@@ -4,25 +4,25 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 
 // Material
 import {
-    useTheme,
-    Typography,
-    Button,
-    Stack,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-    Box,
-    styled,
-    alpha,
-    useMediaQuery,
-    Skeleton
+  useTheme,
+  Typography,
+  Button,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+  Box,
+  styled,
+  alpha,
+  useMediaQuery,
+  Skeleton
 } from '@mui/material';
-import { tableCellClasses } from "@mui/material/TableCell";
+import { tableCellClasses } from '@mui/material/TableCell';
 
 // Context
-import { useContext } from 'react'
-import { AppContext } from 'src/AppContext'
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Icons
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
@@ -71,94 +71,103 @@ const BalanceValue = styled(Typography)(({ theme }) => ({
   }
 }));
 
-export default function AccountBalance({pair, accountPairBalance, setAccountPairBalance}) {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const BASE_URL = process.env.API_URL;
-    const { accountProfile, sync, darkMode } = useContext(AppContext);
-    const curr1 = useMemo(() => pair.curr1, [pair]);
-    const curr2 = useMemo(() => pair.curr2, [pair]);
-    const [loading, setLoading] = useState(false);
+export default function AccountBalance({ pair, accountPairBalance, setAccountPairBalance }) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const BASE_URL = process.env.API_URL;
+  const { accountProfile, sync, darkMode } = useContext(AppContext);
+  const curr1 = useMemo(() => pair.curr1, [pair]);
+  const curr2 = useMemo(() => pair.curr2, [pair]);
+  const [loading, setLoading] = useState(false);
 
-    const getAccountInfo = useCallback(() => {
-        if (!accountProfile?.account || !pair) {
-            setAccountPairBalance(null);
-            return;
+  const getAccountInfo = useCallback(() => {
+    if (!accountProfile?.account || !pair) {
+      setAccountPairBalance(null);
+      return;
+    }
+
+    setLoading(true);
+    const account = accountProfile.account;
+    axios
+      .get(
+        `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
+      )
+      .then((res) => {
+        if (res.status === 200) {
+          setAccountPairBalance(res.data.pair);
         }
+      })
+      .catch((err) => {
+        console.error('Error on getting account pair balance info.', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [accountProfile, pair, curr1, curr2, BASE_URL, setAccountPairBalance]);
 
-        setLoading(true);
-        const account = accountProfile.account;
-        axios.get(`${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`)
-            .then(res => {
-                if (res.status === 200) {
-                    setAccountPairBalance(res.data.pair);
-                }
-            }).catch(err => {
-                console.error("Error on getting account pair balance info.", err);
-            }).finally(() => {
-                setLoading(false);
-            });
-    }, [accountProfile, pair, curr1, curr2, BASE_URL, setAccountPairBalance]);
+  useEffect(() => {
+    getAccountInfo();
+  }, [getAccountInfo, sync]);
 
-    useEffect(() => {
-        getAccountInfo();
-    }, [getAccountInfo, sync]);
-
-    if (loading) {
-        return (
-            <BalanceContainer>
-                <Stack direction="row" spacing={1}>
-                    <Skeleton variant="rounded" width="50%" height={60} />
-                    <Skeleton variant="rounded" width="50%" height={60} />
-                </Stack>
-            </BalanceContainer>
-        );
-    }
-
-    if (!accountPairBalance) {
-        return null;
-    }
-
+  if (loading) {
     return (
-        <BalanceContainer>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-                <AccountBalanceWalletIcon 
-                    sx={{ 
-                        fontSize: { xs: '0.875rem', sm: '1rem' },
-                        color: theme.palette.primary.main 
-                    }} 
-                />
-                <Typography 
-                    variant="caption" 
-                    sx={{ 
-                        fontWeight: 600,
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        color: theme.palette.text.secondary
-                    }}
-                >
-                    Wallet Balance
-                </Typography>
-            </Box>
-            
-            <Stack direction="row" spacing={1}>
-                <BalanceCard>
-                    <CurrencyLabel sx={{ color: '#B72136' }}>
-                        {curr1.name}
-                    </CurrencyLabel>
-                    <BalanceValue>
-                        {new Decimal(accountPairBalance.curr1.value).toFixed(isMobile ? 6 : 8, Decimal.ROUND_DOWN)}
-                    </BalanceValue>
-                </BalanceCard>
-                
-                <BalanceCard>
-                    <CurrencyLabel sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>
-                        {curr2.name}
-                    </CurrencyLabel>
-                    <BalanceValue>
-                        {new Decimal(accountPairBalance.curr2.value).toFixed(isMobile ? 4 : 6, Decimal.ROUND_DOWN)}
-                    </BalanceValue>
-                </BalanceCard>
-            </Stack>
-        </BalanceContainer>
+      <BalanceContainer>
+        <Stack direction="row" spacing={1}>
+          <Skeleton variant="rounded" width="50%" height={60} />
+          <Skeleton variant="rounded" width="50%" height={60} />
+        </Stack>
+      </BalanceContainer>
     );
+  }
+
+  if (!accountPairBalance) {
+    return null;
+  }
+
+  return (
+    <BalanceContainer>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+        <AccountBalanceWalletIcon
+          sx={{
+            fontSize: { xs: '0.875rem', sm: '1rem' },
+            color: theme.palette.primary.main
+          }}
+        />
+        <Typography
+          variant="caption"
+          sx={{
+            fontWeight: 600,
+            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+            color: theme.palette.text.secondary
+          }}
+        >
+          Wallet Balance
+        </Typography>
+      </Box>
+
+      <Stack direction="row" spacing={1}>
+        <BalanceCard>
+          <CurrencyLabel sx={{ color: '#B72136' }}>{curr1.name}</CurrencyLabel>
+          <BalanceValue>
+            {new Decimal(accountPairBalance.curr1.value).toFixed(
+              isMobile ? 6 : 8,
+              Decimal.ROUND_DOWN
+            )}
+          </BalanceValue>
+        </BalanceCard>
+
+        <BalanceCard>
+          <CurrencyLabel sx={{ color: darkMode ? '#007B55' : '#5569ff' }}>
+            {curr2.name}
+          </CurrencyLabel>
+          <BalanceValue>
+            {new Decimal(accountPairBalance.curr2.value).toFixed(
+              isMobile ? 4 : 6,
+              Decimal.ROUND_DOWN
+            )}
+          </BalanceValue>
+        </BalanceCard>
+      </Stack>
+    </BalanceContainer>
+  );
 }

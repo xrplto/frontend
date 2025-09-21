@@ -81,7 +81,7 @@ const Spread = ({ bids, asks, sx }) => {
   // Calculate spread values
   const calculatedValues = useMemo(() => {
     const spread = calculateSpread(bids, asks);
-    
+
     if (spread.spreadAmount === 0) {
       return {
         spreadAmount: '0',
@@ -169,35 +169,35 @@ const Spread = ({ bids, asks, sx }) => {
       />
 
       <CompactTooltip
-          title={
-            <>
-              <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
-                Bid-Ask Spread
-              </Typography>
-              <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
-                The bid-ask spread represents the difference between the quoted prices for an
-                immediate sale (ask) and an immediate purchase (bid) of financial instruments. A
-                smaller spread typically indicates better liquidity and lower trading costs.
-              </Typography>
-            </>
-          }
-          arrow
-          placement="top"
+        title={
+          <>
+            <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+              Bid-Ask Spread
+            </Typography>
+            <Typography variant="body2" sx={{ lineHeight: 1.4 }}>
+              The bid-ask spread represents the difference between the quoted prices for an
+              immediate sale (ask) and an immediate purchase (bid) of financial instruments. A
+              smaller spread typically indicates better liquidity and lower trading costs.
+            </Typography>
+          </>
+        }
+        arrow
+        placement="top"
+      >
+        <IconButton
+          size="small"
+          sx={{
+            padding: '2px',
+            color: alpha(theme.palette.text.secondary, 0.6),
+            '&:hover': {
+              color: theme.palette.primary.main,
+              backgroundColor: alpha(theme.palette.primary.main, 0.08)
+            }
+          }}
         >
-          <IconButton
-            size="small"
-            sx={{
-              padding: '2px',
-              color: alpha(theme.palette.text.secondary, 0.6),
-              '&:hover': {
-                color: theme.palette.primary.main,
-                backgroundColor: alpha(theme.palette.primary.main, 0.08)
-              }
-            }}
-          >
-            <InfoIcon sx={{ fontSize: '0.875rem' }} />
-          </IconButton>
-        </CompactTooltip>
+          <InfoIcon sx={{ fontSize: '0.875rem' }} />
+        </IconButton>
+      </CompactTooltip>
     </SpreadContainer>
   );
 };

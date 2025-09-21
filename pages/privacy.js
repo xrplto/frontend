@@ -7,7 +7,6 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function PrivacyPage() {
-
   const sections = [
     {
       title: 'No Data Collection',
@@ -85,20 +84,16 @@ function PrivacyPage() {
 
       <div className="container">
         <div className="privacy-header">
-          <h1 className="gradient-title">
-            Privacy Policy
-          </h1>
-          <span className="date-chip">
-            Effective Date: May 27, 2023
-          </span>
+          <h1 className="gradient-title">Privacy Policy</h1>
+          <span className="date-chip">Effective Date: May 27, 2023</span>
         </div>
 
         {/* Introduction Card */}
         <div className="intro-card">
           <p className="intro-text">
-            At xrpl.to, your privacy is absolute. We do not collect, store, or process any personal 
-            information whatsoever. We will never contact you, send you emails, or communicate with 
-            you in any way. This Privacy Policy confirms our commitment to zero data collection and 
+            At xrpl.to, your privacy is absolute. We do not collect, store, or process any personal
+            information whatsoever. We will never contact you, send you emails, or communicate with
+            you in any way. This Privacy Policy confirms our commitment to zero data collection and
             complete user anonymity when using our decentralized interface to the XRP Ledger.
           </p>
         </div>
@@ -107,18 +102,12 @@ function PrivacyPage() {
           {/* Main Policy Sections */}
           {sections.map((section) => (
             <div className="section-card main-card" key={section.title}>
-              <h2 className="section-title primary">
-                {section.title}
-              </h2>
+              <h2 className="section-title primary">{section.title}</h2>
               <div className="subsections">
                 {section.content.map((item, itemIndex) => (
                   <div className="subsection" key={`${section.title}-${item.subtitle}`}>
-                    <h3 className="subsection-title secondary">
-                      {item.subtitle}
-                    </h3>
-                    <p className="subsection-text">
-                      {item.text}
-                    </p>
+                    <h3 className="subsection-title secondary">{item.subtitle}</h3>
+                    <p className="subsection-text">{item.text}</p>
                   </div>
                 ))}
               </div>
@@ -128,30 +117,24 @@ function PrivacyPage() {
           {/* Additional Sections */}
           {additionalSections.map((section, index) => (
             <div className="section-card" key={section.title}>
-              <h3 className="section-title">
-                {section.title}
-              </h3>
-              <p className="section-content">
-                {section.text}
-              </p>
+              <h3 className="section-title">{section.title}</h3>
+              <p className="section-content">{section.text}</p>
             </div>
           ))}
 
           {/* Important Notice Section */}
           <div className="section-card full-width contact-card">
-            <h2 className="section-title secondary center">
-              Important Notice
-            </h2>
+            <h2 className="section-title secondary center">Important Notice</h2>
             <div className="contact-content">
               <p className="section-content center">
-                <strong>xrpl.to will NEVER contact you.</strong> We do not have your email or any 
-                contact information. If someone claims to represent xrpl.to and contacts you, 
-                it is a scam. Report it immediately.
+                <strong>xrpl.to will NEVER contact you.</strong> We do not have your email or any
+                contact information. If someone claims to represent xrpl.to and contacts you, it is
+                a scam. Report it immediately.
               </p>
               <hr className="divider" />
               <p className="note-text">
-                This Privacy Policy applies only to xrpl.to. Third-party services linked from our 
-                platform may have different privacy practices. Since we collect no data, any 
+                This Privacy Policy applies only to xrpl.to. Third-party services linked from our
+                platform may have different privacy practices. Since we collect no data, any
                 information you provide to third parties is solely your responsibility.
               </p>
             </div>
@@ -159,13 +142,9 @@ function PrivacyPage() {
 
           {/* Timeline Card */}
           <div className="section-card full-width">
-            <h3 className="section-title center">
-              Policy Updates
-            </h3>
+            <h3 className="section-title center">Policy Updates</h3>
             <div className="timeline">
-              <span className="timeline-date">
-                May 27, 2023
-              </span>
+              <span className="timeline-date">May 27, 2023</span>
               <p className="timeline-text">Privacy Policy Creation</p>
             </div>
           </div>
@@ -215,14 +194,14 @@ function PrivacyPage() {
           background: white;
           border-radius: 8px;
           padding: 32px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           margin-bottom: 32px;
         }
 
         .intro-text {
           line-height: 1.7;
           font-size: 1.1rem;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .sections-grid {
@@ -242,18 +221,18 @@ function PrivacyPage() {
           background: white;
           border-radius: 8px;
           padding: 32px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           height: 100%;
         }
 
         .section-card.main-card {
-          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
-          border: 1px solid rgba(0,0,0,0.12);
+          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
+          border: 1px solid rgba(0, 0, 0, 0.12);
         }
 
         .section-card.contact-card {
-          background: linear-gradient(135deg, rgba(156,39,176,0.06), rgba(33,150,243,0.06));
-          border: 1px solid rgba(0,0,0,0.12);
+          background: linear-gradient(135deg, rgba(156, 39, 176, 0.06), rgba(33, 150, 243, 0.06));
+          border: 1px solid rgba(0, 0, 0, 0.12);
         }
 
         .section-card.full-width {
@@ -281,7 +260,7 @@ function PrivacyPage() {
 
         .section-content {
           line-height: 1.6;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .section-content.center {
@@ -308,7 +287,7 @@ function PrivacyPage() {
 
         .subsection-text {
           line-height: 1.6;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .contact-content {
@@ -323,11 +302,11 @@ function PrivacyPage() {
         .divider {
           margin: 16px 0;
           border: 0;
-          border-top: 1px solid rgba(0,0,0,0.12);
+          border-top: 1px solid rgba(0, 0, 0, 0.12);
         }
 
         .note-text {
-          color: rgba(0,0,0,0.6);
+          color: rgba(0, 0, 0, 0.6);
           font-size: 0.875rem;
           line-height: 1.4;
         }
@@ -349,7 +328,7 @@ function PrivacyPage() {
         }
 
         .timeline-text {
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         /* Dark mode support */
@@ -360,28 +339,28 @@ function PrivacyPage() {
           }
 
           .section-card.main-card {
-            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
-            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.12);
           }
 
           .section-card.contact-card {
-            background: linear-gradient(135deg, rgba(156,39,176,0.1), rgba(33,150,243,0.1));
-            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(33, 150, 243, 0.1));
+            border: 1px solid rgba(255, 255, 255, 0.12);
           }
 
           .intro-text,
           .section-content,
           .subsection-text,
           .timeline-text {
-            color: rgba(255,255,255,0.87);
+            color: rgba(255, 255, 255, 0.87);
           }
 
           .note-text {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
           }
 
           .divider {
-            border-top: 1px solid rgba(255,255,255,0.12);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
           }
         }
       `}</style>

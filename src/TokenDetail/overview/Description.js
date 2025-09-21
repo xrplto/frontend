@@ -1,6 +1,6 @@
 import React, { useState, useContext } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { 
+import {
   Box,
   Card,
   CardHeader,
@@ -19,10 +19,10 @@ import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import { AppContext } from 'src/AppContext';
 
 const MarkdownParagraph = ({ children }) => (
-  <Typography 
-    variant="body2" 
+  <Typography
+    variant="body2"
     paragraph
-    sx={{ 
+    sx={{
       color: 'text.primary',
       lineHeight: 1.5,
       mb: 0.75,
@@ -46,7 +46,11 @@ const MarkdownH2 = ({ children }) => (
 );
 
 const MarkdownH3 = ({ children }) => (
-  <Typography variant="subtitle2" gutterBottom sx={{ mt: 0.75, fontWeight: 600, fontSize: '0.75rem' }}>
+  <Typography
+    variant="subtitle2"
+    gutterBottom
+    sx={{ mt: 0.75, fontWeight: 600, fontSize: '0.75rem' }}
+  >
     {children}
   </Typography>
 );
@@ -64,10 +68,10 @@ const MarkdownOL = ({ children }) => (
 );
 
 const MarkdownLI = ({ children }) => (
-  <Typography 
-    component="li" 
+  <Typography
+    component="li"
     variant="body2"
-    sx={{ 
+    sx={{
       color: 'text.primary',
       mb: 0.25,
       lineHeight: 1.5,
@@ -88,21 +92,21 @@ const markdownComponents = {
   li: MarkdownLI
 };
 
-export default function Description({ 
-  token, 
-  showEditor, 
-  setShowEditor, 
-  description, 
+export default function Description({
+  token,
+  showEditor,
+  setShowEditor,
+  description,
   onApplyDescription,
-  mdEditor 
+  mdEditor
 }) {
   const theme = useTheme();
   const { accountProfile } = useContext(AppContext);
   const [expanded, setExpanded] = useState(false);
-  
+
   const isAdmin = accountProfile?.admin;
   const displayName = token.user || token.name;
-  
+
   const handleEditToggle = () => {
     if (showEditor) onApplyDescription();
     setShowEditor(!showEditor);
@@ -111,7 +115,7 @@ export default function Description({
   if (!description && !showEditor && !isAdmin) return null;
 
   return (
-    <Card 
+    <Card
       elevation={0}
       sx={{
         borderRadius: { xs: '8px', sm: '10px' },
@@ -152,10 +156,10 @@ export default function Description({
         action={
           <Stack direction="row" spacing={0.5}>
             <Tooltip title={expanded ? 'Show less' : 'Show more'}>
-              <IconButton 
-                size="small" 
+              <IconButton
+                size="small"
                 onClick={() => setExpanded(!expanded)}
-                sx={{ 
+                sx={{
                   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                   borderRadius: 1
                 }}
@@ -165,10 +169,10 @@ export default function Description({
             </Tooltip>
             {isAdmin && (
               <Tooltip title={showEditor ? 'Save & close' : 'Edit'}>
-                <IconButton 
-                  size="small" 
+                <IconButton
+                  size="small"
                   onClick={handleEditToggle}
-                  sx={{ 
+                  sx={{
                     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                     borderRadius: 1,
                     color: showEditor ? 'error.main' : 'inherit'
@@ -180,17 +184,17 @@ export default function Description({
             )}
           </Stack>
         }
-        sx={{ 
+        sx={{
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           px: { xs: 1, sm: 1.5 },
           py: 1
         }}
       />
-      
+
       {showEditor && mdEditor ? (
-        <Box 
-          sx={{ 
-            px: { xs: 1, sm: 1.5 }, 
+        <Box
+          sx={{
+            px: { xs: 1, sm: 1.5 },
             py: 1,
             '& .rc-md-editor': {
               border: 'none !important',
@@ -239,28 +243,24 @@ export default function Description({
       ) : !showEditor && description ? (
         <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1 }}>
           <Collapse in={expanded} collapsedSize={80}>
-            <Box 
-              sx={{ 
+            <Box
+              sx={{
                 position: 'relative',
                 ...(!expanded && {
                   overflow: 'hidden'
                 })
               }}
             >
-              <ReactMarkdown
-                components={markdownComponents}
-              >
-                {description}
-              </ReactMarkdown>
+              <ReactMarkdown components={markdownComponents}>{description}</ReactMarkdown>
             </Box>
           </Collapse>
         </Box>
       ) : (
         !showEditor && (
           <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1, minHeight: 60 }}>
-            <Typography 
-              variant="body2" 
-              sx={{ 
+            <Typography
+              variant="body2"
+              sx={{
                 color: 'text.secondary',
                 fontStyle: 'italic',
                 fontSize: '0.75rem'

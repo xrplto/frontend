@@ -54,8 +54,15 @@ const AlertContainer = styled.div`
   bottom: 24px;
   left: 24px;
   z-index: 9999;
-  animation: ${props => props.isClosing ? css`${slideOut} 0.3s ease-out forwards` : css`${slideIn} 0.3s ease-out`};
-  
+  animation: ${(props) =>
+    props.isClosing
+      ? css`
+          ${slideOut} 0.3s ease-out forwards
+        `
+      : css`
+          ${slideIn} 0.3s ease-out
+        `};
+
   @media (max-width: 640px) {
     left: 16px;
     right: 16px;
@@ -69,8 +76,8 @@ const AlertBox = styled.div`
   padding: 20px;
   border-radius: 16px;
   backdrop-filter: blur(20px);
-  background: ${props => {
-    switch(props.severity) {
+  background: ${(props) => {
+    switch (props.severity) {
       case 'success':
         return 'linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%)';
       case 'error':
@@ -79,7 +86,7 @@ const AlertBox = styled.div`
         return 'linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%)';
     }
   }};
-  box-shadow: 
+  box-shadow:
     0 20px 25px -5px rgba(0, 0, 0, 0.1),
     0 10px 10px -5px rgba(0, 0, 0, 0.04),
     inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
@@ -87,7 +94,7 @@ const AlertBox = styled.div`
   color: white;
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -95,14 +102,10 @@ const AlertBox = styled.div`
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, 
-      transparent, 
-      rgba(255, 255, 255, 0.5), 
-      transparent
-    );
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
     animation: ${pulse} 2s ease-in-out infinite;
   }
-  
+
   @media (max-width: 640px) {
     min-width: unset;
     width: 100%;
@@ -174,16 +177,16 @@ const CloseButton = styled.button`
   justify-content: center;
   cursor: pointer;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: scale(1.05);
   }
-  
+
   &:active {
     transform: scale(0.95);
   }
-  
+
   svg {
     width: 16px;
     height: 16px;
@@ -211,12 +214,12 @@ const ViewLink = styled.a`
   font-size: 13px;
   font-weight: 500;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background: rgba(255, 255, 255, 0.3);
     transform: translateY(-1px);
   }
-  
+
   svg {
     width: 14px;
     height: 14px;
@@ -232,7 +235,7 @@ const ProgressBar = styled.div`
   height: 3px;
   background: rgba(255, 255, 255, 0.2);
   overflow: hidden;
-  
+
   &::after {
     content: '';
     position: absolute;
@@ -241,10 +244,13 @@ const ProgressBar = styled.div`
     bottom: 0;
     width: 100%;
     background: rgba(255, 255, 255, 0.8);
-    animation: ${props => props.duration ? css`
+    animation: ${(props) =>
+      props.duration
+        ? css`
       progress ${props.duration}ms linear forwards
-    ` : 'none'};
-    
+    `
+        : 'none'};
+
     @keyframes progress {
       from {
         transform: translateX(-100%);
@@ -272,9 +278,12 @@ const TransactionAlert = () => {
 
   useEffect(() => {
     if (isProcessing === 2 || isProcessing === 3) {
-      const timer = setTimeout(() => {
-        handleClose();
-      }, isProcessing === 2 ? 6000 : 5000);
+      const timer = setTimeout(
+        () => {
+          handleClose();
+        },
+        isProcessing === 2 ? 6000 : 5000
+      );
       return () => clearTimeout(timer);
     }
   }, [isProcessing]);
@@ -287,10 +296,12 @@ const TransactionAlert = () => {
         <>
           <ClockIcon>
             <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z" />
             </svg>
           </ClockIcon>
-          <Spinner style={{ position: 'absolute', width: '36px', height: '36px', borderWidth: '3px' }} />
+          <Spinner
+            style={{ position: 'absolute', width: '36px', height: '36px', borderWidth: '3px' }}
+          />
         </>
       ),
       severity: 'info',
@@ -303,14 +314,14 @@ const TransactionAlert = () => {
         <>
           Transaction successfully submitted
           {txHash && (
-            <ViewLink 
+            <ViewLink
               href={`https://bithomp.com/explorer/${txHash}`}
               target="_blank"
               rel="noreferrer"
             >
               View on Explorer
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z" />
               </svg>
             </ViewLink>
           )}
@@ -319,7 +330,7 @@ const TransactionAlert = () => {
       icon: (
         <CheckIcon>
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
           </svg>
         </CheckIcon>
       ),
@@ -333,7 +344,7 @@ const TransactionAlert = () => {
       icon: (
         <WarningIcon>
           <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
           </svg>
         </WarningIcon>
       ),
@@ -355,21 +366,17 @@ const TransactionAlert = () => {
     <AlertContainer isClosing={isClosing}>
       <AlertBox severity={severity}>
         <Header>
-          <IconWrapper>
-            {icon}
-          </IconWrapper>
+          <IconWrapper>{icon}</IconWrapper>
           <Title>{title}</Title>
           {showClose && (
             <CloseButton onClick={handleClose}>
               <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/>
+                <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z" />
               </svg>
             </CloseButton>
           )}
         </Header>
-        <Content>
-          {typeof content === 'string' ? content : content}
-        </Content>
+        <Content>{typeof content === 'string' ? content : content}</Content>
         {autoHideDuration && <ProgressBar duration={autoHideDuration} />}
       </AlertBox>
     </AlertContainer>

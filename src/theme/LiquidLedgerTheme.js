@@ -2,19 +2,19 @@ import { alpha, createTheme, darken, lighten } from '@mui/material/styles';
 
 // XRP Ledger inspired color palette - liquidity, speed, trust
 const themeColors = {
-  primary: '#23292F',      // Deep Charcoal (XRPL Brand)
-  secondary: '#00D4E6',    // Liquid Cyan
-  success: '#00E676',      // Validator Green
-  warning: '#FFB74D',      // Consensus Amber
-  error: '#FF5252',        // Failed Transaction Red
-  info: '#536DFE',         // Network Blue
-  black: '#0A0E12',        // Ledger Black
-  white: '#F8FAFB',        // Paper White
-  primaryAlt: '#1C2126',   // Dark Slate
+  primary: '#23292F', // Deep Charcoal (XRPL Brand)
+  secondary: '#00D4E6', // Liquid Cyan
+  success: '#00E676', // Validator Green
+  warning: '#FFB74D', // Consensus Amber
+  error: '#FF5252', // Failed Transaction Red
+  info: '#536DFE', // Network Blue
+  black: '#0A0E12', // Ledger Black
+  white: '#F8FAFB', // Paper White
+  primaryAlt: '#1C2126', // Dark Slate
   trueWhite: '#FFFFFF',
-  accent: '#7B61FF',       // Purple Accent
-  teal: '#00BFA5',         // Teal Accent
-  gold: '#FFD700'          // Gold Accent
+  accent: '#7B61FF', // Purple Accent
+  teal: '#00BFA5', // Teal Accent
+  gold: '#FFD700' // Gold Accent
 };
 
 const colors = {
@@ -37,18 +37,23 @@ const colors = {
     black2: 'linear-gradient(60deg, #0A0E12 0%, #23292F 100%)',
     ripple: 'radial-gradient(circle at 50% 50%, rgba(0, 212, 230, 0.3) 0%, transparent 50%)',
     mesh: 'radial-gradient(at 50% 50%, #00D4E6 0%, transparent 50%), radial-gradient(at 80% 80%, #7B61FF 0%, transparent 50%), radial-gradient(at 20% 80%, #00BFA5 0%, transparent 50%)',
-    aurora: 'linear-gradient(45deg, #00D4E6 0%, #7B61FF 25%, #00BFA5 50%, #536DFE 75%, #00D4E6 100%)',
+    aurora:
+      'linear-gradient(45deg, #00D4E6 0%, #7B61FF 25%, #00BFA5 50%, #536DFE 75%, #00D4E6 100%)',
     holographic: 'linear-gradient(45deg, #00D4E6, #7B61FF, #00BFA5, #FFD700, #00D4E6)'
   },
   shadows: {
-    success: '0px 0px 20px rgba(0, 230, 118, 0.5), 0px 0px 40px rgba(0, 230, 118, 0.3), inset 0px 0px 20px rgba(0, 230, 118, 0.1)',
-    error: '0px 0px 20px rgba(255, 82, 82, 0.5), 0px 0px 40px rgba(255, 82, 82, 0.3), inset 0px 0px 20px rgba(255, 82, 82, 0.1)',
+    success:
+      '0px 0px 20px rgba(0, 230, 118, 0.5), 0px 0px 40px rgba(0, 230, 118, 0.3), inset 0px 0px 20px rgba(0, 230, 118, 0.1)',
+    error:
+      '0px 0px 20px rgba(255, 82, 82, 0.5), 0px 0px 40px rgba(255, 82, 82, 0.3), inset 0px 0px 20px rgba(255, 82, 82, 0.1)',
     info: '0px 0px 20px rgba(83, 109, 254, 0.5), 0px 0px 40px rgba(83, 109, 254, 0.3), inset 0px 0px 20px rgba(83, 109, 254, 0.1)',
     primary: '0px 0px 20px rgba(0, 212, 230, 0.5), 0px 0px 40px rgba(123, 97, 255, 0.3)',
-    warning: '0px 0px 20px rgba(255, 183, 77, 0.5), 0px 0px 40px rgba(255, 183, 77, 0.3), inset 0px 0px 20px rgba(255, 215, 0, 0.2)',
+    warning:
+      '0px 0px 20px rgba(255, 183, 77, 0.5), 0px 0px 40px rgba(255, 183, 77, 0.3), inset 0px 0px 20px rgba(255, 215, 0, 0.2)',
     card: '0px 10px 40px rgba(0, 212, 230, 0.2), 0px 2px 20px rgba(123, 97, 255, 0.15), inset 0px 0px 60px rgba(0, 212, 230, 0.05)',
     cardSm: '0px 5px 20px rgba(0, 212, 230, 0.15), 0px 2px 10px rgba(123, 97, 255, 0.1)',
-    cardLg: '0px 20px 60px rgba(0, 212, 230, 0.25), 0px 5px 40px rgba(123, 97, 255, 0.2), inset 0px 0px 80px rgba(0, 191, 165, 0.1)',
+    cardLg:
+      '0px 20px 60px rgba(0, 212, 230, 0.25), 0px 5px 40px rgba(123, 97, 255, 0.2), inset 0px 0px 80px rgba(0, 191, 165, 0.1)',
     glow: '0 0 30px rgba(0, 212, 230, 0.6), 0 0 60px rgba(0, 212, 230, 0.4), 0 0 90px rgba(0, 212, 230, 0.2)'
   },
   layout: {
@@ -142,8 +147,8 @@ export const LiquidLedgerTheme = createTheme({
     h4: { fontFamily: "'JetBrains Mono', monospace" },
     h5: { fontFamily: "'JetBrains Mono', monospace" },
     h6: { fontFamily: "'JetBrains Mono', monospace" },
-    body1: { fontVariantNumeric: "tabular-nums" },
-    body2: { fontVariantNumeric: "tabular-nums" }
+    body1: { fontVariantNumeric: 'tabular-nums' },
+    body2: { fontVariantNumeric: 'tabular-nums' }
   },
   colors: {
     gradients: colors.gradients,
@@ -190,7 +195,7 @@ export const LiquidLedgerTheme = createTheme({
   spacing: 9,
   currency: {
     background1: alpha('#00D4E6', 0.08),
-    background2: alpha('#536DFE', 0.08), 
+    background2: alpha('#536DFE', 0.08),
     border: `1px solid ${alpha('#00D4E6', 0.2)}`
   },
 
@@ -395,7 +400,7 @@ export const LiquidLedgerTheme = createTheme({
             transition: 'left 0.6s ease',
             pointerEvents: 'none'
           },
-          '&:hover': { 
+          '&:hover': {
             boxShadow: colors.shadows.card,
             borderColor: alpha('#00D4E6', 0.2),
             transform: 'translateY(-2px)',
@@ -409,9 +414,9 @@ export const LiquidLedgerTheme = createTheme({
     },
     MuiButton: {
       styleOverrides: {
-        root: { 
-          borderRadius: 12, 
-          padding: '12px 28px', 
+        root: {
+          borderRadius: 12,
+          padding: '12px 28px',
           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
           fontWeight: 500,
           position: 'relative',
@@ -494,18 +499,18 @@ export const LiquidLedgerTheme = createTheme({
             opacity: 0,
             transition: 'opacity 0.3s ease'
           },
-          '&:hover': { 
+          '&:hover': {
             borderColor: 'transparent',
             transform: 'translateY(-1px)',
             '&::before': { opacity: 1 }
           }
         },
-        text: { 
+        text: {
           color: '#00D4E6',
-          '&:hover': { 
+          '&:hover': {
             backgroundColor: alpha('#00D4E6', 0.08),
             color: '#00BFA5'
-          } 
+          }
         },
         sizeSmall: { padding: '8px 16px', fontSize: '0.875rem' },
         sizeMedium: { padding: '10px 24px' },
@@ -517,7 +522,9 @@ export const LiquidLedgerTheme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             transition: 'all 0.2s ease',
-            '&:hover': { '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#00D4E6', 0.3) } },
+            '&:hover': {
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#00D4E6', 0.3) }
+            },
             '&.Mui-focused': {
               '& .MuiOutlinedInput-notchedOutline': {
                 borderColor: '#00D4E6',
@@ -583,7 +590,7 @@ export const LiquidLedgerTheme = createTheme({
           border: '1px solid transparent',
           background: `linear-gradient(${alpha('#00D4E6', 0.08)}, ${alpha('#00D4E6', 0.08)}) padding-box,
                        ${colors.gradients.blue1} border-box`,
-          '&:hover': { 
+          '&:hover': {
             transform: 'scale(1.05)',
             boxShadow: '0 4px 12px rgba(0,212,230,0.2)'
           }
@@ -604,7 +611,7 @@ export const LiquidLedgerTheme = createTheme({
       styleOverrides: {
         root: {
           transition: 'all 0.2s ease',
-          '&:hover': { 
+          '&:hover': {
             transform: 'scale(1.08)',
             backgroundColor: alpha('#00D4E6', 0.05)
           }
@@ -615,14 +622,14 @@ export const LiquidLedgerTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiSwitch-track': { backgroundColor: alpha('#5A6670', 0.3) },
-          '& .MuiSwitch-thumb': { 
+          '& .MuiSwitch-thumb': {
             backgroundColor: '#FFFFFF',
             boxShadow: '0 2px 4px rgba(0,0,0,0.15)'
           }
         },
         colorPrimary: {
           '&.Mui-checked': {
-            '& .MuiSwitch-thumb': { 
+            '& .MuiSwitch-thumb': {
               background: 'linear-gradient(45deg, #00D4E6 30%, #536DFE 90%)'
             }
           }
@@ -681,8 +688,8 @@ export const LiquidLedgerTheme = createTheme({
     },
     MuiLinearProgress: {
       styleOverrides: {
-        root: { 
-          borderRadius: 12, 
+        root: {
+          borderRadius: 12,
           backgroundColor: alpha('#00D4E6', 0.1),
           height: 8,
           overflow: 'hidden',
@@ -698,8 +705,8 @@ export const LiquidLedgerTheme = createTheme({
             animation: 'shimmerWave 2s infinite'
           }
         },
-        bar: { 
-          borderRadius: 12, 
+        bar: {
+          borderRadius: 12,
           background: colors.gradients.aurora,
           backgroundSize: '200% 100%',
           animation: 'liquidFlow 3s linear infinite'
@@ -742,7 +749,7 @@ export const LiquidLedgerTheme = createTheme({
 
 export const createLiquidLedgerTheme = ({ dark = false } = {}) => {
   if (!dark) return LiquidLedgerTheme;
-  
+
   return createTheme({
     ...LiquidLedgerTheme,
     chart: {
@@ -770,7 +777,8 @@ export const createLiquidLedgerTheme = ({ dark = false } = {}) => {
           ...LiquidLedgerTheme.components.MuiCssBaseline.styleOverrides,
           body: {
             ...LiquidLedgerTheme.components.MuiCssBaseline.styleOverrides.body,
-            background: 'linear-gradient(135deg, #0A0E12 0%, #0F1419 25%, #0A0E12 50%, #141A20 75%, #0A0E12 100%)',
+            background:
+              'linear-gradient(135deg, #0A0E12 0%, #0F1419 25%, #0A0E12 50%, #141A20 75%, #0A0E12 100%)',
             '&::before': {
               ...LiquidLedgerTheme.components.MuiCssBaseline.styleOverrides.body['&::before'],
               background: `

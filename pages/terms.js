@@ -7,7 +7,6 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function TermsPage() {
-
   const termsSections = [
     {
       title: 'Acceptance of Terms',
@@ -136,35 +135,23 @@ function TermsPage() {
 
       <div className="container">
         <div className="terms-header">
-          <h1 className="gradient-title">
-            Terms and Conditions
-          </h1>
-          <span className="date-chip">
-            Last updated: May 27, 2023
-          </span>
+          <h1 className="gradient-title">Terms and Conditions</h1>
+          <span className="date-chip">Last updated: May 27, 2023</span>
         </div>
 
         <div className="sections-grid">
           {/* Main Terms Sections */}
           {termsSections.map((section) => (
             <div className="section-card main-card" key={section.title}>
-              <h2 className="section-title success">
-                {section.title}
-              </h2>
+              <h2 className="section-title success">{section.title}</h2>
               {section.content ? (
-                <p className="section-content">
-                  {section.content}
-                </p>
+                <p className="section-content">{section.content}</p>
               ) : (
                 <div className="subsections">
                   {section.subsections.map((item) => (
                     <div className="subsection" key={`${section.title}-${item.subtitle}`}>
-                      <h3 className="subsection-title">
-                        {item.subtitle}
-                      </h3>
-                      <p className="subsection-text">
-                        {item.text}
-                      </p>
+                      <h3 className="subsection-title">{item.subtitle}</h3>
+                      <p className="subsection-text">{item.text}</p>
                     </div>
                   ))}
                 </div>
@@ -175,29 +162,19 @@ function TermsPage() {
           {/* Additional Sections */}
           {additionalSections.map((section) => (
             <div className="section-card" key={section.title}>
-              <h3 className="section-title">
-                {section.title}
-              </h3>
-              <p className="section-content">
-                {section.content}
-              </p>
+              <h3 className="section-title">{section.title}</h3>
+              <p className="section-content">{section.content}</p>
             </div>
           ))}
 
           {/* Disclaimer and Limitation Section */}
           <div className="section-card full-width warning-card">
-            <h2 className="section-title warning">
-              Disclaimer and Limitation of Liability
-            </h2>
+            <h2 className="section-title warning">Disclaimer and Limitation of Liability</h2>
             <div className="subsections">
               {disclaimerSubsections.map((item) => (
                 <div className="subsection" key={item.subtitle}>
-                  <h3 className="subsection-title error">
-                    {item.subtitle}
-                  </h3>
-                  <p className="subsection-text">
-                    {item.text}
-                  </p>
+                  <h3 className="subsection-title error">{item.subtitle}</h3>
+                  <p className="subsection-text">{item.text}</p>
                 </div>
               ))}
             </div>
@@ -205,14 +182,10 @@ function TermsPage() {
 
           {/* Contact Section */}
           <div className="section-card full-width contact-card">
-            <h2 className="section-title">
-              Contact Us
-            </h2>
+            <h2 className="section-title">Contact Us</h2>
             <p className="section-content center">
               If you have any questions about this Agreement, please contact us at{' '}
-              <span className="email-link">
-                hello@xrpl.to
-              </span>
+              <span className="email-link">hello@xrpl.to</span>
             </p>
           </div>
         </div>
@@ -274,23 +247,23 @@ function TermsPage() {
           background: white;
           border-radius: 8px;
           padding: 32px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           height: 100%;
         }
 
         .section-card.main-card {
-          background: linear-gradient(135deg, rgba(102,187,106,0.03), rgba(33,150,243,0.03));
-          border: 1px solid rgba(0,0,0,0.12);
+          background: linear-gradient(135deg, rgba(102, 187, 106, 0.03), rgba(33, 150, 243, 0.03));
+          border: 1px solid rgba(0, 0, 0, 0.12);
         }
 
         .section-card.warning-card {
-          background: linear-gradient(135deg, rgba(255,152,0,0.03), rgba(244,67,54,0.03));
-          border: 1px solid rgba(255,152,0,0.18);
+          background: linear-gradient(135deg, rgba(255, 152, 0, 0.03), rgba(244, 67, 54, 0.03));
+          border: 1px solid rgba(255, 152, 0, 0.18);
         }
 
         .section-card.contact-card {
-          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
-          border: 1px solid rgba(0,0,0,0.12);
+          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
+          border: 1px solid rgba(0, 0, 0, 0.12);
         }
 
         .section-card.full-width {
@@ -314,7 +287,7 @@ function TermsPage() {
 
         .section-content {
           line-height: 1.6;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .section-content.center {
@@ -341,7 +314,7 @@ function TermsPage() {
 
         .subsection-text {
           line-height: 1.6;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .email-link {
@@ -356,22 +329,26 @@ function TermsPage() {
           }
 
           .section-card.main-card {
-            background: linear-gradient(135deg, rgba(102,187,106,0.08), rgba(33,150,243,0.08));
-            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(
+              135deg,
+              rgba(102, 187, 106, 0.08),
+              rgba(33, 150, 243, 0.08)
+            );
+            border: 1px solid rgba(255, 255, 255, 0.12);
           }
 
           .section-card.warning-card {
-            background: linear-gradient(135deg, rgba(255,152,0,0.08), rgba(244,67,54,0.08));
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(244, 67, 54, 0.08));
           }
 
           .section-card.contact-card {
-            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
-            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.12);
           }
 
           .section-content,
           .subsection-text {
-            color: rgba(255,255,255,0.87);
+            color: rgba(255, 255, 255, 0.87);
           }
 
           .date-chip {

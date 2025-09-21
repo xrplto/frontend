@@ -296,42 +296,45 @@ export default function ExchHistory({ pair, md5 }) {
           </TableHead>
           <TableBody>
             {tradeExchs.slice(0, 30).map((row) => {
-            const { _id, exch, amount, direction, time } = row;
-            const nDate = new Date(time);
-            const hour = nDate.getHours().toLocaleString('en-US', {
-              minimumIntegerDigits: 2,
-              useGrouping: false
-            });
-            const min = nDate.getMinutes().toLocaleString('en-US', {
-              minimumIntegerDigits: 2,
-              useGrouping: false
-            });
-            const sec = nDate.getSeconds().toLocaleString('en-US', {
-              minimumIntegerDigits: 2,
-              useGrouping: false
-            });
-            const strTime = `${hour}:${min}:${sec}`;
+              const { _id, exch, amount, direction, time } = row;
+              const nDate = new Date(time);
+              const hour = nDate.getHours().toLocaleString('en-US', {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+              });
+              const min = nDate.getMinutes().toLocaleString('en-US', {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+              });
+              const sec = nDate.getSeconds().toLocaleString('en-US', {
+                minimumIntegerDigits: 2,
+                useGrouping: false
+              });
+              const strTime = `${hour}:${min}:${sec}`;
 
-            return (
-              <TradeRow key={_id} tradetype={direction}>
-                <PriceCell align="left" tradetype={direction}>
-                  {direction === 'up' ? (
-                    <TrendingUpIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }} />
-                  ) : (
-                    <TrendingDownIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }} />
-                  )}
-                  <span>{fNumber(exch)}</span>
-                </PriceCell>
-                <TableCell align="left" sx={{ fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.7rem' } }}>
-                  {amount}
-                </TableCell>
-                <TimeCell align="left">
-                  {!isMobile && <AccessTimeIcon sx={{ fontSize: '0.6rem' }} />}
-                  {strTime}
-                </TimeCell>
-              </TradeRow>
-            );
-          })}
+              return (
+                <TradeRow key={_id} tradetype={direction}>
+                  <PriceCell align="left" tradetype={direction}>
+                    {direction === 'up' ? (
+                      <TrendingUpIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }} />
+                    ) : (
+                      <TrendingDownIcon sx={{ fontSize: { xs: '0.6rem', sm: '0.7rem' } }} />
+                    )}
+                    <span>{fNumber(exch)}</span>
+                  </PriceCell>
+                  <TableCell
+                    align="left"
+                    sx={{ fontWeight: 500, fontSize: { xs: '0.65rem', sm: '0.7rem' } }}
+                  >
+                    {amount}
+                  </TableCell>
+                  <TimeCell align="left">
+                    {!isMobile && <AccessTimeIcon sx={{ fontSize: '0.6rem' }} />}
+                    {strTime}
+                  </TimeCell>
+                </TradeRow>
+              );
+            })}
           </TableBody>
         </ModernTable>
       </TableContainer>

@@ -31,10 +31,7 @@ import { fNumber, fPercent } from 'src/utils/formatNumber';
 import { format } from 'date-fns';
 
 // Import lightweight chart component
-const LightweightChart = dynamic(
-  () => import('src/components/LightweightChart'),
-  { ssr: false }
-);
+const LightweightChart = dynamic(() => import('src/components/LightweightChart'), { ssr: false });
 
 // Using LightweightChart instead of recharts
 
@@ -213,8 +210,8 @@ export const DailyVolumeChart = ({ data }) => {
           height={400}
           series={[
             {
-              dataKey: "cumulativeProfit",
-              name: "Cumulative Profit",
+              dataKey: 'cumulativeProfit',
+              name: 'Cumulative Profit',
               color: theme.palette.success.main,
               lineWidth: 3,
               visible: true
@@ -363,7 +360,6 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
       return 'Invalid Date';
     }
   };
-
 
   const winRate =
     stats.profitableTrades + stats.losingTrades > 0
@@ -669,27 +665,32 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
               mb: 2
             }}
           >
-            <StatCard title="Trade Summary"
+            <StatCard
+              title="Trade Summary"
               icon={<AssessmentIcon sx={{ color: theme.palette.primary.main, fontSize: 16 }} />}
             >
               <StatRow label="Total Trades" value={stats.totalTrades} isCurrency={false} />
-              <StatRow label="Profitable"
+              <StatRow
+                label="Profitable"
                 value={stats.profitableTrades}
                 color={theme.palette.success.main}
                 isCurrency={false}
               />
-              <StatRow label="Losing"
+              <StatRow
+                label="Losing"
                 value={stats.losingTrades}
                 color={theme.palette.error.main}
                 isCurrency={false}
               />
-              <StatRow label="Avg Hold"
+              <StatRow
+                label="Avg Hold"
                 value={formatDuration(stats.avgHoldingTime)}
                 isCurrency={false}
               />
             </StatCard>
 
-            <StatCard title="P&L Analysis"
+            <StatCard
+              title="P&L Analysis"
               icon={<TrendingUpIcon sx={{ color: theme.palette.success.main, fontSize: 16 }} />}
             >
               <ProfitChip value={stats.profit24h} label="24h" />
@@ -699,7 +700,8 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
               <ProfitChip value={stats.profit3m || 0} label="3m" />
             </StatCard>
 
-            <StatCard title="Volume"
+            <StatCard
+              title="Volume"
               icon={<ShowChartIcon sx={{ color: theme.palette.info.main, fontSize: 16 }} />}
             >
               <StatRow label="24h" value={stats.volume24h} />
@@ -709,7 +711,8 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
               <StatRow label="Total" value={stats.totalVolume} />
             </StatCard>
 
-            <StatCard title="Activity"
+            <StatCard
+              title="Activity"
               icon={<TimelineIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
             >
               <StatRow label="24h Trades" value={stats.trades24h} isCurrency={false} />
@@ -719,35 +722,43 @@ export const StatsModal = ({ open, onClose, account, traderStats }) => {
               <StatRow label="Total" value={stats.totalTrades} isCurrency={false} />
             </StatCard>
 
-            <StatCard title="Extremes"
+            <StatCard
+              title="Extremes"
               icon={<StarIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />}
             >
-              <StatRow label="Best Trade"
+              <StatRow
+                label="Best Trade"
                 value={stats.maxProfitTrade}
                 color={theme.palette.success.main}
               />
-              <StatRow label="Worst Trade"
+              <StatRow
+                label="Worst Trade"
                 value={Math.abs(stats.maxLossTrade)}
                 color={theme.palette.error.main}
               />
-              <StatRow label="Buy Volume"
+              <StatRow
+                label="Buy Volume"
                 value={stats.buyVolume}
                 color={theme.palette.success.main}
               />
-              <StatRow label="Sell Volume"
+              <StatRow
+                label="Sell Volume"
                 value={stats.sellVolume}
                 color={theme.palette.error.main}
               />
             </StatCard>
 
-            <StatCard title="Timeline"
+            <StatCard
+              title="Timeline"
               icon={<HistoryIcon sx={{ color: theme.palette.text.secondary, fontSize: 16 }} />}
             >
-              <StatRow label="First Trade"
+              <StatRow
+                label="First Trade"
                 value={formatDate(stats.firstTradeDate)}
                 isCurrency={false}
               />
-              <StatRow label="Last Trade"
+              <StatRow
+                label="Last Trade"
                 value={formatDate(stats.lastTradeDate)}
                 isCurrency={false}
               />

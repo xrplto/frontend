@@ -2,15 +2,15 @@ import { alpha, createTheme, darken, lighten, responsiveFontSizes } from '@mui/m
 
 // Ripple Blue color palette
 const themeColors = {
-  primary: '#0080ff',      // Bright Blue
-  secondary: '#00c5d7',    // Cyan
-  success: '#00d2a0',      // Turquoise
-  warning: '#ffa502',      // Orange
-  error: '#ff4757',        // Red
-  info: '#0080ff',         // Blue
-  black: '#043b6f',        // Dark Blue
-  white: '#ffffff',        // Pure White
-  primaryAlt: '#001429',   // Deep Dark Blue
+  primary: '#0080ff', // Bright Blue
+  secondary: '#00c5d7', // Cyan
+  success: '#00d2a0', // Turquoise
+  warning: '#ffa502', // Orange
+  error: '#ff4757', // Red
+  info: '#0080ff', // Blue
+  black: '#043b6f', // Dark Blue
+  white: '#ffffff', // Pure White
+  primaryAlt: '#001429', // Deep Dark Blue
   trueWhite: '#ffffff'
 };
 
@@ -134,8 +134,8 @@ export const rippleBlueTheme = createTheme({
     h4: { fontFamily: "'JetBrains Mono', monospace" },
     h5: { fontFamily: "'JetBrains Mono', monospace" },
     h6: { fontFamily: "'JetBrains Mono', monospace" },
-    body1: { fontVariantNumeric: "tabular-nums" },
-    body2: { fontVariantNumeric: "tabular-nums" }
+    body1: { fontVariantNumeric: 'tabular-nums' },
+    body2: { fontVariantNumeric: 'tabular-nums' }
   },
   colors: {
     gradients: colors.gradients,
@@ -182,7 +182,7 @@ export const rippleBlueTheme = createTheme({
   spacing: 9,
   currency: {
     background1: alpha('#0080ff', 0.1),
-    background2: alpha('#00c5d7', 0.1), 
+    background2: alpha('#00c5d7', 0.1),
     border: `1px solid ${alpha('#0080ff', 0.3)}`
   },
 
@@ -362,7 +362,11 @@ export const rippleBlueTheme = createTheme({
     },
     MuiButton: {
       styleOverrides: {
-        root: { borderRadius: 14, padding: '8px 20px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)' },
+        root: {
+          borderRadius: 14,
+          padding: '8px 20px',
+          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+        },
         containedPrimary: {
           background: 'linear-gradient(180deg, #0080ff 0%, #0066cc 100%)',
           boxShadow: '0 4px 8px 0 rgba(0,128,255,0.25)',
@@ -397,7 +401,9 @@ export const rippleBlueTheme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': { '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#0080ff', 0.4) } },
+            '&:hover': {
+              '& .MuiOutlinedInput-notchedOutline': { borderColor: alpha('#0080ff', 0.4) }
+            },
             '&.Mui-focused': {
               '& .MuiOutlinedInput-notchedOutline': {
                 borderWidth: 2,
@@ -450,7 +456,10 @@ export const rippleBlueTheme = createTheme({
       styleOverrides: {
         root: {
           '& .MuiSwitch-track': { backgroundColor: alpha('#085a9c', 0.3) },
-          '& .MuiSwitch-thumb': { backgroundColor: '#ffffff', boxShadow: '0 2px 4px rgba(0,128,255,0.2)' }
+          '& .MuiSwitch-thumb': {
+            backgroundColor: '#ffffff',
+            boxShadow: '0 2px 4px rgba(0,128,255,0.2)'
+          }
         },
         colorPrimary: {
           '&.Mui-checked': {
@@ -552,7 +561,7 @@ export const rippleBlueTheme = createTheme({
 
 export const createRippleBlueTheme = ({ dark = false } = {}) => {
   if (!dark) return rippleBlueTheme;
-  
+
   return createTheme({
     ...rippleBlueTheme,
     chart: {

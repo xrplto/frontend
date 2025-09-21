@@ -884,7 +884,7 @@ export default function NFTActions({ nft }) {
 
   return (
     <>
-      <GlassPanel 
+      <GlassPanel
         elevation={0}
         sx={{
           animation: 'fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -984,11 +984,13 @@ export default function NFTActions({ nft }) {
               <IconButton
                 size="large"
                 sx={{
-                  background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                  background: (theme) =>
+                    `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
                   boxShadow: (theme) => `0 4px 15px ${alpha(theme.palette.primary.main, 0.2)}`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   '&:hover': {
-                    background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.primary.main, 0.15)} 100%)`,
+                    background: (theme) =>
+                      `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.primary.main, 0.15)} 100%)`,
                     transform: 'translateY(-2px) rotate(15deg)',
                     boxShadow: (theme) => `0 6px 20px ${alpha(theme.palette.primary.main, 0.3)}`
                   },
@@ -1134,12 +1136,19 @@ export default function NFTActions({ nft }) {
                     <PulseLoader color={theme.palette.primary.main} size={10} />
                   ) : lowestSellOffer ? (
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <InfoIcon sx={{ width: 24, height: 24, filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
-                      <Typography 
-                        variant="h5" 
+                      <InfoIcon
+                        sx={{
+                          width: 24,
+                          height: 24,
+                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
+                        }}
+                      />
+                      <Typography
+                        variant="h5"
                         fontWeight="bold"
                         sx={{
-                          background: (theme) => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+                          background: (theme) =>
+                            `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
                           backgroundClip: 'text',
                           WebkitBackgroundClip: 'text',
                           WebkitTextFillColor: 'transparent',
@@ -1154,7 +1163,9 @@ export default function NFTActions({ nft }) {
                       </Typography>
                     </Stack>
                   ) : (
-                    <Typography variant="body1" sx={{ opacity: 0.5 }}>- - -</Typography>
+                    <Typography variant="body1" sx={{ opacity: 0.5 }}>
+                      - - -
+                    </Typography>
                   )}
                 </Stack>
                 {accountLogin ? (
@@ -1321,7 +1332,8 @@ export default function NFTActions({ nft }) {
                       sx={{
                         py: 4,
                         textAlign: 'center',
-                        background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
+                        background: (theme) =>
+                          `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
                         borderRadius: 2,
                         border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
                       }}
@@ -1462,7 +1474,8 @@ export default function NFTActions({ nft }) {
                     sx={{
                       py: 4,
                       textAlign: 'center',
-                      background: (theme) => `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
+                      background: (theme) =>
+                        `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
                       borderRadius: 2,
                       border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
                     }}
@@ -1484,11 +1497,11 @@ export default function NFTActions({ nft }) {
               </AccordionDetails>
             </StyledAccordion>
 
-            <StyledAccordion
-              defaultExpanded
-            >
-              <AccordionSummary 
-                expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />}
+            <StyledAccordion defaultExpanded>
+              <AccordionSummary
+                expandIcon={
+                  <ExpandMoreIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                }
                 sx={{
                   '& .MuiAccordionSummary-expandIconWrapper': {
                     marginRight: { xs: 0, sm: 1 }
@@ -1496,12 +1509,9 @@ export default function NFTActions({ nft }) {
                 }}
               >
                 <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
-                  <HistoryIcon 
-                    color="primary" 
-                    sx={{ fontSize: { xs: 20, sm: 24 } }} 
-                  />
-                  <Typography 
-                    variant={{ xs: "body1", sm: "h6" }} 
+                  <HistoryIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />
+                  <Typography
+                    variant={{ xs: 'body1', sm: 'h6' }}
                     color="primary.main"
                     sx={{ fontWeight: { xs: 600, sm: 500 } }}
                   >

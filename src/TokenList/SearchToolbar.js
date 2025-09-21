@@ -32,28 +32,23 @@ const Container = styled.div`
   flex-direction: column;
   gap: 8px;
   border-radius: 12px;
-  border: 1px solid ${props => props.darkMode 
-    ? 'rgba(255, 255, 255, 0.03)'
-    : 'rgba(0, 0, 0, 0.03)'};
-  background: ${props => props.darkMode 
-    ? 'rgba(255, 255, 255, 0.01)'
-    : 'rgba(0, 0, 0, 0.01)'};
+  border: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)')};
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
   padding: 8px;
   position: relative;
   transition: all 0.3s ease;
-  
+
   &:hover {
-    background: ${props => props.darkMode 
-      ? 'rgba(255, 255, 255, 0.02)'
-      : 'rgba(0, 0, 0, 0.02)'};
-    border-color: ${props => props.darkMode 
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.05)'};
+    background: ${(props) =>
+      props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+    border-color: ${(props) =>
+      props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   }
-  
+
   @media (max-width: 600px) {
     padding: 4px;
     gap: 4px;
@@ -63,14 +58,14 @@ const Container = styled.div`
 const Row = styled.div`
   display: flex;
   align-items: center;
-  justify-content: ${props => props.spaceBetween ? 'space-between' : 'flex-start'};
+  justify-content: ${(props) => (props.spaceBetween ? 'space-between' : 'flex-start')};
   gap: 10px;
   flex-wrap: wrap;
   flex-direction: row;
   overflow-x: hidden;
   overflow-y: visible;
   width: 100%;
-  
+
   @media (max-width: 600px) {
     gap: 2px;
     overflow-x: auto;
@@ -78,7 +73,7 @@ const Row = styled.div`
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    
+
     &::-webkit-scrollbar {
       display: none;
     }
@@ -90,22 +85,22 @@ const RowContent = styled.div`
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  
+
   @media (max-width: 600px) {
     gap: 4px;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: thin;
-    
+
     &::-webkit-scrollbar {
       height: 3px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: transparent;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: rgba(145, 158, 171, 0.15);
       border-radius: 2px;
@@ -117,49 +112,45 @@ const RowsSelector = styled.select`
   padding: 4px 8px;
   border: 1px solid rgba(145, 158, 171, 0.15);
   border-radius: 8px;
-  background: ${props => props.darkMode 
-    ? 'rgba(17, 24, 39, 0.8)'
-    : 'rgba(255, 255, 255, 0.95)'};
-  color: ${props => props.darkMode ? '#fff' : '#333'};
+  background: ${(props) =>
+    props.darkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.95)'};
+  color: ${(props) => (props.darkMode ? '#fff' : '#333')};
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   height: 32px;
   min-width: 80px;
   transition: all 0.3s ease;
-  margin-left: ${props => props.noMargin ? '0' : 'auto'};
+  margin-left: ${(props) => (props.noMargin ? '0' : 'auto')};
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-image: ${props => `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${props.darkMode ? '%23fff' : '%23333'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
+  background-image: ${(props) =>
+    `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${props.darkMode ? '%23fff' : '%23333'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
   background-repeat: no-repeat;
   background-position: right 8px center;
   background-size: 16px;
   padding-right: 32px;
-  
+
   &:hover {
-    background-color: ${props => props.darkMode 
-      ? 'rgba(17, 24, 39, 0.95)'
-      : 'rgba(255, 255, 255, 1)'};
+    background-color: ${(props) =>
+      props.darkMode ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 1)'};
     border-color: rgba(33, 150, 243, 0.3);
   }
-  
+
   &:focus {
     outline: none;
     border-color: rgba(33, 150, 243, 0.4);
-    box-shadow: 0 0 0 2px ${props => props.darkMode 
-      ? 'rgba(33, 150, 243, 0.1)'
-      : 'rgba(33, 150, 243, 0.05)'};
+    box-shadow: 0 0 0 2px
+      ${(props) => (props.darkMode ? 'rgba(33, 150, 243, 0.1)' : 'rgba(33, 150, 243, 0.05)')};
   }
-  
+
   option {
-    background: ${props => props.darkMode 
-      ? '#111827'
-      : '#ffffff'};
-    color: ${props => props.darkMode ? '#fff' : '#333'};
+    background: ${(props) => (props.darkMode ? '#111827' : '#ffffff')};
+    color: ${(props) => (props.darkMode ? '#fff' : '#333')};
     padding: 8px;
   }
-  
+
   @media (max-width: 600px) {
     font-size: 0.7rem;
     height: 28px;
@@ -176,7 +167,7 @@ const Stack = styled.div`
   gap: 4px;
   align-items: center;
   flex-shrink: 0;
-  
+
   @media (max-width: 600px) {
     gap: 2px;
   }
@@ -188,9 +179,10 @@ const Button = styled.button`
   justify-content: center;
   gap: 4px;
   padding: 6px 12px;
-  border: ${props => props.variant === 'outlined' ? '1px solid rgba(145, 158, 171, 0.15)' : 'none'};
+  border: ${(props) =>
+    props.variant === 'outlined' ? '1px solid rgba(145, 158, 171, 0.15)' : 'none'};
   border-radius: 8px;
-  background: ${props => {
+  background: ${(props) => {
     if (props.variant === 'contained') {
       return props.theme?.palette?.mode === 'dark'
         ? 'rgba(255, 255, 255, 0.08)'
@@ -199,24 +191,25 @@ const Button = styled.button`
     if (props.selected) return 'rgba(33, 150, 243, 0.08)';
     return 'transparent';
   }};
-  color: ${props => {
-    if (props.variant === 'contained') return props.theme?.palette?.mode === 'dark' ? '#fff' : '#333';
+  color: ${(props) => {
+    if (props.variant === 'contained')
+      return props.theme?.palette?.mode === 'dark' ? '#fff' : '#333';
     if (props.selected) return '#2196f3';
     return 'inherit';
   }};
   cursor: pointer;
   font-size: 0.85rem;
-  font-weight: ${props => props.variant === 'contained' ? 600 : 500};
+  font-weight: ${(props) => (props.variant === 'contained' ? 600 : 500)};
   text-transform: none;
   font-family: inherit;
   height: 36px;
-  min-width: ${props => props.minWidth || 'auto'};
+  min-width: ${(props) => props.minWidth || 'auto'};
   transition: all 0.3s ease;
   white-space: nowrap;
   flex-shrink: 0;
-  
+
   &:hover {
-    background: ${props => {
+    background: ${(props) => {
       if (props.variant === 'contained') {
         return props.theme?.palette?.mode === 'dark'
           ? 'rgba(255, 255, 255, 0.12)'
@@ -225,14 +218,15 @@ const Button = styled.button`
       return 'rgba(33, 150, 243, 0.06)';
     }};
     transform: translateY(-1px);
-    box-shadow: ${props => props.variant === 'contained' ? '0 2px 6px rgba(0, 0, 0, 0.08)' : 'none'};
+    box-shadow: ${(props) =>
+      props.variant === 'contained' ? '0 2px 6px rgba(0, 0, 0, 0.08)' : 'none'};
   }
-  
+
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
-  
+
   @media (max-width: 600px) {
     padding: 3px 6px;
     font-size: 0.7rem;
@@ -248,20 +242,21 @@ const IconButton = styled.button`
   width: 36px;
   height: 36px;
   padding: 0;
-  border: ${props => props.selected ? '1px solid rgba(33, 150, 243, 0.3)' : '1px solid rgba(145, 158, 171, 0.08)'};
+  border: ${(props) =>
+    props.selected ? '1px solid rgba(33, 150, 243, 0.3)' : '1px solid rgba(145, 158, 171, 0.08)'};
   border-radius: 8px;
-  background: ${props => props.selected ? 'rgba(33, 150, 243, 0.08)' : 'rgba(0, 0, 0, 0.02)'};
-  color: ${props => props.selected ? '#2196f3' : 'inherit'};
+  background: ${(props) => (props.selected ? 'rgba(33, 150, 243, 0.08)' : 'rgba(0, 0, 0, 0.02)')};
+  color: ${(props) => (props.selected ? '#2196f3' : 'inherit')};
   cursor: pointer;
   transition: all 0.3s ease;
   flex-shrink: 0;
-  
+
   &:hover {
     background: rgba(33, 150, 243, 0.06);
     border-color: rgba(33, 150, 243, 0.2);
     transform: translateY(-1px);
   }
-  
+
   @media (max-width: 600px) {
     width: 32px;
     height: 32px;
@@ -275,7 +270,7 @@ const ButtonGroup = styled.div`
   background: rgba(0, 0, 0, 0.02);
   padding: 2px;
   border-radius: 10px;
-  
+
   & > button {
     border-radius: 8px;
     border: none;
@@ -287,25 +282,25 @@ const ButtonGroup = styled.div`
     background: transparent;
     cursor: pointer;
     transition: all 0.3s ease;
-    
+
     &:hover {
       background: rgba(33, 150, 243, 0.08);
     }
   }
-  
+
   & > button.selected {
     background: rgba(33, 150, 243, 0.15);
     color: #2196f3;
     font-weight: 600;
-    
+
     &:hover {
       background: rgba(33, 150, 243, 0.2);
     }
   }
-  
+
   @media (max-width: 600px) {
-    display: ${props => props.hideOnMobile ? 'none' : 'flex'};
-    
+    display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
+
     & > button {
       min-width: 28px;
       height: 28px;
@@ -321,9 +316,9 @@ const Divider = styled.div`
   background: rgba(145, 158, 171, 0.08);
   margin: 0 4px;
   flex-shrink: 0;
-  
+
   @media (max-width: 600px) {
-    display: ${props => props.hideOnMobile ? 'none' : 'block'};
+    display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
     margin: 0 2px;
   }
 `;
@@ -333,10 +328,10 @@ const Chip = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 12px;
-  border: ${props => props.border || 'none'};
+  border: ${(props) => props.border || 'none'};
   border-radius: 16px;
-  background: ${props => props.background || 'rgba(145, 158, 171, 0.05)'};
-  color: ${props => props.color || 'inherit'};
+  background: ${(props) => props.background || 'rgba(145, 158, 171, 0.05)'};
+  color: ${(props) => props.color || 'inherit'};
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
@@ -344,18 +339,18 @@ const Chip = styled.button`
   white-space: nowrap;
   height: 32px;
   flex-shrink: 0;
-  
+
   &:hover {
-    background: ${props => props.hoverBackground || 'rgba(145, 158, 171, 0.15)'};
+    background: ${(props) => props.hoverBackground || 'rgba(145, 158, 171, 0.15)'};
     transform: translateY(-1px);
   }
-  
+
   @media (max-width: 600px) {
     padding: 2px 5px;
     font-size: 0.65rem;
     height: 24px;
     gap: 2px;
-    display: ${props => props.hideOnMobile ? 'none' : 'inline-flex'};
+    display: ${(props) => (props.hideOnMobile ? 'none' : 'inline-flex')};
   }
 `;
 
@@ -364,10 +359,10 @@ const TagChip = styled.button`
   align-items: center;
   gap: 3px;
   padding: 2px 8px;
-  border: 1px solid ${props => props.borderColor || 'rgba(145, 158, 171, 0.08)'};
+  border: 1px solid ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.08)'};
   border-radius: 12px;
-  background: ${props => props.background || 'rgba(0, 0, 0, 0.02)'};
-  color: ${props => props.color || 'inherit'};
+  background: ${(props) => props.background || 'rgba(0, 0, 0, 0.02)'};
+  color: ${(props) => props.color || 'inherit'};
   font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
@@ -375,9 +370,9 @@ const TagChip = styled.button`
   white-space: nowrap;
   height: 24px;
   flex-shrink: 0;
-  opacity: ${props => props.show ? 1 : 0};
-  animation: ${props => props.show ? 'fadeIn 0.3s ease-out' : 'none'};
-  
+  opacity: ${(props) => (props.show ? 1 : 0)};
+  animation: ${(props) => (props.show ? 'fadeIn 0.3s ease-out' : 'none')};
+
   @keyframes fadeIn {
     from {
       opacity: 0;
@@ -388,12 +383,12 @@ const TagChip = styled.button`
       transform: translateX(0);
     }
   }
-  
+
   &:hover {
-    background: ${props => props.hoverBackground || 'rgba(33, 150, 243, 0.06)'};
+    background: ${(props) => props.hoverBackground || 'rgba(33, 150, 243, 0.06)'};
     transform: translateY(-1px);
   }
-  
+
   @media (max-width: 600px) {
     font-size: 0.55rem;
     height: 18px;
@@ -418,12 +413,12 @@ const AllTagsButton = styled.button`
   white-space: nowrap;
   height: 24px;
   flex-shrink: 0;
-  
+
   &:hover {
     background: rgba(33, 150, 243, 0.1);
     transform: translateY(-1px);
   }
-  
+
   @media (max-width: 600px) {
     font-size: 0.55rem;
     height: 18px;
@@ -431,7 +426,6 @@ const AllTagsButton = styled.button`
     gap: 1px;
   }
 `;
-
 
 const SearchToolbar = memo(function SearchToolbar({
   tags,
@@ -462,7 +456,7 @@ const SearchToolbar = memo(function SearchToolbar({
 }) {
   const router = useRouter();
   const { darkMode } = useContext(AppContext);
-  
+
   const [categoriesOpen, setCategoriesOpen] = useState(false);
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
@@ -473,40 +467,40 @@ const SearchToolbar = memo(function SearchToolbar({
   useEffect(() => {
     const calculateVisibleTags = () => {
       if (!containerRef.current || !tags || tags.length === 0) return;
-      
+
       // Read all DOM properties at once before any DOM modifications
       const container = containerRef.current;
       const containerWidth = container.offsetWidth;
       const isMobile = window.innerWidth <= 600;
-      
+
       // Since tags are in their own row, we don't need to account for fixed elements
       // Reserve space for "All Tags" button (approx 100px on desktop, 60px mobile)
       const allTagsWidth = isMobile ? 60 : 100;
-      
+
       // Available width for tags - use most of the container width for tags
       const availableWidth = containerWidth - allTagsWidth - 20; // 20px buffer for All Tags button and spacing
-      
+
       if (availableWidth <= 100) {
         setVisibleTagCount(isMobile ? 3 : 5);
         return;
       }
-      
+
       // Measure actual tag widths
       let totalTagWidth = 0;
       let count = 0;
-      
+
       // Create cache key based on viewport
       const cacheKey = isMobile ? 'mobile' : 'desktop';
-      
+
       // Create temporary container only if we need to measure new tags
       let tempContainer = null;
-      
+
       for (let i = 0; i < tags.length; i++) {
         const tag = tags[i];
         const tagCacheKey = `${cacheKey}-${tag}`;
-        
+
         let tagWidth;
-        
+
         // Check cache first
         if (tagWidthCache.current.has(tagCacheKey)) {
           tagWidth = tagWidthCache.current.get(tagCacheKey);
@@ -514,10 +508,11 @@ const SearchToolbar = memo(function SearchToolbar({
           // Create temp container if not already created
           if (!tempContainer) {
             tempContainer = document.createElement('div');
-            tempContainer.style.cssText = 'position:absolute;visibility:hidden;display:flex;gap:4px';
+            tempContainer.style.cssText =
+              'position:absolute;visibility:hidden;display:flex;gap:4px';
             document.body.appendChild(tempContainer);
           }
-          
+
           // Measure the tag
           const tempTag = document.createElement('button');
           tempTag.className = 'measure-tag';
@@ -528,31 +523,31 @@ const SearchToolbar = memo(function SearchToolbar({
             white-space: nowrap;
             border: 1px solid transparent;
           `;
-          
+
           // Just measure text width without icons since icons have consistent width
           tempTag.innerHTML = `<span style="width:12px;height:12px;display:inline-block"></span> <span>${tag}</span>`;
           tempContainer.appendChild(tempTag);
         }
       }
-      
+
       // Batch all DOM reads after all modifications are done
       if (tempContainer) {
         const tempTags = tempContainer.querySelectorAll('.measure-tag');
         let tempIndex = 0;
-        
+
         for (let i = 0; i < tags.length; i++) {
           const tag = tags[i];
           const tagCacheKey = `${cacheKey}-${tag}`;
-          
+
           let tagWidth;
-          
+
           if (tagWidthCache.current.has(tagCacheKey)) {
             tagWidth = tagWidthCache.current.get(tagCacheKey);
           } else {
             // Read the width from the temp element
             tagWidth = tempTags[tempIndex].offsetWidth + (isMobile ? 3 : 10); // gap
             tempIndex++;
-            
+
             // Cache the width (limit cache size to 100 entries)
             if (tagWidthCache.current.size > 100) {
               const firstKey = tagWidthCache.current.keys().next().value;
@@ -560,7 +555,7 @@ const SearchToolbar = memo(function SearchToolbar({
             }
             tagWidthCache.current.set(tagCacheKey, tagWidth);
           }
-          
+
           if (totalTagWidth + tagWidth <= availableWidth) {
             totalTagWidth += tagWidth;
             count++;
@@ -573,7 +568,7 @@ const SearchToolbar = memo(function SearchToolbar({
         for (let i = 0; i < tags.length; i++) {
           const tag = tags[i];
           const tagCacheKey = `${cacheKey}-${tag}`;
-          
+
           if (tagWidthCache.current.has(tagCacheKey)) {
             const tagWidth = tagWidthCache.current.get(tagCacheKey);
             if (totalTagWidth + tagWidth <= availableWidth) {
@@ -585,35 +580,35 @@ const SearchToolbar = memo(function SearchToolbar({
           }
         }
       }
-      
+
       // Clean up temp container if created
       if (tempContainer) {
         document.body.removeChild(tempContainer);
       }
-      
+
       // Set the visible count - show more tags by default
       setVisibleTagCount(Math.max(isMobile ? 5 : 8, Math.min(count, tags.length)));
       setMeasuredTags(true);
     };
-    
+
     // Initial calculation
     const timeoutId = setTimeout(calculateVisibleTags, 50);
-    
+
     // Debounced resize handler
     let resizeTimeout;
     const handleResize = () => {
       clearTimeout(resizeTimeout);
       resizeTimeout = setTimeout(calculateVisibleTags, 150);
     };
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     // Also recalculate when container might change
     const observer = new ResizeObserver(handleResize);
     if (containerRef.current) {
       observer.observe(containerRef.current);
     }
-    
+
     return () => {
       clearTimeout(timeoutId);
       clearTimeout(resizeTimeout);
@@ -621,7 +616,6 @@ const SearchToolbar = memo(function SearchToolbar({
       observer.disconnect();
     };
   }, [tags]);
-
 
   // Determine current view
   const currentView = useMemo(() => {
@@ -648,30 +642,54 @@ const SearchToolbar = memo(function SearchToolbar({
     return '24h';
   }, [currentOrderBy, router.pathname]);
 
-
-
   return (
     <Container darkMode={darkMode} ref={containerRef}>
-
       {/* Top Categories - first row */}
       {tags && tags.length > 0 && (
         <Row style={{ paddingBottom: '2px' }}>
           {/* Display categories dynamically based on available space */}
           {tags.slice(0, visibleTagCount).map((tag, index) => {
-            const normalizedTag = tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
-            const colors = ['#e91e63', '#00bcd4', '#4caf50', '#673ab7', '#ff9800', '#795548', '#607d8b', '#3f51b5', '#009688', '#ff5722'];
-            const icons = ['ic:round-label', 'ic:round-place', 'ic:round-star', 'ic:round-auto-awesome', 'ic:round-flag', 'ic:round-bookmark', 'ic:round-palette', 'ic:round-grade', 'ic:round-emoji-events', 'ic:round-lightbulb'];
+            const normalizedTag = tag
+              .split(' ')
+              .join('-')
+              .replace(/&/g, 'and')
+              .toLowerCase()
+              .replace(/[^a-zA-Z0-9-]/g, '');
+            const colors = [
+              '#e91e63',
+              '#00bcd4',
+              '#4caf50',
+              '#673ab7',
+              '#ff9800',
+              '#795548',
+              '#607d8b',
+              '#3f51b5',
+              '#009688',
+              '#ff5722'
+            ];
+            const icons = [
+              'ic:round-label',
+              'ic:round-place',
+              'ic:round-star',
+              'ic:round-auto-awesome',
+              'ic:round-flag',
+              'ic:round-bookmark',
+              'ic:round-palette',
+              'ic:round-grade',
+              'ic:round-emoji-events',
+              'ic:round-lightbulb'
+            ];
             const isSelected = tagName === tag;
             // Use modulo to cycle through colors and icons if we have more than 10 tags
             const colorIndex = index % colors.length;
             const iconIndex = index % icons.length;
-            
+
             return (
               <TagChip
                 key={tag}
                 data-tag="true"
                 show={measuredTags}
-                onClick={() => window.location.href = `/view/${normalizedTag}`}
+                onClick={() => (window.location.href = `/view/${normalizedTag}`)}
                 borderColor={`${colors[colorIndex]}4D`}
                 background={isSelected ? `${colors[colorIndex]}33` : 'transparent'}
                 color={darkMode ? '#fff' : '#333'}
@@ -683,7 +701,7 @@ const SearchToolbar = memo(function SearchToolbar({
               </TagChip>
             );
           })}
-          
+
           {/* All Tags Button - show only if there are more tags than visible */}
           {tags.length > visibleTagCount && (
             <AllTagsButton onClick={() => setCategoriesOpen(true)}>
@@ -700,29 +718,39 @@ const SearchToolbar = memo(function SearchToolbar({
           <ButtonGroup>
             <button
               className={currentView === 'tokens' ? 'selected' : ''}
-              onClick={() => window.location.href = '/'}
+              onClick={() => (window.location.href = '/')}
               style={{ minWidth: window.innerWidth <= 600 ? '55px' : '70px' }}
             >
-              <GridOnIcon sx={{ width: 14, height: 14, marginRight: window.innerWidth <= 600 ? '2px' : '4px' }} />
+              <GridOnIcon
+                sx={{
+                  width: 14,
+                  height: 14,
+                  marginRight: window.innerWidth <= 600 ? '2px' : '4px'
+                }}
+              />
               <span style={{ fontSize: window.innerWidth <= 600 ? '11px' : '12px' }}>Tokens</span>
             </button>
             <button
               className={router.pathname === '/view/firstledger' ? 'selected' : ''}
-              onClick={() => window.location.href = '/view/firstledger'}
+              onClick={() => (window.location.href = '/view/firstledger')}
               style={{ minWidth: window.innerWidth <= 600 ? '70px' : '90px' }}
             >
-              <span style={{ 
-                display: 'inline-flex', 
-                alignItems: 'center', 
-                gap: window.innerWidth <= 600 ? '2px' : '4px',
-                fontSize: window.innerWidth <= 600 ? '11px' : '12px'
-              }}>
-                <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>FirstLedger</span>
+              <span
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: window.innerWidth <= 600 ? '2px' : '4px',
+                  fontSize: window.innerWidth <= 600 ? '11px' : '12px'
+                }}
+              >
+                <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>
+                  FirstLedger
+                </span>
                 <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>FL</span>
-                <FilterListIcon 
-                  icon="material-symbols:open-in-new" 
-                  width={window.innerWidth <= 600 ? '10' : '12'} 
-                  height={window.innerWidth <= 600 ? '10' : '12'} 
+                <FilterListIcon
+                  icon="material-symbols:open-in-new"
+                  width={window.innerWidth <= 600 ? '10' : '12'}
+                  height={window.innerWidth <= 600 ? '10' : '12'}
                   style={{ opacity: 0.7 }}
                 />
               </span>
@@ -732,7 +760,8 @@ const SearchToolbar = memo(function SearchToolbar({
           <Divider />
 
           {/* Period selector for gainers or price change sorting */}
-          {(currentView === 'gainers' || ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
+          {(currentView === 'gainers' ||
+            ['pro5m', 'pro1h', 'pro24h', 'pro7d'].includes(currentOrderBy)) && (
             <>
               <ButtonGroup>
                 <button
@@ -742,7 +771,7 @@ const SearchToolbar = memo(function SearchToolbar({
                       window.location.href = '/gainers/5m';
                     } else {
                       setOrderBy('pro5m');
-                      setSync(prev => prev + 1);
+                      setSync((prev) => prev + 1);
                     }
                   }}
                 >
@@ -755,7 +784,7 @@ const SearchToolbar = memo(function SearchToolbar({
                       window.location.href = '/gainers/1h';
                     } else {
                       setOrderBy('pro1h');
-                      setSync(prev => prev + 1);
+                      setSync((prev) => prev + 1);
                     }
                   }}
                 >
@@ -768,7 +797,7 @@ const SearchToolbar = memo(function SearchToolbar({
                       window.location.href = '/gainers/24h';
                     } else {
                       setOrderBy('pro24h');
-                      setSync(prev => prev + 1);
+                      setSync((prev) => prev + 1);
                     }
                   }}
                 >
@@ -781,7 +810,7 @@ const SearchToolbar = memo(function SearchToolbar({
                       window.location.href = '/gainers/7d';
                     } else {
                       setOrderBy('pro7d');
-                      setSync(prev => prev + 1);
+                      setSync((prev) => prev + 1);
                     }
                   }}
                 >
@@ -793,42 +822,54 @@ const SearchToolbar = memo(function SearchToolbar({
           )}
 
           <Chip
-            onClick={() => window.location.href = '/trending'}
-            background={currentView === 'trending' 
-              ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-              : 'rgba(255, 87, 34, 0.1)'}
+            onClick={() => (window.location.href = '/trending')}
+            background={
+              currentView === 'trending'
+                ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+                : 'rgba(255, 87, 34, 0.1)'
+            }
             color={currentView === 'trending' ? '#fff' : '#ff5722'}
-            hoverBackground={currentView === 'trending'
-              ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-              : 'rgba(255, 87, 34, 0.25)'}
+            hoverBackground={
+              currentView === 'trending'
+                ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
+                : 'rgba(255, 87, 34, 0.25)'
+            }
           >
             <LocalFireDepartmentIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             Hot
           </Chip>
 
           <Chip
-            onClick={() => window.location.href = '/spotlight'}
-            background={currentView === 'spotlight' 
-              ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-              : 'rgba(33, 150, 243, 0.1)'}
+            onClick={() => (window.location.href = '/spotlight')}
+            background={
+              currentView === 'spotlight'
+                ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+                : 'rgba(33, 150, 243, 0.1)'
+            }
             color={currentView === 'spotlight' ? '#fff' : '#2196f3'}
-            hoverBackground={currentView === 'spotlight'
-              ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-              : 'rgba(33, 150, 243, 0.25)'}
+            hoverBackground={
+              currentView === 'spotlight'
+                ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
+                : 'rgba(33, 150, 243, 0.25)'
+            }
           >
             <DiamondIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             Gems
           </Chip>
 
           <Chip
-            onClick={() => window.location.href = '/gainers/24h'}
-            background={currentView === 'gainers' 
-              ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-              : 'rgba(76, 175, 80, 0.1)'}
+            onClick={() => (window.location.href = '/gainers/24h')}
+            background={
+              currentView === 'gainers'
+                ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+                : 'rgba(76, 175, 80, 0.1)'
+            }
             color={currentView === 'gainers' ? '#fff' : '#4caf50'}
-            hoverBackground={currentView === 'gainers'
-              ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-              : 'rgba(76, 175, 80, 0.25)'}
+            hoverBackground={
+              currentView === 'gainers'
+                ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
+                : 'rgba(76, 175, 80, 0.25)'
+            }
           >
             <TrendingUpIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Gainers</span>
@@ -836,28 +877,36 @@ const SearchToolbar = memo(function SearchToolbar({
           </Chip>
 
           <Chip
-            onClick={() => window.location.href = '/new'}
-            background={currentView === 'new' 
-              ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-              : 'rgba(255, 152, 0, 0.1)'}
+            onClick={() => (window.location.href = '/new')}
+            background={
+              currentView === 'new'
+                ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+                : 'rgba(255, 152, 0, 0.1)'
+            }
             color={currentView === 'new' ? '#fff' : '#ff9800'}
-            hoverBackground={currentView === 'new'
-              ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-              : 'rgba(255, 152, 0, 0.25)'}
+            hoverBackground={
+              currentView === 'new'
+                ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
+                : 'rgba(255, 152, 0, 0.25)'
+            }
           >
             <NewReleasesIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             New
           </Chip>
 
           <Chip
-            onClick={() => window.location.href = '/most-viewed'}
-            background={currentView === 'most-viewed' 
-              ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-              : 'rgba(156, 39, 176, 0.1)'}
+            onClick={() => (window.location.href = '/most-viewed')}
+            background={
+              currentView === 'most-viewed'
+                ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+                : 'rgba(156, 39, 176, 0.1)'
+            }
             color={currentView === 'most-viewed' ? '#fff' : '#9c27b0'}
-            hoverBackground={currentView === 'most-viewed'
-              ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-              : 'rgba(156, 39, 176, 0.25)'}
+            hoverBackground={
+              currentView === 'most-viewed'
+                ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
+                : 'rgba(156, 39, 176, 0.25)'
+            }
           >
             <VisibilityIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
             <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Popular</span>
@@ -870,7 +919,9 @@ const SearchToolbar = memo(function SearchToolbar({
           {/* View Mode Selector */}
           {setViewMode && (
             <>
-              <label htmlFor="view-mode-select" className="visually-hidden">View Mode</label>
+              <label htmlFor="view-mode-select" className="visually-hidden">
+                View Mode
+              </label>
               <RowsSelector
                 id="view-mode-select"
                 darkMode={darkMode}
@@ -892,7 +943,7 @@ const SearchToolbar = memo(function SearchToolbar({
 
           {/* Custom columns settings button */}
           {viewMode === 'custom' && (
-            <IconButton 
+            <IconButton
               onClick={() => setCustomSettingsOpen(true)}
               darkMode={darkMode}
               title="Configure columns"
@@ -904,7 +955,9 @@ const SearchToolbar = memo(function SearchToolbar({
 
           {/* Rows selector */}
           <>
-            <label htmlFor="rows-per-page-select" className="visually-hidden">Rows per page</label>
+            <label htmlFor="rows-per-page-select" className="visually-hidden">
+              Rows per page
+            </label>
             <RowsSelector
               id="rows-per-page-select"
               darkMode={darkMode}
@@ -932,7 +985,6 @@ const SearchToolbar = memo(function SearchToolbar({
           md5="categories-drawer"
         />
       )}
-      
     </Container>
   );
 });

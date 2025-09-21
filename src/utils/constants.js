@@ -23,7 +23,6 @@ const CryptoJS = require('crypto-js');
 
 export const BASE_URL = 'https://api.xrpl.to/api';
 
-
 export const BASIC_COLOR = '#00AB55';
 export const tfTransferable = 0x00000008;
 export const tfTrustLine = 0x00000004;
@@ -316,7 +315,6 @@ export const CollectionListType = {
   LANDING: 4
 };
 
-
 export function getMinterName(minter) {
   switch (minter) {
     case 'rzVH4G8GjTbvXhxJHvnri3MJ1aqf9WFGE':
@@ -339,7 +337,6 @@ export function getMinterName(minter) {
       break;
   }
 }
-
 
 export const defaultCurrencyIconProps = {
   sx: {

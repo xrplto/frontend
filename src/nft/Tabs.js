@@ -1,11 +1,11 @@
-export default function Tabs({ tabList, tab, setTab, name = "radio", style = {} }) {
+export default function Tabs({ tabList, tab, setTab, name = 'radio', style = {} }) {
+  const Changed = (e) => {
+    setTab(e.currentTarget.value);
+  };
 
-    const Changed = (e) => {
-      setTab(e.currentTarget.value);
-    }
-  
-    return <div className='tabs' style={style}>
-      <div className='tabs-list'>
+  return (
+    <div className="tabs" style={style}>
+      <div className="tabs-list">
         {tabList.map((tabItem) => (
           <input
             key={tabItem.value}
@@ -20,4 +20,5 @@ export default function Tabs({ tabList, tab, setTab, name = "radio", style = {} 
         ))}
       </div>
     </div>
-  };
+  );
+}

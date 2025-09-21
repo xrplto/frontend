@@ -203,9 +203,10 @@ const StyledTableHead = styled(TableHead, {
     left: 0,
     right: 0,
     height: '1px',
-    background: `linear-gradient(90deg, transparent, ${
-      alpha(theme.palette.divider, 0.2)
-    }, transparent)`
+    background: `linear-gradient(90deg, transparent, ${alpha(
+      theme.palette.divider,
+      0.2
+    )}, transparent)`
   }
 }));
 
@@ -526,7 +527,13 @@ export default function PairsList({ token, pairs }) {
                   {/* Pair */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
                     <Avatar
-                      src={curr1.md5 ? `https://s1.xrpl.to/token/${curr1.md5}` : curr1.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
+                      src={
+                        curr1.md5
+                          ? `https://s1.xrpl.to/token/${curr1.md5}`
+                          : curr1.currency === 'XRP'
+                            ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8`
+                            : undefined
+                      }
                       sx={{ width: 20, height: 20 }}
                     />
                     <Typography
@@ -537,15 +544,21 @@ export default function PairsList({ token, pairs }) {
                     >
                       {name1}
                     </Typography>
-                    <SwapHorizIcon 
-                      sx={{ 
-                        width: '16px', 
-                        height: '16px', 
-                        color: theme.palette.text.secondary 
-                      }} 
+                    <SwapHorizIcon
+                      sx={{
+                        width: '16px',
+                        height: '16px',
+                        color: theme.palette.text.secondary
+                      }}
                     />
                     <Avatar
-                      src={curr2.md5 ? `https://s1.xrpl.to/token/${curr2.md5}` : curr2.currency === 'XRP' ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8` : undefined}
+                      src={
+                        curr2.md5
+                          ? `https://s1.xrpl.to/token/${curr2.md5}`
+                          : curr2.currency === 'XRP'
+                            ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8`
+                            : undefined
+                      }
                       sx={{ width: 20, height: 20 }}
                     />
                     <Typography
@@ -560,7 +573,12 @@ export default function PairsList({ token, pairs }) {
 
                   {/* Chart */}
                   <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <ChartBox darkMode={darkMode} sparkline={sparkline} id={id} isMobile={isMobile} />
+                    <ChartBox
+                      darkMode={darkMode}
+                      sparkline={sparkline}
+                      id={id}
+                      isMobile={isMobile}
+                    />
                   </Box>
 
                   {/* Volume */}

@@ -56,12 +56,13 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   transition: 'background-color 0.15s ease',
   cursor: 'pointer',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'
+    backgroundColor:
+      theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'
   },
   '&:last-child': {
     borderBottom: 'none'
   },
-  'td': {
+  td: {
     borderBottom: 'none'
   }
 }));
@@ -78,7 +79,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const StyledTableHead = styled(TableHead)(({ theme }) => ({
   background: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)',
-  'th': {
+  th: {
     fontWeight: 600,
     fontSize: '12px',
     color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
@@ -146,7 +147,14 @@ const ValueText = styled('span')(({ theme, bold, small }) => ({
 const PercentText = styled('span')(({ theme, value }) => ({
   fontWeight: 600,
   fontSize: '13px',
-  color: value >= 0 ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C') : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F')
+  color:
+    value >= 0
+      ? theme.palette.mode === 'dark'
+        ? '#66BB6A'
+        : '#388E3C'
+      : theme.palette.mode === 'dark'
+        ? '#FF5252'
+        : '#D32F2F'
 }));
 
 const StyledModal = styled(Modal)(({ theme }) => ({
@@ -167,13 +175,15 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   height: '90vh',
   display: 'flex',
   flexDirection: 'column',
-  backgroundColor: theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.background.paper, 0.95)
-    : theme.palette.background.paper,
+  backgroundColor:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.95)
+      : theme.palette.background.paper,
   borderRadius: '32px',
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 24px 64px ${alpha(theme.palette.common.black, 0.4)}`
-    : `0 24px 64px ${alpha(theme.palette.common.black, 0.1)}`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? `0 24px 64px ${alpha(theme.palette.common.black, 0.4)}`
+      : `0 24px 64px ${alpha(theme.palette.common.black, 0.1)}`,
   padding: theme.spacing(4),
   overflow: 'hidden',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -199,9 +209,10 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     height: '52vh',
     borderRadius: '20px',
     overflow: 'hidden',
-    background: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.default, 0.4)
-      : alpha(theme.palette.grey[50], 0.5),
+    background:
+      theme.palette.mode === 'dark'
+        ? alpha(theme.palette.background.default, 0.4)
+        : alpha(theme.palette.grey[50], 0.5),
     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     padding: theme.spacing(2)
   },
@@ -209,9 +220,10 @@ const ModalContent = styled(Paper)(({ theme }) => ({
     height: '32vh',
     overflowY: 'auto',
     padding: theme.spacing(3),
-    backgroundColor: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.default, 0.4)
-      : alpha(theme.palette.grey[50], 0.5),
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? alpha(theme.palette.background.default, 0.4)
+        : alpha(theme.palette.grey[50], 0.5),
     borderRadius: '20px',
     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     marginTop: theme.spacing(2)
@@ -227,158 +239,151 @@ function TabPanel({ children, value, index }) {
 }
 
 // Memoized TraderRow component to prevent unnecessary re-renders
-const TraderRow = memo(({ trader, onRoiClick, formatCurrency, formatPercentage, isMobile, index, scrollLeft }) => {
-  const theme = useTheme();
-  const stickyCellStyles = useMemo(
-    () => ({
-      first: {
-        position: 'sticky',
-        zIndex: 1001,
-        left: 0,
-        backgroundColor: 'transparent',
-        width: isMobile ? '10px' : '40px',
-        minWidth: isMobile ? '10px' : '40px',
-        padding: isMobile ? '0px' : '12px 4px'
-      },
-      second: {
-        position: 'sticky',
-        zIndex: 1001,
-        left: isMobile ? '10px' : '40px',
-        backgroundColor: 'transparent',
-        width: isMobile ? '14px' : '50px',
-        minWidth: isMobile ? '14px' : '50px',
-        padding: isMobile ? '1px 1px' : '12px 8px'
-      },
-      third: {
-        position: 'sticky',
-        zIndex: 1001,
-        left: isMobile ? '24px' : '90px',
-        backgroundColor: 'transparent',
-        minWidth: isMobile ? '80px' : '250px',
-        maxWidth: isMobile ? '100px' : 'none',
-        padding: isMobile ? '1px 4px' : '12px 8px',
-        '&:before': scrollLeft
-          ? {
-              content: "''",
-              boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
-              position: 'absolute',
-              top: '0',
-              right: '0',
-              bottom: '-1px',
-              width: '30px',
-              transform: 'translate(100%)',
-              transition: 'box-shadow .3s',
-              pointerEvents: 'none'
-            }
-          : {}
-      }
-    }),
-    [theme, isMobile, scrollLeft]
-  );
+const TraderRow = memo(
+  ({ trader, onRoiClick, formatCurrency, formatPercentage, isMobile, index, scrollLeft }) => {
+    const theme = useTheme();
+    const stickyCellStyles = useMemo(
+      () => ({
+        first: {
+          position: 'sticky',
+          zIndex: 1001,
+          left: 0,
+          backgroundColor: 'transparent',
+          width: isMobile ? '10px' : '40px',
+          minWidth: isMobile ? '10px' : '40px',
+          padding: isMobile ? '0px' : '12px 4px'
+        },
+        second: {
+          position: 'sticky',
+          zIndex: 1001,
+          left: isMobile ? '10px' : '40px',
+          backgroundColor: 'transparent',
+          width: isMobile ? '14px' : '50px',
+          minWidth: isMobile ? '14px' : '50px',
+          padding: isMobile ? '1px 1px' : '12px 8px'
+        },
+        third: {
+          position: 'sticky',
+          zIndex: 1001,
+          left: isMobile ? '24px' : '90px',
+          backgroundColor: 'transparent',
+          minWidth: isMobile ? '80px' : '250px',
+          maxWidth: isMobile ? '100px' : 'none',
+          padding: isMobile ? '1px 4px' : '12px 8px',
+          '&:before': scrollLeft
+            ? {
+                content: "''",
+                boxShadow: 'inset 10px 0 8px -8px rgba(145, 158, 171, 0.24)',
+                position: 'absolute',
+                top: '0',
+                right: '0',
+                bottom: '-1px',
+                width: '30px',
+                transform: 'translate(100%)',
+                transition: 'box-shadow .3s',
+                pointerEvents: 'none'
+              }
+            : {}
+        }
+      }),
+      [theme, isMobile, scrollLeft]
+    );
 
-  // Removed - using styled components instead
+    // Removed - using styled components instead
 
-  const handleRowClick = useCallback(() => {
-    onRoiClick(trader);
-  }, [onRoiClick, trader]);
+    const handleRowClick = useCallback(() => {
+      onRoiClick(trader);
+    }, [onRoiClick, trader]);
 
-  return (
-    <StyledTableRow
-      key={trader._id}
-      onClick={handleRowClick}
-    >
-      <StyledTableCell align="center" style={{ width: '50px' }}>
-        <ValueText style={{ fontWeight: '600', color: theme.palette.mode === 'dark' ? '#999' : '#666' }}>
-          {index + 1}
-        </ValueText>
-      </StyledTableCell>
-      <StyledTableCell 
-        component="th" 
-        scope="row"
-        style={{ width: '250px' }}
-      >
-        <AddressCell>
-          {isMobile && (
-            <Typography
-              variant="h4"
-              sx={{
-                fontWeight: '600',
-                fontSize: '9px',
-                color: alpha(theme.palette.text.secondary, 0.7),
-                minWidth: '15px',
-                textAlign: 'center',
-                fontFamily: 'Inter, sans-serif'
-              }}
-            >
-              {index + 1}
-            </Typography>
-          )}
-          <TraderAvatar>
-            {trader.address.slice(0, 1).toUpperCase()}
-          </TraderAvatar>
-          <TraderInfo>
-            <TraderAddress
-              href={`/profile/${trader.address}`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              {isMobile ? `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}` : `${trader.address.slice(0, 12)}...${trader.address.slice(-6)}`}
-            </TraderAddress>
-            <TraderLabel>
-              Trader
-            </TraderLabel>
-          </TraderInfo>
-        </AddressCell>
-      </StyledTableCell>
-      <StyledTableCell align="right">
-        <ValueText bold>
-          {formatCurrency(trader.volume24h)}
-        </ValueText>
-      </StyledTableCell>
-      <StyledTableCell align="right">
-        <PercentText value={trader.profit24h}>
-          {trader.profit24h >= 0 ? '+' : ''}{formatCurrency(trader.profit24h)}
-        </PercentText>
-      </StyledTableCell>
-      <StyledTableCell align="right">
-        <ValueText>
-          {trader.totalTrades >= 1000000
-            ? `${(trader.totalTrades / 1000000).toFixed(1)}M`
-            : trader.totalTrades >= 1000
-              ? `${(trader.totalTrades / 1000).toFixed(1)}K`
-              : trader.totalTrades.toLocaleString()}
-        </ValueText>
-      </StyledTableCell>
-      {!isMobile && (
+    return (
+      <StyledTableRow key={trader._id} onClick={handleRowClick}>
+        <StyledTableCell align="center" style={{ width: '50px' }}>
+          <ValueText
+            style={{ fontWeight: '600', color: theme.palette.mode === 'dark' ? '#999' : '#666' }}
+          >
+            {index + 1}
+          </ValueText>
+        </StyledTableCell>
+        <StyledTableCell component="th" scope="row" style={{ width: '250px' }}>
+          <AddressCell>
+            {isMobile && (
+              <Typography
+                variant="h4"
+                sx={{
+                  fontWeight: '600',
+                  fontSize: '9px',
+                  color: alpha(theme.palette.text.secondary, 0.7),
+                  minWidth: '15px',
+                  textAlign: 'center',
+                  fontFamily: 'Inter, sans-serif'
+                }}
+              >
+                {index + 1}
+              </Typography>
+            )}
+            <TraderAvatar>{trader.address.slice(0, 1).toUpperCase()}</TraderAvatar>
+            <TraderInfo>
+              <TraderAddress
+                href={`/profile/${trader.address}`}
+                onClick={(e) => e.stopPropagation()}
+              >
+                {isMobile
+                  ? `${trader.address.slice(0, 6)}...${trader.address.slice(-4)}`
+                  : `${trader.address.slice(0, 12)}...${trader.address.slice(-6)}`}
+              </TraderAddress>
+              <TraderLabel>Trader</TraderLabel>
+            </TraderInfo>
+          </AddressCell>
+        </StyledTableCell>
         <StyledTableCell align="right">
-          <PercentText value={trader.totalProfit}>
-            {trader.totalProfit >= 0 ? '+' : ''}{formatCurrency(trader.totalProfit)}
+          <ValueText bold>{formatCurrency(trader.volume24h)}</ValueText>
+        </StyledTableCell>
+        <StyledTableCell align="right">
+          <PercentText value={trader.profit24h}>
+            {trader.profit24h >= 0 ? '+' : ''}
+            {formatCurrency(trader.profit24h)}
           </PercentText>
         </StyledTableCell>
-      )}
-      <StyledTableCell align="right">
-        <PercentText value={trader.avgROI}>
-          {formatPercentage(trader.avgROI)}
-        </PercentText>
-      </StyledTableCell>
-      <StyledTableCell align="center">
-        <IconButton
-          size="small"
-          onClick={(e) => onRoiClick(trader, e)}
-          title="Show trader analytics"
-          sx={{
-            color: theme.palette.primary.main,
-            padding: isMobile ? '4px' : '8px',
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.08)
-            }
-          }}
-        >
-          <ShowChartIcon sx={{ fontSize: isMobile ? '16px' : '20px' }} />
-        </IconButton>
-      </StyledTableCell>
-    </StyledTableRow>
-  );
-});
+        <StyledTableCell align="right">
+          <ValueText>
+            {trader.totalTrades >= 1000000
+              ? `${(trader.totalTrades / 1000000).toFixed(1)}M`
+              : trader.totalTrades >= 1000
+                ? `${(trader.totalTrades / 1000).toFixed(1)}K`
+                : trader.totalTrades.toLocaleString()}
+          </ValueText>
+        </StyledTableCell>
+        {!isMobile && (
+          <StyledTableCell align="right">
+            <PercentText value={trader.totalProfit}>
+              {trader.totalProfit >= 0 ? '+' : ''}
+              {formatCurrency(trader.totalProfit)}
+            </PercentText>
+          </StyledTableCell>
+        )}
+        <StyledTableCell align="right">
+          <PercentText value={trader.avgROI}>{formatPercentage(trader.avgROI)}</PercentText>
+        </StyledTableCell>
+        <StyledTableCell align="center">
+          <IconButton
+            size="small"
+            onClick={(e) => onRoiClick(trader, e)}
+            title="Show trader analytics"
+            sx={{
+              color: theme.palette.primary.main,
+              padding: isMobile ? '4px' : '8px',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.primary.main, 0.08)
+              }
+            }}
+          >
+            <ShowChartIcon sx={{ fontSize: isMobile ? '16px' : '20px' }} />
+          </IconButton>
+        </StyledTableCell>
+      </StyledTableRow>
+    );
+  }
+);
 
 TraderRow.displayName = 'TraderRow';
 
@@ -552,7 +557,7 @@ export default function Analytics({ initialData, initialError }) {
     if (isFirstLoad && initialData) {
       return;
     }
-    
+
     try {
       setLoading(true);
       const queryParams = new URLSearchParams({
@@ -575,7 +580,7 @@ export default function Analytics({ initialData, initialError }) {
           {
             signal: controller.signal,
             headers: {
-              'Accept': 'application/json'
+              Accept: 'application/json'
             }
           }
         );
@@ -591,10 +596,13 @@ export default function Analytics({ initialData, initialError }) {
         // Handle the data structure and pagination
         if (responseData && Array.isArray(responseData.data)) {
           setTraders(responseData.data);
-          
+
           // Set pagination data with fallbacks
           const pagination = responseData.pagination || {};
-          setTotalPages(pagination.totalPages || Math.ceil((pagination.total || responseData.data.length) / itemsPerPage));
+          setTotalPages(
+            pagination.totalPages ||
+              Math.ceil((pagination.total || responseData.data.length) / itemsPerPage)
+          );
           setTotalItems(pagination.total || responseData.data.length);
           setError(null);
         } else {
@@ -608,7 +616,7 @@ export default function Analytics({ initialData, initialError }) {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      
+
       // Provide user-friendly error messages
       let errorMessage = 'Failed to load trader data';
       if (error.name === 'AbortError') {
@@ -616,7 +624,7 @@ export default function Analytics({ initialData, initialError }) {
       } else if (!navigator.onLine) {
         errorMessage = 'Network error - please check your connection';
       }
-      
+
       setError(errorMessage);
       setTraders([]);
     } finally {
@@ -766,9 +774,13 @@ export default function Analytics({ initialData, initialError }) {
             data: dailyRoi,
             itemStyle: {
               color: function (params) {
-                return params.value >= 0 
-                  ? (theme.palette.mode === 'dark' ? '#66BB6A' : '#388E3C')
-                  : (theme.palette.mode === 'dark' ? '#FF5252' : '#D32F2F');
+                return params.value >= 0
+                  ? theme.palette.mode === 'dark'
+                    ? '#66BB6A'
+                    : '#388E3C'
+                  : theme.palette.mode === 'dark'
+                    ? '#FF5252'
+                    : '#D32F2F';
               }
             }
           },
@@ -792,8 +804,14 @@ export default function Analytics({ initialData, initialError }) {
                 x2: 0,
                 y2: 1,
                 colorStops: [
-                  { offset: 0, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.3) },
-                  { offset: 1, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.05) }
+                  {
+                    offset: 0,
+                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.3)
+                  },
+                  {
+                    offset: 1,
+                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.05)
+                  }
                 ]
               }
             }
@@ -893,8 +911,14 @@ export default function Analytics({ initialData, initialError }) {
                 x2: 0,
                 y2: 1,
                 colorStops: [
-                  { offset: 0, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2) },
-                  { offset: 1, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02) }
+                  {
+                    offset: 0,
+                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2)
+                  },
+                  {
+                    offset: 1,
+                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02)
+                  }
                 ]
               }
             }
@@ -1076,8 +1100,14 @@ export default function Analytics({ initialData, initialError }) {
                 x2: 0,
                 y2: 1,
                 colorStops: [
-                  { offset: 0, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2) },
-                  { offset: 1, color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02) }
+                  {
+                    offset: 0,
+                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.2)
+                  },
+                  {
+                    offset: 1,
+                    color: alpha(theme.palette.mode === 'dark' ? '#FFB800' : '#F57C00', 0.02)
+                  }
                 ]
               }
             }
@@ -1191,25 +1221,28 @@ export default function Analytics({ initialData, initialError }) {
     <>
       <Head>
         <title>Top Traders Analytics - XRPL.to</title>
-        <meta 
-          name="description" 
-          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns of top performers in real-time." 
+        <meta
+          name="description"
+          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns of top performers in real-time."
         />
-        <meta name="keywords" content="XRPL traders, XRP trading, crypto analytics, trading metrics, ROI analysis, XRPL ecosystem" />
+        <meta
+          name="keywords"
+          content="XRPL traders, XRP trading, crypto analytics, trading metrics, ROI analysis, XRPL ecosystem"
+        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta property="og:title" content="Top Traders Analytics - XRPL.to" />
-        <meta 
-          property="og:description" 
-          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns of top performers." 
+        <meta
+          property="og:description"
+          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns of top performers."
         />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://xrpl.to/top-traders" />
         <meta property="og:site_name" content="XRPL.to" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Top Traders Analytics - XRPL.to" />
-        <meta 
-          name="twitter:description" 
-          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns." 
+        <meta
+          name="twitter:description"
+          content="Discover the most successful traders on the XRPL ecosystem. Track performance metrics, ROI trends, and trading patterns."
         />
         <link rel="canonical" href="https://xrpl.to/top-traders" />
       </Head>
@@ -1231,325 +1264,338 @@ export default function Analytics({ initialData, initialError }) {
               mb: { xs: 2, sm: 3, md: 4 }
             }}
           >
-
             <Box
               sx={{
                 p: { xs: 2, sm: 3, md: 4 }
               }}
             >
-                {loading && !isFirstLoad && (
+              {loading && !isFirstLoad && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    py: 8,
+                    background: 'transparent',
+                    borderRadius: '16px',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    backdropFilter: 'blur(10px)'
+                  }}
+                >
+                  <CircularProgress
+                    size={48}
+                    sx={{
+                      color: theme.palette.primary.main,
+                      mb: 2,
+                      '& .MuiCircularProgress-circle': {
+                        strokeLinecap: 'round'
+                      }
+                    }}
+                  />
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 600,
+                      mb: 1
+                    }}
+                  >
+                    Updating Traders
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      textAlign: 'center'
+                    }}
+                  >
+                    Fetching latest trading data...
+                  </Typography>
+                </Box>
+              )}
+
+              {error && (
+                <Box
+                  sx={{
+                    p: 4,
+                    textAlign: 'center',
+                    background: 'transparent',
+                    borderRadius: '16px',
+                    border: `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
+                    backdropFilter: 'blur(10px)'
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      color: theme.palette.error.main,
+                      fontWeight: 600,
+                      mb: 1
+                    }}
+                  >
+                    Error Loading Data
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.secondary
+                    }}
+                  >
+                    {error}
+                  </Typography>
+                </Box>
+              )}
+
+              {(!loading || isFirstLoad) && !error && traders.length > 0 && (
+                <>
                   <Box
                     sx={{
                       display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      py: 8,
-                      background: 'transparent',
-                      borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      backdropFilter: 'blur(10px)'
+                      flexDirection: { xs: 'column', sm: 'row' },
+                      gap: 2,
+                      mb: 3,
+                      alignItems: { xs: 'stretch', sm: 'center' }
                     }}
                   >
-                    <CircularProgress
-                      size={48}
+                    <TextField
+                      fullWidth
+                      variant="outlined"
+                      placeholder="Search by trader address..."
+                      value={searchAddress}
+                      onChange={(e) => setSearchAddress(e.target.value)}
+                      InputProps={{
+                        startAdornment: (
+                          <InputAdornment position="start">
+                            <SearchIcon sx={{ color: theme.palette.primary.main }} />
+                          </InputAdornment>
+                        ),
+                        endAdornment: searchAddress && (
+                          <InputAdornment position="end">
+                            <IconButton
+                              size="small"
+                              onClick={() => setSearchAddress('')}
+                              edge="end"
+                              sx={{
+                                color: theme.palette.text.secondary,
+                                borderRadius: '10px',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  color: theme.palette.error.main,
+                                  bgcolor: alpha(theme.palette.error.main, 0.1),
+                                  transform: 'scale(1.1)'
+                                }
+                              }}
+                            >
+                              <ClearIcon fontSize="small" />
+                            </IconButton>
+                          </InputAdornment>
+                        )
+                      }}
                       sx={{
-                        color: theme.palette.primary.main,
-                        mb: 2,
-                        '& .MuiCircularProgress-circle': {
-                          strokeLinecap: 'round'
+                        maxWidth: 450,
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '16px',
+                          backgroundColor:
+                            theme.palette.mode === 'dark'
+                              ? alpha(theme.palette.background.default, 0.6)
+                              : alpha(theme.palette.grey[50], 0.8),
+                          transition: 'all 0.3s',
+                          '& fieldset': {
+                            borderColor: alpha(theme.palette.divider, 0.2),
+                            borderWidth: '2px'
+                          },
+                          '&:hover fieldset': {
+                            borderColor: alpha(theme.palette.primary.main, 0.4)
+                          },
+                          '&.Mui-focused': {
+                            backgroundColor: theme.palette.background.paper,
+                            '& fieldset': {
+                              borderColor: theme.palette.primary.main
+                            }
+                          }
                         }
                       }}
                     />
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
-                        mb: 1
-                      }}
-                    >
-                      Updating Traders
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        textAlign: 'center'
-                      }}
-                    >
-                      Fetching latest trading data...
-                    </Typography>
-                  </Box>
-                )}
-
-                {error && (
-                  <Box
-                    sx={{
-                      p: 4,
-                      textAlign: 'center',
-                      background: 'transparent',
-                      borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
-                      backdropFilter: 'blur(10px)'
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: theme.palette.error.main,
-                        fontWeight: 600,
-                        mb: 1
-                      }}
-                    >
-                      Error Loading Data
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: theme.palette.text.secondary
-                      }}
-                    >
-                      {error}
-                    </Typography>
-                  </Box>
-                )}
-
-                {(!loading || isFirstLoad) && !error && traders.length > 0 && (
-                  <>
                     <Box
                       sx={{
                         display: 'flex',
-                        flexDirection: { xs: 'column', sm: 'row' },
-                        gap: 2,
-                        mb: 3,
-                        alignItems: { xs: 'stretch', sm: 'center' }
+                        alignItems: 'center',
+                        gap: 2
                       }}
                     >
-                      <TextField
-                        fullWidth
-                        variant="outlined"
-                        placeholder="Search by trader address..."
-                        value={searchAddress}
-                        onChange={(e) => setSearchAddress(e.target.value)}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <SearchIcon sx={{ color: theme.palette.primary.main }} />
-                            </InputAdornment>
-                          ),
-                          endAdornment: searchAddress && (
-                            <InputAdornment position="end">
-                              <IconButton
-                                size="small"
-                                onClick={() => setSearchAddress('')}
-                                edge="end"
-                                sx={{
-                                  color: theme.palette.text.secondary,
-                                  borderRadius: '10px',
-                                  transition: 'all 0.2s',
-                                  '&:hover': {
-                                    color: theme.palette.error.main,
-                                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                                    transform: 'scale(1.1)'
-                                  }
-                                }}
-                              >
-                                <ClearIcon fontSize="small" />
-                              </IconButton>
-                            </InputAdornment>
-                          )
-                        }}
-                        sx={{
-                          maxWidth: 450,
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '16px',
-                            backgroundColor: theme.palette.mode === 'dark'
-                              ? alpha(theme.palette.background.default, 0.6)
-                              : alpha(theme.palette.grey[50], 0.8),
-                            transition: 'all 0.3s',
-                            '& fieldset': {
-                              borderColor: alpha(theme.palette.divider, 0.2),
-                              borderWidth: '2px'
-                            },
-                            '&:hover fieldset': {
-                              borderColor: alpha(theme.palette.primary.main, 0.4)
-                            },
-                            '&.Mui-focused': {
-                              backgroundColor: theme.palette.background.paper,
-                              '& fieldset': {
-                                borderColor: theme.palette.primary.main
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={hideAmm}
+                            onChange={(e) => setHideAmm(e.target.checked)}
+                            sx={{
+                              '& .MuiSwitch-track': {
+                                backgroundColor: alpha(theme.palette.text.secondary, 0.3)
+                              },
+                              '& .Mui-checked + .MuiSwitch-track': {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.5)
                               }
-                            }
-                          }
-                        }}
+                            }}
+                          />
+                        }
+                        label={
+                          <Typography
+                            sx={{
+                              fontWeight: 600,
+                              color: theme.palette.text.primary,
+                              fontSize: '0.9rem'
+                            }}
+                          >
+                            Hide AMM
+                          </Typography>
+                        }
                       />
                       <Box
                         sx={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 2
+                          gap: 1,
+                          px: 2,
+                          py: 0.75,
+                          borderRadius: '100px',
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)}, ${alpha(theme.palette.info.light, 0.1)})`,
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
                         }}
                       >
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={hideAmm}
-                              onChange={(e) => setHideAmm(e.target.checked)}
-                              sx={{
-                                '& .MuiSwitch-track': {
-                                  backgroundColor: alpha(theme.palette.text.secondary, 0.3)
-                                },
-                                '& .Mui-checked + .MuiSwitch-track': {
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.5)
-                                }
-                              }}
-                            />
-                          }
-                          label={
-                            <Typography sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '0.9rem' }}>
-                              Hide AMM
-                            </Typography>
-                          }
-                        />
-                        <Box
+                        <Typography
                           sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1,
-                            px: 2,
-                            py: 0.75,
-                            borderRadius: '100px',
-                            background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.1)}, ${alpha(theme.palette.info.light, 0.1)})`,
-                            border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
-                          }}
-                        >
-                          <Typography sx={{ 
                             fontSize: '0.875rem',
                             fontWeight: 700,
                             background: `linear-gradient(135deg, ${theme.palette.info.main}, ${theme.palette.info.dark})`,
                             WebkitBackgroundClip: 'text',
                             WebkitTextFillColor: 'transparent'
-                          }}>
-                            {totalItems.toLocaleString()} Traders
-                          </Typography>
-                        </Box>
+                          }}
+                        >
+                          {totalItems.toLocaleString()} Traders
+                        </Typography>
                       </Box>
                     </Box>
+                  </Box>
 
-                    <StyledTableContainer onScroll={handleScroll}>
-                      <Table
-                        size="medium"
-                        aria-label="trader analytics table"
-                        style={{ minWidth: 650, backgroundColor: 'transparent' }}
-                      >
-                        <StyledTableHead>
-                          <TableRow>
-                            <TableCell sx={{ 
+                  <StyledTableContainer onScroll={handleScroll}>
+                    <Table
+                      size="medium"
+                      aria-label="trader analytics table"
+                      style={{ minWidth: 650, backgroundColor: 'transparent' }}
+                    >
+                      <StyledTableHead>
+                        <TableRow>
+                          <TableCell
+                            sx={{
                               width: isMobile ? '10px' : '40px',
                               minWidth: isMobile ? '10px' : '40px',
                               padding: isMobile ? '8px 0px' : '16px 4px'
-                            }}>
-                              #
-                            </TableCell>
-                            <TableCell sx={{ 
+                            }}
+                          >
+                            #
+                          </TableCell>
+                          <TableCell
+                            sx={{
                               minWidth: isMobile ? '120px' : '250px',
                               padding: isMobile ? '8px 4px' : '16px 8px'
-                            }}>
+                            }}
+                          >
+                            <TableSortLabel
+                              active={orderBy === 'address'}
+                              direction={orderBy === 'address' ? order : 'asc'}
+                              onClick={() => handleRequestSort('address')}
+                            >
+                              Address
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right" sx={{ minWidth: isMobile ? '32px' : '100px' }}>
+                            <TableSortLabel
+                              active={orderBy === 'volume24h'}
+                              direction={orderBy === 'volume24h' ? order : 'asc'}
+                              onClick={() => handleRequestSort('volume24h')}
+                            >
+                              Volume (24h)
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
+                            <TableSortLabel
+                              active={orderBy === 'profit24h'}
+                              direction={orderBy === 'profit24h' ? order : 'asc'}
+                              onClick={() => handleRequestSort('profit24h')}
+                            >
+                              Profit/Loss (24h)
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
+                            <TableSortLabel
+                              active={orderBy === 'totalTrades'}
+                              direction={orderBy === 'totalTrades' ? order : 'asc'}
+                              onClick={() => handleRequestSort('totalTrades')}
+                            >
+                              Total Trades
+                            </TableSortLabel>
+                          </TableCell>
+                          {!isMobile && (
+                            <TableCell align="right" sx={{ minWidth: '80px' }}>
                               <TableSortLabel
-                                active={orderBy === 'address'}
-                                direction={orderBy === 'address' ? order : 'asc'}
-                                onClick={() => handleRequestSort('address')}
+                                active={orderBy === 'totalProfit'}
+                                direction={orderBy === 'totalProfit' ? order : 'asc'}
+                                onClick={() => handleRequestSort('totalProfit')}
                               >
-                                Address
+                                Total Profit
                               </TableSortLabel>
                             </TableCell>
-                            <TableCell align="right" sx={{ minWidth: isMobile ? '32px' : '100px' }}>
-                              <TableSortLabel
-                                active={orderBy === 'volume24h'}
-                                direction={orderBy === 'volume24h' ? order : 'asc'}
-                                onClick={() => handleRequestSort('volume24h')}
-                              >
-                                Volume (24h)
-                              </TableSortLabel>
-                            </TableCell>
-                            <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
-                              <TableSortLabel
-                                active={orderBy === 'profit24h'}
-                                direction={orderBy === 'profit24h' ? order : 'asc'}
-                                onClick={() => handleRequestSort('profit24h')}
-                              >
-                                Profit/Loss (24h)
-                              </TableSortLabel>
-                            </TableCell>
-                            <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
-                              <TableSortLabel
-                                active={orderBy === 'totalTrades'}
-                                direction={orderBy === 'totalTrades' ? order : 'asc'}
-                                onClick={() => handleRequestSort('totalTrades')}
-                              >
-                                Total Trades
-                              </TableSortLabel>
-                            </TableCell>
-                            {!isMobile && (
-                              <TableCell align="right" sx={{ minWidth: '80px' }}>
-                                <TableSortLabel
-                                  active={orderBy === 'totalProfit'}
-                                  direction={orderBy === 'totalProfit' ? order : 'asc'}
-                                  onClick={() => handleRequestSort('totalProfit')}
-                                >
-                                  Total Profit
-                                </TableSortLabel>
-                              </TableCell>
-                            )}
-                            <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
-                              <TableSortLabel
-                                active={orderBy === 'avgROI'}
-                                direction={orderBy === 'avgROI' ? order : 'asc'}
-                                onClick={() => handleRequestSort('avgROI')}
-                              >
-                                ROI
-                              </TableSortLabel>
-                            </TableCell>
-                            <TableCell align="right" />
-                          </TableRow>
-                        </StyledTableHead>
-                        <TableBody>
-                          {sortedTraders.map((trader, index) => (
-                            <TraderRow
-                              key={trader._id}
-                              trader={trader}
-                              index={index}
-                              onRoiClick={handleRoiClick}
-                              formatCurrency={formatCurrency}
-                              formatPercentage={formatPercentage}
-                              isMobile={isMobile}
-                              scrollLeft={scrollLeft}
-                            />
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </StyledTableContainer>
+                          )}
+                          <TableCell align="right" sx={{ minWidth: isMobile ? '30px' : '80px' }}>
+                            <TableSortLabel
+                              active={orderBy === 'avgROI'}
+                              direction={orderBy === 'avgROI' ? order : 'asc'}
+                              onClick={() => handleRequestSort('avgROI')}
+                            >
+                              ROI
+                            </TableSortLabel>
+                          </TableCell>
+                          <TableCell align="right" />
+                        </TableRow>
+                      </StyledTableHead>
+                      <TableBody>
+                        {sortedTraders.map((trader, index) => (
+                          <TraderRow
+                            key={trader._id}
+                            trader={trader}
+                            index={index}
+                            onRoiClick={handleRoiClick}
+                            formatCurrency={formatCurrency}
+                            formatPercentage={formatPercentage}
+                            isMobile={isMobile}
+                            scrollLeft={scrollLeft}
+                          />
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </StyledTableContainer>
 
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '4px 0',
+                      gap: '6px',
+                      flexWrap: 'wrap',
+                      mt: 4,
+                      '@media (max-width: 900px)': {
+                        flexDirection: 'row',
+                        alignItems: 'stretch',
+                        flexWrap: 'wrap',
+                        gap: '2px',
+                        padding: '2px'
+                      }
+                    }}
+                  >
                     <Box
                       sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '4px 0',
-                        gap: '6px',
-                        flexWrap: 'wrap',
-                        mt: 4,
-                        '@media (max-width: 900px)': {
-                          flexDirection: 'row',
-                          alignItems: 'stretch',
-                          flexWrap: 'wrap',
-                          gap: '2px',
-                          padding: '2px'
-                        }
-                      }}
-                    >
-                      <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
@@ -1567,31 +1613,37 @@ export default function Analytics({ initialData, initialError }) {
                           gap: '4px',
                           padding: '4px 8px'
                         }
-                      }}>
-                        <Box sx={{
+                      }}
+                    >
+                      <Box
+                        sx={{
                           fontSize: '12px',
                           fontWeight: 600,
                           padding: '2px 6px',
                           border: `1px solid ${alpha(theme.palette.divider, 0.32)}`,
                           borderRadius: '6px',
                           color: theme.palette.text.primary
-                        }}>
-                          {`${(page - 1) * itemsPerPage + 1}-${Math.min(
-                            page * itemsPerPage,
-                            totalItems
-                          )} of ${totalItems.toLocaleString()}`}
-                        </Box>
-                        <Typography sx={{
+                        }}
+                      >
+                        {`${(page - 1) * itemsPerPage + 1}-${Math.min(
+                          page * itemsPerPage,
+                          totalItems
+                        )} of ${totalItems.toLocaleString()}`}
+                      </Box>
+                      <Typography
+                        sx={{
                           fontSize: '12px',
                           color: theme.palette.text.secondary,
                           fontWeight: 500
-                        }}>
-                          traders
-                        </Typography>
-                      </Box>
+                        }}
+                      >
+                        traders
+                      </Typography>
+                    </Box>
 
-                      <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-                        <Box sx={{
+                    <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+                      <Box
+                        sx={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '4px',
@@ -1606,124 +1658,135 @@ export default function Analytics({ initialData, initialError }) {
                             justifyContent: 'center',
                             padding: '2px 4px'
                           }
-                        }}>
-                          <IconButton
-                            onClick={() => {
-                              setPage(1);
-                              setIsFirstLoad(false);
-                            }}
-                            disabled={page === 1}
-                            size="small"
-                            sx={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '6px',
-                              padding: 0,
-                              '&:hover:not(:disabled)': {
-                                background: alpha(theme.palette.primary.main, 0.08)
-                              },
-                              '&:disabled': {
-                                color: alpha(theme.palette.text.primary, 0.48)
-                              }
-                            }}
-                            title="First page"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z"/>
-                            </svg>
-                          </IconButton>
-
-                          {(() => {
-                            const pages = [];
-                            const current = page;
-                            const total = totalPages;
-                            
-                            if (total <= 7) {
-                              for (let i = 1; i <= total; i++) {
-                                pages.push(i);
-                              }
-                            } else {
-                              if (current <= 3) {
-                                for (let i = 1; i <= 5; i++) pages.push(i);
-                                pages.push('...');
-                                pages.push(total);
-                              } else if (current >= total - 2) {
-                                pages.push(1);
-                                pages.push('...');
-                                for (let i = total - 4; i <= total; i++) pages.push(i);
-                              } else {
-                                pages.push(1);
-                                pages.push('...');
-                                for (let i = current - 1; i <= current + 1; i++) pages.push(i);
-                                pages.push('...');
-                                pages.push(total);
-                              }
+                        }}
+                      >
+                        <IconButton
+                          onClick={() => {
+                            setPage(1);
+                            setIsFirstLoad(false);
+                          }}
+                          disabled={page === 1}
+                          size="small"
+                          sx={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '6px',
+                            padding: 0,
+                            '&:hover:not(:disabled)': {
+                              background: alpha(theme.palette.primary.main, 0.08)
+                            },
+                            '&:disabled': {
+                              color: alpha(theme.palette.text.primary, 0.48)
                             }
-                            
-                            return pages.map((pageNum, idx) => {
-                              if (pageNum === '...') {
-                                return <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>...</span>;
-                              }
+                          }}
+                          title="First page"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.41 16.59L13.82 12l4.59-4.59L17 6l-6 6 6 6zM6 6h2v12H6z" />
+                          </svg>
+                        </IconButton>
+
+                        {(() => {
+                          const pages = [];
+                          const current = page;
+                          const total = totalPages;
+
+                          if (total <= 7) {
+                            for (let i = 1; i <= total; i++) {
+                              pages.push(i);
+                            }
+                          } else {
+                            if (current <= 3) {
+                              for (let i = 1; i <= 5; i++) pages.push(i);
+                              pages.push('...');
+                              pages.push(total);
+                            } else if (current >= total - 2) {
+                              pages.push(1);
+                              pages.push('...');
+                              for (let i = total - 4; i <= total; i++) pages.push(i);
+                            } else {
+                              pages.push(1);
+                              pages.push('...');
+                              for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+                              pages.push('...');
+                              pages.push(total);
+                            }
+                          }
+
+                          return pages.map((pageNum, idx) => {
+                            if (pageNum === '...') {
                               return (
-                                <Button
-                                  key={pageNum}
-                                  onClick={() => {
-                                    setPage(pageNum);
-                                    setIsFirstLoad(false);
-                                  }}
-                                  sx={{
-                                    minWidth: '20px',
-                                    height: '20px',
-                                    borderRadius: '6px',
-                                    border: 'none',
-                                    background: pageNum === page ? theme.palette.primary.main : 'transparent',
-                                    color: pageNum === page ? 'white' : 'inherit',
-                                    padding: '0 4px',
-                                    margin: 0,
-                                    fontSize: '12px',
-                                    fontWeight: pageNum === page ? 600 : 500,
-                                    '&:hover:not(:disabled)': {
-                                      background: pageNum === page 
+                                <span
+                                  key={`ellipsis-${idx}`}
+                                  style={{ padding: '0 4px', fontSize: '12px' }}
+                                >
+                                  ...
+                                </span>
+                              );
+                            }
+                            return (
+                              <Button
+                                key={pageNum}
+                                onClick={() => {
+                                  setPage(pageNum);
+                                  setIsFirstLoad(false);
+                                }}
+                                sx={{
+                                  minWidth: '20px',
+                                  height: '20px',
+                                  borderRadius: '6px',
+                                  border: 'none',
+                                  background:
+                                    pageNum === page ? theme.palette.primary.main : 'transparent',
+                                  color: pageNum === page ? 'white' : 'inherit',
+                                  padding: '0 4px',
+                                  margin: 0,
+                                  fontSize: '12px',
+                                  fontWeight: pageNum === page ? 600 : 500,
+                                  '&:hover:not(:disabled)': {
+                                    background:
+                                      pageNum === page
                                         ? theme.palette.primary.dark
                                         : alpha(theme.palette.primary.main, 0.08)
-                                    }
-                                  }}
-                                >
-                                  {pageNum}
-                                </Button>
-                              );
-                            });
-                          })()}
+                                  }
+                                }}
+                              >
+                                {pageNum}
+                              </Button>
+                            );
+                          });
+                        })()}
 
-                          <IconButton
-                            onClick={() => {
-                              setPage(totalPages);
-                              setIsFirstLoad(false);
-                            }}
-                            disabled={page === totalPages}
-                            size="small"
-                            sx={{
-                              width: '28px',
-                              height: '28px',
-                              borderRadius: '6px',
-                              padding: 0,
-                              '&:hover:not(:disabled)': {
-                                background: alpha(theme.palette.primary.main, 0.08)
-                              },
-                              '&:disabled': {
-                                color: alpha(theme.palette.text.primary, 0.48)
-                              }
-                            }}
-                            title="Last page"
-                          >
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z"/>
-                            </svg>
-                          </IconButton>
-                        </Box>
+                        <IconButton
+                          onClick={() => {
+                            setPage(totalPages);
+                            setIsFirstLoad(false);
+                          }}
+                          disabled={page === totalPages}
+                          size="small"
+                          sx={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '6px',
+                            padding: 0,
+                            '&:hover:not(:disabled)': {
+                              background: alpha(theme.palette.primary.main, 0.08)
+                            },
+                            '&:disabled': {
+                              color: alpha(theme.palette.text.primary, 0.48)
+                            }
+                          }}
+                          title="Last page"
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M5.59 7.41L10.18 12l-4.59 4.59L7 18l6-6-6-6zM16 6h2v12h-2z" />
+                          </svg>
+                        </IconButton>
                       </Box>
+                    </Box>
 
-                      <Box sx={{
+                    <Box
+                      sx={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: '4px',
@@ -1740,28 +1803,33 @@ export default function Analytics({ initialData, initialError }) {
                           padding: '4px 8px',
                           gap: '2px'
                         }
-                      }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                          <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
-                        </svg>
-                        <Typography sx={{
+                      }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z" />
+                      </svg>
+                      <Typography
+                        sx={{
                           fontSize: '12px',
                           color: theme.palette.text.secondary,
                           fontWeight: 500
-                        }}>
-                          Rows
-                        </Typography>
-                        <Typography sx={{
+                        }}
+                      >
+                        Rows
+                      </Typography>
+                      <Typography
+                        sx={{
                           fontSize: '12px',
                           fontWeight: 600,
                           color: theme.palette.primary.main
-                        }}>
-                          {itemsPerPage}
-                        </Typography>
-                      </Box>
+                        }}
+                      >
+                        {itemsPerPage}
+                      </Typography>
                     </Box>
-                  </>
-                )}
+                  </Box>
+                </>
+              )}
             </Box>
           </Container>
         </Box>
@@ -2189,21 +2257,16 @@ export default function Analytics({ initialData, initialError }) {
 // Server-side rendering function
 export async function getServerSideProps(context) {
   const { req, res, query } = context;
-  
+
   // Set cache headers for better performance
   res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=120, stale-while-revalidate=300');
-  
+
   // Extract and validate query parameters
-  const {
-    page = 1,
-    sortBy = 'volume24h',
-    sortOrder = 'desc',
-    address = ''
-  } = query;
+  const { page = 1, sortBy = 'volume24h', sortOrder = 'desc', address = '' } = query;
 
   // Validate page number
   const pageNum = Math.max(1, parseInt(page.toString(), 10) || 1);
-  
+
   try {
     // Build query params for the API
     const queryParams = new URLSearchParams({
@@ -2227,7 +2290,7 @@ export async function getServerSideProps(context) {
         {
           signal: controller.signal,
           headers: {
-            'Accept': 'application/json',
+            Accept: 'application/json',
             'User-Agent': 'XRPL.to/1.0'
           }
         }
@@ -2260,7 +2323,10 @@ export async function getServerSideProps(context) {
         console.warn('API returned non-array data:', data);
         return {
           props: {
-            initialData: { data: [], pagination: { total: 0, totalPages: 0, currentPage: 1, limit: 25 } },
+            initialData: {
+              data: [],
+              pagination: { total: 0, totalPages: 0, currentPage: 1, limit: 25 }
+            },
             initialError: null
           }
         };
@@ -2271,7 +2337,9 @@ export async function getServerSideProps(context) {
         ...data,
         pagination: {
           total: data.pagination?.total || data.data.length,
-          totalPages: data.pagination?.totalPages || Math.ceil((data.pagination?.total || data.data.length) / 25),
+          totalPages:
+            data.pagination?.totalPages ||
+            Math.ceil((data.pagination?.total || data.data.length) / 25),
           currentPage: data.pagination?.currentPage || pageNum,
           limit: data.pagination?.limit || 25
         }
@@ -2283,15 +2351,13 @@ export async function getServerSideProps(context) {
           initialError: null
         }
       };
-
     } catch (fetchError) {
       clearTimeout(timeoutId);
       throw fetchError;
     }
-
   } catch (error) {
     console.error('Error in getServerSideProps:', error);
-    
+
     // Log more detailed error information
     const errorDetails = {
       message: error.message,
@@ -2304,7 +2370,7 @@ export async function getServerSideProps(context) {
 
     // Return appropriate error based on error type
     let userFriendlyError = 'Failed to load trader data';
-    
+
     if (error.name === 'AbortError') {
       userFriendlyError = 'Request timeout - please try again';
     } else if (error.message.includes('fetch')) {

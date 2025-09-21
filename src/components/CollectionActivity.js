@@ -261,7 +261,7 @@ const renderAddressLink = (address, displayText = null) => {
       underline="hover"
       sx={{
         fontSize: 'inherit',
-        fontWeight: 600,
+        fontWeight: 600
       }}
     >
       {text}
@@ -816,11 +816,14 @@ export default function AccountTransactions({ creatorAccount }) {
 
   if (!creatorAccount) {
     return (
-      <Container maxWidth={false} sx={{ 
-      pl: { xs: 2, sm: 0 }, 
-      pr: { xs: 2, sm: 0 }, 
-      maxWidth: '2000px',
-    }}>
+      <Container
+        maxWidth={false}
+        sx={{
+          pl: { xs: 2, sm: 0 },
+          pr: { xs: 2, sm: 0 },
+          maxWidth: '2000px'
+        }}
+      >
         <Card
           sx={{
             p: 4,
@@ -842,11 +845,14 @@ export default function AccountTransactions({ creatorAccount }) {
   }
 
   return (
-    <Container maxWidth={false} sx={{ 
-      pl: { xs: 2, sm: 0 }, 
-      pr: { xs: 2, sm: 0 }, 
-      maxWidth: '2000px',
-    }}>
+    <Container
+      maxWidth={false}
+      sx={{
+        pl: { xs: 2, sm: 0 },
+        pr: { xs: 2, sm: 0 },
+        maxWidth: '2000px'
+      }}
+    >
       <Card
         sx={{
           mb: 3,
@@ -865,7 +871,7 @@ export default function AccountTransactions({ creatorAccount }) {
             right: 0,
             height: '2px',
             background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.5)}, ${alpha(theme.palette.secondary.main, 0.5)}, ${alpha(theme.palette.primary.main, 0.5)})`,
-            backgroundSize: '200% 100%',
+            backgroundSize: '200% 100%'
           }
         }}
       >
@@ -924,9 +930,10 @@ export default function AccountTransactions({ creatorAccount }) {
                     fontWeight: 700,
                     lineHeight: 1.2,
                     letterSpacing: '-0.02em',
-                    background: theme.palette.mode === 'dark'
-                      ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
-                      : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
+                    background:
+                      theme.palette.mode === 'dark'
+                        ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
+                        : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
                     backgroundClip: 'text',
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -1000,25 +1007,31 @@ export default function AccountTransactions({ creatorAccount }) {
               </Box>
             ) : (
               <>
-                <Box sx={{ 
-                  overflow: 'auto',
-                  maxHeight: { xs: '400px', sm: '600px', md: 'none' },
-                  '&::-webkit-scrollbar': {
-                    width: '8px',
-                    height: '8px'
-                  },
-                  '&::-webkit-scrollbar-track': {
-                    backgroundColor: 'transparent',
-                    borderRadius: '4px'
-                  },
-                  '&::-webkit-scrollbar-thumb': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.3),
-                    borderRadius: '4px'
-                  }
-                }}>
-                  <Table stickyHeader size="medium" sx={{
-                    minWidth: { xs: '600px', sm: '700px', md: '100%' }
-                  }}>
+                <Box
+                  sx={{
+                    overflow: 'auto',
+                    maxHeight: { xs: '400px', sm: '600px', md: 'none' },
+                    '&::-webkit-scrollbar': {
+                      width: '8px',
+                      height: '8px'
+                    },
+                    '&::-webkit-scrollbar-track': {
+                      backgroundColor: 'transparent',
+                      borderRadius: '4px'
+                    },
+                    '&::-webkit-scrollbar-thumb': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                      borderRadius: '4px'
+                    }
+                  }}
+                >
+                  <Table
+                    stickyHeader
+                    size="medium"
+                    sx={{
+                      minWidth: { xs: '600px', sm: '700px', md: '100%' }
+                    }}
+                  >
                     <TableHead>
                       <TableRow>
                         <StyledTableCell>Type</StyledTableCell>
@@ -1070,7 +1083,7 @@ export default function AccountTransactions({ creatorAccount }) {
                                               border: `2px solid ${alpha(
                                                 theme.palette.primary.main,
                                                 0.2
-                                              )}`,
+                                              )}`
                                             }}
                                           >
                                             <CardMedia
@@ -1113,7 +1126,7 @@ export default function AccountTransactions({ creatorAccount }) {
                                                 underline="hover"
                                                 sx={{
                                                   fontSize: '0.85rem',
-                                                  fontWeight: 600,
+                                                  fontWeight: 600
                                                 }}
                                               >
                                                 {detail.text}

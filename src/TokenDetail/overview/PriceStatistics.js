@@ -175,7 +175,9 @@ export default function PriceStatistics({ token }) {
   if (!user) user = name;
 
   const voldivmarket =
-    marketcap > 0 && vol24hxrp != null ? new Decimal(vol24hxrp || 0).div(marketcap || 1).toNumber() : 0;
+    marketcap > 0 && vol24hxrp != null
+      ? new Decimal(vol24hxrp || 0).div(marketcap || 1).toNumber()
+      : 0;
 
   const handleOpenIssuerInfo = () => {
     setOpenIssuerInfo(true);
@@ -214,7 +216,7 @@ export default function PriceStatistics({ token }) {
     return baseTags;
   })();
 
-  const hasScamTag = enhancedTags.some(tag => tag.toLowerCase() === 'scam');
+  const hasScamTag = enhancedTags.some((tag) => tag.toLowerCase() === 'scam');
 
   useEffect(() => {
     if (hasScamTag) {
@@ -266,17 +268,17 @@ export default function PriceStatistics({ token }) {
             borderRadius: '16px',
             background: theme.palette.background.paper,
             border: `2px solid ${theme.palette.error.main}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.error.main, 0.2)}`,
+            boxShadow: `0 8px 32px ${alpha(theme.palette.error.main, 0.2)}`
           }
         }}
       >
         <DialogContent sx={{ textAlign: 'center', py: 2, px: 2 }}>
-          <WarningAmberIcon 
-            sx={{ 
+          <WarningAmberIcon
+            sx={{
               fontSize: '2rem',
               color: theme.palette.error.main,
               mb: 1
-            }} 
+            }}
           />
           <Typography
             variant="h6"
@@ -309,7 +311,7 @@ export default function PriceStatistics({ token }) {
               borderRadius: '12px',
               fontWeight: 600,
               '&:hover': {
-                backgroundColor: theme.palette.error.dark,
+                backgroundColor: theme.palette.error.dark
               }
             }}
           >
@@ -495,28 +497,34 @@ export default function PriceStatistics({ token }) {
                       pr: isMobile ? 0.75 : 1,
                       borderRadius: '10px',
                       height: isMobile ? '20px' : '24px',
-                      background: theme.palette.mode === 'dark'
-                        ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.15)} 0%, ${alpha('#9C27B0', 0.08)} 100%)`
-                        : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.12)} 0%, ${alpha('#7B1FA2', 0.06)} 100%)`,
+                      background:
+                        theme.palette.mode === 'dark'
+                          ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.15)} 0%, ${alpha('#9C27B0', 0.08)} 100%)`
+                          : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.12)} 0%, ${alpha('#7B1FA2', 0.06)} 100%)`,
                       backdropFilter: 'blur(10px)',
-                      border: theme.palette.mode === 'dark'
-                        ? `1px solid ${alpha('#9C27B0', 0.3)}`
-                        : `1px solid ${alpha('#7B1FA2', 0.25)}`,
+                      border:
+                        theme.palette.mode === 'dark'
+                          ? `1px solid ${alpha('#9C27B0', 0.3)}`
+                          : `1px solid ${alpha('#7B1FA2', 0.25)}`,
                       color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2',
                       fontWeight: 600,
                       transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      textShadow: theme.palette.mode === 'dark' ? '0 0 8px rgba(156, 39, 176, 0.4)' : 'none',
+                      textShadow:
+                        theme.palette.mode === 'dark' ? '0 0 8px rgba(156, 39, 176, 0.4)' : 'none',
                       '&:hover': {
-                        background: theme.palette.mode === 'dark'
-                          ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.2)} 0%, ${alpha('#9C27B0', 0.12)} 100%)`
-                          : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.15)} 0%, ${alpha('#7B1FA2', 0.08)} 100%)`,
-                        border: theme.palette.mode === 'dark'
-                          ? `1px solid ${alpha('#9C27B0', 0.4)}`
-                          : `1px solid ${alpha('#7B1FA2', 0.3)}`,
+                        background:
+                          theme.palette.mode === 'dark'
+                            ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.2)} 0%, ${alpha('#9C27B0', 0.12)} 100%)`
+                            : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.15)} 0%, ${alpha('#7B1FA2', 0.08)} 100%)`,
+                        border:
+                          theme.palette.mode === 'dark'
+                            ? `1px solid ${alpha('#9C27B0', 0.4)}`
+                            : `1px solid ${alpha('#7B1FA2', 0.3)}`,
                         transform: 'translateY(-2px)',
-                        boxShadow: theme.palette.mode === 'dark'
-                          ? `0 4px 12px ${alpha('#9C27B0', 0.3)}`
-                          : `0 4px 12px ${alpha('#7B1FA2', 0.2)}`
+                        boxShadow:
+                          theme.palette.mode === 'dark'
+                            ? `0 4px 12px ${alpha('#9C27B0', 0.3)}`
+                            : `0 4px 12px ${alpha('#7B1FA2', 0.2)}`
                       }
                     }}
                   />
@@ -533,16 +541,19 @@ export default function PriceStatistics({ token }) {
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                           transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
                           '&:hover': {
-                            background: theme.palette.mode === 'dark'
-                              ? alpha('#9C27B0', 0.08)
-                              : alpha('#7B1FA2', 0.06),
-                            border: theme.palette.mode === 'dark'
-                              ? `1px solid ${alpha('#9C27B0', 0.3)}`
-                              : `1px solid ${alpha('#7B1FA2', 0.25)}`,
+                            background:
+                              theme.palette.mode === 'dark'
+                                ? alpha('#9C27B0', 0.08)
+                                : alpha('#7B1FA2', 0.06),
+                            border:
+                              theme.palette.mode === 'dark'
+                                ? `1px solid ${alpha('#9C27B0', 0.3)}`
+                                : `1px solid ${alpha('#7B1FA2', 0.25)}`,
                             transform: 'translateY(-1px)',
-                            boxShadow: theme.palette.mode === 'dark'
-                              ? `0 4px 12px ${alpha('#9C27B0', 0.2)}`
-                              : `0 4px 12px ${alpha('#7B1FA2', 0.15)}`
+                            boxShadow:
+                              theme.palette.mode === 'dark'
+                                ? `0 4px 12px ${alpha('#9C27B0', 0.2)}`
+                                : `0 4px 12px ${alpha('#7B1FA2', 0.15)}`
                           }
                         }}
                       >
@@ -588,10 +599,6 @@ export default function PriceStatistics({ token }) {
               </ModernTableCell>
             </TableRow>
           )}
-
-
-
-
 
           {/* Volume/Market Cap Row */}
           <TableRow>
@@ -647,17 +654,14 @@ export default function PriceStatistics({ token }) {
                   fontWeight: 700,
                   color: theme.palette.mode === 'dark' ? '#66BB6A' : '#2E7D32',
                   fontSize: isMobile ? '0.75rem' : '0.9rem',
-                  textShadow: theme.palette.mode === 'dark' 
-                    ? '0 0 12px rgba(102, 187, 106, 0.3)' 
-                    : 'none'
+                  textShadow:
+                    theme.palette.mode === 'dark' ? '0 0 12px rgba(102, 187, 106, 0.3)' : 'none'
                 }}
               >
                 <NumberTooltip number={fNumber(dom || 0)} /> %
               </Typography>
             </ModernTableCell>
           </TableRow>
-
-
 
           {/* Diluted Market Cap Row */}
           <TableRow>
@@ -786,9 +790,8 @@ export default function PriceStatistics({ token }) {
                     fontWeight: 700,
                     color: theme.palette.mode === 'dark' ? '#64B5F6' : '#1976D2',
                     fontSize: isMobile ? '0.75rem' : '0.9rem',
-                    textShadow: theme.palette.mode === 'dark' 
-                      ? '0 0 12px rgba(100, 181, 246, 0.3)' 
-                      : 'none'
+                    textShadow:
+                      theme.palette.mode === 'dark' ? '0 0 12px rgba(100, 181, 246, 0.3)' : 'none'
                   }}
                 >
                   <NumberTooltip number={fNumber(trustlines)} />
@@ -854,9 +857,8 @@ export default function PriceStatistics({ token }) {
                     fontWeight: 700,
                     color: theme.palette.mode === 'dark' ? '#FFB74D' : '#F57C00',
                     fontSize: isMobile ? '0.75rem' : '0.9rem',
-                    textShadow: theme.palette.mode === 'dark' 
-                      ? '0 0 12px rgba(255, 183, 77, 0.3)' 
-                      : 'none'
+                    textShadow:
+                      theme.palette.mode === 'dark' ? '0 0 12px rgba(255, 183, 77, 0.3)' : 'none'
                   }}
                 >
                   <NumberTooltip number={fNumber(vol24htx)} />
@@ -866,7 +868,7 @@ export default function PriceStatistics({ token }) {
           ) : null}
 
           {/* Created Date Row */}
-          {(date || dateon) ? (
+          {date || dateon ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -897,7 +899,7 @@ export default function PriceStatistics({ token }) {
           ) : null}
 
           {/* Social Links & Tags Row */}
-          {(social || enhancedTags.length > 0) ? (
+          {social || enhancedTags.length > 0 ? (
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
@@ -913,20 +915,14 @@ export default function PriceStatistics({ token }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell align="left">
-                <Stack 
-                  direction="row" 
-                  alignItems="center" 
-                  spacing={isMobile ? 0.5 : 1.25} 
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={isMobile ? 0.5 : 1.25}
                   sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
                 >
-                  <CompactTags 
-                    enhancedTags={enhancedTags}
-                    maxTags={isMobile ? 2 : 3}
-                  />
-                  <CompactSocialLinks 
-                    social={social}
-                    size="small"
-                  />
+                  <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 2 : 3} />
+                  <CompactSocialLinks social={social} size="small" />
                 </Stack>
               </ModernTableCell>
             </TableRow>
@@ -994,7 +990,7 @@ const getFullUrl = (platform, handle) => {
 export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   if (!social) return null;
 
   const socialEntries = Object.entries(social).filter(([key, value]) => value);
@@ -1024,7 +1020,7 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
               color: theme.palette.primary.main,
               transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              
+
               '&:hover': {
                 background: `linear-gradient(145deg, ${alpha(
                   theme.palette.primary.main,
@@ -1039,19 +1035,11 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             {(platform === 'twitter' || platform === 'x') && (
               <TwitterIcon sx={{ width: iconSize, height: iconSize }} />
             )}
-            {platform === 'telegram' && (
-              <TelegramIcon sx={{ width: iconSize, height: iconSize }} />
-            )}
-            {platform === 'discord' && (
-              <CircleIcon sx={{ width: iconSize, height: iconSize }} />
-            )}
+            {platform === 'telegram' && <TelegramIcon sx={{ width: iconSize, height: iconSize }} />}
+            {platform === 'discord' && <CircleIcon sx={{ width: iconSize, height: iconSize }} />}
             {platform === 'website' && <Language sx={{ width: iconSize, height: iconSize }} />}
-            {platform === 'github' && (
-              <GitHub sx={{ width: iconSize, height: iconSize }} />
-            )}
-            {platform === 'reddit' && (
-              <Reddit sx={{ width: iconSize, height: iconSize }} />
-            )}
+            {platform === 'github' && <GitHub sx={{ width: iconSize, height: iconSize }} />}
+            {platform === 'reddit' && <Reddit sx={{ width: iconSize, height: iconSize }} />}
             {!['twitter', 'x', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
               platform
             ) && <LinkIcon sx={{ width: iconSize, height: iconSize }} />}
@@ -1101,11 +1089,16 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
 export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   if (!enhancedTags || enhancedTags.length === 0) return null;
-  
+
   return (
-    <Stack direction="row" spacing={isMobile ? 0.4 : 0.75} alignItems="center" sx={{ flexWrap: 'wrap', gap: isMobile ? 0.4 : 0.75 }}>
+    <Stack
+      direction="row"
+      spacing={isMobile ? 0.4 : 0.75}
+      alignItems="center"
+      sx={{ flexWrap: 'wrap', gap: isMobile ? 0.4 : 0.75 }}
+    >
       {enhancedTags.slice(0, maxTags).map((tag) => (
         <Link
           key={tag}
@@ -1203,29 +1196,30 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
 };
 
 // Combined component for easy usage
-export const CompactSocialAndTags = ({ 
-  social, 
-  enhancedTags, 
-  toggleLinksDrawer, 
-  toggleTagsDrawer, 
-  maxTags = 3, 
-  socialSize = 'small' 
+export const CompactSocialAndTags = ({
+  social,
+  enhancedTags,
+  toggleLinksDrawer,
+  toggleTagsDrawer,
+  maxTags = 3,
+  socialSize = 'small'
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  
+
   return (
-    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}>
-      <CompactTags 
+    <Stack
+      direction="row"
+      alignItems="center"
+      spacing={isMobile ? 0.5 : 1.25}
+      sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
+    >
+      <CompactTags
         enhancedTags={enhancedTags}
         toggleTagsDrawer={toggleTagsDrawer}
         maxTags={maxTags}
       />
-      <CompactSocialLinks 
-        social={social}
-        toggleLinksDrawer={toggleLinksDrawer}
-        size={socialSize}
-      />
+      <CompactSocialLinks social={social} toggleLinksDrawer={toggleLinksDrawer} size={socialSize} />
     </Stack>
   );
 };

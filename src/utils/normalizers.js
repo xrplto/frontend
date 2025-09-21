@@ -3,16 +3,16 @@ import Decimal from 'decimal.js-light';
 // IEEE 754 floating-point implementation
 function fromBytesIEEE754(bytes) {
   // Render in binary.  Hackish.
-  var b = "";
+  var b = '';
   for (var i = 0, n = bytes.length; i < n; i++) {
     var bits = (bytes[i] & 0xff).toString(2);
-    while (bits.length < 8) bits = "0" + bits;
+    while (bits.length < 8) bits = '0' + bits;
     b += bits;
   }
 
   // Determine configuration.  This could have all been precomputed but it is fast enough.
   var exponentBits = bytes.length === 4 ? 4 : 11;
-  var mantissaBits = (bytes.length * 8) - exponentBits - 1;
+  var mantissaBits = bytes.length * 8 - exponentBits - 1;
   var bias = Math.pow(2, exponentBits - 1) - 1;
   var minExponent = 1 - bias - mantissaBits;
 
@@ -25,7 +25,7 @@ function fromBytesIEEE754(bytes) {
   var allOnes = /^1+$/;
 
   var value = 0;
-  var multiplier = (s === "0" ? 1 : -1);
+  var multiplier = s === '0' ? 1 : -1;
 
   if (allZeros.test(e)) {
     // Zero or denormalized
@@ -45,7 +45,7 @@ function fromBytesIEEE754(bytes) {
     // Normalized
     var exponent = parseInt(e, 2) - bias;
     var mantissa = parseInt(m, 2);
-    value = (1 + (mantissa * Math.pow(2, -mantissaBits))) * Math.pow(2, exponent);
+    value = (1 + mantissa * Math.pow(2, -mantissaBits)) * Math.pow(2, exponent);
   }
 
   return value * multiplier;

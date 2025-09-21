@@ -1,15 +1,9 @@
-import axios from 'axios'
+import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { performance } from 'perf_hooks';
 
 // Material
-import {
-    styled,
-    Box,
-    Container,
-    Stack,
-    Toolbar
-} from '@mui/material';
+import { styled, Box, Container, Stack, Toolbar } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -22,98 +16,97 @@ import EditCollection from 'src/collection/edit';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled(Box)(
-    ({ theme }) => `
+  ({ theme }) => `
         // overflow: hidden;
         flex: 1;
 `
 );
 
-export default function Overview({data}) {
-    const BASE_URL = 'https://api.xrpnft.com/api';
-    const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
+export default function Overview({ data }) {
+  const BASE_URL = 'https://api.xrpnft.com/api';
+  const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
 
-    const accountLogin = accountProfile?.account;
-    const accountToken = accountProfile?.token;
+  const accountLogin = accountProfile?.account;
+  const accountToken = accountProfile?.token;
 
-    const [collection, setCollection] = useState(null);
+  const [collection, setCollection] = useState(null);
 
-    const slug = data?.collection?.slug;
+  const slug = data?.collection?.slug;
 
-    useEffect(() => {
-        function getCollection() {
-            if (!accountLogin || !accountToken) {
-                openSnackbar('Please login', 'error');
-                return;
-            }
+  useEffect(() => {
+    function getCollection() {
+      if (!accountLogin || !accountToken) {
+        openSnackbar('Please login', 'error');
+        return;
+      }
 
-            // https://api.xrpnft.com/api/collection/test1
-            axios.get(`${BASE_URL}/collection/${slug}?account=${accountLogin}`, {headers: {'x-access-token': accountToken}})
-                .then(res => {
-                    let ret = res.status === 200 ? res.data : undefined;
-                    if (ret) {
-                        setCollection(ret.collection);
-                    }
-                }).catch(err => {
-                    console.log("Error on getting a collection!!!", err);
-                }).then(function () {
-                    // always executed
-                });
-        }
+      // https://api.xrpnft.com/api/collection/test1
+      axios
+        .get(`${BASE_URL}/collection/${slug}?account=${accountLogin}`, {
+          headers: { 'x-access-token': accountToken }
+        })
+        .then((res) => {
+          let ret = res.status === 200 ? res.data : undefined;
+          if (ret) {
+            setCollection(ret.collection);
+          }
+        })
+        .catch((err) => {
+          console.log('Error on getting a collection!!!', err);
+        })
+        .then(function () {
+          // always executed
+        });
+    }
 
-        if (slug)
-            getCollection();
+    if (slug) getCollection();
+  }, [accountLogin, accountToken, slug]);
 
-    }, [accountLogin, accountToken, slug]);
+  return (
+    <OverviewWrapper>
+      <Toolbar id="back-to-top-anchor" />
 
+      <Header />
 
-    return (
-        <OverviewWrapper>
-            <Toolbar id="back-to-top-anchor" />
+      <Container maxWidth="sm">
+        {collection ? (
+          <EditCollection collection={collection} />
+        ) : (
+          <Stack sx={{ mt: 5, minHeight: '50vh' }} />
+        )}
+      </Container>
 
-            <Header />
+      <ScrollToTop />
 
-            <Container maxWidth="sm">
-                {collection ? (
-                    <EditCollection collection={collection}/>
-                ):(
-                    <Stack sx={{mt:5, minHeight: '50vh'}}/>
-                )
-                }
-            </Container>
-
-            <ScrollToTop />
-
-            <Footer />
-
-        </OverviewWrapper>
-    );
+      <Footer />
+    </OverviewWrapper>
+  );
 }
 
 export async function getServerSideProps(ctx) {
-    const BASE_URL = 'http://65.109.54.46/api';
+  const BASE_URL = 'http://65.109.54.46/api';
 
-    let data = null;
-    try {
+  let data = null;
+  try {
+    const slug = ctx.params.slug;
 
-        const slug = ctx.params.slug;
+    var t1 = performance.now();
 
-        var t1 = performance.now();
+    // https://api.xrpnft.com/api/collection/test1
+    const res = await axios.get(`${BASE_URL}/collection/${slug}`);
 
-        // https://api.xrpnft.com/api/collection/test1
-        const res = await axios.get(`${BASE_URL}/collection/${slug}`);
+    data = res.data;
 
-        data = res.data;
+    var t2 = performance.now();
+    var dt = (t2 - t1).toFixed(2);
 
-        var t2 = performance.now();
-        var dt = (t2 - t1).toFixed(2);
-
-        console.log(`4. getServerSideProps(collection/edit) slug: ${slug} took: ${dt}ms`);
-    } catch (e) {
-        console.log(e);
-    }
-    let ret = {};
-    if (data && data.collection) {
-        /*{
+    console.log(`4. getServerSideProps(collection/edit) slug: ${slug} took: ${dt}ms`);
+  } catch (e) {
+    console.log(e);
+  }
+  let ret = {};
+  if (data && data.collection) {
+    /*{
             "result": "success",
             "took": "1.02",
             "slug": "collection-1",
@@ -132,32 +125,27 @@ export async function getServerSideProps(ctx) {
             }
         } */
 
-        const {
-            name,
-            featuredImage,
-            logoImage,
-            bannerImage,
-            slug,
-            uuid,
-            description
-        } = data.collection;
+    const { name, featuredImage, logoImage, bannerImage, slug, uuid, description } =
+      data.collection;
 
-        let ogp = {};
-        ogp.canonical = `https://xrpnft.com/collection/${slug}`;
-        ogp.title = `${name} - Collection`;
-        ogp.url = `https://xrpnft.com/collection/${slug}`;
-        ogp.imgUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
-        ogp.desc = description?description:`XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;
+    let ogp = {};
+    ogp.canonical = `https://xrpnft.com/collection/${slug}`;
+    ogp.title = `${name} - Collection`;
+    ogp.url = `https://xrpnft.com/collection/${slug}`;
+    ogp.imgUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
+    ogp.desc = description
+      ? description
+      : `XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;
 
-        return {
-            props: {data, ogp}, // will be passed to the page component as props
-        }
-    } else {
-        return {
-            redirect: {
-                permanent: false,
-                destination: '/404'
-            }
-        }
-    }
+    return {
+      props: { data, ogp } // will be passed to the page component as props
+    };
+  } else {
+    return {
+      redirect: {
+        permanent: false,
+        destination: '/404'
+      }
+    };
+  }
 }

@@ -23,7 +23,13 @@ const setCachedData = (url, data) => {
   });
 };
 
-const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFactor = 2, ...props }) => {
+const Sparkline = ({
+  url,
+  showGradient = true,
+  lineWidth = 2,
+  interpolationFactor = 2,
+  ...props
+}) => {
   const theme = useTheme();
   const [chartData, setChartData] = useState(null);
   const [isError, setIsError] = useState(false);
@@ -68,10 +74,10 @@ const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const { data: apiData, chartColor } = chartData;
-    
+
     if (!apiData?.prices?.length || !apiData?.timestamps?.length) return;
 
-    const prices = apiData.prices.map(p => parseFloat(p));
+    const prices = apiData.prices.map((p) => parseFloat(p));
     const isPositive = prices[prices.length - 1] >= prices[0];
     const color = chartColor || (isPositive ? '#00ff88' : '#ff3366');
 
@@ -93,14 +99,17 @@ const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
     const range = maxPrice - minPrice;
-    
+
     // Scale points to canvas with padding
     const padding = height * 0.1; // 10% padding top and bottom
-    const chartHeight = height - (padding * 2);
-    
+    const chartHeight = height - padding * 2;
+
     const points = prices.map((price, index) => {
       const x = (index / (prices.length - 1)) * width;
-      const y = range === 0 ? height / 2 : padding + chartHeight - ((price - minPrice) / range) * chartHeight;
+      const y =
+        range === 0
+          ? height / 2
+          : padding + chartHeight - ((price - minPrice) / range) * chartHeight;
       return { x, y };
     });
 
@@ -115,7 +124,7 @@ const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
 
       ctx.beginPath();
       ctx.moveTo(interpolatedPoints[0].x, height - padding);
-      interpolatedPoints.forEach(point => ctx.lineTo(point.x, point.y));
+      interpolatedPoints.forEach((point) => ctx.lineTo(point.x, point.y));
       ctx.lineTo(interpolatedPoints[interpolatedPoints.length - 1].x, height - padding);
       ctx.closePath();
       ctx.fillStyle = gradient;
@@ -125,13 +134,12 @@ const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
     // Draw line with interpolated points
     ctx.beginPath();
     ctx.moveTo(interpolatedPoints[0].x, interpolatedPoints[0].y);
-    interpolatedPoints.forEach(point => ctx.lineTo(point.x, point.y));
+    interpolatedPoints.forEach((point) => ctx.lineTo(point.x, point.y));
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
-
   }, [chartData, showGradient, lineWidth, interpolationFactor, theme]);
 
   // Fetch data when URL changes or component comes into view
@@ -148,14 +156,14 @@ const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
         setIsLoading(false);
         return;
       }
-      
+
       const cachedData = getCachedData(url);
       if (cachedData) {
         setChartData(cachedData);
         setIsLoading(false);
         return;
       }
-      
+
       setIsLoading(true);
       setIsError(false);
       try {
@@ -284,13 +292,13 @@ const Sparkline = ({ url, showGradient = true, lineWidth = 2, interpolationFacto
         position: 'relative'
       }}
     >
-      <canvas 
-        ref={canvasRef} 
-        style={{ 
-          width: '100%', 
+      <canvas
+        ref={canvasRef}
+        style={{
+          width: '100%',
           height: '100%',
           display: 'block'
-        }} 
+        }}
       />
     </Box>
   );

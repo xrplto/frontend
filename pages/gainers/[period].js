@@ -9,7 +9,6 @@ import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/extra';
 
-
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;

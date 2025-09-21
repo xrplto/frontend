@@ -24,7 +24,17 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTranslation } from 'react-i18next';
-import { useState, useContext, useEffect, forwardRef, memo, useCallback, lazy, Suspense, useRef } from 'react';
+import {
+  useState,
+  useContext,
+  useEffect,
+  forwardRef,
+  memo,
+  useCallback,
+  lazy,
+  Suspense,
+  useRef
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // import sdk from "@crossmarkio/sdk";
 import { AppContext } from 'src/AppContext';
@@ -65,80 +75,84 @@ const XPMarketIcon = memo((props) => {
   );
 });
 
-const LedgerMemeIcon = memo(forwardRef((props, ref) => {
-  // Filter out any non-DOM props that might cause warnings
-  const { width, darkMode, ...otherProps } = props;
+const LedgerMemeIcon = memo(
+  forwardRef((props, ref) => {
+    // Filter out any non-DOM props that might cause warnings
+    const { width, darkMode, ...otherProps } = props;
 
-  return (
-    <SvgIcon {...otherProps} ref={ref} viewBox="0 0 26 26">
-      <g transform="scale(0.55)">
-        <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
-        <g>
+    return (
+      <SvgIcon {...otherProps} ref={ref} viewBox="0 0 26 26">
+        <g transform="scale(0.55)">
+          <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
           <g>
+            <g>
+              <path
+                fill="#262626"
+                d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+              ></path>
+              <path
+                fill="#262626"
+                d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
+              ></path>
+              <path
+                fill="#262626"
+                d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
+              ></path>
+              <path
+                fill="#262626"
+                d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
+              ></path>
+            </g>
             <path
               fill="#262626"
-              d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-            ></path>
-            <path
-              fill="#262626"
-              d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
-            ></path>
-            <path
-              fill="#262626"
-              d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-            ></path>
-            <path
-              fill="#262626"
-              d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
+              d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
             ></path>
           </g>
-          <path
-            fill="#262626"
-            d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
-          ></path>
         </g>
-      </g>
-    </SvgIcon>
-  );
-}));
+      </SvgIcon>
+    );
+  })
+);
 
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
-const HorizonIcon = memo(forwardRef((props, ref) => {
-  const { width, darkMode, ...otherProps } = props;
-  return (
-    <SvgIcon
-      {...otherProps}
-      ref={ref}
-      viewBox="0 0 24 24"
-      sx={{
-        '& circle, & path': {
-          fill: 'none',
-          stroke: '#f97316',
-          strokeWidth: 2,
-          strokeLinecap: 'round',
-          strokeLinejoin: 'round'
-        },
-        // Enhanced visibility on mobile
-        '@media (max-width: 600px)': {
+const HorizonIcon = memo(
+  forwardRef((props, ref) => {
+    const { width, darkMode, ...otherProps } = props;
+    return (
+      <SvgIcon
+        {...otherProps}
+        ref={ref}
+        viewBox="0 0 24 24"
+        sx={{
           '& circle, & path': {
-            strokeWidth: 2.5
+            fill: 'none',
+            stroke: '#f97316',
+            strokeWidth: 2,
+            strokeLinecap: 'round',
+            strokeLinejoin: 'round'
+          },
+          // Enhanced visibility on mobile
+          '@media (max-width: 600px)': {
+            '& circle, & path': {
+              strokeWidth: 2.5
+            }
           }
-        }
-      }}
-    >
-      <circle cx="12" cy="12" r="4" />
-      <path d="M12 2v2" />
-      <path d="M12 20v2" />
-      <path d="M4.93 4.93l1.41 1.41" />
-      <path d="M17.66 17.66l1.41 1.41" />
-      <path d="M2 12h2" />
-      <path d="M20 12h2" />
-      <path d="M6.34 17.66l-1.41 1.41" />
-      <path d="M19.07 4.93l-1.41 1.41" />
-    </SvgIcon>
-  );
-}));
+        }}
+      >
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2" />
+        <path d="M12 20v2" />
+        <path d="M4.93 4.93l1.41 1.41" />
+        <path d="M17.66 17.66l1.41 1.41" />
+        <path d="M2 12h2" />
+        <path d="M20 12h2" />
+        <path d="M6.34 17.66l-1.41 1.41" />
+        <path d="M19.07 4.93l-1.41 1.41" />
+      </SvgIcon>
+    );
+  })
+);
 
 HorizonIcon.displayName = 'HorizonIcon';
 
@@ -156,9 +170,9 @@ const HeaderWrapper = styled(Box)(
     right: 0;
     z-index: 1100;
     background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
-    border-bottom: 1px solid ${theme.palette.mode === 'dark'
-      ? 'rgba(255,255,255,0.08)'
-      : 'rgba(0,0,0,0.1)'};
+    border-bottom: 1px solid ${
+      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'
+    };
     box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     overflow: hidden;
     
@@ -244,15 +258,9 @@ const StyledMenuItem = styled(MenuItem, {
     &:hover {
       color: ${theme.palette.primary.main};
       background: 'transparent';
-      border: 1px solid ${alpha(
-        theme.palette.primary.main,
-        0.2
-      )};
+      border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
       box-shadow: 
-        0 4px 16px ${alpha(
-          theme.palette.primary.main,
-          0.12
-        )},
+        0 4px 16px ${alpha(theme.palette.primary.main, 0.12)},
         inset 0 1px 2px ${alpha(theme.palette.common.white, 0.1)};
       
       &::before {
@@ -269,7 +277,7 @@ function Header(props) {
   const isProcessing = useSelector(selectProcess);
   const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
   const isTabletOrMobile = useMediaQuery(theme.breakpoints.down('lg'));
-  
+
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
@@ -285,10 +293,26 @@ function Header(props) {
 
   // Memoize menu items for better performance
   const discoverMenuItems = [
-    { path: '/trending', name: 'Trending', icon: <LocalFireDepartmentIcon sx={{ fontSize: 16, color: '#ff6b35' }} /> },
-    { path: '/spotlight', name: 'Spotlight', icon: <TroubleshootIcon sx={{ fontSize: 16, color: '#4fc3f7' }} /> },
-    { path: '/most-viewed', name: 'Most Viewed', icon: <VisibilityIcon sx={{ fontSize: 16, color: '#9c27b0' }} /> },
-    { path: '/gainers/24h', name: 'Gainers', icon: <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} /> },
+    {
+      path: '/trending',
+      name: 'Trending',
+      icon: <LocalFireDepartmentIcon sx={{ fontSize: 16, color: '#ff6b35' }} />
+    },
+    {
+      path: '/spotlight',
+      name: 'Spotlight',
+      icon: <TroubleshootIcon sx={{ fontSize: 16, color: '#4fc3f7' }} />
+    },
+    {
+      path: '/most-viewed',
+      name: 'Most Viewed',
+      icon: <VisibilityIcon sx={{ fontSize: 16, color: '#9c27b0' }} />
+    },
+    {
+      path: '/gainers/24h',
+      name: 'Gainers',
+      icon: <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} />
+    },
     { path: '/new', name: 'New', icon: <FiberNewIcon sx={{ fontSize: 16, color: '#ffc107' }} /> }
   ];
 
@@ -327,11 +351,13 @@ function Header(props) {
     }, 150);
   }, []);
 
-  const handleTokenOptionSelect = useCallback((path) => {
-    window.location.href = path;
-    handleTokensClose();
-  }, [handleTokensClose]);
-
+  const handleTokenOptionSelect = useCallback(
+    (path) => {
+      window.location.href = path;
+      handleTokensClose();
+    },
+    [handleTokensClose]
+  );
 
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
@@ -366,7 +392,9 @@ function Header(props) {
           link.href = 'https://crossmarkio.com';
           document.head.appendChild(link);
 
-          const { default: CrossmarkSDK } = await import(/* webpackPreload: true */ '@crossmarkio/sdk');
+          const { default: CrossmarkSDK } = await import(
+            /* webpackPreload: true */ '@crossmarkio/sdk'
+          );
 
           if (isMounted && CrossmarkSDK && typeof CrossmarkSDK.on === 'function') {
             const handleClose = () => {
@@ -418,7 +446,10 @@ function Header(props) {
               alignItems: 'center'
             }}
           >
-            <Logo alt="xrpl.to Logo" style={{ marginRight: '16px', width: 'auto', height: '32px' }} />
+            <Logo
+              alt="xrpl.to Logo"
+              style={{ marginRight: '16px', width: 'auto', height: '32px' }}
+            />
           </Box>
 
           {isDesktop && (
@@ -433,11 +464,7 @@ function Header(props) {
                 onMouseLeave={handleTokensClose}
                 sx={{ position: 'relative', display: 'inline-block' }}
               >
-                <StyledLink
-                  underline="none"
-                  darkMode={darkMode}
-                  href="/"
-                >
+                <StyledLink underline="none" darkMode={darkMode} href="/">
                   {t('Tokens')}
                 </StyledLink>
 
@@ -458,10 +485,15 @@ function Header(props) {
                       minWidth: 600,
                       borderRadius: 2,
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      boxShadow: theme.palette.mode === 'dark'
-                        ? `0 4px 20px ${alpha('#000000', 0.3)}`
-                        : `0 4px 20px ${alpha('#000000', 0.08)}`,
-                      bgcolor: theme.header?.background || (theme.palette.mode === 'dark' ? alpha('#000000', 0.95) : alpha('#ffffff', 0.98)),
+                      boxShadow:
+                        theme.palette.mode === 'dark'
+                          ? `0 4px 20px ${alpha('#000000', 0.3)}`
+                          : `0 4px 20px ${alpha('#000000', 0.08)}`,
+                      bgcolor:
+                        theme.header?.background ||
+                        (theme.palette.mode === 'dark'
+                          ? alpha('#000000', 0.95)
+                          : alpha('#ffffff', 0.98)),
                       backdropFilter: 'blur(20px)',
                       WebkitBackdropFilter: 'blur(20px)',
                       overflow: 'hidden',
@@ -473,26 +505,29 @@ function Header(props) {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        background: theme.palette.mode === 'dark'
-                          ? `linear-gradient(135deg, ${alpha('#ffffff', 0.03)} 0%, ${alpha('#ffffff', 0.01)} 100%)`
-                          : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#ffffff', 0.3)} 100%)`,
+                        background:
+                          theme.palette.mode === 'dark'
+                            ? `linear-gradient(135deg, ${alpha('#ffffff', 0.03)} 0%, ${alpha('#ffffff', 0.01)} 100%)`
+                            : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#ffffff', 0.3)} 100%)`,
                         pointerEvents: 'none',
                         zIndex: -1
                       }
                     }}
                   >
-                    <Box sx={{ 
-                      display: 'flex', 
-                      p: 2, 
-                      gap: 2,
-                      alignItems: 'flex-start'
-                    }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        p: 2,
+                        gap: 2,
+                        alignItems: 'flex-start'
+                      }}
+                    >
                       {/* Column 1: All Launchpads */}
                       <Box sx={{ flex: 1 }}>
-                        <Typography 
-                          variant="overline" 
-                          sx={{ 
-                            fontSize: '0.7rem', 
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            fontSize: '0.7rem',
                             fontWeight: 700,
                             color: theme.palette.text.secondary,
                             mb: 1,
@@ -502,12 +537,58 @@ function Header(props) {
                           {t('LAUNCHPADS')}
                         </Typography>
                         {[
-                          { path: '/view/firstledger', name: 'FirstLedger', icon: <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} /> },
-                          { path: '/view/magnetic-x', name: 'Magnetic X', icon: <Image src="/magneticx-logo.webp?v=1" alt="Magnetic X" width={16} height={16} quality={90} loading="lazy" style={{ width: 16, height: 16, objectFit: 'contain' }} /> },
-                          { path: '/view/xpmarket', name: 'XPmarket', icon: <XPMarketIcon sx={{ fontSize: 16, color: '#6D1FEE' }} /> },
-                          { path: '/view/aigentrun', name: 'aigent.run', icon: <Image src="/static/aigentrun.gif?v=1" alt="Aigent.Run" width={16} height={16} sizes="16px" quality={90} loading="lazy" unoptimized={true} style={{ objectFit: 'contain' }} /> },
-                          { path: '/view/ledgermeme', name: 'LedgerMeme', icon: <LedgerMemeIcon sx={{ fontSize: 16 }} /> },
-                          { path: '/view/horizon', name: 'Horizon', icon: <HorizonIcon sx={{ fontSize: 16 }} /> }
+                          {
+                            path: '/view/firstledger',
+                            name: 'FirstLedger',
+                            icon: <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} />
+                          },
+                          {
+                            path: '/view/magnetic-x',
+                            name: 'Magnetic X',
+                            icon: (
+                              <Image
+                                src="/magneticx-logo.webp?v=1"
+                                alt="Magnetic X"
+                                width={16}
+                                height={16}
+                                quality={90}
+                                loading="lazy"
+                                style={{ width: 16, height: 16, objectFit: 'contain' }}
+                              />
+                            )
+                          },
+                          {
+                            path: '/view/xpmarket',
+                            name: 'XPmarket',
+                            icon: <XPMarketIcon sx={{ fontSize: 16, color: '#6D1FEE' }} />
+                          },
+                          {
+                            path: '/view/aigentrun',
+                            name: 'aigent.run',
+                            icon: (
+                              <Image
+                                src="/static/aigentrun.gif?v=1"
+                                alt="Aigent.Run"
+                                width={16}
+                                height={16}
+                                sizes="16px"
+                                quality={90}
+                                loading="lazy"
+                                unoptimized={true}
+                                style={{ objectFit: 'contain' }}
+                              />
+                            )
+                          },
+                          {
+                            path: '/view/ledgermeme',
+                            name: 'LedgerMeme',
+                            icon: <LedgerMemeIcon sx={{ fontSize: 16 }} />
+                          },
+                          {
+                            path: '/view/horizon',
+                            name: 'Horizon',
+                            icon: <HorizonIcon sx={{ fontSize: 16 }} />
+                          }
                         ].map((item) => (
                           <Box
                             key={item.path}
@@ -528,17 +609,19 @@ function Header(props) {
                             }}
                           >
                             {item.icon}
-                            <Typography variant="body2" fontSize={14}>{item.name}</Typography>
+                            <Typography variant="body2" fontSize={14}>
+                              {item.name}
+                            </Typography>
                           </Box>
                         ))}
                       </Box>
 
                       {/* Column 2: Analytics */}
                       <Box sx={{ flex: 1 }}>
-                        <Typography 
-                          variant="overline" 
-                          sx={{ 
-                            fontSize: '0.7rem', 
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            fontSize: '0.7rem',
                             fontWeight: 700,
                             color: theme.palette.text.secondary,
                             mb: 1,
@@ -548,8 +631,16 @@ function Header(props) {
                           {t('ANALYTICS')}
                         </Typography>
                         {[
-                          { path: '/market-metrics', name: t('Market Metrics'), icon: <EmojiEventsIcon sx={{ fontSize: 16, color: '#ff9800' }} /> },
-                          { path: '/top-traders', name: t('Top Traders'), icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} /> }
+                          {
+                            path: '/market-metrics',
+                            name: t('Market Metrics'),
+                            icon: <EmojiEventsIcon sx={{ fontSize: 16, color: '#ff9800' }} />
+                          },
+                          {
+                            path: '/top-traders',
+                            name: t('Top Traders'),
+                            icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
+                          }
                         ].map((item) => (
                           <Box
                             key={item.path}
@@ -570,17 +661,19 @@ function Header(props) {
                             }}
                           >
                             {item.icon}
-                            <Typography variant="body2" fontSize={14}>{item.name}</Typography>
+                            <Typography variant="body2" fontSize={14}>
+                              {item.name}
+                            </Typography>
                           </Box>
                         ))}
                       </Box>
 
                       {/* Column 3: Discover */}
                       <Box sx={{ flex: 1 }}>
-                        <Typography 
-                          variant="overline" 
-                          sx={{ 
-                            fontSize: '0.7rem', 
+                        <Typography
+                          variant="overline"
+                          sx={{
+                            fontSize: '0.7rem',
                             fontWeight: 700,
                             color: theme.palette.text.secondary,
                             mb: 1,
@@ -609,7 +702,9 @@ function Header(props) {
                             }}
                           >
                             {item.icon}
-                            <Typography variant="body2" fontSize={14}>{item.name}</Typography>
+                            <Typography variant="body2" fontSize={14}>
+                              {item.name}
+                            </Typography>
                           </Box>
                         ))}
                       </Box>
@@ -618,25 +713,13 @@ function Header(props) {
                 )}
               </Box>
 
-                <StyledLink
-                  underline="none"
-                  darkMode={darkMode}
-                  href="/collections"
-              >
+              <StyledLink underline="none" darkMode={darkMode} href="/collections">
                 {t('NFTs')}
               </StyledLink>
-              <StyledLink
-                underline="none"
-                darkMode={darkMode}
-                href="/swap"
-              >
+              <StyledLink underline="none" darkMode={darkMode} href="/swap">
                 {t('Swap')}
               </StyledLink>
-              <StyledLink
-                underline="none"
-                darkMode={darkMode}
-                href="/news"
-              >
+              <StyledLink underline="none" darkMode={darkMode} href="/news">
                 {t('News')}
               </StyledLink>
             </Box>
@@ -694,10 +777,10 @@ function Header(props) {
             )}
 
             {!fullSearch && isTabletOrMobile && (
-              <IconButton 
-                aria-label="Open search" 
+              <IconButton
+                aria-label="Open search"
                 onClick={handleFullSearch}
-                sx={{ 
+                sx={{
                   padding: { xs: '8px', sm: '10px' },
                   minWidth: { xs: '40px', sm: '44px' },
                   minHeight: { xs: '40px', sm: '44px' }
@@ -753,7 +836,7 @@ function Header(props) {
                           transition: 'left 0.5s ease'
                         },
                         '&:hover': {
-                                          background: 'transparent',
+                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
                           boxShadow: `
                             0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},
@@ -781,10 +864,10 @@ function Header(props) {
             )}
 
             {isTabletOrMobile && !fullSearch && (
-              <IconButton 
+              <IconButton
                 aria-label="Open menu"
                 onClick={() => toggleDrawer(true)}
-                sx={{ 
+                sx={{
                   padding: { xs: '8px', sm: '10px' },
                   minWidth: { xs: '40px', sm: '44px' },
                   minHeight: { xs: '40px', sm: '44px' },
@@ -811,7 +894,6 @@ function Header(props) {
       <Suspense fallback={null}>
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </Suspense>
-
     </HeaderWrapper>
   );
 }

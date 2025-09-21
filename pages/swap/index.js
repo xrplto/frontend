@@ -6,7 +6,15 @@ import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
 // Material UI imports
-import { styled, Container, Box, Typography, Toolbar, alpha, CircularProgress } from '@mui/material';
+import {
+  styled,
+  Container,
+  Box,
+  Typography,
+  Toolbar,
+  alpha,
+  CircularProgress
+} from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -28,7 +36,6 @@ const Swap = dynamic(() => import('src/components/SwapInterface'), {
   )
 });
 
-
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -39,8 +46,6 @@ const Root = styled('div')(({ theme }) => ({
   flex: 1,
   minHeight: '100vh'
 }));
-
-
 
 const DEFAULT_PAIR = {
   curr1: XRP_TOKEN,
@@ -144,7 +149,6 @@ function Overview({ data }) {
     }
   };
 
-
   return (
     <Root>
       <Toolbar id="back-to-top-anchor" />
@@ -163,13 +167,20 @@ function Overview({ data }) {
             pt: { xs: 0.5, sm: 1, md: 2 }
           }}
         >
-          <Box 
-            sx={(theme) => ({ 
-              width: '100%', 
+          <Box
+            sx={(theme) => ({
+              width: '100%',
               maxWidth: '1200px'
             })}
           >
-            <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} bids={bids} asks={asks} />
+            <Swap
+              pair={pair}
+              setPair={setPair}
+              revert={revert}
+              setRevert={setRevert}
+              bids={bids}
+              asks={asks}
+            />
           </Box>
         </Box>
       </Container>
@@ -193,9 +204,7 @@ export async function getStaticProps() {
     // Fetch both tokens and metrics data
     const [tokensResponse, metricsResponse] = await Promise.all([
       axios.get(`${BASE_URL}/tokens?limit=100&offset=0`),
-      axios.get(
-        `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
-      )
+      axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`)
     ]);
 
     if (tokensResponse.status === 200) {
@@ -211,8 +220,7 @@ export async function getStaticProps() {
         token.time = time;
       }
     }
-  } catch (error) {
-  }
+  } catch (error) {}
 
   const duration = Math.round(performance.now() - startTime);
 

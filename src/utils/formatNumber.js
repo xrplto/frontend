@@ -135,7 +135,7 @@ export function fVolume(vol) {
     const match = vol.match(/^-?\d+\.?\d*/);
     cleanVol = match ? match[0] : '0';
   }
-  
+
   let volume = new Decimal(cleanVol).toNumber();
   if (volume > 1) {
     if (volume >= 1e9) {

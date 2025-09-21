@@ -29,7 +29,11 @@ import {
 } from '@mui/material';
 import { tableCellClasses } from '@mui/material/TableCell';
 
-import { Check as CheckIcon, Close as CloseIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
+import {
+  Check as CheckIcon,
+  Close as CloseIcon,
+  AddCircle as AddCircleIcon
+} from '@mui/icons-material';
 
 // Iconify
 import InfoIcon from '@mui/icons-material/Info';
@@ -185,15 +189,21 @@ export default function EditTokenDialog({ token, setToken }) {
         setLoading(false);
         return;
       }
-      
+
       // Check if token might be expired (simple client-side check)
       // If the profile was loaded from localStorage on page refresh, the token might be old
-      const tokenAge = accountProfile.tokenCreatedAt ? Date.now() - accountProfile.tokenCreatedAt : null;
+      const tokenAge = accountProfile.tokenCreatedAt
+        ? Date.now() - accountProfile.tokenCreatedAt
+        : null;
       if (!tokenAge || tokenAge > 23 * 60 * 60 * 1000) {
         openSnackbar('Your session has expired. Please reconnect your wallet.', 'info');
         setLoading(false);
         // Open wallet modal to re-authenticate
-        if (window.confirm('Your authentication has expired. Would you like to reconnect your wallet?')) {
+        if (
+          window.confirm(
+            'Your authentication has expired. Would you like to reconnect your wallet?'
+          )
+        ) {
           setOpenWalletModal(true);
         }
         return;
@@ -241,7 +251,7 @@ export default function EditTokenDialog({ token, setToken }) {
       });
 
       const responseData = await res.json();
-      
+
       // Convert fetch response to axios-like format
       res = {
         status: res.status,
@@ -271,9 +281,12 @@ export default function EditTokenDialog({ token, setToken }) {
       if (err.response) {
         console.error('Response status:', err.response.status);
         console.error('Response data:', err.response.data);
-        
+
         if (err.response.status === 401) {
-          openSnackbar('Authentication failed. Please ensure you are logged in with an admin account.', 'error');
+          openSnackbar(
+            'Authentication failed. Please ensure you are logged in with an admin account.',
+            'error'
+          );
         } else {
           openSnackbar(`Server error: ${err.response.status}`, 'error');
         }
@@ -677,7 +690,12 @@ export default function EditTokenDialog({ token, setToken }) {
                       );
                     })}
                   <Grid item>
-                    <IconButton onClick={handleAddTagClickOpen} size="small" edge="end" aria-label="add tag">
+                    <IconButton
+                      onClick={handleAddTagClickOpen}
+                      size="small"
+                      edge="end"
+                      aria-label="add tag"
+                    >
                       <AddCircleIcon fontSize="inherit" />
                     </IconButton>
                   </Grid>
@@ -962,7 +980,7 @@ export default function EditTokenDialog({ token, setToken }) {
             id="tag-name"
             label="Tag"
             variant="standard"
-            style={{width: '300px'}}
+            style={{ width: '300px' }}
           />
         </DialogContent>
         <DialogActions>

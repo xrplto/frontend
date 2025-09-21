@@ -24,10 +24,13 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import dynamic from 'next/dynamic';
 
-const { NFTCard, CollectionCard, FilterDetail } = dynamic(() => import('src/collection/CollectionView'), {
-  loading: () => <div>Loading collection...</div>,
-  ssr: false
-});
+const { NFTCard, CollectionCard, FilterDetail } = dynamic(
+  () => import('src/collection/CollectionView'),
+  {
+    loading: () => <div>Loading collection...</div>,
+    ssr: false
+  }
+);
 
 // Loader
 import { PulseLoader } from 'react-spinners';

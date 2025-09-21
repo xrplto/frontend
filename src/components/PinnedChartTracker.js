@@ -1,9 +1,18 @@
-import { useState, useEffect, useRef, memo, useCallback, createContext, useContext, useMemo } from 'react';
-import { 
-  Box, 
-  Paper, 
-  IconButton, 
-  Typography, 
+import {
+  useState,
+  useEffect,
+  useRef,
+  memo,
+  useCallback,
+  createContext,
+  useContext,
+  useMemo
+} from 'react';
+import {
+  Box,
+  Paper,
+  IconButton,
+  Typography,
   useTheme,
   Collapse,
   ButtonGroup,
@@ -66,7 +75,7 @@ const saveState = (state) => {
       pinnedCharts: state.pinnedCharts,
       miniChartPosition: state.miniChartPosition,
       isVisible: state.isVisible,
-      isMinimized: state.isMinimized,
+      isMinimized: state.isMinimized
     });
     localStorage.setItem('pinnedChartsTracker', serializedState);
   } catch (err) {
@@ -77,9 +86,11 @@ const saveState = (state) => {
 // Provider component for pinned charts state
 export const PinnedChartProvider = ({ children }) => {
   const persistedState = loadState();
-  
+
   const [pinnedCharts, setPinnedCharts] = useState(persistedState?.pinnedCharts || []);
-  const [activePinnedChart, setActivePinnedChart] = useState(persistedState?.pinnedCharts?.[0] || null);
+  const [activePinnedChart, setActivePinnedChart] = useState(
+    persistedState?.pinnedCharts?.[0] || null
+  );
   const [miniChartPosition, setMiniChartPosition] = useState(
     persistedState?.miniChartPosition || { x: 20, y: 80 }
   );
@@ -105,15 +116,15 @@ export const PinnedChartProvider = ({ children }) => {
 
   const pinChart = useCallback((chartConfig) => {
     const { token, chartType, range, indicators, activeFiatCurrency } = chartConfig;
-    
-    setPinnedCharts(prev => {
+
+    setPinnedCharts((prev) => {
       const existingIndex = prev.findIndex(
-        chart => chart.token.md5 === token.md5 && chart.chartType === chartType
+        (chart) => chart.token.md5 === token.md5 && chart.chartType === chartType
       );
-      
+
       let newCharts;
       let newChart;
-      
+
       if (existingIndex === -1) {
         newChart = {
           id: `${token.md5}-${chartType}-${Date.now()}`,
@@ -122,7 +133,7 @@ export const PinnedChartProvider = ({ children }) => {
           range,
           indicators,
           activeFiatCurrency,
-          pinnedAt: Date.now(),
+          pinnedAt: Date.now()
         };
         newCharts = [...prev, newChart];
       } else {
@@ -131,86 +142,94 @@ export const PinnedChartProvider = ({ children }) => {
           range,
           indicators,
           activeFiatCurrency,
-          pinnedAt: Date.now(),
+          pinnedAt: Date.now()
         };
         newCharts = [...prev];
         newCharts[existingIndex] = newChart;
       }
-      
+
       setActivePinnedChart(newChart);
       setIsVisible(true);
       setIsMinimized(false);
-      
+
       return newCharts;
     });
   }, []);
 
-  const unpinChart = useCallback((chartId) => {
-    setPinnedCharts(prev => {
-      const newCharts = prev.filter(chart => chart.id !== chartId);
-      
-      if (activePinnedChart?.id === chartId) {
-        setActivePinnedChart(newCharts[0] || null);
-      }
-      
-      return newCharts;
-    });
-  }, [activePinnedChart]);
+  const unpinChart = useCallback(
+    (chartId) => {
+      setPinnedCharts((prev) => {
+        const newCharts = prev.filter((chart) => chart.id !== chartId);
 
-  const unpinChartByToken = useCallback((tokenMd5, chartType) => {
-    setPinnedCharts(prev => {
-      const newCharts = prev.filter(
-        chart => !(chart.token.md5 === tokenMd5 && chart.chartType === chartType)
-      );
-      
-      if (activePinnedChart?.token.md5 === tokenMd5 && activePinnedChart?.chartType === chartType) {
-        setActivePinnedChart(newCharts[0] || null);
-      }
-      
-      return newCharts;
-    });
-  }, [activePinnedChart]);
+        if (activePinnedChart?.id === chartId) {
+          setActivePinnedChart(newCharts[0] || null);
+        }
+
+        return newCharts;
+      });
+    },
+    [activePinnedChart]
+  );
+
+  const unpinChartByToken = useCallback(
+    (tokenMd5, chartType) => {
+      setPinnedCharts((prev) => {
+        const newCharts = prev.filter(
+          (chart) => !(chart.token.md5 === tokenMd5 && chart.chartType === chartType)
+        );
+
+        if (
+          activePinnedChart?.token.md5 === tokenMd5 &&
+          activePinnedChart?.chartType === chartType
+        ) {
+          setActivePinnedChart(newCharts[0] || null);
+        }
+
+        return newCharts;
+      });
+    },
+    [activePinnedChart]
+  );
 
   const clearAllPinnedCharts = useCallback(() => {
     setPinnedCharts([]);
     setActivePinnedChart(null);
   }, []);
 
-  const value = useMemo(() => ({
-    pinnedCharts,
-    activePinnedChart,
-    miniChartPosition,
-    isMinimized,
-    isVisible,
-    setActivePinnedChart,
-    setMiniChartPosition,
-    setIsMinimized,
-    setIsVisible,
-    pinChart,
-    unpinChart,
-    unpinChartByToken,
-    clearAllPinnedCharts,
-  }), [
-    pinnedCharts,
-    activePinnedChart,
-    miniChartPosition,
-    isMinimized,
-    isVisible,
-    setActivePinnedChart,
-    setMiniChartPosition,
-    setIsMinimized,
-    setIsVisible,
-    pinChart,
-    unpinChart,
-    unpinChartByToken,
-    clearAllPinnedCharts,
-  ]);
-
-  return (
-    <PinnedChartContext.Provider value={value}>
-      {children}
-    </PinnedChartContext.Provider>
+  const value = useMemo(
+    () => ({
+      pinnedCharts,
+      activePinnedChart,
+      miniChartPosition,
+      isMinimized,
+      isVisible,
+      setActivePinnedChart,
+      setMiniChartPosition,
+      setIsMinimized,
+      setIsVisible,
+      pinChart,
+      unpinChart,
+      unpinChartByToken,
+      clearAllPinnedCharts
+    }),
+    [
+      pinnedCharts,
+      activePinnedChart,
+      miniChartPosition,
+      isMinimized,
+      isVisible,
+      setActivePinnedChart,
+      setMiniChartPosition,
+      setIsMinimized,
+      setIsVisible,
+      pinChart,
+      unpinChart,
+      unpinChartByToken,
+      clearAllPinnedCharts
+    ]
   );
+
+  return <PinnedChartContext.Provider value={value}>{children}</PinnedChartContext.Provider>;
 };
 
 // Hook to use pinned chart context
@@ -223,57 +242,59 @@ export const usePinnedCharts = () => {
 };
 
 // Pin button component to add to charts
-export const PinChartButton = memo(({ token, chartType, range, indicators, activeFiatCurrency }) => {
-  const theme = useTheme();
-  const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
-  const isMobile = theme.breakpoints.values.sm > window.innerWidth;
-  
-  const isChartPinned = pinnedCharts.some(
-    chart => chart.token.md5 === token.md5 && chart.chartType === chartType
-  );
+export const PinChartButton = memo(
+  ({ token, chartType, range, indicators, activeFiatCurrency }) => {
+    const theme = useTheme();
+    const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
+    const isMobile = theme.breakpoints.values.sm > window.innerWidth;
 
-  const handlePinChart = () => {
-    if (isChartPinned) {
-      unpinChartByToken(token.md5, chartType);
-    } else {
-      pinChart({
-        token: {
-          md5: token.md5,
-          name: token.name,
-          symbol: token.symbol || token.code,
-          code: token.code,
-          currency: token.currency,
-          issuer: token.issuer,
-          slug: token.slug,
-          logo: token.logo
-        },
-        chartType,
-        range,
-        indicators,
-        activeFiatCurrency
-      });
-    }
-  };
+    const isChartPinned = pinnedCharts.some(
+      (chart) => chart.token.md5 === token.md5 && chart.chartType === chartType
+    );
 
-  return (
-    <Tooltip title={isChartPinned ? "Unpin chart" : "Pin chart to track anywhere"}>
-      <IconButton
-        size="small"
-        onClick={handlePinChart}
-        sx={{ 
-          ml: isMobile ? 0.5 : 1,
-          p: isMobile ? 0.5 : 1,
-          color: isChartPinned ? theme.palette.primary.main : 'inherit',
-          '& .MuiSvgIcon-root': {
-            fontSize: isMobile ? '1rem' : '1.25rem'
-          }
-        }}
-      >
-        {isChartPinned ? <PushPinIcon /> : <PushPinOutlinedIcon />}
-      </IconButton>
-    </Tooltip>
-  );
-});
+    const handlePinChart = () => {
+      if (isChartPinned) {
+        unpinChartByToken(token.md5, chartType);
+      } else {
+        pinChart({
+          token: {
+            md5: token.md5,
+            name: token.name,
+            symbol: token.symbol || token.code,
+            code: token.code,
+            currency: token.currency,
+            issuer: token.issuer,
+            slug: token.slug,
+            logo: token.logo
+          },
+          chartType,
+          range,
+          indicators,
+          activeFiatCurrency
+        });
+      }
+    };
+
+    return (
+      <Tooltip title={isChartPinned ? 'Unpin chart' : 'Pin chart to track anywhere'}>
+        <IconButton
+          size="small"
+          onClick={handlePinChart}
+          sx={{
+            ml: isMobile ? 0.5 : 1,
+            p: isMobile ? 0.5 : 1,
+            color: isChartPinned ? theme.palette.primary.main : 'inherit',
+            '& .MuiSvgIcon-root': {
+              fontSize: isMobile ? '1rem' : '1.25rem'
+            }
+          }}
+        >
+          {isChartPinned ? <PushPinIcon /> : <PushPinOutlinedIcon />}
+        </IconButton>
+      </Tooltip>
+    );
+  }
+);
 
 PinChartButton.displayName = 'PinChartButton';
 
@@ -282,7 +303,13 @@ export const FloatingPinnedChart = memo(() => {
   const theme = useTheme();
   const router = useRouter();
   const dispatch = useDispatch();
-  const { accountProfile, sync, setSync, setLoading: setAppLoading, openSnackbar } = useContext(AppContext);
+  const {
+    accountProfile,
+    sync,
+    setSync,
+    setLoading: setAppLoading,
+    openSnackbar
+  } = useContext(AppContext);
   const {
     pinnedCharts,
     activePinnedChart,
@@ -294,7 +321,7 @@ export const FloatingPinnedChart = memo(() => {
     setIsMinimized,
     setIsVisible,
     unpinChart,
-    clearAllPinnedCharts,
+    clearAllPinnedCharts
   } = usePinnedCharts();
 
   const chartContainerRef = useRef(null);
@@ -305,7 +332,7 @@ export const FloatingPinnedChart = memo(() => {
   const isDragging = useRef(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const [isDraggingState, setIsDraggingState] = useState(false);
-  
+
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -322,7 +349,7 @@ export const FloatingPinnedChart = memo(() => {
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
   const [transactionType, setTransactionType] = useState('Payment');
-  
+
   const isDark = theme.palette.mode === 'dark';
   const BASE_URL = process.env.API_URL;
 
@@ -405,20 +432,20 @@ export const FloatingPinnedChart = memo(() => {
   // Fetch data for active chart
   useEffect(() => {
     if (!activePinnedChart) return;
-    
+
     const controller = new AbortController();
-    
+
     const fetchData = async () => {
       try {
         setLoading(true);
         const apiRange = selectedRange === 'ALL' ? '1Y' : selectedRange;
         const endpoint = `${BASE_URL}/graph-ohlc-v2/${activePinnedChart.token.md5}?range=${apiRange}&vs_currency=${activePinnedChart.activeFiatCurrency}`;
-        
+
         const response = await axios.get(endpoint, { signal: controller.signal });
-        
+
         if (response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc
-            .map(candle => ({
+            .map((candle) => ({
               time: Math.floor(candle[0] / 1000),
               open: Number(candle[1]),
               high: Number(candle[2]),
@@ -429,7 +456,7 @@ export const FloatingPinnedChart = memo(() => {
             }))
             .sort((a, b) => a.time - b.time)
             .slice(-100); // Limit data points for performance
-          
+
           setData(processedData);
         }
         setLoading(false);
@@ -440,10 +467,10 @@ export const FloatingPinnedChart = memo(() => {
         setLoading(false);
       }
     };
-    
+
     fetchData();
     const interval = setInterval(fetchData, 10000); // Update every 10 seconds
-    
+
     return () => {
       controller.abort();
       clearInterval(interval);
@@ -465,8 +492,12 @@ export const FloatingPinnedChart = memo(() => {
       // Parse issuer and currency from token
       let tokenIssuer = activePinnedChart.token.issuer;
       let tokenCurrency = activePinnedChart.token.currency || activePinnedChart.token.code;
-      
-      if (!tokenIssuer && activePinnedChart.token.slug && activePinnedChart.token.slug.includes('-')) {
+
+      if (
+        !tokenIssuer &&
+        activePinnedChart.token.slug &&
+        activePinnedChart.token.slug.includes('-')
+      ) {
         const parts = activePinnedChart.token.slug.split('-');
         if (parts.length === 2) {
           tokenIssuer = parts[0];
@@ -475,10 +506,10 @@ export const FloatingPinnedChart = memo(() => {
       }
 
       // Set up currencies based on swap direction
-      const curr1 = swapFromXRP 
-        ? { currency: 'XRP', issuer: '' } 
+      const curr1 = swapFromXRP
+        ? { currency: 'XRP', issuer: '' }
         : { currency: tokenCurrency, issuer: tokenIssuer };
-      const curr2 = swapFromXRP 
+      const curr2 = swapFromXRP
         ? { currency: tokenCurrency, issuer: tokenIssuer }
         : { currency: 'XRP', issuer: '' };
 
@@ -489,16 +520,16 @@ export const FloatingPinnedChart = memo(() => {
         const ratesRes = await axios.get(
           `${BASE_URL}/pair_rates?md51=${xrpMd5}&md52=${activePinnedChart.token.md5}`
         );
-        
+
         if (ratesRes.data) {
           // rate1 = 1 (XRP to XRP)
           // rate2 = XRP per token
           const rate2 = Number(ratesRes.data.rate2) || 0;
-          
+
           // Calculate receive amount based on rates
           if (swapAmount && swapAmount !== '0') {
             const amount = new Decimal(swapAmount);
-            
+
             if (swapFromXRP) {
               // XRP -> Token: divide XRP by rate2 (XRP per token)
               if (rate2 > 0) {
@@ -559,10 +590,14 @@ export const FloatingPinnedChart = memo(() => {
         DeliverMin = {
           currency: Amount.currency,
           issuer: Amount.issuer,
-          value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(15, Decimal.ROUND_DOWN)
+          value: new Decimal(receiveAmount)
+            .mul(new Decimal(1).sub(slippageDecimal))
+            .toFixed(15, Decimal.ROUND_DOWN)
         };
       } else {
-        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0, Decimal.ROUND_DOWN);
+        DeliverMin = new Decimal(Amount)
+          .mul(new Decimal(1).sub(slippageDecimal))
+          .toFixed(0, Decimal.ROUND_DOWN);
       }
 
       const transactionData = {
@@ -580,7 +615,6 @@ export const FloatingPinnedChart = memo(() => {
       // Add memos
       let memoData = 'Quick Swap via https://xrpl.to';
       transactionData.Memos = configureMemos('', '', memoData);
-
 
       switch (wallet_type) {
         case 'xaman':
@@ -677,16 +711,16 @@ export const FloatingPinnedChart = memo(() => {
       // Parse issuer and currency from token
       let issuer = token.issuer;
       let currency = token.currency || token.code;
-      
+
       // If we don't have issuer/currency but have slug, parse from slug
       if (!issuer && token.slug && token.slug.includes('-')) {
         const parts = token.slug.split('-');
         if (parts.length === 2) {
-          issuer = parts[0];  // First part is issuer
+          issuer = parts[0]; // First part is issuer
           currency = parts[1]; // Second part is currency
         }
       }
-      
+
       if (!issuer || !currency) {
         openSnackbar('Unable to create trustline: missing token information', 'error');
         return;
@@ -697,7 +731,6 @@ export const FloatingPinnedChart = memo(() => {
       LimitAmount.issuer = issuer;
       LimitAmount.currency = currency;
       LimitAmount.value = '1000000000'; // Set a high trust limit
-
 
       switch (wallet_type) {
         case 'xaman':
@@ -792,27 +825,23 @@ export const FloatingPinnedChart = memo(() => {
   // Fetch exchange rates when token changes or swap panel opens
   useEffect(() => {
     if (!activePinnedChart?.token || !showSwap) return;
-    
+
     const fetchRates = async () => {
       try {
         // XRP md5 is a known constant
         const xrpMd5 = 'f8cd8e5bc5aeb1e8e5e89e83f8ee2d06';
         const tokenMd5 = activePinnedChart.token.md5;
-        
-        
+
         // Fetch rates with XRP as token1 and our token as token2
-        const res = await axios.get(
-          `${BASE_URL}/pair_rates?md51=${xrpMd5}&md52=${tokenMd5}`
-        );
-        
-        
+        const res = await axios.get(`${BASE_URL}/pair_rates?md51=${xrpMd5}&md52=${tokenMd5}`);
+
         if (res.data) {
           // When XRP is token1 and our token is token2:
           // rate1 = 1 (XRP to XRP)
           // rate2 = XRP per token (e.g., 0.35 XRP per RLUSD)
           const rates = {
             rate1: Number(res.data.rate1) || 1, // Should be 1 for XRP
-            rate2: Number(res.data.rate2) || 0  // XRP per token
+            rate2: Number(res.data.rate2) || 0 // XRP per token
           };
           setTokenExchangeRate(rates);
         }
@@ -820,7 +849,7 @@ export const FloatingPinnedChart = memo(() => {
         console.error('Error fetching exchange rates:', err);
       }
     };
-    
+
     fetchRates();
   }, [activePinnedChart, showSwap, BASE_URL]);
 
@@ -836,20 +865,24 @@ export const FloatingPinnedChart = memo(() => {
         // Parse currency and issuer from token
         let tokenCurrency = activePinnedChart.token.currency || activePinnedChart.token.code;
         let tokenIssuer = activePinnedChart.token.issuer;
-        
-        if (!tokenCurrency && activePinnedChart.token.slug && activePinnedChart.token.slug.includes('-')) {
+
+        if (
+          !tokenCurrency &&
+          activePinnedChart.token.slug &&
+          activePinnedChart.token.slug.includes('-')
+        ) {
           const parts = activePinnedChart.token.slug.split('-');
           if (parts.length === 2) {
             tokenIssuer = parts[0];
             tokenCurrency = parts[1];
           }
         }
-        
+
         // Use the same endpoint as Swap.js to get balances
         const res = await axios.get(
           `${BASE_URL}/account/info/${accountProfile.account}?curr1=XRP&issuer1=&curr2=${tokenCurrency}&issuer2=${tokenIssuer}`
         );
-        
+
         if (res.status === 200 && res.data?.pair) {
           const pair = res.data.pair;
           setAccountBalances({
@@ -872,13 +905,12 @@ export const FloatingPinnedChart = memo(() => {
         setLoadingBalances(false);
       }
     };
-    
+
     fetchBalances();
   }, [accountProfile, activePinnedChart, showSwap, BASE_URL, sync]);
 
   // Check trustline when account or token changes
   useEffect(() => {
-
     if (!accountProfile?.account || !activePinnedChart?.token) {
       setHasTrustline(null);
       return;
@@ -913,7 +945,9 @@ export const FloatingPinnedChart = memo(() => {
 
             for (let page = 1; page < totalPages; page++) {
               additionalRequests.push(
-                axios.get(`${BASE_URL}/account/lines/${accountProfile.account}?page=${page}&limit=50`)
+                axios.get(
+                  `${BASE_URL}/account/lines/${accountProfile.account}?page=${page}&limit=50`
+                )
               );
             }
 
@@ -970,23 +1004,25 @@ export const FloatingPinnedChart = memo(() => {
             return false;
           }
         };
-        
+
         // Parse currency and issuer from token
         let tokenCurrency = activePinnedChart.token.currency || activePinnedChart.token.code;
         let tokenIssuer = activePinnedChart.token.issuer;
-        
-        if (!tokenCurrency && activePinnedChart.token.slug && activePinnedChart.token.slug.includes('-')) {
+
+        if (
+          !tokenCurrency &&
+          activePinnedChart.token.slug &&
+          activePinnedChart.token.slug.includes('-')
+        ) {
           const parts = activePinnedChart.token.slug.split('-');
           if (parts.length === 2) {
             tokenIssuer = parts[0];
             tokenCurrency = parts[1];
           }
         }
-        
-        
+
         if (allTrustlines.length > 0) {
-          
-          const hasTrust = allTrustlines.some(line => {
+          const hasTrust = allTrustlines.some((line) => {
             // Get all possible issuer fields from the trustline
             const lineIssuers = [
               line.account,
@@ -998,11 +1034,10 @@ export const FloatingPinnedChart = memo(() => {
               line.HighLimit?.issuer,
               line.LowLimit?.issuer
             ].filter(Boolean);
-            
-            
+
             // Check if issuer matches (if we have an issuer to check)
             if (tokenIssuer && lineIssuers.length > 0) {
-              const issuerMatches = lineIssuers.some(issuer => issuer === tokenIssuer);
+              const issuerMatches = lineIssuers.some((issuer) => issuer === tokenIssuer);
               if (!issuerMatches) {
                 return false; // Issuer doesn't match
               }
@@ -1016,22 +1051,22 @@ export const FloatingPinnedChart = memo(() => {
               line.HighLimit?.currency,
               line.LowLimit?.currency
             ].filter(Boolean);
-            
-            
+
             // Check if any currency matches our token
-            const currencyMatches = currencies.some(curr => {
-              const matches = currenciesMatch(curr, tokenCurrency) || 
-                             currenciesMatch(curr, activePinnedChart.token.symbol);
-              
+            const currencyMatches = currencies.some((curr) => {
+              const matches =
+                currenciesMatch(curr, tokenCurrency) ||
+                currenciesMatch(curr, activePinnedChart.token.symbol);
+
               if (matches) {
               }
-              
+
               return matches;
             });
-            
+
             return currencyMatches;
           });
-          
+
           setHasTrustline(hasTrust);
         } else {
           setHasTrustline(false);
@@ -1070,24 +1105,24 @@ export const FloatingPinnedChart = memo(() => {
         background: { type: 'solid', color: 'transparent' },
         textColor: theme.palette.text.primary,
         fontSize: 11,
-        fontFamily: "'Segoe UI', Roboto, Arial, sans-serif",
+        fontFamily: "'Segoe UI', Roboto, Arial, sans-serif"
       },
       grid: {
         vertLines: { visible: false },
-        horzLines: { 
+        horzLines: {
           color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
-          visible: true 
-        },
+          visible: true
+        }
       },
       crosshair: {
         mode: 1,
         vertLine: { visible: false },
-        horzLine: { visible: false },
+        horzLine: { visible: false }
       },
       rightPriceScale: {
         borderVisible: false,
         scaleMargins: { top: 0.1, bottom: 0.2 },
-        visible: true,
+        visible: true
       },
       timeScale: {
         borderVisible: false,
@@ -1097,7 +1132,7 @@ export const FloatingPinnedChart = memo(() => {
         barSpacing: 6,
         minBarSpacing: 0.5,
         fixLeftEdge: true,
-        fixRightEdge: true,
+        fixRightEdge: true
       },
       localization: {
         priceFormatter: (price) => {
@@ -1105,8 +1140,8 @@ export const FloatingPinnedChart = memo(() => {
           if (price < 0.01) return symbol + price.toFixed(8);
           if (price < 100) return symbol + price.toFixed(4);
           return symbol + price.toFixed(2);
-        },
-      },
+        }
+      }
     });
 
     chartRef.current = chart;
@@ -1121,20 +1156,30 @@ export const FloatingPinnedChart = memo(() => {
         wickUpColor: '#26a69a',
         wickDownColor: '#ef5350',
         borderVisible: false,
-        wickVisible: true,
+        wickVisible: true
       });
       candleSeries.setData(data);
       seriesRef.current = candleSeries;
-    } else if (activePinnedChart?.chartType === 'line' || activePinnedChart?.chartType === 'holders') {
+    } else if (
+      activePinnedChart?.chartType === 'line' ||
+      activePinnedChart?.chartType === 'holders'
+    ) {
       const areaSeries = chart.addSeries(AreaSeries, {
-        lineColor: activePinnedChart?.chartType === 'holders' ? '#9c27b0' : theme.palette.primary.main,
-        topColor: activePinnedChart?.chartType === 'holders' ? 'rgba(156, 39, 176, 0.4)' : theme.palette.primary.main + '40',
-        bottomColor: activePinnedChart?.chartType === 'holders' ? 'rgba(156, 39, 176, 0.08)' : theme.palette.primary.main + '08',
+        lineColor:
+          activePinnedChart?.chartType === 'holders' ? '#9c27b0' : theme.palette.primary.main,
+        topColor:
+          activePinnedChart?.chartType === 'holders'
+            ? 'rgba(156, 39, 176, 0.4)'
+            : theme.palette.primary.main + '40',
+        bottomColor:
+          activePinnedChart?.chartType === 'holders'
+            ? 'rgba(156, 39, 176, 0.08)'
+            : theme.palette.primary.main + '08',
         lineWidth: 2,
         lineStyle: 0,
-        crosshairMarkerVisible: false,
+        crosshairMarkerVisible: false
       });
-      const lineData = data.map(d => ({ time: d.time, value: d.close || d.value }));
+      const lineData = data.map((d) => ({ time: d.time, value: d.close || d.value }));
       areaSeries.setData(lineData);
       seriesRef.current = areaSeries;
     }
@@ -1147,15 +1192,13 @@ export const FloatingPinnedChart = memo(() => {
         priceScaleId: 'volume',
         scaleMargins: { top: 0.85, bottom: 0 },
         priceLineVisible: false,
-        lastValueVisible: false,
+        lastValueVisible: false
       });
-      
-      const volumeData = data.map(d => ({
+
+      const volumeData = data.map((d) => ({
         time: d.time,
         value: d.volume || 0,
-        color: d.close >= d.open 
-          ? 'rgba(76, 175, 80, 0.2)'
-          : 'rgba(244, 67, 54, 0.2)'
+        color: d.close >= d.open ? 'rgba(76, 175, 80, 0.2)' : 'rgba(244, 67, 54, 0.2)'
       }));
       volumeSeries.setData(volumeData);
       volumeSeriesRef.current = volumeSeries;
@@ -1188,34 +1231,34 @@ export const FloatingPinnedChart = memo(() => {
   useEffect(() => {
     const handleMove = (e) => {
       if (!isDragging.current) return;
-      
+
       // Get coordinates from mouse or touch event
       const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
       const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-      
+
       const newX = clientX - dragStart.current.x;
       const newY = clientY - dragStart.current.y;
-      
+
       // Get current chart dimensions
       const chartWidth = 320;
       const chartHeight = isMinimized ? 60 : 450; // Approximate heights
-      
+
       // Constrain to viewport with smart edge detection
       const padding = 10;
       const maxX = window.innerWidth - chartWidth - padding;
       const maxY = window.innerHeight - chartHeight - padding;
-      
+
       // Add magnetic edge snapping
       const snapThreshold = 15;
       let constrainedX = Math.max(padding, Math.min(newX, maxX));
       let constrainedY = Math.max(padding, Math.min(newY, maxY));
-      
+
       // Snap to edges if close enough
       if (constrainedX < snapThreshold) constrainedX = padding;
       if (constrainedX > maxX - snapThreshold) constrainedX = maxX;
       if (constrainedY < snapThreshold) constrainedY = padding;
       if (constrainedY > maxY - snapThreshold) constrainedY = maxY;
-      
+
       setMiniChartPosition({ x: constrainedX, y: constrainedY });
     };
 
@@ -1247,22 +1290,22 @@ export const FloatingPinnedChart = memo(() => {
   const handleDragStart = (e) => {
     // Prevent default to avoid text selection on mobile
     e.preventDefault();
-    
+
     isDragging.current = true;
     setIsDraggingState(true);
-    
+
     // Get starting coordinates from mouse or touch event
     const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
     const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
-    
+
     dragStart.current = {
       x: clientX - miniChartPosition.x,
       y: clientY - miniChartPosition.y
     };
-    
+
     document.body.style.userSelect = 'none';
     document.body.style.cursor = 'move';
-    
+
     // Add visual feedback
     if (dragRef.current) {
       dragRef.current.style.opacity = '0.95';
@@ -1285,10 +1328,11 @@ export const FloatingPinnedChart = memo(() => {
   const handleOpenFull = () => {
     if (activePinnedChart) {
       // Use slug if available, otherwise fall back to symbol or code
-      const slug = activePinnedChart.token.slug || 
-                   activePinnedChart.token.symbol || 
-                   activePinnedChart.token.code ||
-                   activePinnedChart.token.md5;
+      const slug =
+        activePinnedChart.token.slug ||
+        activePinnedChart.token.symbol ||
+        activePinnedChart.token.code ||
+        activePinnedChart.token.md5;
       router.push(`/token/${slug}`);
     }
     setAnchorEl(null);
@@ -1299,400 +1343,463 @@ export const FloatingPinnedChart = memo(() => {
   }
 
   const currentPrice = data && data.length > 0 ? data[data.length - 1].close : null;
-  const priceChange = data && data.length > 1 
-    ? ((data[data.length - 1].close - data[0].close) / data[0].close * 100).toFixed(2)
-    : null;
+  const priceChange =
+    data && data.length > 1
+      ? (((data[data.length - 1].close - data[0].close) / data[0].close) * 100).toFixed(2)
+      : null;
 
   return (
     <>
-    <Paper
-      elevation={isDraggingState ? 12 : 6}
-      sx={{
-        position: 'fixed',
-        left: miniChartPosition.x,
-        top: miniChartPosition.y,
-        width: isVisible ? 320 : 160,
-        zIndex: 1300,
-        bgcolor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-        backdropFilter: 'blur(10px)',
-        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-        borderRadius: 2,
-        overflow: 'hidden',
-        transition: isDraggingState ? 'none' : 'all 0.3s ease',
-        transform: isDraggingState ? 'scale(1.02)' : 'scale(1)',
-        boxShadow: isDraggingState 
-          ? '0 10px 40px rgba(0,0,0,0.3)' 
-          : undefined,
-      }}
-    >
-      {/* Header */}
-      <Box
-        ref={dragRef}
-        onMouseDown={handleDragStart}
-        onTouchStart={handleDragStart}
+      <Paper
+        elevation={isDraggingState ? 12 : 6}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          p: 1,
-          bgcolor: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-          borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
-          cursor: 'move',
-          userSelect: 'none',
-          touchAction: 'none',
-          '&:active': {
-            bgcolor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)',
-          },
+          position: 'fixed',
+          left: miniChartPosition.x,
+          top: miniChartPosition.y,
+          width: isVisible ? 320 : 160,
+          zIndex: 1300,
+          bgcolor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(10px)',
+          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+          borderRadius: 2,
+          overflow: 'hidden',
+          transition: isDraggingState ? 'none' : 'all 0.3s ease',
+          transform: isDraggingState ? 'scale(1.02)' : 'scale(1)',
+          boxShadow: isDraggingState ? '0 10px 40px rgba(0,0,0,0.3)' : undefined
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <DragIndicatorIcon fontSize="small" sx={{ opacity: 0.5 }} />
-          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-            {activePinnedChart.token.name}
-          </Typography>
-          {currentPrice && priceChange && (
-            <Chip
-              size="small"
-              label={`${Number(priceChange) > 0 ? '+' : ''}${priceChange}%`}
-              sx={{
-                height: 20,
-                fontSize: '0.7rem',
-                bgcolor: Number(priceChange) > 0 ? alpha('#4caf50', 0.15) : alpha('#f44336', 0.15),
-                color: Number(priceChange) > 0 ? '#4caf50' : '#f44336',
-              }}
-            />
-          )}
-        </Box>
-        
-        <Box sx={{ display: 'flex', gap: 0.5 }}>
-          {isVisible && (
-            <>
-              <IconButton size="small" onClick={handleMinimize}>
-                {isMinimized ? <ExpandMoreIcon fontSize="small" /> : <ExpandLessIcon fontSize="small" />}
-              </IconButton>
-              <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
-                <MoreVertIcon fontSize="small" />
-              </IconButton>
-            </>
-          )}
-          <IconButton size="small" onClick={handleClose}>
-            {isVisible ? <CloseIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-          </IconButton>
-        </Box>
-      </Box>
-
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={() => setAnchorEl(null)}
-      >
-        {pinnedCharts.length > 1 && (
-          <Box>
-            <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
-              Switch Chart
-            </MenuItem>
-            {pinnedCharts.map(chart => (
-              <MenuItem
-                key={chart.id}
-                onClick={() => {
-                  setActivePinnedChart(chart);
-                  setAnchorEl(null);
+        {/* Header */}
+        <Box
+          ref={dragRef}
+          onMouseDown={handleDragStart}
+          onTouchStart={handleDragStart}
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 1,
+            bgcolor: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
+            borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
+            cursor: 'move',
+            userSelect: 'none',
+            touchAction: 'none',
+            '&:active': {
+              bgcolor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'
+            }
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <DragIndicatorIcon fontSize="small" sx={{ opacity: 0.5 }} />
+            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+              {activePinnedChart.token.name}
+            </Typography>
+            {currentPrice && priceChange && (
+              <Chip
+                size="small"
+                label={`${Number(priceChange) > 0 ? '+' : ''}${priceChange}%`}
+                sx={{
+                  height: 20,
+                  fontSize: '0.7rem',
+                  bgcolor:
+                    Number(priceChange) > 0 ? alpha('#4caf50', 0.15) : alpha('#f44336', 0.15),
+                  color: Number(priceChange) > 0 ? '#4caf50' : '#f44336'
                 }}
-                selected={chart.id === activePinnedChart.id}
-                sx={{ fontSize: '0.875rem' }}
-              >
-                {chart.token.name} - {chart.chartType}
-              </MenuItem>
-            ))}
-            <MenuItem divider />
-          </Box>
-        )}
-        <MenuItem onClick={handleOpenFull} sx={{ fontSize: '0.875rem' }}>
-          <OpenInFullIcon fontSize="small" sx={{ mr: 1 }} />
-          Open Full Chart
-        </MenuItem>
-        <MenuItem onClick={() => {
-          setShowSwap(!showSwap);
-          setAnchorEl(null);
-        }} sx={{ fontSize: '0.875rem' }}>
-          <SwapHorizIcon fontSize="small" sx={{ mr: 1 }} />
-          Quick Swap
-        </MenuItem>
-        <MenuItem onClick={() => {
-          unpinChart(activePinnedChart.id);
-          setAnchorEl(null);
-        }} sx={{ fontSize: '0.875rem' }}>
-          <CloseIcon fontSize="small" sx={{ mr: 1 }} />
-          Unpin This Chart
-        </MenuItem>
-        <MenuItem onClick={handleClearAll} sx={{ fontSize: '0.875rem', color: 'error.main' }}>
-          <DeleteSweepIcon fontSize="small" sx={{ mr: 1 }} />
-          Clear All Pinned
-        </MenuItem>
-      </Menu>
-
-      {/* Chart Content */}
-      {isVisible && <Collapse in={!isMinimized}>
-        <Box sx={{ p: 1 }}>
-          {/* Range selector */}
-          <ButtonGroup size="small" fullWidth sx={{ mb: 1 }}>
-            {['1D', '7D', '1M', '3M'].map(range => (
-              <Button
-                key={range}
-                onClick={() => setSelectedRange(range)}
-                variant={selectedRange === range ? 'contained' : 'outlined'}
-                sx={{ fontSize: '0.7rem', py: 0.25 }}
-              >
-                {range}
-              </Button>
-            ))}
-          </ButtonGroup>
-          
-          {/* Chart */}
-          <Box sx={{ position: 'relative', height: 180 }}>
-            {loading ? (
-              <Box sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                height: '100%'
-              }}>
-                <Typography variant="caption" color="text.secondary">
-                  Loading...
-                </Typography>
-              </Box>
-            ) : (
-              <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
+              />
             )}
           </Box>
 
-          {/* Current price display */}
-          {currentPrice && (
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              mt: 1,
-              pt: 1,
-              borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
-            }}>
-              <Typography variant="caption" color="text.secondary">
-                Current Price
-              </Typography>
-              <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                {currencySymbols[activePinnedChart.activeFiatCurrency] || ''}
-                {currentPrice < 0.01 ? currentPrice.toFixed(8) : currentPrice.toFixed(4)}
-              </Typography>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
+            {isVisible && (
+              <>
+                <IconButton size="small" onClick={handleMinimize}>
+                  {isMinimized ? (
+                    <ExpandMoreIcon fontSize="small" />
+                  ) : (
+                    <ExpandLessIcon fontSize="small" />
+                  )}
+                </IconButton>
+                <IconButton size="small" onClick={(e) => setAnchorEl(e.currentTarget)}>
+                  <MoreVertIcon fontSize="small" />
+                </IconButton>
+              </>
+            )}
+            <IconButton size="small" onClick={handleClose}>
+              {isVisible ? <CloseIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+            </IconButton>
+          </Box>
+        </Box>
+
+        <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+          {pinnedCharts.length > 1 && (
+            <Box>
+              <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
+                Switch Chart
+              </MenuItem>
+              {pinnedCharts.map((chart) => (
+                <MenuItem
+                  key={chart.id}
+                  onClick={() => {
+                    setActivePinnedChart(chart);
+                    setAnchorEl(null);
+                  }}
+                  selected={chart.id === activePinnedChart.id}
+                  sx={{ fontSize: '0.875rem' }}
+                >
+                  {chart.token.name} - {chart.chartType}
+                </MenuItem>
+              ))}
+              <MenuItem divider />
             </Box>
           )}
+          <MenuItem onClick={handleOpenFull} sx={{ fontSize: '0.875rem' }}>
+            <OpenInFullIcon fontSize="small" sx={{ mr: 1 }} />
+            Open Full Chart
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setShowSwap(!showSwap);
+              setAnchorEl(null);
+            }}
+            sx={{ fontSize: '0.875rem' }}
+          >
+            <SwapHorizIcon fontSize="small" sx={{ mr: 1 }} />
+            Quick Swap
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              unpinChart(activePinnedChart.id);
+              setAnchorEl(null);
+            }}
+            sx={{ fontSize: '0.875rem' }}
+          >
+            <CloseIcon fontSize="small" sx={{ mr: 1 }} />
+            Unpin This Chart
+          </MenuItem>
+          <MenuItem onClick={handleClearAll} sx={{ fontSize: '0.875rem', color: 'error.main' }}>
+            <DeleteSweepIcon fontSize="small" sx={{ mr: 1 }} />
+            Clear All Pinned
+          </MenuItem>
+        </Menu>
 
-          {/* Quick Swap Section */}
-          {showSwap && (
-            <Box sx={{ 
-              mt: 1.5,
-              pt: 1.5,
-              borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
-            }}>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600, mb: 0.5, display: 'block' }}>
-                Quick Swap
-              </Typography>
-              
-              <Stack spacing={1}>
-                <Box sx={{ 
-                  p: 1, 
-                  bgcolor: alpha(theme.palette.background.paper, 0.05),
-                  borderRadius: 1,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                }}>
-                  <Stack spacing={0.5}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-                        Balance: {loadingBalances ? '...' : (swapFromXRP ? accountBalances.xrp : accountBalances.token)}
-                      </Typography>
-                      <Button
-                        size="small"
-                        onClick={() => setSwapAmount(swapFromXRP ? accountBalances.xrp : accountBalances.token)}
-                        disabled={loadingBalances || (swapFromXRP ? accountBalances.xrp === '0' : accountBalances.token === '0')}
-                        sx={{ 
-                          minWidth: 'auto', 
-                          padding: '0px 4px',
-                          fontSize: '0.6rem',
-                          height: 16,
-                          textTransform: 'none'
-                        }}
-                      >
-                        MAX
-                      </Button>
-                    </Stack>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Box sx={{ width: 28, height: 28 }}>
-                        <img 
-                          src={swapFromXRP ? 'https://s1.xrpl.to/token/xrp' : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
-                          width={28}
-                          height={28}
-                          style={{ borderRadius: '50%' }}
-                          onError={(e) => e.target.src = '/static/alt.webp'}
-                          alt="From"
-                        />
-                      </Box>
-                      <TextField
-                        value={swapAmount}
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          if (val === '' || (!isNaN(Number(val)) && Number(val) >= 0)) {
-                            setSwapAmount(val);
-                          }
-                        }}
-                        placeholder="0.00"
-                        variant="standard"
-                        InputProps={{
-                          disableUnderline: true,
-                          sx: { fontSize: '0.85rem', fontWeight: 600 }
-                        }}
-                        sx={{ flex: 1 }}
-                      />
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                        {swapFromXRP ? 'XRP' : activePinnedChart.token.symbol || activePinnedChart.token.code}
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                </Box>
+        {/* Chart Content */}
+        {isVisible && (
+          <Collapse in={!isMinimized}>
+            <Box sx={{ p: 1 }}>
+              {/* Range selector */}
+              <ButtonGroup size="small" fullWidth sx={{ mb: 1 }}>
+                {['1D', '7D', '1M', '3M'].map((range) => (
+                  <Button
+                    key={range}
+                    onClick={() => setSelectedRange(range)}
+                    variant={selectedRange === range ? 'contained' : 'outlined'}
+                    sx={{ fontSize: '0.7rem', py: 0.25 }}
+                  >
+                    {range}
+                  </Button>
+                ))}
+              </ButtonGroup>
 
-                <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-                  <IconButton 
-                    size="small" 
-                    onClick={() => setSwapFromXRP(!swapFromXRP)}
-                    sx={{ 
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
+              {/* Chart */}
+              <Box sx={{ position: 'relative', height: 180 }}>
+                {loading ? (
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%'
                     }}
                   >
-                    <SwapVertIcon fontSize="small" />
-                  </IconButton>
-                </Box>
-
-                <Box sx={{ 
-                  p: 1, 
-                  bgcolor: alpha(theme.palette.background.paper, 0.05),
-                  borderRadius: 1,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                }}>
-                  <Stack spacing={0.5}>
-                    <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary' }}>
-                      You receive: {!swapFromXRP ? accountBalances.xrp : accountBalances.token} available
+                    <Typography variant="caption" color="text.secondary">
+                      Loading...
                     </Typography>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Box sx={{ width: 28, height: 28 }}>
-                        <img 
-                          src={!swapFromXRP ? 'https://s1.xrpl.to/token/xrp' : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
-                          width={28}
-                          height={28}
-                          style={{ borderRadius: '50%' }}
-                          onError={(e) => e.target.src = '/static/alt.webp'}
-                          alt="To"
-                        />
-                      </Box>
-                      <Typography variant="body2" sx={{ flex: 1, fontSize: '0.85rem', fontWeight: 600 }}>
-                        {(() => {
-                        if (!swapAmount || swapAmount === '0') return '0.00';
-                        const amount = new Decimal(swapAmount);
-                        
-                        
-                        // Use exchange rates for calculation
-                        if (tokenExchangeRate.rate1 > 0 || tokenExchangeRate.rate2 > 0) {
-                          if (swapFromXRP) {
-                            // XRP -> Token: divide XRP by rate2 (XRP per token)
-                            // If rate2 is 0.35 (0.35 XRP per RLUSD), then 1 XRP / 0.35 = 2.85 RLUSD
-                            if (tokenExchangeRate.rate2 > 0) {
-                              const result = amount.div(tokenExchangeRate.rate2).toFixed(6);
-                              return result;
+                  </Box>
+                ) : (
+                  <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
+                )}
+              </Box>
+
+              {/* Current price display */}
+              {currentPrice && (
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    mt: 1,
+                    pt: 1,
+                    borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    Current Price
+                  </Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    {currencySymbols[activePinnedChart.activeFiatCurrency] || ''}
+                    {currentPrice < 0.01 ? currentPrice.toFixed(8) : currentPrice.toFixed(4)}
+                  </Typography>
+                </Box>
+              )}
+
+              {/* Quick Swap Section */}
+              {showSwap && (
+                <Box
+                  sx={{
+                    mt: 1.5,
+                    pt: 1.5,
+                    borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{ fontSize: '0.7rem', fontWeight: 600, mb: 0.5, display: 'block' }}
+                  >
+                    Quick Swap
+                  </Typography>
+
+                  <Stack spacing={1}>
+                    <Box
+                      sx={{
+                        p: 1,
+                        bgcolor: alpha(theme.palette.background.paper, 0.05),
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                      }}
+                    >
+                      <Stack spacing={0.5}>
+                        <Stack direction="row" alignItems="center" justifyContent="space-between">
+                          <Typography
+                            variant="caption"
+                            sx={{ fontSize: '0.6rem', color: 'text.secondary' }}
+                          >
+                            Balance:{' '}
+                            {loadingBalances
+                              ? '...'
+                              : swapFromXRP
+                                ? accountBalances.xrp
+                                : accountBalances.token}
+                          </Typography>
+                          <Button
+                            size="small"
+                            onClick={() =>
+                              setSwapAmount(
+                                swapFromXRP ? accountBalances.xrp : accountBalances.token
+                              )
                             }
-                          } else {
-                            // Token -> XRP: multiply token by rate2 (XRP per token)
-                            // rate2 is XRP per token, so multiply token amount by rate2
-                            // If rate2 is 0.35 (0.35 XRP per RLUSD), then 2 RLUSD * 0.35 = 0.7 XRP
-                            if (tokenExchangeRate.rate2 > 0) {
-                              const result = amount.mul(tokenExchangeRate.rate2).toFixed(6);
-                              return result;
+                            disabled={
+                              loadingBalances ||
+                              (swapFromXRP
+                                ? accountBalances.xrp === '0'
+                                : accountBalances.token === '0')
                             }
-                          }
+                            sx={{
+                              minWidth: 'auto',
+                              padding: '0px 4px',
+                              fontSize: '0.6rem',
+                              height: 16,
+                              textTransform: 'none'
+                            }}
+                          >
+                            MAX
+                          </Button>
+                        </Stack>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Box sx={{ width: 28, height: 28 }}>
+                            <img
+                              src={
+                                swapFromXRP
+                                  ? 'https://s1.xrpl.to/token/xrp'
+                                  : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`
+                              }
+                              width={28}
+                              height={28}
+                              style={{ borderRadius: '50%' }}
+                              onError={(e) => (e.target.src = '/static/alt.webp')}
+                              alt="From"
+                            />
+                          </Box>
+                          <TextField
+                            value={swapAmount}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              if (val === '' || (!isNaN(Number(val)) && Number(val) >= 0)) {
+                                setSwapAmount(val);
+                              }
+                            }}
+                            placeholder="0.00"
+                            variant="standard"
+                            InputProps={{
+                              disableUnderline: true,
+                              sx: { fontSize: '0.85rem', fontWeight: 600 }
+                            }}
+                            sx={{ flex: 1 }}
+                          />
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                            {swapFromXRP
+                              ? 'XRP'
+                              : activePinnedChart.token.symbol || activePinnedChart.token.code}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </Box>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+                      <IconButton
+                        size="small"
+                        onClick={() => setSwapFromXRP(!swapFromXRP)}
+                        sx={{
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                          '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
+                        }}
+                      >
+                        <SwapVertIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+
+                    <Box
+                      sx={{
+                        p: 1,
+                        bgcolor: alpha(theme.palette.background.paper, 0.05),
+                        borderRadius: 1,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                      }}
+                    >
+                      <Stack spacing={0.5}>
+                        <Typography
+                          variant="caption"
+                          sx={{ fontSize: '0.6rem', color: 'text.secondary' }}
+                        >
+                          You receive: {!swapFromXRP ? accountBalances.xrp : accountBalances.token}{' '}
+                          available
+                        </Typography>
+                        <Stack direction="row" alignItems="center" spacing={1}>
+                          <Box sx={{ width: 28, height: 28 }}>
+                            <img
+                              src={
+                                !swapFromXRP
+                                  ? 'https://s1.xrpl.to/token/xrp'
+                                  : `https://s1.xrpl.to/token/${activePinnedChart.token.md5}`
+                              }
+                              width={28}
+                              height={28}
+                              style={{ borderRadius: '50%' }}
+                              onError={(e) => (e.target.src = '/static/alt.webp')}
+                              alt="To"
+                            />
+                          </Box>
+                          <Typography
+                            variant="body2"
+                            sx={{ flex: 1, fontSize: '0.85rem', fontWeight: 600 }}
+                          >
+                            {(() => {
+                              if (!swapAmount || swapAmount === '0') return '0.00';
+                              const amount = new Decimal(swapAmount);
+
+                              // Use exchange rates for calculation
+                              if (tokenExchangeRate.rate1 > 0 || tokenExchangeRate.rate2 > 0) {
+                                if (swapFromXRP) {
+                                  // XRP -> Token: divide XRP by rate2 (XRP per token)
+                                  // If rate2 is 0.35 (0.35 XRP per RLUSD), then 1 XRP / 0.35 = 2.85 RLUSD
+                                  if (tokenExchangeRate.rate2 > 0) {
+                                    const result = amount.div(tokenExchangeRate.rate2).toFixed(6);
+                                    return result;
+                                  }
+                                } else {
+                                  // Token -> XRP: multiply token by rate2 (XRP per token)
+                                  // rate2 is XRP per token, so multiply token amount by rate2
+                                  // If rate2 is 0.35 (0.35 XRP per RLUSD), then 2 RLUSD * 0.35 = 0.7 XRP
+                                  if (tokenExchangeRate.rate2 > 0) {
+                                    const result = amount.mul(tokenExchangeRate.rate2).toFixed(6);
+                                    return result;
+                                  }
+                                }
+                              }
+                              return '0.00';
+                            })()}
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                            {!swapFromXRP
+                              ? 'XRP'
+                              : activePinnedChart.token.symbol || activePinnedChart.token.code}
+                          </Typography>
+                        </Stack>
+                      </Stack>
+                    </Box>
+
+                    {/* Trustline warning - show when buying token (swapFromXRP = true means we're buying the token) */}
+                    {swapFromXRP && hasTrustline === false && (
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '0.6rem',
+                          color: 'warning.main',
+                          textAlign: 'center',
+                          display: 'block',
+                          mb: 0.5
+                        }}
+                      >
+                        No trustline for{' '}
+                        {activePinnedChart.token.symbol || activePinnedChart.token.code}
+                      </Typography>
+                    )}
+
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      size="small"
+                      onClick={async () => {
+                        // Check if we need to set trustline first
+                        // swapFromXRP = true means we're buying the token (XRP -> Token)
+                        if (swapFromXRP && hasTrustline === false) {
+                          // Create trustline directly
+                          await onCreateTrustline(activePinnedChart.token);
+                        } else {
+                          // Execute swap directly
+                          await onSwap();
                         }
-                        return '0.00';
-                      })()}
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                        {!swapFromXRP ? 'XRP' : activePinnedChart.token.symbol || activePinnedChart.token.code}
-                      </Typography>
-                    </Stack>
+                      }}
+                      sx={{
+                        fontSize: '0.75rem',
+                        py: 0.75,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.main, 0.7)} 100%)`,
+                        '&:hover': {
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 1)} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`
+                        }
+                      }}
+                      disabled={!accountProfile?.account || !swapAmount || swapAmount === '0'}
+                    >
+                      {!accountProfile?.account
+                        ? 'Connect Wallet'
+                        : swapFromXRP && hasTrustline === false
+                          ? 'Set Trustline'
+                          : 'Swap Now'}
+                    </Button>
+
+                    <Typography
+                      variant="caption"
+                      sx={{ fontSize: '0.6rem', color: 'text.secondary', textAlign: 'center' }}
+                    >
+                      Rate: 1 {activePinnedChart.token.symbol || activePinnedChart.token.code} ={' '}
+                      {currentPrice?.toFixed(4)} {activePinnedChart.activeFiatCurrency}
+                    </Typography>
                   </Stack>
                 </Box>
-
-                {/* Trustline warning - show when buying token (swapFromXRP = true means we're buying the token) */}
-                {swapFromXRP && hasTrustline === false && (
-                  <Typography variant="caption" sx={{ 
-                    fontSize: '0.6rem', 
-                    color: 'warning.main',
-                    textAlign: 'center',
-                    display: 'block',
-                    mb: 0.5
-                  }}>
-                    No trustline for {activePinnedChart.token.symbol || activePinnedChart.token.code}
-                  </Typography>
-                )}
-
-                <Button
-                  fullWidth
-                  variant="contained"
-                  size="small"
-                  onClick={async () => {
-                    
-                    // Check if we need to set trustline first
-                    // swapFromXRP = true means we're buying the token (XRP -> Token)
-                    if (swapFromXRP && hasTrustline === false) {
-                      // Create trustline directly
-                      await onCreateTrustline(activePinnedChart.token);
-                    } else {
-                      // Execute swap directly
-                      await onSwap();
-                    }
-                  }}
-                  sx={{ 
-                    fontSize: '0.75rem',
-                    py: 0.75,
-                    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.main, 0.7)} 100%)`,
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 1)} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
-                    }
-                  }}
-                  disabled={!accountProfile?.account || (!swapAmount || swapAmount === '0')}
-                >
-                  {!accountProfile?.account 
-                    ? 'Connect Wallet' 
-                    : (swapFromXRP && hasTrustline === false)
-                    ? 'Set Trustline'
-                    : 'Swap Now'}
-                </Button>
-
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.secondary', textAlign: 'center' }}>
-                  Rate: 1 {activePinnedChart.token.symbol || activePinnedChart.token.code} = {currentPrice?.toFixed(4)} {activePinnedChart.activeFiatCurrency}
-                </Typography>
-              </Stack>
+              )}
             </Box>
-          )}
-        </Box>
-      </Collapse>}
-    </Paper>
+          </Collapse>
+        )}
+      </Paper>
 
-    {/* QR Dialog for xaman/xumm transactions */}
-    {openScanQR && (
-      <QRDialog
-        open={openScanQR}
-        onClose={() => setOpenScanQR(false)}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-        transactionType={transactionType}
-      />
-    )}
+      {/* QR Dialog for xaman/xumm transactions */}
+      {openScanQR && (
+        <QRDialog
+          open={openScanQR}
+          onClose={() => setOpenScanQR(false)}
+          qrUrl={qrUrl}
+          nextUrl={nextUrl}
+          transactionType={transactionType}
+        />
+      )}
     </>
   );
 });

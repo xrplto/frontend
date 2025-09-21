@@ -88,7 +88,7 @@ function NodesPage() {
     }
 
     fetchNodes();
-    
+
     // Refresh every 30 seconds
     const interval = setInterval(fetchNodes, 30000);
     return () => clearInterval(interval);
@@ -96,11 +96,11 @@ function NodesPage() {
 
   const formatRelativeTime = (dateString) => {
     if (!dateString) return 'N/A';
-    
+
     const date = new Date(dateString);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+
     if (diffInSeconds < 60) {
       return `${diffInSeconds}s ago`;
     } else if (diffInSeconds < 3600) {
@@ -126,11 +126,11 @@ function NodesPage() {
 
   const formatUptime = (seconds) => {
     if (!seconds) return 'N/A';
-    
+
     const days = Math.floor(seconds / 86400);
     const hours = Math.floor((seconds % 86400) / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (days > 0) {
       return `${days}d ${hours}h`;
     } else if (hours > 0) {
@@ -156,15 +156,16 @@ function NodesPage() {
     const date = new Date(lastSeen);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
-    
+
     // Consider online if seen within last 2 minutes
     return diffInSeconds < 120 ? 'online' : 'offline';
   };
 
-  const onlineNodes = nodes.filter(node => getNodeStatus(node.last_seen) === 'online').length;
-  const averageUptime = nodes.length > 0 
-    ? Math.floor(nodes.reduce((acc, node) => acc + (node.uptime || 0), 0) / nodes.length)
-    : 0;
+  const onlineNodes = nodes.filter((node) => getNodeStatus(node.last_seen) === 'online').length;
+  const averageUptime =
+    nodes.length > 0
+      ? Math.floor(nodes.reduce((acc, node) => acc + (node.uptime || 0), 0) / nodes.length)
+      : 0;
 
   return (
     <OverviewWrapper>
@@ -224,9 +225,9 @@ function NodesPage() {
                       <Typography variant="h4" sx={{ fontWeight: 700, color: 'success.main' }}>
                         {onlineNodes}
                       </Typography>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={(onlineNodes / nodes.length) * 100} 
+                      <LinearProgress
+                        variant="determinate"
+                        value={(onlineNodes / nodes.length) * 100}
                         sx={{ mt: 1, height: 4, borderRadius: 2 }}
                         color="success"
                       />
@@ -267,8 +268,18 @@ function NodesPage() {
                 nodes.map((node, index) => (
                   <NodeCard key={index}>
                     <CardContent>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          mb: 2
+                        }}
+                      >
+                        <Typography
+                          variant="body2"
+                          sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
+                        >
                           {truncateKey(node.public_key, 16)}
                         </Typography>
                         <StatusChip
@@ -303,7 +314,8 @@ function NodesPage() {
                             IP Address
                           </Typography>
                           <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                            {node.ip}{node.port ? `:${node.port}` : ''}
+                            {node.ip}
+                            {node.port ? `:${node.port}` : ''}
                           </Typography>
                         </Box>
                       )}
@@ -312,9 +324,7 @@ function NodesPage() {
                         <Typography variant="body2" color="text.secondary">
                           Version
                         </Typography>
-                        <Typography variant="body2">
-                          {node.version || 'N/A'}
-                        </Typography>
+                        <Typography variant="body2">{node.version || 'N/A'}</Typography>
                       </Box>
 
                       {node.complete_ledgers && (
@@ -359,7 +369,9 @@ function NodesPage() {
                           </TableCell>
                           <TableCell>
                             <StatusChip
-                              label={getNodeStatus(node.last_seen) === 'online' ? 'Online' : 'Offline'}
+                              label={
+                                getNodeStatus(node.last_seen) === 'online' ? 'Online' : 'Offline'
+                              }
                               size="small"
                               status={getNodeStatus(node.last_seen)}
                             />
@@ -370,14 +382,16 @@ function NodesPage() {
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">
-                              {formatUptime(node.uptime)}
-                            </Typography>
+                            <Typography variant="body2">{formatUptime(node.uptime)}</Typography>
                           </TableCell>
                           <TableCell>
                             {node.ip ? (
-                              <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}>
-                                {node.ip}{node.port ? `:${node.port}` : ''}
+                              <Typography
+                                variant="body2"
+                                sx={{ fontFamily: 'monospace', fontSize: '0.875rem' }}
+                              >
+                                {node.ip}
+                                {node.port ? `:${node.port}` : ''}
                               </Typography>
                             ) : (
                               <Typography variant="body2" color="text.secondary">
@@ -386,9 +400,7 @@ function NodesPage() {
                             )}
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body2">
-                              {node.version || 'N/A'}
-                            </Typography>
+                            <Typography variant="body2">{node.version || 'N/A'}</Typography>
                           </TableCell>
                           <TableCell>
                             <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>

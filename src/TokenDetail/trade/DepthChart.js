@@ -20,7 +20,11 @@ function prepareDepth(offers, isBid) {
   if (!offers || offers.length === 0) return [];
   const sorted = [...offers].sort((a, b) => (isBid ? b.price - a.price : a.price - b.price));
   // Return all available levels; do not cap
-  return sorted.map((o, i) => ({ idx: i, price: Number(o.price) || 0, value: Number(o.sumAmount) || 0 }));
+  return sorted.map((o, i) => ({
+    idx: i,
+    price: Number(o.price) || 0,
+    value: Number(o.sumAmount) || 0
+  }));
 }
 
 const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220 }) {
@@ -61,9 +65,12 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
       t += 1;
     }
     // total bid depth is last cumulative value on bids side; fall back to sum if missing
-    const bidCum = bids && bids.length
-      ? (typeof bids[bids.length - 1].sumAmount === 'number' ? bids[bids.length - 1].sumAmount : bids.reduce((s, o) => s + (Number(o.amount) || 0), 0))
-      : 0;
+    const bidCum =
+      bids && bids.length
+        ? typeof bids[bids.length - 1].sumAmount === 'number'
+          ? bids[bids.length - 1].sumAmount
+          : bids.reduce((s, o) => s + (Number(o.amount) || 0), 0)
+        : 0;
     out.totalBid = scale(bidCum);
     t += 1; // small gap between sides on x axis
     for (const p of asksDepth) {
@@ -72,9 +79,12 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
       t += 1;
     }
     // total ask depth is last cumulative value on asks side; fall back to sum if missing
-    const askCum = asks && asks.length
-      ? (typeof asks[asks.length - 1].sumAmount === 'number' ? asks[asks.length - 1].sumAmount : asks.reduce((s, o) => s + (Number(o.amount) || 0), 0))
-      : 0;
+    const askCum =
+      asks && asks.length
+        ? typeof asks[asks.length - 1].sumAmount === 'number'
+          ? asks[asks.length - 1].sumAmount
+          : asks.reduce((s, o) => s + (Number(o.amount) || 0), 0)
+        : 0;
     out.totalAsk = scale(askCum);
 
     return out;
@@ -182,7 +192,9 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
     if (!chartRef.current || !bidSeriesRef.current || !askSeriesRef.current) return;
     bidSeriesRef.current.setData(bidData);
     askSeriesRef.current.setData(askData);
-    try { chartRef.current.timeScale().fitContent(); } catch (e) {}
+    try {
+      chartRef.current.timeScale().fitContent();
+    } catch (e) {}
   }, [bidData, askData]);
 
   return (
@@ -191,29 +203,54 @@ const DepthChart = memo(function DepthChart({ asks = [], bids = [], height = 220
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: 50, fontSize: '0.65rem', color: '#999' }}
+          sx={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            height: 50,
+            fontSize: '0.65rem',
+            color: '#999'
+          }}
         >
           No orders available
         </Typography>
       ) : (
         <Box sx={{ position: 'relative' }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1 }}>
+          <Box
+            sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 1 }}
+          >
             <Typography variant="caption" color="text.secondary">
               Depth Chart {scaleNote ? `• ${scaleNote}` : ''}
             </Typography>
             <Box sx={{ textAlign: 'right' }}>
               {hoverInfo && (
-                <Typography variant="caption" sx={{ display: 'block', color: hoverInfo.side === 'bid' ? theme.palette.success.main : theme.palette.error.main }}>
-                  Px {hoverInfo.price?.toLocaleString(undefined, { maximumFractionDigits: 8 })} | Sum {hoverInfo.value?.toLocaleString()}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: 'block',
+                    color:
+                      hoverInfo.side === 'bid'
+                        ? theme.palette.success.main
+                        : theme.palette.error.main
+                  }}
+                >
+                  Px {hoverInfo.price?.toLocaleString(undefined, { maximumFractionDigits: 8 })} |
+                  Sum {hoverInfo.value?.toLocaleString()}
                 </Typography>
               )}
               {(totalBid || totalAsk) && (
                 <Typography variant="caption" sx={{ display: 'block' }}>
-                  <Box component="span" sx={{ color: alpha(theme.palette.success.main, 0.9), mr: 0.5 }}>
+                  <Box
+                    component="span"
+                    sx={{ color: alpha(theme.palette.success.main, 0.9), mr: 0.5 }}
+                  >
                     Σ Bid {Number(totalBid).toLocaleString()}
                   </Box>
                   ·
-                  <Box component="span" sx={{ color: alpha(theme.palette.error.main, 0.9), ml: 0.5 }}>
+                  <Box
+                    component="span"
+                    sx={{ color: alpha(theme.palette.error.main, 0.9), ml: 0.5 }}
+                  >
                     Σ Ask {Number(totalAsk).toLocaleString()}
                   </Box>
                 </Typography>

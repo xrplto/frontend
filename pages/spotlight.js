@@ -9,7 +9,6 @@ import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/extra';
 
-
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;
@@ -72,10 +71,10 @@ function SpotlightPage({ data }) {
           <Grid item xs={12} md={12} lg={12}>
             {data && data.tags ? (
               <>
-                <TokenList 
-                  tags={data.tags} 
-                  tokens={tokens} 
-                  tMap={tMap} 
+                <TokenList
+                  tags={data.tags}
+                  tokens={tokens}
+                  tMap={tMap}
                   setTokens={setTokens}
                   initialOrderBy="assessmentScore"
                 />

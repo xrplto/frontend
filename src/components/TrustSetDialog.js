@@ -723,11 +723,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
       <TrustDialog fullScreen={fullScreen} onClose={handleClose} open={true} sx={{ zIndex: 1302 }}>
         <TrustDialogTitle>
           <Stack direction="row" alignItems="center" spacing={1}>
-            <TokenAvatar
-              alt={`${user} ${name} Logo`}
-              src={imgUrl}
-              variant="rounded"
-            />
+            <TokenAvatar alt={`${user} ${name} Logo`} src={imgUrl} variant="rounded" />
             <Stack spacing={0}>
               <Typography
                 variant="subtitle2"
@@ -773,10 +769,7 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 >
                   {issuer.slice(0, 8)}...{issuer.slice(-6)}
                 </StyledLink>
-                <CopyToClipboard
-                  text={issuer}
-                  onCopy={() => openSnackbar('Copied!', 'success')}
-                >
+                <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
                   <CopyButton size="small" sx={{ padding: '4px' }}>
                     <ContentCopyIcon sx={{ fontSize: '14px' }} />
                   </CopyButton>

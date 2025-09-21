@@ -80,12 +80,8 @@ function FAQPage() {
 
       <div className="container">
         <div className="faq-header">
-          <h1 className="gradient-title">
-            Frequently Asked Questions
-          </h1>
-          <h2 className="subtitle">
-            Find answers to common questions about xrpl.to
-          </h2>
+          <h1 className="gradient-title">Frequently Asked Questions</h1>
+          <h2 className="subtitle">Find answers to common questions about xrpl.to</h2>
         </div>
 
         <div className="faq-list">
@@ -154,7 +150,7 @@ function FAQPage() {
 
         .subtitle {
           font-size: 1.25rem;
-          color: rgba(0,0,0,0.6);
+          color: rgba(0, 0, 0, 0.6);
           max-width: 600px;
           margin: 0 auto;
           font-weight: 400;
@@ -167,8 +163,8 @@ function FAQPage() {
 
         .accordion-item {
           margin-bottom: 16px;
-          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
-          border: 1px solid rgba(0,0,0,0.12);
+          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
+          border: 1px solid rgba(0, 0, 0, 0.12);
           border-radius: 8px;
           overflow: hidden;
         }
@@ -187,13 +183,13 @@ function FAQPage() {
         }
 
         .accordion-header:hover {
-          background-color: rgba(33,150,243,0.06);
+          background-color: rgba(33, 150, 243, 0.06);
         }
 
         .question-text {
           font-size: 1.125rem;
           font-weight: 600;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
           padding-right: 16px;
           flex: 1;
         }
@@ -223,30 +219,30 @@ function FAQPage() {
           margin: 0;
           line-height: 1.7;
           font-size: 1.05rem;
-          color: rgba(0,0,0,0.6);
+          color: rgba(0, 0, 0, 0.6);
         }
 
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
           .subtitle {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
           }
 
           .accordion-item {
-            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
-            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.12);
           }
 
           .accordion-header:hover {
-            background-color: rgba(33,150,243,0.12);
+            background-color: rgba(33, 150, 243, 0.12);
           }
 
           .question-text {
-            color: rgba(255,255,255,0.87);
+            color: rgba(255, 255, 255, 0.87);
           }
 
           .answer-text {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
           }
         }
       `}</style>

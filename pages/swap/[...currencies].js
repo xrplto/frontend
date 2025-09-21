@@ -29,8 +29,6 @@ import ScrollToTop from 'src/components/ScrollToTop';
 
 // Removed Material UI styled component - using Tailwind classes directly
 
-
-
 const DEFAULT_PAIR = {
   curr1: XRP_TOKEN,
   curr2: USD_TOKEN
@@ -141,9 +139,7 @@ function Overview({ data }) {
 
       <div className="max-w-7xl mx-auto py-2 sm:py-3 md:py-4 px-4">
         <div className="flex flex-col items-center justify-center gap-3 min-h-[calc(100vh-180px)] pt-1 sm:pt-0">
-          <h1 className="text-3xl sm:text-4xl font-medium text-foreground mb-1">
-            Swap
-          </h1>
+          <h1 className="text-3xl sm:text-4xl font-medium text-foreground mb-1">Swap</h1>
           <div className="w-full max-w-[800px]">
             <Swap pair={pair} setPair={setPair} revert={revert} setRevert={setRevert} />
           </div>
@@ -221,9 +217,7 @@ export async function getStaticProps({ params }) {
     // Fetch both tokens and metrics data
     const [tokensResponse, metricsResponse] = await Promise.all([
       axios.get(`${BASE_URL}/tokens?limit=100&offset=0`),
-      axios.get(
-        `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
-      )
+      axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`)
     ]);
 
     if (tokensResponse.status === 200) {

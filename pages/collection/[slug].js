@@ -65,8 +65,8 @@ export default function Overview({ collection }) {
   const bannerImage = collection.collection.logoImage
     ? `https://s1.xrpnft.com/collection/${collection.collection.logoImage}`
     : darkMode
-    ? '/static/banner_black.png'
-    : '/static/banner_white.png'; //added default banner. Disable custom banner images above for now.
+      ? '/static/banner_black.png'
+      : '/static/banner_white.png'; //added default banner. Disable custom banner images above for now.
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
@@ -92,16 +92,13 @@ export default function Overview({ collection }) {
 
 export async function getServerSideProps(ctx) {
   const BASE_URL = 'https://api.xrpnft.com/api';
-  
+
   // Set cache headers for better performance
-  ctx.res.setHeader(
-    'Cache-Control',
-    'public, s-maxage=60, stale-while-revalidate=120'
-  );
+  ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
 
   let data = null;
   let initialNfts = null;
-  
+
   try {
     const slug = ctx.params.slug;
     const t1 = performance.now();
@@ -112,25 +109,31 @@ export async function getServerSideProps(ctx) {
         timeout: 5000,
         headers: {
           'Accept-Encoding': 'gzip, deflate',
-          'Accept': 'application/json'
+          Accept: 'application/json'
         }
       }),
-      axios.post(`${BASE_URL}/nfts`, {
-        page: 0,
-        limit: 24,
-        flag: 0,
-        cid: null,
-        search: '',
-        filter: 0,
-        subFilter: 'default',
-        filterAttrs: []
-      }, {
-        timeout: 5000,
-        headers: {
-          'Accept-Encoding': 'gzip, deflate',
-          'Accept': 'application/json'
-        }
-      }).catch(() => null) // Don't fail if NFTs can't be loaded
+      axios
+        .post(
+          `${BASE_URL}/nfts`,
+          {
+            page: 0,
+            limit: 24,
+            flag: 0,
+            cid: null,
+            search: '',
+            filter: 0,
+            subFilter: 'default',
+            filterAttrs: []
+          },
+          {
+            timeout: 5000,
+            headers: {
+              'Accept-Encoding': 'gzip, deflate',
+              Accept: 'application/json'
+            }
+          }
+        )
+        .catch(() => null) // Don't fail if NFTs can't be loaded
     ]);
 
     data = collectionRes.data;
@@ -139,15 +142,17 @@ export async function getServerSideProps(ctx) {
     const t2 = performance.now();
     const dt = (t2 - t1).toFixed(2);
     console.log(`SSR: Collection ${slug} loaded in ${dt}ms with ${initialNfts.length} NFTs`);
-    
   } catch (error) {
     console.error('SSR Error:', error.message);
-    
+
     // Try fallback API if primary fails
     try {
-      const res = await axios.get(`http://65.109.54.46/api/collection/getextra/${ctx.params.slug}`, {
-        timeout: 3000
-      });
+      const res = await axios.get(
+        `http://65.109.54.46/api/collection/getextra/${ctx.params.slug}`,
+        {
+          timeout: 3000
+        }
+      );
       data = res.data;
     } catch (fallbackError) {
       console.error('Fallback API also failed:', fallbackError.message);
@@ -163,8 +168,12 @@ export async function getServerSideProps(ctx) {
       canonical: `https://xrpnft.com/collection/${slug}`,
       title: `${name} | XRPL NFT Collection`,
       url: `https://xrpnft.com/collection/${slug}`,
-      imgUrl: logoImage ? `https://s1.xrpnft.com/collection/${logoImage}` : '/logo/xrpl-to-logo-black.svg',
-      desc: description || `Explore ${name} on XRPL's largest NFT marketplace. Buy, sell, and trade unique digital assets.`,
+      imgUrl: logoImage
+        ? `https://s1.xrpnft.com/collection/${logoImage}`
+        : '/logo/xrpl-to-logo-black.svg',
+      desc:
+        description ||
+        `Explore ${name} on XRPL's largest NFT marketplace. Buy, sell, and trade unique digital assets.`,
       type: 'website',
       siteName: 'XRPL.to',
       locale: 'en_US'
@@ -176,8 +185,8 @@ export async function getServerSideProps(ctx) {
     }
 
     return {
-      props: { 
-        collection: data, 
+      props: {
+        collection: data,
         ogp,
         timestamp: Date.now() // For cache validation
       }

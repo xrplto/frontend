@@ -4,18 +4,19 @@ import { AppContext } from 'src/AppContext';
 
 const StyledTableHead = styled.thead`
   position: sticky;
-  top: ${props => props.scrollTopLength || 0}px;
+  top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 10;
   background: transparent;
-  
+
   &::after {
-    content: "";
+    content: '';
     position: absolute;
     left: 0;
     right: 0;
     bottom: 0;
     height: 1px;
-    background: ${props => props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
+    background: ${(props) =>
+      props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
   }
 `;
 
@@ -24,25 +25,29 @@ const StyledTableCell = styled.th`
   font-size: 0.75rem;
   letter-spacing: 0.5px;
   text-transform: uppercase;
-  color: ${props => props.darkMode ? '#999' : '#666'};
-  padding: ${props => props.isMobile ? '16px 8px' : '16px 12px'};  // Match mobile cell padding
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  white-space: ${props => props.isTokenColumn ? 'normal' : 'nowrap'};
-  text-align: ${props => props.align || 'left'};
-  width: ${props => props.width || 'auto'};
-  min-width: ${props => props.isTokenColumn ? '250px' : props.width || 'auto'};
+  color: ${(props) => (props.darkMode ? '#999' : '#666')};
+  padding: ${(props) => (props.isMobile ? '16px 8px' : '16px 12px')}; // Match mobile cell padding
+  border-bottom: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
+  text-align: ${(props) => props.align || 'left'};
+  width: ${(props) => props.width || 'auto'};
+  min-width: ${(props) => (props.isTokenColumn ? '250px' : props.width || 'auto')};
   box-sizing: border-box;
-  cursor: ${props => props.sortable ? 'pointer' : 'default'};
-  position: ${props => props.sticky ? 'sticky' : 'relative'};
-  left: ${props => props.left || 'unset'};
-  z-index: ${props => props.sticky ? 11 : 'auto'};
-  background: ${props => props.sticky ? (props.darkMode ? '#121212' : '#fff') : 'transparent'};
-  
+  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
+  position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
+  left: ${(props) => props.left || 'unset'};
+  z-index: ${(props) => (props.sticky ? 11 : 'auto')};
+  background: ${(props) => (props.sticky ? (props.darkMode ? '#121212' : '#fff') : 'transparent')};
+
   &:hover {
-    color: ${props => props.sortable ? (props.darkMode ? '#fff' : '#000') : 'inherit'};
+    color: ${(props) => (props.sortable ? (props.darkMode ? '#fff' : '#000') : 'inherit')};
   }
-  
-  ${props => props.scrollLeft && props.stickyThird && `
+
+  ${(props) =>
+    props.scrollLeft &&
+    props.stickyThird &&
+    `
     &::after {
       content: "";
       position: absolute;
@@ -60,9 +65,9 @@ const SortIndicator = styled.span`
   display: inline-block;
   margin-left: 4px;
   font-size: 0.65rem;
-  color: ${props => props.active ? '#2196f3' : (props.darkMode ? '#666' : '#999')};
+  color: ${(props) => (props.active ? '#2196f3' : props.darkMode ? '#666' : '#999')};
   transition: transform 0.2s;
-  transform: ${props => props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
 `;
 
 const MOBILE_TABLE_HEAD = [
@@ -70,7 +75,7 @@ const MOBILE_TABLE_HEAD = [
     id: 'token',
     label: 'TOKEN',
     align: 'left',
-    width: '60%',  // Match the row width
+    width: '60%', // Match the row width
     order: true,
     sticky: false,
     mobileHide: false
@@ -79,7 +84,7 @@ const MOBILE_TABLE_HEAD = [
     id: 'exch',
     label: 'PRICE',
     align: 'right',
-    width: '20%',  // Match the row width
+    width: '20%', // Match the row width
     order: true,
     sticky: false,
     mobileHide: false
@@ -88,7 +93,7 @@ const MOBILE_TABLE_HEAD = [
     id: 'pro24h',
     label: '24H %',
     align: 'right',
-    width: '20%',  // Match the row width
+    width: '20%', // Match the row width
     order: true,
     sticky: false,
     mobileHide: false,
@@ -97,11 +102,11 @@ const MOBILE_TABLE_HEAD = [
 ];
 
 const DESKTOP_TABLE_HEAD = [
-  { 
-    id: 'star', 
-    label: '', 
-    align: 'center', 
-    width: '40px', 
+  {
+    id: 'star',
+    label: '',
+    align: 'center',
+    width: '40px',
     order: false,
     sticky: false,
     mobileHide: true
@@ -253,18 +258,18 @@ const DESKTOP_TABLE_HEAD = [
     sticky: false,
     mobileHide: true,
     style: { paddingLeft: '16px' }
-  },
+  }
 ];
 
 const Tooltip = styled.div`
   position: relative;
   display: inline-block;
-  
+
   &:hover .tooltip-content {
     visibility: visible;
     opacity: 1;
   }
-  
+
   .tooltip-content {
     visibility: hidden;
     opacity: 0;
@@ -281,9 +286,9 @@ const Tooltip = styled.div`
     z-index: 9999;
     transition: opacity 0.3s;
     pointer-events: none;
-    
+
     &:after {
-      content: "";
+      content: '';
       position: absolute;
       top: 100%;
       left: 50%;
@@ -315,41 +320,44 @@ const TokenListHead = memo(function TokenListHead({
     [onRequestSort]
   );
 
-  const getStickyLeft = useMemo(() => (id) => {
-    return 'unset'; // No sticky columns anymore
-  }, []);
+  const getStickyLeft = useMemo(
+    () => (id) => {
+      return 'unset'; // No sticky columns anymore
+    },
+    []
+  );
 
   // Get appropriate table headers based on view mode
   const getTableHeaders = () => {
     if (isMobile) {
       // Mobile column abbreviation map - matches all available options
       const mobileLabels = {
-        'price': 'PRICE',
-        'volume24h': 'VOL',
-        'volume7d': 'V7D',
-        'marketCap': 'MCAP',
-        'tvl': 'TVL',
-        'holders': 'HLDR',
-        'trades': 'TRDS',
-        'supply': 'SUPP',
-        'created': 'AGE',
-        'origin': 'ORIG',
-        'pro5m': '5M%',
-        'pro1h': '1H%',
-        'pro24h': '24H%',
-        'pro7d': '7D%',
-        'pro30d': '30D%'
+        price: 'PRICE',
+        volume24h: 'VOL',
+        volume7d: 'V7D',
+        marketCap: 'MCAP',
+        tvl: 'TVL',
+        holders: 'HLDR',
+        trades: 'TRDS',
+        supply: 'SUPP',
+        created: 'AGE',
+        origin: 'ORIG',
+        pro5m: '5M%',
+        pro1h: '1H%',
+        pro24h: '24H%',
+        pro7d: '7D%',
+        pro30d: '30D%'
       };
 
       // Always use customColumns when available, regardless of viewMode
       let mobileCol1 = 'price';
       let mobileCol2 = 'pro24h';
-      
+
       if (customColumns && customColumns.length >= 2) {
         mobileCol1 = customColumns[0];
         mobileCol2 = customColumns[1];
       }
-      
+
       const mobileHeaders = [
         {
           id: 'token',
@@ -379,14 +387,38 @@ const TokenListHead = memo(function TokenListHead({
           mobileHide: false
         }
       ];
-      
+
       return mobileHeaders;
     }
-    
+
     const baseHeaders = [
-      { id: 'star', label: '', align: 'center', width: '40px', order: false, sticky: false, mobileHide: true },
-      { id: 'rank', label: '#', align: 'center', width: '40px', order: false, sticky: false, mobileHide: true },
-      { id: 'token', label: 'TOKEN', align: 'left', width: '250px', order: true, sticky: false, mobileHide: false }
+      {
+        id: 'star',
+        label: '',
+        align: 'center',
+        width: '40px',
+        order: false,
+        sticky: false,
+        mobileHide: true
+      },
+      {
+        id: 'rank',
+        label: '#',
+        align: 'center',
+        width: '40px',
+        order: false,
+        sticky: false,
+        mobileHide: true
+      },
+      {
+        id: 'token',
+        label: 'TOKEN',
+        align: 'left',
+        width: '250px',
+        order: true,
+        sticky: false,
+        mobileHide: false
+      }
     ];
 
     switch (viewMode) {
@@ -394,12 +426,54 @@ const TokenListHead = memo(function TokenListHead({
         return [
           ...baseHeaders,
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
-          { id: 'pro1h', label: '1H %', align: 'right', width: '8%', order: true, tooltip: '1 hour change' },
-          { id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' },
-          { id: 'pro7d', label: '7D %', align: 'right', width: '8%', order: true, tooltip: '7 day change' },
-          { id: 'pro30d', label: '30D %', align: 'right', width: '8%', order: true, tooltip: '30 day estimate' },
-          { id: 'vol24hxrp', label: 'VOL 24H', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
-          { id: 'vol7d', label: 'VOL 7D', align: 'right', width: '10%', order: true, tooltip: '7d volume estimate' },
+          {
+            id: 'pro1h',
+            label: '1H %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '1 hour change'
+          },
+          {
+            id: 'pro24h',
+            label: '24H %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '24 hour change'
+          },
+          {
+            id: 'pro7d',
+            label: '7D %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '7 day change'
+          },
+          {
+            id: 'pro30d',
+            label: '30D %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '30 day estimate'
+          },
+          {
+            id: 'vol24hxrp',
+            label: 'VOL 24H',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: '24h volume'
+          },
+          {
+            id: 'vol7d',
+            label: 'VOL 7D',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: '7d volume estimate'
+          },
           { id: 'historyGraph', label: 'SPARKLINE', align: 'center', width: '15%', order: false }
         ];
 
@@ -407,23 +481,100 @@ const TokenListHead = memo(function TokenListHead({
         return [
           ...baseHeaders,
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
-          { id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '12%', order: true, tooltip: 'Market capitalization' },
-          { id: 'vol24hxrp', label: 'VOLUME', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
-          { id: 'tvl', label: 'TVL', align: 'right', width: '10%', order: true, tooltip: 'Total Value Locked' },
-          { id: 'holders', label: 'HOLDERS', align: 'right', width: '10%', order: true, tooltip: 'Number of holders' },
-          { id: 'supply', label: 'SUPPLY', align: 'right', width: '10%', order: true, tooltip: 'Total supply' },
-          { id: 'origin', label: 'ORIGIN', align: 'right', width: '10%', order: true, tooltip: 'Token origin' }
+          {
+            id: 'marketcap',
+            label: 'MARKET CAP',
+            align: 'right',
+            width: '12%',
+            order: true,
+            tooltip: 'Market capitalization'
+          },
+          {
+            id: 'vol24hxrp',
+            label: 'VOLUME',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: '24h volume'
+          },
+          {
+            id: 'tvl',
+            label: 'TVL',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: 'Total Value Locked'
+          },
+          {
+            id: 'holders',
+            label: 'HOLDERS',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: 'Number of holders'
+          },
+          {
+            id: 'supply',
+            label: 'SUPPLY',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: 'Total supply'
+          },
+          {
+            id: 'origin',
+            label: 'ORIGIN',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: 'Token origin'
+          }
         ];
 
       case 'topGainers':
         return [
           ...baseHeaders,
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
-          { id: 'pro5m', label: '5M %', align: 'right', width: '8%', order: true, tooltip: '5 minute change' },
-          { id: 'pro1h', label: '1H %', align: 'right', width: '8%', order: true, tooltip: '1 hour change' },
-          { id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' },
-          { id: 'pro7d', label: '7D %', align: 'right', width: '8%', order: true, tooltip: '7 day change' },
-          { id: 'vol24hxrp', label: 'VOLUME', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
+          {
+            id: 'pro5m',
+            label: '5M %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '5 minute change'
+          },
+          {
+            id: 'pro1h',
+            label: '1H %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '1 hour change'
+          },
+          {
+            id: 'pro24h',
+            label: '24H %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '24 hour change'
+          },
+          {
+            id: 'pro7d',
+            label: '7D %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '7 day change'
+          },
+          {
+            id: 'vol24hxrp',
+            label: 'VOLUME',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: '24h volume'
+          },
           { id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false }
         ];
 
@@ -431,87 +582,273 @@ const TokenListHead = memo(function TokenListHead({
         return [
           ...baseHeaders,
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
-          { id: 'vol24htx', label: 'TRADES', align: 'right', width: '10%', order: true, tooltip: '24h trade count' },
-          { id: 'vol24hxrp', label: 'VOLUME', align: 'right', width: '10%', order: true, tooltip: '24h volume' },
-          { id: 'pro24h', label: '24H %', align: 'right', width: '8%', order: true, tooltip: '24 hour change' },
-          { id: 'tvl', label: 'TVL', align: 'right', width: '10%', order: true, tooltip: 'Total Value Locked' },
-          { id: 'dateon', label: 'CREATED', align: 'right', width: '10%', order: true, tooltip: 'Token creation date' },
+          {
+            id: 'vol24htx',
+            label: 'TRADES',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: '24h trade count'
+          },
+          {
+            id: 'vol24hxrp',
+            label: 'VOLUME',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: '24h volume'
+          },
+          {
+            id: 'pro24h',
+            label: '24H %',
+            align: 'right',
+            width: '8%',
+            order: true,
+            tooltip: '24 hour change'
+          },
+          {
+            id: 'tvl',
+            label: 'TVL',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: 'Total Value Locked'
+          },
+          {
+            id: 'dateon',
+            label: 'CREATED',
+            align: 'right',
+            width: '10%',
+            order: true,
+            tooltip: 'Token creation date'
+          },
           { id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false }
         ];
 
       case 'custom':
         const customHeaders = [
-          { id: 'star', label: '', align: 'center', width: '40px', order: false, sticky: false, mobileHide: true },
-          { id: 'rank', label: '#', align: 'center', width: '40px', order: false, sticky: false, mobileHide: true },
-          { id: 'token', label: 'TOKEN', align: 'left', width: '250px', order: true, sticky: false, mobileHide: false }
+          {
+            id: 'star',
+            label: '',
+            align: 'center',
+            width: '40px',
+            order: false,
+            sticky: false,
+            mobileHide: true
+          },
+          {
+            id: 'rank',
+            label: '#',
+            align: 'center',
+            width: '40px',
+            order: false,
+            sticky: false,
+            mobileHide: true
+          },
+          {
+            id: 'token',
+            label: 'TOKEN',
+            align: 'left',
+            width: '250px',
+            order: true,
+            sticky: false,
+            mobileHide: false
+          }
         ];
-        
+
         // Use default columns if customColumns is empty or undefined
-        const columnsToUse = customColumns && customColumns.length > 0 
-          ? customColumns 
-          : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
-        
+        const columnsToUse =
+          customColumns && customColumns.length > 0
+            ? customColumns
+            : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'];
+
         // Track if this is the last column being added
         let columnIndex = 0;
         const totalColumns = columnsToUse.length;
-        
+
         // Add headers based on selected columns with fixed pixel widths
         columnsToUse.forEach((column, idx) => {
           const isLastColumn = idx === totalColumns - 1;
           const extraStyle = isLastColumn && column !== 'sparkline' ? { paddingRight: '24px' } : {};
-          
-          switch(column) {
+
+          switch (column) {
             case 'price':
-              customHeaders.push({ id: 'exch', label: 'PRICE', align: 'right', width: '120px', order: true, style: extraStyle });
+              customHeaders.push({
+                id: 'exch',
+                label: 'PRICE',
+                align: 'right',
+                width: '120px',
+                order: true,
+                style: extraStyle
+              });
               break;
             case 'pro5m':
-              customHeaders.push({ id: 'pro5m', label: '5M %', align: 'right', width: '90px', order: true, tooltip: '5 minute change', style: extraStyle });
+              customHeaders.push({
+                id: 'pro5m',
+                label: '5M %',
+                align: 'right',
+                width: '90px',
+                order: true,
+                tooltip: '5 minute change',
+                style: extraStyle
+              });
               break;
             case 'pro1h':
-              customHeaders.push({ id: 'pro1h', label: '1H %', align: 'right', width: '90px', order: true, tooltip: '1 hour change', style: extraStyle });
+              customHeaders.push({
+                id: 'pro1h',
+                label: '1H %',
+                align: 'right',
+                width: '90px',
+                order: true,
+                tooltip: '1 hour change',
+                style: extraStyle
+              });
               break;
             case 'pro24h':
-              customHeaders.push({ id: 'pro24h', label: '24H %', align: 'right', width: '90px', order: true, tooltip: '24 hour change', style: extraStyle });
+              customHeaders.push({
+                id: 'pro24h',
+                label: '24H %',
+                align: 'right',
+                width: '90px',
+                order: true,
+                tooltip: '24 hour change',
+                style: extraStyle
+              });
               break;
             case 'pro7d':
-              customHeaders.push({ id: 'pro7d', label: '7D %', align: 'right', width: '90px', order: true, tooltip: '7 day change', style: extraStyle });
+              customHeaders.push({
+                id: 'pro7d',
+                label: '7D %',
+                align: 'right',
+                width: '90px',
+                order: true,
+                tooltip: '7 day change',
+                style: extraStyle
+              });
               break;
             case 'pro30d':
-              customHeaders.push({ id: 'pro30d', label: '30D %', align: 'right', width: '90px', order: true, tooltip: '30 day estimate', style: extraStyle });
+              customHeaders.push({
+                id: 'pro30d',
+                label: '30D %',
+                align: 'right',
+                width: '90px',
+                order: true,
+                tooltip: '30 day estimate',
+                style: extraStyle
+              });
               break;
             case 'volume24h':
-              customHeaders.push({ id: 'vol24hxrp', label: 'VOLUME 24H', align: 'right', width: '130px', order: true, tooltip: '24h volume', style: extraStyle });
+              customHeaders.push({
+                id: 'vol24hxrp',
+                label: 'VOLUME 24H',
+                align: 'right',
+                width: '130px',
+                order: true,
+                tooltip: '24h volume',
+                style: extraStyle
+              });
               break;
             case 'volume7d':
-              customHeaders.push({ id: 'vol7d', label: 'VOLUME 7D', align: 'right', width: '130px', order: true, tooltip: '7d volume estimate', style: extraStyle });
+              customHeaders.push({
+                id: 'vol7d',
+                label: 'VOLUME 7D',
+                align: 'right',
+                width: '130px',
+                order: true,
+                tooltip: '7d volume estimate',
+                style: extraStyle
+              });
               break;
             case 'marketCap':
-              customHeaders.push({ id: 'marketcap', label: 'MARKET CAP', align: 'right', width: '140px', order: true, tooltip: 'Market capitalization', style: extraStyle });
+              customHeaders.push({
+                id: 'marketcap',
+                label: 'MARKET CAP',
+                align: 'right',
+                width: '140px',
+                order: true,
+                tooltip: 'Market capitalization',
+                style: extraStyle
+              });
               break;
             case 'tvl':
-              customHeaders.push({ id: 'tvl', label: 'TVL', align: 'right', width: '120px', order: true, tooltip: 'Total Value Locked', style: extraStyle });
+              customHeaders.push({
+                id: 'tvl',
+                label: 'TVL',
+                align: 'right',
+                width: '120px',
+                order: true,
+                tooltip: 'Total Value Locked',
+                style: extraStyle
+              });
               break;
             case 'holders':
-              customHeaders.push({ id: 'holders', label: 'HOLDERS', align: 'right', width: '100px', order: true, tooltip: 'Number of holders', style: extraStyle });
+              customHeaders.push({
+                id: 'holders',
+                label: 'HOLDERS',
+                align: 'right',
+                width: '100px',
+                order: true,
+                tooltip: 'Number of holders',
+                style: extraStyle
+              });
               break;
             case 'trades':
-              customHeaders.push({ id: 'vol24htx', label: 'TRADES', align: 'right', width: '100px', order: true, tooltip: '24h trade count', style: extraStyle });
+              customHeaders.push({
+                id: 'vol24htx',
+                label: 'TRADES',
+                align: 'right',
+                width: '100px',
+                order: true,
+                tooltip: '24h trade count',
+                style: extraStyle
+              });
               break;
             case 'created':
-              customHeaders.push({ id: 'dateon', label: 'CREATED', align: 'right', width: '100px', order: true, tooltip: 'Token creation date', style: extraStyle });
+              customHeaders.push({
+                id: 'dateon',
+                label: 'CREATED',
+                align: 'right',
+                width: '100px',
+                order: true,
+                tooltip: 'Token creation date',
+                style: extraStyle
+              });
               break;
             case 'supply':
-              customHeaders.push({ id: 'supply', label: 'SUPPLY', align: 'right', width: '120px', order: true, tooltip: 'Total supply', style: extraStyle });
+              customHeaders.push({
+                id: 'supply',
+                label: 'SUPPLY',
+                align: 'right',
+                width: '120px',
+                order: true,
+                tooltip: 'Total supply',
+                style: extraStyle
+              });
               break;
             case 'origin':
-              customHeaders.push({ id: 'origin', label: 'ORIGIN', align: 'right', width: '90px', order: true, tooltip: 'Token origin', style: extraStyle });
+              customHeaders.push({
+                id: 'origin',
+                label: 'ORIGIN',
+                align: 'right',
+                width: '90px',
+                order: true,
+                tooltip: 'Token origin',
+                style: extraStyle
+              });
               break;
             case 'sparkline':
-              customHeaders.push({ id: 'historyGraph', label: 'LAST 24H', align: 'right', width: '15%', order: false, style: { paddingLeft: '16px' } });
+              customHeaders.push({
+                id: 'historyGraph',
+                label: 'LAST 24H',
+                align: 'right',
+                width: '15%',
+                order: false,
+                style: { paddingLeft: '16px' }
+              });
               break;
           }
         });
-        
+
         return customHeaders;
 
       case 'classic':
@@ -521,9 +858,9 @@ const TokenListHead = memo(function TokenListHead({
   };
 
   const TABLE_HEAD = getTableHeaders();
-  
+
   // Filter out star column if user is not logged in
-  const filteredTableHead = TABLE_HEAD.filter(headCell => {
+  const filteredTableHead = TABLE_HEAD.filter((headCell) => {
     if (headCell.id === 'star' && !isLoggedIn) return false;
     return true;
   });
@@ -533,7 +870,7 @@ const TokenListHead = memo(function TokenListHead({
       <tr>
         {filteredTableHead.map((headCell) => {
           const isSticky = headCell.sticky && (!isMobile || !headCell.mobileHide);
-          
+
           return (
             <StyledTableCell
               key={headCell.id}
@@ -556,11 +893,7 @@ const TokenListHead = memo(function TokenListHead({
                     <span>
                       {headCell.label}
                       {orderBy === headCell.id && (
-                        <SortIndicator 
-                          active={true} 
-                          direction={order} 
-                          darkMode={darkMode}
-                        >
+                        <SortIndicator active={true} direction={order} darkMode={darkMode}>
                           ▼
                         </SortIndicator>
                       )}
@@ -571,11 +904,7 @@ const TokenListHead = memo(function TokenListHead({
                   <span>
                     {headCell.label}
                     {orderBy === headCell.id && (
-                      <SortIndicator 
-                        active={true} 
-                        direction={order} 
-                        darkMode={darkMode}
-                      >
+                      <SortIndicator active={true} direction={order} darkMode={darkMode}>
                         ▼
                       </SortIndicator>
                     )}

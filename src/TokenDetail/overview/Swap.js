@@ -139,7 +139,11 @@ const ToggleContent = styled('div')(
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%);
+    background: linear-gradient(
+      135deg,
+      ${alpha(theme.palette.background.paper, 0.9)} 0%,
+      ${alpha(theme.palette.background.paper, 0.8)} 100%
+    );
     backdrop-filter: blur(20px);
     border-radius: 50%;
     padding: 8px;
@@ -149,8 +153,12 @@ const ToggleContent = styled('div')(
 
     &:hover {
       transform: translate(-50%, -50%) scale(1.1);
-      background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%);
-      
+      background: linear-gradient(
+        135deg,
+        ${alpha(theme.palette.primary.main, 0.2)} 0%,
+        ${alpha(theme.palette.primary.main, 0.1)} 100%
+      );
+
       svg {
         color: ${theme.palette.primary.main} !important;
       }
@@ -266,8 +274,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
-  
-
   // Add trustline states
   const [trustlines, setTrustlines] = useState([]);
   const [hasTrustline1, setHasTrustline1] = useState(true);
@@ -280,7 +286,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [limitPrice, setLimitPrice] = useState('');
   const [orderExpiry, setOrderExpiry] = useState('never');
   const [expiryHours, setExpiryHours] = useState(24);
-  
+
   // Add state for orderbook visibility
   const [showOrderbook, setShowOrderbook] = useState(false); // used only when not integrated
   const [showOrders, setShowOrders] = useState(false);
@@ -372,11 +378,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const outputPrice = revert ? tokenPrice1 : tokenPrice2;
   const priceImpact =
     inputPrice > 0
-      ? new Decimal(outputPrice)
-          .sub(inputPrice)
-          .mul(100)
-          .div(inputPrice)
-          .toFixed(2)
+      ? new Decimal(outputPrice).sub(inputPrice).mul(100).div(inputPrice).toFixed(2)
       : 0;
 
   // Helper function to convert hex currency code to readable name
@@ -435,7 +437,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         if (amount1 && amount2) {
           const fAmount1 = new Decimal(amount1 || 0).toNumber();
           const fAmount2 = new Decimal(amount2 || 0).toNumber();
-          
+
           if (fAmount1 > 0 && fAmount2 > 0) {
             // Always check against amount1 for curr1 balance (top field)
             // The user is always selling what's in the top field (amount1)
@@ -554,7 +556,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     onOrderBookData(data);
   }, [onOrderBookData, curr1, curr2, asks, bids, orderType, limitPrice, revert]);
 
-  const isPanelOpen = (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
+  const isPanelOpen =
+    (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
 
   // Derived pricing for Limit UI helpers
   const { bestBid, bestAsk, midPrice, spreadPct } = useMemo(() => {
@@ -594,7 +597,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       if (typeof window === 'undefined') return 0;
       const w = window.innerWidth || 0;
       // Match TransactionDetailsPanel (orderbook mode) widths
-      const { md = 900, lg = 1200, xl = 1536 } = (theme.breakpoints && theme.breakpoints.values) || {};
+      const {
+        md = 900,
+        lg = 1200,
+        xl = 1536
+      } = (theme.breakpoints && theme.breakpoints.values) || {};
       if (w >= xl) return 360;
       if (w >= lg) return 320;
       if (w >= md) return 280;
@@ -989,13 +996,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         };
 
         let TakerGets, TakerPays;
-        
+
         // Recalculate amount2 based on limit price for limit orders
         let limitAmount2 = amount2;
         if (limitPrice && amount1) {
           const limitPriceDecimal = new Decimal(limitPrice);
           const amount1Decimal = new Decimal(amount1);
-          
+
           // Price is always curr2/curr1 (e.g., RLUSD per XRP)
           // So amount2 = amount1 * price
           limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
@@ -1045,12 +1052,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           SourceTag: 20221212,
           Memos: configureMemos('', '', 'Limit Order via XPmarket.com')
         };
-        
+
         // Add expiration if specified
         if (orderExpiry !== 'never') {
           const RIPPLE_EPOCH = 946684800; // Jan 1, 2000 00:00 UTC
           const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
-          const expiration = now + (expiryHours * 60 * 60);
+          const expiration = now + expiryHours * 60 * 60;
           transactionData.Expiration = expiration;
         }
       } else {
@@ -1065,43 +1072,43 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         let Amount, SendMax, DeliverMin, DeliverMax;
 
-      // SendMax is what we're willing to send (curr1)
-      SendMax = {
-        currency: curr1.currency,
-        issuer: curr1.issuer,
-        value: amount1.toString()
-      };
-      
-      // Amount is what we want to receive (curr2)
-      Amount = {
-        currency: curr2.currency,
-        issuer: curr2.issuer,
-        value: amount2.toString()
-      };
-
-      // Convert XRP amounts to drops
-      if (SendMax.currency === 'XRP') {
-        SendMax = new Decimal(SendMax.value).mul(1000000).toString();
-      }
-      if (Amount.currency === 'XRP') {
-        Amount = new Decimal(Amount.value).mul(1000000).toString();
-        DeliverMax = Amount; // For XRP, DeliverMax equals Amount
-      }
-
-      // Calculate slippage amounts
-      const slippageDecimal = new Decimal(slippage).div(100);
-
-      // DeliverMin is Amount minus slippage tolerance
-      if (typeof Amount === 'object') {
-        DeliverMin = {
-          currency: Amount.currency,
-          issuer: Amount.issuer,
-          value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+        // SendMax is what we're willing to send (curr1)
+        SendMax = {
+          currency: curr1.currency,
+          issuer: curr1.issuer,
+          value: amount1.toString()
         };
-      } else {
-        // For XRP amounts (strings)
-        DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0);
-      }
+
+        // Amount is what we want to receive (curr2)
+        Amount = {
+          currency: curr2.currency,
+          issuer: curr2.issuer,
+          value: amount2.toString()
+        };
+
+        // Convert XRP amounts to drops
+        if (SendMax.currency === 'XRP') {
+          SendMax = new Decimal(SendMax.value).mul(1000000).toString();
+        }
+        if (Amount.currency === 'XRP') {
+          Amount = new Decimal(Amount.value).mul(1000000).toString();
+          DeliverMax = Amount; // For XRP, DeliverMax equals Amount
+        }
+
+        // Calculate slippage amounts
+        const slippageDecimal = new Decimal(slippage).div(100);
+
+        // DeliverMin is Amount minus slippage tolerance
+        if (typeof Amount === 'object') {
+          DeliverMin = {
+            currency: Amount.currency,
+            issuer: Amount.issuer,
+            value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
+          };
+        } else {
+          // For XRP amounts (strings)
+          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0);
+        }
 
         transactionData = {
           Fee: '12',
@@ -1127,7 +1134,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             user_token
           };
 
-          const endpoint = orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
+          const endpoint =
+            orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
           const res = await axios.post(endpoint, body);
 
           if (res.status === 200) {
@@ -1253,12 +1261,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         // When token1=XRP, token2=Token: rate1=1, rate2=Token-to-XRP rate
         // When token1=Token, token2=XRP: rate1=Token-to-XRP rate, rate2=1
-        
+
         if (token1IsXRP && !token2IsXRP) {
           // Original order: XRP/Token
           // rate2 is the Token-to-XRP rate (e.g., 0.311)
           const tokenToXrpRate = rate2.toNumber();
-          
+
           if (!revert) {
             // Normal display: XRP at top, Token at bottom
             if (active === 'AMOUNT') {
@@ -1278,13 +1286,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               result = new Decimal(amt).mul(tokenToXrpRate).toNumber();
             }
           }
-          
-          
         } else if (!token1IsXRP && token2IsXRP) {
-          // Original order: Token/XRP  
+          // Original order: Token/XRP
           // rate1 is the Token-to-XRP rate (e.g., 0.311)
           const tokenToXrpRate = rate1.toNumber();
-          
+
           if (!revert) {
             // Normal display: Token at top, XRP at bottom
             if (active === 'AMOUNT') {
@@ -1304,7 +1310,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               result = new Decimal(amt).div(tokenToXrpRate).toNumber();
             }
           }
-          
         } else {
           // Both XRP (shouldn't happen)
           result = amt;
@@ -1353,7 +1358,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const handlePlaceOrder = (e) => {
     // Check if we need to create trustlines first
-    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
+    if (
+      isLoggedIn &&
+      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
+    ) {
       const missingCurrency = !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
       onCreateTrustline(missingCurrency);
       return;
@@ -1441,15 +1449,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const handleMsg = () => {
     if (isProcessing === 1) return 'Pending Exchanging';
-    
+
     // Check for missing trustlines
-    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
-      const missingToken = !hasTrustline1 && curr1.currency !== 'XRP' 
-        ? getCurrencyDisplayName(curr1.currency, token1?.name)
-        : getCurrencyDisplayName(curr2.currency, token2?.name);
+    if (
+      isLoggedIn &&
+      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
+    ) {
+      const missingToken =
+        !hasTrustline1 && curr1.currency !== 'XRP'
+          ? getCurrencyDisplayName(curr1.currency, token1?.name)
+          : getCurrencyDisplayName(curr2.currency, token2?.name);
       return `Set Trustline for ${missingToken}`;
     }
-    
+
     if (!amount1 || !amount2) return 'Enter an Amount';
     else if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
@@ -1470,7 +1482,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     setAmount1(val);
     // Trigger counterpart calculation similar to manual input
     const hasValidRates =
-      (curr1?.currency === 'XRP' || curr2?.currency === 'XRP')
+      curr1?.currency === 'XRP' || curr2?.currency === 'XRP'
         ? tokenExch1 > 0 || tokenExch2 > 0
         : tokenExch1 > 0 && tokenExch2 > 0;
     if (hasValidRates) {
@@ -1612,195 +1624,249 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             <Tab value="limit" label="Limit" />
           </Tabs>
         </Box>
-        
+
         <ConverterFrame>
           <AmountRows>
-          <CurrencyContent style={{ backgroundColor: color1 }}>
-            <Box display="flex" flexDirection="column" flex="1" gap="3px">
-              <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
-                <Typography lineHeight="1.2" variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
-                  You sell
+            <CurrencyContent style={{ backgroundColor: color1 }}>
+              <Box display="flex" flexDirection="column" flex="1" gap="3px">
+                <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
+                  <Typography
+                    lineHeight="1.2"
+                    variant="body2"
+                    sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}
+                  >
+                    You sell
+                  </Typography>
+                </Box>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <TokenImage
+                    src={`https://s1.xrpl.to/token/${curr1.md5}`}
+                    width={32}
+                    height={32}
+                    alt={`${curr1.name} token icon`}
+                    onError={(event) => (event.target.src = '/static/alt.webp')}
+                  />
+                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                    {curr1.name}
+                  </Typography>
+                </Stack>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
+                  {curr1.user}
                 </Typography>
               </Box>
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <TokenImage
-                  src={`https://s1.xrpl.to/token/${curr1.md5}`}
-                  width={32}
-                  height={32}
-                  alt={`${curr1.name} token icon`}
-                  onError={(event) => (event.target.src = '/static/alt.webp')}
-                />
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                  {curr1.name}
-                </Typography>
-              </Stack>
-              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                {curr1.user}
-              </Typography>
-            </Box>
-            <InputContent>
-              {isLoggedIn && (
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="flex-end"
-                  spacing={0.5}
-                  sx={{ mb: 0.5 }}
-                >
-                  <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                    Balance{' '}
-                    <Typography variant="caption" color="primary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                      {accountPairBalance?.curr1.value}
-                    </Typography>
-                  </Typography>
-                  <Stack direction="row" spacing={0.25}>
-                    {[0.25, 0.5, 0.75].map((p) => (
-                      <Button
-                        key={p}
-                        sx={{ px: { xs: 0.75, sm: 0.5 }, py: 0, minWidth: 0, fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: '24px', sm: '20px' } }}
-                        disabled={!accountPairBalance?.curr1?.value}
-                        onClick={() => onFillPercent(p)}
-                      >
-                        {Math.round(p * 100)}%
-                      </Button>
-                    ))}
-                    <Button
-                      sx={{ px: { xs: 0.75, sm: 0.5 }, py: 0, minWidth: 0, fontSize: { xs: '0.7rem', sm: '0.75rem' }, height: { xs: '24px', sm: '20px' } }}
-                      disabled={!accountPairBalance?.curr1?.value}
-                      onClick={onFillMax}
+              <InputContent>
+                {isLoggedIn && (
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    spacing={0.5}
+                    sx={{ mb: 0.5 }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                     >
-                      MAX
-                    </Button>
-                  </Stack>
-                </Stack>
-              )}
-              <Input
-                placeholder="0"
-                autoComplete="new-password"
-                disableUnderline
-                inputProps={{ 'aria-label': `Amount of ${curr1?.name || curr1?.currency} to sell` }}
-                value={amount1}
-                onChange={handleChangeAmount1}
-                sx={{
-                  width: '100%',
-                  input: {
-                    autoComplete: 'off',
-                    padding: '0px',
-                    border: 'none',
-                    fontSize: { xs: '14px', sm: '16px' },
-                    textAlign: 'end',
-                    appearance: 'none',
-                    fontWeight: 700
-                  }
-                }}
-              />
-              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                {curr1IsXRP
-                  ? `~${fNumber(tokenPrice1)} XRP`
-                  : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice1)}`}
-              </Typography>
-            </InputContent>
-          </CurrencyContent>
-
-          <CurrencyContent style={{ backgroundColor: color2 }}>
-            <Box display="flex" flexDirection="column" flex="1" gap="3px">
-              <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
-                  You buy
-                </Typography>
-              </Box>
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <TokenImage
-                  src={`https://s1.xrpl.to/token/${curr2.md5}`}
-                  width={32}
-                  height={32}
-                  alt={`${curr2.name} token icon`}
-                  onError={(event) => (event.target.src = '/static/alt.webp')}
-                />
-                <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
-                  {curr2.name}
-                </Typography>
-              </Stack>
-              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                {curr2.user}
-              </Typography>
-            </Box>
-            <InputContent>
-              {isLoggedIn && (
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="flex-end"
-                  spacing={0.5}
-                  sx={{ mb: 0.5 }}
-                >
-                  <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                    Balance{' '}
-                    <Typography variant="caption" color="primary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                      {accountPairBalance?.curr2.value}
+                      Balance{' '}
+                      <Typography
+                        variant="caption"
+                        color="primary"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      >
+                        {accountPairBalance?.curr1.value}
+                      </Typography>
                     </Typography>
+                    <Stack direction="row" spacing={0.25}>
+                      {[0.25, 0.5, 0.75].map((p) => (
+                        <Button
+                          key={p}
+                          sx={{
+                            px: { xs: 0.75, sm: 0.5 },
+                            py: 0,
+                            minWidth: 0,
+                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                            height: { xs: '24px', sm: '20px' }
+                          }}
+                          disabled={!accountPairBalance?.curr1?.value}
+                          onClick={() => onFillPercent(p)}
+                        >
+                          {Math.round(p * 100)}%
+                        </Button>
+                      ))}
+                      <Button
+                        sx={{
+                          px: { xs: 0.75, sm: 0.5 },
+                          py: 0,
+                          minWidth: 0,
+                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                          height: { xs: '24px', sm: '20px' }
+                        }}
+                        disabled={!accountPairBalance?.curr1?.value}
+                        onClick={onFillMax}
+                      >
+                        MAX
+                      </Button>
+                    </Stack>
+                  </Stack>
+                )}
+                <Input
+                  placeholder="0"
+                  autoComplete="new-password"
+                  disableUnderline
+                  inputProps={{
+                    'aria-label': `Amount of ${curr1?.name || curr1?.currency} to sell`
+                  }}
+                  value={amount1}
+                  onChange={handleChangeAmount1}
+                  sx={{
+                    width: '100%',
+                    input: {
+                      autoComplete: 'off',
+                      padding: '0px',
+                      border: 'none',
+                      fontSize: { xs: '14px', sm: '16px' },
+                      textAlign: 'end',
+                      appearance: 'none',
+                      fontWeight: 700
+                    }
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
+                  {curr1IsXRP
+                    ? `~${fNumber(tokenPrice1)} XRP`
+                    : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice1)}`}
+                </Typography>
+              </InputContent>
+            </CurrencyContent>
+
+            <CurrencyContent style={{ backgroundColor: color2 }}>
+              <Box display="flex" flexDirection="column" flex="1" gap="3px">
+                <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                  <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
+                    You buy
+                  </Typography>
+                </Box>
+                <Stack direction="row" alignItems="center" spacing={0.5}>
+                  <TokenImage
+                    src={`https://s1.xrpl.to/token/${curr2.md5}`}
+                    width={32}
+                    height={32}
+                    alt={`${curr2.name} token icon`}
+                    onError={(event) => (event.target.src = '/static/alt.webp')}
+                  />
+                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                    {curr2.name}
                   </Typography>
                 </Stack>
-              )}
-              <Input
-                placeholder="0"
-                autoComplete="new-password"
-                disableUnderline
-                inputProps={{ 'aria-label': `Amount of ${curr2?.name || curr2?.currency} to buy` }}
-                value={amount2}
-                onChange={handleChangeAmount2}
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
+                  {curr2.user}
+                </Typography>
+              </Box>
+              <InputContent>
+                {isLoggedIn && (
+                  <Stack
+                    direction="row"
+                    alignItems="center"
+                    justifyContent="flex-end"
+                    spacing={0.5}
+                    sx={{ mb: 0.5 }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                    >
+                      Balance{' '}
+                      <Typography
+                        variant="caption"
+                        color="primary"
+                        sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                      >
+                        {accountPairBalance?.curr2.value}
+                      </Typography>
+                    </Typography>
+                  </Stack>
+                )}
+                <Input
+                  placeholder="0"
+                  autoComplete="new-password"
+                  disableUnderline
+                  inputProps={{
+                    'aria-label': `Amount of ${curr2?.name || curr2?.currency} to buy`
+                  }}
+                  value={amount2}
+                  onChange={handleChangeAmount2}
+                  sx={{
+                    width: '100%',
+                    input: {
+                      autoComplete: 'off',
+                      padding: '0px',
+                      border: 'none',
+                      fontSize: { xs: '14px', sm: '16px' },
+                      textAlign: 'end',
+                      appearance: 'none',
+                      fontWeight: 700
+                    }
+                  }}
+                />
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                >
+                  {curr2IsXRP
+                    ? `~${fNumber(tokenPrice2)} XRP`
+                    : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice2)}`}
+                </Typography>
+              </InputContent>
+            </CurrencyContent>
+
+            <ToggleContent>
+              <IconButton
+                size="small"
+                onClick={onRevertExchange}
                 sx={{
-                  width: '100%',
-                  input: {
-                    autoComplete: 'off',
-                    padding: '0px',
-                    border: 'none',
-                    fontSize: { xs: '14px', sm: '16px' },
-                    textAlign: 'end',
-                    appearance: 'none',
-                    fontWeight: 700
+                  backgroundColor: 'transparent',
+                  padding: { xs: '4px', sm: '3px' },
+                  width: { xs: '32px', sm: '28px' },
+                  height: { xs: '32px', sm: '28px' },
+                  '&:hover': {
+                    backgroundColor: 'transparent'
                   }
                 }}
-              />
-              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
-                {curr2IsXRP
-                  ? `~${fNumber(tokenPrice2)} XRP`
-                  : `~${currencySymbols[activeFiatCurrency]} ${fNumber(tokenPrice2)}`}
-              </Typography>
-            </InputContent>
-          </CurrencyContent>
-
-          <ToggleContent>
-            <IconButton
-              size="small"
-              onClick={onRevertExchange}
-              sx={{
-                backgroundColor: 'transparent',
-                padding: { xs: '4px', sm: '3px' },
-                width: { xs: '32px', sm: '28px' },
-                height: { xs: '32px', sm: '28px' },
-                '&:hover': {
-                  backgroundColor: 'transparent'
-                }
-              }}
-            >
-              <SwapHorizIcon 
-                sx={{
-                  width: '18px',
-                  height: '18px',
-                  color: theme.palette.text.primary,
-                  transform: 'rotate(90deg)',
-                  transition: 'all 0.2s ease-in-out'
-                }}
-              />
-            </IconButton>
-          </ToggleContent>
+              >
+                <SwapHorizIcon
+                  sx={{
+                    width: '18px',
+                    height: '18px',
+                    color: theme.palette.text.primary,
+                    transform: 'rotate(90deg)',
+                    transition: 'all 0.2s ease-in-out'
+                  }}
+                />
+              </IconButton>
+            </ToggleContent>
           </AmountRows>
 
           {/* Add slippage control */}
           <Box sx={{ px: 1.5, py: 0.5 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="caption" color="textSecondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+              >
                 Slippage tolerance
               </Typography>
               <Stack direction="row" spacing={0.25} alignItems="center">
@@ -1856,12 +1922,15 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </Stack>
             </Stack>
             {Number(slippage) > 5 && (
-              <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}>
+              <Typography
+                variant="caption"
+                color="warning.main"
+                sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}
+              >
                 High slippage increases the risk of a worse execution.
               </Typography>
             )}
           </Box>
-
 
           {/* Limit Order Settings */}
           {orderType === 'limit' && (
@@ -1874,7 +1943,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   placeholder="0.00"
                   fullWidth
                   disableUnderline
-                  inputProps={{ 'aria-label': `Limit price in ${curr2?.name || curr2?.currency} per ${curr1?.name || curr1?.currency}` }}
+                  inputProps={{
+                    'aria-label': `Limit price in ${curr2?.name || curr2?.currency} per ${curr1?.name || curr1?.currency}`
+                  }}
                   value={limitPrice}
                   onChange={(e) => {
                     const val = e.target.value;
@@ -1895,13 +1966,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             variant="text"
                             disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                             onClick={() => {
-                              const mid = (bestBid != null && bestAsk != null) ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                              const mid =
+                                bestBid != null && bestAsk != null
+                                  ? (Number(bestBid) + Number(bestAsk)) / 2
+                                  : null;
                               const base = Number(limitPrice || mid || 0);
                               if (!base) return;
                               const next = new Decimal(base).mul(0.99).toFixed(6);
                               setLimitPrice(next);
                             }}
-                            sx={{ textTransform: 'none', fontSize: '0.65rem', minHeight: '22px', px: 0.75 }}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.65rem',
+                              minHeight: '22px',
+                              px: 0.75
+                            }}
                           >
                             -1%
                           </Button>
@@ -1914,11 +1993,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             variant="text"
                             disabled={!(bestBid != null && bestAsk != null)}
                             onClick={() => {
-                              const mid = (bestBid != null && bestAsk != null) ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                              const mid =
+                                bestBid != null && bestAsk != null
+                                  ? (Number(bestBid) + Number(bestAsk)) / 2
+                                  : null;
                               if (mid == null) return;
                               setLimitPrice(String(new Decimal(mid).toFixed(6)));
                             }}
-                            sx={{ textTransform: 'none', fontSize: '0.65rem', minHeight: '22px', px: 0.75 }}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.65rem',
+                              minHeight: '22px',
+                              px: 0.75
+                            }}
                           >
                             Mid
                           </Button>
@@ -1931,13 +2018,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             variant="text"
                             disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
                             onClick={() => {
-                              const mid = (bestBid != null && bestAsk != null) ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                              const mid =
+                                bestBid != null && bestAsk != null
+                                  ? (Number(bestBid) + Number(bestAsk)) / 2
+                                  : null;
                               const base = Number(limitPrice || mid || 0);
                               if (!base) return;
                               const next = new Decimal(base).mul(1.01).toFixed(6);
                               setLimitPrice(next);
                             }}
-                            sx={{ textTransform: 'none', fontSize: '0.65rem', minHeight: '22px', px: 0.75 }}
+                            sx={{
+                              textTransform: 'none',
+                              fontSize: '0.65rem',
+                              minHeight: '22px',
+                              px: 0.75
+                            }}
                           >
                             +1%
                           </Button>
@@ -1991,29 +2086,40 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     Enter a valid limit price greater than 0.
                   </Typography>
                 )}
-                {orderType === 'limit' && priceWarning && (() => {
-                  const baseMsg = priceWarning.kind === 'buy'
-                    ? `Your buy price is ${new Decimal(priceWarning.pct).toFixed(2)}% above best ask (${new Decimal(priceWarning.ref).toFixed(6)}).`
-                    : `Your sell price is ${new Decimal(priceWarning.pct).toFixed(2)}% below best bid (${new Decimal(priceWarning.ref).toFixed(6)}).`;
-                  const lp = Number(limitPrice);
-                  const marketable = priceWarning.kind === 'buy'
-                    ? (bestAsk != null && lp >= Number(bestAsk))
-                    : (bestBid != null && lp <= Number(bestBid));
-                  if (marketable) {
+                {orderType === 'limit' &&
+                  priceWarning &&
+                  (() => {
+                    const baseMsg =
+                      priceWarning.kind === 'buy'
+                        ? `Your buy price is ${new Decimal(priceWarning.pct).toFixed(2)}% above best ask (${new Decimal(priceWarning.ref).toFixed(6)}).`
+                        : `Your sell price is ${new Decimal(priceWarning.pct).toFixed(2)}% below best bid (${new Decimal(priceWarning.ref).toFixed(6)}).`;
+                    const lp = Number(limitPrice);
+                    const marketable =
+                      priceWarning.kind === 'buy'
+                        ? bestAsk != null && lp >= Number(bestAsk)
+                        : bestBid != null && lp <= Number(bestBid);
+                    if (marketable) {
+                      return (
+                        <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
+                          <Typography
+                            variant="caption"
+                            sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'error.main' }}
+                          >
+                            Immediate execution! {baseMsg} This order will fill instantly at market.
+                            Review price and amount carefully.
+                          </Typography>
+                        </Alert>
+                      );
+                    }
                     return (
-                      <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
-                        <Typography variant="caption" sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'error.main' }}>
-                          Immediate execution! {baseMsg} This order will fill instantly at market. Review price and amount carefully.
-                        </Typography>
-                      </Alert>
+                      <Typography
+                        variant="caption"
+                        sx={{ fontSize: '0.7rem', color: theme.palette.warning.main }}
+                      >
+                        {baseMsg}
+                      </Typography>
                     );
-                  }
-                  return (
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.warning.main }}>
-                      {baseMsg}
-                    </Typography>
-                  );
-                })()}
+                  })()}
                 {bestBid != null && bestAsk != null && (
                   <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
                     {(() => {
@@ -2071,7 +2177,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             borderRadius: '3px'
                           }
                         }}
-                        endAdornment={<Typography variant="caption" sx={{ fontSize: '0.65rem' }}>hrs</Typography>}
+                        endAdornment={
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                            hrs
+                          </Typography>
+                        }
                       />
                     )}
                   </Stack>
@@ -2079,7 +2189,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </Stack>
             </Box>
           )}
-          
+
           {/* Show/Hide Buttons - Only show in limit mode */}
           {orderType === 'limit' && (
             <Box sx={{ px: 1, py: 0.5 }}>
@@ -2127,7 +2237,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   {showOrders ? 'Hide' : 'Show'} Orders
                 </Button>
               </Stack>
-              <Typography variant="caption" color="textSecondary" sx={{ textAlign: 'center', mt: 0.5, fontSize: '0.65rem' }}>
+              <Typography
+                variant="caption"
+                color="textSecondary"
+                sx={{ textAlign: 'center', mt: 0.5, fontSize: '0.65rem' }}
+              >
                 Tip: Use the order book to quickly pick a fair price.
               </Typography>
             </Box>
@@ -2147,7 +2261,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </React.Suspense>
             </Box>
           )}
-          
+
           {/* Transaction Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox>
@@ -2159,30 +2273,39 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   Type: <strong>Limit {revert ? 'Buy' : 'Sell'}</strong>
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Amount: <strong>{amount1} {curr1.name}</strong>
+                  Amount:{' '}
+                  <strong>
+                    {amount1} {curr1.name}
+                  </strong>
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Price: <strong>{limitPrice} {curr2.name}/{curr1.name}</strong>
+                  Price:{' '}
+                  <strong>
+                    {limitPrice} {curr2.name}/{curr1.name}
+                  </strong>
                 </Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
-                  Total: <strong>{(() => {
-                    const limitPriceDecimal = new Decimal(limitPrice || 0);
-                    const amount1Decimal = new Decimal(amount1 || 0);
-                    let total;
-                    // Price is always curr2/curr1 (e.g., RLUSD per XRP)
-                    // So total curr2 = amount1 * price
-                    if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
-                      // Selling XRP for Token: price is Token/XRP, so multiply
-                      total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                    } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
-                      // Selling Token for XRP: price is XRP/Token, so multiply
-                      total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                    } else {
-                      // Token to Token: multiply
-                      total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                    }
-                    return `${total} ${curr2.name}`;
-                  })()}</strong>
+                  Total:{' '}
+                  <strong>
+                    {(() => {
+                      const limitPriceDecimal = new Decimal(limitPrice || 0);
+                      const amount1Decimal = new Decimal(amount1 || 0);
+                      let total;
+                      // Price is always curr2/curr1 (e.g., RLUSD per XRP)
+                      // So total curr2 = amount1 * price
+                      if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
+                        // Selling XRP for Token: price is Token/XRP, so multiply
+                        total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                      } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
+                        // Selling Token for XRP: price is XRP/Token, so multiply
+                        total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                      } else {
+                        // Token to Token: multiply
+                        total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                      }
+                      return `${total} ${curr2.name}`;
+                    })()}
+                  </strong>
                 </Typography>
                 {orderExpiry !== 'never' && (
                   <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
@@ -2192,7 +2315,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </Stack>
             </SummaryBox>
           )}
-
         </ConverterFrame>
       </OverviewWrapper>
 
@@ -2205,144 +2327,155 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       >
         <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={16} />
         <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
-          1 {curr1.name} = {
-            (() => {
-              // Minimal debug logging
-              console.log('Exchange rate calc:', {
-                curr1: curr1?.name,
-                curr2: curr2?.name,
-                tokenExch1,
-                tokenExch2,
-                revert
+          1 {curr1.name} ={' '}
+          {(() => {
+            // Minimal debug logging
+            console.log('Exchange rate calc:', {
+              curr1: curr1?.name,
+              curr2: curr2?.name,
+              tokenExch1,
+              tokenExch2,
+              revert
+            });
+
+            // Use amount-based calculation but verify it's correct
+            if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
+              const amt1 = parseFloat(amount1);
+              const amt2 = parseFloat(amount2);
+
+              // The display shows "1 curr1.name = X curr2.name"
+              // So the rate should be amount2/amount1
+              const displayRate = amt2 / amt1;
+
+              // But let's verify this makes sense
+              console.log('Amount-based calculation check:', {
+                amount1: amt1,
+                amount2: amt2,
+                curr1Name: curr1?.name,
+                curr2Name: curr2?.name,
+                displayRate: displayRate,
+                formula: `${amt2} / ${amt1} = ${displayRate}`
               });
-              
-              // Use amount-based calculation but verify it's correct
-              if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
-                const amt1 = parseFloat(amount1);
-                const amt2 = parseFloat(amount2);
-                
-                // The display shows "1 curr1.name = X curr2.name"
-                // So the rate should be amount2/amount1
-                const displayRate = amt2 / amt1;
-                
-                // But let's verify this makes sense
-                console.log('Amount-based calculation check:', {
-                  amount1: amt1,
-                  amount2: amt2,
-                  curr1Name: curr1?.name,
-                  curr2Name: curr2?.name,
-                  displayRate: displayRate,
-                  formula: `${amt2} / ${amt1} = ${displayRate}`
-                });
-                
-                // Verify the rate makes sense by checking against the expected rates
-                const expectedRate = (() => {
-                  const token1IsXRP = token1?.currency === 'XRP';
-                  const token2IsXRP = token2?.currency === 'XRP';
-                  
-                  if (revert) {
-                    if (token1IsXRP && !token2IsXRP) {
-                      // Showing Token/XRP, rate should be tokenExch2
-                      return tokenExch2;
-                    } else if (!token1IsXRP && token2IsXRP) {
-                      // Showing XRP/Token, rate should be 1/tokenExch1
-                      return 1 / tokenExch1;
-                    }
-                  } else {
-                    if (token1IsXRP && !token2IsXRP) {
-                      // Showing XRP/Token, rate should be 1/tokenExch2
-                      return 1 / tokenExch2;
-                    } else if (!token1IsXRP && token2IsXRP) {
-                      // Showing Token/XRP, rate should be tokenExch1
-                      return tokenExch1;
-                    }
+
+              // Verify the rate makes sense by checking against the expected rates
+              const expectedRate = (() => {
+                const token1IsXRP = token1?.currency === 'XRP';
+                const token2IsXRP = token2?.currency === 'XRP';
+
+                if (revert) {
+                  if (token1IsXRP && !token2IsXRP) {
+                    // Showing Token/XRP, rate should be tokenExch2
+                    return tokenExch2;
+                  } else if (!token1IsXRP && token2IsXRP) {
+                    // Showing XRP/Token, rate should be 1/tokenExch1
+                    return 1 / tokenExch1;
                   }
-                  // For non-XRP pairs
-                  return revert ? tokenExch2 / tokenExch1 : tokenExch1 / tokenExch2;
-                })();
-                
-                // Allow some tolerance for floating point differences (5%)
-                const tolerance = 0.05;
-                const ratioDiff = Math.abs(displayRate - expectedRate) / expectedRate;
-                
-                if (ratioDiff > tolerance) {
-                  console.log('WARNING: Calculated rate differs significantly from expected', {
-                    displayRate,
-                    expectedRate,
-                    difference: `${(ratioDiff * 100).toFixed(1)}%`
-                  });
-                  // Fall through to use the correct calculation below
                 } else {
-                  return displayRate.toFixed(6);
+                  if (token1IsXRP && !token2IsXRP) {
+                    // Showing XRP/Token, rate should be 1/tokenExch2
+                    return 1 / tokenExch2;
+                  } else if (!token1IsXRP && token2IsXRP) {
+                    // Showing Token/XRP, rate should be tokenExch1
+                    return tokenExch1;
+                  }
                 }
-              }
-              
-              // Fallback to default rate calculation
-              const token1IsXRP = token1?.currency === 'XRP';
-              const token2IsXRP = token2?.currency === 'XRP';
-              
-              console.log('token1IsXRP:', token1IsXRP);
-              console.log('token2IsXRP:', token2IsXRP);
-              
-              // The rates depend on the original token order (token1/token2), not the display order (curr1/curr2)
-              // When token1=XRP, token2=RLUSD: tokenExch1=1, tokenExch2=XRP per RLUSD
-              // When token1=RLUSD, token2=XRP: tokenExch1=XRP per RLUSD, tokenExch2=1
-              
-              let calculatedRate;
-              
-              if (revert) {
-                console.log('Revert is true - currencies are swapped');
-                console.log('curr1 is now:', curr1?.name, '(was token2)');
-                console.log('curr2 is now:', curr2?.name, '(was token1)');
-                
-                // When reverted:
-                // - If original was XRP/RLUSD, now it's RLUSD/XRP
-                // - curr1 = RLUSD (token2), curr2 = XRP (token1)
-                
-                if (token1IsXRP && !token2IsXRP) {
-                  // Original: token1=XRP, token2=RLUSD
-                  // Now showing: RLUSD/XRP
-                  // tokenExch2 is RLUSD-to-XRP rate (e.g., 0.311)
-                  calculatedRate = tokenExch2;
-                  console.log('Case: RLUSD -> XRP (reverted from XRP/RLUSD), rate = tokenExch2 =', calculatedRate);
-                } else if (!token1IsXRP && token2IsXRP) {
-                  // Original: token1=RLUSD, token2=XRP
-                  // Now showing: XRP/RLUSD
-                  // tokenExch1 is RLUSD-to-XRP rate (e.g., 0.311)
-                  // Need XRP-to-RLUSD rate, so invert it
-                  calculatedRate = 1 / tokenExch1;
-                  console.log('Case: XRP -> RLUSD (reverted from RLUSD/XRP), rate = 1/tokenExch1 =', calculatedRate);
-                } else {
-                  // Non-XRP pair
-                  calculatedRate = tokenExch2 / tokenExch1;
-                  console.log('Case: Token -> Token (reverted), rate = tokenExch2/tokenExch1 =', calculatedRate);
-                }
+                // For non-XRP pairs
+                return revert ? tokenExch2 / tokenExch1 : tokenExch1 / tokenExch2;
+              })();
+
+              // Allow some tolerance for floating point differences (5%)
+              const tolerance = 0.05;
+              const ratioDiff = Math.abs(displayRate - expectedRate) / expectedRate;
+
+              if (ratioDiff > tolerance) {
+                console.log('WARNING: Calculated rate differs significantly from expected', {
+                  displayRate,
+                  expectedRate,
+                  difference: `${(ratioDiff * 100).toFixed(1)}%`
+                });
+                // Fall through to use the correct calculation below
               } else {
-                console.log('Revert is false - normal order');
-                // Normal order: curr1 = token1, curr2 = token2
-                if (token1IsXRP && !token2IsXRP) {
-                  // curr1 is XRP, curr2 is Token
-                  // Need XRP to Token rate, which is 1/tokenExch2
-                  calculatedRate = 1 / tokenExch2;
-                  console.log('Case: XRP -> Token (normal), rate = 1/tokenExch2 =', calculatedRate);
-                } else if (!token1IsXRP && token2IsXRP) {
-                  // curr1 is Token, curr2 is XRP
-                  // Need Token to XRP rate, which is tokenExch1
-                  calculatedRate = tokenExch1;
-                  console.log('Case: Token -> XRP (normal), rate = tokenExch1 =', calculatedRate);
-                } else {
-                  // Non-XRP pair
-                  calculatedRate = tokenExch1 / tokenExch2;
-                  console.log('Case: Token -> Token (normal), rate = tokenExch1/tokenExch2 =', calculatedRate);
-                }
+                return displayRate.toFixed(6);
               }
-              
-              console.log('Final calculated rate:', calculatedRate);
-              console.log('=== End Exchange Rate Debug ===');
-              
-              return calculatedRate.toFixed(6);
-            })()
-          }{' '}
+            }
+
+            // Fallback to default rate calculation
+            const token1IsXRP = token1?.currency === 'XRP';
+            const token2IsXRP = token2?.currency === 'XRP';
+
+            console.log('token1IsXRP:', token1IsXRP);
+            console.log('token2IsXRP:', token2IsXRP);
+
+            // The rates depend on the original token order (token1/token2), not the display order (curr1/curr2)
+            // When token1=XRP, token2=RLUSD: tokenExch1=1, tokenExch2=XRP per RLUSD
+            // When token1=RLUSD, token2=XRP: tokenExch1=XRP per RLUSD, tokenExch2=1
+
+            let calculatedRate;
+
+            if (revert) {
+              console.log('Revert is true - currencies are swapped');
+              console.log('curr1 is now:', curr1?.name, '(was token2)');
+              console.log('curr2 is now:', curr2?.name, '(was token1)');
+
+              // When reverted:
+              // - If original was XRP/RLUSD, now it's RLUSD/XRP
+              // - curr1 = RLUSD (token2), curr2 = XRP (token1)
+
+              if (token1IsXRP && !token2IsXRP) {
+                // Original: token1=XRP, token2=RLUSD
+                // Now showing: RLUSD/XRP
+                // tokenExch2 is RLUSD-to-XRP rate (e.g., 0.311)
+                calculatedRate = tokenExch2;
+                console.log(
+                  'Case: RLUSD -> XRP (reverted from XRP/RLUSD), rate = tokenExch2 =',
+                  calculatedRate
+                );
+              } else if (!token1IsXRP && token2IsXRP) {
+                // Original: token1=RLUSD, token2=XRP
+                // Now showing: XRP/RLUSD
+                // tokenExch1 is RLUSD-to-XRP rate (e.g., 0.311)
+                // Need XRP-to-RLUSD rate, so invert it
+                calculatedRate = 1 / tokenExch1;
+                console.log(
+                  'Case: XRP -> RLUSD (reverted from RLUSD/XRP), rate = 1/tokenExch1 =',
+                  calculatedRate
+                );
+              } else {
+                // Non-XRP pair
+                calculatedRate = tokenExch2 / tokenExch1;
+                console.log(
+                  'Case: Token -> Token (reverted), rate = tokenExch2/tokenExch1 =',
+                  calculatedRate
+                );
+              }
+            } else {
+              console.log('Revert is false - normal order');
+              // Normal order: curr1 = token1, curr2 = token2
+              if (token1IsXRP && !token2IsXRP) {
+                // curr1 is XRP, curr2 is Token
+                // Need XRP to Token rate, which is 1/tokenExch2
+                calculatedRate = 1 / tokenExch2;
+                console.log('Case: XRP -> Token (normal), rate = 1/tokenExch2 =', calculatedRate);
+              } else if (!token1IsXRP && token2IsXRP) {
+                // curr1 is Token, curr2 is XRP
+                // Need Token to XRP rate, which is tokenExch1
+                calculatedRate = tokenExch1;
+                console.log('Case: Token -> XRP (normal), rate = tokenExch1 =', calculatedRate);
+              } else {
+                // Non-XRP pair
+                calculatedRate = tokenExch1 / tokenExch2;
+                console.log(
+                  'Case: Token -> Token (normal), rate = tokenExch1/tokenExch2 =',
+                  calculatedRate
+                );
+              }
+            }
+
+            console.log('Final calculated rate:', calculatedRate);
+            console.log('=== End Exchange Rate Debug ===');
+
+            return calculatedRate.toFixed(6);
+          })()}{' '}
           {curr2.name}
         </Typography>
       </Stack>
@@ -2358,8 +2491,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               fontSize: { xs: '0.95rem', sm: '0.9rem' }
             }}
             disabled={
-              isProcessing === 1 || 
-              (!isLoggedIn) ||
+              isProcessing === 1 ||
+              !isLoggedIn ||
               (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
             }
           >
@@ -2370,11 +2503,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         )}
         {/* Inline guidance for trustlines and balance */}
         {isLoggedIn && errMsg && (
-          <Alert severity={errMsg.toLowerCase().includes('trustline') ? 'warning' : 'error'} sx={{ mt: 1 }}>
+          <Alert
+            severity={errMsg.toLowerCase().includes('trustline') ? 'warning' : 'error'}
+            sx={{ mt: 1 }}
+          >
             <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>{errMsg}</Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+                {errMsg}
+              </Typography>
               {errMsg.toLowerCase().includes('trustline') && (
-                <Button size="small" variant="outlined" onClick={() => onCreateTrustline(!hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2)} sx={{ textTransform: 'none' }}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() =>
+                    onCreateTrustline(!hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2)
+                  }
+                  sx={{ textTransform: 'none' }}
+                >
                   Create Trustline
                 </Button>
               )}
@@ -2390,7 +2535,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         qrUrl={qrUrl}
         nextUrl={nextUrl}
       />
-      
+
       {/* Orderbook Drawer (embedded) using TransactionDetailsPanel when no global handler */}
       {!onOrderBookToggle && (
         <TransactionDetailsPanel
@@ -2419,7 +2564,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           }}
         />
       )}
-      
+
       {/* Orders Display */}
       {showOrders && (
         <Box
@@ -2443,13 +2588,16 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               background: alpha(theme.palette.background.paper, 0.02)
             }}
           >
-            <Typography variant="h6" sx={{ fontSize: '0.85rem', fontWeight: 600, color: theme.palette.text.primary }}>
+            <Typography
+              variant="h6"
+              sx={{ fontSize: '0.85rem', fontWeight: 600, color: theme.palette.text.primary }}
+            >
               Your Orders
             </Typography>
             <IconButton
               size="small"
               onClick={() => setShowOrders(false)}
-              sx={{ 
+              sx={{
                 color: theme.palette.text.secondary,
                 p: 0.5,
                 '&:hover': {
@@ -2460,12 +2608,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               <CloseIcon sx={{ width: 16, height: 16 }} />
             </IconButton>
           </Box>
-          
-          <React.Suspense fallback={
-            <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
-              <PuffLoader color={theme.palette.primary.main} size={30} />
-            </Box>
-          }>
+
+          <React.Suspense
+            fallback={
+              <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
+                <PuffLoader color={theme.palette.primary.main} size={30} />
+              </Box>
+            }
+          >
             <Orders pair={{ curr1, curr2 }} />
           </React.Suspense>
         </Box>
@@ -2493,14 +2643,16 @@ const App = ({ token }) => {
           overflow: 'hidden',
           borderRadius: { xs: '16px', sm: '12px' },
           transition: 'all 0.3s ease',
-          background: (theme) => showSwap 
-            ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.9)} 0%, ${alpha(theme.palette.error.dark, 0.9)} 100%)`
-            : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
+          background: (theme) =>
+            showSwap
+              ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.9)} 0%, ${alpha(theme.palette.error.dark, 0.9)} 100%)`
+              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
           backdropFilter: 'blur(24px)',
           backgroundSize: '200% 200%',
           animation: { xs: 'none', sm: 'gradient 5s ease infinite' },
           color: '#fff',
-          boxShadow: (theme) => `0 6px 20px ${alpha(showSwap ? theme.palette.error.main : theme.palette.primary.main, 0.25)}`,
+          boxShadow: (theme) =>
+            `0 6px 20px ${alpha(showSwap ? theme.palette.error.main : theme.palette.primary.main, 0.25)}`,
           fontSize: { xs: '1.1rem', sm: '1rem' },
           padding: { xs: '14px 24px', sm: '10px 22px' },
           fontWeight: { xs: 600, sm: 500 },
@@ -2542,9 +2694,10 @@ const App = ({ token }) => {
           },
           '&:hover': {
             transform: { xs: 'scale(0.98)', sm: 'translateY(-2px) scale(1.02)' },
-            background: (theme) => showSwap
-              ? `linear-gradient(135deg, ${alpha(theme.palette.error.dark, 1)} 0%, ${alpha(theme.palette.error.main, 1)} 100%)`
-              : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 1)} 0%, ${alpha(theme.palette.primary.main, 1)} 100%)`
+            background: (theme) =>
+              showSwap
+                ? `linear-gradient(135deg, ${alpha(theme.palette.error.dark, 1)} 0%, ${alpha(theme.palette.error.main, 1)} 100%)`
+                : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 1)} 0%, ${alpha(theme.palette.primary.main, 1)} 100%)`
           },
           '&:active': {
             transform: 'scale(0.95)'

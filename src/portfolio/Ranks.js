@@ -139,18 +139,21 @@ const Ranks = ({ profileAccount }) => {
   };
 
   return (
-    <Box sx={{
-      p: 2,
-      minHeight: '280px',
-      background: theme.palette.mode === 'dark'
-        ? alpha(theme.palette.background.paper, 0.4)
-        : alpha(theme.palette.background.paper, 0.8),
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
-      borderRadius: '12px',
-      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-      boxShadow: theme.shadows[1]
-    }}>
+    <Box
+      sx={{
+        p: 2,
+        minHeight: '280px',
+        background:
+          theme.palette.mode === 'dark'
+            ? alpha(theme.palette.background.paper, 0.4)
+            : alpha(theme.palette.background.paper, 0.8),
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderRadius: '12px',
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        boxShadow: theme.shadows[1]
+      }}
+    >
       {loading ? (
         <Stack alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
           <PulseLoader color={theme.palette.primary.main} size={12} />
@@ -181,9 +184,10 @@ const Ranks = ({ profileAccount }) => {
                           display: 'flex',
                           flexDirection: 'column',
                           transition: 'all 0.3s ease',
-                          background: theme.palette.mode === 'dark'
-                            ? alpha(theme.palette.background.paper, 0.6)
-                            : theme.palette.background.paper,
+                          background:
+                            theme.palette.mode === 'dark'
+                              ? alpha(theme.palette.background.paper, 0.6)
+                              : theme.palette.background.paper,
                           backdropFilter: 'blur(10px)',
                           '&:hover': {
                             transform: 'translateY(-4px)',
@@ -207,7 +211,14 @@ const Ranks = ({ profileAccount }) => {
                             justifyContent: 'space-between'
                           }}
                         >
-                          <Avatar sx={{ bgcolor: item.color, width: 42, height: 42, boxShadow: theme.shadows[3] }}>
+                          <Avatar
+                            sx={{
+                              bgcolor: item.color,
+                              width: 42,
+                              height: 42,
+                              boxShadow: theme.shadows[3]
+                            }}
+                          >
                             <item.icon sx={{ fontSize: 24 }} />
                           </Avatar>
                           <Typography
@@ -231,7 +242,11 @@ const Ranks = ({ profileAccount }) => {
                           </Typography>
                           <Typography
                             variant="subtitle1"
-                            sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: '1rem' }}
+                            sx={{
+                              fontWeight: 700,
+                              color: theme.palette.primary.main,
+                              fontSize: '1rem'
+                            }}
                           >
                             Price: 0.0001 XRP
                           </Typography>

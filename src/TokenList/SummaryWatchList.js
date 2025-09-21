@@ -23,7 +23,7 @@ const Title = styled.h1`
   font-weight: 300;
   line-height: 1.235;
   letter-spacing: -0.00833em;
-  
+
   @media (max-width: 600px) {
     font-size: 1.5rem;
   }
@@ -48,9 +48,7 @@ export default function SummaryWatchList({}) {
 
       {!account && (
         <Subtitle>
-          <ContentTypography>
-            Please log in to view your Watchlist.
-          </ContentTypography>
+          <ContentTypography>Please log in to view your Watchlist.</ContentTypography>
         </Subtitle>
       )}
     </Container>

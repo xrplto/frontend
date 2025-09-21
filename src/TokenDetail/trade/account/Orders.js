@@ -228,14 +228,20 @@ export default function Orders({ pair }) {
 
   const curr1 = pair.curr1;
   const curr2 = pair.curr2;
-  
+
   // Memoize currency names to prevent unnecessary recalculations
-  const curr1Name = useMemo(() => curr1?.name || normalizeCurrencyCode(curr1?.currency), [curr1?.name, curr1?.currency]);
-  const curr2Name = useMemo(() => curr2?.name || normalizeCurrencyCode(curr2?.currency), [curr2?.name, curr2?.currency]);
+  const curr1Name = useMemo(
+    () => curr1?.name || normalizeCurrencyCode(curr1?.currency),
+    [curr1?.name, curr1?.currency]
+  );
+  const curr2Name = useMemo(
+    () => curr2?.name || normalizeCurrencyCode(curr2?.currency),
+    [curr2?.name, curr2?.currency]
+  );
 
   // Store all offers and filter them when needed
   const [allOffers, setAllOffers] = useState([]);
-  
+
   // Fetch offers only when account or sync changes
   useEffect(() => {
     function getOffers() {
@@ -262,20 +268,20 @@ export default function Orders({ pair }) {
     }
     getOffers();
   }, [accountProfile?.account, sync, BASE_URL]);
-  
+
   // Filter offers when pair changes or when all offers are updated
   useEffect(() => {
     if (!curr1 || !curr2) {
       setOffers([]);
       return;
     }
-    
+
     // Filter offers for the current trading pair
-    const filteredOffers = allOffers.filter(offer => {
+    const filteredOffers = allOffers.filter((offer) => {
       // Normalize currency names for comparison
       const offerPaysName = offer.pays.name;
       const offerGetsName = offer.gets.name;
-      
+
       // For XRP, issuer should be undefined or 'XRPL'
       const compareIssuer = (issuer1, issuer2) => {
         if (issuer1 === 'XRPL' || issuer2 === 'XRPL') {
@@ -283,21 +289,21 @@ export default function Orders({ pair }) {
         }
         return issuer1 === issuer2;
       };
-      
+
       // Match either direction of the pair
-      const matchesPair = 
-        (offerPaysName === curr1Name && 
-         compareIssuer(offer.pays.issuer, curr1.issuer) &&
-         offerGetsName === curr2Name && 
-         compareIssuer(offer.gets.issuer, curr2.issuer)) ||
-        (offerPaysName === curr2Name && 
-         compareIssuer(offer.pays.issuer, curr2.issuer) &&
-         offerGetsName === curr1Name && 
-         compareIssuer(offer.gets.issuer, curr1.issuer));
-      
+      const matchesPair =
+        (offerPaysName === curr1Name &&
+          compareIssuer(offer.pays.issuer, curr1.issuer) &&
+          offerGetsName === curr2Name &&
+          compareIssuer(offer.gets.issuer, curr2.issuer)) ||
+        (offerPaysName === curr2Name &&
+          compareIssuer(offer.pays.issuer, curr2.issuer) &&
+          offerGetsName === curr1Name &&
+          compareIssuer(offer.gets.issuer, curr1.issuer));
+
       return matchesPair;
     });
-    
+
     setOffers(filteredOffers);
   }, [allOffers, curr1Name, curr2Name, curr1?.issuer, curr2?.issuer]);
 
@@ -359,13 +365,16 @@ export default function Orders({ pair }) {
           TransactionType: 'OfferCancel',
           Account: accountProfile.account,
           OfferSequence: seq,
-          Fee: '12'  // Add fee as required by XRPL
+          Fee: '12' // Add fee as required by XRPL
         };
-        
+
         // GemWallet expects the transaction wrapped in a transaction property
         const result = await submitTransaction({ transaction });
-        
-        if (result && (result.type === 'response' || result.result?.meta?.TransactionResult === 'tesSUCCESS')) {
+
+        if (
+          result &&
+          (result.type === 'response' || result.result?.meta?.TransactionResult === 'tesSUCCESS')
+        ) {
           setSync(sync + 1);
           openSnackbar('Offer cancelled successfully', 'success');
         } else {
@@ -380,7 +389,7 @@ export default function Orders({ pair }) {
     }
     setLoading(false);
   };
-  
+
   const onOfferCancelCrossmark = async (seq) => {
     setLoading(true);
     try {
@@ -389,9 +398,9 @@ export default function Orders({ pair }) {
         Account: accountProfile.account,
         OfferSequence: seq
       };
-      
+
       const response = await sdk.methods.signAndSubmitAndWait(transaction);
-      
+
       if (response?.response?.data?.meta?.isSuccess) {
         setSync(sync + 1);
         openSnackbar('Offer cancelled successfully', 'success');
@@ -516,11 +525,21 @@ export default function Orders({ pair }) {
                   <TableCell align="left" width="15%">
                     Type
                   </TableCell>
-                  <TableCell align="left" width="14%">Price</TableCell>
-                  <TableCell align="left" width="22%">Gets</TableCell>
-                  <TableCell align="left" width="22%">Pays</TableCell>
-                  <TableCell align="left" width="15%">Expires</TableCell>
-                  <TableCell align="center" width="12%">Action</TableCell>
+                  <TableCell align="left" width="14%">
+                    Price
+                  </TableCell>
+                  <TableCell align="left" width="22%">
+                    Gets
+                  </TableCell>
+                  <TableCell align="left" width="22%">
+                    Pays
+                  </TableCell>
+                  <TableCell align="left" width="15%">
+                    Expires
+                  </TableCell>
+                  <TableCell align="center" width="12%">
+                    Action
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -551,7 +570,7 @@ export default function Orders({ pair }) {
                     }
                     return issuer1 === issuer2;
                   };
-                  
+
                   if (paysName === curr1Name && compareIssuer(pays.issuer, curr1.issuer)) {
                     buy = true;
                     exch = new Decimal(gets.value).div(pays.value).toNumber();
@@ -602,14 +621,14 @@ export default function Orders({ pair }) {
                               const expirationDate = new Date((expire + RIPPLE_EPOCH) * 1000);
                               const now = new Date();
                               const diffMs = expirationDate - now;
-                              
+
                               if (diffMs <= 0) {
                                 return 'Expired';
                               }
-                              
+
                               const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
                               const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                              
+
                               if (diffHours < 1) {
                                 const diffMinutes = Math.floor(diffMs / (1000 * 60));
                                 return `${diffMinutes}m`;
@@ -625,27 +644,31 @@ export default function Orders({ pair }) {
                             sx={{
                               height: '20px',
                               fontSize: '0.7rem',
-                              backgroundColor: expired 
+                              backgroundColor: expired
                                 ? alpha(theme.palette.error.main, 0.1)
-                                : expire && ((expire + 946684800) * 1000 - Date.now()) < 3600000 // Less than 1 hour
+                                : expire && (expire + 946684800) * 1000 - Date.now() < 3600000 // Less than 1 hour
                                   ? alpha(theme.palette.warning.main, 0.1)
                                   : alpha(theme.palette.info.main, 0.1),
-                              color: expired 
+                              color: expired
                                 ? theme.palette.error.main
-                                : expire && ((expire + 946684800) * 1000 - Date.now()) < 3600000
+                                : expire && (expire + 946684800) * 1000 - Date.now() < 3600000
                                   ? theme.palette.warning.main
                                   : theme.palette.info.main,
                               border: `1px solid ${
-                                expired 
+                                expired
                                   ? alpha(theme.palette.error.main, 0.3)
-                                  : expire && ((expire + 946684800) * 1000 - Date.now()) < 3600000
+                                  : expire && (expire + 946684800) * 1000 - Date.now() < 3600000
                                     ? alpha(theme.palette.warning.main, 0.3)
                                     : alpha(theme.palette.info.main, 0.3)
                               }`
                             }}
                           />
                         ) : (
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.75rem' }}
+                          >
                             Never
                           </Typography>
                         )}

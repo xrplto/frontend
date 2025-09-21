@@ -16,22 +16,22 @@ import i18n from 'src/utils/i18n';
 if (typeof window !== 'undefined') {
   // Add requestIdleCallback polyfill for Safari
   if (!window.requestIdleCallback) {
-    window.requestIdleCallback = function(callback, options) {
+    window.requestIdleCallback = function (callback, options) {
       const timeout = options?.timeout || 0;
       const startTime = Date.now();
-      return setTimeout(function() {
+      return setTimeout(function () {
         callback({
-          didTimeout: timeout > 0 && (Date.now() - startTime) > timeout,
-          timeRemaining: function() {
+          didTimeout: timeout > 0 && Date.now() - startTime > timeout,
+          timeRemaining: function () {
             return Math.max(0, 50 - (Date.now() - startTime));
           }
         });
       }, 1);
     };
   }
-  
+
   if (!window.cancelIdleCallback) {
-    window.cancelIdleCallback = function(id) {
+    window.cancelIdleCallback = function (id) {
       clearTimeout(id);
     };
   }
@@ -40,14 +40,26 @@ if (typeof window !== 'undefined') {
 // Error logging handled by ErrorDebugger component
 
 // Lazy load non-critical components
-const XSnackbar = dynamic(() => import('src/components/Snackbar'), { ssr: false, loading: () => null });
-const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), { ssr: false, loading: () => null });
-const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), { ssr: false, loading: () => null });
-const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false, loading: () => null });
-const ErrorDebugger = dynamic(() => import('src/components/ErrorDebugger').catch(() => ({ default: () => null })), { 
+const XSnackbar = dynamic(() => import('src/components/Snackbar'), {
   ssr: false,
-  loading: () => null 
+  loading: () => null
 });
+const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), {
+  ssr: false,
+  loading: () => null
+});
+const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), {
+  ssr: false,
+  loading: () => null
+});
+const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false, loading: () => null });
+const ErrorDebugger = dynamic(
+  () => import('src/components/ErrorDebugger').catch(() => ({ default: () => null })),
+  {
+    ssr: false,
+    loading: () => null
+  }
+);
 
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
@@ -85,7 +97,7 @@ const ProgressBarContainer = styled('div')(({ theme, show }) => ({
   height: '3px',
   zIndex: 9999,
   opacity: show ? 1 : 0,
-  transition: 'opacity 0.2s ease-in-out',
+  transition: 'opacity 0.2s ease-in-out'
 }));
 
 const ProgressBarFill = styled('div')(({ theme, progress }) => ({
@@ -93,7 +105,7 @@ const ProgressBarFill = styled('div')(({ theme, progress }) => ({
   backgroundColor: theme.palette.primary.main,
   width: `${progress}%`,
   transition: 'width 0.3s ease-out',
-  boxShadow: `0 0 10px ${theme.palette.primary.main}`,
+  boxShadow: `0 0 10px ${theme.palette.primary.main}`
 }));
 
 // Inline ProgressBar component
@@ -142,7 +154,7 @@ function AppProgressBar({ router }) {
     let interval;
     if (show && progress > 0 && progress < 90) {
       interval = setInterval(() => {
-        setProgress(prev => {
+        setProgress((prev) => {
           if (prev >= 90) return prev;
           return prev + Math.random() * 10;
         });
@@ -171,24 +183,28 @@ function AppPageLayout({ children }) {
   return (
     <div>
       {/* Main content with padding for fixed headers */}
-      <div style={{
-        paddingTop: isApiDocsPage ? '0' : '56px',
-        marginRight: accountProfile && open ? '350px' : '0',
-        transition: 'margin-right 0.3s ease'
-      }}>
+      <div
+        style={{
+          paddingTop: isApiDocsPage ? '0' : '56px',
+          marginRight: accountProfile && open ? '350px' : '0',
+          transition: 'margin-right 0.3s ease'
+        }}
+      >
         {children}
       </div>
 
       {/* Embedded wallet panel - positioned below header */}
       {accountProfile && open && (
-        <div style={{
-          position: 'fixed',
-          top: '56px',
-          right: '0',
-          width: '350px',
-          height: 'calc(100vh - 48px)',
-          zIndex: 1000
-        }}>
+        <div
+          style={{
+            position: 'fixed',
+            top: '56px',
+            right: '0',
+            width: '350px',
+            height: 'calc(100vh - 48px)',
+            zIndex: 1000
+          }}
+        >
           <Wallet embedded={true} />
         </div>
       )}
@@ -232,97 +248,97 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
 
   return (
     <CacheProvider value={emotionCache}>
-    <>
-      <Head>
-        <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
-        />
-        <meta name="robots" content="index, follow" />
-        <meta name="language" content="en" />
-        <meta content="xrpl.to" name="author" />
-        <meta name="copyright" content="xrpl.to" />
-        <meta name="coverage" content="Worldwide" />
-        <meta name="distribution" content="Global" />
-        <meta name="rating" content="General" />
-        <meta httpEquiv="Expires" content="0" />
-        <meta httpEquiv="Pragma" content="no-cache" />
-        <meta httpEquiv="Cache-Control" content="no-cache" />
-        <meta
-          name="google-site-verification"
-          content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc"
-        />
-        <meta name="msapplication-TileColor" content="#000000" />
-        <meta name="theme-color" content="#147DFE" />
-        <link rel="icon" type="image/webp" sizes="32x32" href="/icons/favicon-32x32.webp" />
-        <link rel="icon" type="image/webp" sizes="16x16" href="/icons/favicon-16x16.webp" />
-        <link rel="manifest" href="/icons/site.webmanifest" />
-        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000" />
-        <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
-        <link rel="canonical" href={ogp.canonical} />
+      <>
+        <Head>
+          <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
+          <meta
+            name="viewport"
+            content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=5.0, viewport-fit=cover"
+          />
+          <meta name="robots" content="index, follow" />
+          <meta name="language" content="en" />
+          <meta content="xrpl.to" name="author" />
+          <meta name="copyright" content="xrpl.to" />
+          <meta name="coverage" content="Worldwide" />
+          <meta name="distribution" content="Global" />
+          <meta name="rating" content="General" />
+          <meta httpEquiv="Expires" content="0" />
+          <meta httpEquiv="Pragma" content="no-cache" />
+          <meta httpEquiv="Cache-Control" content="no-cache" />
+          <meta
+            name="google-site-verification"
+            content="hh6F1f8GQ-_d3L7eGAcBc9G020PM2jSDzIjT12_I-Mc"
+          />
+          <meta name="msapplication-TileColor" content="#000000" />
+          <meta name="theme-color" content="#147DFE" />
+          <link rel="icon" type="image/webp" sizes="32x32" href="/icons/favicon-32x32.webp" />
+          <link rel="icon" type="image/webp" sizes="16x16" href="/icons/favicon-16x16.webp" />
+          <link rel="manifest" href="/icons/site.webmanifest" />
+          <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#000000" />
+          <link rel="shortcut icon" href="/icons/favicon.ico" type="image/x-icon" />
+          <link rel="canonical" href={ogp.canonical} />
 
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript }} />
+          <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLdScript }} />
 
-        <title>{ogp.title}</title>
-        <meta name="description" content={ogp.desc} />
-        <meta property="og:site_name" content="xrpl.to" />
+          <title>{ogp.title}</title>
+          <meta name="description" content={ogp.desc} />
+          <meta property="og:site_name" content="xrpl.to" />
 
-        {/* Facebook Meta Tags */}
-        <meta property="og:url" content={ogp.url} />
-        <meta property="og:type" content="website" />
-        <meta property="og:title" content={`${ogp.title} | xrpl.to`} />
-        <meta property="og:description" content={ogp.desc} />
-        <meta property="og:image" content={ogp.imgUrl} />
-        <meta property="og:image:type" content={ogp.imgType || 'image/png'} />
-        <meta property="og:image:width" content={ogp.imgWidth || '1200'} />
-        <meta property="og:image:height" content={ogp.imgHeight || '630'} />
-        {ogp.imgAlt && <meta property="og:image:alt" content={ogp.imgAlt} />}
+          {/* Facebook Meta Tags */}
+          <meta property="og:url" content={ogp.url} />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={`${ogp.title} | xrpl.to`} />
+          <meta property="og:description" content={ogp.desc} />
+          <meta property="og:image" content={ogp.imgUrl} />
+          <meta property="og:image:type" content={ogp.imgType || 'image/png'} />
+          <meta property="og:image:width" content={ogp.imgWidth || '1200'} />
+          <meta property="og:image:height" content={ogp.imgHeight || '630'} />
+          {ogp.imgAlt && <meta property="og:image:alt" content={ogp.imgAlt} />}
 
-        {/* Additional Open Graph images for better fallback support */}
-        {ogp.images &&
-          ogp.images.slice(1).map((img, index) => (
-            <React.Fragment key={img.url}>
-              <meta property="og:image" content={img.url} />
-              <meta property="og:image:type" content={img.type} />
-              <meta property="og:image:width" content={img.width} />
-              <meta property="og:image:height" content={img.height} />
-              {img.alt && <meta property="og:image:alt" content={img.alt} />}
-            </React.Fragment>
-          ))}
+          {/* Additional Open Graph images for better fallback support */}
+          {ogp.images &&
+            ogp.images.slice(1).map((img, index) => (
+              <React.Fragment key={img.url}>
+                <meta property="og:image" content={img.url} />
+                <meta property="og:image:type" content={img.type} />
+                <meta property="og:image:width" content={img.width} />
+                <meta property="og:image:height" content={img.height} />
+                {img.alt && <meta property="og:image:alt" content={img.alt} />}
+              </React.Fragment>
+            ))}
 
-        {/* Twitter Meta Tags */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta property="twitter:domain" content="xrpl.to" />
-        <meta property="twitter:url" content={ogp.url} />
-        <meta name="twitter:title" content={`${ogp.title} | xrpl.to`} />
-        <meta name="twitter:description" content={ogp.desc} />
-        <meta name="twitter:image" content={ogp.imgUrl} />
-      </Head>
+          {/* Twitter Meta Tags */}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta property="twitter:domain" content="xrpl.to" />
+          <meta property="twitter:url" content={ogp.url} />
+          <meta name="twitter:title" content={`${ogp.title} | xrpl.to`} />
+          <meta name="twitter:description" content={ogp.desc} />
+          <meta name="twitter:image" content={ogp.imgUrl} />
+        </Head>
 
-      <ContextProvider data={data} openSnackbar={openSnackbar}>
-        <AppProgressBar router={router} />
-        <ThemeProvider>
-          <SnackbarProvider
-            maxSnack={2}
-            anchorOrigin={{
-              vertical: 'top',
-              horizontal: 'center'
-            }}
-          >
-            <PinnedChartTracker>
-              <CssBaseline />
-              <AppPageLayout>
-                <Component {...pageProps} />
-              </AppPageLayout>
-              <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
-              <TransactionAlert />
-              {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
-            </PinnedChartTracker>
-          </SnackbarProvider>
-        </ThemeProvider>
-      </ContextProvider>
-    </>
+        <ContextProvider data={data} openSnackbar={openSnackbar}>
+          <AppProgressBar router={router} />
+          <ThemeProvider>
+            <SnackbarProvider
+              maxSnack={2}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'center'
+              }}
+            >
+              <PinnedChartTracker>
+                <CssBaseline />
+                <AppPageLayout>
+                  <Component {...pageProps} />
+                </AppPageLayout>
+                <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+                <TransactionAlert />
+                {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
+              </PinnedChartTracker>
+            </SnackbarProvider>
+          </ThemeProvider>
+        </ContextProvider>
+      </>
     </CacheProvider>
   );
 }

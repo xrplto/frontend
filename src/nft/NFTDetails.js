@@ -3,7 +3,9 @@ import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 const Swiper = dynamic(() => import('swiper/react').then((mod) => mod.Swiper), { ssr: false });
-const SwiperSlide = dynamic(() => import('swiper/react').then((mod) => mod.SwiperSlide), { ssr: false });
+const SwiperSlide = dynamic(() => import('swiper/react').then((mod) => mod.SwiperSlide), {
+  ssr: false
+});
 import { Navigation, Pagination } from 'swiper/modules';
 
 // Material
@@ -106,8 +108,18 @@ function getProperties(meta) {
 
   // Other props
   const props = [
-    'Rarity', 'Signature', 'Background', 'Base', 'Mouth', 'Accessories',
-    'Base Effects', 'Blade Effect', 'End Scene', 'Music', 'Blades In Video', 'Special'
+    'Rarity',
+    'Signature',
+    'Background',
+    'Base',
+    'Mouth',
+    'Accessories',
+    'Base Effects',
+    'Blade Effect',
+    'End Scene',
+    'Music',
+    'Blades In Video',
+    'Special'
   ];
 
   try {
@@ -194,7 +206,8 @@ const MediaContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  backgroundColor: theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
+  backgroundColor:
+    theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
   overflow: 'hidden',
   [theme.breakpoints.down('md')]: {
     aspectRatio: '4 / 3'
@@ -208,7 +221,7 @@ const MediaContainer = styled(Box)(({ theme }) => ({
 const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails = false }) {
   const { darkMode } = useContext(AppContext);
   const noImg = '/static/nft_no_image.webp';
-  
+
   // Load Swiper styles on client only
   React.useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -225,7 +238,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const [openImage, setOpenImage] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [errored, setErrored] = useState(false);
-  
 
   // Get media URLs
   let imageUrl = getNftFilesUrls(nft, 'image');
@@ -258,7 +270,8 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
     imageUrl = noImg;
   }
 
-  const imgOrAnimUrl = contentTab === 'image' ? imageUrl : contentTab === 'animation' ? animationUrl : '';
+  const imgOrAnimUrl =
+    contentTab === 'image' ? imageUrl : contentTab === 'animation' ? animationUrl : '';
 
   const handleOpenImage = (imageUrl) => {
     setSelectedImageUrl(imageUrl);
@@ -269,13 +282,13 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
     const nftName = nft?.name || 'this NFT';
     const collectionName = nft?.collection || nft?.meta?.collection?.name || '';
     const currentUrl = window.location.href;
-    
+
     let tweetText = `Check out ${nftName}`;
     if (collectionName) {
       tweetText += ` from ${collectionName} collection`;
     }
     tweetText += ` on @xrplto! 🚀\n\n`;
-    
+
     const tweetUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(tweetText)}&url=${encodeURIComponent(currentUrl)}`;
     window.open(tweetUrl, '_blank', 'width=550,height=420');
   };
@@ -286,9 +299,20 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
   const loadingImage = () => {
     if (errored) {
-      return <div style={{ textAlign: 'center', marginTop: '40px' }}>{t('general.load-failed')}<br /></div>;
+      return (
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          {t('general.load-failed')}
+          <br />
+        </div>
+      );
     } else if (!loaded) {
-      return <div style={{ textAlign: 'center', marginTop: '40px' }}><span className="waiting"></span><br />{t('general.loading')}</div>;
+      return (
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <span className="waiting"></span>
+          <br />
+          {t('general.loading')}
+        </div>
+      );
     }
   };
 
@@ -297,7 +321,14 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
       component="button"
       underline="none"
       onClick={() => handleOpenImage(file.cachedUrl)}
-      sx={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}
+      sx={{
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative'
+      }}
     >
       {loadingImage()}
       <img
@@ -312,14 +343,22 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           top: 0,
           left: 0
         }}
-        onLoad={() => { setLoaded(true); setErrored(false); }}
+        onLoad={() => {
+          setLoaded(true);
+          setErrored(false);
+        }}
         onError={() => setErrored(true)}
-        src={typeof file === 'string' ? file : file.thumbnail ? 'https://s2.xrpnft.com/d1/' + (file.thumbnail?.big || file.thumbnail?.small) : file.cachedUrl}
+        src={
+          typeof file === 'string'
+            ? file
+            : file.thumbnail
+              ? 'https://s2.xrpnft.com/d1/' + (file.thumbnail?.big || file.thumbnail?.small)
+              : file.cachedUrl
+        }
         alt={NFTName}
       />
     </Link>
   );
-
 
   return (
     <StyledCard>
@@ -327,18 +366,37 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
       <Box sx={{ p: 2, pb: 1 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 0.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: 700,
+                mb: 0.5,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
               {NFTName}
             </Typography>
             {collectionName && (
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Avatar sx={{ width: 20, height: 20 }} src="/static/collection-placeholder.png" />
-                <Typography variant="body2" color="text.secondary">{collectionName}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {collectionName}
+                </Typography>
               </Stack>
             )}
           </Box>
           <Stack direction="row" spacing={1}>
-            {rarity && <Chip label={`Rank #${rarity}`} size="small" color="primary" variant="outlined" sx={{ fontWeight: 600 }} />}
+            {rarity && (
+              <Chip
+                label={`Rank #${rarity}`}
+                size="small"
+                color="primary"
+                variant="outlined"
+                sx={{ fontWeight: 600 }}
+              />
+            )}
             <Tooltip title="Share">
               <IconButton size="small" onClick={handleTweetNFT}>
                 <ShareIcon fontSize="small" />
@@ -360,10 +418,32 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
             {renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
-            <Modal open={openImage} onClose={() => setOpenImage(false)} closeAfterTransition BackdropComponent={Backdrop}>
-              <Box sx={{ position: 'relative', maxWidth: '90vw', maxHeight: '90vh', outline: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src={selectedImageUrl} alt={NFTName} style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }} />
-                <IconButton onClick={() => setOpenImage(false)} sx={{ position: 'absolute', top: 10, right: 10, color: 'white' }}>
+            <Modal
+              open={openImage}
+              onClose={() => setOpenImage(false)}
+              closeAfterTransition
+              BackdropComponent={Backdrop}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  maxWidth: '90vw',
+                  maxHeight: '90vh',
+                  outline: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                <img
+                  src={selectedImageUrl}
+                  alt={NFTName}
+                  style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+                />
+                <IconButton
+                  onClick={() => setOpenImage(false)}
+                  sx={{ position: 'absolute', top: 10, right: 10, color: 'white' }}
+                >
                   <CloseIcon />
                 </IconButton>
               </Box>
@@ -373,7 +453,13 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
         {videoUrl && contentTab === 'video' && (
           <Box sx={{ p: 2 }}>
-            <video playsInline muted loop controls style={{ width: '100%', height: '100%', maxHeight: '100%', objectFit: 'contain' }}>
+            <video
+              playsInline
+              muted
+              loop
+              controls
+              style={{ width: '100%', height: '100%', maxHeight: '100%', objectFit: 'contain' }}
+            >
               <source src={videoUrl[currentSlide]?.cachedUrl} type="video/mp4" />
             </video>
           </Box>
@@ -385,8 +471,22 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
         <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
             <Stack direction="row" spacing={2}>
-              {nft?.transferFee && <Chip label={`${(nft.transferFee / 1000).toFixed(1)}% Fee`} size="small" variant="filled" sx={{ bgcolor: 'action.selected' }} />}
-              {nft?.volume > 0 && <Chip label={`${fVolume(nft.volume)} XRP Vol`} size="small" variant="filled" sx={{ bgcolor: 'action.selected' }} />}
+              {nft?.transferFee && (
+                <Chip
+                  label={`${(nft.transferFee / 1000).toFixed(1)}% Fee`}
+                  size="small"
+                  variant="filled"
+                  sx={{ bgcolor: 'action.selected' }}
+                />
+              )}
+              {nft?.volume > 0 && (
+                <Chip
+                  label={`${fVolume(nft.volume)} XRP Vol`}
+                  size="small"
+                  variant="filled"
+                  sx={{ bgcolor: 'action.selected' }}
+                />
+              )}
             </Stack>
           </Stack>
         </Box>
@@ -401,7 +501,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const { collection, account, date, meta, cslug, NFTokenID, props, total, volume, rarity_rank, files } = nft;
+  const {
+    collection,
+    account,
+    date,
+    meta,
+    cslug,
+    NFTokenID,
+    props,
+    total,
+    volume,
+    rarity_rank,
+    files
+  } = nft;
 
   const { flag, issuer, transferFee } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
 
@@ -418,7 +530,10 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
     return '';
   }, [date]);
 
-  const collectionName = useMemo(() => collection || meta?.collection?.name || 'No Collection', [collection, meta]);
+  const collectionName = useMemo(
+    () => collection || meta?.collection?.name || 'No Collection',
+    [collection, meta]
+  );
   const properties = useMemo(() => props || getProperties(meta), [props, meta]);
 
   return (
@@ -437,16 +552,25 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 <Label>Collection</Label>
                 {cslug ? (
                   <Link href={`/collection/${cslug}`} underline="hover">
-                    <Value sx={{ color: 'primary.main', fontSize: '0.7rem' }}>{collectionName}</Value>
+                    <Value sx={{ color: 'primary.main', fontSize: '0.7rem' }}>
+                      {collectionName}
+                    </Value>
                   </Link>
                 ) : (
                   <Value sx={{ fontSize: '0.7rem' }}>{collectionName}</Value>
                 )}
               </Box>
-              {rarity_rank > 0 && <CompactChip label={`Rank #${rarity_rank}`} size="small" color="primary" variant="outlined" />}
+              {rarity_rank > 0 && (
+                <CompactChip
+                  label={`Rank #${rarity_rank}`}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              )}
             </Stack>
           </Grid>
-          
+
           {(strDateTime || volume > 0) && (
             <Grid item xs={12}>
               <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
@@ -482,7 +606,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               const value = item.value;
               const count = item.count || 0;
               const rarity = total > 0 && count > 0 ? ((count * 100) / total).toFixed(2) : 0;
-              
+
               return (
                 <Grid item key={`${type}-${value}`} xs={6} sm={4} md={3}>
                   <Paper
@@ -495,7 +619,14 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                       height: '100%'
                     }}
                   >
-                    <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', textTransform: 'uppercase', fontWeight: 600 }}>
+                    <Typography
+                      sx={{
+                        fontSize: '0.6rem',
+                        color: 'text.secondary',
+                        textTransform: 'uppercase',
+                        fontWeight: 600
+                      }}
+                    >
                       {type}
                     </Typography>
                     <Typography sx={{ fontSize: '0.7rem', fontWeight: 500, my: 0.25 }}>
@@ -518,14 +649,16 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {meta?.description && (
         <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
           <SectionTitle>Description</SectionTitle>
-          <Value sx={{ lineHeight: 1.4, fontSize: '0.7rem', maxHeight: 60, overflowY: 'auto' }}>{meta.description}</Value>
+          <Value sx={{ lineHeight: 1.4, fontSize: '0.7rem', maxHeight: 60, overflowY: 'auto' }}>
+            {meta.description}
+          </Value>
         </Paper>
       )}
 
       {/* Technical Details */}
       <Paper sx={{ p: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
         <SectionTitle>Details</SectionTitle>
-        
+
         <Grid container spacing={0.5}>
           <Grid item xs={12}>
             <Stack direction="row" alignItems="center" spacing={0.5}>
@@ -541,23 +674,31 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               <Stack direction="row" alignItems="center">
                 <Label sx={{ mb: 0, minWidth: 40 }}>Owner:</Label>
                 <Link href={`/account/${account}`} underline="hover">
-                  <Value sx={{ fontSize: '0.65rem' }}>{`${account.slice(0, 8)}...${account.slice(-6)}`}</Value>
+                  <Value
+                    sx={{ fontSize: '0.65rem' }}
+                  >{`${account.slice(0, 8)}...${account.slice(-6)}`}</Value>
                 </Link>
                 <CopyToClipboard text={account} onCopy={() => openSnackbar('Copied!', 'success')}>
                   <Tooltip title="Copy">
-                    <CopyButton size="small"><ContentCopyIcon /></CopyButton>
+                    <CopyButton size="small">
+                      <ContentCopyIcon />
+                    </CopyButton>
                   </Tooltip>
                 </CopyToClipboard>
               </Stack>
-              
+
               <Stack direction="row" alignItems="center">
                 <Label sx={{ mb: 0, minWidth: 40 }}>Issuer:</Label>
                 <Link href={`/account/${issuer}`} underline="hover">
-                  <Value sx={{ fontSize: '0.65rem' }}>{`${issuer.slice(0, 8)}...${issuer.slice(-6)}`}</Value>
+                  <Value
+                    sx={{ fontSize: '0.65rem' }}
+                  >{`${issuer.slice(0, 8)}...${issuer.slice(-6)}`}</Value>
                 </Link>
                 <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
                   <Tooltip title="Copy">
-                    <CopyButton size="small"><ContentCopyIcon /></CopyButton>
+                    <CopyButton size="small">
+                      <ContentCopyIcon />
+                    </CopyButton>
                   </Tooltip>
                 </CopyToClipboard>
               </Stack>
@@ -574,8 +715,15 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           <Grid item xs={12}>
             <Stack direction="row" alignItems="center" sx={{ mt: 0.5 }}>
               <Label sx={{ mb: 0, minWidth: 60 }}>TokenID:</Label>
-              <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" rel="noreferrer noopener nofollow" underline="hover">
-                <Value sx={{ fontSize: '0.6rem', color: 'primary.main' }}>{`${NFTokenID.slice(0, 12)}...${NFTokenID.slice(-12)}`}</Value>
+              <Link
+                href={`https://livenet.xrpl.org/nfts/${NFTokenID}`}
+                target="_blank"
+                rel="noreferrer noopener nofollow"
+                underline="hover"
+              >
+                <Value
+                  sx={{ fontSize: '0.6rem', color: 'primary.main' }}
+                >{`${NFTokenID.slice(0, 12)}...${NFTokenID.slice(-12)}`}</Value>
               </Link>
             </Stack>
           </Grid>
@@ -596,23 +744,52 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
                 return (
                   <Stack key={file.type} direction="row" spacing={0.5} alignItems="center">
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem' }}>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{ fontSize: '0.6rem' }}
+                    >
                       {file.type}:
                     </Typography>
                     {/^https?:\/\//.test(file.parsedUrl) ? (
-                      <Link href={file.parsedUrl} target="_blank" rel="noreferrer noopener nofollow" underline="hover">
-                        <Typography variant="caption" sx={{ fontSize: '0.6rem', wordBreak: 'break-all' }}>
-                          {file.parsedUrl.length > 30 ? `${file.parsedUrl.slice(0, 30)}...` : file.parsedUrl}
+                      <Link
+                        href={file.parsedUrl}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        underline="hover"
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{ fontSize: '0.6rem', wordBreak: 'break-all' }}
+                        >
+                          {file.parsedUrl.length > 30
+                            ? `${file.parsedUrl.slice(0, 30)}...`
+                            : file.parsedUrl}
                         </Typography>
                       </Link>
                     ) : (
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', wordBreak: 'break-all' }}>
-                        {file.parsedUrl.length > 30 ? `${file.parsedUrl.slice(0, 30)}...` : file.parsedUrl}
+                      <Typography
+                        variant="caption"
+                        sx={{ fontSize: '0.6rem', wordBreak: 'break-all' }}
+                      >
+                        {file.parsedUrl.length > 30
+                          ? `${file.parsedUrl.slice(0, 30)}...`
+                          : file.parsedUrl}
                       </Typography>
                     )}
                     {cachedHref && (
-                      <Link href={cachedHref} target="_blank" rel="noreferrer noopener nofollow" underline="hover">
-                        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'primary.main' }}>[C]</Typography>
+                      <Link
+                        href={cachedHref}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        underline="hover"
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{ fontSize: '0.6rem', color: 'primary.main' }}
+                        >
+                          [C]
+                        </Typography>
                       </Link>
                     )}
                   </Stack>

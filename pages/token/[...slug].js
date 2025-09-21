@@ -85,11 +85,15 @@ function Detail({ data }) {
 
       <Container
         maxWidth={creatorPanelOpen || transactionPanelOpen || orderBookOpen ? false : 'xl'}
-        sx={creatorPanelOpen || transactionPanelOpen || orderBookOpen ? { width: '100%', px: 2 } : undefined}
+        sx={
+          creatorPanelOpen || transactionPanelOpen || orderBookOpen
+            ? { width: '100%', px: 2 }
+            : undefined
+        }
       >
-        <TokenDetail 
-          token={token} 
-          tab={data.tab} 
+        <TokenDetail
+          token={token}
+          tab={data.tab}
           onCreatorPanelToggle={(open) => setCreatorPanelOpen(open)}
           creatorPanelOpen={creatorPanelOpen}
           onTransactionPanelToggle={(open) => setTransactionPanelOpen(open)}

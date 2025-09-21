@@ -388,7 +388,11 @@ export default function Share({ token }) {
           Icon: shareLib.WhatsappIcon,
           props: { url, title, separator: ' - ' }
         },
-        { Component: shareLib.TelegramShareButton, Icon: shareLib.TelegramIcon, props: { url, title } },
+        {
+          Component: shareLib.TelegramShareButton,
+          Icon: shareLib.TelegramIcon,
+          props: { url, title }
+        },
         { Component: shareLib.RedditShareButton, Icon: shareLib.RedditIcon, props: { url, title } },
         {
           Component: shareLib.EmailShareButton,
@@ -515,7 +519,9 @@ export default function Share({ token }) {
                   }}
                 >
                   {socialPlatforms.length === 0 && (
-                    <Typography variant="body2" color="text.secondary">Loading share options…</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Loading share options…
+                    </Typography>
                   )}
                   {socialPlatforms.map(({ Component, Icon, props }, index) => (
                     <Fade in={open} timeout={800 + index * 100} key={index}>

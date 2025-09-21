@@ -77,12 +77,13 @@ const ApiDocsPage = () => {
   };
 
   const handleCopyResponse = () => {
-    navigator.clipboard.writeText(JSON.stringify(apiResponse, null, 2))
+    navigator.clipboard
+      .writeText(JSON.stringify(apiResponse, null, 2))
       .then(() => {
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
       })
-      .catch(err => console.error('Failed to copy:', err));
+      .catch((err) => console.error('Failed to copy:', err));
   };
 
   const renderContent = () => {
@@ -94,13 +95,21 @@ const ApiDocsPage = () => {
               XRPL.to API Documentation
             </Typography>
             <Typography variant="body1" paragraph>
-              Welcome to the XRPL.to API! Access comprehensive XRP Ledger token data, market analytics, and trading information.
+              Welcome to the XRPL.to API! Access comprehensive XRP Ledger token data, market
+              analytics, and trading information.
             </Typography>
 
             <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>Base URL</Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
+                <Typography variant="h6" gutterBottom>
+                  Base URL
+                </Typography>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
                   <code>https://api.xrpl.to</code>
                 </Paper>
               </CardContent>
@@ -108,20 +117,38 @@ const ApiDocsPage = () => {
 
             <Card sx={{ mb: 3 }}>
               <CardContent>
-                <Typography variant="h6" gutterBottom>Quick Start</Typography>
-                <Typography variant="body2" paragraph>Get trending tokens:</Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
-                  <code>curl -X GET "https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc"</code>
+                <Typography variant="h6" gutterBottom>
+                  Quick Start
+                </Typography>
+                <Typography variant="body2" paragraph>
+                  Get trending tokens:
+                </Typography>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
+                  <code>
+                    curl -X GET
+                    "https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc"
+                  </code>
                 </Paper>
               </CardContent>
             </Card>
 
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>Rate Limits</Typography>
+                <Typography variant="h6" gutterBottom>
+                  Rate Limits
+                </Typography>
                 <List>
-                  <ListItem><ListItemText primary="Free: 1,000 requests/hour" /></ListItem>
-                  <ListItem><ListItemText primary="Authenticated: 5,000 requests/hour" /></ListItem>
+                  <ListItem>
+                    <ListItemText primary="Free: 1,000 requests/hour" />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText primary="Authenticated: 5,000 requests/hour" />
+                  </ListItem>
                 </List>
               </CardContent>
             </Card>
@@ -131,7 +158,9 @@ const ApiDocsPage = () => {
       case 'tokens':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Tokens</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
+              Tokens
+            </Typography>
 
             <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
               <CardContent>
@@ -145,7 +174,9 @@ const ApiDocsPage = () => {
                   Get paginated list of tokens with sorting and filtering
                 </Typography>
 
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>Parameters</Typography>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                  Parameters
+                </Typography>
                 <TableContainer component={Paper}>
                   <Table size="small">
                     <TableHead>
@@ -158,19 +189,25 @@ const ApiDocsPage = () => {
                     </TableHead>
                     <TableBody>
                       <TableRow>
-                        <TableCell><code>limit</code></TableCell>
+                        <TableCell>
+                          <code>limit</code>
+                        </TableCell>
                         <TableCell>number</TableCell>
                         <TableCell>20</TableCell>
                         <TableCell>Results per page (1-100)</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><code>sortBy</code></TableCell>
+                        <TableCell>
+                          <code>sortBy</code>
+                        </TableCell>
                         <TableCell>string</TableCell>
                         <TableCell>vol24hxrp</TableCell>
                         <TableCell>Sort field</TableCell>
                       </TableRow>
                       <TableRow>
-                        <TableCell><code>filter</code></TableCell>
+                        <TableCell>
+                          <code>filter</code>
+                        </TableCell>
                         <TableCell>string</TableCell>
                         <TableCell>-</TableCell>
                         <TableCell>Search filter</TableCell>
@@ -179,9 +216,18 @@ const ApiDocsPage = () => {
                   </Table>
                 </TableContainer>
 
-                <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 600 }}>Example</Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
-                  <code>GET https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc</code>
+                <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 600 }}>
+                  Example
+                </Typography>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
+                  <code>
+                    GET https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc
+                  </code>
                 </Paper>
 
                 <Box sx={{ mt: 2 }}>
@@ -208,7 +254,12 @@ const ApiDocsPage = () => {
                 <Typography variant="body2" sx={{ mb: 2 }}>
                   Get trending tokens
                 </Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
                   <code>GET https://api.xrpl.to/api/trending?limit=10</code>
                 </Paper>
                 <Box sx={{ mt: 2 }}>
@@ -229,7 +280,9 @@ const ApiDocsPage = () => {
       case 'token-details':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Token Details</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
+              Token Details
+            </Typography>
 
             <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
               <CardContent>
@@ -242,7 +295,12 @@ const ApiDocsPage = () => {
                 <Typography variant="body2" sx={{ mb: 2 }}>
                   Get detailed token information
                 </Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
                   <code>GET https://api.xrpl.to/api/token/solo</code>
                 </Paper>
                 <Box sx={{ mt: 2 }}>
@@ -263,7 +321,9 @@ const ApiDocsPage = () => {
       case 'trading':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Trading</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
+              Trading
+            </Typography>
 
             <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
               <CardContent>
@@ -276,7 +336,12 @@ const ApiDocsPage = () => {
                 <Typography variant="body2" sx={{ mb: 2 }}>
                   Get trading history
                 </Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
                   <code>GET https://api.xrpl.to/api/history?limit=10</code>
                 </Paper>
                 <Box sx={{ mt: 2 }}>
@@ -297,7 +362,9 @@ const ApiDocsPage = () => {
       case 'accounts':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Accounts</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
+              Accounts
+            </Typography>
 
             <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
               <CardContent>
@@ -310,7 +377,12 @@ const ApiDocsPage = () => {
                 <Typography variant="body2" sx={{ mb: 2 }}>
                   Get account balances
                 </Typography>
-                <Paper sx={{ p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa' }}>
+                <Paper
+                  sx={{
+                    p: 2,
+                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
+                  }}
+                >
                   <code>GET https://api.xrpl.to/api/account/balance/rAccount123...</code>
                 </Paper>
               </CardContent>
@@ -321,7 +393,9 @@ const ApiDocsPage = () => {
       case 'errors':
         return (
           <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>Error Codes</Typography>
+            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
+              Error Codes
+            </Typography>
 
             <TableContainer component={Paper}>
               <Table>
@@ -367,20 +441,25 @@ const ApiDocsPage = () => {
     <Box sx={{ flex: 1 }}>
       <Head>
         <title>XRPL.to API Documentation</title>
-        <meta name="description" content="Complete API documentation for XRPL.to - XRP Ledger token data and analytics" />
+        <meta
+          name="description"
+          content="Complete API documentation for XRPL.to - XRP Ledger token data and analytics"
+        />
       </Head>
 
       <Toolbar id="back-to-top-anchor" />
       <Header />
 
-      <Box sx={{
-        margin: 0,
-        padding: 0,
-        background: theme.palette.background.default,
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column'
-      }}>
+      <Box
+        sx={{
+          margin: 0,
+          padding: 0,
+          background: theme.palette.background.default,
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
         <Box sx={{ display: 'flex', flex: 1 }}>
           <IconButton
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -410,7 +489,9 @@ const ApiDocsPage = () => {
             }}
           >
             <Box sx={{ p: 2 }}>
-              <Typography variant="h6" gutterBottom>API Documentation</Typography>
+              <Typography variant="h6" gutterBottom>
+                API Documentation
+              </Typography>
               <TextField
                 fullWidth
                 size="small"
@@ -420,7 +501,7 @@ const ApiDocsPage = () => {
                 sx={{ mb: 2, mt: 1 }}
               />
               <List>
-                {sections.map(section => (
+                {sections.map((section) => (
                   <ListItem
                     key={section.id}
                     button
@@ -463,11 +544,17 @@ const ApiDocsPage = () => {
           onClose={() => setIsModalOpen(false)}
           sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}
         >
-          <Paper sx={{ width: '90%', maxWidth: '800px', maxHeight: '80vh', overflow: 'auto', p: 3 }}>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+          <Paper
+            sx={{ width: '90%', maxWidth: '800px', maxHeight: '80vh', overflow: 'auto', p: 3 }}
+          >
+            <Box
+              sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}
+            >
               <Typography variant="h6">API Response</Typography>
               <Box>
-                {copySuccess && <Chip icon={<CheckCircleIcon />} label="Copied!" color="success" size="small" />}
+                {copySuccess && (
+                  <Chip icon={<CheckCircleIcon />} label="Copied!" color="success" size="small" />
+                )}
                 <IconButton onClick={handleCopyResponse} size="small">
                   <ContentCopyIcon />
                 </IconButton>
@@ -482,7 +569,16 @@ const ApiDocsPage = () => {
                 <CircularProgress />
               </Box>
             ) : apiResponse ? (
-              <Box component="pre" sx={{ fontSize: '0.9rem', overflow: 'auto', p: 2, backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa', borderRadius: 1 }}>
+              <Box
+                component="pre"
+                sx={{
+                  fontSize: '0.9rem',
+                  overflow: 'auto',
+                  p: 2,
+                  backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa',
+                  borderRadius: 1
+                }}
+              >
                 {JSON.stringify(apiResponse, null, 2)}
               </Box>
             ) : null}

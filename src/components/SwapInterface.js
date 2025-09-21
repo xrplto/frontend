@@ -12,9 +12,12 @@ const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   ssr: false
 });
 
-const ClipLoader = dynamic(() => import('react-spinners').then(mod => ({ default: mod.ClipLoader })), {
-  ssr: false
-});
+const ClipLoader = dynamic(
+  () => import('react-spinners').then((mod) => ({ default: mod.ClipLoader })),
+  {
+    ssr: false
+  }
+);
 
 // Material UI components (to be gradually replaced with Tailwind)
 import {
@@ -95,12 +98,9 @@ const TransactionDetailsPanel = dynamic(
 // Router
 import { useRouter } from 'next/router';
 
-
-
-
-
-const ExchangeButton = memo(styled(Button)(
-  ({ theme }) => `
+const ExchangeButton = memo(
+  styled(Button)(
+    ({ theme }) => `
     width: 100%;
     padding: 12px 16px;
     border-radius: 10px;
@@ -153,10 +153,12 @@ const ExchangeButton = memo(styled(Button)(
       font-size: 13px;
     }
 `
-));
+  )
+);
 
-const AllowButton = memo(styled(Button)(
-  ({ theme }) => `
+const AllowButton = memo(
+  styled(Button)(
+    ({ theme }) => `
     padding: 4px 10px;
     border-radius: 8px;
     font-size: 11px;
@@ -173,10 +175,12 @@ const AllowButton = memo(styled(Button)(
       transform: scale(1.02);
     }
 `
-));
+  )
+);
 
-const ToggleButton = memo(styled(IconButton)(
-  ({ theme }) => `
+const ToggleButton = memo(
+  styled(IconButton)(
+    ({ theme }) => `
     background: ${theme.palette.background.paper};
     border: 1px solid ${alpha(theme.palette.divider, 0.12)};
     width: 28px;
@@ -204,7 +208,8 @@ const ToggleButton = memo(styled(IconButton)(
       transform: translate(-50%, -50%) rotate(180deg);
     }
 `
-));
+  )
+);
 
 const getPriceImpactColor = (impact) => {
   if (impact <= 1) return '#22C55E'; // Green for low impact
@@ -218,8 +223,9 @@ const getPriceImpactSeverity = (impact) => {
   return 'High';
 };
 
-const WalletDisplay = memo(styled('div')(
-  ({ theme }) => `
+const WalletDisplay = memo(
+  styled('div')(
+    ({ theme }) => `
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -240,7 +246,8 @@ const WalletDisplay = memo(styled('div')(
       margin-bottom: 6px;
     }
 `
-));
+  )
+);
 
 const WalletInfo = styled('div')(
   ({ theme }) => `
@@ -317,17 +324,17 @@ const StatusIndicator = styled('div')(
 `
 );
 
-
-
 // Token Selector Components
 const MAX_RECENT_SEARCHES = 6;
 
 const TokenImage = styled(Image)(({ theme }) => ({
   borderRadius: '50%',
   overflow: 'hidden',
-  border: `1px solid ${theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.divider, 0.1) 
-    : alpha(theme.palette.divider, 0.08)}`,
+  border: `1px solid ${
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.divider, 0.1)
+      : alpha(theme.palette.divider, 0.08)
+  }`,
   transition: 'all 0.3s ease'
 }));
 
@@ -499,18 +506,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   // Add state for latest sparkline prices
   const [latestPrice1, setLatestPrice1] = useState(null);
   const [latestPrice2, setLatestPrice2] = useState(null);
-  
+
   // Add state for orderbook modal
   const [showOrderbook, setShowOrderbook] = useState(false);
   // Add state for showing user orders
   const [showOrders, setShowOrders] = useState(false);
   // Add state for order summary collapse
   const [showOrderSummary, setShowOrderSummary] = useState(false);
-  
+
   // Use orderbook data from props
   const bids = propsBids || [];
   const asks = propsAsks || [];
-  
+
   // Token Selector Panel states
   const [panel1Open, setPanel1Open] = useState(false);
   const [panel2Open, setPanel2Open] = useState(false);
@@ -521,7 +528,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [recentTokens, setRecentTokens] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const searchInputRef = useRef(null);
-  
+
   // Categories will be populated from API
   const [categories, setCategories] = useState([]);
   const [apiTags, setApiTags] = useState([]);
@@ -538,56 +545,59 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const curr2IsXRP = curr2?.currency === 'XRP';
 
   // Helper function to calculate token price in fiat
-  const calculateTokenPrice = useCallback((token, otherToken, amount, tokenExch, activeFiatCurrency, metrics) => {
-    try {
-      const tokenIsXRP = token?.currency === 'XRP';
-      const otherTokenIsXRP = otherToken?.currency === 'XRP';
-      const tokenIsRLUSD = token?.currency === 'RLUSD' || token?.name === 'RLUSD';
-      
-      if (activeFiatCurrency === 'XRP') {
-        // When display currency is XRP, show XRP value
-        if (tokenIsXRP) {
-          return new Decimal(amount || 0).toNumber();
-        } else if (otherTokenIsXRP && tokenExch > 0) {
-          return new Decimal(amount || 0).mul(tokenExch).toNumber();
-        } else {
-          return 0;
-        }
-      } else {
-        // For other fiat currencies (USD, EUR, etc.)
-        if (tokenIsXRP) {
-          return new Decimal(amount || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
-        } else if (otherTokenIsXRP && tokenIsRLUSD) {
-          if (activeFiatCurrency === 'USD') {
-            return new Decimal(amount || 0).toNumber();
-          } else {
-            const usdValue = new Decimal(amount || 0);
-            const usdToXrp = new Decimal(metrics['USD'] || 1);
-            const targetToXrp = new Decimal(metrics[activeFiatCurrency] || 1);
-            return usdValue.mul(usdToXrp).div(targetToXrp).toNumber();
-          }
-        } else if (otherTokenIsXRP) {
-          const xrpValue = new Decimal(amount || 0).mul(tokenExch || 0);
-          return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
-        } else {
-          return new Decimal(tokenExch || 0)
-            .mul(amount || 0)
-            .div(metrics[activeFiatCurrency] || 1)
-            .toNumber();
-        }
-      }
-    } catch (e) {
-      return 0;
-    }
-  }, []);
+  const calculateTokenPrice = useCallback(
+    (token, otherToken, amount, tokenExch, activeFiatCurrency, metrics) => {
+      try {
+        const tokenIsXRP = token?.currency === 'XRP';
+        const otherTokenIsXRP = otherToken?.currency === 'XRP';
+        const tokenIsRLUSD = token?.currency === 'RLUSD' || token?.name === 'RLUSD';
 
-  const tokenPrice1 = useMemo(() => 
-    calculateTokenPrice(token1, token2, amount1, tokenExch1, activeFiatCurrency, metrics),
+        if (activeFiatCurrency === 'XRP') {
+          // When display currency is XRP, show XRP value
+          if (tokenIsXRP) {
+            return new Decimal(amount || 0).toNumber();
+          } else if (otherTokenIsXRP && tokenExch > 0) {
+            return new Decimal(amount || 0).mul(tokenExch).toNumber();
+          } else {
+            return 0;
+          }
+        } else {
+          // For other fiat currencies (USD, EUR, etc.)
+          if (tokenIsXRP) {
+            return new Decimal(amount || 0).div(metrics[activeFiatCurrency] || 1).toNumber();
+          } else if (otherTokenIsXRP && tokenIsRLUSD) {
+            if (activeFiatCurrency === 'USD') {
+              return new Decimal(amount || 0).toNumber();
+            } else {
+              const usdValue = new Decimal(amount || 0);
+              const usdToXrp = new Decimal(metrics['USD'] || 1);
+              const targetToXrp = new Decimal(metrics[activeFiatCurrency] || 1);
+              return usdValue.mul(usdToXrp).div(targetToXrp).toNumber();
+            }
+          } else if (otherTokenIsXRP) {
+            const xrpValue = new Decimal(amount || 0).mul(tokenExch || 0);
+            return xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
+          } else {
+            return new Decimal(tokenExch || 0)
+              .mul(amount || 0)
+              .div(metrics[activeFiatCurrency] || 1)
+              .toNumber();
+          }
+        }
+      } catch (e) {
+        return 0;
+      }
+    },
+    []
+  );
+
+  const tokenPrice1 = useMemo(
+    () => calculateTokenPrice(token1, token2, amount1, tokenExch1, activeFiatCurrency, metrics),
     [calculateTokenPrice, token1, token2, amount1, tokenExch1, activeFiatCurrency, metrics]
   );
-  
-  const tokenPrice2 = useMemo(() => 
-    calculateTokenPrice(token2, token1, amount2, tokenExch2, activeFiatCurrency, metrics),
+
+  const tokenPrice2 = useMemo(
+    () => calculateTokenPrice(token2, token1, amount2, tokenExch2, activeFiatCurrency, metrics),
     [calculateTokenPrice, token2, token1, amount2, tokenExch2, activeFiatCurrency, metrics]
   );
 
@@ -595,60 +605,59 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const outputPrice = revert ? tokenPrice1 : tokenPrice2;
   const priceImpact = useMemo(() => {
     if (inputPrice <= 0) return 0;
-    
-    const result = new Decimal(outputPrice)
-      .sub(inputPrice)
-      .mul(100)
-      .div(inputPrice)
-      .toNumber();
-    
+
+    const result = new Decimal(outputPrice).sub(inputPrice).mul(100).div(inputPrice).toNumber();
+
     // Round to 2 decimal places
     return Math.round(result * 100) / 100;
   }, [inputPrice, outputPrice]);
 
   // Helper function to format token price for charts
-  const formatTokenPrice = useCallback((token, otherToken, tokenExch, latestPrice) => {
-    if (token.currency === 'XRP') {
-      return `$${fNumber(latestPrice || token.exch || tokenExch)}`;
-    }
-    
-    // Special handling for RLUSD when paired with XRP
-    if ((token.currency === 'RLUSD' || token.name === 'RLUSD') && otherToken.currency === 'XRP') {
-      let price = Number(tokenExch);
-      if (isNaN(price) || price === 0) {
-        // Try calculating from other token exchange rate
-        const otherExch = token === token1 ? tokenExch2 : tokenExch1;
-        price = otherExch > 0 ? 1 / otherExch : 0;
+  const formatTokenPrice = useCallback(
+    (token, otherToken, tokenExch, latestPrice) => {
+      if (token.currency === 'XRP') {
+        return `$${fNumber(latestPrice || token.exch || tokenExch)}`;
       }
-      if (price > 0) {
+
+      // Special handling for RLUSD when paired with XRP
+      if ((token.currency === 'RLUSD' || token.name === 'RLUSD') && otherToken.currency === 'XRP') {
+        let price = Number(tokenExch);
+        if (isNaN(price) || price === 0) {
+          // Try calculating from other token exchange rate
+          const otherExch = token === token1 ? tokenExch2 : tokenExch1;
+          price = otherExch > 0 ? 1 / otherExch : 0;
+        }
+        if (price > 0) {
+          return `${price.toFixed(4)} XRP`;
+        }
+      }
+
+      // Use token.exch first, then tokenExch, then latestPrice
+      let price = Number(token.exch || tokenExch || latestPrice);
+      if (isNaN(price) || price === 0) return '0 XRP';
+
+      // Format based on size
+      if (price >= 1) {
         return `${price.toFixed(4)} XRP`;
       }
-    }
-    
-    // Use token.exch first, then tokenExch, then latestPrice
-    let price = Number(token.exch || tokenExch || latestPrice);
-    if (isNaN(price) || price === 0) return '0 XRP';
-    
-    // Format based on size
-    if (price >= 1) {
-      return `${price.toFixed(4)} XRP`;
-    }
-    
-    // Handle scientific notation for small numbers
-    const priceStr = price.toString();
-    if (priceStr.includes('e')) {
-      const exponent = parseInt(priceStr.split('e')[1]);
-      const decimalPlaces = Math.abs(exponent) + 4;
-      const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
-      return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
-    }
-    
-    // Regular small numbers
-    if (price >= 0.01) return `${price.toFixed(6)} XRP`;
-    if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
-    if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
-    return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
-  }, [token1, token2, tokenExch1, tokenExch2]);
+
+      // Handle scientific notation for small numbers
+      const priceStr = price.toString();
+      if (priceStr.includes('e')) {
+        const exponent = parseInt(priceStr.split('e')[1]);
+        const decimalPlaces = Math.abs(exponent) + 4;
+        const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
+        return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
+      }
+
+      // Regular small numbers
+      if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+      if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+      if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+      return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+    },
+    [token1, token2, tokenExch1, tokenExch2]
+  );
 
   // Helper function to convert hex currency code to readable name
   const getCurrencyDisplayName = (currency, tokenName) => {
@@ -715,7 +724,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             const spendingAmount = revert ? parseFloat(amount2 || 0) : parseFloat(amount1 || 0);
             const availableBalance = revert ? accountValue : accountAmount;
 
-
             if (availableBalance >= spendingAmount) {
               isSufficientBalance = true;
             } else {
@@ -754,8 +762,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setAccountPairBalance(ret.pair);
           }
         })
-        .catch((err) => {
-        });
+        .catch((err) => {});
 
       // Check trustlines - implement pagination to fetch all trustlines
       const fetchAllTrustlines = async () => {
@@ -772,7 +779,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           if (firstResponse.status === 200 && firstResponse.data) {
             allTrustlines = firstResponse.data.lines || [];
             totalTrustlines = firstResponse.data.total || 0;
-
 
             // If total is more than 50, fetch additional pages starting from page 1
             if (totalTrustlines > 50) {
@@ -795,7 +801,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   allTrustlines = allTrustlines.concat(response.data.lines);
                 }
               });
-
             }
 
             return allTrustlines;
@@ -810,8 +815,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       fetchAllTrustlines()
         .then((allTrustlines) => {
           setTrustlines(allTrustlines);
-
-
 
           // Helper function to normalize currency codes for comparison
           const normalizeCurrency = (currency) => {
@@ -900,7 +903,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               const issuerMatch = issuersMatch(line, curr1.issuer);
               const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
 
-
               return currencyMatch && (issuerMatch || isStandardCurrency);
             });
 
@@ -925,18 +927,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               const issuerMatch = issuersMatch(line, curr2.issuer);
               const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr2.currency);
 
-
               return currencyMatch && (issuerMatch || isStandardCurrency);
             });
 
-
           setHasTrustline1(hasCurr1Trustline);
           setHasTrustline2(hasCurr2Trustline);
-
-
         })
-        .catch((err) => {
-        });
+        .catch((err) => {});
     }
 
     getAccountInfo();
@@ -945,9 +942,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   // Add function to fetch latest sparkline price
   const fetchLatestSparklinePrice = async (token, setPriceFunction) => {
     try {
-      const response = await axios.get(
-        `${BASE_URL}/sparkline/${token.md5}?period=24h`
-      );
+      const response = await axios.get(`${BASE_URL}/sparkline/${token.md5}?period=24h`);
 
       if (response.data && response.data.data && response.data.data.prices) {
         const prices = response.data.data.prices;
@@ -957,8 +952,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           setPriceFunction(latestPrice);
         }
       }
-    } catch (error) {
-    }
+    } catch (error) {}
   };
 
   // Fetch latest sparkline prices when tokens change
@@ -981,7 +975,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const md51 = token1.md5;
       const md52 = token2.md5;
 
-
       // Get dynamic exchange rates from API
       axios
         .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
@@ -993,13 +986,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setTokenExch2(Number(ret.rate2) || 0);
           }
         })
-        .catch((err) => {
-        })
+        .catch((err) => {})
         .catch(() => {
           // Silently handle errors
         });
     }
-    
+
     // Only call if both tokens exist
     if (token1 && token2) {
       getTokenPrice();
@@ -1122,10 +1114,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       // - Bottom field (amount2): What you receive
       // But when revert=false, the displayed tokens are token1/token2
       // When revert=true, the displayed tokens are actually swapped internally
-      
+
       // We should always use what the user sees in the UI
-      const swapCurr1 = token1;  // Top field token ("You pay")
-      const swapCurr2 = token2;  // Bottom field token ("You receive")
+      const swapCurr1 = token1; // Top field token ("You pay")
+      const swapCurr2 = token2; // Bottom field token ("You receive")
       const Account = accountProfile.account;
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
@@ -1148,7 +1140,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         if (limitPrice && amount1) {
           const limitPriceDecimal = new Decimal(limitPrice);
           const amount1Decimal = new Decimal(amount1);
-          
+
           // Determine which direction to calculate based on currencies
           if (swapCurr1.currency === 'XRP' && swapCurr2.currency !== 'XRP') {
             // XRP -> Token: multiply XRP amount by limit price (Token per XRP)
@@ -1207,18 +1199,28 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           // XRPL uses Ripple Epoch (Jan 1, 2000 00:00 UTC)
           const RIPPLE_EPOCH = 946684800;
           const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
-          
+
           let expiryHours = 0;
-          switch(orderExpiry) {
-            case '1h': expiryHours = 1; break;
-            case '24h': expiryHours = 24; break;
-            case '7d': expiryHours = 24 * 7; break;
-            case '30d': expiryHours = 24 * 30; break;
-            case 'custom': expiryHours = customExpiry; break;
+          switch (orderExpiry) {
+            case '1h':
+              expiryHours = 1;
+              break;
+            case '24h':
+              expiryHours = 24;
+              break;
+            case '7d':
+              expiryHours = 24 * 7;
+              break;
+            case '30d':
+              expiryHours = 24 * 30;
+              break;
+            case 'custom':
+              expiryHours = customExpiry;
+              break;
           }
-          
+
           if (expiryHours > 0) {
-            expiration = now + (expiryHours * 60 * 60);
+            expiration = now + expiryHours * 60 * 60;
           }
         }
 
@@ -1231,7 +1233,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           Fee: '12',
           SourceTag: 93339333
         };
-        
+
         // Add expiration if set
         if (expiration) {
           transactionData.Expiration = expiration;
@@ -1251,20 +1253,22 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         // IMPORTANT: In XRPL Payment transactions:
         // - SendMax = what you're willing to spend (input)
         // - Amount = what you want to receive (output)
-        // 
+        //
         // The UI shows: Top field (amount1) -> Bottom field (amount2)
         // This means: Spend amount1 of curr1 to get amount2 of curr2
-        
+
         // Always: Send from top field (curr1/amount1), Receive in bottom field (curr2/amount2)
         const sendCurrency = swapCurr1;
         const receiveCurrency = swapCurr2;
         const sendAmount = amount1;
         const receiveAmount = amount2;
-        
+
         // Check if we're selling 100% of the balance
-        const accountBalance = revert ? accountPairBalance?.curr2?.value : accountPairBalance?.curr1?.value;
+        const accountBalance = revert
+          ? accountPairBalance?.curr2?.value
+          : accountPairBalance?.curr1?.value;
         const isSelling100Percent = accountBalance && sendAmount === accountBalance.toString();
-        
+
         // Build SendMax (what we're spending) - handle XRP special case
         if (sendCurrency.currency === 'XRP') {
           SendMax = new Decimal(sendAmount).mul(1000000).toFixed(0, 1); // Convert to drops
@@ -1273,12 +1277,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             currency: sendCurrency.currency,
             issuer: sendCurrency.issuer,
             // For 100% sells, use more precision to ensure all tokens are sold
-            value: isSelling100Percent 
-              ? sendAmount  // Use exact balance string
-              : new Decimal(sendAmount).toFixed(6, 1)  // Use safe precision for XRPL
+            value: isSelling100Percent
+              ? sendAmount // Use exact balance string
+              : new Decimal(sendAmount).toFixed(6, 1) // Use safe precision for XRPL
           };
         }
-        
+
         // Build Amount (what we want to receive) - handle XRP special case
         if (receiveCurrency.currency === 'XRP') {
           Amount = new Decimal(receiveAmount).mul(1000000).toFixed(0, 1); // Convert to drops
@@ -1286,7 +1290,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           Amount = {
             currency: receiveCurrency.currency,
             issuer: receiveCurrency.issuer,
-            value: new Decimal(receiveAmount).toFixed(6, 1)  // Use safe precision for XRPL
+            value: new Decimal(receiveAmount).toFixed(6, 1) // Use safe precision for XRPL
           };
         }
 
@@ -1300,7 +1304,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           DeliverMin = {
             currency: Amount.currency,
             issuer: Amount.issuer,
-            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, 1)  // Safe precision for XRPL
+            value: new Decimal(receiveAmount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(6, 1) // Safe precision for XRPL
           };
         } else {
           // For XRP amounts (strings) - Amount is already in drops
@@ -1318,7 +1322,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           Fee: '12',
           SourceTag: 20221212
         };
-        
       }
 
       let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
@@ -1333,7 +1336,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             user_token
           };
 
-          const endpoint = orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
+          const endpoint =
+            orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
           const res = await axios.post(endpoint, body);
 
           if (res.status === 200) {
@@ -1425,13 +1429,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
 
-
       // API rates depend on token order:
       // When token1=XRP, token2=RLUSD: rate1=1, rate2=XRP per RLUSD (e.g., 2.84)
       // When token1=RLUSD, token2=XRP: rate1=XRP per RLUSD (e.g., 2.84), rate2=1
-      
+
       let result = new Decimal(0);
-      
+
       if (token1IsXRP && !token2IsXRP) {
         // XRP -> Token (e.g., XRP -> RLUSD)
         // rate2 = XRP per RLUSD, so divide XRP by rate2 to get RLUSD
@@ -1456,14 +1459,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           result = !revert ? amt.mul(rate2).div(rate1) : amt.mul(rate1).div(rate2);
         }
       }
-      
-      
+
       // Check if result is valid - use toString and check for invalid values
       const resultStr = result.toString();
       if (resultStr === 'NaN' || resultStr === 'Infinity' || resultStr === '-Infinity') {
         return '';
       }
-      
+
       // Use safe precision for XRPL (max 16 significant digits total)
       const finalValue = result.toFixed(6, 1);
       return finalValue;
@@ -1479,7 +1481,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const handlePlaceOrder = (e) => {
     // Check if we need to create trustlines first
-    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
+    if (
+      isLoggedIn &&
+      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
+    ) {
       const missingCurrency = !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
       onCreateTrustline(missingCurrency);
       return;
@@ -1512,18 +1517,15 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     const token1IsXRP = token1?.currency === 'XRP';
     const token2IsXRP = token2?.currency === 'XRP';
 
-
     // Check if we have valid rates for calculation
     const hasValidRates =
       token1IsXRP || token2IsXRP
         ? tokenExch1 > 0 || tokenExch2 > 0
         : tokenExch1 > 0 && tokenExch2 > 0;
 
-
     if (value && value !== '' && hasValidRates) {
       const activeType = revert ? 'VALUE' : 'AMOUNT';
       const calculatedValue = calcQuantity(value, activeType);
-
 
       if (calculatedValue && calculatedValue !== '0') {
         setAmount2(calculatedValue);
@@ -1612,15 +1614,15 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           if (token.currency === 'XRP') return 'xrp';
           return `${token.currency}-${token.issuer}`;
         };
-        
+
         const currency1String = createUrlString(tempToken2);
         const currency2String = createUrlString(tempToken1);
-        
+
         if (currency1String && currency2String) {
           const newPath = `/swap/${currency1String}/${currency2String}`;
           const currentCurrency1 = router.query.currencies?.[0];
           const currentCurrency2 = router.query.currencies?.[1];
-          
+
           if (currentCurrency1 !== currency1String || currentCurrency2 !== currency2String) {
             router.push(newPath, undefined, { shallow: true });
           }
@@ -1647,18 +1649,21 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     return () => window.removeEventListener('keydown', handleKeyPress);
   }, [onRevertExchange]);
 
-
   const handleMsg = () => {
     if (isProcessing === 1) return 'Pending Exchanging';
-    
+
     // Check for missing trustlines
-    if (isLoggedIn && ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))) {
-      const missingToken = !hasTrustline1 && curr1.currency !== 'XRP' 
-        ? getCurrencyDisplayName(curr1.currency, curr1?.name)
-        : getCurrencyDisplayName(curr2.currency, curr2?.name);
+    if (
+      isLoggedIn &&
+      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
+    ) {
+      const missingToken =
+        !hasTrustline1 && curr1.currency !== 'XRP'
+          ? getCurrencyDisplayName(curr1.currency, curr1?.name)
+          : getCurrencyDisplayName(curr2.currency, curr2?.name);
       return `Set Trustline for ${missingToken}`;
     }
-    
+
     if (!amount1 || !amount2) return 'Enter an Amount';
     else if (orderType === 'limit' && !limitPrice) return 'Enter Limit Price';
     else if (errMsg && amount1 !== '' && amount2 !== '') return errMsg;
@@ -1780,7 +1785,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setLoading(false);
   };
 
-
   // Helper function to create URL-friendly currency string
   const createCurrencyUrlString = (token) => {
     if (!token) return '';
@@ -1818,24 +1822,27 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   };
 
   // Function to update URL based on current tokens
-  const updateUrl = useCallback((token1, token2) => {
-    if (!token1 || !token2) return;
+  const updateUrl = useCallback(
+    (token1, token2) => {
+      if (!token1 || !token2) return;
 
-    const currency1String = createCurrencyUrlString(token1);
-    const currency2String = createCurrencyUrlString(token2);
+      const currency1String = createCurrencyUrlString(token1);
+      const currency2String = createCurrencyUrlString(token2);
 
-    if (currency1String && currency2String) {
-      const newPath = `/swap/${currency1String}/${currency2String}`;
-      // Only update URL if it's different from current path
-      // For Next.js dynamic routes, we need to check both pathname and query
-      const currentCurrency1 = router.query.currencies?.[0];
-      const currentCurrency2 = router.query.currencies?.[1];
+      if (currency1String && currency2String) {
+        const newPath = `/swap/${currency1String}/${currency2String}`;
+        // Only update URL if it's different from current path
+        // For Next.js dynamic routes, we need to check both pathname and query
+        const currentCurrency1 = router.query.currencies?.[0];
+        const currentCurrency2 = router.query.currencies?.[1];
 
-      if (currentCurrency1 !== currency1String || currentCurrency2 !== currency2String) {
-        router.push(newPath, undefined, { shallow: true });
+        if (currentCurrency1 !== currency1String || currentCurrency2 !== currency2String) {
+          router.push(newPath, undefined, { shallow: true });
+        }
       }
-    }
-  }, [router]);
+    },
+    [router]
+  );
 
   // Function to find token by currency and issuer
   const findTokenByCurrencyAndIssuer = async (currency, issuer) => {
@@ -1872,8 +1879,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             return foundToken;
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // 2. Try xrpnft tokens endpoint (used by CurrencySearchModal)
       try {
@@ -1892,8 +1898,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             return foundToken;
           }
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // 3. Try direct token lookup by issuer_currency format
       try {
@@ -1902,8 +1907,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         if (directResponse.data && directResponse.data.token) {
           return directResponse.data.token;
         }
-      } catch (e) {
-      }
+      } catch (e) {}
 
       // 4. Fallback - create basic token object
       return {
@@ -1973,10 +1977,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           curr1: token1Data,
           curr2: token2Data
         });
-
       }
-    } catch (error) {
-    }
+    } catch (error) {}
 
     setUrlParsed(true);
     setIsLoadingFromUrl(false);
@@ -2054,7 +2056,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         const tagsRes = await axios.get(`${BASE_URL}/tags`);
         if (tagsRes.status === 200 && tagsRes.data) {
           setApiTags(tagsRes.data);
-          
+
           // Build categories from API response
           const dynamicCategories = [
             { value: 'all', label: 'All Tokens' },
@@ -2064,17 +2066,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             { value: 'gainers-24h', label: 'Gainers 24h' },
             { value: 'most-viewed', label: 'Most Viewed' }
           ];
-          
+
           // Add tag-based categories from API
           if (tagsRes.data && Array.isArray(tagsRes.data)) {
-            tagsRes.data.forEach(tag => {
+            tagsRes.data.forEach((tag) => {
               dynamicCategories.push({
                 value: tag,
                 label: tag
               });
             });
           }
-          
+
           setCategories(dynamicCategories);
         }
       } catch (err) {
@@ -2085,7 +2087,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         ]);
       }
     };
-    
+
     fetchCategories();
   }, []);
 
@@ -2116,7 +2118,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setLoadingTokens(true);
     try {
       // Use the same endpoint that provides marketcap data
-      const res = await axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`);
+      const res = await axios.get(
+        `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
+      );
       if (res.status === 200 && res.data) {
         const tokenList = res.data.tokens || [];
         // Add XRP token with full data
@@ -2167,27 +2171,29 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     // If searching, apply search filter on current tokens
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
-      let filtered = selectorTokens.filter(token => 
-        token.name?.toLowerCase().includes(query) ||
-        token.currency?.toLowerCase().includes(query) ||
-        token.user?.toLowerCase().includes(query)
+      let filtered = selectorTokens.filter(
+        (token) =>
+          token.name?.toLowerCase().includes(query) ||
+          token.currency?.toLowerCase().includes(query) ||
+          token.user?.toLowerCase().includes(query)
       );
 
       // Also search via API for more results
       if (searchQuery.length > 2) {
         try {
-          const res = await axios.get(`${BASE_URL}/tokens?filter=${encodeURIComponent(searchQuery)}&limit=50`);
+          const res = await axios.get(
+            `${BASE_URL}/tokens?filter=${encodeURIComponent(searchQuery)}&limit=50`
+          );
           if (res.status === 200 && res.data?.tokens) {
             const remoteTokens = res.data.tokens || [];
-            const existingMd5s = new Set(filtered.map(t => t.md5));
-            remoteTokens.forEach(rt => {
+            const existingMd5s = new Set(filtered.map((t) => t.md5));
+            remoteTokens.forEach((rt) => {
               if (!existingMd5s.has(rt.md5)) {
                 filtered.push(rt);
               }
             });
           }
-        } catch (err) {
-        }
+        } catch (err) {}
       }
 
       setFilteredTokens(filtered);
@@ -2199,7 +2205,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       setLoadingTokens(true);
       try {
         let apiUrl = '';
-        
+
         // Use specific endpoints for known categories - matching the dedicated pages
         if (selectedCategory === 'trending') {
           apiUrl = `${BASE_URL}/tokens?start=0&limit=50&sortBy=trendingScore&sortType=desc`;
@@ -2219,13 +2225,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         const res = await axios.get(apiUrl);
         if (res.status === 200 && res.data?.tokens) {
           const tokens = res.data.tokens || [];
-          
+
           // Check if we should exclude XRP for specific categories
-          const excludeXrpCategories = ['trending', 'spotlight', 'new', 'gainers-24h', 'most-viewed'];
-          
+          const excludeXrpCategories = [
+            'trending',
+            'spotlight',
+            'new',
+            'gainers-24h',
+            'most-viewed'
+          ];
+
           if (excludeXrpCategories.includes(selectedCategory)) {
             // For these categories, don't add XRP and filter out any XRP entries
-            const nonXrpTokens = tokens.filter(t => t.currency !== 'XRP');
+            const nonXrpTokens = tokens.filter((t) => t.currency !== 'XRP');
             setFilteredTokens(nonXrpTokens);
           } else {
             // For 'all' and tag-based categories, include XRP at the top
@@ -2241,9 +2253,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               vol24hxrp: 0,
               exch: 1
             };
-            
+
             // Filter out any duplicate XRP entries
-            const nonXrpTokens = tokens.filter(t => t.currency !== 'XRP');
+            const nonXrpTokens = tokens.filter((t) => t.currency !== 'XRP');
             setFilteredTokens([xrpToken, ...nonXrpTokens]);
           }
         } else {
@@ -2263,9 +2275,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const handleSelectToken = (token, isToken1) => {
     // Save to recent tokens
-    const recent = [token, ...recentTokens.filter(t => t.md5 !== token.md5)].slice(0, MAX_RECENT_SEARCHES);
+    const recent = [token, ...recentTokens.filter((t) => t.md5 !== token.md5)].slice(
+      0,
+      MAX_RECENT_SEARCHES
+    );
     localStorage.setItem('recentTokens', JSON.stringify(recent));
-    
+
     if (isToken1) {
       onChangeToken1(token);
       setPanel1Open(false);
@@ -2292,7 +2307,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
         transition: 'all 0.2s ease',
         '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+          backgroundColor: alpha(theme.palette.primary.main, 0.04)
         },
         '&:last-child': {
           borderBottom: 'none'
@@ -2302,8 +2317,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <Avatar
         src={`https://s1.xrpl.to/token/${token.md5}`}
         alt={token.name}
-        sx={{ 
-          width: 28, 
+        sx={{
+          width: 28,
           height: 28,
           mr: 1.5
         }}
@@ -2313,11 +2328,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           }
         }}
       />
-      
+
       <Box sx={{ flex: '0 0 25%', minWidth: 0 }}>
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography 
-            variant="body2" 
+          <Typography
+            variant="body2"
             fontWeight={600}
             noWrap
             sx={{ fontSize: '0.8rem' }}
@@ -2326,16 +2341,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {token.name}
           </Typography>
           {token.verified && (
-            <CheckCircleIcon 
-              sx={{ 
+            <CheckCircleIcon
+              sx={{
                 fontSize: 12,
                 color: theme.palette.primary.main,
                 flexShrink: 0
-              }} 
+              }}
             />
           )}
         </Stack>
-        <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.65rem', display: 'block' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ fontSize: '0.65rem', display: 'block' }}
+        >
           {token.user || 'Unknown'}
         </Typography>
       </Box>
@@ -2344,22 +2363,22 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
           {(() => {
             if (!token.exch && token.exch !== 0) return '0 XRP';
-            
+
             // Convert to number, handling scientific notation
             let price = Number(token.exch);
-            
+
             // Check for invalid number
             if (isNaN(price) || price === 0) return '0 XRP';
-            
+
             // For large numbers
             if (price >= 1) {
               return `${price.toFixed(4)} XRP`;
             }
-            
+
             // For smaller numbers, dynamically determine decimal places
             // Convert to string to check how many decimals we need
             const priceStr = price.toString();
-            
+
             // If already in decimal format, just format it
             if (!priceStr.includes('e')) {
               if (price >= 0.01) return `${price.toFixed(6)} XRP`;
@@ -2367,15 +2386,15 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
               return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
             }
-            
+
             // Handle scientific notation (e.g., 2.8273e-7)
             // Use toFixed with enough decimal places
             const exponent = parseInt(priceStr.split('e')[1]);
             const decimalPlaces = Math.abs(exponent) + 4; // Add 4 more digits after the significant part
-            
+
             // Cap at 20 decimal places for display
             const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
-            
+
             // Remove trailing zeros
             return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
           })()}
@@ -2383,7 +2402,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       </Box>
 
       <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
-        <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.success.main }}>
+        <Typography
+          variant="caption"
+          sx={{ fontSize: '0.75rem', color: theme.palette.success.main }}
+        >
           {(() => {
             if (!token.vol24hxrp) return '0 XRP';
             const vol = parseFloat(token.vol24hxrp);
@@ -2409,12 +2431,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       </Box>
 
       {((isToken1 && token1?.md5 === token.md5) || (!isToken1 && token2?.md5 === token.md5)) && (
-        <CheckCircleIcon 
-          sx={{ 
+        <CheckCircleIcon
+          sx={{
             fontSize: 16,
             color: theme.palette.primary.main,
             ml: 1
-          }} 
+          }}
         />
       )}
     </Box>
@@ -2422,24 +2444,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const renderTokenSelector = (token, onClickToken, panelTitle) => {
     if (!token) return null;
-    
-    const { 
-      md5 = '', 
-      name = 'Select Token', 
-      user = '', 
-      kyc = false, 
-      isOMCF = 'no' 
-    } = token;
-    
+
+    const { md5 = '', name = 'Select Token', user = '', kyc = false, isOMCF = 'no' } = token;
+
     const imgUrl = md5 ? `https://s1.xrpl.to/token/${md5}` : '/static/alt.webp';
 
     return (
-      <SelectTokenButton
-        direction="row"
-        alignItems="center"
-        spacing={1.5}
-        onClick={onClickToken}
-      >
+      <SelectTokenButton direction="row" alignItems="center" spacing={1.5} onClick={onClickToken}>
         <Box sx={{ position: 'relative' }}>
           <TokenImage
             src={imgUrl}
@@ -2465,20 +2476,18 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
               }}
             >
-              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 'bold' }}>✓</Typography>
+              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 'bold' }}>
+                ✓
+              </Typography>
             </Box>
           )}
         </Box>
         <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
           <Typography
             variant="subtitle2"
-            color={
-              isOMCF !== 'yes' 
-                ? 'text.primary' 
-                : darkMode ? '#00AB55' : '#4E8DF4'
-            }
-            sx={{ 
-              lineHeight: 1.2, 
+            color={isOMCF !== 'yes' ? 'text.primary' : darkMode ? '#00AB55' : '#4E8DF4'}
+            sx={{
+              lineHeight: 1.2,
               fontWeight: 700,
               fontSize: '0.95rem',
               letterSpacing: '-0.01em'
@@ -2490,9 +2499,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <Typography
             variant="caption"
             color="text.secondary"
-            sx={{ 
-              lineHeight: 1, 
-              fontSize: '0.75rem', 
+            sx={{
+              lineHeight: 1,
+              fontSize: '0.75rem',
               opacity: 0.8,
               letterSpacing: '0.02em'
             }}
@@ -2501,11 +2510,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {user ? truncate(user, 15) : 'Choose a token to swap'}
           </Typography>
         </Stack>
-        <Box 
-          sx={{ 
-            display: 'flex', 
+        <Box
+          sx={{
+            display: 'flex',
             alignItems: 'center',
-            backgroundColor: theme => alpha(theme.palette.primary.main, 0.1),
+            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
             borderRadius: '50%',
             width: 28,
             height: 28,
@@ -2513,13 +2522,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             ml: 1
           }}
         >
-          <ArrowDropDownIcon 
+          <ArrowDropDownIcon
             className="arrow-icon"
-            sx={{ 
-              fontSize: 18, 
+            sx={{
+              fontSize: 18,
               color: 'primary.main',
               transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-            }} 
+            }}
           />
         </Box>
       </SelectTokenButton>
@@ -2528,239 +2537,247 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
     <PanelContainer>
-        {/* Header */}
-        <PanelHeader>
-          <Stack direction="row" alignItems="center" justifyContent="space-between" pb={2}>
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <IconButton 
-                onClick={onClose}
-                sx={{ 
-                  bgcolor: alpha(theme.palette.primary.main, 0.08),
-                  '&:hover': {
-                    bgcolor: alpha(theme.palette.primary.main, 0.16),
-                    transform: 'translateX(-2px)'
-                  }
-                }}
-              >
-                <ArrowBackIcon sx={{ width: 24, height: 24 }} />
-              </IconButton>
-              <Typography variant="h6" fontWeight={700}>
-                {title}
-              </Typography>
-            </Stack>
-            
-            {currentToken && (
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="caption" color="text.secondary">
-                  Current:
-                </Typography>
-                <Chip 
-                  avatar={
-                    <Avatar 
-                      src={`https://s1.xrpl.to/token/${currentToken.md5}`}
-                      sx={{ width: 20, height: 20 }}
-                    />
-                  }
-                  label={currentToken.name}
-                  size="small"
-                  variant="outlined"
-                />
-              </Stack>
-            )}
-          </Stack>
-        </PanelHeader>
-
-        {/* Search Bar */}
-        <SearchContainer>
-          <TextField
-            inputRef={searchInputRef}
-            fullWidth
-            placeholder="Search by name, symbol, or address..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            variant="outlined"
-            size="medium"
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                borderRadius: 2,
-                backgroundColor: alpha(theme.palette.background.default, 0.8),
-                '& fieldset': {
-                  borderColor: alpha(theme.palette.divider, 0.15)
-                },
-                '&:hover fieldset': {
-                  borderColor: alpha(theme.palette.primary.main, 0.3)
-                },
-                '&.Mui-focused fieldset': {
-                  borderColor: theme.palette.primary.main
+      {/* Header */}
+      <PanelHeader>
+        <Stack direction="row" alignItems="center" justifyContent="space-between" pb={2}>
+          <Stack direction="row" alignItems="center" spacing={2}>
+            <IconButton
+              onClick={onClose}
+              sx={{
+                bgcolor: alpha(theme.palette.primary.main, 0.08),
+                '&:hover': {
+                  bgcolor: alpha(theme.palette.primary.main, 0.16),
+                  transform: 'translateX(-2px)'
                 }
-              }
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon sx={{ width: 20, height: 20, color: theme.palette.text.secondary }} />
-                </InputAdornment>
-              ),
-              endAdornment: searchQuery && (
-                <InputAdornment position="end">
-                  <IconButton size="small" onClick={() => setSearchQuery('')}>
-                    <CloseIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
-          
-          {/* Category Filters */}
-          <Stack 
-            direction="row" 
-            spacing={1} 
-            sx={{ 
-              mt: 2,
-              overflowX: 'auto',
-              pb: 1,
-              '&::-webkit-scrollbar': { height: 0 }
-            }}
-          >
-            {categories.map(cat => (
-              <CategoryChip
-                key={cat.value}
-                label={cat.label}
-                onClick={() => setSelectedCategory(cat.value)}
-                color={selectedCategory === cat.value ? 'primary' : 'default'}
-                variant={selectedCategory === cat.value ? 'filled' : 'outlined'}
-              />
-            ))}
+              }}
+            >
+              <ArrowBackIcon sx={{ width: 24, height: 24 }} />
+            </IconButton>
+            <Typography variant="h6" fontWeight={700}>
+              {title}
+            </Typography>
           </Stack>
-        </SearchContainer>
 
-        {/* Content */}
-        <ScrollableContent>
-          <Box>
-            {/* Recent Tokens */}
-            {!searchQuery && recentTokens.length > 0 && (
-              <Box mb={2}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
-                  <SectionTitle>
-                    <AccessTimeIcon sx={{ width: 14, height: 14 }} />
-                    Recent Selections
-                  </SectionTitle>
-                  <Typography
-                    variant="caption"
-                    sx={{ 
-                      cursor: 'pointer',
-                      color: theme.palette.error.main,
-                      fontSize: '0.7rem',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
-                    onClick={handleClearRecent}
-                  >
-                    Clear All
-                  </Typography>
-                </Stack>
-                <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 1 }}>
-                  {recentTokens.map(token => renderTokenItem(token, isToken1))}
-                </Box>
-                <Divider sx={{ mt: 2, mb: 1 }} />
+          {currentToken && (
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Typography variant="caption" color="text.secondary">
+                Current:
+              </Typography>
+              <Chip
+                avatar={
+                  <Avatar
+                    src={`https://s1.xrpl.to/token/${currentToken.md5}`}
+                    sx={{ width: 20, height: 20 }}
+                  />
+                }
+                label={currentToken.name}
+                size="small"
+                variant="outlined"
+              />
+            </Stack>
+          )}
+        </Stack>
+      </PanelHeader>
+
+      {/* Search Bar */}
+      <SearchContainer>
+        <TextField
+          inputRef={searchInputRef}
+          fullWidth
+          placeholder="Search by name, symbol, or address..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          variant="outlined"
+          size="medium"
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              borderRadius: 2,
+              backgroundColor: alpha(theme.palette.background.default, 0.8),
+              '& fieldset': {
+                borderColor: alpha(theme.palette.divider, 0.15)
+              },
+              '&:hover fieldset': {
+                borderColor: alpha(theme.palette.primary.main, 0.3)
+              },
+              '&.Mui-focused fieldset': {
+                borderColor: theme.palette.primary.main
+              }
+            }
+          }}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon sx={{ width: 20, height: 20, color: theme.palette.text.secondary }} />
+              </InputAdornment>
+            ),
+            endAdornment: searchQuery && (
+              <InputAdornment position="end">
+                <IconButton size="small" onClick={() => setSearchQuery('')}>
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </InputAdornment>
+            )
+          }}
+        />
+
+        {/* Category Filters */}
+        <Stack
+          direction="row"
+          spacing={1}
+          sx={{
+            mt: 2,
+            overflowX: 'auto',
+            pb: 1,
+            '&::-webkit-scrollbar': { height: 0 }
+          }}
+        >
+          {categories.map((cat) => (
+            <CategoryChip
+              key={cat.value}
+              label={cat.label}
+              onClick={() => setSelectedCategory(cat.value)}
+              color={selectedCategory === cat.value ? 'primary' : 'default'}
+              variant={selectedCategory === cat.value ? 'filled' : 'outlined'}
+            />
+          ))}
+        </Stack>
+      </SearchContainer>
+
+      {/* Content */}
+      <ScrollableContent>
+        <Box>
+          {/* Recent Tokens */}
+          {!searchQuery && recentTokens.length > 0 && (
+            <Box mb={2}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+                <SectionTitle>
+                  <AccessTimeIcon sx={{ width: 14, height: 14 }} />
+                  Recent Selections
+                </SectionTitle>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    cursor: 'pointer',
+                    color: theme.palette.error.main,
+                    fontSize: '0.7rem',
+                    '&:hover': { textDecoration: 'underline' }
+                  }}
+                  onClick={handleClearRecent}
+                >
+                  Clear All
+                </Typography>
+              </Stack>
+              <Box
+                sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 1 }}
+              >
+                {recentTokens.map((token) => renderTokenItem(token, isToken1))}
               </Box>
-            )}
+              <Divider sx={{ mt: 2, mb: 1 }} />
+            </Box>
+          )}
 
-            {/* Token List */}
-            <Box>
-              <SectionTitle>
-                {searchQuery ? (
-                  <>Search Results ({filteredTokens.length})</>
-                ) : selectedCategory === 'all' ? (
-                  <>All Available Tokens</>
-                ) : (
-                  <>{categories.find(c => c.value === selectedCategory)?.label}</>
-                )}
-              </SectionTitle>
-              
-              {loadingTokens ? (
-                <Grid container spacing={1}>
-                  {[...Array(8)].map((_, i) => (
-                    <Grid item xs={6} sm={4} md={3} key={i}>
-                      <Paper sx={{ p: 1, borderRadius: 1 }}>
-                        <Stack direction="row" spacing={1} alignItems="center">
-                          <Skeleton variant="circular" width={32} height={32} />
-                          <Box flex={1}>
-                            <Skeleton variant="text" width="60%" height={14} />
-                            <Skeleton variant="text" width="40%" height={12} />
-                          </Box>
-                        </Stack>
-                      </Paper>
-                    </Grid>
-                  ))}
-                </Grid>
-              ) : filteredTokens.length > 0 ? (
-                <Box>
-                  {/* Table Header */}
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center',
-                      padding: '8px 12px',
-                      borderBottom: `2px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      backgroundColor: alpha(theme.palette.background.default, 0.3)
-                    }}
-                  >
-                    <Box sx={{ width: 28, mr: 1.5 }} />
-                    <Box sx={{ flex: '0 0 25%' }}>
-                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        TOKEN
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
-                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        PRICE (XRP)
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
-                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        24H VOL (XRP)
-                      </Typography>
-                    </Box>
-                    <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
-                      <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                        MARKET CAP (XRP)
-                      </Typography>
-                    </Box>
-                  </Box>
-                  {/* Table Body */}
-                  <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 1, borderTop: 'none' }}>
-                    {filteredTokens.slice(0, 50).map(token => renderTokenItem(token, isToken1))}
-                  </Box>
-                </Box>
+          {/* Token List */}
+          <Box>
+            <SectionTitle>
+              {searchQuery ? (
+                <>Search Results ({filteredTokens.length})</>
+              ) : selectedCategory === 'all' ? (
+                <>All Available Tokens</>
               ) : (
-                <Paper 
-                  sx={{ 
-                    p: 6, 
-                    textAlign: 'center',
-                    borderRadius: 2,
-                    backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                <>{categories.find((c) => c.value === selectedCategory)?.label}</>
+              )}
+            </SectionTitle>
+
+            {loadingTokens ? (
+              <Grid container spacing={1}>
+                {[...Array(8)].map((_, i) => (
+                  <Grid item xs={6} sm={4} md={3} key={i}>
+                    <Paper sx={{ p: 1, borderRadius: 1 }}>
+                      <Stack direction="row" spacing={1} alignItems="center">
+                        <Skeleton variant="circular" width={32} height={32} />
+                        <Box flex={1}>
+                          <Skeleton variant="text" width="60%" height={14} />
+                          <Skeleton variant="text" width="40%" height={12} />
+                        </Box>
+                      </Stack>
+                    </Paper>
+                  </Grid>
+                ))}
+              </Grid>
+            ) : filteredTokens.length > 0 ? (
+              <Box>
+                {/* Table Header */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '8px 12px',
+                    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.15)}`,
+                    backgroundColor: alpha(theme.palette.background.default, 0.3)
                   }}
                 >
-                  <Typography variant="h6" gutterBottom color="text.secondary">
-                    No tokens found
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {searchQuery 
-                      ? `No results for "${searchQuery}"`
-                      : 'No tokens available in this category'}
-                  </Typography>
-                </Paper>
-              )}
-            </Box>
+                  <Box sx={{ width: 28, mr: 1.5 }} />
+                  <Box sx={{ flex: '0 0 25%' }}>
+                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      TOKEN
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
+                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      PRICE (XRP)
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      24H VOL (XRP)
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                      MARKET CAP (XRP)
+                    </Typography>
+                  </Box>
+                </Box>
+                {/* Table Body */}
+                <Box
+                  sx={{
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    borderRadius: 1,
+                    borderTop: 'none'
+                  }}
+                >
+                  {filteredTokens.slice(0, 50).map((token) => renderTokenItem(token, isToken1))}
+                </Box>
+              </Box>
+            ) : (
+              <Paper
+                sx={{
+                  p: 6,
+                  textAlign: 'center',
+                  borderRadius: 2,
+                  backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                }}
+              >
+                <Typography variant="h6" gutterBottom color="text.secondary">
+                  No tokens found
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {searchQuery
+                    ? `No results for "${searchQuery}"`
+                    : 'No tokens available in this category'}
+                </Typography>
+              </Paper>
+            )}
           </Box>
-        </ScrollableContent>
-      </PanelContainer>
+        </Box>
+      </ScrollableContent>
+    </PanelContainer>
   );
 
   // Check if we should show token selector
   const showTokenSelector = panel1Open || panel2Open;
   const currentSelectorToken = panel1Open ? token1 : token2;
-  const selectorTitle = panel1Open ? "Select token to swap from" : "Select token to receive";
+  const selectorTitle = panel1Open ? 'Select token to swap from' : 'Select token to receive';
   const isToken1Selector = panel1Open;
 
   return (
@@ -2787,15 +2804,16 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               pointerEvents: showTokenSelector ? 'auto' : 'none'
             }}
           >
-            {(panel1Open || panel2Open) && renderTokenSelectorPanel(
-              currentSelectorToken,
-              selectorTitle,
-              isToken1Selector,
-              () => {
-                setPanel1Open(false);
-                setPanel2Open(false);
-              }
-            )}
+            {(panel1Open || panel2Open) &&
+              renderTokenSelectorPanel(
+                currentSelectorToken,
+                selectorTitle,
+                isToken1Selector,
+                () => {
+                  setPanel1Open(false);
+                  setPanel2Open(false);
+                }
+              )}
           </Box>
 
           {/* Swap UI */}
@@ -2809,1156 +2827,1418 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               pointerEvents: showTokenSelector ? 'none' : 'auto'
             }}
           >
-        <Stack
-          direction={{ xs: 'column', md: 'row' }}
-          spacing={{ xs: 1, md: 3 }}
-          alignItems="flex-start"
-          justifyContent="center"
-          sx={{ width: '100%' }}
-        >
-          <Stack sx={{ 
-            width: '100%', 
-            flex: 1,
-            maxWidth: '100%',
-            transition: 'all 0.3s ease' 
-          }}>
-        {/* Minimalist Swap Container */}
-        <Box 
-          sx={{ 
-            width: '100%',
-            backgroundColor: 'transparent',
-            backdropFilter: 'blur(24px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-            borderRadius: '20px',
-            overflow: 'hidden',
-            boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.04)}`,
-            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.06)}`
-            }
-          }}
-        >
-          {/* Header with Market/Limit Tabs */}
-          <Box
-            sx={{
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-              background: alpha(theme.palette.background.paper, 0.02)
-            }}
-          >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ p: 1 }}>
-              <Stack direction="row" spacing={0.5}>
-                <Button
-                  size="small"
-                  variant={orderType === 'market' ? 'contained' : 'text'}
-                  onClick={() => {
-                    setOrderType('market');
-                    setShowOrders(false);  // Reset orders view when switching tabs
-                  }}
-                  sx={{
-                    px: 2,
-                    py: 0.75,
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    backgroundColor: orderType === 'market' ? theme.palette.primary.main : 'transparent',
-                    color: orderType === 'market' ? 'white' : theme.palette.text.secondary,
-                    '&:hover': {
-                      backgroundColor: orderType === 'market' 
-                        ? theme.palette.primary.dark 
-                        : alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  Market
-                </Button>
-                <Button
-                  size="small"
-                  variant={orderType === 'limit' ? 'contained' : 'text'}
-                  onClick={() => {
-                    setOrderType('limit');
-                    setShowOrders(false);  // Reset orders view when switching tabs
-                  }}
-                  sx={{
-                    px: 2,
-                    py: 0.75,
-                    borderRadius: '8px',
-                    fontSize: '0.8rem',
-                    fontWeight: 600,
-                    textTransform: 'none',
-                    backgroundColor: orderType === 'limit' ? theme.palette.primary.main : 'transparent',
-                    color: orderType === 'limit' ? 'white' : theme.palette.text.secondary,
-                    '&:hover': {
-                      backgroundColor: orderType === 'limit' 
-                        ? theme.palette.primary.dark 
-                        : alpha(theme.palette.primary.main, 0.08)
-                    }
-                  }}
-                >
-                  Limit
-                </Button>
-              </Stack>
-              <IconButton size="small" onClick={handleShareUrl}>
-                <ShareIcon sx={{ width: 16, height: 16 }} />
-              </IconButton>
-            </Stack>
-          </Box>
-
-          <Box sx={{ p: 2 }}>
-            {/* First Token - Clean Card Design */}
-            <Box
-              sx={{
-                position: 'relative',
-                borderRadius: '20px',
-                border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.08)}`,
-                transition: 'all 0.3s ease',
-                backgroundColor: alpha(theme.palette.background.paper, 0.5),
-                backdropFilter: 'blur(12px)',
-                overflow: 'hidden',
-                background: `linear-gradient(135deg,
-                  ${alpha(theme.palette.background.paper, 0.6)},
-                  ${alpha(theme.palette.background.paper, 0.4)})`,
-                boxShadow: focusTop
-                  ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`
-                  : 'none',
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                  borderColor: alpha(theme.palette.primary.main, 0.15),
-                  transform: 'translateY(-1px)',
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
-                }
-              }}
+            <Stack
+              direction={{ xs: 'column', md: 'row' }}
+              spacing={{ xs: 1, md: 3 }}
+              alignItems="flex-start"
+              justifyContent="center"
+              sx={{ width: '100%' }}
             >
-              {/* Embedded sparkline background */}
-              {token1 && token1.md5 && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    width: '60%',
-                    height: '100%',
-                    opacity: 0.15,
-                    pointerEvents: 'none',
-                    maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
-                    WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
-                  }}
-                >
-                  <Sparkline
-                    url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&lightweight=true`}
-                    style={{ width: '100%', height: '100%' }}
-                    showGradient={false}
-                    lineWidth={1.5}
-                    animation={false}
-                  />
-                </Box>
-              )}
-              <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        mb: 1,
-                        display: 'block',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                        color: theme.palette.text.primary,
-                        opacity: 0.9
-                      }}
-                    >
-                      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                        <Box
-                          sx={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.error.main,
-                            opacity: 0.8
-                          }}
-                        />
-                        You pay
-                      </Box>
-                    </Typography>
-                    {renderTokenSelector(token1, () => setPanel1Open(true), "Select token to swap from")}
-                  </Box>
-                  <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
-                    <Input
-                      placeholder="0.00"
-                      disableUnderline
-                      value={amount1}
-                      onChange={handleChangeAmount1}
-                      inputMode="decimal"
-                      sx={{
-                        width: '100%',
-                        input: {
-                          textAlign: 'right',
-                          fontSize: { xs: '24px', sm: '32px' },
-                          fontWeight: 700,
-                          padding: '8px 0',
-                          background: 'transparent',
-                          color: theme.palette.text.primary,
-                          border: 'none',
-                          outline: 'none',
-                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-                          letterSpacing: '-0.02em',
-                          transition: 'all 0.2s ease',
-                          '&::placeholder': {
-                            color: alpha(theme.palette.text.primary, 0.3),
-                            fontWeight: 400
-                          },
-                          '&:focus': {
-                            transform: 'scale(1.02)',
-                            transformOrigin: 'right center'
-                          }
-                        }
-                      }}
-                      onFocus={() => setFocusTop(true)}
-                      onBlur={() => setFocusTop(false)}
-                    />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        mt: 1,
-                        display: 'block',
-                        fontSize: '0.8rem',
-                        fontWeight: 500,
-                        opacity: focusTop ? 1 : 0.7,
-                        transition: 'opacity 0.2s ease'
-                      }}
-                    >
-                      {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : ' '}
-                    </Typography>
-                  </Box>
-                </Stack>
-                {isLoggedIn && accountPairBalance && (
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mt: 1 }}>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        fontSize: '0.75rem',
-                        fontWeight: 500,
-                        letterSpacing: '0.01em'
-                      }}
-                    >
-                      Balance: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
-                    </Typography>
-                    {(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
-                      <Stack direction="row" spacing={0.75}>
-                        {[25, 50, 100].map(percent => (
-                          <Box
-                            key={percent}
-                            onClick={() => {
-                              const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
-                              const newAmount = percent === 100
-                                ? balance.toString()
-                                : (balance * percent / 100).toFixed(6);
-                              handleChangeAmount1({ target: { value: newAmount } });
-                            }}
-                            sx={{
-                              px: 1.5,
-                              py: 0.5,
-                              borderRadius: '8px',
-                              fontSize: '0.7rem',
-                              fontWeight: 600,
-                              cursor: 'pointer',
-                              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                              color: theme.palette.primary.main,
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                                borderColor: theme.palette.primary.main,
-                                transform: 'translateY(-1px)',
-                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
-                              },
-                              '&:active': {
-                                transform: 'translateY(0)'
-                              }
-                            }}
-                          >
-                            {percent}%
-                          </Box>
-                        ))}
-                      </Stack>
-                    )}
-                  </Stack>
-                )}
-              </Box>
-            </Box>
-
-
-            {/* Clean Swap Button */}
-            <Box sx={{ position: 'relative', height: '20px', my: 1 }}>
-              <ToggleButton
-                onClick={onRevertExchange}
-                disabled={isSwitching}
-                className={isSwitching ? 'switching' : ''}
-                title="Switch currencies (Alt + S)"
-              >
-                <SwapHorizIcon sx={{ width: 20, height: 20 }} />
-              </ToggleButton>
-            </Box>
-
-            {/* Second Token - Clean Card Design */}
-            <Box
-              sx={{
-                position: 'relative',
-                borderRadius: '20px',
-                border: `2px dashed ${focusBottom ? alpha(theme.palette.primary.main, 0.25) : alpha(theme.palette.divider, 0.12)}`,
-                transition: 'all 0.3s ease',
-                backgroundColor: alpha(theme.palette.background.default, 0.3),
-                backdropFilter: 'blur(8px)',
-                overflow: 'hidden',
-                background: `linear-gradient(135deg,
-                  ${alpha(theme.palette.background.default, 0.2)},
-                  ${alpha(theme.palette.background.paper, 0.1)})`,
-                opacity: amount2 ? 1 : 0.9,
-                boxShadow: focusBottom
-                  ? `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`
-                  : `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.background.default, 0.4),
-                  borderColor: alpha(theme.palette.primary.main, 0.2),
-                  opacity: 1
-                }
-              }}
-            >
-              {/* Embedded sparkline background */}
-              {token2 && token2.md5 && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    right: 0,
-                    top: 0,
-                    width: '60%',
-                    height: '100%',
-                    opacity: 0.15,
-                    pointerEvents: 'none',
-                    maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
-                    WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
-                  }}
-                >
-                  <Sparkline
-                    url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&lightweight=true`}
-                    style={{ width: '100%', height: '100%' }}
-                    showGradient={false}
-                    lineWidth={1.5}
-                    animation={false}
-                  />
-                </Box>
-              )}
-              <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        mb: 1,
-                        display: 'block',
-                        fontSize: '0.75rem',
-                        fontWeight: 600,
-                        letterSpacing: '0.05em',
-                        textTransform: 'uppercase',
-                        color: theme.palette.text.secondary,
-                        opacity: 0.8
-                      }}
-                    >
-                      <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}>
-                        <Box
-                          sx={{
-                            width: 6,
-                            height: 6,
-                            borderRadius: '50%',
-                            backgroundColor: theme.palette.success.main,
-                            opacity: 0.7
-                          }}
-                        />
-                        You receive
-                      </Box>
-                    </Typography>
-                    {renderTokenSelector(token2, () => setPanel2Open(true), "Select token to receive")}
-                  </Box>
-                  <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
-                    <Input
-                      placeholder="0.00"
-                      disableUnderline
-                      value={amount1 === '' ? '' : amount2}
-                      onChange={handleChangeAmount2}
-                      inputMode="decimal"
-                      sx={{
-                        width: '100%',
-                        input: {
-                          textAlign: 'right',
-                          fontSize: { xs: '24px', sm: '32px' },
-                          fontWeight: 700,
-                          padding: '8px 0',
-                          background: 'transparent',
-                          color: theme.palette.text.primary,
-                          border: 'none',
-                          outline: 'none',
-                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
-                          letterSpacing: '-0.02em',
-                          transition: 'all 0.2s ease',
-                          '&::placeholder': {
-                            color: alpha(theme.palette.text.primary, 0.3),
-                            fontWeight: 400
-                          },
-                          '&:focus': {
-                            transform: 'scale(1.02)',
-                            transformOrigin: 'right center'
-                          }
-                        }
-                      }}
-                      onFocus={() => setFocusBottom(true)}
-                      onBlur={() => setFocusBottom(false)}
-                    />
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        mt: 1,
-                        display: 'block',
-                        fontSize: '0.8rem',
-                        fontWeight: 500,
-                        opacity: focusBottom ? 1 : 0.7,
-                        transition: 'opacity 0.2s ease'
-                      }}
-                    >
-                      {tokenPrice2 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}` : ' '}
-                    </Typography>
-                  </Box>
-                </Stack>
-                {isLoggedIn && accountPairBalance && (
-                  <Typography variant="caption" color="text.secondary">
-                    Balance: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
-                  </Typography>
-                )}
-              </Box>
-            </Box>
-
-
-            {/* View Buttons - Shows only for Limit orders */}
-            {orderType === 'limit' && (
-              <Box sx={{ mt: 2, mb: 1 }}>
-                <Stack direction="row" spacing={1}>
-                  <Button
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    onClick={() => setShowOrderbook(!showOrderbook)}
-                    startIcon={showOrderbook ? <ToggleOnIcon sx={{ width: 14, height: 14 }} /> : <ToggleOffIcon sx={{ width: 14, height: 14 }} />}
-                    sx={{
-                      py: 0.6,
-                      fontSize: '0.7rem',
-                      textTransform: 'none',
-                      borderColor: showOrderbook ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
-                      color: showOrderbook ? theme.palette.primary.main : theme.palette.text.secondary,
-                      backgroundColor: showOrderbook ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
-                      '&:hover': {
-                        borderColor: theme.palette.primary.main,
-                        backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                      }
-                    }}
-                  >
-                    {showOrderbook ? 'Hide' : 'Show'} Book
-                  </Button>
-                  {accountProfile?.account && (
-                    <Button
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      onClick={() => setShowOrders(!showOrders)}
-                      startIcon={<ListIcon sx={{ width: 14, height: 14 }} />}
-                      sx={{
-                        py: 0.6,
-                        fontSize: '0.7rem',
-                        textTransform: 'none',
-                        borderColor: showOrders ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2),
-                        color: showOrders ? theme.palette.primary.main : theme.palette.text.secondary,
-                        backgroundColor: showOrders ? alpha(theme.palette.primary.main, 0.05) : 'transparent',
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                        }
-                      }}
-                    >
-                      {showOrders ? 'Hide' : 'Show'} Orders
-                    </Button>
-                  )}
-                </Stack>
-              </Box>
-            )}
-
-            {/* Market Order UI */}
-            {orderType === 'market' && (
-              <Box sx={{ mb: 2 }}>
-                <Stack spacing={1}>
-                  {/* Slippage Setting */}
-                  <Box sx={{ 
-                    p: 1.5, 
-                    borderRadius: '10px', 
-                    backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                  }}>
-                    <Stack direction="row" alignItems="center" justifyContent="space-between">
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                          Slippage Tolerance
-                        </Typography>
-                        <Tooltip title="Maximum price change you accept" arrow>
-                          <InfoIcon sx={{ width: 12, height: 12, opacity: 0.5 }} />
-                        </Tooltip>
-                      </Stack>
-                      <Stack direction="row" spacing={0.5}>
-                        {[0.5, 1, 3].map(val => (
-                          <Chip
-                            key={val}
-                            label={`${val}%`}
-                            size="small"
-                            onClick={() => setSlippage(val)}
-                            sx={{
-                              height: '18px',
-                              fontSize: '0.6rem',
-                              cursor: 'pointer',
-                              backgroundColor: slippage === val 
-                                ? theme.palette.primary.main 
-                                : alpha(theme.palette.action.selected, 0.08),
-                              color: slippage === val ? 'white' : theme.palette.text.secondary,
-                              '&:hover': {
-                                backgroundColor: slippage === val 
-                                  ? theme.palette.primary.dark 
-                                  : alpha(theme.palette.action.selected, 0.16)
-                              }
-                            }}
-                          />
-                        ))}
-                      </Stack>
-                    </Stack>
-                  </Box>
-                  
-                  {/* Min Received */}
-                  {amount2 && (
-                    <Box sx={{ 
-                      p: 1,
-                      borderRadius: '8px',
-                      backgroundColor: alpha(theme.palette.info.main, 0.05),
-                      border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`
-                    }}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="caption" color="text.secondary" fontSize="0.65rem">
-                          Minimum Received
-                        </Typography>
-                        <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
-                          {new Decimal(amount2).mul(1 - slippage/100).toFixed(4)} {token2.name}
-                        </Typography>
-                      </Stack>
-                    </Box>
-                  )}
-                </Stack>
-              </Box>
-            )}
-
-            {/* Limit Order UI */}
-            {orderType === 'limit' && (
-              <Box
+              <Stack
                 sx={{
-                  mt: 1.5,
-                  mb: 1.5,
-                  p: 1.5,
-                  borderRadius: '10px',
-                  backgroundColor: alpha(theme.palette.background.paper, 0.2),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                  width: '100%',
+                  flex: 1,
+                  maxWidth: '100%',
+                  transition: 'all 0.3s ease'
                 }}
               >
-                <Stack spacing={1.5}>
-                  {/* Limit Price Input */}
-                  <Box>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontSize: '0.65rem',
-                          fontWeight: 600,
-                          color: theme.palette.text.secondary,
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.03em'
-                        }}
-                      >
-                        Limit Price
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.6rem', color: theme.palette.text.secondary, opacity: 0.7 }}>
-                        {token2.name || token2.currency} per {token1.name || token1.currency}
-                      </Typography>
-                    </Stack>
-                    <Input
-                      placeholder="0.00"
-                      fullWidth
-                      disableUnderline
-                      value={limitPrice}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        if (val === '.') {
-                          setLimitPrice('0.');
-                          return;
-                        }
-                        if (!isNaN(Number(val)) || val === '') {
-                          setLimitPrice(val);
-                        }
-                      }}
-                      sx={{
-                        backgroundColor: alpha(theme.palette.background.default, 0.4),
-                        borderRadius: '8px',
-                        padding: '8px 12px',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                        transition: 'all 0.2s ease',
-                        input: {
-                          fontSize: '0.9rem',
-                          fontWeight: 600,
-                          fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
-                        },
-                        '&:hover': {
-                          borderColor: alpha(theme.palette.primary.main, 0.2)
-                        },
-                        '&:focus-within': {
-                          borderColor: theme.palette.primary.main,
-                          backgroundColor: alpha(theme.palette.background.default, 0.6)
-                        }
-                      }}
-                    />
-                  </Box>
-
-                  {/* Quick Price Select */}
-                  {(bids[0] || asks[0]) && (
-                    <Stack direction="row" spacing={0.75}>
-                      {bids[0] && (
-                        <Box
-                          onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
-                          sx={{
-                            flex: 1,
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            backgroundColor: alpha(theme.palette.success.main, 0.08),
-                            border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                            transition: 'all 0.2s ease',
-                            textAlign: 'center',
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.success.main, 0.15)
-                            }
-                          }}
-                        >
-                          <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: theme.palette.success.main }}>
-                            Bid: {bids[0].price.toFixed(4)}
-                          </Typography>
-                        </Box>
-                      )}
-                      {asks[0] && (
-                        <Box
-                          onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
-                          sx={{
-                            flex: 1,
-                            px: 1,
-                            py: 0.5,
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            backgroundColor: alpha(theme.palette.error.main, 0.08),
-                            border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
-                            transition: 'all 0.2s ease',
-                            textAlign: 'center',
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.error.main, 0.15)
-                            }
-                          }}
-                        >
-                          <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600, color: theme.palette.error.main }}>
-                            Ask: {asks[0].price.toFixed(4)}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Stack>
-                  )}
-
-                  {/* Expiration Setting */}
-                  <Box>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.65rem',
-                        fontWeight: 600,
-                        color: theme.palette.text.secondary,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.03em',
-                        mb: 0.5,
-                        display: 'block'
-                      }}
-                    >
-                      Expires
-                    </Typography>
-                    <Stack direction="row" spacing={0.5}>
-                      {[
-                        { value: 'never', label: 'Never' },
-                        { value: '1h', label: '1h' },
-                        { value: '24h', label: '1d' },
-                        { value: '7d', label: '7d' }
-                      ].map(exp => (
-                        <Box
-                          key={exp.value}
-                          onClick={() => setOrderExpiry(exp.value)}
-                          sx={{
-                            flex: 1,
-                            px: 0.75,
-                            py: 0.5,
-                            borderRadius: '6px',
-                            cursor: 'pointer',
-                            textAlign: 'center',
-                            backgroundColor: orderExpiry === exp.value
-                              ? alpha(theme.palette.primary.main, 0.12)
-                              : alpha(theme.palette.background.default, 0.2),
-                            color: orderExpiry === exp.value
-                              ? theme.palette.primary.main
-                              : theme.palette.text.secondary,
-                            border: `1px solid ${orderExpiry === exp.value
-                              ? alpha(theme.palette.primary.main, 0.2)
-                              : alpha(theme.palette.divider, 0.08)}`,
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              backgroundColor: orderExpiry === exp.value
-                                ? alpha(theme.palette.primary.main, 0.18)
-                                : alpha(theme.palette.background.default, 0.3)
-                            }
-                          }}
-                        >
-                          <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 600 }}>
-                            {exp.label}
-                          </Typography>
-                        </Box>
-                      ))}
-                    </Stack>
-                    {orderExpiry === 'custom' && (
-                      <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Input
-                          type="number"
-                          value={customExpiry}
-                          onChange={(e) => setCustomExpiry(Math.max(1, parseInt(e.target.value) || 1))}
-                          disableUnderline
-                          sx={{
-                            width: '60px',
-                            padding: '4px 8px',
-                            borderRadius: '6px',
-                            backgroundColor: alpha(theme.palette.background.paper, 0.05),
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            input: {
-                              fontSize: '0.7rem',
-                              textAlign: 'center'
-                            }
-                          }}
-                        />
-                        <Typography variant="caption" fontSize="0.7rem">hours</Typography>
-                      </Box>
-                    )}
-                  </Box>
-                  
-                  {/* Price difference from market and warnings */}
-                  {limitPrice && parseFloat(limitPrice) > 0 && (() => {
-                    const limit = parseFloat(limitPrice);
-                    const bestAsk = asks[0]?.price || 0;
-                    const bestBid = bids[0]?.price || 0;
-                    
-                    // Determine the current market price based on order type
-                    const currentPrice = !revert ? bestAsk : bestBid;
-                    
-                    if (currentPrice > 0) {
-                      const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
-                      const isAbove = priceDiff > 0;
-                      
-                      // Check if order will execute immediately
-                      const willExecute = (!revert && limit >= bestAsk && bestAsk > 0) || 
-                                         (revert && limit <= bestBid && bestBid > 0);
-                      
-                      return (
-                        <Stack spacing={1} sx={{ mt: 1 }}>
-                          {/* Price difference indicator */}
-                          <Box 
-                            sx={{ 
-                              p: 1,
-                              borderRadius: '6px',
-                              backgroundColor: alpha(
-                                isAbove ? theme.palette.error.main : theme.palette.success.main, 
-                                0.1
-                              ),
-                              border: `1px solid ${alpha(
-                                isAbove ? theme.palette.error.main : theme.palette.success.main, 
-                                0.3
-                              )}`
-                            }}
-                          >
-                            <Typography 
-                              variant="caption" 
-                              sx={{ 
-                                fontWeight: 600,
-                                color: isAbove ? theme.palette.error.main : theme.palette.success.main
-                              }}
-                            >
-                              {isAbove ? '▲' : '▼'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} current {!revert ? 'ask' : 'bid'} price ({currentPrice.toFixed(6)})
-                            </Typography>
-                          </Box>
-                          
-                          {/* Warning for immediate execution */}
-                          {willExecute && (
-                            <Box 
-                              sx={{ 
-                                p: 1,
-                                borderRadius: '6px',
-                                backgroundColor: alpha(theme.palette.warning.main, 0.1),
-                                border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
-                              }}
-                            >
-                              <Typography variant="caption" color="warning.main" sx={{ fontWeight: 600 }}>
-                                ⚠️ Order will execute immediately at market price
-                              </Typography>
-                            </Box>
-                          )}
-                        </Stack>
-                      );
-                    }
-                    return null;
-                  })()}
-                </Stack>
-              </Box>
-            )}
-
-
-            {/* User's Open Orders - Display when button is clicked */}
-            {showOrders && accountProfile?.account && (
-              <Box sx={{ mb: 2 }}>
-                {(
-                  <Box 
-                    sx={{ 
-                      borderRadius: '12px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      overflow: 'hidden',
-                      backgroundColor: alpha(theme.palette.background.paper, 0.02)
-                    }}
-                  >
-                    <Orders 
-                      pair={{
-                        // For now, use a simple pair string format that the API might accept
-                        // The backend should handle both MD5 and string formats
-                        pair: `${curr1.currency}:${curr1.issuer || 'XRP'}/${curr2.currency}:${curr2.issuer || 'XRP'}`,
-                        curr1: { 
-                          ...curr1, 
-                          name: curr1.name || curr1.currency,
-                          issuer: curr1.issuer || (curr1.currency === 'XRP' ? undefined : ''),
-                          currency: curr1.currency
-                        },
-                        curr2: { 
-                          ...curr2, 
-                          name: curr2.name || curr2.currency,
-                          issuer: curr2.issuer || (curr2.currency === 'XRP' ? undefined : ''),
-                          currency: curr2.currency
-                        }
-                      }}
-                    />
-                  </Box>
-                )}
-              </Box>
-            )}
-
-            {/* Transaction Summary */}
-            {amount1 && amount2 && (
-              <Box sx={{ mt: 2, mb: 1 }}>
-                <Box
-                  sx={{
-                    p: 1.5,
-                    borderRadius: '12px',
-                    backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                  }}
-                >
-                  <Stack 
-                    direction="row" 
-                    justifyContent="space-between" 
-                    alignItems="center"
-                    onClick={() => setShowOrderSummary(!showOrderSummary)}
-                    sx={{ cursor: 'pointer', mb: showOrderSummary ? 1 : 0 }}
-                  >
-                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary }}>
-                      ORDER SUMMARY
-                    </Typography>
-                    <InfoIcon 
-                      icon={showOrderSummary ? "mdi:chevron-up" : "mdi:chevron-down"} 
-                      width={16} 
-                      height={16}
-                      style={{ color: theme.palette.text.secondary }}
-                    />
-                  </Stack>
-                  {showOrderSummary && (
-                  <Stack spacing={0.75}>
-                    {/* Sell Amount */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                        {orderType === 'limit' ? 'Sell Order' : 'You Pay'}
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                        {amount1} {token1.name || token1.currency}
-                      </Typography>
-                    </Stack>
-                    
-                    {/* Buy Amount */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                        {orderType === 'limit' ? 'To Buy' : 'You Receive'}
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem" color="primary.main">
-                        {orderType === 'limit' && limitPrice 
-                          ? (() => {
-                              const limitPriceDecimal = new Decimal(limitPrice);
-                              const amount1Decimal = new Decimal(amount1);
-                              if (token1.currency === 'XRP' && token2.currency !== 'XRP') {
-                                return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                              } else if (token1.currency !== 'XRP' && token2.currency === 'XRP') {
-                                return amount1Decimal.div(limitPriceDecimal).toFixed(6);
-                              } else {
-                                return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                              }
-                            })()
-                          : amount2} {token2.name || token2.currency}
-                      </Typography>
-                    </Stack>
-                    
-                    {/* Rate */}
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                        {orderType === 'limit' ? `${token1.name} at Rate` : 'Exchange Rate'}
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                        {orderType === 'limit' && limitPrice
-                          ? `${limitPrice} ${token2.name || token2.currency}`
-                          : (() => {
-                              const token1IsXRP = token1?.currency === 'XRP';
-                              const token2IsXRP = token2?.currency === 'XRP';
-                              
-                              if (token1IsXRP && !token2IsXRP) {
-                                return tokenExch2 > 0 ? `${(1 / tokenExch2).toFixed(6)} ${token2.name}` : '0';
-                              } else if (!token1IsXRP && token2IsXRP) {
-                                return tokenExch1 > 0 ? `${tokenExch1.toFixed(6)} ${token2.name}` : '0';
-                              } else {
-                                return tokenExch1 > 0 && tokenExch2 > 0 ? `${(tokenExch1 / tokenExch2).toFixed(6)} ${token2.name}` : '0';
-                              }
-                            })()
-                        }
-                      </Typography>
-                    </Stack>
-                    
-                    {/* Order Type & Expiry for Limit Orders */}
-                    {orderType === 'limit' && (
-                      <>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                            Order Type
-                          </Typography>
-                          <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                            Limit Order
-                          </Typography>
-                        </Stack>
-                        <Stack direction="row" justifyContent="space-between" alignItems="center">
-                          <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                            Expiry
-                          </Typography>
-                          <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                            {orderExpiry === 'never' ? 'Never' :
-                             orderExpiry === '1h' ? '1 Hour' :
-                             orderExpiry === '24h' ? '1 Day' :
-                             orderExpiry === '7d' ? '7 Days' :
-                             orderExpiry === '30d' ? '30 Days' :
-                             orderExpiry === 'custom' ? `${customExpiry} Hours` : 'Never'}
-                          </Typography>
-                        </Stack>
-                      </>
-                    )}
-                    
-                    {/* Slippage for Market Orders */}
-                    {orderType === 'market' && (
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                          Max Slippage
-                        </Typography>
-                        <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                          {slippage}%
-                        </Typography>
-                      </Stack>
-                    )}
-                    
-                    {/* Platform Fee */}
-                    <Divider sx={{ my: 0.5, borderColor: alpha(theme.palette.divider, 0.05) }} />
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                        Network Fee
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
-                        ~0.000012 XRP
-                      </Typography>
-                    </Stack>
-                  </Stack>
-                  )}
-                </Box>
-              </Box>
-            )}
-
-
-            {/* Price Impact Row - Only show for market orders or limit orders that will execute immediately */}
-            {amount1 && amount2 && (() => {
-              // For limit orders, only show price impact if the order will execute immediately
-              if (orderType === 'limit') {
-                const limit = parseFloat(limitPrice);
-                const bestAsk = asks[0]?.price || 0;
-                const bestBid = bids[0]?.price || 0;
-                const willExecute = (!revert && limit >= bestAsk && bestAsk > 0) || 
-                                   (revert && limit <= bestBid && bestBid > 0);
-                
-                // Don't show price impact for limit orders that won't execute immediately
-                if (!willExecute || !limit) {
-                  return null;
-                }
-              }
-              
-              return (
-                <Stack direction="row" justifyContent="space-between" alignItems="center" 
-                  sx={{ 
-                    mt: 1,
-                    p: 1,
-                    borderRadius: '8px',
-                    backgroundColor: alpha(theme.palette.background.paper, 0.03),
-                    border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Price Impact
-                  </Typography>
-                  <Stack direction="row" alignItems="center" spacing={0.5}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: getPriceImpactColor(Math.abs(priceImpact)),
-                        fontWeight: 600,
-                        fontSize: '0.75rem'
-                      }}
-                    >
-                      {priceImpact > 0 ? '+' : ''}{priceImpact}%
-                    </Typography>
-                    {Math.abs(priceImpact) > 5 && (
-                      <Tooltip title={Math.abs(priceImpact) > 10 
-                        ? "Very high impact! Consider reducing size" 
-                        : "High impact detected"} arrow>
-                        <InfoIcon 
-                          icon="mdi:alert-circle" 
-                          width={14} 
-                          height={14} 
-                          style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}
-                        />
-                      </Tooltip>
-                    )}
-                  </Stack>
-                </Stack>
-            );
-          })()}
-
-            {/* Action Button */}
-            <Box sx={{ mt: 3 }}>
-
-              {accountProfile && accountProfile.account ? (
-                <ExchangeButton
-                  variant="contained"
-                  fullWidth
-                  onClick={handlePlaceOrder}
-                  disabled={
-                    isProcessing === 1 || 
-                    (!isLoggedIn) ||
-                    (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-                  }
-                  sx={{
-                    minHeight: '52px',
-                    fontSize: '16px',
-                    fontWeight: 600,
-                    borderRadius: '12px',
-                    textTransform: 'none',
-                    boxShadow: 'none',
-                    '&:hover': {
-                      boxShadow: 'none'
-                    }
-                  }}
-                >
-                  {handleMsg()}
-                </ExchangeButton>
-              ) : (
+                {/* Minimalist Swap Container */}
                 <Box
                   sx={{
                     width: '100%',
-                    '& .MuiButton-root': {
-                      width: '100% !important',
-                      minWidth: '100% !important',
-                      padding: '14px 24px !important',
-                      minHeight: '52px !important',
-                      fontSize: '16px !important',
-                      borderRadius: '12px !important',
-                      textTransform: 'none !important'
+                    backgroundColor: 'transparent',
+                    backdropFilter: 'blur(24px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                    borderRadius: '20px',
+                    overflow: 'hidden',
+                    boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.04)}`,
+                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.06)}`
                     }
                   }}
                 >
-                  <ConnectWallet pair={pair} />
+                  {/* Header with Market/Limit Tabs */}
+                  <Box
+                    sx={{
+                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+                      background: alpha(theme.palette.background.paper, 0.02)
+                    }}
+                  >
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="space-between"
+                      sx={{ p: 1 }}
+                    >
+                      <Stack direction="row" spacing={0.5}>
+                        <Button
+                          size="small"
+                          variant={orderType === 'market' ? 'contained' : 'text'}
+                          onClick={() => {
+                            setOrderType('market');
+                            setShowOrders(false); // Reset orders view when switching tabs
+                          }}
+                          sx={{
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            backgroundColor:
+                              orderType === 'market' ? theme.palette.primary.main : 'transparent',
+                            color: orderType === 'market' ? 'white' : theme.palette.text.secondary,
+                            '&:hover': {
+                              backgroundColor:
+                                orderType === 'market'
+                                  ? theme.palette.primary.dark
+                                  : alpha(theme.palette.primary.main, 0.08)
+                            }
+                          }}
+                        >
+                          Market
+                        </Button>
+                        <Button
+                          size="small"
+                          variant={orderType === 'limit' ? 'contained' : 'text'}
+                          onClick={() => {
+                            setOrderType('limit');
+                            setShowOrders(false); // Reset orders view when switching tabs
+                          }}
+                          sx={{
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: '8px',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                            textTransform: 'none',
+                            backgroundColor:
+                              orderType === 'limit' ? theme.palette.primary.main : 'transparent',
+                            color: orderType === 'limit' ? 'white' : theme.palette.text.secondary,
+                            '&:hover': {
+                              backgroundColor:
+                                orderType === 'limit'
+                                  ? theme.palette.primary.dark
+                                  : alpha(theme.palette.primary.main, 0.08)
+                            }
+                          }}
+                        >
+                          Limit
+                        </Button>
+                      </Stack>
+                      <IconButton size="small" onClick={handleShareUrl}>
+                        <ShareIcon sx={{ width: 16, height: 16 }} />
+                      </IconButton>
+                    </Stack>
+                  </Box>
+
+                  <Box sx={{ p: 2 }}>
+                    {/* First Token - Clean Card Design */}
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        borderRadius: '20px',
+                        border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.08)}`,
+                        transition: 'all 0.3s ease',
+                        backgroundColor: alpha(theme.palette.background.paper, 0.5),
+                        backdropFilter: 'blur(12px)',
+                        overflow: 'hidden',
+                        background: `linear-gradient(135deg,
+                  ${alpha(theme.palette.background.paper, 0.6)},
+                  ${alpha(theme.palette.background.paper, 0.4)})`,
+                        boxShadow: focusTop
+                          ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`
+                          : 'none',
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                          borderColor: alpha(theme.palette.primary.main, 0.15),
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                        }
+                      }}
+                    >
+                      {/* Embedded sparkline background */}
+                      {token1 && token1.md5 && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            width: '60%',
+                            height: '100%',
+                            opacity: 0.15,
+                            pointerEvents: 'none',
+                            maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
+                            WebkitMaskImage:
+                              'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
+                          }}
+                        >
+                          <Sparkline
+                            url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&lightweight=true`}
+                            style={{ width: '100%', height: '100%' }}
+                            showGradient={false}
+                            lineWidth={1.5}
+                            animation={false}
+                          />
+                        </Box>
+                      )}
+                      <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          mb={2}
+                        >
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                mb: 1,
+                                display: 'block',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                letterSpacing: '0.05em',
+                                textTransform: 'uppercase',
+                                color: theme.palette.text.primary,
+                                opacity: 0.9
+                              }}
+                            >
+                              <Box
+                                component="span"
+                                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: '50%',
+                                    backgroundColor: theme.palette.error.main,
+                                    opacity: 0.8
+                                  }}
+                                />
+                                You pay
+                              </Box>
+                            </Typography>
+                            {renderTokenSelector(
+                              token1,
+                              () => setPanel1Open(true),
+                              'Select token to swap from'
+                            )}
+                          </Box>
+                          <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
+                            <Input
+                              placeholder="0.00"
+                              disableUnderline
+                              value={amount1}
+                              onChange={handleChangeAmount1}
+                              inputMode="decimal"
+                              sx={{
+                                width: '100%',
+                                input: {
+                                  textAlign: 'right',
+                                  fontSize: { xs: '24px', sm: '32px' },
+                                  fontWeight: 700,
+                                  padding: '8px 0',
+                                  background: 'transparent',
+                                  color: theme.palette.text.primary,
+                                  border: 'none',
+                                  outline: 'none',
+                                  fontFamily:
+                                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                                  letterSpacing: '-0.02em',
+                                  transition: 'all 0.2s ease',
+                                  '&::placeholder': {
+                                    color: alpha(theme.palette.text.primary, 0.3),
+                                    fontWeight: 400
+                                  },
+                                  '&:focus': {
+                                    transform: 'scale(1.02)',
+                                    transformOrigin: 'right center'
+                                  }
+                                }
+                              }}
+                              onFocus={() => setFocusTop(true)}
+                              onBlur={() => setFocusTop(false)}
+                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                mt: 1,
+                                display: 'block',
+                                fontSize: '0.8rem',
+                                fontWeight: 500,
+                                opacity: focusTop ? 1 : 0.7,
+                                transition: 'opacity 0.2s ease'
+                              }}
+                            >
+                              {tokenPrice1 > 0
+                                ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`
+                                : ' '}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        {isLoggedIn && accountPairBalance && (
+                          <Stack
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{ mt: 1 }}
+                          >
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                fontSize: '0.75rem',
+                                fontWeight: 500,
+                                letterSpacing: '0.01em'
+                              }}
+                            >
+                              Balance:{' '}
+                              {fNumber(
+                                revert
+                                  ? accountPairBalance?.curr2.value
+                                  : accountPairBalance?.curr1.value
+                              )}
+                            </Typography>
+                            {(revert
+                              ? accountPairBalance?.curr2.value
+                              : accountPairBalance?.curr1.value) > 0 && (
+                              <Stack direction="row" spacing={0.75}>
+                                {[25, 50, 100].map((percent) => (
+                                  <Box
+                                    key={percent}
+                                    onClick={() => {
+                                      const balance = revert
+                                        ? accountPairBalance?.curr2.value
+                                        : accountPairBalance?.curr1.value;
+                                      const newAmount =
+                                        percent === 100
+                                          ? balance.toString()
+                                          : ((balance * percent) / 100).toFixed(6);
+                                      handleChangeAmount1({ target: { value: newAmount } });
+                                    }}
+                                    sx={{
+                                      px: 1.5,
+                                      py: 0.5,
+                                      borderRadius: '8px',
+                                      fontSize: '0.7rem',
+                                      fontWeight: 600,
+                                      cursor: 'pointer',
+                                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                                      color: theme.palette.primary.main,
+                                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                      transition: 'all 0.2s ease',
+                                      '&:hover': {
+                                        backgroundColor: alpha(theme.palette.primary.main, 0.2),
+                                        borderColor: theme.palette.primary.main,
+                                        transform: 'translateY(-1px)',
+                                        boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
+                                      },
+                                      '&:active': {
+                                        transform: 'translateY(0)'
+                                      }
+                                    }}
+                                  >
+                                    {percent}%
+                                  </Box>
+                                ))}
+                              </Stack>
+                            )}
+                          </Stack>
+                        )}
+                      </Box>
+                    </Box>
+
+                    {/* Clean Swap Button */}
+                    <Box sx={{ position: 'relative', height: '20px', my: 1 }}>
+                      <ToggleButton
+                        onClick={onRevertExchange}
+                        disabled={isSwitching}
+                        className={isSwitching ? 'switching' : ''}
+                        title="Switch currencies (Alt + S)"
+                      >
+                        <SwapHorizIcon sx={{ width: 20, height: 20 }} />
+                      </ToggleButton>
+                    </Box>
+
+                    {/* Second Token - Clean Card Design */}
+                    <Box
+                      sx={{
+                        position: 'relative',
+                        borderRadius: '20px',
+                        border: `2px dashed ${focusBottom ? alpha(theme.palette.primary.main, 0.25) : alpha(theme.palette.divider, 0.12)}`,
+                        transition: 'all 0.3s ease',
+                        backgroundColor: alpha(theme.palette.background.default, 0.3),
+                        backdropFilter: 'blur(8px)',
+                        overflow: 'hidden',
+                        background: `linear-gradient(135deg,
+                  ${alpha(theme.palette.background.default, 0.2)},
+                  ${alpha(theme.palette.background.paper, 0.1)})`,
+                        opacity: amount2 ? 1 : 0.9,
+                        boxShadow: focusBottom
+                          ? `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`
+                          : `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.background.default, 0.4),
+                          borderColor: alpha(theme.palette.primary.main, 0.2),
+                          opacity: 1
+                        }
+                      }}
+                    >
+                      {/* Embedded sparkline background */}
+                      {token2 && token2.md5 && (
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            right: 0,
+                            top: 0,
+                            width: '60%',
+                            height: '100%',
+                            opacity: 0.15,
+                            pointerEvents: 'none',
+                            maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
+                            WebkitMaskImage:
+                              'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
+                          }}
+                        >
+                          <Sparkline
+                            url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&lightweight=true`}
+                            style={{ width: '100%', height: '100%' }}
+                            showGradient={false}
+                            lineWidth={1.5}
+                            animation={false}
+                          />
+                        </Box>
+                      )}
+                      <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
+                        <Stack
+                          direction="row"
+                          justifyContent="space-between"
+                          alignItems="flex-start"
+                          mb={2}
+                        >
+                          <Box sx={{ flex: 1 }}>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                mb: 1,
+                                display: 'block',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                letterSpacing: '0.05em',
+                                textTransform: 'uppercase',
+                                color: theme.palette.text.secondary,
+                                opacity: 0.8
+                              }}
+                            >
+                              <Box
+                                component="span"
+                                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: 6,
+                                    height: 6,
+                                    borderRadius: '50%',
+                                    backgroundColor: theme.palette.success.main,
+                                    opacity: 0.7
+                                  }}
+                                />
+                                You receive
+                              </Box>
+                            </Typography>
+                            {renderTokenSelector(
+                              token2,
+                              () => setPanel2Open(true),
+                              'Select token to receive'
+                            )}
+                          </Box>
+                          <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
+                            <Input
+                              placeholder="0.00"
+                              disableUnderline
+                              value={amount1 === '' ? '' : amount2}
+                              onChange={handleChangeAmount2}
+                              inputMode="decimal"
+                              sx={{
+                                width: '100%',
+                                input: {
+                                  textAlign: 'right',
+                                  fontSize: { xs: '24px', sm: '32px' },
+                                  fontWeight: 700,
+                                  padding: '8px 0',
+                                  background: 'transparent',
+                                  color: theme.palette.text.primary,
+                                  border: 'none',
+                                  outline: 'none',
+                                  fontFamily:
+                                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                                  letterSpacing: '-0.02em',
+                                  transition: 'all 0.2s ease',
+                                  '&::placeholder': {
+                                    color: alpha(theme.palette.text.primary, 0.3),
+                                    fontWeight: 400
+                                  },
+                                  '&:focus': {
+                                    transform: 'scale(1.02)',
+                                    transformOrigin: 'right center'
+                                  }
+                                }
+                              }}
+                              onFocus={() => setFocusBottom(true)}
+                              onBlur={() => setFocusBottom(false)}
+                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{
+                                mt: 1,
+                                display: 'block',
+                                fontSize: '0.8rem',
+                                fontWeight: 500,
+                                opacity: focusBottom ? 1 : 0.7,
+                                transition: 'opacity 0.2s ease'
+                              }}
+                            >
+                              {tokenPrice2 > 0
+                                ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`
+                                : ' '}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        {isLoggedIn && accountPairBalance && (
+                          <Typography variant="caption" color="text.secondary">
+                            Balance:{' '}
+                            {fNumber(
+                              revert
+                                ? accountPairBalance?.curr1.value
+                                : accountPairBalance?.curr2.value
+                            )}
+                          </Typography>
+                        )}
+                      </Box>
+                    </Box>
+
+                    {/* View Buttons - Shows only for Limit orders */}
+                    {orderType === 'limit' && (
+                      <Box sx={{ mt: 2, mb: 1 }}>
+                        <Stack direction="row" spacing={1}>
+                          <Button
+                            fullWidth
+                            size="small"
+                            variant="outlined"
+                            onClick={() => setShowOrderbook(!showOrderbook)}
+                            startIcon={
+                              showOrderbook ? (
+                                <ToggleOnIcon sx={{ width: 14, height: 14 }} />
+                              ) : (
+                                <ToggleOffIcon sx={{ width: 14, height: 14 }} />
+                              )
+                            }
+                            sx={{
+                              py: 0.6,
+                              fontSize: '0.7rem',
+                              textTransform: 'none',
+                              borderColor: showOrderbook
+                                ? theme.palette.primary.main
+                                : alpha(theme.palette.divider, 0.2),
+                              color: showOrderbook
+                                ? theme.palette.primary.main
+                                : theme.palette.text.secondary,
+                              backgroundColor: showOrderbook
+                                ? alpha(theme.palette.primary.main, 0.05)
+                                : 'transparent',
+                              '&:hover': {
+                                borderColor: theme.palette.primary.main,
+                                backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                              }
+                            }}
+                          >
+                            {showOrderbook ? 'Hide' : 'Show'} Book
+                          </Button>
+                          {accountProfile?.account && (
+                            <Button
+                              fullWidth
+                              size="small"
+                              variant="outlined"
+                              onClick={() => setShowOrders(!showOrders)}
+                              startIcon={<ListIcon sx={{ width: 14, height: 14 }} />}
+                              sx={{
+                                py: 0.6,
+                                fontSize: '0.7rem',
+                                textTransform: 'none',
+                                borderColor: showOrders
+                                  ? theme.palette.primary.main
+                                  : alpha(theme.palette.divider, 0.2),
+                                color: showOrders
+                                  ? theme.palette.primary.main
+                                  : theme.palette.text.secondary,
+                                backgroundColor: showOrders
+                                  ? alpha(theme.palette.primary.main, 0.05)
+                                  : 'transparent',
+                                '&:hover': {
+                                  borderColor: theme.palette.primary.main,
+                                  backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                                }
+                              }}
+                            >
+                              {showOrders ? 'Hide' : 'Show'} Orders
+                            </Button>
+                          )}
+                        </Stack>
+                      </Box>
+                    )}
+
+                    {/* Market Order UI */}
+                    {orderType === 'market' && (
+                      <Box sx={{ mb: 2 }}>
+                        <Stack spacing={1}>
+                          {/* Slippage Setting */}
+                          <Box
+                            sx={{
+                              p: 1.5,
+                              borderRadius: '10px',
+                              backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                              border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                            }}
+                          >
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Stack direction="row" alignItems="center" spacing={0.5}>
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontSize="0.7rem"
+                                >
+                                  Slippage Tolerance
+                                </Typography>
+                                <Tooltip title="Maximum price change you accept" arrow>
+                                  <InfoIcon sx={{ width: 12, height: 12, opacity: 0.5 }} />
+                                </Tooltip>
+                              </Stack>
+                              <Stack direction="row" spacing={0.5}>
+                                {[0.5, 1, 3].map((val) => (
+                                  <Chip
+                                    key={val}
+                                    label={`${val}%`}
+                                    size="small"
+                                    onClick={() => setSlippage(val)}
+                                    sx={{
+                                      height: '18px',
+                                      fontSize: '0.6rem',
+                                      cursor: 'pointer',
+                                      backgroundColor:
+                                        slippage === val
+                                          ? theme.palette.primary.main
+                                          : alpha(theme.palette.action.selected, 0.08),
+                                      color:
+                                        slippage === val ? 'white' : theme.palette.text.secondary,
+                                      '&:hover': {
+                                        backgroundColor:
+                                          slippage === val
+                                            ? theme.palette.primary.dark
+                                            : alpha(theme.palette.action.selected, 0.16)
+                                      }
+                                    }}
+                                  />
+                                ))}
+                              </Stack>
+                            </Stack>
+                          </Box>
+
+                          {/* Min Received */}
+                          {amount2 && (
+                            <Box
+                              sx={{
+                                p: 1,
+                                borderRadius: '8px',
+                                backgroundColor: alpha(theme.palette.info.main, 0.05),
+                                border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`
+                              }}
+                            >
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontSize="0.65rem"
+                                >
+                                  Minimum Received
+                                </Typography>
+                                <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                                  {new Decimal(amount2).mul(1 - slippage / 100).toFixed(4)}{' '}
+                                  {token2.name}
+                                </Typography>
+                              </Stack>
+                            </Box>
+                          )}
+                        </Stack>
+                      </Box>
+                    )}
+
+                    {/* Limit Order UI */}
+                    {orderType === 'limit' && (
+                      <Box
+                        sx={{
+                          mt: 1.5,
+                          mb: 1.5,
+                          p: 1.5,
+                          borderRadius: '10px',
+                          backgroundColor: alpha(theme.palette.background.paper, 0.2),
+                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                        }}
+                      >
+                        <Stack spacing={1.5}>
+                          {/* Limit Price Input */}
+                          <Box>
+                            <Stack
+                              direction="row"
+                              justifyContent="space-between"
+                              alignItems="center"
+                              sx={{ mb: 0.5 }}
+                            >
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.65rem',
+                                  fontWeight: 600,
+                                  color: theme.palette.text.secondary,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.03em'
+                                }}
+                              >
+                                Limit Price
+                              </Typography>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  fontSize: '0.6rem',
+                                  color: theme.palette.text.secondary,
+                                  opacity: 0.7
+                                }}
+                              >
+                                {token2.name || token2.currency} per{' '}
+                                {token1.name || token1.currency}
+                              </Typography>
+                            </Stack>
+                            <Input
+                              placeholder="0.00"
+                              fullWidth
+                              disableUnderline
+                              value={limitPrice}
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === '.') {
+                                  setLimitPrice('0.');
+                                  return;
+                                }
+                                if (!isNaN(Number(val)) || val === '') {
+                                  setLimitPrice(val);
+                                }
+                              }}
+                              sx={{
+                                backgroundColor: alpha(theme.palette.background.default, 0.4),
+                                borderRadius: '8px',
+                                padding: '8px 12px',
+                                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+                                transition: 'all 0.2s ease',
+                                input: {
+                                  fontSize: '0.9rem',
+                                  fontWeight: 600,
+                                  fontFamily:
+                                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
+                                },
+                                '&:hover': {
+                                  borderColor: alpha(theme.palette.primary.main, 0.2)
+                                },
+                                '&:focus-within': {
+                                  borderColor: theme.palette.primary.main,
+                                  backgroundColor: alpha(theme.palette.background.default, 0.6)
+                                }
+                              }}
+                            />
+                          </Box>
+
+                          {/* Quick Price Select */}
+                          {(bids[0] || asks[0]) && (
+                            <Stack direction="row" spacing={0.75}>
+                              {bids[0] && (
+                                <Box
+                                  onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
+                                  sx={{
+                                    flex: 1,
+                                    px: 1,
+                                    py: 0.5,
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: alpha(theme.palette.success.main, 0.08),
+                                    border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                                    transition: 'all 0.2s ease',
+                                    textAlign: 'center',
+                                    '&:hover': {
+                                      backgroundColor: alpha(theme.palette.success.main, 0.15)
+                                    }
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.6rem',
+                                      fontWeight: 600,
+                                      color: theme.palette.success.main
+                                    }}
+                                  >
+                                    Bid: {bids[0].price.toFixed(4)}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {asks[0] && (
+                                <Box
+                                  onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
+                                  sx={{
+                                    flex: 1,
+                                    px: 1,
+                                    py: 0.5,
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    backgroundColor: alpha(theme.palette.error.main, 0.08),
+                                    border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
+                                    transition: 'all 0.2s ease',
+                                    textAlign: 'center',
+                                    '&:hover': {
+                                      backgroundColor: alpha(theme.palette.error.main, 0.15)
+                                    }
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.6rem',
+                                      fontWeight: 600,
+                                      color: theme.palette.error.main
+                                    }}
+                                  >
+                                    Ask: {asks[0].price.toFixed(4)}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Stack>
+                          )}
+
+                          {/* Expiration Setting */}
+                          <Box>
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                fontSize: '0.65rem',
+                                fontWeight: 600,
+                                color: theme.palette.text.secondary,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.03em',
+                                mb: 0.5,
+                                display: 'block'
+                              }}
+                            >
+                              Expires
+                            </Typography>
+                            <Stack direction="row" spacing={0.5}>
+                              {[
+                                { value: 'never', label: 'Never' },
+                                { value: '1h', label: '1h' },
+                                { value: '24h', label: '1d' },
+                                { value: '7d', label: '7d' }
+                              ].map((exp) => (
+                                <Box
+                                  key={exp.value}
+                                  onClick={() => setOrderExpiry(exp.value)}
+                                  sx={{
+                                    flex: 1,
+                                    px: 0.75,
+                                    py: 0.5,
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    textAlign: 'center',
+                                    backgroundColor:
+                                      orderExpiry === exp.value
+                                        ? alpha(theme.palette.primary.main, 0.12)
+                                        : alpha(theme.palette.background.default, 0.2),
+                                    color:
+                                      orderExpiry === exp.value
+                                        ? theme.palette.primary.main
+                                        : theme.palette.text.secondary,
+                                    border: `1px solid ${
+                                      orderExpiry === exp.value
+                                        ? alpha(theme.palette.primary.main, 0.2)
+                                        : alpha(theme.palette.divider, 0.08)
+                                    }`,
+                                    transition: 'all 0.2s ease',
+                                    '&:hover': {
+                                      backgroundColor:
+                                        orderExpiry === exp.value
+                                          ? alpha(theme.palette.primary.main, 0.18)
+                                          : alpha(theme.palette.background.default, 0.3)
+                                    }
+                                  }}
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ fontSize: '0.6rem', fontWeight: 600 }}
+                                  >
+                                    {exp.label}
+                                  </Typography>
+                                </Box>
+                              ))}
+                            </Stack>
+                            {orderExpiry === 'custom' && (
+                              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Input
+                                  type="number"
+                                  value={customExpiry}
+                                  onChange={(e) =>
+                                    setCustomExpiry(Math.max(1, parseInt(e.target.value) || 1))
+                                  }
+                                  disableUnderline
+                                  sx={{
+                                    width: '60px',
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    backgroundColor: alpha(theme.palette.background.paper, 0.05),
+                                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                    input: {
+                                      fontSize: '0.7rem',
+                                      textAlign: 'center'
+                                    }
+                                  }}
+                                />
+                                <Typography variant="caption" fontSize="0.7rem">
+                                  hours
+                                </Typography>
+                              </Box>
+                            )}
+                          </Box>
+
+                          {/* Price difference from market and warnings */}
+                          {limitPrice &&
+                            parseFloat(limitPrice) > 0 &&
+                            (() => {
+                              const limit = parseFloat(limitPrice);
+                              const bestAsk = asks[0]?.price || 0;
+                              const bestBid = bids[0]?.price || 0;
+
+                              // Determine the current market price based on order type
+                              const currentPrice = !revert ? bestAsk : bestBid;
+
+                              if (currentPrice > 0) {
+                                const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
+                                const isAbove = priceDiff > 0;
+
+                                // Check if order will execute immediately
+                                const willExecute =
+                                  (!revert && limit >= bestAsk && bestAsk > 0) ||
+                                  (revert && limit <= bestBid && bestBid > 0);
+
+                                return (
+                                  <Stack spacing={1} sx={{ mt: 1 }}>
+                                    {/* Price difference indicator */}
+                                    <Box
+                                      sx={{
+                                        p: 1,
+                                        borderRadius: '6px',
+                                        backgroundColor: alpha(
+                                          isAbove
+                                            ? theme.palette.error.main
+                                            : theme.palette.success.main,
+                                          0.1
+                                        ),
+                                        border: `1px solid ${alpha(
+                                          isAbove
+                                            ? theme.palette.error.main
+                                            : theme.palette.success.main,
+                                          0.3
+                                        )}`
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          fontWeight: 600,
+                                          color: isAbove
+                                            ? theme.palette.error.main
+                                            : theme.palette.success.main
+                                        }}
+                                      >
+                                        {isAbove ? '▲' : '▼'} {Math.abs(priceDiff).toFixed(2)}%{' '}
+                                        {isAbove ? 'above' : 'below'} current{' '}
+                                        {!revert ? 'ask' : 'bid'} price ({currentPrice.toFixed(6)})
+                                      </Typography>
+                                    </Box>
+
+                                    {/* Warning for immediate execution */}
+                                    {willExecute && (
+                                      <Box
+                                        sx={{
+                                          p: 1,
+                                          borderRadius: '6px',
+                                          backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                                          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
+                                        }}
+                                      >
+                                        <Typography
+                                          variant="caption"
+                                          color="warning.main"
+                                          sx={{ fontWeight: 600 }}
+                                        >
+                                          ⚠️ Order will execute immediately at market price
+                                        </Typography>
+                                      </Box>
+                                    )}
+                                  </Stack>
+                                );
+                              }
+                              return null;
+                            })()}
+                        </Stack>
+                      </Box>
+                    )}
+
+                    {/* User's Open Orders - Display when button is clicked */}
+                    {showOrders && accountProfile?.account && (
+                      <Box sx={{ mb: 2 }}>
+                        {
+                          <Box
+                            sx={{
+                              borderRadius: '12px',
+                              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                              overflow: 'hidden',
+                              backgroundColor: alpha(theme.palette.background.paper, 0.02)
+                            }}
+                          >
+                            <Orders
+                              pair={{
+                                // For now, use a simple pair string format that the API might accept
+                                // The backend should handle both MD5 and string formats
+                                pair: `${curr1.currency}:${curr1.issuer || 'XRP'}/${curr2.currency}:${curr2.issuer || 'XRP'}`,
+                                curr1: {
+                                  ...curr1,
+                                  name: curr1.name || curr1.currency,
+                                  issuer:
+                                    curr1.issuer || (curr1.currency === 'XRP' ? undefined : ''),
+                                  currency: curr1.currency
+                                },
+                                curr2: {
+                                  ...curr2,
+                                  name: curr2.name || curr2.currency,
+                                  issuer:
+                                    curr2.issuer || (curr2.currency === 'XRP' ? undefined : ''),
+                                  currency: curr2.currency
+                                }
+                              }}
+                            />
+                          </Box>
+                        }
+                      </Box>
+                    )}
+
+                    {/* Transaction Summary */}
+                    {amount1 && amount2 && (
+                      <Box sx={{ mt: 2, mb: 1 }}>
+                        <Box
+                          sx={{
+                            p: 1.5,
+                            borderRadius: '12px',
+                            backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                          }}
+                        >
+                          <Stack
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            onClick={() => setShowOrderSummary(!showOrderSummary)}
+                            sx={{ cursor: 'pointer', mb: showOrderSummary ? 1 : 0 }}
+                          >
+                            <Typography
+                              variant="caption"
+                              sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary }}
+                            >
+                              ORDER SUMMARY
+                            </Typography>
+                            <InfoIcon
+                              icon={showOrderSummary ? 'mdi:chevron-up' : 'mdi:chevron-down'}
+                              width={16}
+                              height={16}
+                              style={{ color: theme.palette.text.secondary }}
+                            />
+                          </Stack>
+                          {showOrderSummary && (
+                            <Stack spacing={0.75}>
+                              {/* Sell Amount */}
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontSize="0.7rem"
+                                >
+                                  {orderType === 'limit' ? 'Sell Order' : 'You Pay'}
+                                </Typography>
+                                <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                  {amount1} {token1.name || token1.currency}
+                                </Typography>
+                              </Stack>
+
+                              {/* Buy Amount */}
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontSize="0.7rem"
+                                >
+                                  {orderType === 'limit' ? 'To Buy' : 'You Receive'}
+                                </Typography>
+                                <Typography
+                                  variant="caption"
+                                  fontWeight={600}
+                                  fontSize="0.75rem"
+                                  color="primary.main"
+                                >
+                                  {orderType === 'limit' && limitPrice
+                                    ? (() => {
+                                        const limitPriceDecimal = new Decimal(limitPrice);
+                                        const amount1Decimal = new Decimal(amount1);
+                                        if (
+                                          token1.currency === 'XRP' &&
+                                          token2.currency !== 'XRP'
+                                        ) {
+                                          return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                                        } else if (
+                                          token1.currency !== 'XRP' &&
+                                          token2.currency === 'XRP'
+                                        ) {
+                                          return amount1Decimal.div(limitPriceDecimal).toFixed(6);
+                                        } else {
+                                          return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
+                                        }
+                                      })()
+                                    : amount2}{' '}
+                                  {token2.name || token2.currency}
+                                </Typography>
+                              </Stack>
+
+                              {/* Rate */}
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontSize="0.7rem"
+                                >
+                                  {orderType === 'limit'
+                                    ? `${token1.name} at Rate`
+                                    : 'Exchange Rate'}
+                                </Typography>
+                                <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                  {orderType === 'limit' && limitPrice
+                                    ? `${limitPrice} ${token2.name || token2.currency}`
+                                    : (() => {
+                                        const token1IsXRP = token1?.currency === 'XRP';
+                                        const token2IsXRP = token2?.currency === 'XRP';
+
+                                        if (token1IsXRP && !token2IsXRP) {
+                                          return tokenExch2 > 0
+                                            ? `${(1 / tokenExch2).toFixed(6)} ${token2.name}`
+                                            : '0';
+                                        } else if (!token1IsXRP && token2IsXRP) {
+                                          return tokenExch1 > 0
+                                            ? `${tokenExch1.toFixed(6)} ${token2.name}`
+                                            : '0';
+                                        } else {
+                                          return tokenExch1 > 0 && tokenExch2 > 0
+                                            ? `${(tokenExch1 / tokenExch2).toFixed(6)} ${token2.name}`
+                                            : '0';
+                                        }
+                                      })()}
+                                </Typography>
+                              </Stack>
+
+                              {/* Order Type & Expiry for Limit Orders */}
+                              {orderType === 'limit' && (
+                                <>
+                                  <Stack
+                                    direction="row"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      fontSize="0.7rem"
+                                    >
+                                      Order Type
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      fontWeight={600}
+                                      fontSize="0.75rem"
+                                    >
+                                      Limit Order
+                                    </Typography>
+                                  </Stack>
+                                  <Stack
+                                    direction="row"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      color="text.secondary"
+                                      fontSize="0.7rem"
+                                    >
+                                      Expiry
+                                    </Typography>
+                                    <Typography
+                                      variant="caption"
+                                      fontWeight={600}
+                                      fontSize="0.75rem"
+                                    >
+                                      {orderExpiry === 'never'
+                                        ? 'Never'
+                                        : orderExpiry === '1h'
+                                          ? '1 Hour'
+                                          : orderExpiry === '24h'
+                                            ? '1 Day'
+                                            : orderExpiry === '7d'
+                                              ? '7 Days'
+                                              : orderExpiry === '30d'
+                                                ? '30 Days'
+                                                : orderExpiry === 'custom'
+                                                  ? `${customExpiry} Hours`
+                                                  : 'Never'}
+                                    </Typography>
+                                  </Stack>
+                                </>
+                              )}
+
+                              {/* Slippage for Market Orders */}
+                              {orderType === 'market' && (
+                                <Stack
+                                  direction="row"
+                                  justifyContent="space-between"
+                                  alignItems="center"
+                                >
+                                  <Typography
+                                    variant="caption"
+                                    color="text.secondary"
+                                    fontSize="0.7rem"
+                                  >
+                                    Max Slippage
+                                  </Typography>
+                                  <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                    {slippage}%
+                                  </Typography>
+                                </Stack>
+                              )}
+
+                              {/* Platform Fee */}
+                              <Divider
+                                sx={{ my: 0.5, borderColor: alpha(theme.palette.divider, 0.05) }}
+                              />
+                              <Stack
+                                direction="row"
+                                justifyContent="space-between"
+                                alignItems="center"
+                              >
+                                <Typography
+                                  variant="caption"
+                                  color="text.secondary"
+                                  fontSize="0.7rem"
+                                >
+                                  Network Fee
+                                </Typography>
+                                <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                  ~0.000012 XRP
+                                </Typography>
+                              </Stack>
+                            </Stack>
+                          )}
+                        </Box>
+                      </Box>
+                    )}
+
+                    {/* Price Impact Row - Only show for market orders or limit orders that will execute immediately */}
+                    {amount1 &&
+                      amount2 &&
+                      (() => {
+                        // For limit orders, only show price impact if the order will execute immediately
+                        if (orderType === 'limit') {
+                          const limit = parseFloat(limitPrice);
+                          const bestAsk = asks[0]?.price || 0;
+                          const bestBid = bids[0]?.price || 0;
+                          const willExecute =
+                            (!revert && limit >= bestAsk && bestAsk > 0) ||
+                            (revert && limit <= bestBid && bestBid > 0);
+
+                          // Don't show price impact for limit orders that won't execute immediately
+                          if (!willExecute || !limit) {
+                            return null;
+                          }
+                        }
+
+                        return (
+                          <Stack
+                            direction="row"
+                            justifyContent="space-between"
+                            alignItems="center"
+                            sx={{
+                              mt: 1,
+                              p: 1,
+                              borderRadius: '8px',
+                              backgroundColor: alpha(theme.palette.background.paper, 0.03),
+                              border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
+                            }}
+                          >
+                            <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                              Price Impact
+                            </Typography>
+                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                              <Typography
+                                variant="caption"
+                                sx={{
+                                  color: getPriceImpactColor(Math.abs(priceImpact)),
+                                  fontWeight: 600,
+                                  fontSize: '0.75rem'
+                                }}
+                              >
+                                {priceImpact > 0 ? '+' : ''}
+                                {priceImpact}%
+                              </Typography>
+                              {Math.abs(priceImpact) > 5 && (
+                                <Tooltip
+                                  title={
+                                    Math.abs(priceImpact) > 10
+                                      ? 'Very high impact! Consider reducing size'
+                                      : 'High impact detected'
+                                  }
+                                  arrow
+                                >
+                                  <InfoIcon
+                                    icon="mdi:alert-circle"
+                                    width={14}
+                                    height={14}
+                                    style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}
+                                  />
+                                </Tooltip>
+                              )}
+                            </Stack>
+                          </Stack>
+                        );
+                      })()}
+
+                    {/* Action Button */}
+                    <Box sx={{ mt: 3 }}>
+                      {accountProfile && accountProfile.account ? (
+                        <ExchangeButton
+                          variant="contained"
+                          fullWidth
+                          onClick={handlePlaceOrder}
+                          disabled={
+                            isProcessing === 1 ||
+                            !isLoggedIn ||
+                            (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                          }
+                          sx={{
+                            minHeight: '52px',
+                            fontSize: '16px',
+                            fontWeight: 600,
+                            borderRadius: '12px',
+                            textTransform: 'none',
+                            boxShadow: 'none',
+                            '&:hover': {
+                              boxShadow: 'none'
+                            }
+                          }}
+                        >
+                          {handleMsg()}
+                        </ExchangeButton>
+                      ) : (
+                        <Box
+                          sx={{
+                            width: '100%',
+                            '& .MuiButton-root': {
+                              width: '100% !important',
+                              minWidth: '100% !important',
+                              padding: '14px 24px !important',
+                              minHeight: '52px !important',
+                              fontSize: '16px !important',
+                              borderRadius: '12px !important',
+                              textTransform: 'none !important'
+                            }
+                          }}
+                        >
+                          <ConnectWallet pair={pair} />
+                        </Box>
+                      )}
+                    </Box>
+                  </Box>
                 </Box>
-              )}
-            </Box>
+
+                <QRDialog
+                  open={openScanQR}
+                  type={transactionType}
+                  onClose={handleScanQRClose}
+                  qrUrl={qrUrl}
+                  nextUrl={nextUrl}
+                />
+              </Stack>
+
+              {/* Orderbook Drawer (embedded) using TransactionDetailsPanel) */}
+              <TransactionDetailsPanel
+                open={showOrderbook && orderType === 'limit'}
+                onClose={() => setShowOrderbook(false)}
+                mode="orderbook"
+                pair={{
+                  curr1: { ...curr1, name: curr1.name || curr1.currency },
+                  curr2: { ...curr2, name: curr2.name || curr2.currency }
+                }}
+                asks={asks}
+                bids={bids}
+                limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
+                isBuyOrder={!!revert}
+                onAskClick={(e, idx) => {
+                  if (asks && asks[idx]) {
+                    setLimitPrice(asks[idx].price.toString());
+                    setOrderType('limit');
+                  }
+                }}
+                onBidClick={(e, idx) => {
+                  if (bids && bids[idx]) {
+                    setLimitPrice(bids[idx].price.toString());
+                    setOrderType('limit');
+                  }
+                }}
+              />
+            </Stack>
           </Box>
         </Box>
-
-
-        <QRDialog
-          open={openScanQR}
-          type={transactionType}
-          onClose={handleScanQRClose}
-          qrUrl={qrUrl}
-          nextUrl={nextUrl}
-        />
-
-      </Stack>
-
-      {/* Orderbook Drawer (embedded) using TransactionDetailsPanel) */}
-      <TransactionDetailsPanel
-        open={showOrderbook && orderType === 'limit'}
-        onClose={() => setShowOrderbook(false)}
-        mode="orderbook"
-        pair={{
-          curr1: { ...curr1, name: curr1.name || curr1.currency },
-          curr2: { ...curr2, name: curr2.name || curr2.currency }
-        }}
-        asks={asks}
-        bids={bids}
-        limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-        isBuyOrder={!!revert}
-        onAskClick={(e, idx) => {
-          if (asks && asks[idx]) {
-            setLimitPrice(asks[idx].price.toString());
-            setOrderType('limit');
-          }
-        }}
-        onBidClick={(e, idx) => {
-          if (bids && bids[idx]) {
-            setLimitPrice(bids[idx].price.toString());
-            setOrderType('limit');
-          }
-        }}
-      />
-        </Stack>
-        </Box>
-      </Box>
       </Box>
 
       {/* Chart Display - Full width sparklines matching swap container */}
@@ -3996,12 +4276,27 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   }
                 }}
               >
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  sx={{ mb: 1 }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight={600}
+                    sx={{ fontSize: '0.7rem' }}
+                  >
                     {token1.name}
                   </Typography>
                   {(token1.exch || tokenExch1 || latestPrice1) && (
-                    <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ fontSize: '0.75rem' }}>
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.primary"
+                      sx={{ fontSize: '0.75rem' }}
+                    >
                       {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
                     </Typography>
                   )}
@@ -4017,7 +4312,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 </Box>
               </Box>
             )}
-            
+
             {token2 && (
               <Box
                 sx={{
@@ -4035,12 +4330,27 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   }
                 }}
               >
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <Typography variant="caption" color="text.secondary" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  sx={{ mb: 1 }}
+                >
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    fontWeight={600}
+                    sx={{ fontSize: '0.7rem' }}
+                  >
                     {token2.name}
                   </Typography>
                   {(token2.exch || tokenExch2 || latestPrice2) && (
-                    <Typography variant="caption" fontWeight={700} color="text.primary" sx={{ fontSize: '0.75rem' }}>
+                    <Typography
+                      variant="caption"
+                      fontWeight={700}
+                      color="text.primary"
+                      sx={{ fontSize: '0.75rem' }}
+                    >
                       {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
                     </Typography>
                   )}

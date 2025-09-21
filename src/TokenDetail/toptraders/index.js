@@ -276,7 +276,14 @@ const headCells = [
     tooltip: 'Total number of trades for this token',
     mobileHide: true
   },
-  { id: 'roi', label: 'ROI', numeric: true, sortable: true, tooltip: 'Return on Investment', mobileHide: false },
+  {
+    id: 'roi',
+    label: 'ROI',
+    numeric: true,
+    sortable: true,
+    tooltip: 'Return on Investment',
+    mobileHide: false
+  },
   {
     id: 'lastTradeDate',
     label: 'Last Trade',
@@ -298,9 +305,9 @@ function ProfitCell({ value }) {
       ) : (
         <TrendingDownIcon sx={{ color: '#F44336', fontSize: 14 }} />
       )}
-      <Typography 
-        variant="body2" 
-        sx={{ 
+      <Typography
+        variant="body2"
+        sx={{
           color: isPositive ? theme.palette.primary.main : '#F44336',
           fontWeight: 600,
           fontSize: '0.85rem'
@@ -511,7 +518,7 @@ export default function TopTraders({ token }) {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
-  
+
   const totalPages = Math.ceil(sortedTraders.length / rowsPerPage);
 
   return (
@@ -585,8 +592,11 @@ export default function TopTraders({ token }) {
 
           <Stack spacing={0.5}>
             {paginatedTraders.map((trader, index) => {
-              const volumePercentage = Math.min(100, Math.max(5, (trader.totalVolume / 1000000) * 100));
-              
+              const volumePercentage = Math.min(
+                100,
+                Math.max(5, (trader.totalVolume / 1000000) * 100)
+              );
+
               return (
                 <TraderCard key={trader.address + '-' + index}>
                   <VolumeIndicator volume={volumePercentage} />
@@ -666,7 +676,12 @@ export default function TopTraders({ token }) {
                       </Box>
 
                       {/* P&L 7d */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' }, display: { xs: 'none', md: 'block' } }}>
+                      <Box
+                        sx={{
+                          textAlign: { xs: 'left', md: 'right' },
+                          display: { xs: 'none', md: 'block' }
+                        }}
+                      >
                         <ProfitCell value={trader.profit7d} />
                       </Box>
 
@@ -690,7 +705,12 @@ export default function TopTraders({ token }) {
                       </Box>
 
                       {/* Total Volume */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' }, display: { xs: 'none', md: 'block' } }}>
+                      <Box
+                        sx={{
+                          textAlign: { xs: 'left', md: 'right' },
+                          display: { xs: 'none', md: 'block' }
+                        }}
+                      >
                         <Typography
                           variant="body2"
                           fontWeight="600"
@@ -721,9 +741,18 @@ export default function TopTraders({ token }) {
                       </Box>
 
                       {/* ROI */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, justifyContent: { xs: 'flex-start', md: 'flex-end' } }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          justifyContent: { xs: 'flex-start', md: 'flex-end' }
+                        }}
+                      >
                         {trader.roi >= 0 ? (
-                          <TrendingUpIcon sx={{ color: theme.palette.primary.main, fontSize: 14 }} />
+                          <TrendingUpIcon
+                            sx={{ color: theme.palette.primary.main, fontSize: 14 }}
+                          />
                         ) : (
                           <TrendingDownIcon sx={{ color: '#F44336', fontSize: 14 }} />
                         )}

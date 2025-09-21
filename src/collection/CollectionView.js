@@ -1,4 +1,13 @@
-import React, { useState, useEffect, useContext, useCallback, useMemo, useRef, lazy, Suspense } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useCallback,
+  useMemo,
+  useRef,
+  lazy,
+  Suspense
+} from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
@@ -14,7 +23,11 @@ const debounce = (func, delay) => {
 // Lazy load heavy components
 const InfiniteScroll = dynamic(() => import('react-infinite-scroll-component'), {
   ssr: false,
-  loading: () => <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}><CircularProgress size={30} /></Box>
+  loading: () => (
+    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+      <CircularProgress size={30} />
+    </Box>
+  )
 });
 // react-share is heavy; load it on demand when share popover opens
 
@@ -380,11 +393,11 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
             size="small"
             sx={{
               background: 'transparent',
-              color: theme => theme.palette.primary.main,
+              color: (theme) => theme.palette.primary.main,
               fontWeight: 600,
               fontSize: '0.7rem',
               height: '24px',
-              border: theme => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
               '&:hover': {
                 transform: 'translateY(-0.5px)'
               }
@@ -630,7 +643,10 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
         {/* Image Section with lazy loading */}
         <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden' }}>
           {loadingImg && !imageError && (
-            <Skeleton variant="rectangular" sx={{ width: '100%', height: '100%', position: 'absolute' }} />
+            <Skeleton
+              variant="rectangular"
+              sx={{ width: '100%', height: '100%', position: 'absolute' }}
+            />
           )}
           {!imageError ? (
             <Box
@@ -663,7 +679,9 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 bgcolor: 'action.disabledBackground'
               }}
             >
-              <Typography variant="caption" color="text.secondary">Image unavailable</Typography>
+              <Typography variant="caption" color="text.secondary">
+                Image unavailable
+              </Typography>
             </Box>
           )}
 
@@ -717,10 +735,10 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
           <Stack
             direction="row"
             spacing={0.5}
-            sx={{ 
-              position: 'absolute', 
-              bottom: 8, 
-              left: 8, 
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              left: 8,
               right: 8,
               flexWrap: 'wrap',
               gap: 0.5
@@ -786,11 +804,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
               {name}
             </Typography>
             {(cost || amount) && (
-              <Typography
-                variant="caption"
-                color="text.secondary"
-                sx={{ fontWeight: 600 }}
-              >
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600 }}>
                 {cost
                   ? cost.currency === 'XRP'
                     ? `✕ ${fNumber(cost.amount)}`
@@ -863,16 +877,19 @@ const NFTGrid = React.memo(({ collection }) => {
   const [filterAttrs, setFilterAttrs] = useState([]);
   const [isFirstLoad, setIsFirstLoad] = useState(initialNfts.length === 0);
 
-  const sortOptions = useMemo(() => [
-    { value: 'default', label: 'Default', icon: '📊', desc: 'Collection order' },
-    { value: 'pricexrpasc', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
-    { value: 'pricexrpdesc', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
-    { value: 'rarityasc', label: 'Rarity: Common First', icon: '🌟', desc: 'Common to rare' },
-    { value: 'raritydesc', label: 'Rarity: Rare First', icon: '👑', desc: 'Rare to common' },
-    { value: 'recent', label: 'Recently Listed', icon: '🆕', desc: 'Newest listings' }
-  ], []);
+  const sortOptions = useMemo(
+    () => [
+      { value: 'default', label: 'Default', icon: '📊', desc: 'Collection order' },
+      { value: 'pricexrpasc', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
+      { value: 'pricexrpdesc', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
+      { value: 'rarityasc', label: 'Rarity: Common First', icon: '🌟', desc: 'Common to rare' },
+      { value: 'raritydesc', label: 'Rarity: Rare First', icon: '👑', desc: 'Rare to common' },
+      { value: 'recent', label: 'Recently Listed', icon: '🆕', desc: 'Newest listings' }
+    ],
+    []
+  );
 
-  const currentSort = sortOptions.find(opt => opt.value === subFilter) || sortOptions[0];
+  const currentSort = sortOptions.find((opt) => opt.value === subFilter) || sortOptions[0];
 
   // Fetch NFTs with optimized batch size
   const fetchNfts = useCallback(() => {
@@ -894,8 +911,8 @@ const NFTGrid = React.memo(({ collection }) => {
       .then((res) => {
         const newNfts = res.data.nfts || [];
         setHasMore(newNfts.length === limit);
-        setNfts(prev => page === 0 ? newNfts : [...prev, ...newNfts]);
-        setDeletingNfts(prev => page === 0 ? newNfts : [...prev, ...newNfts]);
+        setNfts((prev) => (page === 0 ? newNfts : [...prev, ...newNfts]));
+        setDeletingNfts((prev) => (page === 0 ? newNfts : [...prev, ...newNfts]));
       })
       .catch((err) => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
@@ -916,28 +933,28 @@ const NFTGrid = React.memo(({ collection }) => {
     setIsFirstLoad(false);
   }, [fetchNfts, isFirstLoad, page]);
 
-  const debouncedSearch = useMemo(
-    () => debounce((value) => setSearch(value), 500),
-    []
+  const debouncedSearch = useMemo(() => debounce((value) => setSearch(value), 500), []);
+
+  const handleRemove = useCallback(
+    (NFTokenID) => {
+      if (!collection) return;
+
+      setLoading(true);
+      axios
+        .delete(`${BASE_URL}/nfts`, {
+          data: {
+            issuer: collection.account,
+            taxon: collection.taxon,
+            cid: collection.uuid,
+            idsToDelete: NFTokenID
+          }
+        })
+        .then(() => location.reload())
+        .catch((err) => console.error('Error removing NFT:', err))
+        .finally(() => setLoading(false));
+    },
+    [collection]
   );
-
-  const handleRemove = useCallback((NFTokenID) => {
-    if (!collection) return;
-
-    setLoading(true);
-    axios
-      .delete(`${BASE_URL}/nfts`, {
-        data: {
-          issuer: collection.account,
-          taxon: collection.taxon,
-          cid: collection.uuid,
-          idsToDelete: NFTokenID
-        }
-      })
-      .then(() => location.reload())
-      .catch((err) => console.error('Error removing NFT:', err))
-      .finally(() => setLoading(false));
-  }, [collection]);
 
   return (
     <Box sx={{ p: { xs: 0, sm: 0 }, backgroundColor: 'transparent' }}>
@@ -975,7 +992,7 @@ const NFTGrid = React.memo(({ collection }) => {
             <TextField
               fullWidth
               variant="standard"
-              placeholder={isMobile ? "Search NFTs..." : "Search by name, ID, or attribute..."}
+              placeholder={isMobile ? 'Search NFTs...' : 'Search by name, ID, or attribute...'}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -987,8 +1004,8 @@ const NFTGrid = React.memo(({ collection }) => {
                 endAdornment: (
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     {search && (
-                      <IconButton 
-                        size="small" 
+                      <IconButton
+                        size="small"
                         onClick={() => {
                           setSearch('');
                           debouncedSearch('');
@@ -1044,7 +1061,7 @@ const NFTGrid = React.memo(({ collection }) => {
             </Button>
 
             <Button
-              variant={showFilter ? "contained" : "outlined"}
+              variant={showFilter ? 'contained' : 'outlined'}
               onClick={() => setShowFilter(!showFilter)}
               startIcon={<TuneIcon />}
               sx={{
@@ -1058,7 +1075,9 @@ const NFTGrid = React.memo(({ collection }) => {
                 color: showFilter ? 'white' : theme.palette.text.primary,
                 transition: 'transform 0.2s ease, border-color 0.2s ease',
                 '&:hover': {
-                  backgroundColor: showFilter ? theme.palette.primary.dark : alpha(theme.palette.primary.main, 0.08),
+                  backgroundColor: showFilter
+                    ? theme.palette.primary.dark
+                    : alpha(theme.palette.primary.main, 0.08),
                   borderColor: theme.palette.primary.main,
                   transform: 'translateY(-1px)'
                 }
@@ -1069,11 +1088,11 @@ const NFTGrid = React.memo(({ collection }) => {
                 <Chip
                   size="small"
                   label={[
-                    ((filter & 1) ? 1 : 0) +
-                    ((filter & 2) ? 1 : 0) +
-                    ((filter & 4) ? 1 : 0) +
-                    ((filter & 16) ? 1 : 0) +
-                    filterAttrs.length
+                    (filter & 1 ? 1 : 0) +
+                      (filter & 2 ? 1 : 0) +
+                      (filter & 4 ? 1 : 0) +
+                      (filter & 16 ? 1 : 0) +
+                      filterAttrs.length
                   ]}
                   sx={{
                     ml: 1,
@@ -1218,11 +1237,11 @@ const NFTGrid = React.memo(({ collection }) => {
         onClose={() => setAnchorEl(null)}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'left'
         }}
         PaperProps={{
           sx: {
@@ -1236,12 +1255,12 @@ const NFTGrid = React.memo(({ collection }) => {
         }}
       >
         <Box sx={{ p: 1 }}>
-          <Typography 
-            variant="caption" 
-            sx={{ 
-              px: 2, 
-              py: 1, 
-              display: 'block', 
+          <Typography
+            variant="caption"
+            sx={{
+              px: 2,
+              py: 1,
+              display: 'block',
               color: 'text.secondary',
               fontWeight: 600,
               textTransform: 'uppercase',
@@ -1263,7 +1282,10 @@ const NFTGrid = React.memo(({ collection }) => {
                 py: 1.5,
                 cursor: 'pointer',
                 borderRadius: '12px',
-                backgroundColor: subFilter === option.value ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                backgroundColor:
+                  subFilter === option.value
+                    ? alpha(theme.palette.primary.main, 0.08)
+                    : 'transparent',
                 transition: 'all 0.2s ease',
                 '&:hover': {
                   backgroundColor: alpha(theme.palette.primary.main, 0.05)
@@ -1273,11 +1295,12 @@ const NFTGrid = React.memo(({ collection }) => {
               <Stack direction="row" alignItems="center" spacing={2}>
                 <Typography sx={{ fontSize: '1.2rem' }}>{option.icon}</Typography>
                 <Box sx={{ flex: 1 }}>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    sx={{
                       fontWeight: subFilter === option.value ? 600 : 500,
-                      color: subFilter === option.value ? theme.palette.primary.main : 'text.primary'
+                      color:
+                        subFilter === option.value ? theme.palette.primary.main : 'text.primary'
                     }}
                   >
                     {option.label}
@@ -1287,11 +1310,11 @@ const NFTGrid = React.memo(({ collection }) => {
                   </Typography>
                 </Box>
                 {subFilter === option.value && (
-                  <CheckCircleIcon 
-                    sx={{ 
-                      fontSize: '1.2rem', 
-                      color: theme.palette.primary.main 
-                    }} 
+                  <CheckCircleIcon
+                    sx={{
+                      fontSize: '1.2rem',
+                      color: theme.palette.primary.main
+                    }}
                   />
                 )}
               </Stack>
@@ -1321,7 +1344,7 @@ const NFTGrid = React.memo(({ collection }) => {
       {/* NFT Grid */}
       <InfiniteScroll
         dataLength={nfts.length}
-        next={() => setPage(prev => prev + 1)}
+        next={() => setPage((prev) => prev + 1)}
         hasMore={hasMore}
         loader={
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
@@ -1398,7 +1421,14 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
   const activeFiltersCount = useMemo(() => Object.keys(fAttrs).length, [fAttrs]);
 
   return (
-    <Box sx={{ background: 'transparent', p: 3, borderRadius: 2, border: theme => `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+    <Box
+      sx={{
+        background: 'transparent',
+        p: 3,
+        borderRadius: 2,
+        border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`
+      }}
+    >
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
@@ -1417,10 +1447,17 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
               <TuneIcon sx={{ color: 'primary.main', fontSize: '1.3rem' }} />
             </Box>
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.1rem' }}>
+              <Typography
+                variant="h6"
+                sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.1rem' }}
+              >
                 Attribute Filters
               </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.85rem' }}>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontWeight: 500, fontSize: '0.85rem' }}
+              >
                 Refine by specific traits
               </Typography>
             </Box>
@@ -1430,12 +1467,17 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
             variant={activeFiltersCount > 0 ? 'filled' : 'outlined'}
             size="small"
             sx={{
-              backgroundColor: activeFiltersCount > 0 ? theme => theme.palette.primary.main : 'transparent',
-              color: activeFiltersCount > 0 ? 'white' : theme => theme.palette.text.primary,
-              border: theme => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+              backgroundColor:
+                activeFiltersCount > 0 ? (theme) => theme.palette.primary.main : 'transparent',
+              color: activeFiltersCount > 0 ? 'white' : (theme) => theme.palette.text.primary,
+              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
               fontWeight: 600
             }}
-            icon={activeFiltersCount > 0 ? <CheckCircleIcon sx={{ fontSize: '16px !important' }} /> : undefined}
+            icon={
+              activeFiltersCount > 0 ? (
+                <CheckCircleIcon sx={{ fontSize: '16px !important' }} />
+              ) : undefined
+            }
           />
         </Stack>
 
@@ -1449,10 +1491,10 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
               startIcon={<FilterListIcon sx={{ fontSize: '16px' }} />}
               sx={{
                 backgroundColor: 'transparent',
-                border: theme => `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                 '&:hover': {
                   backgroundColor: 'transparent',
-                  borderColor: theme => theme.palette.primary.main
+                  borderColor: (theme) => theme.palette.primary.main
                 }
               }}
             >
@@ -1466,9 +1508,9 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
               size="small"
               startIcon={<CheckCircleIcon sx={{ fontSize: '16px' }} />}
               sx={{
-                backgroundColor: theme => theme.palette.primary.main,
+                backgroundColor: (theme) => theme.palette.primary.main,
                 '&:hover': {
-                  backgroundColor: theme => theme.palette.primary.dark
+                  backgroundColor: (theme) => theme.palette.primary.dark
                 }
               }}
             >
@@ -1490,10 +1532,21 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
               onChange={handleAccordionChange('panel' + idx)}
             >
               <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" width="100%" pr={1}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  width="100%"
+                  pr={1}
+                >
                   <Stack direction="row" alignItems="center" spacing={2}>
-                    <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }} />
-                    <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}>
+                    <Box
+                      sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }}
+                    />
+                    <Typography
+                      variant="subtitle1"
+                      sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}
+                    >
                       {attr.title}
                     </Typography>
                   </Stack>
@@ -1528,10 +1581,12 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                           p: 2,
                           borderRadius: '12px',
                           background: 'transparent',
-                          border: (theme) => `1px solid ${isChecked ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
+                          border: (theme) =>
+                            `1px solid ${isChecked ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
                           transition: 'transform 0.2s ease, border-color 0.2s ease',
                           '&:hover': {
-                            border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                            border: (theme) =>
+                              `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                             transform: 'translateX(4px)'
                           }
                         }}
@@ -1545,8 +1600,16 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                             sx={{ '& .MuiSvgIcon-root': { fontSize: '1.3rem' } }}
                           />
                           <Box sx={{ flex: 1 }}>
-                            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-                              <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.9rem' }}>
+                            <Stack
+                              direction="row"
+                              alignItems="center"
+                              justifyContent="space-between"
+                              sx={{ mb: 1 }}
+                            >
+                              <Typography
+                                variant="body2"
+                                sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.9rem' }}
+                              >
                                 {key}
                               </Typography>
                               <Box
@@ -1555,7 +1618,8 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                                   py: 0.3,
                                   borderRadius: '12px',
                                   background: 'transparent',
-                                  border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                                  border: (theme) =>
+                                    `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
                                   color: 'success.main',
                                   fontWeight: 700,
                                   fontSize: '0.7rem'
@@ -1569,7 +1633,13 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                               <Typography
                                 variant="caption"
                                 color="text.secondary"
-                                sx={{ position: 'absolute', right: 0, top: -20, fontSize: '0.7rem', fontWeight: 500 }}
+                                sx={{
+                                  position: 'absolute',
+                                  right: 0,
+                                  top: -20,
+                                  fontSize: '0.7rem',
+                                  fontWeight: 500
+                                }}
                               >
                                 {percentage.toFixed(1)}%
                               </Typography>
@@ -1589,8 +1659,17 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
   );
 }
 
-// FilterDetail Component  
-function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, filterAttrs, setFilterAttrs, setPage }) {
+// FilterDetail Component
+function FilterDetail({
+  collection,
+  filter,
+  setFilter,
+  subFilter,
+  setSubFilter,
+  filterAttrs,
+  setFilterAttrs,
+  setPage
+}) {
   const theme = useTheme();
   const type = collection?.type;
   const extra = collection?.extra;
@@ -1598,11 +1677,7 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
   const [expandedPanels, setExpandedPanels] = useState(['status', 'sort']);
 
   const handlePanelChange = (panel) => (event, isExpanded) => {
-    setExpandedPanels(prev => 
-      isExpanded 
-        ? [...prev, panel]
-        : prev.filter(p => p !== panel)
-    );
+    setExpandedPanels((prev) => (isExpanded ? [...prev, panel] : prev.filter((p) => p !== panel)));
   };
 
   const handleFlagChange = (e) => {
@@ -1625,20 +1700,20 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
     setPage(0);
   };
 
-  const activeFiltersCount = 
-    ((filter & 1) ? 1 : 0) + 
-    ((filter & 2) ? 1 : 0) + 
-    ((filter & 4) ? 1 : 0) + 
-    ((filter & 8) ? 1 : 0) + 
-    ((filter & 16) ? 1 : 0) +
+  const activeFiltersCount =
+    (filter & 1 ? 1 : 0) +
+    (filter & 2 ? 1 : 0) +
+    (filter & 4 ? 1 : 0) +
+    (filter & 8 ? 1 : 0) +
+    (filter & 16 ? 1 : 0) +
     (filterAttrs?.length || 0);
 
   return (
-    <Box 
-      sx={{ 
-        background: 'transparent', 
-        p: 2, 
-        borderRadius: '20px', 
+    <Box
+      sx={{
+        background: 'transparent',
+        p: 2,
+        borderRadius: '20px',
         border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
         position: 'sticky',
         top: 20,
@@ -1661,7 +1736,10 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
     >
       <Box sx={{ mb: 3, p: 1 }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-          <Typography variant="h6" sx={{ color: 'text.primary', fontWeight: 700, fontSize: '1.1rem' }}>
+          <Typography
+            variant="h6"
+            sx={{ color: 'text.primary', fontWeight: 700, fontSize: '1.1rem' }}
+          >
             Filters
           </Typography>
           {activeFiltersCount > 0 && (
@@ -1679,14 +1757,18 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             />
           )}
         </Stack>
-        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+        <Typography
+          variant="body2"
+          color="text.secondary"
+          sx={{ fontWeight: 500, fontSize: '0.8rem' }}
+        >
           Refine your search results
         </Typography>
       </Box>
 
       <Stack spacing={1.5}>
-        <StyledAccordion 
-          expanded={expandedPanels.includes('status')} 
+        <StyledAccordion
+          expanded={expandedPanels.includes('status')}
           onChange={handlePanelChange('status')}
           sx={{
             background: 'transparent',
@@ -1700,13 +1782,15 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             }
           }}
         >
-          <StyledAccordionSummary 
+          <StyledAccordionSummary
             expandIcon={
-              <ExpandMoreIcon sx={{ 
-                fontSize: '1.2rem',
-                transition: 'transform 0.2s ease, border-color 0.2s ease',
-                color: theme.palette.primary.main
-              }} />
+              <ExpandMoreIcon
+                sx={{
+                  fontSize: '1.2rem',
+                  transition: 'transform 0.2s ease, border-color 0.2s ease',
+                  color: theme.palette.primary.main
+                }}
+              />
             }
             sx={{
               minHeight: '56px',
@@ -1723,29 +1807,34 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             }}
           >
             <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-              <Box 
-                sx={{ 
-                  p: 0.75, 
-                  borderRadius: '10px', 
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: '10px',
                   background: alpha(theme.palette.primary.main, 0.08),
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 <FactCheckIcon sx={{ color: 'primary.main', fontSize: '1.1rem' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}
+              >
                 Status
               </Typography>
-              {((filter & 1) || (filter & 2) || (filter & 4) || (filter & 16)) && (
+              {(filter & 1 || filter & 2 || filter & 4 || filter & 16) && (
                 <Chip
-                  label={[
-                    (filter & 1) && 'Buy with Mints',
-                    (filter & 2) && 'Recently Minted',
-                    (filter & 4) && 'Buy Now',
-                    (filter & 16) && 'Rarity'
-                  ].filter(Boolean).length}
+                  label={
+                    [
+                      filter & 1 && 'Buy with Mints',
+                      filter & 2 && 'Recently Minted',
+                      filter & 4 && 'Buy Now',
+                      filter & 16 && 'Rarity'
+                    ].filter(Boolean).length
+                  }
                   size="small"
                   sx={{
                     height: '20px',
@@ -1762,53 +1851,57 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
           <StyledAccordionDetails>
             <Stack spacing={3}>
               {type === 'bulk' && (
-                <Box 
-                  sx={{ 
-                    p: 2.5, 
-                    borderRadius: '12px', 
-                    background: (filter & 1) ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
-                    border: `1px solid ${(filter & 1) ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, 
-                    transition: 'transform 0.2s ease, border-color 0.2s ease', 
+                <Box
+                  sx={{
+                    p: 2.5,
+                    borderRadius: '12px',
+                    background:
+                      filter & 1 ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                    border: `1px solid ${filter & 1 ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
+                    transition: 'transform 0.2s ease, border-color 0.2s ease',
                     cursor: 'pointer',
-                    '&:hover': { 
-                      transform: 'translateY(-1px)', 
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
                       boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
                       borderColor: alpha(theme.palette.primary.main, 0.3)
-                    } 
+                    }
                   }}
                   onClick={() => handleFlagChange({ target: { value: 1 } })}
                 >
                   <Stack direction="row" alignItems="center" spacing={3}>
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
-                        justifyContent: 'center', 
-                        width: 40, 
-                        height: 40, 
-                        borderRadius: '10px', 
-                        background: (filter & 1) ? theme.palette.primary.main : 'transparent',
-                        border: `1px solid ${(filter & 1) ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.2)}`,
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 40,
+                        height: 40,
+                        borderRadius: '10px',
+                        background: filter & 1 ? theme.palette.primary.main : 'transparent',
+                        border: `1px solid ${filter & 1 ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.2)}`,
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      <Checkbox 
-                        checked={(filter & 1) !== 0} 
-                        onChange={handleFlagChange} 
-                        value={1} 
-                        color="primary" 
-                        sx={{ 
+                      <Checkbox
+                        checked={(filter & 1) !== 0}
+                        onChange={handleFlagChange}
+                        value={1}
+                        color="primary"
+                        sx={{
                           padding: 0,
-                          '& .MuiSvgIcon-root': { 
+                          '& .MuiSvgIcon-root': {
                             fontSize: '1.2rem',
-                            color: (filter & 1) ? 'white' : theme.palette.primary.main
-                          } 
-                        }} 
+                            color: filter & 1 ? 'white' : theme.palette.primary.main
+                          }
+                        }}
                       />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}>
+                        <Typography
+                          variant="subtitle1"
+                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}
+                        >
                           Buy with Mints
                         </Typography>
                         <Chip
@@ -1818,33 +1911,44 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                             height: '24px',
                             fontSize: '0.7rem',
                             fontWeight: 700,
-                            backgroundColor: (filter & 1) ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.1),
-                            color: (filter & 1) ? 'white' : theme.palette.primary.main,
+                            backgroundColor:
+                              filter & 1
+                                ? theme.palette.primary.main
+                                : alpha(theme.palette.primary.main, 0.1),
+                            color: filter & 1 ? 'white' : theme.palette.primary.main,
                             border: 'none'
                           }}
                         />
                       </Stack>
                       <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontWeight: 500, fontSize: '0.8rem' }}
+                        >
                           Available for bulk minting purchases
                         </Typography>
-                        <Tooltip title="Disabled on Spinning collections, only enabled on Bulk collections." placement="top" arrow>
-                          <Box 
-                            sx={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              justifyContent: 'center', 
-                              width: 18, 
-                              height: 18, 
-                              borderRadius: '50%', 
-                              background: alpha(theme.palette.info.main, 0.1), 
-                              color: 'info.main', 
-                              cursor: 'help', 
-                              transition: 'all 0.2s ease', 
-                              '&:hover': { 
-                                background: alpha(theme.palette.info.main, 0.2), 
-                                transform: 'scale(1.1)' 
-                              } 
+                        <Tooltip
+                          title="Disabled on Spinning collections, only enabled on Bulk collections."
+                          placement="top"
+                          arrow
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 18,
+                              height: 18,
+                              borderRadius: '50%',
+                              background: alpha(theme.palette.info.main, 0.1),
+                              color: 'info.main',
+                              cursor: 'help',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                background: alpha(theme.palette.info.main, 0.2),
+                                transform: 'scale(1.1)'
+                              }
                             }}
                           >
                             <MoreVertIcon sx={{ fontSize: '10px' }} />
@@ -1857,17 +1961,59 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
               )}
 
               {type !== 'normal' && (
-                <Box sx={{ p: 3, borderRadius: '16px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.12)}`, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'translateY(-2px)', border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}` } }}>
+                <Box
+                  sx={{
+                    p: 3,
+                    borderRadius: '16px',
+                    background: 'transparent',
+                    border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                    }
+                  }}
+                >
                   <Stack direction="row" alignItems="center" spacing={3}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: '12px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}` }}>
-                      <Checkbox checked={(filter & 2) !== 0} onChange={handleFlagChange} value={2} color="success" sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }} />
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        width: 48,
+                        height: 48,
+                        borderRadius: '12px',
+                        background: 'transparent',
+                        border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}`
+                      }}
+                    >
+                      <Checkbox
+                        checked={(filter & 2) !== 0}
+                        onChange={handleFlagChange}
+                        value={2}
+                        color="success"
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }}
+                      />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}>
+                        <Typography
+                          variant="h6"
+                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}
+                        >
                           Recently Minted
                         </Typography>
-                        <Box sx={{ px: 2, py: 0.5, borderRadius: '20px', background: (theme) => theme.palette.success.main, color: 'white', fontWeight: 700, fontSize: '0.75rem' }}>
+                        <Box
+                          sx={{
+                            px: 2,
+                            py: 0.5,
+                            borderRadius: '20px',
+                            background: (theme) => theme.palette.success.main,
+                            color: 'white',
+                            fontWeight: 700,
+                            fontSize: '0.75rem'
+                          }}
+                        >
                           {extra?.boughtWithMints || 0}
                         </Box>
                       </Stack>
@@ -1875,8 +2021,29 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                         <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                           Fresh NFTs pending transfer or acceptance
                         </Typography>
-                        <Tooltip title="Display recently Minted NFTs and being transferred to users. Or NFTs that pending to be accepted by users." placement="top" arrow>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: '50%', background: (theme) => alpha(theme.palette.info.main, 0.1), color: 'info.main', cursor: 'help', transition: 'all 0.2s ease', '&:hover': { background: (theme) => alpha(theme.palette.info.main, 0.2), transform: 'scale(1.1)' } }}>
+                        <Tooltip
+                          title="Display recently Minted NFTs and being transferred to users. Or NFTs that pending to be accepted by users."
+                          placement="top"
+                          arrow
+                        >
+                          <Box
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              width: 20,
+                              height: 20,
+                              borderRadius: '50%',
+                              background: (theme) => alpha(theme.palette.info.main, 0.1),
+                              color: 'info.main',
+                              cursor: 'help',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                background: (theme) => alpha(theme.palette.info.main, 0.2),
+                                transform: 'scale(1.1)'
+                              }
+                            }}
+                          >
                             <MoreVertIcon sx={{ fontSize: '12px' }} />
                           </Box>
                         </Tooltip>
@@ -1886,55 +2053,58 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                 </Box>
               )}
 
-              <Box 
-                sx={{ 
-                  p: 2.5, 
-                  borderRadius: '12px', 
-                  background: (filter & 4) ? alpha(theme.palette.warning.main, 0.04) : 'transparent',
-                  border: `1px solid ${(filter & 4) ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.08)}`, 
-                  transition: 'transform 0.2s ease, border-color 0.2s ease', 
+              <Box
+                sx={{
+                  p: 2.5,
+                  borderRadius: '12px',
+                  background: filter & 4 ? alpha(theme.palette.warning.main, 0.04) : 'transparent',
+                  border: `1px solid ${filter & 4 ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
+                  transition: 'transform 0.2s ease, border-color 0.2s ease',
                   cursor: 'pointer',
-                  '&:hover': { 
-                    transform: 'translateY(-1px)', 
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
                     boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.08)}`,
                     borderColor: alpha(theme.palette.warning.main, 0.3)
-                  } 
+                  }
                 }}
                 onClick={() => handleFlagChange({ target: { value: 4 } })}
               >
                 <Stack direction="row" alignItems="center" spacing={2.5}>
-                  <Box 
-                    sx={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      justifyContent: 'center', 
-                      width: 40, 
-                      height: 40, 
-                      borderRadius: '10px', 
-                      background: (filter & 4) ? theme.palette.warning.main : 'transparent',
-                      border: `1px solid ${(filter & 4) ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.2)}`,
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 40,
+                      height: 40,
+                      borderRadius: '10px',
+                      background: filter & 4 ? theme.palette.warning.main : 'transparent',
+                      border: `1px solid ${filter & 4 ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.2)}`,
                       transition: 'all 0.2s ease'
                     }}
                   >
-                    <Checkbox 
-                      checked={(filter & 4) !== 0} 
-                      onChange={handleFlagChange} 
-                      value={4} 
-                      sx={{ 
+                    <Checkbox
+                      checked={(filter & 4) !== 0}
+                      onChange={handleFlagChange}
+                      value={4}
+                      sx={{
                         padding: 0,
-                        color: (filter & 4) ? 'white' : theme.palette.warning.main,
+                        color: filter & 4 ? 'white' : theme.palette.warning.main,
                         '&.Mui-checked': {
                           color: 'white'
                         },
-                        '& .MuiSvgIcon-root': { 
+                        '& .MuiSvgIcon-root': {
                           fontSize: '1.2rem'
-                        } 
-                      }} 
+                        }
+                      }}
                     />
                   </Box>
                   <Box sx={{ flex: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}
+                      >
                         Buy Now
                       </Typography>
                       <Chip
@@ -1944,13 +2114,20 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                           height: '24px',
                           fontSize: '0.7rem',
                           fontWeight: 700,
-                          backgroundColor: (filter & 4) ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.1),
-                          color: (filter & 4) ? 'white' : theme.palette.warning.main,
+                          backgroundColor:
+                            filter & 4
+                              ? theme.palette.warning.main
+                              : alpha(theme.palette.warning.main, 0.1),
+                          color: filter & 4 ? 'white' : theme.palette.warning.main,
                           border: 'none'
                         }}
                       />
                     </Stack>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontWeight: 500, fontSize: '0.8rem' }}
+                    >
                       NFTs available for immediate purchase
                     </Typography>
                   </Box>
@@ -1958,23 +2135,23 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
 
                 {(filter & 0x04) !== 0 && (
                   <Fade in={true}>
-                    <Box 
-                      sx={{ 
-                        mt: 2, 
-                        p: 2, 
-                        background: alpha(theme.palette.warning.main, 0.02), 
-                        border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`, 
-                        borderRadius: '10px' 
+                    <Box
+                      sx={{
+                        mt: 2,
+                        p: 2,
+                        background: alpha(theme.palette.warning.main, 0.02),
+                        border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                        borderRadius: '10px'
                       }}
                     >
-                      <Typography 
-                        variant="subtitle2" 
-                        sx={{ 
-                          fontWeight: 600, 
-                          color: 'text.primary', 
-                          mb: 1.5, 
-                          display: 'flex', 
-                          alignItems: 'center', 
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: 600,
+                          color: 'text.primary',
+                          mb: 1.5,
+                          display: 'flex',
+                          alignItems: 'center',
                           gap: 1,
                           fontSize: '0.85rem'
                         }}
@@ -1985,57 +2162,93 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                       <RadioGroup value={subFilter} onChange={handleOnSaleFlagChange}>
                         <Stack spacing={0.5}>
                           {[
-                            { value: 'pricenoxrp', label: 'No XRP', desc: 'Exclude XRP', icon: '🚫' },
-                            { value: 'pricexrpasc', label: 'Low to High', desc: 'Cheapest first', icon: '📈' },
-                            { value: 'pricexrpdesc', label: 'High to Low', desc: 'Most expensive', icon: '📉' }
+                            {
+                              value: 'pricenoxrp',
+                              label: 'No XRP',
+                              desc: 'Exclude XRP',
+                              icon: '🚫'
+                            },
+                            {
+                              value: 'pricexrpasc',
+                              label: 'Low to High',
+                              desc: 'Cheapest first',
+                              icon: '📈'
+                            },
+                            {
+                              value: 'pricexrpdesc',
+                              label: 'High to Low',
+                              desc: 'Most expensive',
+                              icon: '📉'
+                            }
                           ].map((option) => (
-                            <Box 
-                              key={option.value} 
-                              sx={{ 
-                                p: 1.5, 
-                                borderRadius: '8px', 
-                                background: subFilter === option.value ? alpha(theme.palette.warning.main, 0.08) : 'transparent',
-                                border: `1px solid ${subFilter === option.value ? alpha(theme.palette.warning.main, 0.2) : 'transparent'}`, 
-                                transition: 'all 0.2s ease', 
+                            <Box
+                              key={option.value}
+                              sx={{
+                                p: 1.5,
+                                borderRadius: '8px',
+                                background:
+                                  subFilter === option.value
+                                    ? alpha(theme.palette.warning.main, 0.08)
+                                    : 'transparent',
+                                border: `1px solid ${subFilter === option.value ? alpha(theme.palette.warning.main, 0.2) : 'transparent'}`,
+                                transition: 'all 0.2s ease',
                                 cursor: 'pointer',
-                                '&:hover': { 
+                                '&:hover': {
                                   background: alpha(theme.palette.warning.main, 0.05),
                                   borderColor: alpha(theme.palette.warning.main, 0.15)
-                                } 
+                                }
                               }}
-                              onClick={() => handleOnSaleFlagChange({ target: { value: option.value } })}
+                              onClick={() =>
+                                handleOnSaleFlagChange({ target: { value: option.value } })
+                              }
                             >
                               <FormControlLabel
                                 value={option.value}
                                 control={
-                                  <Radio 
-                                    size="small" 
-                                    sx={{ 
+                                  <Radio
+                                    size="small"
+                                    sx={{
                                       p: 0.5,
                                       color: theme.palette.warning.main,
                                       '&.Mui-checked': {
                                         color: theme.palette.warning.main
                                       }
-                                    }} 
+                                    }}
                                   />
                                 }
                                 label={
-                                  <Stack direction="row" alignItems="center" spacing={1} sx={{ ml: 0.5 }}>
+                                  <Stack
+                                    direction="row"
+                                    alignItems="center"
+                                    spacing={1}
+                                    sx={{ ml: 0.5 }}
+                                  >
                                     <Typography sx={{ fontSize: '1rem' }}>{option.icon}</Typography>
                                     <Box>
-                                      <Typography variant="body2" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.85rem' }}>
+                                      <Typography
+                                        variant="body2"
+                                        sx={{
+                                          fontWeight: 600,
+                                          color: 'text.primary',
+                                          fontSize: '0.85rem'
+                                        }}
+                                      >
                                         {option.label}
                                       </Typography>
-                                      <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                                      <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ fontSize: '0.7rem' }}
+                                      >
                                         {option.desc}
                                       </Typography>
                                     </Box>
                                   </Stack>
                                 }
-                                sx={{ 
-                                  margin: 0, 
+                                sx={{
+                                  margin: 0,
                                   width: '100%',
-                                  '& .MuiFormControlLabel-label': { width: '100%' } 
+                                  '& .MuiFormControlLabel-label': { width: '100%' }
                                 }}
                               />
                             </Box>
@@ -2047,14 +2260,46 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                 )}
               </Box>
 
-              <Box sx={{ p: 3, borderRadius: '16px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.12)}`, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', '&:hover': { transform: 'translateY(-2px)', border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}` } }}>
+              <Box
+                sx={{
+                  p: 3,
+                  borderRadius: '16px',
+                  background: 'transparent',
+                  border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                  }
+                }}
+              >
                 <Stack direction="row" alignItems="center" spacing={3}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 48, height: 48, borderRadius: '12px', background: 'transparent', border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}` }}>
-                    <Checkbox checked={(filter & 16) !== 0} onChange={handleFlagChange} value={16} color="info" sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }} />
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: 48,
+                      height: 48,
+                      borderRadius: '12px',
+                      background: 'transparent',
+                      border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                    }}
+                  >
+                    <Checkbox
+                      checked={(filter & 16) !== 0}
+                      onChange={handleFlagChange}
+                      value={16}
+                      color="info"
+                      sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }}
+                    />
                   </Box>
                   <Box sx={{ flex: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                      <Typography variant="h6" sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}>
+                      <Typography
+                        variant="h6"
+                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}
+                      >
                         Rarity Sorting
                       </Typography>
                     </Stack>
@@ -2063,7 +2308,24 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
                         Sort NFTs by their rarity ranking
                       </Typography>
                       <Tooltip title="Sort NFTs with rarity" placement="top" arrow>
-                        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 20, height: 20, borderRadius: '50%', background: (theme) => alpha(theme.palette.info.main, 0.1), color: 'info.main', cursor: 'help', transition: 'all 0.2s ease', '&:hover': { background: (theme) => alpha(theme.palette.info.main, 0.2), transform: 'scale(1.1)' } }}>
+                        <Box
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            width: 20,
+                            height: 20,
+                            borderRadius: '50%',
+                            background: (theme) => alpha(theme.palette.info.main, 0.1),
+                            color: 'info.main',
+                            cursor: 'help',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              background: (theme) => alpha(theme.palette.info.main, 0.2),
+                              transform: 'scale(1.1)'
+                            }
+                          }}
+                        >
                           <MoreVertIcon sx={{ fontSize: '12px' }} />
                         </Box>
                       </Tooltip>
@@ -2075,8 +2337,8 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
           </StyledAccordionDetails>
         </StyledAccordion>
 
-        <StyledAccordion 
-          expanded={expandedPanels.includes('attributes')} 
+        <StyledAccordion
+          expanded={expandedPanels.includes('attributes')}
           onChange={handlePanelChange('attributes')}
           sx={{
             background: 'transparent',
@@ -2090,13 +2352,15 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             }
           }}
         >
-          <StyledAccordionSummary 
+          <StyledAccordionSummary
             expandIcon={
-              <ExpandMoreIcon sx={{ 
-                fontSize: '1.2rem',
-                transition: 'transform 0.2s ease, border-color 0.2s ease',
-                color: theme.palette.success.main
-              }} />
+              <ExpandMoreIcon
+                sx={{
+                  fontSize: '1.2rem',
+                  transition: 'transform 0.2s ease, border-color 0.2s ease',
+                  color: theme.palette.success.main
+                }}
+              />
             }
             sx={{
               minHeight: '56px',
@@ -2113,19 +2377,22 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
             }}
           >
             <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-              <Box 
-                sx={{ 
-                  p: 0.75, 
-                  borderRadius: '10px', 
+              <Box
+                sx={{
+                  p: 0.75,
+                  borderRadius: '10px',
                   background: alpha(theme.palette.success.main, 0.08),
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center' 
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
                 }}
               >
                 <CategoryIcon sx={{ color: 'success.main', fontSize: '1.1rem' }} />
               </Box>
-              <Typography variant="subtitle1" sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}>
+              <Typography
+                variant="subtitle1"
+                sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}
+              >
                 Attributes
               </Typography>
               {filterAttrs?.length > 0 && (
@@ -2146,7 +2413,15 @@ function FilterDetail({ collection, filter, setFilter, subFilter, setSubFilter, 
           </StyledAccordionSummary>
           <StyledAccordionDetails>
             {!attrs || attrs.length === 0 ? (
-              <Box sx={{ textAlign: 'center', p: 4, borderRadius: '12px', background: 'transparent', border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}` }}>
+              <Box
+                sx={{
+                  textAlign: 'center',
+                  p: 4,
+                  borderRadius: '12px',
+                  background: 'transparent',
+                  border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
+                }}
+              >
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
                   No Attributes Available
                 </Typography>
@@ -2189,7 +2464,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
   const { accountProfile } = useContext(AppContext);
   const isAdmin = accountProfile?.admin;
   const [loadingImg, setLoadingImg] = useState(true);
-  
+
   const { NFTokenID } = collection;
   const imgUrl = `https://s1.xrpnft.com/collection/${collection.logoImage}`;
   const name = collection.name || 'No Name';
@@ -2205,10 +2480,25 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
   };
 
   return (
-    <Link href={`/account/${account}/collection${collectionType}/${collectionData.collection.id}`} underline="none" sx={{ position: 'relative' }}>
-      <CardWrapper sx={{ marginLeft: 'auto', marginRight: 'auto', width: '100%', maxWidth: 280, aspectRatio: '9 / 15' }}>
+    <Link
+      href={`/account/${account}/collection${collectionType}/${collectionData.collection.id}`}
+      underline="none"
+      sx={{ position: 'relative' }}
+    >
+      <CardWrapper
+        sx={{
+          marginLeft: 'auto',
+          marginRight: 'auto',
+          width: '100%',
+          maxWidth: 280,
+          aspectRatio: '9 / 15'
+        }}
+      >
         {isAdmin && (
-          <CloseIcon sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1500 }} onClick={handleRemoveNft} />
+          <CloseIcon
+            sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1500 }}
+            onClick={handleRemoveNft}
+          />
         )}
         <CardMedia
           component={loadingImg ? LoadingSkeleton : 'img'}
@@ -2220,25 +2510,54 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
         <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} alt="" />
         <CardContent sx={{ padding: 0 }}>
           <Box display={'flex'} flexDirection="column" justifyContent={'space-evenly'} px={1}>
-            <Typography variant="subtitle2" sx={{ mt: 0.5, mb: 0.4, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mt: 0.5,
+                mb: 0.4,
+                fontWeight: 600,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap'
+              }}
+            >
               {name}
             </Typography>
             <Grid container alignItems="center" spacing={0.1}>
               <Grid item xs={12}>
-                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0, pl: 0, pr: 0 }}>
-                  <Typography variant="caption" color="text.secondary">{collectionData.nftCount} item(s)</Typography>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mt: 0, pl: 0, pr: 0 }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    {collectionData.nftCount} item(s)
+                  </Typography>
                   {collection.rarity_rank > 0 && (
                     <Chip
                       variant="outlined"
                       icon={<LeaderboardOutlinedIcon sx={{ width: '11px' }} />}
-                      label={<Typography variant="caption">{fIntNumber(collection.rarity_rank)}</Typography>}
-                      sx={{ height: '18px', pt: 0, backgroundColor: 'transparent', border: theme => `1px solid ${alpha(theme.palette.info.main, 0.3)}`, color: theme => theme.palette.info.main }}
+                      label={
+                        <Typography variant="caption">
+                          {fIntNumber(collection.rarity_rank)}
+                        </Typography>
+                      }
+                      sx={{
+                        height: '18px',
+                        pt: 0,
+                        backgroundColor: 'transparent',
+                        border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
+                        color: (theme) => theme.palette.info.main
+                      }}
                     />
                   )}
                 </Stack>
               </Grid>
               <Grid item xs={12}>
-                <Typography variant="caption" color="text.secondary">{collectionData.nftsForSale} listed</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {collectionData.nftsForSale} listed
+                </Typography>
               </Grid>
             </Grid>
           </Box>
@@ -2409,7 +2728,9 @@ export default function CollectionView({ collection }) {
                 </shareLib.TwitterShareButton>
               </>
             ) : (
-              <Typography variant="body2" color="text.secondary">Loading…</Typography>
+              <Typography variant="body2" color="text.secondary">
+                Loading…
+              </Typography>
             )}
             <IconButton
               onClick={() => {
@@ -2437,7 +2758,9 @@ export default function CollectionView({ collection }) {
           alignItems={{ xs: 'stretch', sm: 'center' }}
         >
           {/* Logo Section */}
-          <Box sx={{ flexShrink: 0, display: { xs: 'flex', sm: 'block' }, justifyContent: 'center' }}>
+          <Box
+            sx={{ flexShrink: 0, display: { xs: 'flex', sm: 'block' }, justifyContent: 'center' }}
+          >
             <IconCover>
               <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
                 <Image
@@ -2462,7 +2785,11 @@ export default function CollectionView({ collection }) {
               alignItems={{ xs: 'center', sm: 'flex-start' }}
             >
               <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1 }}>
-                <Typography variant="h5" fontWeight="bold" sx={{ fontSize: { xs: '1.1rem', sm: '1.4rem' } }}>
+                <Typography
+                  variant="h5"
+                  fontWeight="bold"
+                  sx={{ fontSize: { xs: '1.1rem', sm: '1.4rem' } }}
+                >
                   {name}
                 </Typography>
                 {verified === 'yes' && (
@@ -2504,7 +2831,11 @@ export default function CollectionView({ collection }) {
             </Stack>
 
             {/* Creator and Description Row */}
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 1.5, sm: 3 }} alignItems="center">
+            <Stack
+              direction={{ xs: 'column', sm: 'row' }}
+              spacing={{ xs: 1.5, sm: 3 }}
+              alignItems="center"
+            >
               <Box
                 sx={{
                   px: 2.5,
@@ -2552,9 +2883,9 @@ export default function CollectionView({ collection }) {
                   >
                     <PeopleIcon sx={{ fontSize: '0.9rem', color: theme.palette.primary.main }} />
                   </Box>
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
+                  <Typography
+                    variant="body2"
+                    sx={{
                       fontSize: '0.75rem',
                       fontWeight: 500,
                       color: alpha(theme.palette.text.secondary, 0.7),
@@ -2567,7 +2898,7 @@ export default function CollectionView({ collection }) {
                   <Link color="inherit" href={`/profile/${account}`} underline="none">
                     <Typography
                       variant="body2"
-                      sx={{ 
+                      sx={{
                         fontSize: '0.85rem',
                         fontWeight: 700,
                         background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
@@ -2575,7 +2906,7 @@ export default function CollectionView({ collection }) {
                         WebkitTextFillColor: 'transparent',
                         backgroundClip: 'text',
                         transition: 'all 0.2s ease',
-                        '&:hover': { 
+                        '&:hover': {
                           transform: 'translateY(-1px)',
                           filter: 'brightness(1.2)'
                         }
@@ -2617,9 +2948,9 @@ export default function CollectionView({ collection }) {
                       }
                     }}
                   >
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
+                    <Typography
+                      variant="caption"
+                      sx={{
                         fontSize: '0.7rem',
                         fontWeight: 600,
                         color: theme.palette.primary.main,
@@ -2667,48 +2998,50 @@ export default function CollectionView({ collection }) {
               mt: { xs: 2, sm: 0 }
             }}
           >
-            {statsData.filter((item, index) => index < 4).map((item) => (
-              <CompactStatsCard key={item.label}>
-                <Box sx={{ width: '100%' }}>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, mb: 0.5 }}
-                  >
-                    {item.icon && <span style={{ marginRight: '3px' }}>{item.icon}</span>}
-                    {item.value}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{
-                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                      fontWeight: 500,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: 0.5
-                    }}
-                  >
-                    {item.label}
-                    {item.tooltip && (
-                      <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
-                        <MoreVertIcon
-                          icon={<InfoIcon />}
-                          style={{
-                            fontSize: '10px',
-                            color: theme.palette.text.secondary,
-                            cursor: 'help'
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                  </Typography>
-                </Box>
-              </CompactStatsCard>
-            ))}
+            {statsData
+              .filter((item, index) => index < 4)
+              .map((item) => (
+                <CompactStatsCard key={item.label}>
+                  <Box sx={{ width: '100%' }}>
+                    <Typography
+                      variant="subtitle2"
+                      fontWeight="bold"
+                      sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, mb: 0.5 }}
+                    >
+                      {item.icon && <span style={{ marginRight: '3px' }}>{item.icon}</span>}
+                      {item.value}
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      color="text.secondary"
+                      sx={{
+                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                        fontWeight: 500,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 0.5
+                      }}
+                    >
+                      {item.label}
+                      {item.tooltip && (
+                        <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
+                          <MoreVertIcon
+                            icon={<InfoIcon />}
+                            style={{
+                              fontSize: '10px',
+                              color: theme.palette.text.secondary,
+                              cursor: 'help'
+                            }}
+                          />
+                        </Tooltip>
+                      )}
+                    </Typography>
+                  </Box>
+                </CompactStatsCard>
+              ))}
           </Box>
         </Stack>
       </CompactCard>

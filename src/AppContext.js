@@ -4,15 +4,17 @@ import axios from 'axios';
 import { Backdrop } from '@mui/material';
 
 // Redux
-import { Provider } from 'react-redux';
+import { Provider, useDispatch } from 'react-redux';
 import { configureRedux } from 'src/redux/store';
+import { update_metrics } from 'src/redux/statusSlice';
 
 // Loader
 import { PuffLoader } from 'react-spinners';
 
 export const AppContext = createContext({});
 
-export function ContextProvider({ children, data, openSnackbar }) {
+function ContextProviderInner({ children, data, openSnackbar }) {
+  const dispatch = useDispatch();
   const BASE_URL = process.env.API_URL;
 
   const [sync, setSync] = useState(0);
@@ -24,7 +26,6 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [accountProfile, setAccountProfile] = useState(null);
   const [profiles, setProfiles] = useState([]);
   const [deletingNfts, setDeletingNfts] = useState([]);
-  const [store, setStore] = useState(configureRedux(data));
 
   const [open, setOpen] = useState(false);
   const [openWalletModal, setOpenWalletModal] = useState(false);
@@ -33,6 +34,8 @@ export function ContextProvider({ children, data, openSnackbar }) {
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
   const [accountBalance, setAccountBalance] = useState(null);
+  const [watchList, setWatchList] = useState([]);
+  const [metricsLoaded, setMetricsLoaded] = useState(false);
 
   const KEY_ACCOUNT_PROFILE = 'account_profile_2';
   const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
@@ -58,7 +61,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
     const savedThemeName = window.localStorage.getItem('appThemeName');
     const isDarkMode = window.localStorage.getItem('appTheme');
     const fiatCurrency = window.localStorage.getItem('appFiatCurrency');
-    
+
     if (fiatCurrency) {
       setActiveFiatCurrency(fiatCurrency);
     } else {
@@ -66,7 +69,7 @@ export function ContextProvider({ children, data, openSnackbar }) {
       setActiveFiatCurrency('XRP');
       window.localStorage.setItem('appFiatCurrency', 'XRP');
     }
-    
+
     // Load the theme
     if (savedThemeName) {
       setThemeName(savedThemeName);
@@ -109,13 +112,13 @@ export function ContextProvider({ children, data, openSnackbar }) {
       wallet_type: profile.wallet_type,
       fullProfile: profile
     });
-    
+
     // Add token creation timestamp
     const profileWithTimestamp = {
       ...profile,
       tokenCreatedAt: Date.now()
     };
-    
+
     setAccountProfile(profileWithTimestamp);
     window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profileWithTimestamp));
 
@@ -292,6 +295,88 @@ export function ContextProvider({ children, data, openSnackbar }) {
     getAccountInfo();
   }, [accountProfile, sync]);
 
+  // Fetch metrics
+  useEffect(() => {
+    if (!metricsLoaded && BASE_URL) {
+      const fetchMetrics = async () => {
+        try {
+          const metricsResponse = await axios.get(
+            `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=&skipMetrics=false`
+          );
+          if (metricsResponse.status === 200 && metricsResponse.data) {
+            dispatch(update_metrics(metricsResponse.data));
+            setMetricsLoaded(true);
+          }
+        } catch (error) {
+          console.error('Error fetching metrics via REST API:', error);
+        }
+      };
+      setTimeout(fetchMetrics, 100);
+    }
+  }, [metricsLoaded, BASE_URL, dispatch]);
+
+  // Fetch watchlist
+  useEffect(() => {
+    const getWatchList = () => {
+      const account = accountProfile?.account;
+      if (!account) {
+        setWatchList([]);
+        return;
+      }
+
+      axios
+        .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
+        .then((res) => {
+          if (res.status === 200) {
+            setWatchList(res.data.watchlist);
+          }
+        })
+        .catch((err) => console.log('Error on getting watchlist!', err));
+    };
+    getWatchList();
+  }, [accountProfile, sync, BASE_URL]);
+
+  const updateWatchList = async (md5) => {
+    const account = accountProfile?.account;
+    const accountToken = accountProfile?.token;
+
+    if (!account || !accountToken) {
+      openSnackbar('Please login!', 'error');
+      return false;
+    }
+
+    const newWatchList = watchList.includes(md5)
+      ? watchList.filter((item) => item !== md5)
+      : [...watchList, md5];
+    setWatchList(newWatchList);
+
+    try {
+      const action = watchList.includes(md5) ? 'remove' : 'add';
+      const body = { md5, account, action };
+
+      const res = await axios.post(`${BASE_URL}/watchlist/update_watchlist`, body, {
+        headers: { 'x-access-token': accountToken }
+      });
+
+      if (res.status === 200) {
+        const ret = res.data;
+        if (ret.status) {
+          openSnackbar('Watchlist updated successfully!', 'success');
+          return true;
+        } else {
+          setWatchList(watchList);
+          openSnackbar(ret.err || 'Failed to update watchlist', 'error');
+          return false;
+        }
+      }
+    } catch (err) {
+      console.error(err);
+      setWatchList(watchList);
+      openSnackbar('Failed to update watchlist', 'error');
+      return false;
+    }
+  };
+
   const contextValue = useMemo(
     () => ({
       toggleTheme,
@@ -336,7 +421,9 @@ export function ContextProvider({ children, data, openSnackbar }) {
       connecting,
       setConnecting,
       deletingNfts,
-      setDeletingNfts
+      setDeletingNfts,
+      watchList,
+      updateWatchList
     }),
     [
       darkMode,
@@ -353,7 +440,8 @@ export function ContextProvider({ children, data, openSnackbar }) {
       nextUrl,
       accountBalance,
       connecting,
-      deletingNfts
+      deletingNfts,
+      watchList
       // Add any other dependencies that should trigger a re-creation of the context value
     ]
   );
@@ -363,8 +451,19 @@ export function ContextProvider({ children, data, openSnackbar }) {
       <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }} open={loading}>
         <PuffLoader color={'#00AB55'} size={50} />
       </Backdrop>
-
-      <Provider store={store}>{children}</Provider>
+      {children}
     </AppContext.Provider>
+  );
+}
+
+export function ContextProvider({ children, data, openSnackbar }) {
+  const [store] = useState(() => configureRedux(data));
+
+  return (
+    <Provider store={store}>
+      <ContextProviderInner data={data} openSnackbar={openSnackbar}>
+        {children}
+      </ContextProviderInner>
+    </Provider>
   );
 }

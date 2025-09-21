@@ -17,7 +17,7 @@ const StyledToolbar = styled.div`
   padding: 4px 0;
   gap: 6px;
   flex-wrap: wrap;
-  
+
   @media (max-width: 900px) {
     flex-direction: row;
     align-items: stretch;
@@ -37,7 +37,7 @@ const PaginationContainer = styled.div`
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
   box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
   backdrop-filter: blur(10px);
-  
+
   @media (max-width: 900px) {
     width: 100%;
     justify-content: center;
@@ -55,7 +55,7 @@ const RowsSelector = styled.div`
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
   box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
   backdrop-filter: blur(10px);
-  
+
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
@@ -76,7 +76,7 @@ const InfoBox = styled.div`
   box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
   padding: 4px 8px;
   backdrop-filter: blur(10px);
-  
+
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
@@ -98,7 +98,7 @@ const Chip = styled.span`
 const Text = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
-  font-weight: ${props => props.fontWeight || 500};
+  font-weight: ${(props) => props.fontWeight || 500};
 `;
 
 const NavButton = styled.button`
@@ -113,11 +113,12 @@ const NavButton = styled.button`
   justify-content: center;
   color: inherit;
   padding: 0;
-  
+
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
+    background: ${({ theme }) =>
+      theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
   }
-  
+
   &:disabled {
     color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.48)};
     cursor: not-allowed;
@@ -129,8 +130,12 @@ const PageButton = styled.button`
   height: 20px;
   border-radius: 6px;
   border: none;
-  background: ${props => props.selected ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main : 'transparent'};
-  color: ${props => props.selected ? (props.theme.pagination?.selectedTextColor || 'white') : 'inherit'};
+  background: ${(props) =>
+    props.selected
+      ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main
+      : 'transparent'};
+  color: ${(props) =>
+    props.selected ? props.theme.pagination?.selectedTextColor || 'white' : 'inherit'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -138,12 +143,15 @@ const PageButton = styled.button`
   padding: 0 4px;
   margin: 0;
   font-size: 12px;
-  font-weight: ${props => props.selected ? 600 : 500};
-  
+  font-weight: ${(props) => (props.selected ? 600 : 500)};
+
   &:hover:not(:disabled) {
-    background: ${props => props.selected ? (props.theme.palette.primary.dark || '#1976D2') : (props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08))};
+    background: ${(props) =>
+      props.selected
+        ? props.theme.palette.primary.dark || '#1976D2'
+        : props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08)};
   }
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.5;
@@ -167,7 +175,7 @@ const SelectButton = styled.button`
   align-items: center;
   gap: 2px;
   min-width: 40px;
-  
+
   &:hover {
     background: ${({ theme }) => alpha(theme.palette.primary.main, 0.04)};
     border-radius: 4px;
@@ -200,7 +208,7 @@ const SelectOption = styled.button`
   cursor: pointer;
   font-size: 12px;
   color: ${({ theme }) => theme.palette.text.primary};
-  
+
   &:hover {
     background: ${({ theme }) => alpha(theme.palette.action.hover, 0.04)};
   }
@@ -252,10 +260,13 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
     }
   }, []);
 
-  const handleChangePage = useCallback((newPage) => {
-    setPage(newPage);
-    gotoTop({ target: document });
-  }, [setPage, gotoTop]);
+  const handleChangePage = useCallback(
+    (newPage) => {
+      setPage(newPage);
+      gotoTop({ target: document });
+    },
+    [setPage, gotoTop]
+  );
 
   const handleFirstPage = useCallback(() => {
     setPage(0);
@@ -272,7 +283,7 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
     const pages = [];
     const current = page + 1;
     const total = page_count;
-    
+
     if (total <= 7) {
       for (let i = 1; i <= total; i++) {
         pages.push(i);
@@ -306,17 +317,17 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
 
       <CenterBox>
         <PaginationContainer>
-          <NavButton
-            onClick={handleFirstPage}
-            disabled={page === 0}
-            title="First page"
-          >
+          <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page">
             <FirstPageIcon sx={{ width: 14, height: 14 }} />
           </NavButton>
 
           {getPageNumbers().map((pageNum, idx) => {
             if (pageNum === '...') {
-              return <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>...</span>;
+              return (
+                <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>
+                  ...
+                </span>
+              );
             }
             return (
               <PageButton
@@ -329,11 +340,7 @@ const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, s
             );
           })}
 
-          <NavButton
-            onClick={handleLastPage}
-            disabled={page === page_count - 1}
-            title="Last page"
-          >
+          <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
             <LastPageIcon sx={{ width: 14, height: 14 }} />
           </NavButton>
         </PaginationContainer>

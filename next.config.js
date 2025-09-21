@@ -2,12 +2,16 @@
 // module.exports = withImages()
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
-    enabled: process.env.ANALYZE === 'true',
-})
+  enabled: process.env.ANALYZE === 'true'
+});
 
 // Support RUN_ENV while falling back to NODE_ENV for safety
-const isProd = (process.env.RUN_ENV ? process.env.RUN_ENV === 'production' : process.env.NODE_ENV === 'production');
-const isDev = (process.env.RUN_ENV ? process.env.RUN_ENV === 'development' : process.env.NODE_ENV !== 'production');
+const isProd = process.env.RUN_ENV
+  ? process.env.RUN_ENV === 'production'
+  : process.env.NODE_ENV === 'production';
+const isDev = process.env.RUN_ENV
+  ? process.env.RUN_ENV === 'development'
+  : process.env.NODE_ENV !== 'production';
 
 const config = {
   poweredByHeader: false,
@@ -71,7 +75,7 @@ const config = {
         }
       ];
     }
-    
+
     return [
       {
         source: '/:path*',
@@ -217,26 +221,26 @@ const config = {
   experimental: {
     esmExternals: true,
     webpackMemoryOptimizations: true,
-    optimizePackageImports: ['@mui/material', '@mui/icons-material', '@mui/lab'],
+    optimizePackageImports: ['@mui/material', '@mui/icons-material', '@mui/lab']
   },
   turbopack: {
     rules: {
       '*.svg': {
         loaders: ['@svgr/webpack'],
-        as: '*.js',
-      },
-    },
+        as: '*.js'
+      }
+    }
   },
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production'
   },
-  // Webpack config - optimized for performance  
+  // Webpack config - optimized for performance
   webpack: (config, { isServer, dev }) => {
     // Ensure proper handling of dynamic imports
     if (!isServer) {
       config.resolve.fallback = {
         ...config.resolve.fallback,
-        fs: false,
+        fs: false
       };
 
       // Production optimizations only
@@ -255,43 +259,43 @@ const config = {
                 test: /[\\/]node_modules[\\/](lightweight-charts|recharts|echarts)[\\/]/,
                 name: 'charts',
                 priority: 30,
-                chunks: 'async',
+                chunks: 'async'
               },
               // Material-UI separate chunk
               mui: {
                 test: /[\\/]node_modules[\\/]@mui[\\/]/,
-                name: 'mui', 
+                name: 'mui',
                 priority: 20,
                 chunks: 'all',
-                minSize: 20000,
+                minSize: 20000
               },
               // Large vendor libraries
               vendor: {
                 test: /[\\/]node_modules[\\/](react|react-dom|axios|@reduxjs)[\\/]/,
                 name: 'vendor',
                 priority: 10,
-                chunks: 'all',
+                chunks: 'all'
               },
               // Swiper and slider components
               sliders: {
                 test: /[\\/]node_modules[\\/](swiper|keen-slider)[\\/]/,
                 name: 'sliders',
                 priority: 25,
-                chunks: 'async',
+                chunks: 'async'
               },
               // Iconify icons
               iconify: {
                 test: /[\\/]node_modules[\\/]@iconify[\\/]/,
                 name: 'iconify',
                 priority: 15,
-                chunks: 'async',
+                chunks: 'async'
               }
             }
           }
         };
       }
     }
-    
+
     return config;
   }
 };

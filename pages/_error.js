@@ -12,7 +12,9 @@ function Error({ statusCode, hasGetInitialPropsRun, err }) {
       const errorInfo = {
         type: 'nextjs-error',
         statusCode,
-        message: err?.message || `An error ${statusCode} occurred on ${typeof window !== 'undefined' ? 'client' : 'server'}`,
+        message:
+          err?.message ||
+          `An error ${statusCode} occurred on ${typeof window !== 'undefined' ? 'client' : 'server'}`,
         stack: err?.stack,
         url: typeof window !== 'undefined' ? window.location.href : '',
         userAgent: typeof window !== 'undefined' ? navigator.userAgent : '',
@@ -46,23 +48,26 @@ function Error({ statusCode, hasGetInitialPropsRun, err }) {
         }}
       >
         <ErrorOutlineIcon sx={{ fontSize: 80, color: 'error.main' }} />
-        
+
         <Typography variant="h1" sx={{ fontSize: '3rem', fontWeight: 'bold' }}>
           {statusCode || 'Error'}
         </Typography>
-        
+
         <Typography variant="h6" color="text.secondary">
           {statusCode
             ? `An error ${statusCode} occurred on ${hasGetInitialPropsRun ? 'server' : 'client'}`
             : 'An error occurred on client'}
         </Typography>
-        
+
         {err?.message && (
-          <Typography variant="body2" sx={{ fontFamily: 'monospace', bgcolor: 'background.paper', p: 2, borderRadius: 1 }}>
+          <Typography
+            variant="body2"
+            sx={{ fontFamily: 'monospace', bgcolor: 'background.paper', p: 2, borderRadius: 1 }}
+          >
             {err.message}
           </Typography>
         )}
-        
+
         <Box sx={{ display: 'flex', gap: 2 }}>
           <Button variant="contained" onClick={() => router.push('/')}>
             Go Home

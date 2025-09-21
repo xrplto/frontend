@@ -52,7 +52,7 @@ const DeFiHistory = ({ account }) => {
     if (account) {
       accountHistory();
     }
-    
+
     return () => {
       // Cleanup: disconnect client on unmount
       if (client.isConnected()) {
@@ -66,15 +66,15 @@ const DeFiHistory = ({ account }) => {
 
   const accountHistory = useCallback(async () => {
     if (!account) return;
-    
+
     // Cancel previous request if exists
     if (abortController) {
       abortController.abort();
     }
-    
+
     const newAbortController = new AbortController();
     setAbortController(newAbortController);
-    
+
     setLoading(true);
     try {
       if (!client.isConnected()) {
@@ -90,7 +90,7 @@ const DeFiHistory = ({ account }) => {
         forward: false
       };
       const response = await client.request(transaction);
-      
+
       // Check if request was aborted
       if (newAbortController.signal.aborted) return;
       const totalTransactions = response.result.transactions;
@@ -219,20 +219,18 @@ const DeFiHistory = ({ account }) => {
     setPage(0);
   }, []);
 
-  const paginatedHistory = useMemo(() => 
-    activityHistory.slice(
-      page * rowsPerPage,
-      page * rowsPerPage + rowsPerPage
-    ),
+  const paginatedHistory = useMemo(
+    () => activityHistory.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
     [activityHistory, page, rowsPerPage]
   );
 
   return (
     <Box
       sx={{
-        background: theme.palette.mode === 'dark'
-          ? alpha(theme.palette.background.paper, 0.6)
-          : alpha(theme.palette.background.paper, 0.9),
+        background:
+          theme.palette.mode === 'dark'
+            ? alpha(theme.palette.background.paper, 0.6)
+            : alpha(theme.palette.background.paper, 0.9),
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         borderRadius: '12px',
@@ -245,9 +243,16 @@ const DeFiHistory = ({ account }) => {
       {loading ? (
         <Stack alignItems="center" sx={{ py: isSmallScreen ? 4 : 6 }}>
           <Box sx={{ mb: 2 }}>
-            <PulseLoader color={theme.palette.text.secondary} size={isSmallScreen ? 8 : 10} margin={3} />
+            <PulseLoader
+              color={theme.palette.text.secondary}
+              size={isSmallScreen ? 8 : 10}
+              margin={3}
+            />
           </Box>
-          <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.6), fontSize: '0.9rem' }}>
+          <Typography
+            variant="body2"
+            sx={{ color: alpha(theme.palette.text.primary, 0.6), fontSize: '0.9rem' }}
+          >
             Loading transaction history...
           </Typography>
         </Stack>
@@ -263,11 +268,22 @@ const DeFiHistory = ({ account }) => {
               px: isSmallScreen ? 2 : 3
             }}
           >
-            <ErrorOutlineIcon sx={{ fontSize: isSmallScreen ? 40 : 48, color: alpha(theme.palette.text.primary, 0.3) }} />
-            <Typography variant={isSmallScreen ? 'h6' : 'h5'} sx={{ color: alpha(theme.palette.text.primary, 0.7), fontWeight: 600 }}>
+            <ErrorOutlineIcon
+              sx={{
+                fontSize: isSmallScreen ? 40 : 48,
+                color: alpha(theme.palette.text.primary, 0.3)
+              }}
+            />
+            <Typography
+              variant={isSmallScreen ? 'h6' : 'h5'}
+              sx={{ color: alpha(theme.palette.text.primary, 0.7), fontWeight: 600 }}
+            >
               No Transaction History
             </Typography>
-            <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.9rem' }}>
+            <Typography
+              variant="body2"
+              sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '0.9rem' }}
+            >
               Your DeFi transactions will appear here
             </Typography>
           </Stack>
@@ -290,26 +306,67 @@ const DeFiHistory = ({ account }) => {
           >
             <TableHead>
               <TableRow sx={{ backgroundColor: 'transparent' }}>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
+                <TableCell
+                  sx={{
+                    color: alpha(theme.palette.text.primary, 0.6),
+                    fontWeight: 600,
+                    backgroundColor: 'transparent',
+                    fontSize: '0.85rem'
+                  }}
+                >
                   Type
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
+                <TableCell
+                  sx={{
+                    color: alpha(theme.palette.text.primary, 0.6),
+                    fontWeight: 600,
+                    backgroundColor: 'transparent',
+                    fontSize: '0.85rem'
+                  }}
+                >
                   {isSmallScreen ? 'Time' : 'Date'}
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
+                <TableCell
+                  sx={{
+                    color: alpha(theme.palette.text.primary, 0.6),
+                    fontWeight: 600,
+                    backgroundColor: 'transparent',
+                    fontSize: '0.85rem'
+                  }}
+                >
                   Amount
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, backgroundColor: 'transparent', fontSize: '0.85rem' }}>
+                <TableCell
+                  sx={{
+                    color: alpha(theme.palette.text.primary, 0.6),
+                    fontWeight: 600,
+                    backgroundColor: 'transparent',
+                    fontSize: '0.85rem'
+                  }}
+                >
                   Source
                 </TableCell>
-                <TableCell sx={{ color: alpha(theme.palette.text.primary, 0.6), fontWeight: 600, textAlign: 'center', backgroundColor: 'transparent', fontSize: '0.85rem' }}>
+                <TableCell
+                  sx={{
+                    color: alpha(theme.palette.text.primary, 0.6),
+                    fontWeight: 600,
+                    textAlign: 'center',
+                    backgroundColor: 'transparent',
+                    fontSize: '0.85rem'
+                  }}
+                >
                   <OpenInNewIcon sx={{ fontSize: '16px' }} />
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody sx={{ backgroundColor: 'transparent' }}>
               {paginatedHistory.map((item, index) => (
-                <HistoryRow key={index} {...item} isSmallScreen={isSmallScreen} darkMode={darkMode} />
+                <HistoryRow
+                  key={index}
+                  {...item}
+                  isSmallScreen={isSmallScreen}
+                  darkMode={darkMode}
+                />
               ))}
             </TableBody>
           </Table>
@@ -324,8 +381,12 @@ const DeFiHistory = ({ account }) => {
               backdropFilter: 'blur(5px)'
             }}
           >
-            <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.6), fontSize: '0.8rem' }}>
-              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, activityHistory.length)} of {activityHistory.length}
+            <Typography
+              variant="body2"
+              sx={{ color: alpha(theme.palette.text.primary, 0.6), fontSize: '0.8rem' }}
+            >
+              {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, activityHistory.length)}{' '}
+              of {activityHistory.length}
             </Typography>
             <Stack direction="row" spacing={1} alignItems="center">
               <Select
@@ -804,9 +865,9 @@ const HistoryRow = React.memo((props) => {
       }}
     >
       <TableCell>
-        <Typography 
-          variant="caption" 
-          sx={{ 
+        <Typography
+          variant="caption"
+          sx={{
             color: getTypeColor(TransactionType, offerType),
             fontWeight: 500,
             textTransform: 'uppercase',
@@ -819,30 +880,36 @@ const HistoryRow = React.memo((props) => {
       </TableCell>
       <TableCell>
         <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5) }}>
-          {props.isSmallScreen ? getRelativeTime(rippleEpoch).replace(' ago', '') : getRelativeTime(rippleEpoch)}
+          {props.isSmallScreen
+            ? getRelativeTime(rippleEpoch).replace(' ago', '')
+            : getRelativeTime(rippleEpoch)}
         </Typography>
       </TableCell>
       <TableCell>
         {TransactionType === 'AMMDeposit' && (
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>
+              {assetValue.valueBeforeDot}
+            </Typography>
             {assetValue.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue.valueAfterDot}
+              </Typography>
             )}
-            {tokenImageUrl && (
-              <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />
-            )}
+            {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.3 }}>/</Typography>
+            <Typography variant="caption" sx={{ opacity: 0.3 }}>
+              /
+            </Typography>
             <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
             {assetValue2.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue2.valueAfterDot}
+              </Typography>
             )}
-            {tokenImageUrl2 && (
-              <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />
-            )}
+            {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName2}
             </Typography>
@@ -853,32 +920,54 @@ const HistoryRow = React.memo((props) => {
             {assetValue.valueAfterDot === '' && assetValue2.valueAfterDot === '' ? (
               <>
                 {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
-                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: alpha(theme.palette.text.primary, 0.7) }}
+                >
                   {assetName}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.3 }}>/</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.3 }}>
+                  /
+                </Typography>
                 {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
-                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: alpha(theme.palette.text.primary, 0.7) }}
+                >
                   {assetName2}
                 </Typography>
               </>
             ) : (
               <>
-                <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                  {assetValue.valueBeforeDot}
+                </Typography>
                 {assetValue.valueAfterDot && (
-                  <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    .{assetValue.valueAfterDot}
+                  </Typography>
                 )}
                 {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
-                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: alpha(theme.palette.text.primary, 0.7) }}
+                >
                   {assetName}
                 </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.3 }}>/</Typography>
+                <Typography variant="caption" sx={{ opacity: 0.3 }}>
+                  /
+                </Typography>
                 <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
                 {assetValue2.valueAfterDot && (
-                  <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    .{assetValue2.valueAfterDot}
+                  </Typography>
                 )}
                 {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
-                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
+                <Typography
+                  variant="caption"
+                  sx={{ color: alpha(theme.palette.text.primary, 0.7) }}
+                >
                   {assetName2}
                 </Typography>
               </>
@@ -887,18 +976,26 @@ const HistoryRow = React.memo((props) => {
         )}
         {TransactionType === 'Payment' && (
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>
+              {assetValue.valueBeforeDot}
+            </Typography>
             {assetValue.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue.valueAfterDot}
+              </Typography>
             )}
             {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.3 }}>→</Typography>
+            <Typography variant="caption" sx={{ opacity: 0.3 }}>
+              →
+            </Typography>
             <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
             {assetValue2.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue2.valueAfterDot}
+              </Typography>
             )}
             {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
@@ -908,9 +1005,13 @@ const HistoryRow = React.memo((props) => {
         )}
         {TransactionType === 'TrustSet' && (
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>
+              {assetValue.valueBeforeDot}
+            </Typography>
             {assetValue.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue.valueAfterDot}
+              </Typography>
             )}
             {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
@@ -920,18 +1021,26 @@ const HistoryRow = React.memo((props) => {
         )}
         {TransactionType === 'OfferCreate' && (
           <Stack direction="row" alignItems="center" spacing={0.5}>
-            <Typography variant="caption" sx={{ fontWeight: 500 }}>{assetValue.valueBeforeDot}</Typography>
+            <Typography variant="caption" sx={{ fontWeight: 500 }}>
+              {assetValue.valueBeforeDot}
+            </Typography>
             {assetValue.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue.valueAfterDot}
+              </Typography>
             )}
             {tokenImageUrl && <Avatar src={tokenImageUrl} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
               {assetName}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.3 }}>→</Typography>
+            <Typography variant="caption" sx={{ opacity: 0.3 }}>
+              →
+            </Typography>
             <Typography variant="caption">{assetValue2.valueBeforeDot}</Typography>
             {assetValue2.valueAfterDot && (
-              <Typography variant="caption" sx={{ opacity: 0.6 }}>.{assetValue2.valueAfterDot}</Typography>
+              <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                .{assetValue2.valueAfterDot}
+              </Typography>
             )}
             {tokenImageUrl2 && <Avatar src={tokenImageUrl2} sx={{ width: 16, height: 16 }} />}
             <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.7) }}>
@@ -946,9 +1055,9 @@ const HistoryRow = React.memo((props) => {
         )}
       </TableCell>
       <TableCell>
-        <Typography 
-          variant="caption" 
-          sx={{ 
+        <Typography
+          variant="caption"
+          sx={{
             color: alpha(theme.palette.text.primary, 0.4),
             fontSize: '0.7rem'
           }}

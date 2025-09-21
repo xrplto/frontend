@@ -10,8 +10,6 @@ import StarIcon from '@mui/icons-material/Star'; // Spotlight
 import { AppContext } from 'src/AppContext';
 import { styled, useTheme } from '@mui/material';
 
-
-
 const PhoneDropDown = () => {
   const theme = useTheme();
   const { darkMode } = useContext(AppContext);

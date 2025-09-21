@@ -74,4 +74,3 @@ export function isEqual(a, b) {
   // Fallback strict equality for primitives/functions
   return false;
 }
-

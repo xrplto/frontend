@@ -1,10 +1,10 @@
 import React, { useContext, useState } from 'react';
-import { 
-  IconButton, 
-  alpha, 
-  Menu, 
-  MenuItem, 
-  ListItemIcon, 
+import {
+  IconButton,
+  alpha,
+  Menu,
+  MenuItem,
+  ListItemIcon,
   ListItemText,
   Typography,
   Box
@@ -58,21 +58,21 @@ const themes = [
 export default function ThemeSwitcher() {
   const { themeName, setTheme } = useContext(AppContext);
   const [anchorEl, setAnchorEl] = useState(null);
-  
+
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
-  
+
   const handleClose = () => {
     setAnchorEl(null);
   };
-  
+
   const handleThemeChange = (themeId) => {
     setTheme(themeId);
     handleClose();
   };
-  
-  const currentTheme = themes.find(t => t.id === themeName) || themes[0];
+
+  const currentTheme = themes.find((t) => t.id === themeName) || themes[0];
 
   return (
     <>
@@ -93,7 +93,7 @@ export default function ThemeSwitcher() {
       >
         <PaletteIcon sx={{ fontSize: 16 }} />
       </IconButton>
-      
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -134,16 +134,29 @@ export default function ThemeSwitcher() {
                   height: 24,
                   borderRadius: '6px',
                   backgroundColor: theme.color,
-                  border: theme.id === 'XrplToLightTheme' ? '1px solid #e0e0e0' : theme.id === 'BirdTheme' ? '1px solid #1A1A1A' : 'none',
-                  boxShadow: theme.id === 'SyncWaveTheme' || theme.id === 'RippleBlueTheme' || theme.id === 'LiquidLedgerTheme'
-                    ? `0 0 10px ${theme.color}` 
-                    : 'none'
+                  border:
+                    theme.id === 'XrplToLightTheme'
+                      ? '1px solid #e0e0e0'
+                      : theme.id === 'BirdTheme'
+                        ? '1px solid #1A1A1A'
+                        : 'none',
+                  boxShadow:
+                    theme.id === 'SyncWaveTheme' ||
+                    theme.id === 'RippleBlueTheme' ||
+                    theme.id === 'LiquidLedgerTheme'
+                      ? `0 0 10px ${theme.color}`
+                      : 'none'
                 }}
               >
-                <PaletteIcon 
-                  sx={{ 
-                    fontSize: 16, 
-                    color: theme.id === 'XrplToLightTheme' || theme.id === 'BirdTheme' ? '#fff' : theme.id === 'XrplToDarkTheme' ? '#fff' : '#fff'
+                <PaletteIcon
+                  sx={{
+                    fontSize: 16,
+                    color:
+                      theme.id === 'XrplToLightTheme' || theme.id === 'BirdTheme'
+                        ? '#fff'
+                        : theme.id === 'XrplToDarkTheme'
+                          ? '#fff'
+                          : '#fff'
                   }}
                 />
               </Box>

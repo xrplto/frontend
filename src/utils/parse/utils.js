@@ -62,8 +62,7 @@ function hexToString(hex) {
 function isValidSecret(secret) {
   // Basic validation - removed ripple-keypairs for security
   // XRP secrets are typically 29 chars starting with 's'
-  return secret && typeof secret === 'string' && 
-         secret.length === 29 && secret.startsWith('s');
+  return secret && typeof secret === 'string' && secret.length === 29 && secret.startsWith('s');
 }
 
 function dropsToXrp(drops) {
@@ -493,7 +492,8 @@ export function parseNFTokenID(NFTokenID) {
 
   let transferFee = 0;
   try {
-    if (royalty) transferFee = new Decimal(royalty).div('1000').toDP(3, Decimal.ROUND_DOWN).toNumber();
+    if (royalty)
+      transferFee = new Decimal(royalty).div('1000').toDP(3, Decimal.ROUND_DOWN).toNumber();
   } catch (e) {}
 
   return { flag, royalty, issuer, taxon, transferFee };
@@ -509,20 +509,20 @@ export function convertHexToString(hex, encoding = 'utf8') {
 
 // Parse amount function (from amount.js)
 export function parseAmount(amount) {
-    if (typeof amount === 'string') {
-        return {
-            issuer: 'XRPL',
-            currency: 'XRP',
-            name: 'XRP',
-            value: dropsToXrp(amount)
-        }
-    }
+  if (typeof amount === 'string') {
     return {
-        issuer: amount.issuer,
-        currency: amount.currency,
-        name: normalizeCurrencyCode(amount.currency),
-        value: amount.value,
-    }
+      issuer: 'XRPL',
+      currency: 'XRP',
+      name: 'XRP',
+      value: dropsToXrp(amount)
+    };
+  }
+  return {
+    issuer: amount.issuer,
+    currency: amount.currency,
+    name: normalizeCurrencyCode(amount.currency),
+    value: amount.value
+  };
 }
 
 export {

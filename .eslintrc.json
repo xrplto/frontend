@@ -9,11 +9,14 @@
     "react-hooks/exhaustive-deps": "off",
     "react/no-unescaped-entities": "off",
     "react/jsx-max-props-per-line": "off",
-    "react/jsx-no-bind": ["error", {
-      "allowArrowFunctions": true,
-      "allowFunctions": false,
-      "allowBind": false
-    }],
+    "react/jsx-no-bind": [
+      "error",
+      {
+        "allowArrowFunctions": true,
+        "allowFunctions": false,
+        "allowBind": false
+      }
+    ],
     "react/jsx-no-constructed-context-values": "error",
     "react/no-array-index-key": "off",
     "react/hook-use-state": "warn",

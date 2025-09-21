@@ -36,7 +36,7 @@ function OGPTestPage({ imageUrls }) {
             <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
               All 13 Open Graph images for testing social media preview functionality
             </Typography>
-            
+
             <Grid container spacing={2}>
               {imageUrls.map((url, index) => (
                 <Grid item xs={12} sm={6} md={4} key={index}>
@@ -55,11 +55,14 @@ function OGPTestPage({ imageUrls }) {
                         mb: 1
                       }}
                     />
-                    <Typography variant="caption" sx={{ 
-                      display: 'block',
-                      wordBreak: 'break-all',
-                      fontSize: '0.7rem'
-                    }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        display: 'block',
+                        wordBreak: 'break-all',
+                        fontSize: '0.7rem'
+                      }}
+                    >
                       {url.split('/').pop()}
                     </Typography>
                   </Paper>
@@ -81,7 +84,7 @@ function OGPTestPage({ imageUrls }) {
                     component="img"
                     image={imageUrls[0]}
                     alt="Primary Open Graph Image"
-                    sx={{ 
+                    sx={{
                       width: '100%',
                       height: 'auto',
                       maxHeight: 400,
@@ -107,16 +110,18 @@ function OGPTestPage({ imageUrls }) {
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                   This is how your link will appear when shared:
                 </Typography>
-                
+
                 <Paper variant="outlined" sx={{ p: 2 }}>
-                  <Box sx={{ 
-                    width: '100%', 
-                    height: 150, 
-                    backgroundImage: `url(${imageUrls[0]})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    mb: 2
-                  }} />
+                  <Box
+                    sx={{
+                      width: '100%',
+                      height: 150,
+                      backgroundImage: `url(${imageUrls[0]})`,
+                      backgroundSize: 'cover',
+                      backgroundPosition: 'center',
+                      mb: 2
+                    }}
+                  />
                   <Typography variant="subtitle1" fontWeight="bold">
                     OGP Test Page | xrpl.to
                   </Typography>
@@ -162,7 +167,8 @@ function OGPTestPage({ imageUrls }) {
             Test Your OGP Tags
           </Typography>
           <Typography variant="body1" align="center" color="text.secondary">
-            You can validate this page's Open Graph tags using tools like Facebook's Sharing Debugger or Twitter Card Validator
+            You can validate this page's Open Graph tags using tools like Facebook's Sharing
+            Debugger or Twitter Card Validator
           </Typography>
         </Box>
       </Container>
@@ -184,9 +190,9 @@ export async function getStaticProps() {
     '3ea807e02dbf5f092d27bde3391adc8a',
     'fe8c16be4b0505d9df97e8cb12758b02'
   ];
-  
+
   const imageUrls = [
-    ...imageHashes.map(hash => `http://s1.xrpl.to/ogp/${hash}`),
+    ...imageHashes.map((hash) => `http://s1.xrpl.to/ogp/${hash}`),
     'https://s1.xrpl.to/ogp/landing.webp',
     'https://s1.xrpl.to/ogp/new.webp',
     'https://s1.xrpl.to/ogp/5m.webp',
@@ -195,7 +201,7 @@ export async function getStaticProps() {
     'https://s1.xrpl.to/ogp/7d.webp',
     'https://s1.xrpl.to/ogp/news.webp'
   ];
-  
+
   const ogp = {
     canonical: 'https://xrpl.to/ogp-test',
     title: 'OGP Test Page',

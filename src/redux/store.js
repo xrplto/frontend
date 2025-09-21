@@ -15,27 +15,28 @@ const store = configureStore({
 
 export default store;
 
-
 export function configureRedux(data) {
-  const preloadedState = data ? {
-    status: {
-      metrics: {
-        USD: data.exch?.USD || 100,
-        EUR: data.exch?.EUR || 100,
-        JPY: data.exch?.JPY || 100,
-        CNY: data.exch?.CNY || 100,
-        XRP: 1,
-        H24: data.H24 || {},
-        global: {
-          total: data.total || 0,
-          ...data.global
-        },
-        tokenCreation: data.tokenCreation || []
-      },
-      filteredCount: data.count || 0,
-      activeFiatCurrency: 'USD'
-    }
-  } : undefined;
+  const preloadedState = data
+    ? {
+        status: {
+          metrics: {
+            USD: data.exch?.USD || 100,
+            EUR: data.exch?.EUR || 100,
+            JPY: data.exch?.JPY || 100,
+            CNY: data.exch?.CNY || 100,
+            XRP: 1,
+            H24: data.H24 || {},
+            global: {
+              total: data.total || 0,
+              ...data.global
+            },
+            tokenCreation: data.tokenCreation || []
+          },
+          filteredCount: data.count || 0,
+          activeFiatCurrency: 'USD'
+        }
+      }
+    : undefined;
 
   return configureStore({
     reducer: {

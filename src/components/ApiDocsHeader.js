@@ -16,9 +16,9 @@ const HeaderWrapper = styled(Box)(
     right: 0;
     z-index: 1100;
     background: ${theme.palette.background.paper};
-    border-bottom: 1px solid ${theme.palette.mode === 'dark'
-      ? 'rgba(255,255,255,0.08)'
-      : 'rgba(0,0,0,0.1)'};
+    border-bottom: 1px solid ${
+      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'
+    };
     box-shadow: 0 1px 3px rgba(0,0,0,0.12);
     
     ${theme.breakpoints.down('sm')} {
@@ -35,10 +35,13 @@ function ApiDocsHeader() {
       <Container maxWidth={false} sx={{ px: { xs: 2, sm: 3 } }}>
         <Box display="flex" alignItems="center" sx={{ width: '100%' }}>
           <Logo alt="xrpl.to Logo" style={{ marginRight: '16px', width: 'auto', height: '32px' }} />
-          <Typography variant="h6" sx={{ 
-            color: theme.palette.text.primary,
-            fontWeight: 600
-          }}>
+          <Typography
+            variant="h6"
+            sx={{
+              color: theme.palette.text.primary,
+              fontWeight: 600
+            }}
+          >
             API Documentation
           </Typography>
           <Box sx={{ ml: 'auto' }}>

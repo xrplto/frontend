@@ -56,7 +56,6 @@ import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
 import RichList from 'src/TokenDetail/RichList';
 
-
 // Performance utilities
 const throttle = (func, delay) => {
   let lastCall = 0;
@@ -68,10 +67,13 @@ const throttle = (func, delay) => {
       return func(...args);
     }
     clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      lastCall = Date.now();
-      func(...args);
-    }, delay - (now - lastCall));
+    timeout = setTimeout(
+      () => {
+        lastCall = Date.now();
+        func(...args);
+      },
+      delay - (now - lastCall)
+    );
   };
 };
 
@@ -142,9 +144,10 @@ const TradeCard = styled(Card, {
 })(({ theme, isNew, tradetype }) => ({
   marginBottom: theme.spacing(0.2),
   borderRadius: '6px',
-  background: tradetype === 'BUY'
-    ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 50%, transparent 100%)`
-    : `linear-gradient(90deg, ${alpha('#F44336', 0.08)} 0%, ${alpha('#F44336', 0.02)} 50%, transparent 100%)`,
+  background:
+    tradetype === 'BUY'
+      ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 50%, transparent 100%)`
+      : `linear-gradient(90deg, ${alpha('#F44336', 0.08)} 0%, ${alpha('#F44336', 0.02)} 50%, transparent 100%)`,
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
@@ -171,9 +174,10 @@ const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
   height: '16px',
   fontWeight: 'bold',
   borderRadius: '6px',
-  background: tradetype === 'BUY' 
-    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`
-    : `linear-gradient(135deg, ${alpha('#F44336', 0.2)} 0%, ${alpha('#F44336', 0.05)} 100%)`,
+  background:
+    tradetype === 'BUY'
+      ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`
+      : `linear-gradient(135deg, ${alpha('#F44336', 0.2)} 0%, ${alpha('#F44336', 0.05)} 100%)`,
   color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
   border:
     tradetype === 'BUY'
@@ -309,8 +313,8 @@ const getXRPAmount = (trade) => {
     trade.paid.currency === 'XRP'
       ? parseValue(trade.paid.value)
       : trade.got.currency === 'XRP'
-      ? parseValue(trade.got.value)
-      : 0;
+        ? parseValue(trade.got.value)
+        : 0;
   return xrpValue;
 };
 
@@ -485,11 +489,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [wsReady, setWsReady] = useState(false);
   const [bidId, setBidId] = useState(-1);
   const [askId, setAskId] = useState(-1);
-  const [selectedPair, setSelectedPair] = useState(() => token ? getInitPair(token) : null);
+  const [selectedPair, setSelectedPair] = useState(() => (token ? getInitPair(token) : null));
   const [orderBookOpen, setOrderBookOpen] = useState(false);
-  
+
   const WSS_URL = 'wss://xrplcluster.com';
-  
+
   // WebSocket for OrderBook
   const { sendJsonMessage } = useWebSocket(WSS_URL, {
     onOpen: () => {
@@ -572,24 +576,33 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
 
   // WebSocket message processor for OrderBook - throttled for performance
   const processOrderBookMessages = useMemo(
-    () => throttle((event) => {
-      const orderBook = JSON.parse(event.data);
+    () =>
+      throttle((event) => {
+        const orderBook = JSON.parse(event.data);
 
-      if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-        const req = orderBook.id % 2;
-        if (req === 1) {
-          const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_ASKS, orderBookData.asks);
-          setOrderBookData(prev => ({ ...prev, asks: parsed }));
+        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+          const req = orderBook.id % 2;
+          if (req === 1) {
+            const parsed = formatOrderBook(
+              orderBook.result.offers,
+              ORDER_TYPE_ASKS,
+              orderBookData.asks
+            );
+            setOrderBookData((prev) => ({ ...prev, asks: parsed }));
+          }
+          if (req === 0) {
+            const parsed = formatOrderBook(
+              orderBook.result.offers,
+              ORDER_TYPE_BIDS,
+              orderBookData.bids
+            );
+            setOrderBookData((prev) => ({ ...prev, bids: parsed }));
+            setTimeout(() => {
+              setClearNewFlag(true);
+            }, 2000);
+          }
         }
-        if (req === 0) {
-          const parsed = formatOrderBook(orderBook.result.offers, ORDER_TYPE_BIDS, orderBookData.bids);
-          setOrderBookData(prev => ({ ...prev, bids: parsed }));
-          setTimeout(() => {
-            setClearNewFlag(true);
-          }, 2000);
-        }
-      }
-    }, 100), // Throttle to max 10 updates per second
+      }, 100), // Throttle to max 10 updates per second
     [orderBookData.asks, orderBookData.bids]
   );
 
@@ -638,9 +651,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   useEffect(() => {
     if (clearNewFlag) {
       setClearNewFlag(false);
-      setOrderBookData(prev => ({
-        asks: prev.asks.map(ask => ({ ...ask, isNew: false })),
-        bids: prev.bids.map(bid => ({ ...bid, isNew: false }))
+      setOrderBookData((prev) => ({
+        asks: prev.asks.map((ask) => ({ ...ask, isNew: false })),
+        bids: prev.bids.map((bid) => ({ ...bid, isNew: false }))
       }));
     }
   }, [clearNewFlag]);
@@ -805,18 +818,31 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
 
   return (
     <Stack spacing={1} sx={{ mx: 0, width: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Box
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}
+      >
         <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
           <Tab label="Trading History" />
           <Tab label="Trading Pairs" />
           <Tab label="Top Traders" />
           <Tab label="Rich List" />
         </Tabs>
-        <Button variant="outlined" size="small" onClick={() => setOrderBookOpen(true)} sx={{ mr: 1 }}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => setOrderBookOpen(true)}
+          sx={{ mr: 1 }}
+        >
           Quick Trade
         </Button>
       </Box>
-      
+
       {tabValue === 0 && (
         <>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -825,338 +851,347 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               label="XRP Trades Only"
             />
           </Box>
-      {/* Table Headers with integrated title */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: '1fr 1fr',
-            md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
-          },
-          gap: 1,
-          p: 0.75,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          backgroundColor: 'transparent',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          borderRadius: '6px 6px 0 0',
-          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          boxShadow: `
+          {/* Table Headers with integrated title */}
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: '1fr 1fr',
+                md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
+              },
+              gap: 1,
+              p: 0.75,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              backgroundColor: 'transparent',
+              backdropFilter: 'none',
+              WebkitBackdropFilter: 'none',
+              borderRadius: '6px 6px 0 0',
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              boxShadow: `
             0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
             0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
             inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-          '& > *': {
-            fontWeight: 'bold',
-            color: theme.palette.text.secondary,
-            fontSize: '0.6rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Time / Type</Typography>
-          <LiveIndicator sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}>
-            <LiveCircle />
-            <Typography
-              variant="caption"
-              fontWeight="600"
-              sx={{ color: 'primary.main', fontSize: '0.5rem' }}
-            >
-              LIVE
-            </Typography>
-          </LiveIndicator>
-        </Box>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price (XRP)</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Amount</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Maker/Taker</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
-      </Box>
-
-      <Stack spacing={0.3}>
-        {trades.map((trade, index) => {
-          const isBuy = trade.paid.currency === 'XRP';
-          const xrpAmount = getXRPAmount(trade);
-          const price = calculatePrice(trade);
-          const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
-
-          const amountData = isBuy ? trade.got : trade.paid;
-          const totalData = isBuy ? trade.paid : trade.got;
-
-          const makerDetails = renderWashTradeDetails(
-            trade.maker,
-            washTradingData[trade.maker],
-            abbreviateNumber
-          );
-          const takerDetails = renderWashTradeDetails(
-            trade.taker,
-            washTradingData[trade.taker],
-            abbreviateNumber
-          );
-
-          const makerIsWashTrader = !!makerDetails;
-          const takerIsWashTrader = !!takerDetails;
-
-          let addressToShow = trade.maker;
-          if (amm) {
-            if (trade.maker === amm) {
-              addressToShow = trade.taker;
-            } else if (trade.taker === amm) {
-              addressToShow = trade.maker;
-            }
-          }
-
-          return (
-            <TradeCard key={trade._id} isNew={newTradeIds.has(trade._id)} tradetype={isBuy ? 'BUY' : 'SELL'}>
-              <VolumeIndicator volume={volumePercentage} />
-              <CardContent sx={{ p: 0.75, '&:last-child': { pb: 0.75 } }}>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: {
-                      xs: '1fr 1fr',
-                      sm: '1.2fr 1.2fr 1.8fr',
-                      md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
-                    },
-                    gap: 1,
-                    alignItems: 'center'
-                  }}
+              '& > *': {
+                fontWeight: 'bold',
+                color: theme.palette.text.secondary,
+                fontSize: '0.6rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }
+            }}
+          >
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Time / Type</Typography>
+              <LiveIndicator sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}>
+                <LiveCircle />
+                <Typography
+                  variant="caption"
+                  fontWeight="600"
+                  sx={{ color: 'primary.main', fontSize: '0.5rem' }}
                 >
-                  {/* Time and Type */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      fontWeight="500"
-                      sx={{ minWidth: 'fit-content', fontSize: '0.65rem' }}
+                  LIVE
+                </Typography>
+              </LiveIndicator>
+            </Box>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price (XRP)</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Amount</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Maker/Taker</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
+          </Box>
+
+          <Stack spacing={0.3}>
+            {trades.map((trade, index) => {
+              const isBuy = trade.paid.currency === 'XRP';
+              const xrpAmount = getXRPAmount(trade);
+              const price = calculatePrice(trade);
+              const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
+
+              const amountData = isBuy ? trade.got : trade.paid;
+              const totalData = isBuy ? trade.paid : trade.got;
+
+              const makerDetails = renderWashTradeDetails(
+                trade.maker,
+                washTradingData[trade.maker],
+                abbreviateNumber
+              );
+              const takerDetails = renderWashTradeDetails(
+                trade.taker,
+                washTradingData[trade.taker],
+                abbreviateNumber
+              );
+
+              const makerIsWashTrader = !!makerDetails;
+              const takerIsWashTrader = !!takerDetails;
+
+              let addressToShow = trade.maker;
+              if (amm) {
+                if (trade.maker === amm) {
+                  addressToShow = trade.taker;
+                } else if (trade.taker === amm) {
+                  addressToShow = trade.maker;
+                }
+              }
+
+              return (
+                <TradeCard
+                  key={trade._id}
+                  isNew={newTradeIds.has(trade._id)}
+                  tradetype={isBuy ? 'BUY' : 'SELL'}
+                >
+                  <VolumeIndicator volume={volumePercentage} />
+                  <CardContent sx={{ p: 0.75, '&:last-child': { pb: 0.75 } }}>
+                    <Box
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: {
+                          xs: '1fr 1fr',
+                          sm: '1.2fr 1.2fr 1.8fr',
+                          md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
+                        },
+                        gap: 1,
+                        alignItems: 'center'
+                      }}
                     >
-                      {formatRelativeTime(trade.time)}
-                    </Typography>
-                    <TradeTypeChip
-                      label={isBuy ? 'BUY' : 'SELL'}
-                      tradetype={isBuy ? 'BUY' : 'SELL'}
-                      size="small"
-                    />
-                  </Box>
-
-                  {/* Price */}
-                  <Box sx={{ textAlign: { xs: 'left', md: 'left' } }}>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
-                    >
-                      Price (XRP)
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      fontWeight="600"
-                      color="text.primary"
-                      sx={{ fontSize: '0.7rem' }}
-                    >
-                      {formatPrice(price)}
-                    </Typography>
-                  </Box>
-
-                  {/* Amount */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <img
-                      src={getTokenImageUrl(amountData.issuer, amountData.currency)}
-                      alt={decodeCurrency(amountData.currency)}
-                      style={{ width: 14, height: 14, borderRadius: '50%' }}
-                    />
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
-                      >
-                        Amount
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        fontWeight="600"
-                        color="text.primary"
-                        sx={{ fontSize: '0.7rem' }}
-                      >
-                        {formatTradeValue(amountData.value)} {decodeCurrency(amountData.currency)}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {/* Total */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <img
-                      src={getTokenImageUrl(totalData.issuer, totalData.currency)}
-                      alt={decodeCurrency(totalData.currency)}
-                      style={{ width: 14, height: 14, borderRadius: '50%' }}
-                    />
-                    <Box>
-                      <Typography
-                        variant="body2"
-                        color="text.secondary"
-                        sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
-                      >
-                        Total
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        fontWeight="600"
-                        color="text.primary"
-                        sx={{ fontSize: '0.7rem' }}
-                      >
-                        {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
-                      </Typography>
-                    </Box>
-                  </Box>
-
-                  {/* Maker/Taker */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
-                      <Link
-                        href={`/profile/${addressToShow}`}
-                        sx={{
-                          textDecoration: 'none',
-                          color: 'primary.main',
-                          fontWeight: '500',
-                          '&:hover': {
-                            textDecoration: 'underline',
-                            color: 'primary.dark'
-                          }
-                        }}
-                      >
+                      {/* Time and Type */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                         <Typography
                           variant="body2"
+                          color="text.secondary"
                           fontWeight="500"
-                          sx={{ fontSize: '0.65rem', color: 'primary.main' }}
+                          sx={{ minWidth: 'fit-content', fontSize: '0.65rem' }}
                         >
-                          {addressToShow
-                            ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
-                            : ''}
+                          {formatRelativeTime(trade.time)}
                         </Typography>
-                      </Link>
-                    </Tooltip>
-                    <SwapHorizIcon 
-                      icon={getTradeSizeIcon(xrpAmount)} 
-                      width="16" 
-                      height="16"
-                      style={{ color: theme.palette.text.secondary }}
-                    />
-                    {(makerIsWashTrader || takerIsWashTrader) && (
-                      <SmartToy
-                        fontSize="small"
-                        sx={{ color: theme.palette.warning.main, fontSize: '0.75rem' }}
-                      />
-                    )}
-                  </Box>
+                        <TradeTypeChip
+                          label={isBuy ? 'BUY' : 'SELL'}
+                          tradetype={isBuy ? 'BUY' : 'SELL'}
+                          size="small"
+                        />
+                      </Box>
 
-                  {/* Actions */}
-                  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    {(makerIsWashTrader || takerIsWashTrader) && (
-                      <IconButton
-                        onClick={(e) => handleIconClick(e, trade)}
-                        size="small"
-                        sx={{ padding: '4px' }}
-                      >
-                        <SmartToy fontSize="small" sx={{ color: theme.palette.warning.main }} />
-                      </IconButton>
-                    )}
-                    <Tooltip title="View Transaction" arrow>
-                      <IconButton
-                        size="small"
-                        onClick={() => handleTxClick(trade.hash)}
-                        sx={{
-                          color: `${theme.palette.primary.main} !important`,
-                          padding: '2px',
-                          '&:hover': {
-                            color: `${theme.palette.primary.dark} !important`,
-                            backgroundColor:
-                              theme.palette.mode === 'dark'
-                                ? 'rgba(255, 255, 255, 0.08)'
-                                : 'rgba(0, 0, 0, 0.04)',
-                            transform: 'scale(1.1)'
-                          },
-                          '& .MuiSvgIcon-root': {
-                            color: `${theme.palette.primary.main} !important`
-                          },
-                          '&:hover .MuiSvgIcon-root': {
-                            color: `${theme.palette.primary.dark} !important`
-                          }
-                        }}
-                      >
-                        <OpenInNewIcon fontSize="small" />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Box>
-              </CardContent>
-            </TradeCard>
-          );
-        })}
-      </Stack>
+                      {/* Price */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'left' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                        >
+                          Price (XRP)
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          fontWeight="600"
+                          color="text.primary"
+                          sx={{ fontSize: '0.7rem' }}
+                        >
+                          {formatPrice(price)}
+                        </Typography>
+                      </Box>
 
-      {totalPages > 1 && (
-        <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
-          <StyledPagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            size="large"
-            showFirstButton
-            showLastButton
-          />
-        </Stack>
-      )}
-      <Popover
-        open={openPopover}
-        anchorEl={anchorEl}
-        onClose={handlePopoverClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center'
-        }}
-      >
-        <Box sx={{ 
-          p: 1, 
-          maxWidth: 320, 
-          backgroundColor: 'transparent',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          borderRadius: '6px',
-          boxShadow: `
+                      {/* Amount */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <img
+                          src={getTokenImageUrl(amountData.issuer, amountData.currency)}
+                          alt={decodeCurrency(amountData.currency)}
+                          style={{ width: 14, height: 14, borderRadius: '50%' }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                          >
+                            Amount
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            fontWeight="600"
+                            color="text.primary"
+                            sx={{ fontSize: '0.7rem' }}
+                          >
+                            {formatTradeValue(amountData.value)}{' '}
+                            {decodeCurrency(amountData.currency)}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Total */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <img
+                          src={getTokenImageUrl(totalData.issuer, totalData.currency)}
+                          alt={decodeCurrency(totalData.currency)}
+                          style={{ width: 14, height: 14, borderRadius: '50%' }}
+                        />
+                        <Box>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                          >
+                            Total
+                          </Typography>
+                          <Typography
+                            variant="body2"
+                            fontWeight="600"
+                            color="text.primary"
+                            sx={{ fontSize: '0.7rem' }}
+                          >
+                            {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Maker/Taker */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                        <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
+                          <Link
+                            href={`/profile/${addressToShow}`}
+                            sx={{
+                              textDecoration: 'none',
+                              color: 'primary.main',
+                              fontWeight: '500',
+                              '&:hover': {
+                                textDecoration: 'underline',
+                                color: 'primary.dark'
+                              }
+                            }}
+                          >
+                            <Typography
+                              variant="body2"
+                              fontWeight="500"
+                              sx={{ fontSize: '0.65rem', color: 'primary.main' }}
+                            >
+                              {addressToShow
+                                ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
+                                : ''}
+                            </Typography>
+                          </Link>
+                        </Tooltip>
+                        <SwapHorizIcon
+                          icon={getTradeSizeIcon(xrpAmount)}
+                          width="16"
+                          height="16"
+                          style={{ color: theme.palette.text.secondary }}
+                        />
+                        {(makerIsWashTrader || takerIsWashTrader) && (
+                          <SmartToy
+                            fontSize="small"
+                            sx={{ color: theme.palette.warning.main, fontSize: '0.75rem' }}
+                          />
+                        )}
+                      </Box>
+
+                      {/* Actions */}
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                        {(makerIsWashTrader || takerIsWashTrader) && (
+                          <IconButton
+                            onClick={(e) => handleIconClick(e, trade)}
+                            size="small"
+                            sx={{ padding: '4px' }}
+                          >
+                            <SmartToy fontSize="small" sx={{ color: theme.palette.warning.main }} />
+                          </IconButton>
+                        )}
+                        <Tooltip title="View Transaction" arrow>
+                          <IconButton
+                            size="small"
+                            onClick={() => handleTxClick(trade.hash)}
+                            sx={{
+                              color: `${theme.palette.primary.main} !important`,
+                              padding: '2px',
+                              '&:hover': {
+                                color: `${theme.palette.primary.dark} !important`,
+                                backgroundColor:
+                                  theme.palette.mode === 'dark'
+                                    ? 'rgba(255, 255, 255, 0.08)'
+                                    : 'rgba(0, 0, 0, 0.04)',
+                                transform: 'scale(1.1)'
+                              },
+                              '& .MuiSvgIcon-root': {
+                                color: `${theme.palette.primary.main} !important`
+                              },
+                              '&:hover .MuiSvgIcon-root': {
+                                color: `${theme.palette.primary.dark} !important`
+                              }
+                            }}
+                          >
+                            <OpenInNewIcon fontSize="small" />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </Box>
+                  </CardContent>
+                </TradeCard>
+              );
+            })}
+          </Stack>
+
+          {totalPages > 1 && (
+            <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
+              <StyledPagination
+                count={totalPages}
+                page={page}
+                onChange={handlePageChange}
+                size="large"
+                showFirstButton
+                showLastButton
+              />
+            </Stack>
+          )}
+          <Popover
+            open={openPopover}
+            anchorEl={anchorEl}
+            onClose={handlePopoverClose}
+            anchorOrigin={{
+              vertical: 'bottom',
+              horizontal: 'center'
+            }}
+            transformOrigin={{
+              vertical: 'top',
+              horizontal: 'center'
+            }}
+          >
+            <Box
+              sx={{
+                p: 1,
+                maxWidth: 320,
+                backgroundColor: 'transparent',
+                backdropFilter: 'none',
+                WebkitBackdropFilter: 'none',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                borderRadius: '6px',
+                boxShadow: `
             0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
             0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
             inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-        }}>
-          {selectedTrade && (
-            <React.Fragment>
-              {renderWashTradeDetails(
-                selectedTrade.maker,
-                washTradingData[selectedTrade.maker],
-                abbreviateNumber
+              }}
+            >
+              {selectedTrade && (
+                <React.Fragment>
+                  {renderWashTradeDetails(
+                    selectedTrade.maker,
+                    washTradingData[selectedTrade.maker],
+                    abbreviateNumber
+                  )}
+                  {renderWashTradeDetails(
+                    selectedTrade.taker,
+                    washTradingData[selectedTrade.taker],
+                    abbreviateNumber
+                  )}
+                </React.Fragment>
               )}
-              {renderWashTradeDetails(
-                selectedTrade.taker,
-                washTradingData[selectedTrade.taker],
-                abbreviateNumber
-              )}
-            </React.Fragment>
-          )}
-        </Box>
-      </Popover>
+            </Box>
+          </Popover>
         </>
       )}
-      
+
       {/* Quick Trade Modal */}
       <Dialog open={orderBookOpen} onClose={() => setOrderBookOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
           Quick Trade
           <IconButton size="small" onClick={() => setOrderBookOpen(false)}>
             <CloseIcon fontSize="small" />
@@ -1165,31 +1200,31 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
         <DialogContent dividers>
           {token && (
             <Stack spacing={2}>
-              <Box sx={{ 
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                p: 0.75, 
-                backgroundColor: 'transparent',
-                backdropFilter: 'none',
-                WebkitBackdropFilter: 'none',
-                borderRadius: 1, 
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                boxShadow: `
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 2,
+                  p: 0.75,
+                  backgroundColor: 'transparent',
+                  backdropFilter: 'none',
+                  WebkitBackdropFilter: 'none',
+                  borderRadius: 1,
+                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  boxShadow: `
                   0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
                   0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
                   inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-              }}>
-                <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>Trading Pair:</Typography>
+                }}
+              >
+                <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>
+                  Trading Pair:
+                </Typography>
                 <Box sx={{ minWidth: 200, maxWidth: 300 }}>
-                  <PairsSelect 
-                    token={token}
-                    pair={selectedPair}
-                    setPair={setSelectedPair}
-                  />
+                  <PairsSelect token={token} pair={selectedPair} setPair={setSelectedPair} />
                 </Box>
               </Box>
-              <TradePanel 
+              <TradePanel
                 pair={selectedPair}
                 asks={orderBookData.asks}
                 bids={orderBookData.bids}
@@ -1200,15 +1235,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           )}
         </DialogContent>
       </Dialog>
-      
-      {tabValue === 1 && token && pairs && (
-        <PairsList token={token} pairs={pairs} />
-      )}
-      
-      {tabValue === 2 && token && (
-        <TopTraders token={token} />
-      )}
-      
+
+      {tabValue === 1 && token && pairs && <PairsList token={token} pairs={pairs} />}
+
+      {tabValue === 2 && token && <TopTraders token={token} />}
+
       {tabValue === 3 && token && (
         <Suspense fallback={<CircularProgress />}>
           <RichList token={token} amm={amm} />

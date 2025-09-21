@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
   DialogActions,
-  Button, 
-  Typography, 
-  Box, 
+  Button,
+  Typography,
+  Box,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -51,9 +51,9 @@ const ErrorDebugger = () => {
   // Capture all error types
   useEffect(() => {
     if (listenersAttached) return;
-    
+
     loadErrors();
-    
+
     // 1. Global error handler (runtime errors)
     const handleError = (event) => {
       logError({
@@ -69,7 +69,7 @@ const ErrorDebugger = () => {
         url: window.location.href
       });
     };
-    
+
     // 2. Unhandled promise rejections
     const handleUnhandledRejection = (event) => {
       logError({
@@ -82,15 +82,15 @@ const ErrorDebugger = () => {
         url: window.location.href
       });
     };
-    
+
     // 3. Next.js specific error boundary
     const originalConsoleError = console.error;
-    console.error = function(...args) {
+    console.error = function (...args) {
       // Capture Next.js hydration errors and other console errors
-      const errorMessage = args.map(arg => 
-        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
-      ).join(' ');
-      
+      const errorMessage = args
+        .map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : String(arg)))
+        .join(' ');
+
       if (errorMessage.includes('Error') || errorMessage.includes('Warning')) {
         logError({
           type: 'console.error',
@@ -101,10 +101,10 @@ const ErrorDebugger = () => {
           url: window.location.href
         });
       }
-      
+
       originalConsoleError.apply(console, args);
     };
-    
+
     // 4. Resource loading errors
     const handleResourceError = (event) => {
       if (event.target !== window) {
@@ -119,7 +119,7 @@ const ErrorDebugger = () => {
         });
       }
     };
-    
+
     // 5. Keyboard shortcut
     const handleKeyPress = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
@@ -128,15 +128,15 @@ const ErrorDebugger = () => {
         loadErrors();
       }
     };
-    
+
     // Attach all listeners
     window.addEventListener('error', handleError, true);
     window.addEventListener('unhandledrejection', handleUnhandledRejection);
     window.addEventListener('error', handleResourceError, true);
     document.addEventListener('keydown', handleKeyPress);
-    
+
     setListenersAttached(true);
-    
+
     // Cleanup
     return () => {
       window.removeEventListener('error', handleError, true);
@@ -151,17 +151,17 @@ const ErrorDebugger = () => {
   // On mobile, auto-open dialog if there are recent errors (within last 30 seconds)
   useEffect(() => {
     setShowDebugInfo(errors.length > 0);
-    
+
     // Auto-open on mobile for recent errors to replace generic Next.js message
     if (errors.length > 0) {
       const isMobile = /Mobi|Android/i.test(navigator.userAgent);
-      const recentErrors = errors.filter(error => {
+      const recentErrors = errors.filter((error) => {
         if (!error.timestamp) return false;
         const errorTime = new Date(error.timestamp);
         const now = new Date();
-        return (now - errorTime) < 30000; // Within last 30 seconds
+        return now - errorTime < 30000; // Within last 30 seconds
       });
-      
+
       if (isMobile && recentErrors.length > 0) {
         // Small delay to ensure error logging is complete
         setTimeout(() => {
@@ -223,11 +223,11 @@ const ErrorDebugger = () => {
 
   const generateErrorSummary = () => {
     if (errors.length === 0) return 'No errors found';
-    
+
     const latestError = errors[errors.length - 1];
     const errorMsg = latestError.message || latestError.reason || 'Unknown error';
     const deviceInfo = `${getDeviceInfo().platform} ${getDeviceInfo().userAgent.split(' ')[0]}`;
-    
+
     return `Error on xrpl.to: ${errorMsg.substring(0, 100)}${errorMsg.length > 100 ? '...' : ''} (${deviceInfo})`;
   };
 
@@ -254,27 +254,31 @@ ${fullReport}
 Please let us know if you need any additional information.
 
 Thanks!`;
-    
+
     const mailtoUrl = `mailto:hello@xrpl.to?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.location.href = mailtoUrl;
   };
 
   const formatError = (error, index) => {
-    const timeAgo = error.timestamp ? 
-      new Date(Date.now() - new Date(error.timestamp).getTime()).toISOString().substr(11, 8) : 
-      'Unknown';
-    
+    const timeAgo = error.timestamp
+      ? new Date(Date.now() - new Date(error.timestamp).getTime()).toISOString().substr(11, 8)
+      : 'Unknown';
+
     return (
       <Accordion key={index}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1 }}>
-            <Chip 
-              size="small" 
-              label={error.type || 'Error'} 
+            <Chip
+              size="small"
+              label={error.type || 'Error'}
               color={
-                error.type === 'unhandledrejection' ? 'warning' : 
-                error.type === 'resource' ? 'info' :
-                error.type === 'console.error' ? 'secondary' : 'error'
+                error.type === 'unhandledrejection'
+                  ? 'warning'
+                  : error.type === 'resource'
+                    ? 'info'
+                    : error.type === 'console.error'
+                      ? 'secondary'
+                      : 'error'
               }
             />
             <Typography variant="body2" sx={{ flex: 1 }}>
@@ -293,7 +297,7 @@ Thanks!`;
                 {error.message || error.reason || 'N/A'}
               </Typography>
             </Box>
-            
+
             {error.filename && (
               <Box>
                 <Typography variant="subtitle2">File:</Typography>
@@ -302,15 +306,15 @@ Thanks!`;
                 </Typography>
               </Box>
             )}
-            
+
             {(error.error || error.stack) && (
               <Box>
                 <Typography variant="subtitle2">Stack Trace:</Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontFamily: 'monospace', 
-                    fontSize: '0.7rem', 
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.7rem',
                     whiteSpace: 'pre-wrap',
                     maxHeight: 200,
                     overflow: 'auto',
@@ -319,27 +323,29 @@ Thanks!`;
                     borderRadius: 1
                   }}
                 >
-                  {typeof error.error === 'object' ? JSON.stringify(error.error, null, 2) : (error.error || error.stack)}
+                  {typeof error.error === 'object'
+                    ? JSON.stringify(error.error, null, 2)
+                    : error.error || error.stack}
                 </Typography>
               </Box>
             )}
-            
+
             <Box>
               <Typography variant="subtitle2">User Agent:</Typography>
               <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.7rem' }}>
                 {error.userAgent}
               </Typography>
             </Box>
-            
+
             <Stack direction="row" spacing={1} flexWrap="wrap">
-              <Button 
-                size="small" 
+              <Button
+                size="small"
                 onClick={() => copyToClipboard(JSON.stringify(error, null, 2))}
                 variant="outlined"
               >
                 Copy Details
               </Button>
-              <Button 
+              <Button
                 size="small"
                 startIcon={<TwitterIcon />}
                 onClick={() => {
@@ -353,7 +359,7 @@ Thanks!`;
               >
                 Tweet
               </Button>
-              <Button 
+              <Button
                 size="small"
                 startIcon={<EmailIcon />}
                 onClick={() => {
@@ -372,7 +378,7 @@ Stack Trace:
 ${error.error || error.stack || 'No stack trace available'}
 
 Thanks!`;
-                  
+
                   const mailtoUrl = `mailto:hello@xrpl.to?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
                   window.location.href = mailtoUrl;
                 }}
@@ -407,7 +413,7 @@ Thanks!`;
             cursor: 'pointer',
             boxShadow: 3,
             '&:hover': {
-              bgcolor: 'error.dark',
+              bgcolor: 'error.dark'
             }
           }}
           onClick={() => {
@@ -439,13 +445,10 @@ Thanks!`;
       )}
 
       {/* Debug Dialog */}
-      <Dialog 
-        open={open} 
-        onClose={() => setOpen(false)}
-        fullWidth
-        maxWidth="md"
-      >
-        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <Dialog open={open} onClose={() => setOpen(false)} fullWidth maxWidth="md">
+        <DialogTitle
+          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+        >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <BugReportIcon />
             Error Debugger ({errors.length} errors)
@@ -454,7 +457,7 @@ Thanks!`;
             <RefreshIcon />
           </IconButton>
         </DialogTitle>
-        
+
         <DialogContent>
           {errors.length === 0 ? (
             <Box sx={{ textAlign: 'center', py: 4 }}>
@@ -474,7 +477,7 @@ Thanks!`;
                 <Typography variant="body2" color="text.secondary">
                   Tip: Press Ctrl/Cmd + Shift + D to open this debugger anytime
                 </Typography>
-                
+
                 {/* Show latest error message prominently on mobile */}
                 {/Mobi|Android/i.test(navigator.userAgent) && errors.length > 0 && (
                   <Box sx={{ mt: 2, p: 2, bgcolor: 'error.light', borderRadius: 1 }}>
@@ -482,23 +485,32 @@ Thanks!`;
                       Latest Error:
                     </Typography>
                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                      {errors[errors.length - 1].message || errors[errors.length - 1].reason || 'Unknown error occurred'}
+                      {errors[errors.length - 1].message ||
+                        errors[errors.length - 1].reason ||
+                        'Unknown error occurred'}
                     </Typography>
                   </Box>
                 )}
               </Box>
-              
-              {errors.slice().reverse().map((error, index) => formatError(error, index))}
+
+              {errors
+                .slice()
+                .reverse()
+                .map((error, index) => formatError(error, index))}
             </Stack>
           )}
         </DialogContent>
-        
+
         <DialogActions>
-          <Stack direction="row" spacing={1} sx={{ width: '100%', justifyContent: 'space-between' }}>
+          <Stack
+            direction="row"
+            spacing={1}
+            sx={{ width: '100%', justifyContent: 'space-between' }}
+          >
             <Stack direction="row" spacing={1}>
               {errors.length > 0 && (
                 <>
-                  <Button 
+                  <Button
                     startIcon={<TwitterIcon />}
                     onClick={reportToTwitter}
                     size="small"
@@ -507,7 +519,7 @@ Thanks!`;
                   >
                     Tweet Error
                   </Button>
-                  <Button 
+                  <Button
                     startIcon={<EmailIcon />}
                     onClick={reportToEmail}
                     size="small"
@@ -521,7 +533,7 @@ Thanks!`;
                 Copy Report
               </Button>
             </Stack>
-            
+
             <Stack direction="row" spacing={1}>
               <Button onClick={clearErrors} color="warning" size="small">
                 Clear All

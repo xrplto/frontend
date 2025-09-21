@@ -36,9 +36,10 @@ import { getNftCoverUrl } from 'src/utils/parse/utils';
 // NFT Card Wrapper
 const NFTCardWrapper = styled(Card)(({ theme }) => ({
   borderRadius: 16,
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.paper, 0.6)
-    : theme.palette.background.paper,
+  background:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.6)
+      : theme.palette.background.paper,
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   boxShadow: theme.shadows[2],
@@ -61,9 +62,10 @@ const NFTCardWrapper = styled(Card)(({ theme }) => ({
 // Collection Card Wrapper
 const CollectionCardWrapper = styled(Card)(({ theme }) => ({
   borderRadius: 16,
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.paper, 0.6)
-    : theme.palette.background.paper,
+  background:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.6)
+      : theme.palette.background.paper,
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   boxShadow: theme.shadows[2],
@@ -249,10 +251,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
 
 // Skeleton component for loading state
 const CollectionSkeleton = ({ smallSize }) => (
-  <Skeleton
-    variant="rectangular"
-    sx={{ width: '100%', height: smallSize ? '70px' : '90px' }}
-  />
+  <Skeleton variant="rectangular" sx={{ width: '100%', height: smallSize ? '70px' : '90px' }} />
 );
 
 const createSkeletonComponent = (smallSize) => (props) => (
@@ -501,9 +500,10 @@ const NFTPortfolio = ({
         pt: 0,
         height: smallSize ? '320px' : '520px',
         overflow: 'auto',
-        background: theme.palette.mode === 'dark'
-          ? alpha(theme.palette.background.paper, 0.4)
-          : alpha(theme.palette.background.paper, 0.8),
+        background:
+          theme.palette.mode === 'dark'
+            ? alpha(theme.palette.background.paper, 0.4)
+            : alpha(theme.palette.background.paper, 0.8),
         backdropFilter: 'blur(20px)',
         WebkitBackdropFilter: 'blur(20px)',
         borderRadius: smallSize ? '12px' : '16px',
@@ -527,7 +527,11 @@ const NFTPortfolio = ({
           >
             <ErrorOutlineIcon sx={{ fontSize: '2.5rem', color: theme.palette.info.main }} />
             <Box>
-              <Typography variant="h5" color="text.primary" sx={{ fontWeight: 700, mb: 0.75, fontSize: '1.2rem' }}>
+              <Typography
+                variant="h5"
+                color="text.primary"
+                sx={{ fontWeight: 700, mb: 0.75, fontSize: '1.2rem' }}
+              >
                 No NFTs Found
               </Typography>
               <Typography variant="body1" color="text.secondary" sx={{ fontSize: '0.95rem' }}>

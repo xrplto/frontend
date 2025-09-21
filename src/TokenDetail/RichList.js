@@ -56,9 +56,9 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
 
 const formatNumber = (num) => {
   if (!num || num === 0) return '0';
-  
+
   const value = parseFloat(num);
-  
+
   if (value >= 1e9) {
     return (value / 1e9).toFixed(2) + 'B';
   } else if (value >= 1e6) {
@@ -68,7 +68,7 @@ const formatNumber = (num) => {
   } else if (value < 1) {
     return value.toFixed(4);
   }
-  
+
   return value.toFixed(2);
 };
 
@@ -82,7 +82,7 @@ const RichList = ({ token, amm }) => {
   const [totalSupply, setTotalSupply] = useState(0);
   const theme = useTheme();
   const limit = 20;
-  
+
   // Use AMM from prop or from token object
   const ammAccount = amm || token?.AMM;
 
@@ -99,24 +99,26 @@ const RichList = ({ token, amm }) => {
           `https://api.xrpl.to/api/richlist/${token.md5}?start=${(page - 1) * limit}&limit=${limit}`
         );
         const data = await response.json();
-        
+
         if (data.result === 'success') {
           setRichList(data.richList || []);
-          
+
           // data.length is the total number of actual holders (balance > 0)
           // This is different from trustlines which includes accounts with 0 balance
           const actualHolders = data.length || data.richList?.length || 0;
           setTotalHolders(actualHolders);
-          
+
           // Get trustlines from token object if available
           // Check both trustlines and holders fields as they might be used interchangeably
           const trustlineCount = token?.trustlines || token?.holders || 0;
           setTotalTrustlines(trustlineCount);
-          
+
           // Calculate total supply from token or sum of holdings
-          const supply = token.supply || token.total_supply || 
-            (data.richList && data.richList.length > 0 && data.richList[0].holding 
-              ? (parseFloat(data.richList[0].balance) / (parseFloat(data.richList[0].holding) / 100)) 
+          const supply =
+            token.supply ||
+            token.total_supply ||
+            (data.richList && data.richList.length > 0 && data.richList[0].holding
+              ? parseFloat(data.richList[0].balance) / (parseFloat(data.richList[0].holding) / 100)
               : 0);
           setTotalSupply(supply);
           setTotalPages(Math.ceil((actualHolders || 100) / limit));
@@ -206,12 +208,14 @@ const RichList = ({ token, amm }) => {
           <TableBody>
             {richList.map((holder, index) => {
               const rank = holder.id || (page - 1) * limit + index + 1;
-              const percentOfSupply = holder.holding || (totalSupply > 0 
-                ? ((parseFloat(holder.balance) / parseFloat(totalSupply)) * 100).toFixed(2)
-                : '0');
-              
+              const percentOfSupply =
+                holder.holding ||
+                (totalSupply > 0
+                  ? ((parseFloat(holder.balance) / parseFloat(totalSupply)) * 100).toFixed(2)
+                  : '0');
+
               return (
-                <TableRow 
+                <TableRow
                   key={holder.account || index}
                   sx={{
                     '&:hover': {
@@ -220,7 +224,7 @@ const RichList = ({ token, amm }) => {
                   }}
                 >
                   <TableCell>
-                    <Chip 
+                    <Chip
                       label={`#${rank}`}
                       size="small"
                       color={rank <= 3 ? 'primary' : 'default'}
@@ -241,13 +245,13 @@ const RichList = ({ token, amm }) => {
                       }}
                     >
                       <Typography variant="body2" component="span">
-                        {holder.account 
+                        {holder.account
                           ? `${holder.account.slice(0, 6)}...${holder.account.slice(-6)}`
                           : 'Unknown'}
                       </Typography>
                     </Link>
                     {holder.freeze && (
-                      <Chip 
+                      <Chip
                         label="Frozen"
                         size="small"
                         sx={{ ml: 1 }}
@@ -256,7 +260,7 @@ const RichList = ({ token, amm }) => {
                       />
                     )}
                     {ammAccount && holder.account === ammAccount && (
-                      <Chip 
+                      <Chip
                         label="AMM"
                         size="small"
                         sx={{ ml: 1 }}
@@ -265,26 +269,37 @@ const RichList = ({ token, amm }) => {
                       />
                     )}
                     {token.issuer && holder.account === token.issuer && (
-                      <Chip 
-                        label={token.creator && holder.account === token.creator ? "Issuer/Creator" : "Issuer"}
+                      <Chip
+                        label={
+                          token.creator && holder.account === token.creator
+                            ? 'Issuer/Creator'
+                            : 'Issuer'
+                        }
                         size="small"
                         sx={{ ml: 1 }}
                         variant="filled"
                         color="secondary"
                       />
                     )}
-                    {token.creator && holder.account === token.creator && holder.account !== token.issuer && (
-                      <Chip 
-                        label="Creator"
-                        size="small"
-                        sx={{ ml: 1 }}
-                        variant="filled"
-                        color="info"
-                      />
-                    )}
+                    {token.creator &&
+                      holder.account === token.creator &&
+                      holder.account !== token.issuer && (
+                        <Chip
+                          label="Creator"
+                          size="small"
+                          sx={{ ml: 1 }}
+                          variant="filled"
+                          color="info"
+                        />
+                      )}
                   </TableCell>
                   <TableCell align="right">
-                    <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      justifyContent="flex-end"
+                      spacing={1}
+                    >
                       <img
                         src={getTokenImageUrl(token.issuer, token.currency)}
                         alt={decodeCurrency(token.currency)}
@@ -296,12 +311,13 @@ const RichList = ({ token, amm }) => {
                     </Stack>
                   </TableCell>
                   <TableCell align="right">
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        color: parseFloat(percentOfSupply) > 10 
-                          ? theme.palette.warning.main 
-                          : theme.palette.text.primary 
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color:
+                          parseFloat(percentOfSupply) > 10
+                            ? theme.palette.warning.main
+                            : theme.palette.text.primary
                       }}
                     >
                       {percentOfSupply}%
@@ -311,22 +327,25 @@ const RichList = ({ token, amm }) => {
                     {holder.balance24h !== undefined && holder.balance24h !== null ? (
                       (() => {
                         const change = parseFloat(holder.balance) - parseFloat(holder.balance24h);
-                        const changePercent = holder.balance24h > 0 
-                          ? ((change / parseFloat(holder.balance24h)) * 100).toFixed(2)
-                          : 0;
+                        const changePercent =
+                          holder.balance24h > 0
+                            ? ((change / parseFloat(holder.balance24h)) * 100).toFixed(2)
+                            : 0;
                         const isPositive = change >= 0;
-                        
+
                         return (
-                          <Typography 
-                            variant="body2" 
+                          <Typography
+                            variant="body2"
                             fontWeight="600"
-                            sx={{ 
-                              color: isPositive 
-                                ? theme.palette.success.main 
-                                : theme.palette.error.main 
+                            sx={{
+                              color: isPositive
+                                ? theme.palette.success.main
+                                : theme.palette.error.main
                             }}
                           >
-                            {isPositive ? '▲' : '▼'} {formatNumber(Math.abs(change))} ({isPositive ? '+' : ''}{changePercent}%)
+                            {isPositive ? '▲' : '▼'} {formatNumber(Math.abs(change))} (
+                            {isPositive ? '+' : ''}
+                            {changePercent}%)
                           </Typography>
                         );
                       })()

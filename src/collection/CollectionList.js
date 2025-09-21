@@ -33,153 +33,165 @@ import dynamic from 'next/dynamic';
 const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   ssr: false,
   loading: () => (
-    <div style={{
-      width: '260px',
-      height: '60px',
-      background: 'rgba(128, 128, 128, 0.05)',
-      borderRadius: '4px'
-    }} />
+    <div
+      style={{
+        width: '260px',
+        height: '60px',
+        background: 'rgba(128, 128, 128, 0.05)',
+        borderRadius: '4px'
+      }}
+    />
   )
 });
 
 // Optimized chart wrapper with direct canvas rendering
-const OptimizedChart = memo(({ salesData, darkMode }) => {
-  const [isVisible, setIsVisible] = useState(false);
-  const chartRef = useRef(null);
-  const canvasRef = useRef(null);
-  const observerRef = useRef(null);
-  const theme = useTheme();
+const OptimizedChart = memo(
+  ({ salesData, darkMode }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const chartRef = useRef(null);
+    const canvasRef = useRef(null);
+    const observerRef = useRef(null);
+    const theme = useTheme();
 
-  useEffect(() => {
-    if (!chartRef.current) return;
+    useEffect(() => {
+      if (!chartRef.current) return;
 
-    observerRef.current = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          if (observerRef.current) {
-            observerRef.current.disconnect();
+      observerRef.current = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            if (observerRef.current) {
+              observerRef.current.disconnect();
+            }
           }
+        },
+        {
+          rootMargin: '100px',
+          threshold: 0.01
         }
-      },
-      {
-        rootMargin: '100px',
-        threshold: 0.01
-      }
-    );
+      );
 
-    observerRef.current.observe(chartRef.current);
+      observerRef.current.observe(chartRef.current);
 
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, []);
+      return () => {
+        if (observerRef.current) {
+          observerRef.current.disconnect();
+        }
+      };
+    }, []);
 
-  // Draw chart on canvas
-  useEffect(() => {
-    if (!salesData || !canvasRef.current || !isVisible) return;
+    // Draw chart on canvas
+    useEffect(() => {
+      if (!salesData || !canvasRef.current || !isVisible) return;
 
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
 
-    if (!salesData.length) return;
+      if (!salesData.length) return;
 
-    // Set canvas size
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+      // Set canvas size
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width * window.devicePixelRatio;
+      canvas.height = rect.height * window.devicePixelRatio;
+      ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-    const width = rect.width;
-    const height = rect.height;
+      const width = rect.width;
+      const height = rect.height;
 
-    // Clear canvas
-    ctx.clearRect(0, 0, width, height);
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
 
-    if (salesData.length < 2) return;
+      if (salesData.length < 2) return;
 
-    // Calculate min/max for scaling
-    const values = salesData.map(d => d.value);
-    const minValue = Math.min(...values);
-    const maxValue = Math.max(...values);
-    const range = maxValue - minValue;
+      // Calculate min/max for scaling
+      const values = salesData.map((d) => d.value);
+      const minValue = Math.min(...values);
+      const maxValue = Math.max(...values);
+      const range = maxValue - minValue;
 
-    // Scale points to canvas with padding
-    const padding = height * 0.1;
-    const chartHeight = height - (padding * 2);
+      // Scale points to canvas with padding
+      const padding = height * 0.1;
+      const chartHeight = height - padding * 2;
 
-    const points = salesData.map((item, index) => {
-      const x = (index / (salesData.length - 1)) * width;
-      const y = range === 0 ? height / 2 : padding + chartHeight - ((item.value - minValue) / range) * chartHeight;
-      return { x, y };
-    });
+      const points = salesData.map((item, index) => {
+        const x = (index / (salesData.length - 1)) * width;
+        const y =
+          range === 0
+            ? height / 2
+            : padding + chartHeight - ((item.value - minValue) / range) * chartHeight;
+        return { x, y };
+      });
 
-    const color = '#00AB55';
+      const color = '#00AB55';
 
-    // Draw gradient fill
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, color + '66');
-    gradient.addColorStop(1, color + '00');
+      // Draw gradient fill
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, color + '66');
+      gradient.addColorStop(1, color + '00');
 
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, height - padding);
-    points.forEach(point => ctx.lineTo(point.x, point.y));
-    ctx.lineTo(points[points.length - 1].x, height - padding);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, height - padding);
+      points.forEach((point) => ctx.lineTo(point.x, point.y));
+      ctx.lineTo(points[points.length - 1].x, height - padding);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
+      ctx.fill();
 
-    // Draw line
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    points.forEach(point => ctx.lineTo(point.x, point.y));
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
+      // Draw line
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
+      points.forEach((point) => ctx.lineTo(point.x, point.y));
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+    }, [salesData, isVisible, theme]);
 
-  }, [salesData, isVisible, theme]);
+    // Don't render chart until visible
+    if (!isVisible) {
+      return (
+        <div
+          ref={chartRef}
+          style={{
+            width: '260px',
+            height: '60px',
+            background: 'rgba(128, 128, 128, 0.05)',
+            borderRadius: '4px',
+            contain: 'layout size style'
+          }}
+        />
+      );
+    }
 
-  // Don't render chart until visible
-  if (!isVisible) {
     return (
       <div
         ref={chartRef}
         style={{
           width: '260px',
           height: '60px',
-          background: 'rgba(128, 128, 128, 0.05)',
-          borderRadius: '4px',
+          display: 'inline-block',
           contain: 'layout size style'
         }}
-      />
+      >
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'block'
+          }}
+        />
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    return (
+      JSON.stringify(prevProps.salesData) === JSON.stringify(nextProps.salesData) &&
+      prevProps.darkMode === nextProps.darkMode
     );
   }
-
-  return (
-    <div ref={chartRef} style={{
-      width: '260px',
-      height: '60px',
-      display: 'inline-block',
-      contain: 'layout size style'
-    }}>
-      <canvas
-        ref={canvasRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'block'
-        }}
-      />
-    </div>
-  );
-}, (prevProps, nextProps) => {
-  return JSON.stringify(prevProps.salesData) === JSON.stringify(nextProps.salesData) &&
-         prevProps.darkMode === nextProps.darkMode;
-});
+);
 
 OptimizedChart.displayName = 'OptimizedChart';
 
@@ -511,10 +523,10 @@ const Row = memo(({ id, item }) => {
     if (!graphData30d || !Array.isArray(graphData30d)) return null;
 
     const processedData = graphData30d
-      .filter(item => item && item.date)
-      .map(item => ({
+      .filter((item) => item && item.date)
+      .map((item) => ({
         date: item.date,
-        value: (item.sales || 0) // Use sales count for the chart
+        value: item.sales || 0 // Use sales count for the chart
       }))
       .slice(-30); // Get last 30 days
 
@@ -626,10 +638,9 @@ const Row = memo(({ id, item }) => {
                   color: darkMode ? '#919EAB' : '#637381'
                 }}
               >
-                {isMobile ?
-                  `${fIntNumber(items)} items • ${fIntNumber(owners)} owners • ${fIntNumber(sales24h || 0)} sales`
-                  : strDateTime
-                }
+                {isMobile
+                  ? `${fIntNumber(items)} items • ${fIntNumber(owners)} owners • ${fIntNumber(sales24h || 0)} sales`
+                  : strDateTime}
               </Typography>
             </Stack>
           </Link>
@@ -826,7 +837,12 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
   };
 
   return (
-    <Grid container rowSpacing={isMobile ? 1 : 2} alignItems="center" sx={{ mt: 0, px: isMobile ? 1 : 0 }}>
+    <Grid
+      container
+      rowSpacing={isMobile ? 1 : 2}
+      alignItems="center"
+      sx={{ mt: 0, px: isMobile ? 1 : 0 }}
+    >
       <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
         <Stack alignItems="center">
           <Pagination page={page + 1} onChange={handleChangePage} count={page_count} size="small" />
@@ -945,7 +961,6 @@ export default function CollectionList({ type, category }) {
     loadCollections();
   }, [sync, order, orderBy, page, rows]);
 
-
   const handleRequestSort = useCallback(
     (event, id) => {
       const isDesc = orderBy === id && order === 'desc';
@@ -956,7 +971,6 @@ export default function CollectionList({ type, category }) {
     },
     [orderBy, order, sync]
   );
-
 
   return (
     <>

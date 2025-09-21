@@ -97,7 +97,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
                     <AccountAvatar account={tx.Account} />
                     <Typography
                       variant="body2"
-                      onClick={() => window.location.href = `/profile/${tx.Account}`}
+                      onClick={() => (window.location.href = `/profile/${tx.Account}`)}
                       sx={{
                         color: 'primary.main',
                         textDecoration: 'none',
@@ -122,7 +122,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
                 <TableCell>
                   <Typography
                     variant="body2"
-                    onClick={() => window.location.href = `/tx/${tx.hash}`}
+                    onClick={() => (window.location.href = `/tx/${tx.hash}`)}
                     sx={{
                       color: 'primary.main',
                       textDecoration: 'none',

@@ -123,8 +123,8 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
           expandIcon={<ExpandMoreIcon />}
           id="panel-header"
           aria-controls="panel-content"
-          sx={{ 
-            minHeight: '52px', 
+          sx={{
+            minHeight: '52px',
             '&.Mui-expanded': { minHeight: '52px' },
             px: 1.5,
             '& .MuiAccordionSummary-content': {
@@ -132,15 +132,17 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             }
           }}
         >
-          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>Tokens</Typography>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>
+            Tokens
+          </Typography>
         </AccordionSummary>
         <AccordionDetails style={{ padding: '0', margin: '0' }}>
           <MenuItem sx={{ py: 1, px: 2 }} component={Link} href="/">
             <Typography sx={{ fontSize: '0.9rem' }}>All Tokens</Typography>
           </MenuItem>
-          
+
           <Divider sx={{ my: 0.5 }} />
-          
+
           <Typography
             variant="caption"
             sx={{
@@ -155,15 +157,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
           >
             Launchpads
           </Typography>
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/view/firstledger"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -171,15 +173,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
               <Typography sx={{ fontSize: '0.875rem' }}>FirstLedger</Typography>
             </Box>
           </MenuItem>
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/view/magnetic-x"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -187,15 +189,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
               <Typography sx={{ fontSize: '0.875rem' }}>Magnetic X</Typography>
             </Box>
           </MenuItem>
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/view/xpmarket"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -203,15 +205,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
               <Typography sx={{ fontSize: '0.875rem' }}>XPmarket</Typography>
             </Box>
           </MenuItem>
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/view/aigentrun"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -219,15 +221,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
               <Typography sx={{ fontSize: '0.875rem' }}>aigent.run</Typography>
             </Box>
           </MenuItem>
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/view/ledgermeme"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -235,15 +237,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
               <Typography sx={{ fontSize: '0.875rem' }}>LedgerMeme</Typography>
             </Box>
           </MenuItem>
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/view/horizon"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -268,15 +270,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             Discover
           </Typography>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/trending"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -285,15 +287,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             </Box>
           </MenuItem>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/spotlight"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -302,15 +304,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             </Box>
           </MenuItem>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/most-viewed"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -319,15 +321,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             </Box>
           </MenuItem>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/gainers/24h"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -336,15 +338,15 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             </Box>
           </MenuItem>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/new"
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
@@ -370,29 +372,29 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
             Analytics
           </Typography>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/market-metrics"
           >
             <Typography sx={{ fontSize: '0.875rem' }}>Market Metrics</Typography>
           </MenuItem>
 
-          <MenuItem 
-            sx={{ 
-              py: 0.75, 
+          <MenuItem
+            sx={{
+              py: 0.75,
               px: 2,
               '&:hover': {
                 backgroundColor: 'action.hover'
               }
-            }} 
-            component={Link} 
+            }}
+            component={Link}
             href="/top-traders"
           >
             <Typography sx={{ fontSize: '0.875rem' }}>Top Traders</Typography>
@@ -401,21 +403,20 @@ export default function SidebarDrawer({ toggleDrawer, isOpen }) {
       </Accordion>
       <Link underline="none" color="inherit" href="/collections" rel="noreferrer noopener nofollow">
         <MenuItem sx={{ py: 1.5, px: 2, minHeight: '52px' }}>
-          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>NFTs</Typography>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>
+            NFTs
+          </Typography>
         </MenuItem>
       </Link>
       <Link underline="none" color="inherit" href="/swap" rel="noreferrer noopener nofollow">
         <MenuItem sx={{ py: 1.5, px: 2, minHeight: '52px' }}>
-          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>Swap</Typography>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>
+            Swap
+          </Typography>
         </MenuItem>
       </Link>
       <Divider sx={{ my: 2 }} />
-      <Stack
-        direction="column"
-        spacing={2}
-        sx={{ px: 2, pb: 3 }}
-        alignItems="stretch"
-      >
+      <Stack direction="column" spacing={2} sx={{ px: 2, pb: 3 }} alignItems="stretch">
         <Box sx={{ width: '100%' }}>
           <Wallet />
         </Box>

@@ -44,15 +44,11 @@ const colors = {
     black2: 'linear-gradient(60deg, #29323c 0%, #485563 100%)'
   },
   shadows: {
-    success:
-      '0px 1px 4px rgba(68, 214, 0, 0.25), 0px 3px 12px 2px rgba(68, 214, 0, 0.35)',
-    error:
-      '0px 1px 4px rgba(255, 25, 67, 0.25), 0px 3px 12px 2px rgba(255, 25, 67, 0.35)',
+    success: '0px 1px 4px rgba(68, 214, 0, 0.25), 0px 3px 12px 2px rgba(68, 214, 0, 0.35)',
+    error: '0px 1px 4px rgba(255, 25, 67, 0.25), 0px 3px 12px 2px rgba(255, 25, 67, 0.35)',
     info: '0px 1px 4px rgba(51, 194, 255, 0.25), 0px 3px 12px 2px rgba(51, 194, 255, 0.35)',
-    primary:
-      '0px 1px 4px rgba(20, 125, 254, 0.25), 0px 3px 12px 2px rgba(20, 125, 254, 0.35)',
-    warning:
-      '0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)',
+    primary: '0px 1px 4px rgba(20, 125, 254, 0.25), 0px 3px 12px 2px rgba(20, 125, 254, 0.35)',
+    warning: '0px 1px 4px rgba(255, 163, 25, 0.25), 0px 3px 12px 2px rgba(255, 163, 25, 0.35)',
     card: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
     cardSm: '0px 1px 2px rgba(0, 0, 0, 0.05)',
     cardMd: '0px 4px 6px -1px rgba(0, 0, 0, 0.1), 0px 2px 4px -1px rgba(0, 0, 0, 0.06)',
@@ -166,8 +162,8 @@ export const XrplToLightTheme = createTheme({
     h4: { fontFamily: "'JetBrains Mono', monospace" },
     h5: { fontFamily: "'JetBrains Mono', monospace" },
     h6: { fontFamily: "'JetBrains Mono', monospace" },
-    body1: { fontVariantNumeric: "tabular-nums" },
-    body2: { fontVariantNumeric: "tabular-nums" }
+    body1: { fontVariantNumeric: 'tabular-nums' },
+    body2: { fontVariantNumeric: 'tabular-nums' }
   },
   colors: {
     gradients: {
@@ -264,13 +260,13 @@ export const XrplToLightTheme = createTheme({
     borderRadius: '12px',
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
-    backgroundAlt: "#F8FAFC",
-    backgroundAsset: "#F1F5F9",
-    backgroundTrait: "#E0F2FE",
-    borderTrait: "#0EA5E9",
-    surfaceElevated: "#FFFFFF",
-    surfaceHover: "#F8FAFC",
-    surfacePressed: "#F1F5F9"
+    backgroundAlt: '#F8FAFC',
+    backgroundAsset: '#F1F5F9',
+    backgroundTrait: '#E0F2FE',
+    borderTrait: '#0EA5E9',
+    surfaceElevated: '#FFFFFF',
+    surfaceHover: '#F8FAFC',
+    surfacePressed: '#F1F5F9'
   },
   sidebar: {
     background: colors.layout.sidebar.background,
@@ -283,8 +279,7 @@ export const XrplToLightTheme = createTheme({
     menuItemIconColor: colors.layout.sidebar.menuItemIconColor,
     menuItemIconColorActive: colors.layout.sidebar.menuItemIconColorActive,
     menuItemHeadingColor: colors.layout.sidebar.menuItemHeadingColor,
-    boxShadow:
-      '2px 0 8px rgba(0, 0, 0, 0.1)',
+    boxShadow: '2px 0 8px rgba(0, 0, 0, 0.1)',
     width: '290px'
   },
   header: {
@@ -301,13 +296,13 @@ export const XrplToLightTheme = createTheme({
     background2: '#F8F9FA',
     border: '1px solid #E0E7EC'
   },
-  
+
   chart: {
     background: '#FFFFFF',
     gridColor: '#F1F5F9',
     borderColor: '#E2E8F0'
   },
-  
+
   walletDialog: {
     background: '#FFFFFF',
     backgroundSecondary: alpha('#F8F9FA', 0.95),
@@ -339,7 +334,7 @@ export const XrplToLightTheme = createTheme({
       main: '#9c27b0',
       light: '#ba68c8',
       dark: '#7b1fa2',
-      contrastText: '#fff',
+      contrastText: '#fff'
     },
     error: {
       light: colors.error.light,
@@ -388,9 +383,9 @@ export const XrplToLightTheme = createTheme({
       activatedOpacity: 0.12
     },
     tx: {
-      light: "#fff",
-      main: "#000000",
-      dark: "#0f0f0f"
+      light: '#fff',
+      main: '#000000',
+      dark: '#0f0f0f'
     },
     tonalOffset: 0.5
   },
@@ -486,11 +481,7 @@ export const XrplToLightTheme = createTheme({
           borderLeftColor: colors.primary.lighter
         },
         '#nprogress .peg': {
-          boxShadow:
-            '0 0 15px ' +
-            colors.primary.lighter +
-            ', 0 0 8px' +
-            colors.primary.light
+          boxShadow: '0 0 15px ' + colors.primary.lighter + ', 0 0 8px' + colors.primary.light
         },
         ':root': {
           '--swiper-theme-color': colors.primary.main
@@ -1212,7 +1203,7 @@ export const XrplToLightTheme = createTheme({
         },
         arrow: {
           background: alpha('#fff', 1),
-          color: colors.alpha.black[100],
+          color: colors.alpha.black[100]
         }
       }
     },
@@ -1238,10 +1229,7 @@ export const XrplToLightTheme = createTheme({
         thumb: {
           border: '1px solid ' + colors.alpha.black[30],
           boxShadow:
-            '0px 9px 14px ' +
-            colors.alpha.black[10] +
-            ', 0px 2px 2px ' +
-            colors.alpha.black[10]
+            '0px 9px 14px ' + colors.alpha.black[10] + ', 0px 2px 2px ' + colors.alpha.black[10]
         },
         track: {
           backgroundColor: colors.alpha.black[5],
@@ -1324,7 +1312,7 @@ export const XrplToLightTheme = createTheme({
           s16: 'span',
           s17: 'span',
           s18: 'span',
-          modal: "h1"
+          modal: 'h1'
         }
       },
       styleOverrides: {
@@ -1343,11 +1331,11 @@ export const XrplToLightTheme = createTheme({
             fontWeight: 600,
             fontSize: 28,
             [theme.breakpoints.up('md')]: {
-              fontSize: 32,
+              fontSize: 32
             },
             [theme.breakpoints.up('lg')]: {
-              fontSize: 40,
-            },
+              fontSize: 40
+            }
           })
         },
         {
@@ -1356,8 +1344,8 @@ export const XrplToLightTheme = createTheme({
             fontWeight: 600,
             fontSize: 18,
             [theme.breakpoints.up('md')]: {
-              fontSize: 24,
-            },
+              fontSize: 24
+            }
           })
         },
         {
@@ -1368,8 +1356,8 @@ export const XrplToLightTheme = createTheme({
             lineHeight: 1.4,
             color: colors.alpha.black[100],
             [theme.breakpoints.up('md')]: {
-              fontSize: 20,
-            },
+              fontSize: 20
+            }
           })
         },
         {
@@ -1379,8 +1367,8 @@ export const XrplToLightTheme = createTheme({
             fontSize: 12,
             color: colors.alpha.black[50],
             [theme.breakpoints.up('sm')]: {
-              fontSize: 16,
-            },
+              fontSize: 16
+            }
           })
         },
         {
@@ -1390,8 +1378,8 @@ export const XrplToLightTheme = createTheme({
             fontSize: 14,
             color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
-              fontSize: 20,
-            },
+              fontSize: 20
+            }
           })
         },
         {
@@ -1401,11 +1389,11 @@ export const XrplToLightTheme = createTheme({
             fontSize: 11,
             // color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
-              fontSize: 13,
-            },
+              fontSize: 13
+            }
           })
         }
-      ],
+      ]
     }
   },
   shape: {
@@ -1480,11 +1468,11 @@ export const XrplToLightTheme = createTheme({
     },
     h1: {
       fontWeight: 700,
-      fontSize: '1.2rem'// 35
+      fontSize: '1.2rem' // 35
     },
     h1_trustline: {
       fontWeight: 700,
-      fontSize: '1.2rem'// 35
+      fontSize: '1.2rem' // 35
     },
     h2: {
       fontWeight: 700,
@@ -1506,7 +1494,7 @@ export const XrplToLightTheme = createTheme({
     // },
     h4: {
       fontWeight: 600,
-      fontSize: 16,
+      fontSize: 16
     },
     h4a: {
       fontSize: 14,
@@ -1539,42 +1527,42 @@ export const XrplToLightTheme = createTheme({
     // },
     kyc: {
       fontSize: 10,
-      color: "#34B60C",
+      color: '#34B60C',
       borderRadius: '6px',
       border: '0.05em solid #34B60C',
       paddingLeft: '2px',
-      paddingRight: '2px',
+      paddingRight: '2px'
     },
     kyc2: {
       fontSize: 11,
-      color: "#34B60C",
+      color: '#34B60C',
       borderRadius: '8px',
       border: '0.05em solid #34B60C',
       paddingLeft: '2px',
-      paddingRight: '2px',
+      paddingRight: '2px'
     },
     nokyc: {
       fontSize: 10,
-      color: "#454F5B",
+      color: '#454F5B',
       borderRadius: '6px',
       border: '0.05em solid #454F5B',
       paddingLeft: '2px',
-      paddingRight: '2px',
+      paddingRight: '2px'
     },
     token: {
       fontWeight: 700,
       fontSize: 16,
-      color: "#3366FF"
+      color: '#3366FF'
     },
     desc: {
       fontWeight: 700,
       fontSize: '1.25rem',
-      lineHeight: 1.5,
+      lineHeight: 1.5
     },
     price: {
       fontWeight: 700,
       fontSize: '2rem',
-      lineHeight: 1.5,
+      lineHeight: 1.5
     },
     small: {
       fontSize: 12
@@ -1637,7 +1625,7 @@ export const XrplToLightTheme = createTheme({
     },
     s11: {
       fontWeight: 400,
-      fontSize: 12,
+      fontSize: 12
     },
     s12: {
       fontWeight: 400,
@@ -1652,7 +1640,7 @@ export const XrplToLightTheme = createTheme({
     s15: {
       fontWeight: 700,
       fontSize: 18,
-      color: "#000000"
+      color: '#000000'
     },
     s17: {
       fontWeight: 400,
@@ -1665,9 +1653,9 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[100]
     },
     modal: {
-      fontSize: "2em",
-      display: "block",
-      background: "#ffffff"
+      fontSize: '2em',
+      display: 'block',
+      background: '#ffffff'
     }
   },
   shadows: [

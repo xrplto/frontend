@@ -35,20 +35,20 @@ import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 
-const ReactECharts = dynamic(
-  () => import('echarts-for-react'),
-  { ssr: false, loading: () => <div>Loading chart...</div> }
-);
+const ReactECharts = dynamic(() => import('echarts-for-react'), {
+  ssr: false,
+  loading: () => <div>Loading chart...</div>
+});
 
 // Generate color from string hash
 const generateColorFromString = (str, saturation = 70, lightness = 50) => {
   if (!str) return '#007B55';
-  
+
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     hash = str.charCodeAt(i) + ((hash << 5) - hash);
   }
-  
+
   const hue = Math.abs(hash) % 360;
   return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
 };
@@ -82,10 +82,7 @@ const processAssetDistribution = async (trustlines, theme) => {
   const data = topAssets.map((asset) => parseFloat(asset.value) || 0);
 
   if (otherAssets.length > 0) {
-    const othersValue = otherAssets.reduce(
-      (sum, asset) => sum + (parseFloat(asset.value) || 0),
-      0
-    );
+    const othersValue = otherAssets.reduce((sum, asset) => sum + (parseFloat(asset.value) || 0), 0);
     labels.push('Others');
     data.push(othersValue);
   }
@@ -122,7 +119,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
   const theme = useTheme();
   const { activeFiatCurrency, openSnackbar, accountProfile, setSync } = useContext(AppContext);
   const BASE_URL = process.env.API_URL;
-  
+
   const [dialogState, setDialogState] = useState({
     openScanQR: false,
     openConfirm: false,
@@ -144,33 +141,33 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
       openSnackbar('You are not the owner of this account!', 'error');
       return;
     }
-    setDialogState(prev => ({ ...prev, xamanStep: token.balance > 0 ? 1 : 3 }));
+    setDialogState((prev) => ({ ...prev, xamanStep: token.balance > 0 ? 1 : 3 }));
   };
 
   const handleConfirmClose = () => {
-    setDialogState(prev => ({ ...prev, openConfirm: false, xamanStep: 0 }));
-    setSync(prev => !prev);
+    setDialogState((prev) => ({ ...prev, openConfirm: false, xamanStep: 0 }));
+    setSync((prev) => !prev);
   };
 
   const handleScanQRClose = () => {
-    setDialogState(prev => ({ ...prev, openScanQR: false }));
+    setDialogState((prev) => ({ ...prev, openScanQR: false }));
     if (dialogState.uuid) {
       axios.delete(`${BASE_URL}/xumm/logout/${dialogState.uuid}`);
-      setDialogState(prev => ({ ...prev, uuid: null }));
+      setDialogState((prev) => ({ ...prev, uuid: null }));
     }
   };
 
   const value = useMemo(() => {
     const xrpToFiat = exchRate ? 1 / exchRate : 0;
-    
+
     if (isXRP) {
       return (token.balance || 0) * xrpToFiat;
     }
-    
+
     if (token.value !== undefined && token.value !== null) {
       return Number(token.value) * xrpToFiat;
     }
-    
+
     if (!token.balance || !token.exch) return 0;
     return Number(token.balance) * Number(token.exch) * xrpToFiat;
   }, [token, isXRP, exchRate]);
@@ -222,7 +219,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   }
                 }}
               />
-              
+
               <Box flex={1} minWidth={0}>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <Typography
@@ -236,28 +233,28 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                       whiteSpace: 'nowrap'
                     }}
                   >
-                    {isXRP ? 'XRP' : (token.name || token.currencyName || token.currency)}
+                    {isXRP ? 'XRP' : token.name || token.currencyName || token.currency}
                   </Typography>
                   {(isXRP || token.verified) && (
                     <VerifiedIcon sx={{ fontSize: 12, color: theme.palette.success.main }} />
                   )}
                   {!isXRP && token.origin && (
-                    <Chip 
-                      label={token.origin} 
-                      size="small" 
-                      sx={{ 
-                        height: 14, 
+                    <Chip
+                      label={token.origin}
+                      size="small"
+                      sx={{
+                        height: 14,
                         fontSize: '0.65rem',
                         '& .MuiChip-label': { px: 0.5 }
                       }}
                     />
                   )}
                 </Stack>
-                
+
                 {!isXRP && token.issuer && (
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
+                  <Typography
+                    variant="caption"
+                    sx={{
                       fontSize: { xs: '0.65rem', sm: '0.7rem' },
                       color: theme.palette.text.secondary,
                       fontFamily: 'monospace'
@@ -267,9 +264,9 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
                   </Typography>
                 )}
                 {isXRP && (
-                  <Typography 
-                    variant="caption" 
-                    sx={{ 
+                  <Typography
+                    variant="caption"
+                    sx={{
                       fontSize: { xs: '0.65rem', sm: '0.7rem' },
                       color: theme.palette.text.secondary,
                       visibility: 'hidden'
@@ -281,51 +278,74 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
               </Box>
             </Stack>
 
-            <Stack 
-              direction="row" 
-              spacing={{ xs: 2, sm: 3 }} 
+            <Stack
+              direction="row"
+              spacing={{ xs: 2, sm: 3 }}
               alignItems="center"
               sx={{ ml: 'auto' }}
             >
               <Box sx={{ textAlign: 'right', minWidth: { xs: 60, sm: 80 } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}
+                >
                   Balance
                 </Typography>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: { xs: '0.65rem', sm: '0.75rem' }, lineHeight: 1.2 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: { xs: '0.65rem', sm: '0.75rem' },
+                    lineHeight: 1.2
+                  }}
+                >
                   {formatBalance(token.balance)}
                 </Typography>
               </Box>
-              
+
               <Box sx={{ textAlign: 'right', minWidth: { xs: 50, sm: 70 } }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}
+                >
                   Value
                 </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: 700, 
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 700,
                     fontSize: { xs: '0.65rem', sm: '0.75rem' },
                     color: theme.palette.primary.main,
                     lineHeight: 1.2
                   }}
                 >
-                  {currencySymbols[activeFiatCurrency]}{value.toFixed(2)}
+                  {currencySymbols[activeFiatCurrency]}
+                  {value.toFixed(2)}
                 </Typography>
               </Box>
-              
+
               <Box sx={{ textAlign: 'right', display: { xs: 'none', sm: 'block' }, minWidth: 50 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.55rem', display: 'block', lineHeight: 1.1 }}
+                >
                   % Owned
                 </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    fontWeight: 600, 
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
                     fontSize: { xs: '0.7rem', sm: '0.8rem' },
                     lineHeight: 1.3,
-                    color: percentOwned > 50 ? theme.palette.error.main : 
-                           percentOwned > 20 ? theme.palette.warning.main : 
-                           theme.palette.success.main
+                    color:
+                      percentOwned > 50
+                        ? theme.palette.error.main
+                        : percentOwned > 20
+                          ? theme.palette.warning.main
+                          : theme.palette.success.main
                   }}
                 >
                   {percentOwned}%
@@ -360,7 +380,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
         qrUrl={dialogState.qrUrl}
         nextUrl={dialogState.nextUrl}
       />
-      
+
       <CustomDialog
         open={dialogState.openConfirm}
         content={dialogState.content}
@@ -380,7 +400,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency];
   const BASE_URL = process.env.API_URL;
-  
+
   const [loading, setLoading] = useState(false);
   const [lines, setLines] = useState([]);
   const [showAll, setShowAll] = useState(false);
@@ -392,12 +412,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const [totalCount, setTotalCount] = useState(0);
   const [allLines, setAllLines] = useState([]);
   const [loadingMore, setLoadingMore] = useState(false);
-  
+
   const ITEMS_PER_PAGE = 10;
   const DISPLAY_PER_PAGE = 5;
-  
+
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  
+
   useWebSocket(WSS_FEED_URL, {
     onMessage: (event) => {
       try {
@@ -418,18 +438,21 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
       setCurrentPage(0);
       setAllLines([]);
       try {
-        const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=${ITEMS_PER_PAGE}&page=0`, {
-          signal: controller.signal
-        });
+        const res = await axios.get(
+          `${BASE_URL}/trustlines/${account}?sortByValue=true&limit=${ITEMS_PER_PAGE}&page=0`,
+          {
+            signal: controller.signal
+          }
+        );
         if (res.data?.result === 'success') {
           const trustlines = res.data.lines || [];
           setAllLines(trustlines);
           setLines(trustlines);
-          
+
           const total = res.data.totalCount || res.data.total || trustlines.length;
           setTotalCount(total);
           setTotalPages(Math.ceil(total / ITEMS_PER_PAGE));
-          
+
           if (res.data.xrpToken) {
             setXrpTokenData(res.data.xrpToken);
           }
@@ -442,26 +465,28 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
         setLoading(false);
       }
     };
-    
+
     if (account) {
       fetchLines();
     }
-    
+
     return () => controller.abort();
   }, [account, sync, BASE_URL]);
-  
+
   // Function to load more pages
   const loadMorePages = async (pageNum) => {
     if (loadingMore || pageNum >= totalPages) return;
-    
+
     setLoadingMore(true);
     try {
-      const res = await axios.get(`${BASE_URL}/trustlines/${account}?sortByValue=true&limit=${ITEMS_PER_PAGE}&page=${pageNum}`);
+      const res = await axios.get(
+        `${BASE_URL}/trustlines/${account}?sortByValue=true&limit=${ITEMS_PER_PAGE}&page=${pageNum}`
+      );
       if (res.data?.result === 'success' && res.data.lines) {
         const newLines = res.data.lines;
         const updatedLines = [...allLines, ...newLines];
         setAllLines(updatedLines);
-        
+
         // Update displayed lines based on current view
         const startIdx = currentPage * DISPLAY_PER_PAGE;
         const endIdx = startIdx + DISPLAY_PER_PAGE;
@@ -473,15 +498,15 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
       setLoadingMore(false);
     }
   };
-  
+
   // Handle page change
   const handlePageChange = async (newPage) => {
     if (newPage < 0 || newPage >= Math.ceil(totalCount / DISPLAY_PER_PAGE)) return;
-    
+
     setCurrentPage(newPage);
     const startIdx = newPage * DISPLAY_PER_PAGE;
     const endIdx = startIdx + DISPLAY_PER_PAGE;
-    
+
     // Check if we need to load more data from API
     const apiPageNeeded = Math.floor(endIdx / ITEMS_PER_PAGE);
     if (apiPageNeeded * ITEMS_PER_PAGE >= allLines.length && allLines.length < totalCount) {
@@ -496,24 +521,24 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   useEffect(() => {
     const processData = async () => {
       const xrpToFiat = exchRate ? 1 / exchRate : 0;
-      
+
       const trustlinesSum = lines.reduce((acc, line) => {
         if (line.value !== undefined && line.value !== null) {
-          return acc + (Number(line.value) * xrpToFiat);
+          return acc + Number(line.value) * xrpToFiat;
         }
         const balance = parseFloat(line.balance) || 0;
         const exch = parseFloat(line.exch) || 0;
-        return acc + (balance * exch * xrpToFiat);
+        return acc + balance * exch * xrpToFiat;
       }, 0);
       const xrpValue = (xrpBalance || 0) * xrpToFiat;
       const totalSum = trustlinesSum + xrpValue;
-      
+
       if (onUpdateTotalValue) {
         onUpdateTotalValue(totalSum);
       }
-      
+
       const allAssets = [];
-      
+
       if (xrpBalance > 0 && xrpTokenData) {
         allAssets.push({
           ...xrpTokenData,
@@ -522,19 +547,19 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           isXRP: true
         });
       }
-      
+
       allAssets.push(...lines);
-      
+
       if (onTrustlinesData) {
         onTrustlinesData(allAssets);
       }
-      
+
       setSortedAssets(allAssets);
-      
+
       const pieData = await processAssetDistribution(allAssets, theme);
       setAssetDistribution(pieData);
     };
-    
+
     processData();
   }, [lines, xrpBalance, exchRate, onUpdateTotalValue, onTrustlinesData, theme, xrpTokenData]);
 
@@ -554,7 +579,9 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     return (
       <Box sx={{ p: 4, textAlign: 'center' }}>
         <WalletIcon sx={{ fontSize: 48, color: theme.palette.text.secondary, mb: 2 }} />
-        <Typography variant="h6" gutterBottom>No Assets Found</Typography>
+        <Typography variant="h6" gutterBottom>
+          No Assets Found
+        </Typography>
         <Typography variant="body2" color="text.secondary">
           This account doesn't have any tokens yet
         </Typography>
@@ -565,9 +592,10 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   return (
     <Box
       sx={{
-        background: theme.palette.mode === 'dark'
-          ? alpha(theme.palette.background.paper, 0.4)
-          : alpha(theme.palette.background.paper, 0.8),
+        background:
+          theme.palette.mode === 'dark'
+            ? alpha(theme.palette.background.paper, 0.4)
+            : alpha(theme.palette.background.paper, 0.8),
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
         borderRadius: '12px',
@@ -608,28 +636,51 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           >
             {(() => {
               try {
-                if (!assetDistribution || !assetDistribution.series || assetDistribution.series.length === 0) {
+                if (
+                  !assetDistribution ||
+                  !assetDistribution.series ||
+                  assetDistribution.series.length === 0
+                ) {
                   return (
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: theme.palette.text.secondary }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: theme.palette.text.secondary
+                      }}
+                    >
                       <Typography variant="body2">No asset data available</Typography>
                     </Box>
                   );
                 }
 
-                const chartData = assetDistribution.labels?.map((label, index) => {
-                  const value = parseFloat(assetDistribution.series[index]) || 0;
-                  return {
-                    name: label,
-                    value: value,
-                    itemStyle: {
-                      color: assetDistribution.colors[index]
-                    }
-                  };
-                }).filter(item => item.value > 0) || [];
+                const chartData =
+                  assetDistribution.labels
+                    ?.map((label, index) => {
+                      const value = parseFloat(assetDistribution.series[index]) || 0;
+                      return {
+                        name: label,
+                        value: value,
+                        itemStyle: {
+                          color: assetDistribution.colors[index]
+                        }
+                      };
+                    })
+                    .filter((item) => item.value > 0) || [];
 
                 if (chartData.length === 0) {
                   return (
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: theme.palette.text.secondary }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        height: '100%',
+                        color: theme.palette.text.secondary
+                      }}
+                    >
                       <Typography variant="body2">No positive balances</Typography>
                     </Box>
                   );
@@ -646,15 +697,18 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                           backgroundColor: 'transparent',
                           tooltip: {
                             trigger: 'item',
-                            backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.8)' : 'rgba(255, 255, 255, 0.8)',
+                            backgroundColor:
+                              theme.palette.mode === 'dark'
+                                ? 'rgba(0, 0, 0, 0.8)'
+                                : 'rgba(255, 255, 255, 0.8)',
                             borderColor: theme.palette.divider,
                             borderWidth: 1,
                             borderRadius: 8,
-                            textStyle: { 
+                            textStyle: {
                               color: theme.palette.text.primary,
                               fontSize: 11
                             },
-                            formatter: function(params) {
+                            formatter: function (params) {
                               const percentage = params.percent || 0;
                               return `<div style="padding: 4px;">
                                 <b style="font-size: 11px">${params.name}</b><br/>
@@ -663,33 +717,35 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                               </div>`;
                             }
                           },
-                          series: [{
-                            name: 'Assets',
-                            type: 'pie',
-                            radius: ['60%', '85%'], // Inner and outer radius for donut chart
-                            center: ['50%', '50%'],
-                            data: chartData,
-                            label: {
-                              show: false
-                            },
-                            emphasis: {
+                          series: [
+                            {
+                              name: 'Assets',
+                              type: 'pie',
+                              radius: ['60%', '85%'], // Inner and outer radius for donut chart
+                              center: ['50%', '50%'],
+                              data: chartData,
+                              label: {
+                                show: false
+                              },
+                              emphasis: {
+                                itemStyle: {
+                                  shadowBlur: 10,
+                                  shadowOffsetX: 0,
+                                  shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                }
+                              },
                               itemStyle: {
-                                shadowBlur: 10,
-                                shadowOffsetX: 0,
-                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                borderRadius: 2,
+                                borderColor: theme.palette.background.paper,
+                                borderWidth: 1
+                              },
+                              animationType: 'scale',
+                              animationEasing: 'elasticOut',
+                              animationDelay: function (idx) {
+                                return Math.random() * 200;
                               }
-                            },
-                            itemStyle: {
-                              borderRadius: 2,
-                              borderColor: theme.palette.background.paper,
-                              borderWidth: 1
-                            },
-                            animationType: 'scale',
-                            animationEasing: 'elasticOut',
-                            animationDelay: function (idx) {
-                              return Math.random() * 200;
                             }
-                          }]
+                          ]
                         }}
                         opts={{ renderer: 'svg' }}
                       />
@@ -737,7 +793,17 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               } catch (error) {
                 console.error('Error rendering pie chart:', error);
                 return (
-                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: theme.palette.error.main, flexDirection: 'column', gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      height: '100%',
+                      color: theme.palette.error.main,
+                      flexDirection: 'column',
+                      gap: 1
+                    }}
+                  >
                     <Typography variant="body2">Error loading chart</Typography>
                     <Typography variant="caption" color="text.secondary">
                       {error.message || 'Please try again later'}
@@ -801,7 +867,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     >
                       {parseFloat(assetDistribution.series[index]).toLocaleString('en-US', {
                         maximumFractionDigits: 3
-                      })} XRP
+                      })}{' '}
+                      XRP
                     </Typography>
                   </Box>
                 ))}
@@ -824,32 +891,57 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
             >
               <Stack direction="row" alignItems="center" justifyContent="space-between">
                 <Stack direction="row" alignItems="center" spacing={1.5}>
-                  <TrendingIcon sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }} />
+                  <TrendingIcon
+                    sx={{ fontSize: { xs: 24, sm: 28 }, color: theme.palette.primary.main }}
+                  />
                   <Box>
-                    <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', sm: '1.1rem' } }}>
+                    <Typography
+                      variant="h6"
+                      sx={{ fontWeight: 700, fontSize: { xs: '0.95rem', sm: '1.1rem' } }}
+                    >
                       Portfolio Overview
                     </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>
-                      {totalCount > 0 ? totalCount : sortedAssets.length} assets {currentPage > 0 && `(Page ${currentPage + 1}/${totalDisplayPages})`}
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
+                    >
+                      {totalCount > 0 ? totalCount : sortedAssets.length} assets{' '}
+                      {currentPage > 0 && `(Page ${currentPage + 1}/${totalDisplayPages})`}
                     </Typography>
                   </Box>
                 </Stack>
-                
+
                 <Box textAlign="right">
-                  <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}>Total Value</Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.primary.main, fontSize: { xs: '1.1rem', sm: '1.3rem' } }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: { xs: '0.7rem', sm: '0.8rem' } }}
+                  >
+                    Total Value
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      fontWeight: 700,
+                      color: theme.palette.primary.main,
+                      fontSize: { xs: '1.1rem', sm: '1.3rem' }
+                    }}
+                  >
                     {currencySymbols[activeFiatCurrency]}
                     {(() => {
                       const xrpToFiat = exchRate ? 1 / exchRate : 0;
-                      return ((lines.reduce((acc, line) => {
-                        if (line.value !== undefined && line.value !== null) {
-                          return acc + (Number(line.value) * xrpToFiat);
-                        }
-                        const balance = parseFloat(line.balance) || 0;
-                        const exch = parseFloat(line.exch) || 0;
-                        return acc + (balance * exch * xrpToFiat);
-                      }, 0) + 
-                        ((xrpBalance || 0) * xrpToFiat))).toFixed(2);
+                      return (
+                        lines.reduce((acc, line) => {
+                          if (line.value !== undefined && line.value !== null) {
+                            return acc + Number(line.value) * xrpToFiat;
+                          }
+                          const balance = parseFloat(line.balance) || 0;
+                          const exch = parseFloat(line.exch) || 0;
+                          return acc + balance * exch * xrpToFiat;
+                        }, 0) +
+                        (xrpBalance || 0) * xrpToFiat
+                      ).toFixed(2);
                     })()}
                   </Typography>
                 </Box>
@@ -864,7 +956,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     <Fade in timeout={300 + index * 50} key="XRP">
                       <Box>
                         <TokenCard
-                          token={{ 
+                          token={{
                             balance: asset.balance,
                             supply: asset.supply,
                             value: asset.value
@@ -877,7 +969,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     </Fade>
                   );
                 }
-                
+
                 const tokenData = {
                   ...asset,
                   currencyName: asset.name || asset.currency,
@@ -889,7 +981,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   name: asset.name,
                   exch: asset.exch || 0
                 };
-                
+
                 return (
                   <Fade in timeout={300 + index * 50} key={`${asset.currency}-${asset.issuer}`}>
                     <Box>
@@ -902,13 +994,15 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
             {/* Pagination Controls */}
             {hasMorePages && (
-              <Box sx={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                alignItems: 'center', 
-                gap: 1.5,
-                mt: 1 
-              }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: 1.5,
+                  mt: 1
+                }}
+              >
                 <IconButton
                   size="small"
                   onClick={() => handlePageChange(currentPage - 1)}
@@ -925,7 +1019,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 >
                   <NavigateBeforeIcon sx={{ fontSize: 20 }} />
                 </IconButton>
-                
+
                 <Stack direction="row" spacing={0.5} alignItems="center">
                   {/* Page numbers */}
                   {(() => {
@@ -933,19 +1027,19 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     const maxVisible = 5;
                     let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
                     let end = Math.min(totalDisplayPages, start + maxVisible);
-                    
+
                     if (end - start < maxVisible) {
                       start = Math.max(0, end - maxVisible);
                     }
-                    
+
                     if (start > 0) {
                       pages.push(
                         <Button
                           key={0}
                           size="small"
                           onClick={() => handlePageChange(0)}
-                          sx={{ 
-                            minWidth: 32, 
+                          sx={{
+                            minWidth: 32,
                             height: 28,
                             fontSize: '0.75rem',
                             px: 1
@@ -956,11 +1050,13 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       );
                       if (start > 1) {
                         pages.push(
-                          <Typography key="dots1" variant="caption" sx={{ px: 0.5 }}>...</Typography>
+                          <Typography key="dots1" variant="caption" sx={{ px: 0.5 }}>
+                            ...
+                          </Typography>
                         );
                       }
                     }
-                    
+
                     for (let i = start; i < end; i++) {
                       pages.push(
                         <Button
@@ -969,8 +1065,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                           variant={currentPage === i ? 'contained' : 'text'}
                           onClick={() => handlePageChange(i)}
                           disabled={loadingMore}
-                          sx={{ 
-                            minWidth: 32, 
+                          sx={{
+                            minWidth: 32,
                             height: 28,
                             fontSize: '0.75rem',
                             px: 1,
@@ -987,11 +1083,13 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                         </Button>
                       );
                     }
-                    
+
                     if (end < totalDisplayPages) {
                       if (end < totalDisplayPages - 1) {
                         pages.push(
-                          <Typography key="dots2" variant="caption" sx={{ px: 0.5 }}>...</Typography>
+                          <Typography key="dots2" variant="caption" sx={{ px: 0.5 }}>
+                            ...
+                          </Typography>
                         );
                       }
                       pages.push(
@@ -999,8 +1097,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                           key={totalDisplayPages - 1}
                           size="small"
                           onClick={() => handlePageChange(totalDisplayPages - 1)}
-                          sx={{ 
-                            minWidth: 32, 
+                          sx={{
+                            minWidth: 32,
                             height: 28,
                             fontSize: '0.75rem',
                             px: 1
@@ -1010,11 +1108,11 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                         </Button>
                       );
                     }
-                    
+
                     return pages;
                   })()}
                 </Stack>
-                
+
                 <IconButton
                   size="small"
                   onClick={() => handlePageChange(currentPage + 1)}
@@ -1031,10 +1129,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 >
                   <NavigateNextIcon sx={{ fontSize: 20 }} />
                 </IconButton>
-                
-                {loadingMore && (
-                  <CircularProgress size={20} sx={{ ml: 1 }} />
-                )}
+
+                {loadingMore && <CircularProgress size={20} sx={{ ml: 1 }} />}
               </Box>
             )}
           </Stack>

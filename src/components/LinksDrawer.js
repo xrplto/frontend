@@ -91,8 +91,18 @@ export default function LinksDrawer({ isOpen, toggleDrawer, token, getFullUrl })
             <Typography variant="h6" color="textPrimary" sx={{ mt: 2, ml: 2, mb: 1 }}>
               Links
             </Typography>
-            {domain && renderLinkItem('Website', { alt: 'link', src: null, icon: LinkIcon }, `https://${domain}`)}
-            {whitepaper && renderLinkItem('Whitepaper', { alt: 'document', src: null, icon: DocumentIcon }, whitepaper)}
+            {domain &&
+              renderLinkItem(
+                'Website',
+                { alt: 'link', src: null, icon: LinkIcon },
+                `https://${domain}`
+              )}
+            {whitepaper &&
+              renderLinkItem(
+                'Whitepaper',
+                { alt: 'document', src: null, icon: DocumentIcon },
+                whitepaper
+              )}
             <Divider sx={{ my: 2 }} />
           </>
         )}

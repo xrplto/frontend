@@ -7,7 +7,6 @@ import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
 function DisclaimerPage() {
-
   const disclaimerSections = [
     {
       title: 'No Investment Advice',
@@ -43,47 +42,34 @@ function DisclaimerPage() {
 
       <div className="container">
         <div className="disclaimer-header">
-          <h1 className="gradient-title">
-            Disclaimer
-          </h1>
-          <h2 className="subtitle">
-            Important legal information and disclosures
-          </h2>
+          <h1 className="gradient-title">Disclaimer</h1>
+          <h2 className="subtitle">Important legal information and disclosures</h2>
         </div>
 
         {/* Important Notice */}
         <div className="alert alert-warning">
           <h3 className="alert-title">Important Notice</h3>
           <p className="alert-message">
-            Please read this disclaimer carefully before using xrpl.to. By accessing and using
-            this website, you acknowledge and agree to the terms outlined below.
+            Please read this disclaimer carefully before using xrpl.to. By accessing and using this
+            website, you acknowledge and agree to the terms outlined below.
           </p>
         </div>
 
         <div className="sections-grid">
           {disclaimerSections.map((section) => (
             <div className={`section-card ${section.type}-card`} key={section.title}>
-              <h2 className={`section-title ${section.type}`}>
-                {section.title}
-              </h2>
-              <p className="section-content">
-                {section.content}
-              </p>
+              <h2 className={`section-title ${section.type}`}>{section.title}</h2>
+              <p className="section-content">{section.content}</p>
             </div>
           ))}
         </div>
 
         {/* Footer Notice */}
         <div className="footer-card">
-          <h3 className="footer-title">
-            Questions or Concerns?
-          </h3>
+          <h3 className="footer-title">Questions or Concerns?</h3>
           <p className="footer-text">
-            If you have any questions about this disclaimer or need clarification on any of
-            these terms, please contact us at{' '}
-            <span className="email-link">
-              hello@xrpl.to
-            </span>
+            If you have any questions about this disclaimer or need clarification on any of these
+            terms, please contact us at <span className="email-link">hello@xrpl.to</span>
           </p>
         </div>
       </div>
@@ -120,7 +106,7 @@ function DisclaimerPage() {
 
         .subtitle {
           font-size: 1.25rem;
-          color: rgba(0,0,0,0.6);
+          color: rgba(0, 0, 0, 0.6);
           max-width: 600px;
           margin: 0 auto;
           font-weight: 400;
@@ -147,7 +133,7 @@ function DisclaimerPage() {
         .alert-message {
           font-size: 1.1rem;
           line-height: 1.6;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .sections-grid {
@@ -167,23 +153,23 @@ function DisclaimerPage() {
           background: white;
           border-radius: 8px;
           padding: 32px;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
           height: 100%;
         }
 
         .section-card.warning-card {
-          background: linear-gradient(135deg, rgba(255,152,0,0.03), rgba(244,67,54,0.03));
-          border: 1px solid rgba(255,152,0,0.18);
+          background: linear-gradient(135deg, rgba(255, 152, 0, 0.03), rgba(244, 67, 54, 0.03));
+          border: 1px solid rgba(255, 152, 0, 0.18);
         }
 
         .section-card.success-card {
-          background: linear-gradient(135deg, rgba(76,175,80,0.03), rgba(33,150,243,0.03));
-          border: 1px solid rgba(76,175,80,0.18);
+          background: linear-gradient(135deg, rgba(76, 175, 80, 0.03), rgba(33, 150, 243, 0.03));
+          border: 1px solid rgba(76, 175, 80, 0.18);
         }
 
         .section-card.info-card {
-          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(33,150,243,0.03));
-          border: 1px solid rgba(33,150,243,0.18);
+          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(33, 150, 243, 0.03));
+          border: 1px solid rgba(33, 150, 243, 0.18);
         }
 
         .section-title {
@@ -207,12 +193,12 @@ function DisclaimerPage() {
         .section-content {
           line-height: 1.7;
           font-size: 1.05rem;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .footer-card {
-          background: linear-gradient(135deg, rgba(33,150,243,0.03), rgba(156,39,176,0.03));
-          border: 1px solid rgba(0,0,0,0.12);
+          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
+          border: 1px solid rgba(0, 0, 0, 0.12);
           border-radius: 8px;
           padding: 32px;
           text-align: center;
@@ -222,13 +208,13 @@ function DisclaimerPage() {
         .footer-title {
           font-size: 1.25rem;
           font-weight: 600;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
           margin-bottom: 16px;
         }
 
         .footer-text {
           line-height: 1.7;
-          color: rgba(0,0,0,0.87);
+          color: rgba(0, 0, 0, 0.87);
         }
 
         .email-link {
@@ -239,16 +225,16 @@ function DisclaimerPage() {
         /* Dark mode support */
         @media (prefers-color-scheme: dark) {
           .subtitle {
-            color: rgba(255,255,255,0.6);
+            color: rgba(255, 255, 255, 0.6);
           }
 
           .alert-warning {
-            background: rgba(255,152,0,0.15);
+            background: rgba(255, 152, 0, 0.15);
             border: 1px solid #ff9800;
           }
 
           .alert-message {
-            color: rgba(255,255,255,0.87);
+            color: rgba(255, 255, 255, 0.87);
           }
 
           .section-card {
@@ -256,26 +242,26 @@ function DisclaimerPage() {
           }
 
           .section-card.warning-card {
-            background: linear-gradient(135deg, rgba(255,152,0,0.08), rgba(244,67,54,0.08));
+            background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(244, 67, 54, 0.08));
           }
 
           .section-card.success-card {
-            background: linear-gradient(135deg, rgba(76,175,80,0.08), rgba(33,150,243,0.08));
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.08), rgba(33, 150, 243, 0.08));
           }
 
           .section-card.info-card {
-            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(33,150,243,0.08));
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(33, 150, 243, 0.08));
           }
 
           .section-content,
           .footer-title,
           .footer-text {
-            color: rgba(255,255,255,0.87);
+            color: rgba(255, 255, 255, 0.87);
           }
 
           .footer-card {
-            background: linear-gradient(135deg, rgba(33,150,243,0.08), rgba(156,39,176,0.08));
-            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
+            border: 1px solid rgba(255, 255, 255, 0.12);
           }
         }
       `}</style>

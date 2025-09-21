@@ -3,17 +3,7 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 
 // Material
-import {
-  Container,
-  Grid,
-  Link,
-  Box,
-  styled,
-  Toolbar,
-  Typography,
-  Pagination
-} from '@mui/material';
-
+import { Container, Grid, Link, Box, styled, Toolbar, Typography, Pagination } from '@mui/material';
 
 // Context
 import { useContext } from 'react';
@@ -54,9 +44,7 @@ const Sitemap = ({ tokens, slug }) => {
   };
 
   const gotoTop = (event) => {
-    const anchor = (event.target.ownerDocument || document).querySelector(
-      '#back-to-top-anchor'
-    );
+    const anchor = (event.target.ownerDocument || document).querySelector('#back-to-top-anchor');
 
     if (anchor) {
       anchor.scrollIntoView({
@@ -104,8 +92,8 @@ const Sitemap = ({ tokens, slug }) => {
                 }}
               >
                 <Link
-                //  href={`/${slug}/${token}`}
-                href={`/trustset/${token}`}
+                  //  href={`/${slug}/${token}`}
+                  href={`/trustset/${token}`}
                   underline="none"
                   target="_blank"
                   rel="noreferrer noopener nofollow"
@@ -195,7 +183,8 @@ export const getServerSideProps = async (ctx) => {
     ogp.title = slug.charAt(0).toUpperCase() + slug.substr(1) + ' Trustline Sitemap';
     ogp.url = 'https://xrpl.to/';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-    ogp.desc = "Navigate XRPL tokens easily with XRPL.to's Token Trustlines Sitemap – a user-friendly guide for managing your trustlines and exploring new tokens!";
+    ogp.desc =
+      "Navigate XRPL tokens easily with XRPL.to's Token Trustlines Sitemap – a user-friendly guide for managing your trustlines and exploring new tokens!";
 
     console.log(`3. sitemap/token.xml count: ${count} took: ${dt}ms [${time}]`);
     return {

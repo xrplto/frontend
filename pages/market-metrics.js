@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useCallback, useRef, useMemo, useReducer, useLayoutEffect } from 'react';
+import React, {
+  useState,
+  useEffect,
+  useCallback,
+  useRef,
+  useMemo,
+  useReducer,
+  useLayoutEffect
+} from 'react';
 import dynamic from 'next/dynamic';
 
 const LightweightChart = dynamic(() => import('src/components/LightweightChart'), { ssr: false });
@@ -592,125 +600,147 @@ const MarketMetricsContent = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   // Memoized token color function with cache size limit
-  const getTokenColor = useCallback((tokenName) => {
-    if (tokenColorMap.has(tokenName)) {
-      return tokenColorMap.get(tokenName);
-    }
-    const colors = [
-      '#e6194B', '#3cb44b', '#ffe119', '#4363d8', '#f58231',
-      '#911eb4', '#42d4f4', '#f032e6', '#bfef45', '#fabed4',
-      '#469990', '#dcbeff', '#9A6324', '#fffac8', '#800000',
-      '#aaffc3', '#808000', '#ffd8b1', '#000075', '#a9a9a9'
-    ];
-    const tokenIndex = availableTokens.indexOf(tokenName);
-    const colorIndex = tokenIndex !== -1 ? tokenIndex % colors.length : 0;
-    const color = colors[colorIndex];
-    // Limit cache size to prevent memory leaks
-    if (tokenColorMap.size > 100) {
-      const firstKey = tokenColorMap.keys().next().value;
-      tokenColorMap.delete(firstKey);
-    }
-    tokenColorMap.set(tokenName, color);
-    return color;
-  }, [availableTokens]);
+  const getTokenColor = useCallback(
+    (tokenName) => {
+      if (tokenColorMap.has(tokenName)) {
+        return tokenColorMap.get(tokenName);
+      }
+      const colors = [
+        '#e6194B',
+        '#3cb44b',
+        '#ffe119',
+        '#4363d8',
+        '#f58231',
+        '#911eb4',
+        '#42d4f4',
+        '#f032e6',
+        '#bfef45',
+        '#fabed4',
+        '#469990',
+        '#dcbeff',
+        '#9A6324',
+        '#fffac8',
+        '#800000',
+        '#aaffc3',
+        '#808000',
+        '#ffd8b1',
+        '#000075',
+        '#a9a9a9'
+      ];
+      const tokenIndex = availableTokens.indexOf(tokenName);
+      const colorIndex = tokenIndex !== -1 ? tokenIndex % colors.length : 0;
+      const color = colors[colorIndex];
+      // Limit cache size to prevent memory leaks
+      if (tokenColorMap.size > 100) {
+        const firstKey = tokenColorMap.keys().next().value;
+        tokenColorMap.delete(firstKey);
+      }
+      tokenColorMap.set(tokenName, color);
+      return color;
+    },
+    [availableTokens]
+  );
 
   // Memoized chart series generation
-  const getChartSeries = useCallback((type) => {
-    switch (type) {
-      case 'marketcap':
-        return [
-          {
-            dataKey: "totalMarketcap",
-            name: "Total",
-            color: chartColors.totalLine,
-            lineWidth: 3,
-            visible: visibleLines.totalMarketcap
-          },
-          {
-            dataKey: "firstLedgerMarketcap", 
-            name: "FirstLedger",
-            color: chartColors.primary.main,
+  const getChartSeries = useCallback(
+    (type) => {
+      switch (type) {
+        case 'marketcap':
+          return [
+            {
+              dataKey: 'totalMarketcap',
+              name: 'Total',
+              color: chartColors.totalLine,
+              lineWidth: 3,
+              visible: visibleLines.totalMarketcap
+            },
+            {
+              dataKey: 'firstLedgerMarketcap',
+              name: 'FirstLedger',
+              color: chartColors.primary.main,
+              lineWidth: 2,
+              visible: visibleLines.firstLedgerMarketcap
+            },
+            {
+              dataKey: 'magneticXMarketcap',
+              name: 'Magnetic X',
+              color: chartColors.secondary.main,
+              lineWidth: 2,
+              visible: visibleLines.magneticXMarketcap
+            },
+            {
+              dataKey: 'xpMarketMarketcap',
+              name: 'XPMarket',
+              color: chartColors.tertiary.main,
+              lineWidth: 2,
+              visible: visibleLines.xpMarketMarketcap
+            },
+            {
+              dataKey: 'ledgerMemeMarketcap',
+              name: 'LedgerMeme',
+              color: chartColors.quaternary.main,
+              lineWidth: 2,
+              visible: visibleLines.ledgerMemeMarketcap
+            }
+          ];
+        case 'tokens':
+          return selectedTokens.map((token) => ({
+            dataKey: `${token}_marketcap`,
+            name: token,
+            color: getTokenColor(token),
             lineWidth: 2,
-            visible: visibleLines.firstLedgerMarketcap
-          },
-          {
-            dataKey: "magneticXMarketcap",
-            name: "Magnetic X", 
-            color: chartColors.secondary.main,
-            lineWidth: 2,
-            visible: visibleLines.magneticXMarketcap
-          },
-          {
-            dataKey: "xpMarketMarketcap",
-            name: "XPMarket",
-            color: chartColors.tertiary.main,
-            lineWidth: 2,
-            visible: visibleLines.xpMarketMarketcap
-          },
-          {
-            dataKey: "ledgerMemeMarketcap",
-            name: "LedgerMeme",
-            color: chartColors.quaternary.main,
-            lineWidth: 2,
-            visible: visibleLines.ledgerMemeMarketcap
-          }
-        ];
-      case 'tokens':
-        return selectedTokens.map(token => ({
-          dataKey: `${token}_marketcap`,
-          name: token,
-          color: getTokenColor(token),
-          lineWidth: 2,
-          visible: visibleLines[`${token}_marketcap`]
-        }));
-      case 'activity':
-        return [
-          {
-            dataKey: "tokenCount",
-            name: "Active Tokens",
-            color: chartColors.primary.main,
-            lineWidth: 2,
-            visible: visibleLines.tokenCount
-          }
-        ];
-      case 'trading':
-        return [
-          {
-            dataKey: "volumeAMM",
-            name: "AMM Volume",
-            color: chartColors.primary.main,
-            lineWidth: 2,
-            visible: visibleLines.volumeAMM
-          },
-          {
-            dataKey: "volumeNonAMM",
-            name: "Non-AMM Volume",
-            color: chartColors.secondary.main,
-            lineWidth: 2,
-            visible: visibleLines.volumeNonAMM
-          }
-        ];
-      case 'addresses':
-        return [
-          {
-            dataKey: "uniqueActiveAddressesAMM",
-            name: "AMM Addresses",
-            color: chartColors.primary.main,
-            lineWidth: 2,
-            visible: visibleLines.uniqueActiveAddressesAMM
-          },
-          {
-            dataKey: "uniqueActiveAddressesNonAMM",
-            name: "Non-AMM Addresses",
-            color: chartColors.secondary.main,
-            lineWidth: 2,
-            visible: visibleLines.uniqueActiveAddressesNonAMM
-          }
-        ];
-      default:
-        return [];
-    }
-  }, [chartColors, visibleLines, selectedTokens, getTokenColor]);
+            visible: visibleLines[`${token}_marketcap`]
+          }));
+        case 'activity':
+          return [
+            {
+              dataKey: 'tokenCount',
+              name: 'Active Tokens',
+              color: chartColors.primary.main,
+              lineWidth: 2,
+              visible: visibleLines.tokenCount
+            }
+          ];
+        case 'trading':
+          return [
+            {
+              dataKey: 'volumeAMM',
+              name: 'AMM Volume',
+              color: chartColors.primary.main,
+              lineWidth: 2,
+              visible: visibleLines.volumeAMM
+            },
+            {
+              dataKey: 'volumeNonAMM',
+              name: 'Non-AMM Volume',
+              color: chartColors.secondary.main,
+              lineWidth: 2,
+              visible: visibleLines.volumeNonAMM
+            }
+          ];
+        case 'addresses':
+          return [
+            {
+              dataKey: 'uniqueActiveAddressesAMM',
+              name: 'AMM Addresses',
+              color: chartColors.primary.main,
+              lineWidth: 2,
+              visible: visibleLines.uniqueActiveAddressesAMM
+            },
+            {
+              dataKey: 'uniqueActiveAddressesNonAMM',
+              name: 'Non-AMM Addresses',
+              color: chartColors.secondary.main,
+              lineWidth: 2,
+              visible: visibleLines.uniqueActiveAddressesNonAMM
+            }
+          ];
+        default:
+          return [];
+      }
+    },
+    [chartColors, visibleLines, selectedTokens, getTokenColor]
+  );
 
   const handleLegendClick = (entry) => {
     setVisibleLines((prev) => ({
@@ -782,7 +812,7 @@ const MarketMetricsContent = () => {
       // Filter data based on selected time range
       if (range !== 'all') {
         let cutoffDate = new Date();
-        
+
         switch (range) {
           case '5y':
             cutoffDate = subYears(new Date(), 5);
@@ -799,7 +829,7 @@ const MarketMetricsContent = () => {
             cutoffDate.setMonth(cutoffDate.getMonth() - 1);
             break;
         }
-        
+
         filteredData = filteredData.filter((item) => {
           try {
             const itemDate = parse(item.date, 'MMM dd yyyy', new Date());
@@ -1962,117 +1992,116 @@ const MarketMetricsContent = () => {
             <Box sx={{ height: 400 }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
               {/* Recharts removed - using LightweightChart */}
-              {false && <div width="100%" height="100%">
-                <div
-                  data={progressiveData}
-                  margin={chartConfig.margin}
-                  isAnimationActive={false}
-                  onClick={(data) => {
-                    if (data && data.activePayload && data.activePayload.length > 0) {
-                      handleDataPointClick(data.activePayload[0].payload);
-                    }
-                  }}
-                >
-                  <div {...chartConfig.gridStyle} />
+              {false && (
+                <div width="100%" height="100%">
                   <div
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    interval={
-                      timeRange === 'all'
-                        ? 30
-                        : timeRange === '5y'
-                          ? 20
-                          : timeRange === '1y'
-                            ? 10
-                            : 5
-                    }
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    domain={['auto', 'auto']}
-                    tickFormatter={(value) => value.toLocaleString()}
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    content={<CustomTooltip />}
-                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                  />
-                  <div
-                    content={null}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="tokenCount"
-                    stroke={chartColors.totalLine}
-                    name="Total Active Tokens"
-                    strokeWidth={3}
-                    dot={false}
-                    hide={!visibleLines.tokenCount}
+                    data={progressiveData}
+                    margin={chartConfig.margin}
                     isAnimationActive={false}
-                    activeDot={{
-                      r: 8,
-                      strokeWidth: 2,
-                      stroke: chartColors.totalLine,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
+                    onClick={(data) => {
+                      if (data && data.activePayload && data.activePayload.length > 0) {
+                        handleDataPointClick(data.activePayload[0].payload);
+                      }
                     }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="firstLedgerTokens"
-                    stroke={chartColors.primary.main}
-                    name="FirstLedger"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.firstLedgerTokens}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.primary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="magneticXTokens"
-                    stroke={chartColors.secondary.main}
-                    name="Magnetic X"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.magneticXTokens}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.secondary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="xpMarketTokens"
-                    stroke={chartColors.tertiary.main}
-                    name="XPMarket"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.xpMarketTokens}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.tertiary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
+                  >
+                    <div {...chartConfig.gridStyle} />
+                    <div
+                      dataKey="date"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval={
+                        timeRange === 'all'
+                          ? 30
+                          : timeRange === '5y'
+                            ? 20
+                            : timeRange === '1y'
+                              ? 10
+                              : 5
+                      }
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      domain={['auto', 'auto']}
+                      tickFormatter={(value) => value.toLocaleString()}
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      content={<CustomTooltip />}
+                      cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
+                    />
+                    <div content={null} />
+                    <div
+                      type="monotone"
+                      dataKey="tokenCount"
+                      stroke={chartColors.totalLine}
+                      name="Total Active Tokens"
+                      strokeWidth={3}
+                      dot={false}
+                      hide={!visibleLines.tokenCount}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 8,
+                        strokeWidth: 2,
+                        stroke: chartColors.totalLine,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      type="monotone"
+                      dataKey="firstLedgerTokens"
+                      stroke={chartColors.primary.main}
+                      name="FirstLedger"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.firstLedgerTokens}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.primary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      type="monotone"
+                      dataKey="magneticXTokens"
+                      stroke={chartColors.secondary.main}
+                      name="Magnetic X"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.magneticXTokens}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.secondary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      type="monotone"
+                      dataKey="xpMarketTokens"
+                      stroke={chartColors.tertiary.main}
+                      name="XPMarket"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.xpMarketTokens}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.tertiary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              }
+              )}
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -2494,135 +2523,134 @@ const MarketMetricsContent = () => {
             <Box sx={{ height: 400, backgroundColor: 'transparent' }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
               {/* Recharts removed - using LightweightChart */}
-              {false && <div width="100%" height="100%">
-                <div
-                  data={progressiveData}
-                  margin={chartConfig.margin}
-                  style={{
-                    backgroundColor: 'transparent'
-                  }}
-                  isAnimationActive={false}
-                  onClick={(data) => {
-                    if (data && data.activePayload && data.activePayload.length > 0) {
-                      handleDataPointClick(data.activePayload[0].payload);
-                    }
-                  }}
-                >
-                  <div {...chartConfig.gridStyle} opacity={0.1} />
+              {false && (
+                <div width="100%" height="100%">
                   <div
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    interval={
-                      timeRange === 'all'
-                        ? 30
-                        : timeRange === '5y'
-                          ? 20
-                          : timeRange === '1y'
-                            ? 10
-                            : 5
-                    }
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    yAxisId="volume"
-                    orientation="left"
-                    domain={['dataMin - 1000', 'dataMax + 1000']}
-                    tickFormatter={(value) => value.toLocaleString() + ' XRP'}
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    yAxisId="trades"
-                    orientation="right"
-                    domain={['dataMin - 100', 'dataMax + 100']}
-                    tickFormatter={(value) => value.toLocaleString()}
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    content={<CustomTooltip />}
-                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                  />
-                  <div
-                    content={null}
-                  />
-                  <div
-                    yAxisId="volume"
-                    type="monotone"
-                    dataKey="volumeAMM"
-                    stroke={chartColors.primary.main}
-                    name="AMM Volume"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.volumeAMM}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 8,
-                      strokeWidth: 2,
-                      stroke: chartColors.primary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
+                    data={progressiveData}
+                    margin={chartConfig.margin}
+                    style={{
+                      backgroundColor: 'transparent'
                     }}
-                  />
-                  <div
-                    yAxisId="volume"
-                    type="monotone"
-                    dataKey="volumeNonAMM"
-                    stroke={chartColors.secondary.main}
-                    name="Non-AMM Volume"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.volumeNonAMM}
                     isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.secondary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
+                    onClick={(data) => {
+                      if (data && data.activePayload && data.activePayload.length > 0) {
+                        handleDataPointClick(data.activePayload[0].payload);
+                      }
                     }}
-                  />
-                  <div
-                    yAxisId="trades"
-                    type="monotone"
-                    dataKey="tradesAMM"
-                    stroke={`${chartColors.primary.main}80`}
-                    name="AMM Trades"
-                    strokeDasharray="5 5"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.tradesAMM}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.primary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
-                  <div
-                    yAxisId="trades"
-                    type="monotone"
-                    dataKey="tradesNonAMM"
-                    stroke={`${chartColors.secondary.main}80`}
-                    name="Non-AMM Trades"
-                    strokeDasharray="5 5"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.tradesNonAMM}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.secondary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
+                  >
+                    <div {...chartConfig.gridStyle} opacity={0.1} />
+                    <div
+                      dataKey="date"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval={
+                        timeRange === 'all'
+                          ? 30
+                          : timeRange === '5y'
+                            ? 20
+                            : timeRange === '1y'
+                              ? 10
+                              : 5
+                      }
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      yAxisId="volume"
+                      orientation="left"
+                      domain={['dataMin - 1000', 'dataMax + 1000']}
+                      tickFormatter={(value) => value.toLocaleString() + ' XRP'}
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      yAxisId="trades"
+                      orientation="right"
+                      domain={['dataMin - 100', 'dataMax + 100']}
+                      tickFormatter={(value) => value.toLocaleString()}
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      content={<CustomTooltip />}
+                      cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
+                    />
+                    <div content={null} />
+                    <div
+                      yAxisId="volume"
+                      type="monotone"
+                      dataKey="volumeAMM"
+                      stroke={chartColors.primary.main}
+                      name="AMM Volume"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.volumeAMM}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 8,
+                        strokeWidth: 2,
+                        stroke: chartColors.primary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      yAxisId="volume"
+                      type="monotone"
+                      dataKey="volumeNonAMM"
+                      stroke={chartColors.secondary.main}
+                      name="Non-AMM Volume"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.volumeNonAMM}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.secondary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      yAxisId="trades"
+                      type="monotone"
+                      dataKey="tradesAMM"
+                      stroke={`${chartColors.primary.main}80`}
+                      name="AMM Trades"
+                      strokeDasharray="5 5"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.tradesAMM}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.primary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      yAxisId="trades"
+                      type="monotone"
+                      dataKey="tradesNonAMM"
+                      stroke={`${chartColors.secondary.main}80`}
+                      name="Non-AMM Trades"
+                      strokeDasharray="5 5"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.tradesNonAMM}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.secondary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              }
+              )}
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}
@@ -2998,83 +3026,82 @@ const MarketMetricsContent = () => {
             <Box sx={{ height: 400 }}>
               {/* Recharts LineChart removed - TODO: Replace with lightweight-charts */}
               {/* Recharts removed - using LightweightChart */}
-              {false && <div width="100%" height="100%">
-                <div
-                  data={progressiveData}
-                  margin={chartConfig.margin}
-                  isAnimationActive={false}
-                  onClick={(data) => {
-                    if (data && data.activePayload && data.activePayload.length > 0) {
-                      handleDataPointClick(data.activePayload[0].payload);
-                    }
-                  }}
-                >
-                  <div {...chartConfig.gridStyle} />
+              {false && (
+                <div width="100%" height="100%">
                   <div
-                    dataKey="date"
-                    angle={-45}
-                    textAnchor="end"
-                    height={60}
-                    interval={
-                      timeRange === 'all'
-                        ? 30
-                        : timeRange === '5y'
-                          ? 20
-                          : timeRange === '1y'
-                            ? 10
-                            : 5
-                    }
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    domain={['auto', 'auto']}
-                    tickFormatter={(value) => value.toLocaleString()}
-                    tick={{ ...chartConfig.axisStyle }}
-                  />
-                  <div
-                    content={<CustomTooltip />}
-                    cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                  />
-                  <div
-                    content={null}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="uniqueActiveAddressesAMM"
-                    stroke={chartColors.primary.main}
-                    name="AMM Active Addresses"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.uniqueActiveAddressesAMM}
+                    data={progressiveData}
+                    margin={chartConfig.margin}
                     isAnimationActive={false}
-                    activeDot={{
-                      r: 8,
-                      strokeWidth: 2,
-                      stroke: chartColors.primary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
+                    onClick={(data) => {
+                      if (data && data.activePayload && data.activePayload.length > 0) {
+                        handleDataPointClick(data.activePayload[0].payload);
+                      }
                     }}
-                  />
-                  <div
-                    type="monotone"
-                    dataKey="uniqueActiveAddressesNonAMM"
-                    stroke={chartColors.secondary.main}
-                    name="Non-AMM Active Addresses"
-                    strokeWidth={2}
-                    dot={false}
-                    hide={!visibleLines.uniqueActiveAddressesNonAMM}
-                    isAnimationActive={false}
-                    activeDot={{
-                      r: 6,
-                      strokeWidth: 2,
-                      stroke: chartColors.secondary.main,
-                      fill: themeColors.background,
-                      onClick: (data) => handleDataPointClick(data.payload)
-                    }}
-                  />
+                  >
+                    <div {...chartConfig.gridStyle} />
+                    <div
+                      dataKey="date"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval={
+                        timeRange === 'all'
+                          ? 30
+                          : timeRange === '5y'
+                            ? 20
+                            : timeRange === '1y'
+                              ? 10
+                              : 5
+                      }
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      domain={['auto', 'auto']}
+                      tickFormatter={(value) => value.toLocaleString()}
+                      tick={{ ...chartConfig.axisStyle }}
+                    />
+                    <div
+                      content={<CustomTooltip />}
+                      cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
+                    />
+                    <div content={null} />
+                    <div
+                      type="monotone"
+                      dataKey="uniqueActiveAddressesAMM"
+                      stroke={chartColors.primary.main}
+                      name="AMM Active Addresses"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.uniqueActiveAddressesAMM}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 8,
+                        strokeWidth: 2,
+                        stroke: chartColors.primary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                    <div
+                      type="monotone"
+                      dataKey="uniqueActiveAddressesNonAMM"
+                      stroke={chartColors.secondary.main}
+                      name="Non-AMM Active Addresses"
+                      strokeWidth={2}
+                      dot={false}
+                      hide={!visibleLines.uniqueActiveAddressesNonAMM}
+                      isAnimationActive={false}
+                      activeDot={{
+                        r: 6,
+                        strokeWidth: 2,
+                        stroke: chartColors.secondary.main,
+                        fill: themeColors.background,
+                        onClick: (data) => handleDataPointClick(data.payload)
+                      }}
+                    />
+                  </div>
                 </div>
-              </div>
-              }
+              )}
               <LightweightChart
                 data={progressiveData}
                 height={isMobile ? 300 : 400}

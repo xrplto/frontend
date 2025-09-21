@@ -9,11 +9,14 @@ function Logo({ style }) {
   const [imageError, setImageError] = useState(false);
 
   // Memoize logo paths - removed query string to avoid Next.js localPatterns warning
-  const { img_black, img_white } = useMemo(() => ({
-    img_black: '/logo/xrpl-to-logo-black.svg',
-    img_white: '/logo/xrpl-to-logo-white.svg'
-  }), []);
-  
+  const { img_black, img_white } = useMemo(
+    () => ({
+      img_black: '/logo/xrpl-to-logo-black.svg',
+      img_white: '/logo/xrpl-to-logo-white.svg'
+    }),
+    []
+  );
+
   // Use theme.palette.mode as primary check, fallback to darkMode
   const isDark = theme.palette.mode === 'dark' || darkMode;
   const img = isDark ? img_white : img_black;
@@ -36,7 +39,7 @@ function Logo({ style }) {
   };
 
   return (
-    <Box style={logoStyle} onClick={() => window.location.href = '/'}>
+    <Box style={logoStyle} onClick={() => (window.location.href = '/')}>
       {imageError ? (
         <Box
           sx={{

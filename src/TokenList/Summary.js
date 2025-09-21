@@ -28,13 +28,13 @@ import { format } from 'date-fns';
 const Container = styled.div`
   position: relative;
   z-index: 2;
-  margin-top: ${props => props.theme?.spacing?.(2) || '16px'};
-  margin-bottom: ${props => props.theme?.spacing?.(3) || '24px'};
+  margin-top: ${(props) => props.theme?.spacing?.(2) || '16px'};
+  margin-bottom: ${(props) => props.theme?.spacing?.(3) || '24px'};
   width: 100%;
   max-width: 100%;
   background: transparent;
   overflow: visible;
-  
+
   @media (max-width: 600px) {
     margin-top: 0;
     margin-bottom: 8px;
@@ -43,26 +43,26 @@ const Container = styled.div`
 
 const Stack = styled.div`
   display: flex;
-  flex-direction: ${props => props.direction === 'row' ? 'row' : 'column'};
-  gap: ${props => props.spacing || '8px'};
-  align-items: ${props => props.alignItems || 'stretch'};
-  justify-content: ${props => props.justifyContent || 'flex-start'};
-  width: ${props => props.width || 'auto'};
+  flex-direction: ${(props) => (props.direction === 'row' ? 'row' : 'column')};
+  gap: ${(props) => props.spacing || '8px'};
+  align-items: ${(props) => props.alignItems || 'stretch'};
+  justify-content: ${(props) => props.justifyContent || 'flex-start'};
+  width: ${(props) => props.width || 'auto'};
 `;
 
 const Grid = styled.div`
   display: grid;
-  grid-template-columns: repeat(${props => props.cols || 1}, 1fr);
-  gap: ${props => props.spacing || '20px'};
+  grid-template-columns: repeat(${(props) => props.cols || 1}, 1fr);
+  gap: ${(props) => props.spacing || '20px'};
   width: 100%;
-  
+
   @media (max-width: 900px) {
-    grid-template-columns: repeat(${props => props.mdCols || props.cols || 1}, 1fr);
+    grid-template-columns: repeat(${(props) => props.mdCols || props.cols || 1}, 1fr);
     gap: 16px;
   }
-  
+
   @media (max-width: 600px) {
-    grid-template-columns: repeat(${props => props.smCols || 2}, 1fr);
+    grid-template-columns: repeat(${(props) => props.smCols || 2}, 1fr);
     gap: 12px;
   }
 `;
@@ -76,26 +76,23 @@ const MetricBox = styled.div`
   justify-content: center;
   align-items: flex-start;
   border-radius: 12px;
-  background: ${props => props.theme?.palette?.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.02)' 
-    : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.05)'
-    : 'rgba(0, 0, 0, 0.05)'};
+  background: ${(props) =>
+    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid
+    ${(props) =>
+      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   position: relative;
   overflow: visible;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
-  
+
   &:hover {
-    background: ${props => props.theme?.palette?.mode === 'dark' 
-      ? 'rgba(255, 255, 255, 0.04)' 
-      : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${props => props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.08)'
-      : 'rgba(0, 0, 0, 0.08)'};
+    background: ${(props) =>
+      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${(props) =>
+      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   }
-  
+
   @media (max-width: 600px) {
     padding: 12px;
     min-height: 60px;
@@ -106,13 +103,12 @@ const MetricBox = styled.div`
 const MetricTitle = styled.span`
   font-size: 0.75rem;
   font-weight: 500;
-  color: ${props => props.theme?.palette?.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.7)'
-    : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) =>
+    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   margin-bottom: 4px;
   letter-spacing: 0.02em;
   line-height: 1.2;
-  
+
   @media (max-width: 600px) {
     font-size: 0.65rem;
     margin-bottom: 2px;
@@ -122,12 +118,12 @@ const MetricTitle = styled.span`
 const MetricValue = styled.span`
   font-size: 1.5rem;
   font-weight: 700;
-  color: ${props => props.theme?.palette?.text?.primary || '#212B36'};
+  color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
   line-height: 1.2;
   margin-bottom: 4px;
   font-family: inherit;
   letter-spacing: -0.02em;
-  
+
   @media (max-width: 600px) {
     font-size: 1rem;
     margin-bottom: 2px;
@@ -136,15 +132,20 @@ const MetricValue = styled.span`
 
 const PercentageChange = styled.span`
   font-size: 0.85rem;
-  color: ${props => props.isPositive 
-    ? (props.theme?.palette?.mode === 'dark' ? '#4ade80' : '#059669')
-    : (props.theme?.palette?.mode === 'dark' ? '#f87171' : '#dc2626')};
+  color: ${(props) =>
+    props.isPositive
+      ? props.theme?.palette?.mode === 'dark'
+        ? '#4ade80'
+        : '#059669'
+      : props.theme?.palette?.mode === 'dark'
+        ? '#f87171'
+        : '#dc2626'};
   display: inline-flex;
   align-items: flex-start;
   gap: 3px;
   font-weight: 600;
   font-family: inherit;
-  
+
   @media (max-width: 600px) {
     font-size: 0.7rem;
   }
@@ -152,25 +153,23 @@ const PercentageChange = styled.span`
 
 const VolumePercentage = styled.span`
   font-size: 0.6rem;
-  color: ${props => props.theme?.palette?.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.6)'
-    : 'rgba(33, 43, 54, 0.6)'};
+  color: ${(props) =>
+    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)'};
   font-weight: 400;
   letter-spacing: 0.01em;
-  
+
   @media (max-width: 600px) {
     font-size: 0.5rem;
   }
 `;
 
 const ContentTypography = styled.span`
-  color: ${props => props.theme?.palette?.mode === 'dark' 
-    ? 'rgba(255, 255, 255, 0.7)'
-    : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) =>
+    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   font-size: 0.7rem;
   font-weight: 500;
   letter-spacing: 0.01em;
-  
+
   @media (max-width: 600px) {
     font-size: 0.55rem;
   }
@@ -178,18 +177,19 @@ const ContentTypography = styled.span`
 
 const ChartContainer = styled.div`
   width: 100%;
-  height: ${props => props.height || '180px'};
-  margin-top: ${props => props.mt || '0'};
-  
+  height: ${(props) => props.height || '180px'};
+  margin-top: ${(props) => props.mt || '0'};
+
   @media (max-width: 600px) {
     height: 140px;
   }
 `;
 
 const TooltipContainer = styled.div`
-  background: ${props => props.darkMode ? '#1c1c1c' : 'white'};
-  color: ${props => props.darkMode ? '#fff' : '#000'};
-  border: 1px solid ${props => props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+  background: ${(props) => (props.darkMode ? '#1c1c1c' : 'white')};
+  color: ${(props) => (props.darkMode ? '#fff' : '#000')};
+  border: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
@@ -203,12 +203,16 @@ const Skeleton = styled.div`
   background-size: 200% 100%;
   animation: loading 1.5s infinite;
   border-radius: 4px;
-  height: ${props => props.height || '20px'};
-  width: ${props => props.width || '100%'};
-  
+  height: ${(props) => props.height || '20px'};
+  width: ${(props) => props.width || '100%'};
+
   @keyframes loading {
-    0% { background-position: 200% 0; }
-    100% { background-position: -200% 0; }
+    0% {
+      background-position: 200% 0;
+    }
+    100% {
+      background-position: -200% 0;
+    }
   }
 `;
 
@@ -219,16 +223,18 @@ const CircularProgress = styled.div`
   border-top-color: #1976d2;
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  
+
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;
 
 const ChartMetricBox = styled(MetricBox)`
   grid-column: span 2;
   overflow: visible;
-  
+
   @media (max-width: 600px) {
     grid-column: 1 / -1;
   }
@@ -261,14 +267,17 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
     const chartData = data.slice(-30);
     if (chartData.length === 0) return;
-    
+
     const width = rect.width;
     const pointWidth = width / Math.max(chartData.length - 1, 1);
-    
+
     // Find closest data point
-    const closestIndex = Math.max(0, Math.min(Math.round(mouseX / pointWidth), chartData.length - 1));
+    const closestIndex = Math.max(
+      0,
+      Math.min(Math.round(mouseX / pointWidth), chartData.length - 1)
+    );
     const dataPoint = chartData[closestIndex];
-    
+
     // Show tooltip for the closest data point
     setTooltip({
       show: true,
@@ -287,9 +296,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    
+
     // Get last 30 days of data
-    const chartValues = data.slice(-30).map(d => d.Tokens || 0);
+    const chartValues = data.slice(-30).map((d) => d.Tokens || 0);
     if (chartValues.length === 0) return;
 
     // Set canvas size
@@ -310,7 +319,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     const minValue = Math.min(...chartValues);
     const maxValue = Math.max(...chartValues);
     const range = maxValue - minValue;
-    
+
     // Scale points to canvas
     const points = chartValues.map((value, index) => {
       const x = (index / (chartValues.length - 1)) * width;
@@ -326,10 +335,10 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     const gradient = ctx.createLinearGradient(0, 0, 0, height);
     gradient.addColorStop(0, color + '66');
     gradient.addColorStop(1, color + '00');
-    
+
     ctx.beginPath();
     ctx.moveTo(points[0].x, height);
-    points.forEach(point => ctx.lineTo(point.x, point.y));
+    points.forEach((point) => ctx.lineTo(point.x, point.y));
     ctx.lineTo(points[points.length - 1].x, height);
     ctx.closePath();
     ctx.fillStyle = gradient;
@@ -338,7 +347,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     // Draw line
     ctx.beginPath();
     ctx.moveTo(points[0].x, points[0].y);
-    points.forEach(point => ctx.lineTo(point.x, point.y));
+    points.forEach((point) => ctx.lineTo(point.x, point.y));
     ctx.strokeStyle = color;
     ctx.lineWidth = 2;
     ctx.lineCap = 'round';
@@ -355,7 +364,6 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       ctx.lineWidth = 1;
       ctx.stroke();
     });
-
   }, [data, theme]);
 
   // Tooltip Portal Component
@@ -380,7 +388,14 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           fontSize: '0.75rem'
         }}
       >
-        <div style={{ fontSize: '0.875rem', fontWeight: 600, marginBottom: '8px', color: theme.palette.primary.main }}>
+        <div
+          style={{
+            fontSize: '0.875rem',
+            fontWeight: 600,
+            marginBottom: '8px',
+            color: theme.palette.primary.main
+          }}
+        >
           {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
@@ -389,7 +404,10 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
           <span>Market Cap</span>
-          <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(tooltip.data.totalMarketcap || 0)}</strong>
+          <strong>
+            {currencySymbols[activeFiatCurrency]}
+            {formatNumberWithDecimals(tooltip.data.totalMarketcap || 0)}
+          </strong>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
           <span>Avg Holders</span>
@@ -397,40 +415,80 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
           <span>Volume 24h</span>
-          <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(tooltip.data.totalVolume24h || 0)}</strong>
+          <strong>
+            {currencySymbols[activeFiatCurrency]}
+            {formatNumberWithDecimals(tooltip.data.totalVolume24h || 0)}
+          </strong>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', margin: '4px 0' }}>
           <span>Avg Market Cap</span>
-          <strong>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(tooltip.data.avgMarketcap || 0)}</strong>
+          <strong>
+            {currencySymbols[activeFiatCurrency]}
+            {formatNumberWithDecimals(tooltip.data.avgMarketcap || 0)}
+          </strong>
         </div>
-        {tooltip.data.platforms && Object.entries(tooltip.data.platforms).filter(([,v]) => v > 0).length > 0 && (
-          <>
-            <div style={{ borderTop: `1px solid ${theme.palette.primary.main}40`, margin: '8px 0 4px', paddingTop: '4px' }}>
-              <strong>Platforms:</strong>
-            </div>
-            {Object.entries(tooltip.data.platforms).filter(([,v]) => v > 0).map(([platform, count]) => (
-              <div key={platform} style={{ display: 'flex', justifyContent: 'space-between', margin: '2px 0', fontSize: '0.7rem', opacity: 0.8 }}>
-                <span>{platform}</span>
-                <span>{count}</span>
+        {tooltip.data.platforms &&
+          Object.entries(tooltip.data.platforms).filter(([, v]) => v > 0).length > 0 && (
+            <>
+              <div
+                style={{
+                  borderTop: `1px solid ${theme.palette.primary.main}40`,
+                  margin: '8px 0 4px',
+                  paddingTop: '4px'
+                }}
+              >
+                <strong>Platforms:</strong>
               </div>
-            ))}
-          </>
-        )}
+              {Object.entries(tooltip.data.platforms)
+                .filter(([, v]) => v > 0)
+                .map(([platform, count]) => (
+                  <div
+                    key={platform}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      margin: '2px 0',
+                      fontSize: '0.7rem',
+                      opacity: 0.8
+                    }}
+                  >
+                    <span>{platform}</span>
+                    <span>{count}</span>
+                  </div>
+                ))}
+            </>
+          )}
         {tooltip.data.tokensInvolved?.length > 0 && (
           <>
-            <div style={{ borderTop: `1px solid ${theme.palette.primary.main}40`, margin: '8px 0 4px', paddingTop: '4px' }}>
+            <div
+              style={{
+                borderTop: `1px solid ${theme.palette.primary.main}40`,
+                margin: '8px 0 4px',
+                paddingTop: '4px'
+              }}
+            >
               <strong>Top Tokens:</strong>
             </div>
             {tooltip.data.tokensInvolved.slice(0, 3).map((token, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '2px 0', fontSize: '0.7rem', opacity: 0.8 }}>
+              <div
+                key={i}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  margin: '2px 0',
+                  fontSize: '0.7rem',
+                  opacity: 0.8
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <img 
+                  <img
                     src={`https://s1.xrpl.to/token/${token.md5}`}
                     alt={token.name}
-                    style={{ 
-                      width: '16px', 
-                      height: '16px', 
-                      borderRadius: '50%', 
+                    style={{
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '50%',
                       background: theme.palette.primary.main + '20',
                       objectFit: 'cover',
                       border: `1px solid ${theme.palette.primary.main}40`
@@ -442,7 +500,10 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                   />
                   <span>{token.name}</span>
                 </div>
-                <span>{currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(token.marketcap || 0)}</span>
+                <span>
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(token.marketcap || 0)}
+                </span>
               </div>
             ))}
           </>
@@ -454,32 +515,32 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
   return (
     <>
-      <div 
+      <div
         ref={containerRef}
-        style={{ 
-          width: '100%', 
-          height: '60px', 
-          marginTop: '-4px', 
+        style={{
+          width: '100%',
+          height: '60px',
+          marginTop: '-4px',
           position: 'relative'
         }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        <canvas 
-          ref={canvasRef} 
-          style={{ 
-            width: '100%', 
+        <canvas
+          ref={canvasRef}
+          style={{
+            width: '100%',
             height: '100%',
             display: 'block',
             cursor: 'pointer'
-          }} 
+          }}
         />
       </div>
-      
-      <TooltipPortal 
-        tooltip={tooltip} 
-        darkMode={darkMode} 
-        activeFiatCurrency={activeFiatCurrency} 
+
+      <TooltipPortal
+        tooltip={tooltip}
+        darkMode={darkMode}
+        activeFiatCurrency={activeFiatCurrency}
       />
     </>
   );
@@ -492,7 +553,6 @@ export default function Summary() {
   const { activeFiatCurrency, darkMode } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
   const theme = useTheme();
-
 
   const fiatRate = metrics[activeFiatCurrency] || 1;
 
@@ -511,19 +571,19 @@ export default function Summary() {
         // Calculate position to ensure tooltip stays within viewport
         var x = point[0];
         var y = point[1];
-        
+
         // Adjust if tooltip would go off top of screen
         if (y - size.contentSize[1] - 10 < 0) {
           y = point[1] + 20; // Show below cursor
         } else {
           y = point[1] - size.contentSize[1] - 10; // Show above cursor
         }
-        
+
         // Adjust if tooltip would go off right side
         if (x + size.contentSize[0] > window.innerWidth) {
           x = window.innerWidth - size.contentSize[0] - 10;
         }
-        
+
         return [x, y];
       },
       formatter: (params) => {
@@ -534,7 +594,7 @@ export default function Summary() {
         const tokensInvolved = (data.tokensInvolved || [])
           .slice()
           .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0));
-        
+
         let html = `
           <div style="background: ${darkMode ? '#1c1c1c' : 'white'}; color: ${darkMode ? '#fff' : '#000'}; border: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; border-radius: 8px; padding: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px;">
             <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">
@@ -556,26 +616,43 @@ export default function Summary() {
               <span style="font-size: 0.75rem;">Volume 24h</span>
               <span style="font-size: 0.75rem; font-weight: 600;">${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(data.totalVolume24h)}</span>
             </div>
-            ${platformEntries.length > 0 ? `
+            ${
+              platformEntries.length > 0
+                ? `
               <div style="border-top: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}; margin: 8px -12px;"></div>
               <div style="font-size: 0.75rem; font-weight: 600; margin-top: 8px;">Platforms</div>
-              ${platformEntries.map(([platform, count]) => `
+              ${platformEntries
+                .map(
+                  ([platform, count]) => `
                 <div style="display: flex; justify-content: space-between; margin: 4px 0;">
                   <span style="font-size: 0.7rem; color: ${darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};">${platform}</span>
                   <span style="font-size: 0.7rem; font-weight: 600;">${count}</span>
                 </div>
-              `).join('')}
-            ` : ''}
-            ${tokensInvolved.length > 0 ? `
+              `
+                )
+                .join('')}
+            `
+                : ''
+            }
+            ${
+              tokensInvolved.length > 0
+                ? `
               <div style="border-top: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}; margin: 8px -12px;"></div>
               <div style="font-size: 0.75rem; font-weight: 600; margin-top: 8px;">Top Tokens Created</div>
-              ${tokensInvolved.slice(0, 3).map((token) => `
+              ${tokensInvolved
+                .slice(0, 3)
+                .map(
+                  (token) => `
                 <div style="display: flex; justify-content: space-between; margin: 4px 0;">
                   <span style="font-size: 0.7rem; color: ${darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};">${token.currency || token.symbol || token.ticker || token.code || token.currencyCode || token.name || 'Unknown'}</span>
                   <span style="font-size: 0.7rem;">${currencySymbols[activeFiatCurrency]}${formatNumberWithDecimals(new Decimal(token.marketcap || 0).div(fiatRate).toNumber())}</span>
                 </div>
-              `).join('')}
-            ` : ''}
+              `
+                )
+                .join('')}
+            `
+                : ''
+            }
           </div>
         `;
         return html;
@@ -591,39 +668,44 @@ export default function Summary() {
     },
     xAxis: {
       type: 'category',
-      data: chartData.map(d => d.date),
+      data: chartData.map((d) => d.date),
       show: false
     },
     yAxis: {
       type: 'value',
       show: false
     },
-    series: [{
-      data: chartData.map(d => d.Tokens),
-      type: 'line',
-      smooth: true,
-      lineStyle: {
-        color: '#8C7CF0',
-        width: 1.5
-      },
-      areaStyle: {
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 0,
-          y2: 1,
-          colorStops: [{
-            offset: 0,
-            color: 'rgba(140, 124, 240, 0.3)'
-          }, {
-            offset: 1,
-            color: 'rgba(140, 124, 240, 0)'
-          }]
-        }
-      },
-      showSymbol: false
-    }]
+    series: [
+      {
+        data: chartData.map((d) => d.Tokens),
+        type: 'line',
+        smooth: true,
+        lineStyle: {
+          color: '#8C7CF0',
+          width: 1.5
+        },
+        areaStyle: {
+          color: {
+            type: 'linear',
+            x: 0,
+            y: 0,
+            x2: 0,
+            y2: 1,
+            colorStops: [
+              {
+                offset: 0,
+                color: 'rgba(140, 124, 240, 0.3)'
+              },
+              {
+                offset: 1,
+                color: 'rgba(140, 124, 240, 0)'
+              }
+            ]
+          }
+        },
+        showSymbol: false
+      }
+    ]
   });
 
   useEffect(() => {
@@ -671,13 +753,13 @@ export default function Summary() {
     return chartData.some((d) => (d.platforms?.[platform] || 0) > 0);
   });
 
-  const xrpPrice = activeFiatCurrency === 'XRP'
-    ? Rate(1, metrics.USD || 1)
-    : Rate(1, metrics[activeFiatCurrency] || 1);
+  const xrpPrice =
+    activeFiatCurrency === 'XRP'
+      ? Rate(1, metrics.USD || 1)
+      : Rate(1, metrics[activeFiatCurrency] || 1);
 
-  const xrpPriceSymbol = activeFiatCurrency === 'XRP' 
-    ? currencySymbols.USD 
-    : currencySymbols[activeFiatCurrency];
+  const xrpPriceSymbol =
+    activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
 
   return (
     <Container>
@@ -701,7 +783,11 @@ export default function Summary() {
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>
                   {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0).div(fiatRate).toNumber())}
+                  {formatNumberWithDecimals(
+                    new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
+                      .div(fiatRate)
+                      .toNumber()
+                  )}
                 </MetricValue>
                 <PercentageChange isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}>
                   {(metrics.global?.gMarketcapPro || 0) >= 0 ? '▲' : '▼'}
@@ -713,7 +799,11 @@ export default function Summary() {
                 <MetricTitle>24h Volume</MetricTitle>
                 <MetricValue>
                   {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0).div(fiatRate).toNumber())}
+                  {formatNumberWithDecimals(
+                    new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0)
+                      .div(fiatRate)
+                      .toNumber()
+                  )}
                 </MetricValue>
                 <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                   {(metrics.global?.gDexVolumePro || 0) >= 0 ? '▲' : '▼'}
@@ -724,9 +814,12 @@ export default function Summary() {
               <MetricBox>
                 <MetricTitle>XRP Price</MetricTitle>
                 <MetricValue>
-                  {xrpPriceSymbol}{xrpPrice}
+                  {xrpPriceSymbol}
+                  {xrpPrice}
                 </MetricValue>
-                <PercentageChange isPositive={(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0}>
+                <PercentageChange
+                  isPositive={(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0}
+                >
                   {(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
                   {Math.abs(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0).toFixed(2)}%
                 </PercentageChange>
@@ -739,10 +832,17 @@ export default function Summary() {
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Stables</ContentTypography>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
-                        {currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber())}
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(
+                          new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber()
+                        )}
                       </MetricValue>
-                      <PercentageChange style={{ fontSize: '0.7rem' }} isPositive={(metrics.global?.gStableVolumePro || 0) >= 0}>
-                        {(metrics.global?.gStableVolumePro || 0) >= 0 ? '▲' : '▼'}{Math.abs(metrics.global?.gStableVolumePro || 0).toFixed(1)}%
+                      <PercentageChange
+                        style={{ fontSize: '0.7rem' }}
+                        isPositive={(metrics.global?.gStableVolumePro || 0) >= 0}
+                      >
+                        {(metrics.global?.gStableVolumePro || 0) >= 0 ? '▲' : '▼'}
+                        {Math.abs(metrics.global?.gStableVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                     </div>
                   </Stack>
@@ -750,10 +850,17 @@ export default function Summary() {
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Memes</ContentTypography>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                       <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
-                        {currencySymbols[activeFiatCurrency]}{formatNumberWithDecimals(new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber())}
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(
+                          new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber()
+                        )}
                       </MetricValue>
-                      <PercentageChange style={{ fontSize: '0.7rem' }} isPositive={(metrics.global?.gMemeVolumePro || 0) >= 0}>
-                        {(metrics.global?.gMemeVolumePro || 0) >= 0 ? '▲' : '▼'}{Math.abs(metrics.global?.gMemeVolumePro || 0).toFixed(1)}%
+                      <PercentageChange
+                        style={{ fontSize: '0.7rem' }}
+                        isPositive={(metrics.global?.gMemeVolumePro || 0) >= 0}
+                      >
+                        {(metrics.global?.gMemeVolumePro || 0) >= 0 ? '▲' : '▼'}
+                        {Math.abs(metrics.global?.gMemeVolumePro || 0).toFixed(1)}%
                       </PercentageChange>
                     </div>
                   </Stack>
@@ -766,57 +873,86 @@ export default function Summary() {
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Sentiment</ContentTypography>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MetricValue style={{
-                        fontSize: '0.9rem',
-                        margin: 0,
-                        color:
-                          metrics.global?.sentimentScore >= 80 ? '#16a34a' :
-                          metrics.global?.sentimentScore >= 60 ? '#4ade80' :
-                          metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
-                          metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444'
-                      }}>
+                      <MetricValue
+                        style={{
+                          fontSize: '0.9rem',
+                          margin: 0,
+                          color:
+                            metrics.global?.sentimentScore >= 80
+                              ? '#16a34a'
+                              : metrics.global?.sentimentScore >= 60
+                                ? '#4ade80'
+                                : metrics.global?.sentimentScore >= 40
+                                  ? '#fbbf24'
+                                  : metrics.global?.sentimentScore >= 20
+                                    ? '#f97316'
+                                    : '#ef4444'
+                        }}
+                      >
                         {(metrics.global?.sentimentScore || 0).toFixed(1)}
                       </MetricValue>
-                      <ContentTypography style={{
-                        fontSize: '0.65rem',
-                        color:
-                          metrics.global?.sentimentScore >= 80 ? '#16a34a' :
-                          metrics.global?.sentimentScore >= 60 ? '#4ade80' :
-                          metrics.global?.sentimentScore >= 40 ? '#fbbf24' :
-                          metrics.global?.sentimentScore >= 20 ? '#f97316' : '#ef4444',
-                        fontWeight: 600
-                      }}>
-                        {
-                          metrics.global?.sentimentScore >= 80 ? 'V.Bull' :
-                          metrics.global?.sentimentScore >= 60 ? 'Bull' :
-                          metrics.global?.sentimentScore >= 40 ? 'Neutral' :
-                          metrics.global?.sentimentScore >= 20 ? 'Bear' : 'V.Bear'
-                        }
+                      <ContentTypography
+                        style={{
+                          fontSize: '0.65rem',
+                          color:
+                            metrics.global?.sentimentScore >= 80
+                              ? '#16a34a'
+                              : metrics.global?.sentimentScore >= 60
+                                ? '#4ade80'
+                                : metrics.global?.sentimentScore >= 40
+                                  ? '#fbbf24'
+                                  : metrics.global?.sentimentScore >= 20
+                                    ? '#f97316'
+                                    : '#ef4444',
+                          fontWeight: 600
+                        }}
+                      >
+                        {metrics.global?.sentimentScore >= 80
+                          ? 'V.Bull'
+                          : metrics.global?.sentimentScore >= 60
+                            ? 'Bull'
+                            : metrics.global?.sentimentScore >= 40
+                              ? 'Neutral'
+                              : metrics.global?.sentimentScore >= 20
+                                ? 'Bear'
+                                : 'V.Bear'}
                       </ContentTypography>
                     </div>
                   </Stack>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Avg RSI</ContentTypography>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      <MetricValue style={{
-                        fontSize: '0.9rem',
-                        margin: 0,
-                        color: (metrics.global?.avgRSI || 50) <= 30 ? '#ef4444' :
-                               (metrics.global?.avgRSI || 50) >= 70 ? '#16a34a' :
-                               theme.palette.text.primary
-                      }}>
+                      <MetricValue
+                        style={{
+                          fontSize: '0.9rem',
+                          margin: 0,
+                          color:
+                            (metrics.global?.avgRSI || 50) <= 30
+                              ? '#ef4444'
+                              : (metrics.global?.avgRSI || 50) >= 70
+                                ? '#16a34a'
+                                : theme.palette.text.primary
+                        }}
+                      >
                         {(metrics.global?.avgRSI || 50).toFixed(1)}
                       </MetricValue>
-                      <ContentTypography style={{
-                        fontSize: '0.65rem',
-                        color: (metrics.global?.avgRSI || 50) <= 30 ? '#ef4444' :
-                               (metrics.global?.avgRSI || 50) >= 70 ? '#16a34a' :
-                               theme.palette.text.secondary,
-                        fontWeight: 600
-                      }}>
-                        {(metrics.global?.avgRSI || 50) <= 30 ? 'Oversold' :
-                         (metrics.global?.avgRSI || 50) >= 70 ? 'Overbought' :
-                         'Neutral'}
+                      <ContentTypography
+                        style={{
+                          fontSize: '0.65rem',
+                          color:
+                            (metrics.global?.avgRSI || 50) <= 30
+                              ? '#ef4444'
+                              : (metrics.global?.avgRSI || 50) >= 70
+                                ? '#16a34a'
+                                : theme.palette.text.secondary,
+                          fontWeight: 600
+                        }}
+                      >
+                        {(metrics.global?.avgRSI || 50) <= 30
+                          ? 'Oversold'
+                          : (metrics.global?.avgRSI || 50) >= 70
+                            ? 'Overbought'
+                            : 'Neutral'}
                       </ContentTypography>
                     </div>
                   </Stack>
@@ -835,7 +971,6 @@ export default function Summary() {
             </Grid>
           </div>
         )}
-
       </Stack>
     </Container>
   );

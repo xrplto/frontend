@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  Stack,
-  Typography,
-  Box,
-  Container
-} from '@mui/material';
+import { Stack, Typography, Box, Container } from '@mui/material';
 import CollectionList from './CollectionList';
 import { CollectionListType } from 'src/utils/constants';
 import { useTheme } from '@mui/material/styles';
@@ -24,8 +19,6 @@ function Collections() {
         position: 'relative'
       }}
     >
-
-
       {/* Collections List Section */}
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 } }}>
         <Box sx={{ mb: { xs: 2, sm: 3 } }}>

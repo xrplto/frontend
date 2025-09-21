@@ -2,15 +2,15 @@ import { alpha, createTheme, darken, lighten } from '@mui/material/styles';
 
 // birdjpg theme - monochrome pixel art inspired
 const themeColors = {
-  primary: '#1A1A1A',      // Black from bird
-  secondary: '#F5F5F5',    // Off-white background
-  success: '#2E2E2E',      // Dark gray
-  warning: '#808080',      // Medium gray
-  error: '#4A4A4A',        // Charcoal
-  info: '#D3D3D3',         // Light gray
-  black: '#000000',        // Pure black
-  white: '#FFFFFF',        // Pure white
-  primaryAlt: '#333333',   // Dark gray alt
+  primary: '#1A1A1A', // Black from bird
+  secondary: '#F5F5F5', // Off-white background
+  success: '#2E2E2E', // Dark gray
+  warning: '#808080', // Medium gray
+  error: '#4A4A4A', // Charcoal
+  info: '#D3D3D3', // Light gray
+  black: '#000000', // Pure black
+  white: '#FFFFFF', // Pure white
+  primaryAlt: '#333333', // Dark gray alt
   trueWhite: '#FFFFFF'
 };
 
@@ -134,8 +134,8 @@ export const BirdTheme = createTheme({
     h4: { fontFamily: "'JetBrains Mono', monospace" },
     h5: { fontFamily: "'JetBrains Mono', monospace" },
     h6: { fontFamily: "'JetBrains Mono', monospace" },
-    body1: { fontVariantNumeric: "tabular-nums" },
-    body2: { fontVariantNumeric: "tabular-nums" }
+    body1: { fontVariantNumeric: 'tabular-nums' },
+    body2: { fontVariantNumeric: 'tabular-nums' }
   },
   colors: {
     gradients: colors.gradients,
@@ -182,7 +182,7 @@ export const BirdTheme = createTheme({
   spacing: 9,
   currency: {
     background1: alpha('#1A1A1A', 0.06),
-    background2: alpha('#333333', 0.06), 
+    background2: alpha('#333333', 0.06),
     border: `1px solid ${alpha('#1A1A1A', 0.2)}`
   },
 
@@ -381,7 +381,7 @@ export const BirdTheme = createTheme({
         root: {
           borderColor: alpha('#1A1A1A', 0.12),
           '&::before, &::after': {
-            borderColor: alpha('#1A1A1A', 0.12),
+            borderColor: alpha('#1A1A1A', 0.12)
           }
         }
       }
@@ -425,7 +425,7 @@ export const BirdTheme = createTheme({
               borderWidth: '1px'
             },
             '&:hover fieldset': {
-              borderColor: alpha('#1A1A1A', 0.4),
+              borderColor: alpha('#1A1A1A', 0.4)
             },
             '&.Mui-focused fieldset': {
               borderColor: themeColors.primary,
@@ -504,7 +504,7 @@ export const BirdTheme = createTheme({
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 0,
             backgroundColor: alpha('#1A1A1A', 0.4),
-            border: `1px solid ${alpha('#1A1A1A', 0.08)}`,
+            border: `1px solid ${alpha('#1A1A1A', 0.08)}`
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
             backgroundColor: alpha('#1A1A1A', 0.6)

@@ -19,7 +19,7 @@ const Title = styled.h1`
   font-weight: 300;
   line-height: 1.235;
   letter-spacing: -0.00833em;
-  
+
   @media (max-width: 600px) {
     font-size: 1.5rem;
   }
@@ -40,9 +40,9 @@ export default function SummaryTag({ tagName }) {
 
       <Subtitle>
         <ContentTypography>
-          This page showcases the top {tagName} tokens, ranked by 24-hour volume in descending order,
-          with the largest volume first. To reorder the list, simply click on one of the options, such
-          as 24h or 7d, for a different perspective on the sector.
+          This page showcases the top {tagName} tokens, ranked by 24-hour volume in descending
+          order, with the largest volume first. To reorder the list, simply click on one of the
+          options, such as 24h or 7d, for a different perspective on the sector.
         </ContentTypography>
       </Subtitle>
     </Container>

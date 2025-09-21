@@ -76,12 +76,16 @@ const Group = React.memo(({ label, items }) => (
     >
       {label}
     </Typography>
-    <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.4) }}>•</Typography>
+    <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.4) }}>
+      •
+    </Typography>
     {items.map((it, idx) => (
       <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
         <FooterLink href={it.href}>{it.label}</FooterLink>
         {idx < items.length - 1 && (
-          <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>/</Typography>
+          <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>
+            /
+          </Typography>
         )}
       </Box>
     ))}
@@ -97,7 +101,10 @@ function Footer() {
 
   return (
     <Root>
-      <Container maxWidth={false} sx={{ px: { xs: 2, md: 4, xl: 8 }, py: 1.25, pb: { xs: 7, md: 7 } }}>
+      <Container
+        maxWidth={false}
+        sx={{ px: { xs: 2, md: 4, xl: 8 }, py: 1.25, pb: { xs: 7, md: 7 } }}
+      >
         <Box
           sx={{
             display: 'flex',
@@ -111,12 +118,25 @@ function Footer() {
             <Link href="/" underline="none" sx={{ display: 'inline-flex' }}>
               <Image src={logo} alt="XRPL.to" width={110} height={38} priority />
             </Link>
-            <Typography variant="caption" color="text.secondary" sx={{ display: { xs: 'none', md: 'inline' } }}>
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ display: { xs: 'none', md: 'inline' } }}
+            >
               © {year}
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, flex: 1, justifyContent: 'flex-end', flexWrap: 'wrap' }}>
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+              flex: 1,
+              justifyContent: 'flex-end',
+              flexWrap: 'wrap'
+            }}
+          >
             <Group label="Products" items={PRODUCTS} />
             <Group label="Company" items={COMPANY} />
             <Group label="Support" items={SUPPORT} />

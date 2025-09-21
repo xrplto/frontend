@@ -462,12 +462,7 @@ export default function PlaceOrder({
               {buySell === 'BUY' ? 'Place Buy Order' : 'Place Sell Order'}
             </OrderButton>
           ) : (
-            <OrderButton
-              variant="outlined"
-              disabled
-              fullWidth
-              ordertype="disabled"
-            >
+            <OrderButton variant="outlined" disabled fullWidth ordertype="disabled">
               Place Order
             </OrderButton>
           )}

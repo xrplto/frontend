@@ -319,14 +319,16 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
           <Box sx={{ textAlign: 'center', py: 1 }}>
             {buySell === 'BUY' ? (
               <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-                Get <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
-                by selling{' '}
+                Get{' '}
+                <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" /> by
+                selling{' '}
                 <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
               </Typography>
             ) : (
               <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-                Sell <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" />{' '}
-                to get{' '}
+                Sell{' '}
+                <CurrencyChip label={curr1.name} size="small" color="error" variant="outlined" /> to
+                get{' '}
                 <CurrencyChip label={curr2.name} size="small" color="primary" variant="outlined" />
               </Typography>
             )}
@@ -434,12 +436,18 @@ export default function TradePanel({ pair, bids, asks, bidId, askId }) {
                 fontSize: { xs: '0.875rem', sm: '1rem' }
               }}
             />
-            <Typography variant="caption" sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}>
+            <Typography
+              variant="caption"
+              sx={{ fontWeight: 500, fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+            >
               Total
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-            <Typography variant="caption" sx={{ color: theme.palette.text.secondary, display: { xs: 'none', sm: 'block' } }}>
+            <Typography
+              variant="caption"
+              sx={{ color: theme.palette.text.secondary, display: { xs: 'none', sm: 'block' } }}
+            >
               ≈
             </Typography>
             <Typography

@@ -137,7 +137,7 @@ const calculateIntervalMetrics = (traderStats, interval) => {
   let intervalVolume = 0;
   if (traderStats.volumeHistory) {
     intervalVolume = traderStats.volumeHistory
-      .filter(item => new Date(item.date) >= cutoffTime)
+      .filter((item) => new Date(item.date) >= cutoffTime)
       .reduce((sum, item) => sum + (item.h24Volume || 0), 0);
   }
 
@@ -145,7 +145,7 @@ const calculateIntervalMetrics = (traderStats, interval) => {
   let intervalTrades = 0;
   if (traderStats.tradeHistory) {
     intervalTrades = traderStats.tradeHistory
-      .filter(item => new Date(item.date) >= cutoffTime)
+      .filter((item) => new Date(item.date) >= cutoffTime)
       .reduce((sum, item) => sum + (item.trades || 0), 0);
   }
 
@@ -153,11 +153,17 @@ const calculateIntervalMetrics = (traderStats, interval) => {
   let intervalROI = 0;
   if (traderStats.roiHistory) {
     const roiData = traderStats.roiHistory
-      .filter(item => new Date(item.date) >= cutoffTime)
-      .filter(item => (item.dailyRoi !== null && item.dailyRoi !== undefined) || (item.dailyroi !== null && item.dailyroi !== undefined));
+      .filter((item) => new Date(item.date) >= cutoffTime)
+      .filter(
+        (item) =>
+          (item.dailyRoi !== null && item.dailyRoi !== undefined) ||
+          (item.dailyroi !== null && item.dailyroi !== undefined)
+      );
 
     if (roiData.length > 0) {
-      intervalROI = roiData.reduce((sum, item) => sum + (item.dailyRoi || item.dailyroi || 0), 0) / roiData.length;
+      intervalROI =
+        roiData.reduce((sum, item) => sum + (item.dailyRoi || item.dailyroi || 0), 0) /
+        roiData.length;
     }
   }
 
@@ -169,10 +175,12 @@ const calculateIntervalMetrics = (traderStats, interval) => {
   if (traderStats.volumeHistory) {
     const tradedTokensSet = new Set();
     traderStats.volumeHistory
-      .filter(item => new Date(item.date) >= cutoffTime)
-      .forEach(item => {
+      .filter((item) => new Date(item.date) >= cutoffTime)
+      .forEach((item) => {
         if (item.tradedTokens && Array.isArray(item.tradedTokens)) {
-          item.tradedTokens.forEach(token => tradedTokensSet.add(token.tokenId || token.currency));
+          item.tradedTokens.forEach((token) =>
+            tradedTokensSet.add(token.tokenId || token.currency)
+          );
         }
       });
     intervalActiveTokens = tradedTokensSet.size;
@@ -215,9 +223,10 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   maxHeight: '90vh',
   overflow: 'auto',
   padding: theme.spacing(2),
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.paper, 0.95)
-    : theme.palette.background.paper,
+  background:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.95)
+      : theme.palette.background.paper,
   backdropFilter: 'blur(20px)',
   borderRadius: '24px',
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -226,25 +235,28 @@ const ModalContent = styled(Paper)(({ theme }) => ({
 
 // Styled container for consistent glass-morphism effect
 const OuterBorderContainer = styled(Box)(({ theme }) => ({
-  background: theme.palette.mode === 'dark'
-    ? alpha(theme.palette.background.paper, 0.6)
-    : alpha(theme.palette.background.paper, 0.8),
+  background:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.6)
+      : alpha(theme.palette.background.paper, 0.8),
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   borderRadius: '16px',
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   padding: theme.spacing(1.5),
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 8px 32px ${alpha(theme.palette.common.black, 0.3)}`
-    : `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
+  boxShadow:
+    theme.palette.mode === 'dark'
+      ? `0 8px 32px ${alpha(theme.palette.common.black, 0.3)}`
+      : `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   position: 'relative',
   overflow: 'hidden',
   '&:hover': {
     transform: 'translateY(-2px)',
-    boxShadow: theme.palette.mode === 'dark'
-      ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}`
-      : `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
+    boxShadow:
+      theme.palette.mode === 'dark'
+        ? `0 12px 40px ${alpha(theme.palette.common.black, 0.4)}`
+        : `0 8px 30px ${alpha(theme.palette.common.black, 0.12)}`,
     border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
   }
 }));
@@ -262,7 +274,12 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
       firstSeriesLength: chartData?.series?.[0]?.data?.length
     });
 
-    if (!chartContainerRef.current || !chartData || !chartData.series || chartData.series.length === 0) {
+    if (
+      !chartContainerRef.current ||
+      !chartData ||
+      !chartData.series ||
+      chartData.series.length === 0
+    ) {
       console.log('LightweightChart: No data to render');
       return;
     }
@@ -270,7 +287,7 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
     const initChart = async () => {
       // Load chart libraries first
       await loadChartLibraries();
-      
+
       if (!createChart) {
         console.error('Chart library failed to load');
         return;
@@ -293,188 +310,201 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
 
       // Create new chart
       const chart = createChart(chartContainerRef.current, {
-      width: chartContainerRef.current.clientWidth,
-      height: chartContainerRef.current.clientHeight || (isMobile ? 300 : 400),
-      layout: {
-        background: { type: 'solid', color: 'transparent' },
-        textColor: theme.palette.text.primary,
-        fontSize: 11,
-      },
-      grid: {
-        vertLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)',
+        width: chartContainerRef.current.clientWidth,
+        height: chartContainerRef.current.clientHeight || (isMobile ? 300 : 400),
+        layout: {
+          background: { type: 'solid', color: 'transparent' },
+          textColor: theme.palette.text.primary,
+          fontSize: 11
         },
-        horzLines: {
-          color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-        },
-      },
-      crosshair: {
-        mode: 0,
-        vertLine: {
-          color: theme.palette.primary.main,
-          width: 1,
-          labelBackgroundColor: theme.palette.primary.main,
-        },
-        horzLine: {
-          color: theme.palette.primary.main,
-          width: 1,
-          labelBackgroundColor: theme.palette.primary.main,
-        },
-      },
-      rightPriceScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-        scaleMargins: { top: 0.1, bottom: 0.2 },
-      },
-      timeScale: {
-        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-        timeVisible: true,
-        secondsVisible: false,
-      },
-    });
-
-    chartRef.current = chart;
-
-    // Add series
-    const seriesRefs = [];
-    chartData.series.forEach((serie, index) => {
-      console.log(`Adding series ${index}:`, serie.name, serie.type, 'with', serie.data.length, 'points');
-
-      let series;
-      if (serie.type === 'column') {
-        console.log(`Creating histogram series for ${serie.name}`);
-        series = chart.addSeries(HistogramSeries, {
-          color: index === 0 ? theme.palette.primary.main : alpha(theme.palette.info.main, 0.6),
-          priceFormat: {
-            type: 'volume',
-            precision: 0,
-            minMove: 1
+        grid: {
+          vertLines: {
+            color: isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'
           },
-        });
-      } else {
-        console.log(`Creating line series for ${serie.name}`);
-        series = chart.addSeries(LineSeries, {
-          color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
-          lineWidth: 2,
-          crosshairMarkerVisible: true,
-          crosshairMarkerRadius: 4,
-          priceFormat: {
-            type: 'price',
-            precision: 2,
-            minMove: 0.01
+          horzLines: {
+            color: isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'
           }
-        });
-      }
-
-      // Convert data to lightweight-charts format and sort by time
-      const data = serie.data
-        .map((value, idx) => {
-          const dateStr = chartData.xaxis.categories[idx];
-          // Parse date more carefully
-          const date = new Date(dateStr);
-          const timestamp = date.getTime() / 1000;
-
-          // Validate timestamp
-          if (isNaN(timestamp) || !isFinite(timestamp)) {
-            console.warn('Invalid timestamp for:', dateStr);
-            return null;
-          }
-          return {
-            time: Math.floor(timestamp),
-            value: parseFloat(value) || 0
-          };
-        })
-        .filter(item => item !== null) // Remove invalid entries
-        .sort((a, b) => a.time - b.time) // Sort in ascending order by time
-        .filter((item, index, array) => {
-          // Remove duplicates - keep only the first occurrence of each timestamp
-          return index === 0 || item.time !== array[index - 1].time;
-        });
-
-      console.log(`Series ${index} processed data points:`, data.length);
-
-      if (data.length > 0) {
-        series.setData(data);
-        series.priceScale().applyOptions({
-          scaleMargins: {
-            top: 0.1,
-            bottom: 0.2,
+        },
+        crosshair: {
+          mode: 0,
+          vertLine: {
+            color: theme.palette.primary.main,
+            width: 1,
+            labelBackgroundColor: theme.palette.primary.main
           },
-        });
-      }
-      seriesRefs.push(series);
-    });
-
-    // Add tooltip
-    const toolTip = document.createElement('div');
-    toolTip.style = `position: absolute; display: none; padding: 8px; font-size: 12px; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`;
-    chartContainerRef.current.appendChild(toolTip);
-
-    chart.subscribeCrosshairMove(param => {
-      if (!param.time || param.point.x < 0 || param.point.y < 0) {
-        toolTip.style.display = 'none';
-        return;
-      }
-
-      const dateStr = new Date(param.time * 1000).toLocaleDateString();
-      let html = `<div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>`;
-      
-      seriesRefs.forEach((series, idx) => {
-        const data = param.seriesData.get(series);
-        if (data) {
-          const seriesName = chartData.series[idx].name;
-          const value = data.value;
-          let formattedValue = value.toFixed(2);
-          if (seriesName.includes('ROI')) formattedValue += '%';
-          else if (seriesName.includes('Volume')) formattedValue = value.toLocaleString() + ' XRP';
-          else if (seriesName.includes('Trades')) formattedValue = value.toLocaleString();
-          
-          html += `<div>${seriesName}: ${formattedValue}</div>`;
+          horzLine: {
+            color: theme.palette.primary.main,
+            width: 1,
+            labelBackgroundColor: theme.palette.primary.main
+          }
+        },
+        rightPriceScale: {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+          scaleMargins: { top: 0.1, bottom: 0.2 }
+        },
+        timeScale: {
+          borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+          timeVisible: true,
+          secondsVisible: false
         }
       });
 
-      toolTip.innerHTML = html;
-      toolTip.style.display = 'block';
-      toolTip.style.left = Math.min(param.point.x + 10, chartContainerRef.current.clientWidth - 150) + 'px';
-      toolTip.style.top = '12px';
-    });
+      chartRef.current = chart;
 
-    chart.timeScale().fitContent();
+      // Add series
+      const seriesRefs = [];
+      chartData.series.forEach((serie, index) => {
+        console.log(
+          `Adding series ${index}:`,
+          serie.name,
+          serie.type,
+          'with',
+          serie.data.length,
+          'points'
+        );
 
-    const handleResize = () => {
-      if (chartContainerRef.current && chart) {
-        chart.applyOptions({ width: chartContainerRef.current.clientWidth });
-      }
-    };
-    window.addEventListener('resize', handleResize);
+        let series;
+        if (serie.type === 'column') {
+          console.log(`Creating histogram series for ${serie.name}`);
+          series = chart.addSeries(HistogramSeries, {
+            color: index === 0 ? theme.palette.primary.main : alpha(theme.palette.info.main, 0.6),
+            priceFormat: {
+              type: 'volume',
+              precision: 0,
+              minMove: 1
+            }
+          });
+        } else {
+          console.log(`Creating line series for ${serie.name}`);
+          series = chart.addSeries(LineSeries, {
+            color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
+            lineWidth: 2,
+            crosshairMarkerVisible: true,
+            crosshairMarkerRadius: 4,
+            priceFormat: {
+              type: 'price',
+              precision: 2,
+              minMove: 0.01
+            }
+          });
+        }
 
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      if (chartContainerRef.current) {
-        const tooltips = chartContainerRef.current.querySelectorAll('div[style*="position: absolute"]');
-        tooltips.forEach(tooltip => tooltip.remove());
-      }
-      if (chartRef.current) {
-        try {
-          chartRef.current.remove();
-        } catch (e) {}
-        chartRef.current = null;
-      }
+        // Convert data to lightweight-charts format and sort by time
+        const data = serie.data
+          .map((value, idx) => {
+            const dateStr = chartData.xaxis.categories[idx];
+            // Parse date more carefully
+            const date = new Date(dateStr);
+            const timestamp = date.getTime() / 1000;
+
+            // Validate timestamp
+            if (isNaN(timestamp) || !isFinite(timestamp)) {
+              console.warn('Invalid timestamp for:', dateStr);
+              return null;
+            }
+            return {
+              time: Math.floor(timestamp),
+              value: parseFloat(value) || 0
+            };
+          })
+          .filter((item) => item !== null) // Remove invalid entries
+          .sort((a, b) => a.time - b.time) // Sort in ascending order by time
+          .filter((item, index, array) => {
+            // Remove duplicates - keep only the first occurrence of each timestamp
+            return index === 0 || item.time !== array[index - 1].time;
+          });
+
+        console.log(`Series ${index} processed data points:`, data.length);
+
+        if (data.length > 0) {
+          series.setData(data);
+          series.priceScale().applyOptions({
+            scaleMargins: {
+              top: 0.1,
+              bottom: 0.2
+            }
+          });
+        }
+        seriesRefs.push(series);
+      });
+
+      // Add tooltip
+      const toolTip = document.createElement('div');
+      toolTip.style = `position: absolute; display: none; padding: 8px; font-size: 12px; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 4px; background: ${isDark ? 'rgba(0, 0, 0, 0.85)' : 'rgba(255, 255, 255, 0.95)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`;
+      chartContainerRef.current.appendChild(toolTip);
+
+      chart.subscribeCrosshairMove((param) => {
+        if (!param.time || param.point.x < 0 || param.point.y < 0) {
+          toolTip.style.display = 'none';
+          return;
+        }
+
+        const dateStr = new Date(param.time * 1000).toLocaleDateString();
+        let html = `<div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>`;
+
+        seriesRefs.forEach((series, idx) => {
+          const data = param.seriesData.get(series);
+          if (data) {
+            const seriesName = chartData.series[idx].name;
+            const value = data.value;
+            let formattedValue = value.toFixed(2);
+            if (seriesName.includes('ROI')) formattedValue += '%';
+            else if (seriesName.includes('Volume'))
+              formattedValue = value.toLocaleString() + ' XRP';
+            else if (seriesName.includes('Trades')) formattedValue = value.toLocaleString();
+
+            html += `<div>${seriesName}: ${formattedValue}</div>`;
+          }
+        });
+
+        toolTip.innerHTML = html;
+        toolTip.style.display = 'block';
+        toolTip.style.left =
+          Math.min(param.point.x + 10, chartContainerRef.current.clientWidth - 150) + 'px';
+        toolTip.style.top = '12px';
+      });
+
+      chart.timeScale().fitContent();
+
+      const handleResize = () => {
+        if (chartContainerRef.current && chart) {
+          chart.applyOptions({ width: chartContainerRef.current.clientWidth });
+        }
+      };
+      window.addEventListener('resize', handleResize);
+
+      return () => {
+        window.removeEventListener('resize', handleResize);
+        if (chartContainerRef.current) {
+          const tooltips = chartContainerRef.current.querySelectorAll(
+            'div[style*="position: absolute"]'
+          );
+          tooltips.forEach((tooltip) => tooltip.remove());
+        }
+        if (chartRef.current) {
+          try {
+            chartRef.current.remove();
+          } catch (e) {}
+          chartRef.current = null;
+        }
+      };
     };
-    };
-    
+
     initChart();
   }, [chartData, isDark, theme]);
 
   if (!chartData || !chartData.series) {
     return (
-      <Box sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-        width: '100%',
-        color: theme.palette.text.secondary
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: '100%',
+          width: '100%',
+          color: theme.palette.text.secondary
+        }}
+      >
         <Typography variant="body2">Loading chart data...</Typography>
       </Box>
     );
@@ -492,7 +522,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [loading, setLoading] = useState(true);
   const [selectedChart, setSelectedChart] = useState(null);
   const [chartView, setChartView] = useState('roi');
-    const [xrpBalance, setXrpBalance] = useState(null);
+  const [xrpBalance, setXrpBalance] = useState(null);
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [isAmm, setIsAmm] = useState(false);
 
@@ -511,9 +541,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   useEffect(() => {
     const fetchTraderStats = async () => {
       try {
-        const response = await axiosInstance.get(
-          `${BASE_URL}/analytics/trader-stats/${account}`
-        );
+        const response = await axiosInstance.get(`${BASE_URL}/analytics/trader-stats/${account}`);
         setTraderStats(response.data);
         // Set AMM status based on response
         setIsAmm(!!response.data?.AMM);
@@ -743,7 +771,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             color: theme.palette.text.secondary,
             fontSize: '10px'
           },
-          formatter: function() {
+          formatter: function () {
             return this.value + '%';
           }
         }
@@ -791,7 +819,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     }
   };
-  
+
   /* Old ApexCharts options removed - now handled in renderChart
       custom: function ({ series, seriesIndex, dataPointIndex, w }) {
         const data = w.globals.initialSeries;
@@ -1004,7 +1032,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             color: theme.palette.text.secondary,
             fontSize: '10px'
           },
-          formatter: function() {
+          formatter: function () {
             return formatNumber(this.value, 'trades');
           }
         }
@@ -1023,7 +1051,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             color: theme.palette.text.secondary,
             fontSize: '10px'
           },
-          formatter: function() {
+          formatter: function () {
             return formatNumber(this.value, 'trades');
           }
         }
@@ -1055,7 +1083,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     }
   };
-  
+
   /* Old ApexCharts options
     chart: {
       stacked: false,
@@ -1301,7 +1329,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             color: theme.palette.text.secondary,
             fontSize: '10px'
           },
-          formatter: function() {
+          formatter: function () {
             return formatNumber(this.value, 'volume');
           }
         }
@@ -1320,7 +1348,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             color: theme.palette.text.secondary,
             fontSize: '10px'
           },
-          formatter: function() {
+          formatter: function () {
             return formatNumber(this.value, 'volume');
           }
         }
@@ -1352,7 +1380,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     }
   };
-  
+
   /* Old ApexCharts volume options
     chart: {
       stacked: false,
@@ -1610,15 +1638,18 @@ export default function Portfolio({ account, limit, collection, type }) {
   const fetchCollections = async () => {
     setLoadingCollections(true);
     try {
-      const response = await axiosInstance.post('https://api.xrpnft.com/api/account/collectedCreated', {
-        account,
-        filter: 0,
-        limit: 16,
-        page: 0,
-        search: '',
-        subFilter: 'pricexrpasc',
-        type: 'collected'
-      });
+      const response = await axiosInstance.post(
+        'https://api.xrpnft.com/api/account/collectedCreated',
+        {
+          account,
+          filter: 0,
+          limit: 16,
+          page: 0,
+          search: '',
+          subFilter: 'pricexrpasc',
+          type: 'collected'
+        }
+      );
       if (response.data) {
         setCollections(response.data.nfts || []);
         setTotalValue(response.data.totalValue || 0);
@@ -1647,7 +1678,6 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   };
 
-
   const renderChart = (chartData, options, type = 'line') => {
     console.log('renderChart called with chartView:', chartView);
 
@@ -1657,11 +1687,15 @@ export default function Portfolio({ account, limit, collection, type }) {
       dateSource = [...traderStats.roiHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
     } else if (chartView === 'activity' && traderStats?.tradeHistory) {
       // Use the same logic as processTradeHistoryData - full history
-      const sortedHistory = [...traderStats.tradeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const sortedHistory = [...traderStats.tradeHistory].sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
       dateSource = sortedHistory;
     } else if (chartView === 'volume' && traderStats?.volumeHistory) {
       // Use the same logic as processVolumeHistoryData - full history
-      const sortedHistory = [...traderStats.volumeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+      const sortedHistory = [...traderStats.volumeHistory].sort(
+        (a, b) => new Date(a.date) - new Date(b.date)
+      );
       dateSource = sortedHistory;
     }
 
@@ -1679,7 +1713,9 @@ export default function Portfolio({ account, limit, collection, type }) {
       // Use the actual date from source data for proper timestamp
       if (dateSource && dateSource[index]) {
         item.date = dateSource[index].date;
-        console.log(`Index ${index}: Using source date ${dateSource[index].date} for category "${dateStr}"`);
+        console.log(
+          `Index ${index}: Using source date ${dateSource[index].date} for category "${dateStr}"`
+        );
       } else {
         console.warn(`Index ${index}: No source date for category "${dateStr}", using fallback`);
 
@@ -1717,18 +1753,23 @@ export default function Portfolio({ account, limit, collection, type }) {
       name: serie.name,
       dataKey: serie.name.toLowerCase().replace(/\s+/g, ''),
       type: serie.type,
-      color: chartView === 'roi' && serie.name === 'Volume'
-        ? alpha(theme.palette.info.main, 0.5)  // Lighter color for volume bars in ROI view
-        : index === 0 ? theme.palette.primary.main
-        : index === 1 ? theme.palette.success.main
-        : alpha(theme.palette.info.main, 0.8),
+      color:
+        chartView === 'roi' && serie.name === 'Volume'
+          ? alpha(theme.palette.info.main, 0.5) // Lighter color for volume bars in ROI view
+          : index === 0
+            ? theme.palette.primary.main
+            : index === 1
+              ? theme.palette.success.main
+              : alpha(theme.palette.info.main, 0.8),
       visible: true,
       isVolumeInRoi: chartView === 'roi' && serie.name === 'Volume',
       lineWidth: chartView === 'roi' && serie.type === 'line' ? 2.5 : 2, // Thicker lines for ROI
       valueFormatter: (value) => {
         if (chartView === 'roi') {
           // Volume in ROI view is scaled down, so multiply back for display
-          return serie.name.includes('Volume') ? formatNumber(value * 10000, 'volume') + ' XRP' : formatNumber(value, 'roi');
+          return serie.name.includes('Volume')
+            ? formatNumber(value * 10000, 'volume') + ' XRP'
+            : formatNumber(value, 'roi');
         } else if (chartView === 'activity') {
           return formatNumber(value, 'trades');
         } else if (chartView === 'volume') {
@@ -1772,9 +1813,6 @@ export default function Portfolio({ account, limit, collection, type }) {
   //   // fetchData(); // Commenting out or removing this call
   // }, [account, collection, type]);
 
-
-
-
   // Render loading state or error state
   if (loading) {
     return <Box>Loading...</Box>;
@@ -1782,7 +1820,10 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   return (
     <OverviewWrapper>
-      <Container maxWidth={false} sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 2 }, maxWidth: '100%' }}>
+      <Container
+        maxWidth={false}
+        sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 2 }, maxWidth: '100%' }}
+      >
         <Grid container spacing={{ xs: 1, sm: 2 }}>
           <Grid item xs={12} lg={3} order={{ xs: 2, lg: 1 }}>
             <OuterBorderContainer>
@@ -1795,7 +1836,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                   spacing={{ xs: 0.75, sm: 1 }}
                 >
                   {/* XRP Address Section - removed nested container */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, p: { xs: 1.5, sm: 2 } }}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: { xs: 1, sm: 1.5 },
+                      p: { xs: 1.5, sm: 2 }
+                    }}
+                  >
                     <Box sx={{ position: 'relative' }}>
                       <Avatar
                         src={getHashIcon(account)}
@@ -1846,7 +1894,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                             maxWidth: { xs: '160px', sm: '100%' }
                           }}
                         >
-                          {isMobile ? `${account.substring(0, 8)}...${account.substring(account.length - 6)}` : account}
+                          {isMobile
+                            ? `${account.substring(0, 8)}...${account.substring(account.length - 6)}`
+                            : account}
                         </Typography>
                         <IconButton
                           size="small"
@@ -1865,9 +1915,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </Box>
                       <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                         <Chip
-                          label={
-                            activeRanks[account] === 'verified' ? 'Verified' : 'Trader'
-                          }
+                          label={activeRanks[account] === 'verified' ? 'Verified' : 'Trader'}
                           size="small"
                           sx={{
                             bgcolor: alpha(
@@ -1875,8 +1923,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               0.08
                             ),
                             color:
-                              activeRankColors[activeRanks[account]] ||
-                              theme.palette.primary.main,
+                              activeRankColors[activeRanks[account]] || theme.palette.primary.main,
                             border: 'none',
                             fontWeight: 600,
                             fontSize: '0.75rem',
@@ -1909,249 +1956,267 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </Stack>
 
                 <Card
-                    sx={{
-                      borderRadius: '12px',
-                      background: theme.palette.mode === 'dark'
+                  sx={{
+                    borderRadius: '12px',
+                    background:
+                      theme.palette.mode === 'dark'
                         ? alpha(theme.palette.background.paper, 0.4)
                         : alpha(theme.palette.background.paper, 0.9),
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      boxShadow: theme.shadows[2],
-                      overflow: 'hidden',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: theme.shadows[4]
-                      }
-                    }}
-                  >
-                    <Box sx={{ p: 1.5 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <TrendingUpIcon
-                            sx={{
-                              fontSize: '1rem',
-                              color: theme.palette.success.main
-                            }}
-                          />
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: alpha(theme.palette.text.secondary, 0.9),
-                              fontWeight: 600,
-                              fontSize: '0.75rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.3px'
-                            }}
-                          >
-                            Trading Volume
-                          </Typography>
-                        </Box>
-                        {loading ? (
-                          <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
-                        ) : (
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              color: theme.palette.success.main,
-                              fontWeight: 700,
-                              fontSize: '0.95rem'
-                            }}
-                          >
-                            {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </Card>
-
-                  {/* XRP Balance Display */}
-                  <Card
-                    sx={{
-                      mt: 1,
-                      borderRadius: '12px',
-                      background: theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.background.paper, 0.4)
-                        : alpha(theme.palette.background.paper, 0.9),
-                      backdropFilter: 'blur(8px)',
-                      WebkitBackdropFilter: 'blur(8px)',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      boxShadow: theme.shadows[2],
-                      overflow: 'hidden',
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        transform: 'translateY(-2px)',
-                        boxShadow: theme.shadows[4]
-                      }
-                    }}
-                  >
-                    <Box sx={{ p: 2 }}>
-                      {/* Main Balance Row */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 1, mb: 1.5 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <AccountBalanceWalletIcon
-                            sx={{
-                              fontSize: '1rem',
-                              color: theme.palette.primary.main
-                            }}
-                          />
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: alpha(theme.palette.text.secondary, 0.9),
-                              fontWeight: 600,
-                              fontSize: '0.8rem',
-                              textTransform: 'uppercase',
-                              letterSpacing: '0.3px'
-                            }}
-                          >
-                            XRP Balance
-                          </Typography>
-                        </Box>
-                        {loadingBalance ? (
-                          <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
-                        ) : (
-                          <Typography
-                            variant="body2"
-                            sx={{
-                              fontWeight: 700,
-                              color: theme.palette.primary.main,
-                              fontSize: '1.1rem'
-                            }}
-                          >
-                            {xrpBalance !== null
-                              ? xrpBalance.toLocaleString(undefined, {
-                                  minimumFractionDigits: 2,
-                                  maximumFractionDigits: 2
-                                })
-                              : '0.00'}{' '}
-                            XRP
-                          </Typography>
-                        )}
-                      </Box>
-
-                      {/* Buy/Sell Volume Row */}
-                      <Box sx={{ display: 'flex', gap: 1.5 }}>
-                        <Box
-                          sx={{
-                            flex: 1,
-                            p: 1.5,
-                            borderRadius: '8px',
-                            background: alpha(theme.palette.success.main, 0.05),
-                            border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: '0.7rem',
-                              display: 'block'
-                            }}
-                          >
-                            Buy
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: theme.palette.success.main,
-                              fontWeight: 600,
-                              fontSize: '0.85rem'
-                            }}
-                          >
-                            {(traderStats?.buyVolume || 0).toLocaleString()}
-                          </Typography>
-                        </Box>
-                        <Box
-                          sx={{
-                            flex: 1,
-                            p: 1.5,
-                            borderRadius: '8px',
-                            background: alpha(theme.palette.error.main, 0.05),
-                            border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`
-                          }}
-                        >
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: alpha(theme.palette.text.secondary, 0.8),
-                              fontSize: '0.7rem',
-                              display: 'block'
-                            }}
-                          >
-                            Sell
-                          </Typography>
-                          <Typography
-                            variant="caption"
-                            sx={{
-                              color: theme.palette.error.main,
-                              fontWeight: 600,
-                              fontSize: '0.85rem'
-                            }}
-                          >
-                            {(traderStats?.sellVolume || 0).toLocaleString()}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </Box>
-                  </Card>
-
-                  {/* Additional Stats - Compact card */}
-                  <Box
-                    sx={{
-                      mt: 1,
-                      p: 1.5,
-                      borderRadius: '12px',
-                      background: alpha(theme.palette.info.main, 0.08),
-                      border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                      boxShadow: theme.shadows[1],
-                      transition: 'all 0.2s ease',
-                      '&:hover': {
-                        transform: 'translateY(-1px)',
-                        boxShadow: theme.shadows[2]
-                      }
-                    }}
-                  >
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: theme.shadows[2],
+                    overflow: 'hidden',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: theme.shadows[4]
+                    }
+                  }}
+                >
+                  <Box sx={{ p: 1.5 }}>
                     <Box
                       sx={{
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'space-between'
+                        justifyContent: 'space-between',
+                        gap: 1
                       }}
                     >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: alpha(theme.palette.text.secondary, 0.9),
-                          fontWeight: 600,
-                          fontSize: '0.8rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.3px'
-                        }}
-                      >
-                        Avg Holding Time
-                      </Typography>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: theme.palette.info.main,
-                          fontWeight: 700,
-                          fontSize: '1.1rem'
-                        }}
-                      >
-                        {formatHoldingTime(traderStats?.avgHoldingTime || 0)}
-                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <TrendingUpIcon
+                          sx={{
+                            fontSize: '1rem',
+                            color: theme.palette.success.main
+                          }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: alpha(theme.palette.text.secondary, 0.9),
+                            fontWeight: 600,
+                            fontSize: '0.75rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px'
+                          }}
+                        >
+                          Trading Volume
+                        </Typography>
+                      </Box>
+                      {loading ? (
+                        <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            color: theme.palette.success.main,
+                            fontWeight: 700,
+                            fontSize: '0.95rem'
+                          }}
+                        >
+                          {`${(traderStats?.totalVolume || 0).toLocaleString()} XRP`}
+                        </Typography>
+                      )}
                     </Box>
                   </Box>
+                </Card>
+
+                {/* XRP Balance Display */}
+                <Card
+                  sx={{
+                    mt: 1,
+                    borderRadius: '12px',
+                    background:
+                      theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.paper, 0.4)
+                        : alpha(theme.palette.background.paper, 0.9),
+                    backdropFilter: 'blur(8px)',
+                    WebkitBackdropFilter: 'blur(8px)',
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    boxShadow: theme.shadows[2],
+                    overflow: 'hidden',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-2px)',
+                      boxShadow: theme.shadows[4]
+                    }
+                  }}
+                >
+                  <Box sx={{ p: 2 }}>
+                    {/* Main Balance Row */}
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 1,
+                        mb: 1.5
+                      }}
+                    >
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <AccountBalanceWalletIcon
+                          sx={{
+                            fontSize: '1rem',
+                            color: theme.palette.primary.main
+                          }}
+                        />
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: alpha(theme.palette.text.secondary, 0.9),
+                            fontWeight: 600,
+                            fontSize: '0.8rem',
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.3px'
+                          }}
+                        >
+                          XRP Balance
+                        </Typography>
+                      </Box>
+                      {loadingBalance ? (
+                        <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
+                      ) : (
+                        <Typography
+                          variant="body2"
+                          sx={{
+                            fontWeight: 700,
+                            color: theme.palette.primary.main,
+                            fontSize: '1.1rem'
+                          }}
+                        >
+                          {xrpBalance !== null
+                            ? xrpBalance.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                              })
+                            : '0.00'}{' '}
+                          XRP
+                        </Typography>
+                      )}
+                    </Box>
+
+                    {/* Buy/Sell Volume Row */}
+                    <Box sx={{ display: 'flex', gap: 1.5 }}>
+                      <Box
+                        sx={{
+                          flex: 1,
+                          p: 1.5,
+                          borderRadius: '8px',
+                          background: alpha(theme.palette.success.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: alpha(theme.palette.text.secondary, 0.8),
+                            fontSize: '0.7rem',
+                            display: 'block'
+                          }}
+                        >
+                          Buy
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.success.main,
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          {(traderStats?.buyVolume || 0).toLocaleString()}
+                        </Typography>
+                      </Box>
+                      <Box
+                        sx={{
+                          flex: 1,
+                          p: 1.5,
+                          borderRadius: '8px',
+                          background: alpha(theme.palette.error.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: alpha(theme.palette.text.secondary, 0.8),
+                            fontSize: '0.7rem',
+                            display: 'block'
+                          }}
+                        >
+                          Sell
+                        </Typography>
+                        <Typography
+                          variant="caption"
+                          sx={{
+                            color: theme.palette.error.main,
+                            fontWeight: 600,
+                            fontSize: '0.85rem'
+                          }}
+                        >
+                          {(traderStats?.sellVolume || 0).toLocaleString()}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Box>
+                </Card>
+
+                {/* Additional Stats - Compact card */}
+                <Box
+                  sx={{
+                    mt: 1,
+                    p: 1.5,
+                    borderRadius: '12px',
+                    background: alpha(theme.palette.info.main, 0.08),
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                    boxShadow: theme.shadows[1],
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      transform: 'translateY(-1px)',
+                      boxShadow: theme.shadows[2]
+                    }
+                  }}
+                >
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha(theme.palette.text.secondary, 0.9),
+                        fontWeight: 600,
+                        fontSize: '0.8rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px'
+                      }}
+                    >
+                      Avg Holding Time
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        color: theme.palette.info.main,
+                        fontWeight: 700,
+                        fontSize: '1.1rem'
+                      }}
+                    >
+                      {formatHoldingTime(traderStats?.avgHoldingTime || 0)}
+                    </Typography>
+                  </Box>
+                </Box>
 
                 <Box sx={{ mt: 1 }}>
                   <Card
                     sx={{
                       borderRadius: '12px',
-                      background: theme.palette.mode === 'dark'
-                        ? alpha(theme.palette.background.paper, 0.4)
-                        : alpha(theme.palette.background.paper, 0.9),
+                      background:
+                        theme.palette.mode === 'dark'
+                          ? alpha(theme.palette.background.paper, 0.4)
+                          : alpha(theme.palette.background.paper, 0.9),
                       backdropFilter: 'blur(8px)',
                       WebkitBackdropFilter: 'blur(8px)',
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -2165,7 +2230,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                     }}
                   >
                     <Box sx={{ p: 2 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          mb: 1.5
+                        }}
+                      >
                         <Typography
                           variant="caption"
                           sx={{
@@ -2181,17 +2253,14 @@ export default function Portfolio({ account, limit, collection, type }) {
                       </Box>
 
                       {loading ? (
-                        <Skeleton
-                          variant="rectangular"
-                          height={100}
-                          sx={{ borderRadius: '6px' }}
-                        />
+                        <Skeleton variant="rectangular" height={100} sx={{ borderRadius: '6px' }} />
                       ) : (
                         <Box
                           sx={{
-                            background: theme.palette.mode === 'dark'
-                              ? alpha(theme.palette.background.default, 0.3)
-                              : alpha(theme.palette.background.default, 0.5),
+                            background:
+                              theme.palette.mode === 'dark'
+                                ? alpha(theme.palette.background.default, 0.3)
+                                : alpha(theme.palette.background.default, 0.5),
                             borderRadius: '8px',
                             border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                             overflow: 'hidden'
@@ -2228,60 +2297,65 @@ export default function Portfolio({ account, limit, collection, type }) {
                               {traderStats?.tokenPerformance
                                 ?.sort((a, b) => b.profit - a.profit)
                                 .slice(0, 25)
-                                .slice(tokenPage * tokenRowsPerPage, tokenPage * tokenRowsPerPage + tokenRowsPerPage)
+                                .slice(
+                                  tokenPage * tokenRowsPerPage,
+                                  tokenPage * tokenRowsPerPage + tokenRowsPerPage
+                                )
                                 .map((token, index) => (
-                                <TableRow
-                                  key={token.tokenId}
-                                  sx={{
-                                    '&:hover': {
-                                      background: alpha(theme.palette.primary.main, 0.02)
-                                    }
-                                  }}
-                                >
-                                  <TableCell>
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                                      <Box
-                                        sx={{
-                                          width: 6,
-                                          height: 6,
-                                          borderRadius: '50%',
-                                          bgcolor:
-                                            token.roi >= 0
-                                              ? theme.palette.success.main
-                                              : theme.palette.error.main
-                                        }}
-                                      />
-                                      <Typography sx={{ fontWeight: 500, fontSize: '0.8rem' }}>{token.name}</Typography>
-                                    </Box>
-                                  </TableCell>
-                                  <TableCell
-                                    align="right"
+                                  <TableRow
+                                    key={token.tokenId}
                                     sx={{
-                                      color:
-                                        token.roi >= 0
-                                          ? theme.palette.success.main
-                                          : theme.palette.error.main,
-                                      fontWeight: 600,
-                                      fontSize: '0.8rem'
+                                      '&:hover': {
+                                        background: alpha(theme.palette.primary.main, 0.02)
+                                      }
                                     }}
                                   >
-                                    {token.roi.toFixed(2)}%
-                                  </TableCell>
-                                  <TableCell
-                                    align="right"
-                                    sx={{
-                                      color:
-                                        token.profit >= 0
-                                          ? theme.palette.success.main
-                                          : theme.palette.error.main,
-                                      fontWeight: 600,
-                                      fontSize: '0.8rem'
-                                    }}
-                                  >
-                                    {token.profit.toFixed(0)}
-                                  </TableCell>
-                                </TableRow>
-                              ))}
+                                    <TableCell>
+                                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                        <Box
+                                          sx={{
+                                            width: 6,
+                                            height: 6,
+                                            borderRadius: '50%',
+                                            bgcolor:
+                                              token.roi >= 0
+                                                ? theme.palette.success.main
+                                                : theme.palette.error.main
+                                          }}
+                                        />
+                                        <Typography sx={{ fontWeight: 500, fontSize: '0.8rem' }}>
+                                          {token.name}
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                    <TableCell
+                                      align="right"
+                                      sx={{
+                                        color:
+                                          token.roi >= 0
+                                            ? theme.palette.success.main
+                                            : theme.palette.error.main,
+                                        fontWeight: 600,
+                                        fontSize: '0.8rem'
+                                      }}
+                                    >
+                                      {token.roi.toFixed(2)}%
+                                    </TableCell>
+                                    <TableCell
+                                      align="right"
+                                      sx={{
+                                        color:
+                                          token.profit >= 0
+                                            ? theme.palette.success.main
+                                            : theme.palette.error.main,
+                                        fontWeight: 600,
+                                        fontSize: '0.8rem'
+                                      }}
+                                    >
+                                      {token.profit.toFixed(0)}
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
                             </TableBody>
                           </Table>
                           {traderStats?.tokenPerformance?.length > 5 && (
@@ -2302,9 +2376,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                                   paddingLeft: 1,
                                   paddingRight: 1
                                 },
-                                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows': {
-                                  fontSize: '0.65rem'
-                                },
+                                '.MuiTablePagination-selectLabel, .MuiTablePagination-displayedRows':
+                                  {
+                                    fontSize: '0.65rem'
+                                  },
                                 '.MuiTablePagination-select': {
                                   fontSize: '0.65rem'
                                 },
@@ -2327,9 +2402,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                   sx={{
                     borderRadius: '12px',
                     mt: 1,
-                    background: theme.palette.mode === 'dark'
-                      ? alpha(theme.palette.background.paper, 0.4)
-                      : alpha(theme.palette.background.paper, 0.9),
+                    background:
+                      theme.palette.mode === 'dark'
+                        ? alpha(theme.palette.background.paper, 0.4)
+                        : alpha(theme.palette.background.paper, 0.9),
                     backdropFilter: 'blur(8px)',
                     WebkitBackdropFilter: 'blur(8px)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -2462,9 +2538,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                 sx={{
                   p: { xs: 1.5, sm: 2 },
                   borderRadius: '12px',
-                  background: theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.background.paper, 0.6)
-                    : alpha(theme.palette.background.paper, 0.9),
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.background.paper, 0.6)
+                      : alpha(theme.palette.background.paper, 0.9),
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -2515,17 +2592,20 @@ export default function Portfolio({ account, limit, collection, type }) {
                           cursor: 'pointer',
                           fontSize: { xs: '0.7rem', sm: '0.75rem' },
                           fontWeight: 600,
-                          color: selectedInterval === period
-                            ? theme.palette.primary.contrastText
-                            : theme.palette.text.secondary,
-                          background: selectedInterval === period
-                            ? theme.palette.primary.main
-                            : 'transparent',
+                          color:
+                            selectedInterval === period
+                              ? theme.palette.primary.contrastText
+                              : theme.palette.text.secondary,
+                          background:
+                            selectedInterval === period
+                              ? theme.palette.primary.main
+                              : 'transparent',
                           transition: 'all 0.15s ease',
                           '&:hover': {
-                            background: selectedInterval === period
-                              ? theme.palette.primary.dark
-                              : alpha(theme.palette.primary.main, 0.08)
+                            background:
+                              selectedInterval === period
+                                ? theme.palette.primary.dark
+                                : alpha(theme.palette.primary.main, 0.08)
                           }
                         }}
                       >
@@ -2552,10 +2632,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                               roiValue = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
                             } else {
                               // Use calculated interval metrics from historical data
-                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
                               roiValue = intervalMetrics?.roi || 0;
                             }
-                            return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            return roiValue >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main;
                           })(),
                           0.06
                         ),
@@ -2569,10 +2654,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                               roiValue = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
                             } else {
                               // Use calculated interval metrics from historical data
-                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
                               roiValue = intervalMetrics?.roi || 0;
                             }
-                            return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            return roiValue >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main;
                           })(),
                           0.15
                         )}`,
@@ -2597,7 +2687,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                                   roiValue = 0;
                                 }
                               }
-                              return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                              return roiValue >= 0
+                                ? theme.palette.success.main
+                                : theme.palette.error.main;
                             })(),
                             0.08
                           )
@@ -2629,26 +2721,36 @@ export default function Portfolio({ account, limit, collection, type }) {
                               roiValue = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
                             } else {
                               // Use calculated interval metrics from historical data
-                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
                               roiValue = intervalMetrics?.roi || 0;
                             }
-                            return roiValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            return roiValue >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main;
                           })(),
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (() => {
-                          if (selectedInterval === '24h') {
-                            // For 24h, calculate ROI from API profit and volume fields
-                            const profit24h = traderStats?.profit24h || 0;
-                            const volume24h = traderStats?.volume24h || 0;
-                            const roi24h = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
-                            return formatNumber(roi24h, 'roi');
-                          }
-                          // Use calculated interval metrics from historical data for other periods
-                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
-                          return formatNumber(intervalMetrics?.roi || 0, 'roi');
-                        })()}
+                        {loading
+                          ? '-'
+                          : (() => {
+                              if (selectedInterval === '24h') {
+                                // For 24h, calculate ROI from API profit and volume fields
+                                const profit24h = traderStats?.profit24h || 0;
+                                const volume24h = traderStats?.volume24h || 0;
+                                const roi24h = volume24h > 0 ? (profit24h / volume24h) * 100 : 0;
+                                return formatNumber(roi24h, 'roi');
+                              }
+                              // Use calculated interval metrics from historical data for other periods
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
+                              return formatNumber(intervalMetrics?.roi || 0, 'roi');
+                            })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2686,15 +2788,20 @@ export default function Portfolio({ account, limit, collection, type }) {
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (() => {
-                          if (selectedInterval === '24h') {
-                            // For 24h, use API volume field
-                            return formatNumber(traderStats?.volume24h || 0, 'volume');
-                          }
-                          // Use calculated interval metrics from historical data for other periods
-                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
-                          return formatNumber(intervalMetrics?.volume || 0, 'volume');
-                        })()}
+                        {loading
+                          ? '-'
+                          : (() => {
+                              if (selectedInterval === '24h') {
+                                // For 24h, use API volume field
+                                return formatNumber(traderStats?.volume24h || 0, 'volume');
+                              }
+                              // Use calculated interval metrics from historical data for other periods
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
+                              return formatNumber(intervalMetrics?.volume || 0, 'volume');
+                            })()}
                         <Typography
                           component="span"
                           sx={{
@@ -2743,15 +2850,20 @@ export default function Portfolio({ account, limit, collection, type }) {
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (() => {
-                          if (selectedInterval === '24h') {
-                            // For 24h, use API trades field
-                            return formatNumber(traderStats?.trades24h || 0, 'trades');
-                          }
-                          // Use calculated interval metrics from historical data for other periods
-                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
-                          return formatNumber(intervalMetrics?.trades || 0, 'trades');
-                        })()}
+                        {loading
+                          ? '-'
+                          : (() => {
+                              if (selectedInterval === '24h') {
+                                // For 24h, use API trades field
+                                return formatNumber(traderStats?.trades24h || 0, 'trades');
+                              }
+                              // Use calculated interval metrics from historical data for other periods
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
+                              return formatNumber(intervalMetrics?.trades || 0, 'trades');
+                            })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2769,10 +2881,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                               profitValue = traderStats?.profit24h || 0;
                             } else {
                               // Use calculated interval metrics from historical data
-                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
                               profitValue = intervalMetrics?.profit || 0;
                             }
-                            return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            return profitValue >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main;
                           })(),
                           0.06
                         ),
@@ -2784,10 +2901,15 @@ export default function Portfolio({ account, limit, collection, type }) {
                               profitValue = traderStats?.profit24h || 0;
                             } else {
                               // Use calculated interval metrics from historical data
-                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
                               profitValue = intervalMetrics?.profit || 0;
                             }
-                            return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            return profitValue >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main;
                           })(),
                           0.15
                         )}`,
@@ -2802,7 +2924,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 const profitKey = `profit${selectedInterval === '7d' ? '7d' : selectedInterval === '1m' ? '1m' : selectedInterval === '3m' ? '3m' : '24h'}`;
                                 profitValue = traderStats?.[profitKey] || 0;
                               }
-                              return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                              return profitValue >= 0
+                                ? theme.palette.success.main
+                                : theme.palette.error.main;
                             })(),
                             0.08
                           )
@@ -2832,25 +2956,35 @@ export default function Portfolio({ account, limit, collection, type }) {
                               profitValue = traderStats?.profit24h || 0;
                             } else {
                               // Use calculated interval metrics from historical data
-                              const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
                               profitValue = intervalMetrics?.profit || 0;
                             }
-                            return profitValue >= 0 ? theme.palette.success.main : theme.palette.error.main;
+                            return profitValue >= 0
+                              ? theme.palette.success.main
+                              : theme.palette.error.main;
                           })(),
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (() => {
-                          if (selectedInterval === '24h') {
-                            // For 24h, use API profit field
-                            const profitValue = traderStats?.profit24h || 0;
-                            return `${profitValue >= 0 ? '+' : ''}${formatNumber(profitValue, 'currency')} XRP`;
-                          }
-                          // Use calculated interval metrics from historical data for other periods
-                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
-                          const profitValue = intervalMetrics?.profit || 0;
-                          return `${profitValue >= 0 ? '+' : ''}${formatNumber(profitValue, 'currency')} XRP`;
-                        })()}
+                        {loading
+                          ? '-'
+                          : (() => {
+                              if (selectedInterval === '24h') {
+                                // For 24h, use API profit field
+                                const profitValue = traderStats?.profit24h || 0;
+                                return `${profitValue >= 0 ? '+' : ''}${formatNumber(profitValue, 'currency')} XRP`;
+                              }
+                              // Use calculated interval metrics from historical data for other periods
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
+                              const profitValue = intervalMetrics?.profit || 0;
+                              return `${profitValue >= 0 ? '+' : ''}${formatNumber(profitValue, 'currency')} XRP`;
+                            })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2888,15 +3022,20 @@ export default function Portfolio({ account, limit, collection, type }) {
                           lineHeight: 1
                         }}
                       >
-                        {loading ? '-' : (() => {
-                          if (selectedInterval === '24h') {
-                            // For 24h, use API active tokens field
-                            return traderStats?.activeTokens24h || 0;
-                          }
-                          // Use calculated interval metrics from historical data for other periods
-                          const intervalMetrics = calculateIntervalMetrics(traderStats, selectedInterval);
-                          return intervalMetrics?.activeTokens || 0;
-                        })()}
+                        {loading
+                          ? '-'
+                          : (() => {
+                              if (selectedInterval === '24h') {
+                                // For 24h, use API active tokens field
+                                return traderStats?.activeTokens24h || 0;
+                              }
+                              // Use calculated interval metrics from historical data for other periods
+                              const intervalMetrics = calculateIntervalMetrics(
+                                traderStats,
+                                selectedInterval
+                              );
+                              return intervalMetrics?.activeTokens || 0;
+                            })()}
                       </Typography>
                     </Box>
                   </Grid>
@@ -2910,9 +3049,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                 sx={{
                   p: { xs: 2, sm: 3 },
                   borderRadius: '16px',
-                  background: theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.background.paper, 0.6)
-                    : alpha(theme.palette.background.paper, 0.9),
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.background.paper, 0.6)
+                      : alpha(theme.palette.background.paper, 0.9),
                   backdropFilter: 'blur(10px)',
                   WebkitBackdropFilter: 'blur(10px)',
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -2992,13 +3132,18 @@ export default function Portfolio({ account, limit, collection, type }) {
                       size="small"
                       title="Expand chart"
                       sx={{
-                        color: chartView === 'roi' ? theme.palette.primary.main :
-                               chartView === 'activity' ? theme.palette.success.main :
-                               theme.palette.info.main,
+                        color:
+                          chartView === 'roi'
+                            ? theme.palette.primary.main
+                            : chartView === 'activity'
+                              ? theme.palette.success.main
+                              : theme.palette.info.main,
                         bgcolor: alpha(
-                          chartView === 'roi' ? theme.palette.primary.main :
-                          chartView === 'activity' ? theme.palette.success.main :
-                          theme.palette.info.main,
+                          chartView === 'roi'
+                            ? theme.palette.primary.main
+                            : chartView === 'activity'
+                              ? theme.palette.success.main
+                              : theme.palette.info.main,
                           0.1
                         ),
                         borderRadius: '8px',
@@ -3006,9 +3151,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                         transition: 'all 0.2s ease',
                         '&:hover': {
                           bgcolor: alpha(
-                            chartView === 'roi' ? theme.palette.primary.main :
-                            chartView === 'activity' ? theme.palette.success.main :
-                            theme.palette.info.main,
+                            chartView === 'roi'
+                              ? theme.palette.primary.main
+                              : chartView === 'activity'
+                                ? theme.palette.success.main
+                                : theme.palette.info.main,
                             0.2
                           ),
                           transform: 'scale(1.05)'
@@ -3021,49 +3168,71 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </Box>
 
                 {/* Chart Summary Section */}
-                {!loading && (() => {
-                  const chartData = chartView === 'roi' ? processChartData() :
-                                   chartView === 'activity' ? processTradeHistoryData() :
-                                   processVolumeHistoryData();
+                {!loading &&
+                  (() => {
+                    const chartData =
+                      chartView === 'roi'
+                        ? processChartData()
+                        : chartView === 'activity'
+                          ? processTradeHistoryData()
+                          : processVolumeHistoryData();
 
-                  if (chartData && chartData.series && chartData.series.length > 0) {
-                    const lastValues = chartData.series.map(s => s.data[s.data.length - 1]);
+                    if (chartData && chartData.series && chartData.series.length > 0) {
+                      const lastValues = chartData.series.map((s) => s.data[s.data.length - 1]);
 
-                    return (
-                      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-                        {chartData.series.map((serie, index) => {
-                          const lastValue = lastValues[index];
+                      return (
+                        <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                          {chartData.series.map((serie, index) => {
+                            const lastValue = lastValues[index];
 
-                          return (
-                            <Box
-                              key={index}
-                              sx={{
-                                flex: '1 1 150px',
-                                p: 1.5,
-                                borderRadius: '8px',
-                                background: alpha(theme.palette.background.default, 0.5),
-                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                              }}
-                            >
-                              <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
-                                {serie.name}
-                              </Typography>
-                              <Typography variant="h6" sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 0.5 }}>
-                                {chartView === 'roi' ? formatNumber(lastValue, serie.name.includes('Volume') ? 'volume' : 'roi') :
-                                 chartView === 'activity' ? formatNumber(lastValue, 'trades') :
-                                 formatNumber(lastValue, 'volume') + ' XRP'}
-                              </Typography>
-                            </Box>
-                          );
-                        })}
-                      </Box>
-                    );
-                  }
-                  return null;
-                })()}
+                            return (
+                              <Box
+                                key={index}
+                                sx={{
+                                  flex: '1 1 150px',
+                                  p: 1.5,
+                                  borderRadius: '8px',
+                                  background: alpha(theme.palette.background.default, 0.5),
+                                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                                }}
+                              >
+                                <Typography
+                                  variant="caption"
+                                  sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}
+                                >
+                                  {serie.name}
+                                </Typography>
+                                <Typography
+                                  variant="h6"
+                                  sx={{ fontWeight: 700, fontSize: '1.1rem', mb: 0.5 }}
+                                >
+                                  {chartView === 'roi'
+                                    ? formatNumber(
+                                        lastValue,
+                                        serie.name.includes('Volume') ? 'volume' : 'roi'
+                                      )
+                                    : chartView === 'activity'
+                                      ? formatNumber(lastValue, 'trades')
+                                      : formatNumber(lastValue, 'volume') + ' XRP'}
+                                </Typography>
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      );
+                    }
+                    return null;
+                  })()}
 
                 {/* Chart Section */}
-                <Box sx={{ height: { xs: 300, sm: 400 }, width: '100%', position: 'relative', minHeight: { xs: 300, sm: 400 } }}>
+                <Box
+                  sx={{
+                    height: { xs: 300, sm: 400 },
+                    width: '100%',
+                    position: 'relative',
+                    minHeight: { xs: 300, sm: 400 }
+                  }}
+                >
                   {loading ? (
                     <Skeleton variant="rectangular" height="100%" sx={{ borderRadius: '12px' }} />
                   ) : (
@@ -3080,16 +3249,22 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                         if (!chartData || !chartData.series || chartData.series.length === 0) {
                           return (
-                            <Box sx={{
-                              width: '100%',
-                              height: '100%',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexDirection: 'column',
-                              gap: 1
-                            }}>
-                              <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+                            <Box
+                              sx={{
+                                width: '100%',
+                                height: '100%',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexDirection: 'column',
+                                gap: 1
+                              }}
+                            >
+                              <Typography
+                                variant="h6"
+                                color="text.secondary"
+                                sx={{ fontWeight: 600 }}
+                              >
                                 No {chartView.toUpperCase()} Data
                               </Typography>
                               <Typography variant="body2" color="text.secondary">
@@ -3104,9 +3279,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                         return (
                           <Box sx={{ width: '100%', height: '100%' }}>
                             {renderChart(chartData, {
-                              ...(chartView === 'roi' ? chartOptions :
-                                  chartView === 'activity' ? tradeHistoryOptions :
-                                  volumeHistoryOptions),
+                              ...(chartView === 'roi'
+                                ? chartOptions
+                                : chartView === 'activity'
+                                  ? tradeHistoryOptions
+                                  : volumeHistoryOptions),
                               legend: { enabled: false }
                             })}
                           </Box>
@@ -3172,9 +3349,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                   px: 2,
                   py: 1.5,
                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                  background: theme.palette.mode === 'dark'
-                    ? alpha(theme.palette.background.default, 0.4)
-                    : alpha(theme.palette.background.default, 0.6),
+                  background:
+                    theme.palette.mode === 'dark'
+                      ? alpha(theme.palette.background.default, 0.4)
+                      : alpha(theme.palette.background.default, 0.6),
                   backdropFilter: 'blur(5px)',
                   borderRadius: '12px 12px 0 0'
                 }}
@@ -3212,15 +3390,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                     }
                   }}
                 >
-                  <ToggleButton value="0">
-                    Portfolio
-                  </ToggleButton>
-                  <ToggleButton value="1">
-                    NFTs
-                  </ToggleButton>
-                  <ToggleButton value="2">
-                    Ranks
-                  </ToggleButton>
+                  <ToggleButton value="0">Portfolio</ToggleButton>
+                  <ToggleButton value="1">NFTs</ToggleButton>
+                  <ToggleButton value="2">Ranks</ToggleButton>
                 </ToggleButtonGroup>
               </Box>
 
@@ -3234,12 +3406,7 @@ export default function Portfolio({ account, limit, collection, type }) {
               </TabPanel>
 
               <TabPanel sx={{ p: 0 }} value="1">
-                <NFTPortfolio
-                  account={account}
-                  limit={limit}
-                  collection={collection}
-                  type={type}
-                />
+                <NFTPortfolio account={account} limit={limit} collection={collection} type={type} />
               </TabPanel>
 
               <TabPanel sx={{ p: 0 }} value="2">

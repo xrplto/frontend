@@ -1,17 +1,17 @@
 import React from 'react';
 import { Button, CircularProgress } from '@mui/material';
 
-const LoadingButton = ({ 
-  loading = false, 
+const LoadingButton = ({
+  loading = false,
   loadingPosition = 'center',
-  children, 
+  children,
   disabled,
   startIcon,
   endIcon,
-  ...props 
+  ...props
 }) => {
   const isDisabled = disabled || loading;
-  
+
   const getStartIcon = () => {
     if (loading && loadingPosition === 'start') {
       return <CircularProgress size={20} color="inherit" />;
@@ -34,12 +34,7 @@ const LoadingButton = ({
   };
 
   return (
-    <Button
-      {...props}
-      disabled={isDisabled}
-      startIcon={getStartIcon()}
-      endIcon={getEndIcon()}
-    >
+    <Button {...props} disabled={isDisabled} startIcon={getStartIcon()} endIcon={getEndIcon()}>
       {getChildren()}
     </Button>
   );

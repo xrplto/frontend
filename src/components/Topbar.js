@@ -1,4 +1,12 @@
-import React, { useState, useContext, useEffect, useMemo, useCallback, lazy, Suspense } from 'react';
+import React, {
+  useState,
+  useContext,
+  useEffect,
+  useMemo,
+  useCallback,
+  lazy,
+  Suspense
+} from 'react';
 import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js-light';
 import 'src/utils/i18n';
@@ -19,13 +27,13 @@ import WaterIcon from '@mui/icons-material/Water';
 import { useTheme } from '@mui/material/styles';
 
 // Lazy load switchers
-const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), { 
+const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), {
   loading: () => <SkeletonLoader style={{ width: '100px', height: '32px' }} />,
-  ssr: false 
+  ssr: false
 });
-const ThemeSwitcher = dynamic(() => import('./ThemeSwitcher'), { 
+const ThemeSwitcher = dynamic(() => import('./ThemeSwitcher'), {
   loading: () => <SkeletonLoader style={{ width: '32px', height: '32px', borderRadius: '50%' }} />,
-  ssr: false 
+  ssr: false
 });
 
 // Helper function for responsive breakpoints
@@ -43,14 +51,23 @@ const media = {
 
 // Skeleton loader component
 const SkeletonLoader = styled.div`
-  background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.2) 50%,
+    rgba(255, 255, 255, 0.1) 100%
+  );
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
-  
+
   @keyframes shimmer {
-    0% { background-position: -200% 0; }
-    100% { background-position: 200% 0; }
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
   }
 `;
 
@@ -60,16 +77,22 @@ const TopWrapper = styled.header`
   display: flex;
   align-items: center;
   height: 40px;
-  background: ${props => props.backgroundColor};
-  border-top: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+  background: ${(props) => props.backgroundColor};
+  border-top: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   z-index: 1099;
-  box-shadow: 0 -1px 12px ${props => props.darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.06)'};
+  box-shadow: 0 -1px 12px ${(props) => (props.darkMode ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.06)')};
   backdrop-filter: blur(24px) saturate(140%);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    sans-serif;
   overflow-x: hidden;
 
   ${media.down('md')} {
@@ -100,7 +123,7 @@ const ContentWrapper = styled.nav`
   width: 100%;
   justify-content: space-between;
   align-items: center;
-  
+
   &::-webkit-scrollbar {
     display: none;
   }
@@ -110,28 +133,30 @@ const ContentWrapper = styled.nav`
 const APILabel = styled.button`
   font-size: 11px;
   font-weight: 600;
-  color: ${props => props.textColor};
+  color: ${(props) => props.textColor};
   text-decoration: none;
   margin-left: 6px;
-  background: ${props => props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'};
+  background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)')};
   padding: 6px 12px;
   border-radius: 8px;
   display: flex;
   align-items: center;
   gap: 6px;
   min-height: 30px;
-  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
   cursor: pointer;
   transition: all 0.2s ease;
 
   &:hover {
-    background: ${props => props.primaryColor ? `${props.primaryColor}15` : 'rgba(0,128,255,0.1)'};
-    border-color: ${props => props.primaryColor ? `${props.primaryColor}30` : 'rgba(0,128,255,0.2)'};
+    background: ${(props) =>
+      props.primaryColor ? `${props.primaryColor}15` : 'rgba(0,128,255,0.1)'};
+    border-color: ${(props) =>
+      props.primaryColor ? `${props.primaryColor}30` : 'rgba(0,128,255,0.2)'};
     transform: translateY(-1px);
   }
 
   &:focus {
-    outline: 2px solid ${props => props.primaryColor || '#0080ff'};
+    outline: 2px solid ${(props) => props.primaryColor || '#0080ff'};
     outline-offset: 2px;
   }
 
@@ -158,8 +183,8 @@ const MobileMetricCard = styled.div`
   justify-content: center;
   height: 100%;
   padding: 0 2px;
-  background: ${props => `${props.color}08`};
-  border-left: ${props => props.isFirst ? 'none' : `1px solid ${props.borderColor}`};
+  background: ${(props) => `${props.color}08`};
+  border-left: ${(props) => (props.isFirst ? 'none' : `1px solid ${props.borderColor}`)};
 `;
 
 const MetricContent = styled.div`
@@ -172,7 +197,7 @@ const MetricContent = styled.div`
 const MetricBadge = styled.span`
   font-size: 0.4rem;
   font-weight: 600;
-  color: ${props => props.textColor};
+  color: ${(props) => props.textColor};
   opacity: 0.8;
   text-transform: uppercase;
   letter-spacing: 0.1px;
@@ -182,7 +207,7 @@ const MetricBadge = styled.span`
 const MetricNumber = styled.span`
   font-size: 0.6rem;
   font-weight: 700;
-  color: ${props => props.color};
+  color: ${(props) => props.color};
   font-family: 'JetBrains Mono', monospace;
   line-height: 0.8;
 `;
@@ -192,15 +217,15 @@ const LiveButton = styled.button`
   align-items: center;
   gap: 1px;
   padding: 2px 5px;
-  background: ${props => props.primaryColor}20;
+  background: ${(props) => props.primaryColor}20;
   border: none;
   border-radius: 10px;
-  color: ${props => props.primaryColor};
+  color: ${(props) => props.primaryColor};
   font-size: 0.5rem;
   font-weight: 800;
   cursor: pointer;
   margin-left: 2px;
-  box-shadow: inset 0 1px 0 ${props => props.primaryColor}30;
+  box-shadow: inset 0 1px 0 ${(props) => props.primaryColor}30;
   min-width: 36px;
   height: 18px;
   justify-content: center;
@@ -208,19 +233,19 @@ const LiveButton = styled.button`
 
 const H24Style = styled.div`
   padding: 4px 8px;
-  background: ${props => props.primaryColor || '#0080ff'};
+  background: ${(props) => props.primaryColor || '#0080ff'};
   border-radius: 12px;
   min-width: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   transition: all 0.2s ease;
   margin: 0 8px;
 
   &:hover {
     transform: translateY(-1px);
-    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
   }
 `;
 
@@ -228,19 +253,22 @@ const PulsatingCircle = styled.div`
   width: 5px;
   height: 5px;
   border-radius: 50%;
-  background: ${props => props.primaryColor || '#10b981'};
+  background: ${(props) => props.primaryColor || '#10b981'};
   position: relative;
   animation: pulse 2s infinite;
-  
+
   @keyframes pulse {
     0% {
-      box-shadow: 0 0 0 0 ${props => props.primaryColor ? `${props.primaryColor}b3` : 'rgba(16, 185, 129, 0.7)'};
+      box-shadow: 0 0 0 0
+        ${(props) => (props.primaryColor ? `${props.primaryColor}b3` : 'rgba(16, 185, 129, 0.7)')};
     }
     70% {
-      box-shadow: 0 0 0 8px ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
+      box-shadow: 0 0 0 8px
+        ${(props) => (props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)')};
     }
     100% {
-      box-shadow: 0 0 0 0 ${props => props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)'};
+      box-shadow: 0 0 0 0
+        ${(props) => (props.primaryColor ? `${props.primaryColor}00` : 'rgba(16, 185, 129, 0)')};
     }
   }
 `;
@@ -251,20 +279,20 @@ const MetricContainer = styled.div`
   gap: 6px;
   padding: 6px 10px;
   border-radius: 6px;
-  background: ${props => props.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+  background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)')};
   min-width: auto;
   position: relative;
   transition: all 0.2s ease;
   border: 1px solid transparent;
 
   &:hover {
-    background: ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'};
-    border-color: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
+    border-color: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
   }
 `;
 
 const MetricLabel = styled.span`
-  color: ${props => props.textSecondary};
+  color: ${(props) => props.textSecondary};
   font-weight: 500;
   font-size: 0.65rem;
   text-transform: uppercase;
@@ -280,28 +308,28 @@ const MetricValue = styled.span`
   line-height: 1;
   font-family: 'JetBrains Mono', monospace;
   letter-spacing: -0.02em;
-  color: ${props => props.color || props.textPrimary};
+  color: ${(props) => props.color || props.textPrimary};
 `;
 
 const Drawer = styled.div`
   position: fixed;
   bottom: 36px;
-  right: ${props => props.open ? '0' : '-100%'};
-  width: ${props => props.isMobile ? '100vw' : '400px'};
+  right: ${(props) => (props.open ? '0' : '-100%')};
+  width: ${(props) => (props.isMobile ? '100vw' : '400px')};
   height: calc(100vh - 36px);
-  background: ${props => props.backgroundColor};
-  box-shadow: -4px -4px 16px rgba(0,0,0,0.25);
+  background: ${(props) => props.backgroundColor};
+  box-shadow: -4px -4px 16px rgba(0, 0, 0, 0.25);
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1200;
   display: flex;
   flex-direction: column;
-  max-width: ${props => props.isMobile ? '100vw' : '400px'};
+  max-width: ${(props) => (props.isMobile ? '100vw' : '400px')};
   border-top-left-radius: 12px;
-  
+
   ${media.down('md')} {
     width: 100vw;
     max-width: 100vw;
-    right: ${props => props.open ? '0' : '-100vw'};
+    right: ${(props) => (props.open ? '0' : '-100vw')};
   }
 `;
 
@@ -310,13 +338,14 @@ const DrawerHeader = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 16px 20px;
-  background: ${props => props.paperBackground};
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
+  background: ${(props) => props.paperBackground};
+  border-bottom: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)')};
   position: sticky;
   top: 0;
   z-index: 1;
   min-height: 64px;
-  
+
   ${media.down('md')} {
     padding: 12px 16px;
     min-height: 60px;
@@ -329,8 +358,8 @@ const DrawerOverlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
-  display: ${props => props.open ? 'block' : 'none'};
+  background: rgba(0, 0, 0, 0.5);
+  display: ${(props) => (props.open ? 'block' : 'none')};
   z-index: 1199;
 `;
 
@@ -344,19 +373,19 @@ const IconButton = styled.button`
   justify-content: center;
   cursor: pointer;
   border-radius: 6px;
-  color: ${props => props.textSecondary};
+  color: ${(props) => props.textSecondary};
   transition: all 0.2s;
-  
+
   &:hover {
-    background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-    color: ${props => props.textPrimary};
+    background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+    color: ${(props) => props.textPrimary};
   }
-  
+
   &:focus {
-    outline: 2px solid ${props => props.primaryColor || '#0080ff'};
+    outline: 2px solid ${(props) => props.primaryColor || '#0080ff'};
     outline-offset: 2px;
   }
-  
+
   ${media.down('md')} {
     width: 44px;
     height: 44px;
@@ -369,26 +398,26 @@ const SelectButton = styled.button`
   gap: 6px;
   padding: 6px 10px;
   font-size: 0.75rem;
-  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'};
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)')};
   border-radius: 6px;
-  background: ${props => props.paperBackground};
-  color: ${props => props.textPrimary};
+  background: ${(props) => props.paperBackground};
+  color: ${(props) => props.textPrimary};
   cursor: pointer;
   min-width: 120px;
   height: 32px;
   transition: all 0.2s;
   position: relative;
-  
+
   &:hover {
-    border-color: ${props => props.primaryColor || '#0080ff'};
+    border-color: ${(props) => props.primaryColor || '#0080ff'};
   }
-  
+
   &:focus {
-    outline: 2px solid ${props => props.primaryColor || '#0080ff'};
+    outline: 2px solid ${(props) => props.primaryColor || '#0080ff'};
     outline-offset: 2px;
-    border-color: ${props => props.primaryColor || '#0080ff'};
+    border-color: ${(props) => props.primaryColor || '#0080ff'};
   }
-  
+
   ${media.down('md')} {
     min-height: 44px;
     height: 44px;
@@ -403,10 +432,10 @@ const SelectDropdown = styled.div`
   left: 0;
   right: 0;
   margin-top: 4px;
-  background: ${props => props.paperBackground};
-  border: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)'};
+  background: ${(props) => props.paperBackground};
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.3)')};
   border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   overflow: hidden;
 `;
@@ -419,19 +448,20 @@ const SelectOption = styled.button`
   padding: 6px 8px;
   font-size: 0.75rem;
   background: transparent;
-  color: ${props => props.textPrimary};
+  color: ${(props) => props.textPrimary};
   border: none;
   cursor: pointer;
   transition: background 0.2s;
   text-align: left;
-  
+
   &:hover {
-    background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
   }
-  
+
   &.selected {
-    background: ${props => props.primaryColor ? `${props.primaryColor}1a` : 'rgba(0,128,255,0.1)'};
-    color: ${props => props.primaryColor || '#0080ff'};
+    background: ${(props) =>
+      props.primaryColor ? `${props.primaryColor}1a` : 'rgba(0,128,255,0.1)'};
+    color: ${(props) => props.primaryColor || '#0080ff'};
   }
 `;
 
@@ -439,22 +469,24 @@ const TradeList = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 0;
-  background: ${props => props.backgroundColor};
-  
+  background: ${(props) => props.backgroundColor};
+
   &::-webkit-scrollbar {
     width: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
-    background: ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+    background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
   }
-  
+
   &::-webkit-scrollbar-thumb {
-    background: ${props => props.primaryColor ? `${props.primaryColor}40` : 'rgba(0,128,255,0.25)'};
+    background: ${(props) =>
+      props.primaryColor ? `${props.primaryColor}40` : 'rgba(0,128,255,0.25)'};
     border-radius: 3px;
-    
+
     &:hover {
-      background: ${props => props.primaryColor ? `${props.primaryColor}60` : 'rgba(0,128,255,0.4)'};
+      background: ${(props) =>
+        props.primaryColor ? `${props.primaryColor}60` : 'rgba(0,128,255,0.4)'};
     }
   }
 `;
@@ -463,27 +495,29 @@ const TradeItem = styled.a`
   display: flex;
   align-items: center;
   padding: 12px;
-  border-bottom: 1px solid ${props => props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+  border-bottom: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
   text-decoration: none;
   color: inherit;
-  background: ${props => props.isBuy 
-    ? `rgba(16, 185, 129, ${props.opacity})` 
-    : `rgba(239, 68, 68, ${props.opacity})`};
+  background: ${(props) =>
+    props.isBuy ? `rgba(16, 185, 129, ${props.opacity})` : `rgba(239, 68, 68, ${props.opacity})`};
   transition: background 0.2s;
   min-height: 64px;
-  
+
   &:hover {
-    background: ${props => props.isBuy 
-      ? `rgba(16, 185, 129, ${props.opacity * 1.5})` 
-      : `rgba(239, 68, 68, ${props.opacity * 1.5})`};
+    background: ${(props) =>
+      props.isBuy
+        ? `rgba(16, 185, 129, ${props.opacity * 1.5})`
+        : `rgba(239, 68, 68, ${props.opacity * 1.5})`};
   }
-  
+
   &:active {
-    background: ${props => props.isBuy 
-      ? `rgba(16, 185, 129, ${props.opacity * 2})` 
-      : `rgba(239, 68, 68, ${props.opacity * 2})`};
+    background: ${(props) =>
+      props.isBuy
+        ? `rgba(16, 185, 129, ${props.opacity * 2})`
+        : `rgba(239, 68, 68, ${props.opacity * 2})`};
   }
-  
+
   ${media.down('md')} {
     padding: 14px 16px;
     min-height: 72px;
@@ -494,10 +528,10 @@ const TokenImage = styled.img`
   width: 20px;
   height: 20px;
   border-radius: 50%;
-  background: ${props => props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'};
+  background: ${(props) => (props.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)')};
   object-fit: cover;
   flex-shrink: 0;
-  
+
   ${media.down('md')} {
     width: 24px;
     height: 24px;
@@ -506,62 +540,64 @@ const TokenImage = styled.img`
 
 const Typography = styled.span`
   font-family: inherit;
-  font-size: ${props => props.variant === 'caption' ? '0.75rem' : '0.875rem'};
-  font-weight: ${props => props.fontWeight || 400};
-  color: ${props => props.color || 'inherit'};
+  font-size: ${(props) => (props.variant === 'caption' ? '0.75rem' : '0.875rem')};
+  font-weight: ${(props) => props.fontWeight || 400};
+  color: ${(props) => props.color || 'inherit'};
 `;
 
 const Box = styled.div`
-  display: ${props => props.display || 'block'};
-  align-items: ${props => props.alignItems || 'stretch'};
-  justify-content: ${props => props.justifyContent || 'flex-start'};
-  gap: ${props => props.gap ? `${props.gap * 4}px` : '0'};
-  padding: ${props => props.p ? `${props.p * 8}px` : '0'};
-  margin: ${props => props.m ? `${props.m * 8}px` : '0'};
-  text-align: ${props => props.textAlign || 'left'};
-  flex: ${props => props.flex || 'initial'};
-  width: ${props => props.width || 'auto'};
-  min-width: ${props => props.minWidth || 'auto'};
+  display: ${(props) => props.display || 'block'};
+  align-items: ${(props) => props.alignItems || 'stretch'};
+  justify-content: ${(props) => props.justifyContent || 'flex-start'};
+  gap: ${(props) => (props.gap ? `${props.gap * 4}px` : '0')};
+  padding: ${(props) => (props.p ? `${props.p * 8}px` : '0')};
+  margin: ${(props) => (props.m ? `${props.m * 8}px` : '0')};
+  text-align: ${(props) => props.textAlign || 'left'};
+  flex: ${(props) => props.flex || 'initial'};
+  width: ${(props) => props.width || 'auto'};
+  min-width: ${(props) => props.minWidth || 'auto'};
 `;
 
 const Stack = styled.div`
   display: flex;
-  flex-direction: ${props => props.direction === 'row' ? 'row' : 'column'};
-  gap: ${props => props.spacing ? `${props.spacing * 4}px` : '0'};
-  align-items: ${props => props.alignItems || 'stretch'};
-  width: ${props => props.width || 'auto'};
-  flex: ${props => props.flex || 'initial'};
+  flex-direction: ${(props) => (props.direction === 'row' ? 'row' : 'column')};
+  gap: ${(props) => (props.spacing ? `${props.spacing * 4}px` : '0')};
+  align-items: ${(props) => props.alignItems || 'stretch'};
+  width: ${(props) => props.width || 'auto'};
+  flex: ${(props) => props.flex || 'initial'};
 `;
 
 const CircularProgress = styled.div`
-  width: ${props => props.size || 40}px;
-  height: ${props => props.size || 40}px;
-  border: 3px solid ${props => props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  border-top-color: ${props => props.primaryColor || '#0080ff'};
+  width: ${(props) => props.size || 40}px;
+  height: ${(props) => props.size || 40}px;
+  border: 3px solid ${(props) => (props.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  border-top-color: ${(props) => props.primaryColor || '#0080ff'};
   border-radius: 50%;
   animation: spin 1s linear infinite;
-  
+
   @keyframes spin {
-    to { transform: rotate(360deg); }
+    to {
+      transform: rotate(360deg);
+    }
   }
 `;
 
 // Icons as React components
 const SwapHorizIcon = ({ style }) => (
   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style={style}>
-    <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z"/>
+    <path d="M6.99 11L3 15l3.99 4v-3H14v-2H6.99v-3zM21 9l-3.99-4v3H10v2h7.01v3L21 9z" />
   </svg>
 );
 
 const CloseIcon = ({ style }) => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={style}>
-    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
   </svg>
 );
 
 const LinkIcon = ({ style }) => (
   <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" style={style}>
-    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/>
+    <path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z" />
   </svg>
 );
 
@@ -597,12 +633,12 @@ const formatRelativeTime = (timestamp) => {
 
 const getTradeSizeIconComponent = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return SetMealIcon;  // Small for smallest
-  if (xrpValue < 1000) return PetsIcon;  // Regular
-  if (xrpValue < 2500) return WaterIcon;  // Medium
-  if (xrpValue < 5000) return InfoIcon;  // Large
-  if (xrpValue < 10000) return WavesIcon;  // Larger
-  return InfoIcon;  // Largest
+  if (xrpValue < 500) return SetMealIcon; // Small for smallest
+  if (xrpValue < 1000) return PetsIcon; // Regular
+  if (xrpValue < 2500) return WaterIcon; // Medium
+  if (xrpValue < 5000) return InfoIcon; // Large
+  if (xrpValue < 10000) return WavesIcon; // Larger
+  return InfoIcon; // Largest
 };
 
 const abbreviateNumber = (num) => {
@@ -659,7 +695,8 @@ const parseValue = (value) => {
 };
 
 const getTradeApiUrl = (filter) => {
-  const baseUrl = 'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=200';
+  const baseUrl =
+    'https://api.xrpl.to/api/history?md5=84e5efeb89c4eae8f68188982dc290d8&page=0&limit=200';
   if (filter === 'All') {
     return baseUrl;
   }
@@ -705,23 +742,30 @@ const Topbar = () => {
 
   // Get theme-specific colors without calling hooks in nested functions
   const themeColors = useMemo(() => {
-    const backgroundColor = muiTheme?.palette?.background?.default || (darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)');
+    const backgroundColor =
+      muiTheme?.palette?.background?.default ||
+      (darkMode ? 'rgba(0, 0, 0, 0.95)' : 'rgba(255, 255, 255, 0.95)');
     return {
       primaryColor: muiTheme?.palette?.primary?.main || (darkMode ? '#147DFE' : '#0080ff'),
       backgroundColor,
-      paperBackground: muiTheme?.palette?.background?.paper || (darkMode ? '#0a0a0a' : 'rgba(245, 245, 245, 1)'),
+      paperBackground:
+        muiTheme?.palette?.background?.paper || (darkMode ? '#0a0a0a' : 'rgba(245, 245, 245, 1)'),
       textPrimary: muiTheme?.palette?.text?.primary || (darkMode ? '#ffffff' : '#000000'),
-      textSecondary: muiTheme?.palette?.text?.secondary || (darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')
+      textSecondary:
+        muiTheme?.palette?.text?.secondary ||
+        (darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)')
     };
   }, [muiTheme, darkMode]);
   const primaryColor = themeColors.primaryColor;
 
   // Check if metrics are properly loaded
   const metricsLoaded = useMemo(() => {
-    return metrics?.global?.total !== undefined && 
-           metrics?.global?.totalAddresses !== undefined &&
-           metrics?.H24?.transactions24H !== undefined &&
-           metrics?.global?.total > 0;
+    return (
+      metrics?.global?.total !== undefined &&
+      metrics?.global?.totalAddresses !== undefined &&
+      metrics?.H24?.transactions24H !== undefined &&
+      metrics?.global?.total > 0
+    );
   }, [metrics?.global?.total, metrics?.global?.totalAddresses, metrics?.H24?.transactions24H]);
 
   // Fetch metrics if not loaded
@@ -730,9 +774,12 @@ const Topbar = () => {
       const controller = new AbortController();
       const fetchMetrics = async () => {
         try {
-          const response = await axios.get('https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=', {
-            signal: controller.signal
-          });
+          const response = await axios.get(
+            'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=',
+            {
+              signal: controller.signal
+            }
+          );
           if (response.status === 200 && response.data) {
             dispatch(update_metrics(response.data));
           }
@@ -746,8 +793,6 @@ const Topbar = () => {
       return () => controller.abort();
     }
   }, [metricsLoaded, dispatch]);
-
-
 
   const handleTradeDrawerOpen = () => {
     if (!tradeDrawerOpen) {
@@ -769,16 +814,18 @@ const Topbar = () => {
 
   // Throttled functions
   const throttledSetTrades = useMemo(
-    () => throttle((newTrades) => {
-      setTrades(newTrades);
-    }, 200),
+    () =>
+      throttle((newTrades) => {
+        setTrades(newTrades);
+      }, 200),
     []
   );
 
   const throttledAddTrade = useMemo(
-    () => throttle((newTrade) => {
-      setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
-    }, 200),
+    () =>
+      throttle((newTrade) => {
+        setTrades((prevTrades) => [newTrade, ...prevTrades].slice(0, 200));
+      }, 200),
     []
   );
 
@@ -815,7 +862,7 @@ const Topbar = () => {
         throttledAddTrade.cancel();
       };
     }
-    
+
     const ws = new WebSocket('wss://api.xrpl.to/ws/sync');
 
     ws.onopen = () => {
@@ -870,15 +917,31 @@ const Topbar = () => {
               <MobileContainer>
                 {/* Show 3 key metrics simultaneously */}
                 {[
-                  { label: 'Tokens', value: metricsLoaded ? abbreviateNumber(metrics.global?.total || 0) : '...', color: '#FF6B6B' },
-                  { label: 'Trades', value: metricsLoaded ? abbreviateNumber(metrics.H24?.transactions24H || 0) : '...', color: '#74CAFF' },
-                  { label: 'Vol', value: metricsLoaded ? `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-                    metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-                      ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                          .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                          .toNumber()
-                      : 0
-                  )}` : '...', color: '#10b981' }
+                  {
+                    label: 'Tokens',
+                    value: metricsLoaded ? abbreviateNumber(metrics.global?.total || 0) : '...',
+                    color: '#FF6B6B'
+                  },
+                  {
+                    label: 'Trades',
+                    value: metricsLoaded
+                      ? abbreviateNumber(metrics.H24?.transactions24H || 0)
+                      : '...',
+                    color: '#74CAFF'
+                  },
+                  {
+                    label: 'Vol',
+                    value: metricsLoaded
+                      ? `${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
+                          metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
+                            ? new Decimal(metrics.H24.tradedXRP24H || 0)
+                                .div(new Decimal(metrics[activeFiatCurrency] || 1))
+                                .toNumber()
+                            : 0
+                        )}`
+                      : '...',
+                    color: '#10b981'
+                  }
                 ].map((metric, index) => (
                   <MobileMetricCard
                     key={metric.label}
@@ -895,12 +958,14 @@ const Topbar = () => {
                           {metric.value}
                         </MetricNumber>
                       ) : (
-                        <SkeletonLoader style={{ width: '32px', height: '10px', borderRadius: '2px' }} />
+                        <SkeletonLoader
+                          style={{ width: '32px', height: '10px', borderRadius: '2px' }}
+                        />
                       )}
                     </MetricContent>
                   </MobileMetricCard>
                 ))}
-                
+
                 <LiveButton
                   onClick={(e) => {
                     e.preventDefault();
@@ -916,7 +981,9 @@ const Topbar = () => {
             ) : (
               <Stack direction="row" spacing={1.5} alignItems="center" flex={1}>
                 <MetricContainer darkMode={darkMode}>
-                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Addresses')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>
+                    {t('Addresses')}
+                  </MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#54D62C">
                       {abbreviateNumber(metrics.global?.totalAddresses || 0)}
@@ -949,7 +1016,9 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer darkMode={darkMode}>
-                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Trustlines')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>
+                    {t('Trustlines')}
+                  </MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#FFA48D">
                       {abbreviateNumber(metrics.global?.totalTrustLines || 0)}
@@ -1003,7 +1072,9 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer darkMode={darkMode}>
-                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Tokens Traded')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>
+                    {t('Tokens Traded')}
+                  </MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#3366FF">
                       {abbreviateNumber(metrics.H24?.tradedTokens24H || 0)}
@@ -1014,7 +1085,9 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer darkMode={darkMode}>
-                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Active Addresses')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>
+                    {t('Active Addresses')}
+                  </MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#54D62C">
                       {abbreviateNumber(metrics.H24?.activeAddresses24H || 0)}
@@ -1025,7 +1098,9 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer darkMode={darkMode}>
-                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Unique Traders')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>
+                    {t('Unique Traders')}
+                  </MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#2196F3">
                       {abbreviateNumber(metrics?.H24?.uniqueTraders24H || 0)}
@@ -1036,7 +1111,9 @@ const Topbar = () => {
                 </MetricContainer>
 
                 <MetricContainer darkMode={darkMode}>
-                  <MetricLabel textSecondary={themeColors.textSecondary}>{t('Total TVL')}</MetricLabel>
+                  <MetricLabel textSecondary={themeColors.textSecondary}>
+                    {t('Total TVL')}
+                  </MetricLabel>
                   {metricsLoaded ? (
                     <MetricValue color="#8E44AD">
                       {currencySymbols[activeFiatCurrency]}
@@ -1070,7 +1147,10 @@ const Topbar = () => {
                   darkMode={darkMode}
                 >
                   <PulsatingCircle primaryColor={primaryColor} />
-                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}>
+                  <Typography
+                    variant="caption"
+                    style={{ fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}
+                  >
                     Live Trades
                   </Typography>
                 </APILabel>
@@ -1082,7 +1162,10 @@ const Topbar = () => {
                   primaryColor={primaryColor}
                   darkMode={darkMode}
                 >
-                  <Typography variant="caption" style={{ fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}>
+                  <Typography
+                    variant="caption"
+                    style={{ fontWeight: 600, fontSize: '0.7rem', fontFamily: 'Inter, sans-serif' }}
+                  >
                     API
                   </Typography>
                 </APILabel>
@@ -1095,209 +1178,247 @@ const Topbar = () => {
       {tradeDrawerOpen && (
         <>
           <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
-          <Drawer 
-            open={tradeDrawerOpen} 
-            backgroundColor={themeColors.backgroundColor} 
+          <Drawer
+            open={tradeDrawerOpen}
+            backgroundColor={themeColors.backgroundColor}
             isMobile={isMobile}
             isSmallMobile={isSmallMobile}
           >
-        <DrawerHeader darkMode={darkMode} paperBackground={themeColors.backgroundColor}>
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
-              Global Trades
-            </Typography>
-            <PulsatingCircle primaryColor={primaryColor} />
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Box style={{ position: 'relative' }}>
-              <SelectButton
-                onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+            <DrawerHeader darkMode={darkMode} paperBackground={themeColors.backgroundColor}>
+              <Box display="flex" alignItems="center" gap={0.5}>
+                <Typography variant="h6" style={{ fontWeight: 600, fontSize: '0.95rem' }}>
+                  Global Trades
+                </Typography>
+                <PulsatingCircle primaryColor={primaryColor} />
+              </Box>
+              <Box display="flex" alignItems="center" gap={1}>
+                <Box style={{ position: 'relative' }}>
+                  <SelectButton
+                    onClick={() => setFilterDropdownOpen(!filterDropdownOpen)}
+                    darkMode={darkMode}
+                    primaryColor={primaryColor}
+                    paperBackground={themeColors.backgroundColor}
+                    textPrimary={themeColors.textPrimary}
+                    aria-label="Filter trades by size"
+                    aria-expanded={filterDropdownOpen}
+                    aria-haspopup="listbox"
+                  >
+                    {(() => {
+                      const FilterIconComponent =
+                        FILTER_OPTIONS.find((opt) => opt.value === tradeFilter)?.IconComponent ||
+                        WaterIcon;
+                      return <FilterIconComponent sx={{ width: 16, height: 16 }} />;
+                    })()}
+                    <span>
+                      {FILTER_OPTIONS.find((opt) => opt.value === tradeFilter)?.label ||
+                        'All Trades'}
+                    </span>
+                  </SelectButton>
+                  {filterDropdownOpen && (
+                    <SelectDropdown
+                      darkMode={darkMode}
+                      paperBackground={themeColors.backgroundColor}
+                    >
+                      {FILTER_OPTIONS.map((option) => (
+                        <SelectOption
+                          key={option.value}
+                          className={option.value === tradeFilter ? 'selected' : ''}
+                          onClick={() => {
+                            handleFilterChange({ target: { value: option.value } });
+                            setFilterDropdownOpen(false);
+                          }}
+                          darkMode={darkMode}
+                          primaryColor={primaryColor}
+                          textPrimary={themeColors.textPrimary}
+                        >
+                          <option.IconComponent sx={{ width: 16, height: 16 }} />
+                          <span>{option.label}</span>
+                        </SelectOption>
+                      ))}
+                    </SelectDropdown>
+                  )}
+                </Box>
+                <IconButton
+                  onClick={handleTradeDrawerClose}
+                  darkMode={darkMode}
+                  textSecondary={themeColors.textSecondary}
+                  textPrimary={themeColors.textPrimary}
+                  aria-label="Close trade drawer"
+                >
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </DrawerHeader>
+
+            {wsError ? (
+              <Box p={3} textAlign="center">
+                <Typography
+                  color="#ef4444"
+                  variant="h6"
+                  style={{ marginBottom: '8px', fontWeight: 600 }}
+                >
+                  Failed to load trades
+                </Typography>
+                <Typography variant="body2" color={themeColors.textSecondary}>
+                  {wsError}
+                </Typography>
+              </Box>
+            ) : isWsLoading ? (
+              <Box p={3}>
+                <Box display="flex" justifyContent="center" style={{ marginBottom: '16px' }}>
+                  <CircularProgress size={40} darkMode={darkMode} primaryColor={primaryColor} />
+                </Box>
+                <Typography variant="body2" color={themeColors.textSecondary} textAlign="center">
+                  Connecting to live trades...
+                </Typography>
+                <Box style={{ marginTop: '16px' }}>
+                  {[...Array(5)].map((_, i) => (
+                    <Box key={i} style={{ marginBottom: '8px' }}>
+                      <SkeletonLoader style={{ height: '60px', borderRadius: '8px' }} />
+                    </Box>
+                  ))}
+                </Box>
+              </Box>
+            ) : (
+              <TradeList
                 darkMode={darkMode}
                 primaryColor={primaryColor}
-                paperBackground={themeColors.backgroundColor}
-                textPrimary={themeColors.textPrimary}
-                aria-label="Filter trades by size"
-                aria-expanded={filterDropdownOpen}
-                aria-haspopup="listbox"
+                backgroundColor={themeColors.backgroundColor}
               >
-                {(() => {
-                  const FilterIconComponent = FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.IconComponent || WaterIcon;
-                  return <FilterIconComponent sx={{ width: 16, height: 16 }} />;
-                })()}
-                <span>{FILTER_OPTIONS.find(opt => opt.value === tradeFilter)?.label || 'All Trades'}</span>
-              </SelectButton>
-              {filterDropdownOpen && (
-                <SelectDropdown
-                  darkMode={darkMode}
-                  paperBackground={themeColors.backgroundColor}
-                >
-                  {FILTER_OPTIONS.map((option) => (
-                    <SelectOption
-                      key={option.value}
-                      className={option.value === tradeFilter ? 'selected' : ''}
-                      onClick={() => {
-                        handleFilterChange({ target: { value: option.value } });
-                        setFilterDropdownOpen(false);
-                      }}
+                {filteredTrades.map((trade, index) => {
+                  const tokenCurrency = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
+                  const tokenPath =
+                    tokenCurrency?.issuer && tokenCurrency?.currency
+                      ? `/token/${tokenCurrency.issuer}-${tokenCurrency.currency}`
+                      : '#';
+                  const txPath = trade.hash ? `/tx/${trade.hash}` : '#';
+
+                  const xrpAmount = getXRPAmount(trade);
+                  const isBuy = trade.paid?.currency === 'XRP';
+
+                  let opacity = 0.05;
+                  if (xrpAmount > 0) {
+                    if (xrpAmount < 10) opacity = 0.05;
+                    else if (xrpAmount < 50) opacity = 0.07;
+                    else if (xrpAmount < 100) opacity = 0.09;
+                    else if (xrpAmount < 500) opacity = 0.11;
+                    else if (xrpAmount < 1000) opacity = 0.13;
+                    else if (xrpAmount < 5000) opacity = 0.15;
+                    else opacity = 0.18;
+                  }
+
+                  return (
+                    <TradeItem
+                      key={`${trade.time}-${trade.maker}-${trade.taker}-${trade.paid?.value}-${trade.got?.value}-${index}`}
+                      href={tokenPath}
                       darkMode={darkMode}
-                      primaryColor={primaryColor}
-                      textPrimary={themeColors.textPrimary}
+                      isBuy={isBuy}
+                      opacity={opacity}
                     >
-                      <option.IconComponent sx={{ width: 16, height: 16 }} />
-                      <span>{option.label}</span>
-                    </SelectOption>
-                  ))}
-                </SelectDropdown>
-              )}
-            </Box>
-            <IconButton 
-              onClick={handleTradeDrawerClose} 
-              darkMode={darkMode} 
-              textSecondary={themeColors.textSecondary} 
-              textPrimary={themeColors.textPrimary}
-              aria-label="Close trade drawer"
-            >
-              <CloseIcon />
-            </IconButton>
-          </Box>
-        </DrawerHeader>
-
-        {wsError ? (
-          <Box p={3} textAlign="center">
-            <Typography color="#ef4444" variant="h6" style={{ marginBottom: '8px', fontWeight: 600 }}>
-              Failed to load trades
-            </Typography>
-            <Typography variant="body2" color={themeColors.textSecondary}>
-              {wsError}
-            </Typography>
-          </Box>
-        ) : isWsLoading ? (
-          <Box p={3}>
-            <Box display="flex" justifyContent="center" style={{ marginBottom: '16px' }}>
-              <CircularProgress size={40} darkMode={darkMode} primaryColor={primaryColor} />
-            </Box>
-            <Typography variant="body2" color={themeColors.textSecondary} textAlign="center">
-              Connecting to live trades...
-            </Typography>
-            <Box style={{ marginTop: '16px' }}>
-              {[...Array(5)].map((_, i) => (
-                <Box key={i} style={{ marginBottom: '8px' }}>
-                  <SkeletonLoader style={{ height: '60px', borderRadius: '8px' }} />
-                </Box>
-              ))}
-            </Box>
-          </Box>
-        ) : (
-          <TradeList darkMode={darkMode} primaryColor={primaryColor} backgroundColor={themeColors.backgroundColor}>
-            {filteredTrades.map((trade, index) => {
-              const tokenCurrency = trade.paid?.currency === 'XRP' ? trade.got : trade.paid;
-              const tokenPath = tokenCurrency?.issuer && tokenCurrency?.currency 
-                ? `/token/${tokenCurrency.issuer}-${tokenCurrency.currency}` 
-                : '#';
-              const txPath = trade.hash ? `/tx/${trade.hash}` : '#';
-              
-              const xrpAmount = getXRPAmount(trade);
-              const isBuy = trade.paid?.currency === 'XRP';
-              
-              let opacity = 0.05;
-              if (xrpAmount > 0) {
-                if (xrpAmount < 10) opacity = 0.05;
-                else if (xrpAmount < 50) opacity = 0.07;
-                else if (xrpAmount < 100) opacity = 0.09;
-                else if (xrpAmount < 500) opacity = 0.11;
-                else if (xrpAmount < 1000) opacity = 0.13;
-                else if (xrpAmount < 5000) opacity = 0.15;
-                else opacity = 0.18;
-              }
-              
-              return (
-                <TradeItem
-                  key={`${trade.time}-${trade.maker}-${trade.taker}-${trade.paid?.value}-${trade.got?.value}-${index}`}
-                  href={tokenPath}
-                  darkMode={darkMode}
-                  isBuy={isBuy}
-                  opacity={opacity}
-                >
-                  <Box display="flex" alignItems="center" width="100%" gap={1}>
-                    <Box minWidth={55} textAlign="left">
-                      <Typography variant="caption" color={themeColors.textSecondary} style={{ fontSize: '0.65rem', opacity: 0.8 }}>
-                        {formatRelativeTime(trade.time)}
-                      </Typography>
-                    </Box>
-
-                    <Box minWidth={35} textAlign="center">
-                      <Typography 
-                        variant="caption" 
-                        style={{ 
-                          fontSize: '0.7rem', 
-                          fontWeight: 700,
-                          color: isBuy ? '#10b981' : '#ef4444'
-                        }}
-                      >
-                        {isBuy ? 'BUY' : 'SELL'}
-                      </Typography>
-                    </Box>
-
-                    <Box flex={1} display="flex" alignItems="center" gap={0.75}>
-                      <Box display="flex" alignItems="center" gap={0.5} flex={1}>
-                        <TokenImage
-                          src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
-                          alt={decodeCurrency(trade.paid.currency)}
-                          loading="lazy"
-                          darkMode={darkMode}
-                        />
-                        <Box minWidth={0}>
-                          <Typography variant="body2" style={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
-                            {formatTradeValue(trade.paid.value)} {decodeCurrency(trade.paid.currency)}
+                      <Box display="flex" alignItems="center" width="100%" gap={1}>
+                        <Box minWidth={55} textAlign="left">
+                          <Typography
+                            variant="caption"
+                            color={themeColors.textSecondary}
+                            style={{ fontSize: '0.65rem', opacity: 0.8 }}
+                          >
+                            {formatRelativeTime(trade.time)}
                           </Typography>
                         </Box>
-                      </Box>
 
-                      <SwapHorizIcon style={{ color: themeColors.textSecondary, opacity: 0.4, fontSize: '0.8rem' }} />
-
-                      <Box display="flex" alignItems="center" gap={0.5} flex={1}>
-                        <Box minWidth={0}>
-                          <Typography variant="body2" style={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}>
-                            {formatTradeValue(trade.got.value)} {decodeCurrency(trade.got.currency)}
+                        <Box minWidth={35} textAlign="center">
+                          <Typography
+                            variant="caption"
+                            style={{
+                              fontSize: '0.7rem',
+                              fontWeight: 700,
+                              color: isBuy ? '#10b981' : '#ef4444'
+                            }}
+                          >
+                            {isBuy ? 'BUY' : 'SELL'}
                           </Typography>
                         </Box>
-                        <TokenImage
-                          src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
-                          alt={decodeCurrency(trade.got.currency)}
-                          loading="lazy"
-                          darkMode={darkMode}
-                        />
-                      </Box>
-                    </Box>
 
-                    <Box display="flex" alignItems="center" gap={0.25} minWidth={35}>
-                      {(() => {
-                        const TradeIconComponent = getTradeSizeIconComponent(getXRPAmount(trade));
-                        return <TradeIconComponent sx={{ width: 16, height: 16, color: themeColors.textSecondary }} />;
-                      })()}
-                      {trade.hash && (
-                        <a
-                          href={txPath}
-                          style={{
-                            width: '14px',
-                            height: '14px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: themeColors.textSecondary
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <LinkIcon />
-                        </a>
-                      )}
-                    </Box>
-                  </Box>
-                </TradeItem>
-              );
-            })}
-          </TradeList>
-        )}
+                        <Box flex={1} display="flex" alignItems="center" gap={0.75}>
+                          <Box display="flex" alignItems="center" gap={0.5} flex={1}>
+                            <TokenImage
+                              src={getTokenImageUrl(trade.paid.issuer, trade.paid.currency)}
+                              alt={decodeCurrency(trade.paid.currency)}
+                              loading="lazy"
+                              darkMode={darkMode}
+                            />
+                            <Box minWidth={0}>
+                              <Typography
+                                variant="body2"
+                                style={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}
+                              >
+                                {formatTradeValue(trade.paid.value)}{' '}
+                                {decodeCurrency(trade.paid.currency)}
+                              </Typography>
+                            </Box>
+                          </Box>
+
+                          <SwapHorizIcon
+                            style={{
+                              color: themeColors.textSecondary,
+                              opacity: 0.4,
+                              fontSize: '0.8rem'
+                            }}
+                          />
+
+                          <Box display="flex" alignItems="center" gap={0.5} flex={1}>
+                            <Box minWidth={0}>
+                              <Typography
+                                variant="body2"
+                                style={{ fontWeight: 600, fontSize: '0.75rem', lineHeight: 1.1 }}
+                              >
+                                {formatTradeValue(trade.got.value)}{' '}
+                                {decodeCurrency(trade.got.currency)}
+                              </Typography>
+                            </Box>
+                            <TokenImage
+                              src={getTokenImageUrl(trade.got.issuer, trade.got.currency)}
+                              alt={decodeCurrency(trade.got.currency)}
+                              loading="lazy"
+                              darkMode={darkMode}
+                            />
+                          </Box>
+                        </Box>
+
+                        <Box display="flex" alignItems="center" gap={0.25} minWidth={35}>
+                          {(() => {
+                            const TradeIconComponent = getTradeSizeIconComponent(
+                              getXRPAmount(trade)
+                            );
+                            return (
+                              <TradeIconComponent
+                                sx={{ width: 16, height: 16, color: themeColors.textSecondary }}
+                              />
+                            );
+                          })()}
+                          {trade.hash && (
+                            <a
+                              href={txPath}
+                              style={{
+                                width: '14px',
+                                height: '14px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: themeColors.textSecondary
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <LinkIcon />
+                            </a>
+                          )}
+                        </Box>
+                      </Box>
+                    </TradeItem>
+                  );
+                })}
+              </TradeList>
+            )}
           </Drawer>
         </>
       )}

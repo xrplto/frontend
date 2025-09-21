@@ -71,11 +71,20 @@ export default function Overview({ nft }) {
         {collectionData && (
           <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
         )}
-        <Suspense fallback={
-          <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 400 }}>
-            <CircularProgress />
-          </Box>
-        }>
+        <Suspense
+          fallback={
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: 400
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          }
+        >
           <TokenDetail nft={nft.nft} />
         </Suspense>
       </Container>

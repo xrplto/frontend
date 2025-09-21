@@ -12,14 +12,13 @@ import { AppContext } from 'src/AppContext';
 
 // ----------------------------------------------------------------------
 export default function Watch({ collection }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';//process.env.API_URL;
+  const BASE_URL = 'https://api.xrpnft.com/api'; //process.env.API_URL;
   const theme = useTheme();
-  const { accountProfile, openSnackbar, setLoading, darkMode } =
-    useContext(AppContext);
+  const { accountProfile, openSnackbar, setLoading, darkMode } = useContext(AppContext);
 
   const [watchList, setWatchList] = useState([]);
 
-  const { _id:md5 } = collection;
+  const { _id: md5 } = collection;
 
   //let user = token.user;
   //if (!user) user = name;
@@ -107,7 +106,7 @@ export default function Watch({ collection }) {
             sx={{
               '& .MuiChip-icon': {
                 color: '#F6B87E'
-              },
+              }
               //borderRadius: '4px',
               //border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
             }}
@@ -128,7 +127,7 @@ export default function Watch({ collection }) {
                 '& .MuiChip-icon': {
                   color: '#F6B87E'
                 }
-              },
+              }
               //borderRadius: '4px',
               //border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
             }}

@@ -82,13 +82,13 @@ const LedgerDetails = ({ ledgerData, error }) => {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <IconButton onClick={() => window.location.href = `/ledgers/${ledgerIndex - 1}`}>
+        <IconButton onClick={() => (window.location.href = `/ledgers/${ledgerIndex - 1}`)}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" sx={{ mx: 2 }}>
           #{ledgerIndex}
         </Typography>
-        <IconButton onClick={() => window.location.href = `/ledgers/${ledgerIndex + 1}`}>
+        <IconButton onClick={() => (window.location.href = `/ledgers/${ledgerIndex + 1}`)}>
           <ArrowForwardIcon />
         </IconButton>
       </Box>
@@ -114,7 +114,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
                     <AccountAvatar account={tx.Account} />
                     <Typography
                       variant="body2"
-                      onClick={() => window.location.href = `/profile/${tx.Account}`}
+                      onClick={() => (window.location.href = `/profile/${tx.Account}`)}
                       sx={{
                         color: 'primary.main',
                         textDecoration: 'none',
@@ -139,7 +139,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
                 <TableCell>
                   <Typography
                     variant="body2"
-                    onClick={() => window.location.href = `/tx/${tx.hash}`}
+                    onClick={() => (window.location.href = `/tx/${tx.hash}`)}
                     sx={{
                       color: 'primary.main',
                       textDecoration: 'none',

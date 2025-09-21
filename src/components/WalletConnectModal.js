@@ -33,7 +33,9 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
   },
   '& .MuiDialog-paper': {
     borderRadius: '16px',
-    background: theme.walletDialog?.background || (theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.95)' : '#FFFFFF'),
+    background:
+      theme.walletDialog?.background ||
+      (theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.95)' : '#FFFFFF'),
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.2)}`,
@@ -47,7 +49,11 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2, 2.5),
-  background: theme.walletDialog?.backgroundSecondary || (theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.6)' : alpha(theme.palette.background.default, 0.6)),
+  background:
+    theme.walletDialog?.backgroundSecondary ||
+    (theme.palette.mode === 'dark'
+      ? 'rgba(0, 0, 0, 0.6)'
+      : alpha(theme.palette.background.default, 0.6)),
   backdropFilter: 'blur(10px)',
   WebkitBackdropFilter: 'blur(10px)',
   borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
@@ -81,16 +87,18 @@ const WalletItem = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
   cursor: 'pointer',
   borderRadius: '12px',
-  background: theme.palette.mode === 'dark' 
-    ? alpha(theme.palette.background.paper, 0.4)
-    : alpha(theme.palette.background.paper, 0.6),
+  background:
+    theme.palette.mode === 'dark'
+      ? alpha(theme.palette.background.paper, 0.4)
+      : alpha(theme.palette.background.paper, 0.6),
   backdropFilter: 'blur(10px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
-    background: theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.6)
-      : alpha(theme.palette.background.paper, 0.8),
+    background:
+      theme.palette.mode === 'dark'
+        ? alpha(theme.palette.background.paper, 0.6)
+        : alpha(theme.palette.background.paper, 0.8),
     border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
     transform: 'translateY(-1px)',
     '& .wallet-name': {
@@ -325,22 +333,35 @@ const WalletConnectModal = () => {
         {openLogin ? (
           <>
             <ModalTitle variant="modal">Xaman Wallet</ModalTitle>
-            <Typography variant="body1" align="center" sx={{ mb: 2, color: theme.palette.text.secondary }}>
+            <Typography
+              variant="body1"
+              align="center"
+              sx={{ mb: 2, color: theme.palette.text.secondary }}
+            >
               Please log in with your Xaman (Xumm) app
             </Typography>
             <QRContainer>
-              <Box sx={{ width: '200px', height: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <Box
+                sx={{
+                  width: '200px',
+                  height: '200px',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}
+              >
                 {connecting ? (
-                  <Skeleton variant="rectangular" width={200} height={200} sx={{ borderRadius: '8px' }} />
+                  <Skeleton
+                    variant="rectangular"
+                    width={200}
+                    height={200}
+                    sx={{ borderRadius: '8px' }}
+                  />
                 ) : (
                   <StyledQRImage alt="Xaman QR" src={qrUrl} />
                 )}
               </Box>
-              <OpenXamanButton
-                href={nextUrl}
-                target="_blank"
-                rel="noreferrer noopener nofollow"
-              >
+              <OpenXamanButton href={nextUrl} target="_blank" rel="noreferrer noopener nofollow">
                 Open in Xaman
               </OpenXamanButton>
             </QRContainer>

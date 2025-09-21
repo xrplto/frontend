@@ -29,8 +29,8 @@ const LightweightChart = ({
 
     const handleResize = () => {
       if (chartRef.current) {
-        chartRef.current.applyOptions({ 
-          width: chartContainerRef.current.clientWidth 
+        chartRef.current.applyOptions({
+          width: chartContainerRef.current.clientWidth
         });
       }
     };
@@ -41,50 +41,50 @@ const LightweightChart = ({
       layout: {
         background: { type: 'solid', color: theme.chart?.background || 'transparent' },
         textColor: theme.palette.text.secondary,
-        fontSize: 12,
+        fontSize: 12
       },
       grid: {
         vertLines: {
           color: theme.chart?.gridColor || alpha(theme.palette.divider, 0.1),
           style: 1,
-          visible: true,
+          visible: true
         },
         horzLines: {
           color: theme.chart?.gridColor || alpha(theme.palette.divider, 0.1),
           style: 1,
-          visible: true,
-        },
+          visible: true
+        }
       },
       crosshair: {
         mode: 1,
         vertLine: {
           width: 1,
           color: alpha(theme.palette.text.secondary, 0.3),
-          style: 0,
+          style: 0
         },
         horzLine: {
           visible: true,
           labelVisible: true,
           width: 1,
           color: alpha(theme.palette.text.secondary, 0.3),
-          style: 0,
-        },
+          style: 0
+        }
       },
       rightPriceScale: {
         borderColor: theme.chart?.borderColor || alpha(theme.palette.divider, 0.1),
         visible: true,
         scaleMargins: {
           top: 0.1,
-          bottom: 0.25, // More space at bottom for volume bars
-        },
+          bottom: 0.25 // More space at bottom for volume bars
+        }
       },
       leftPriceScale: {
         borderColor: theme.chart?.borderColor || alpha(theme.palette.divider, 0.1),
         visible: false,
         scaleMargins: {
           top: 0.7, // Volume bars only use bottom 30% of chart
-          bottom: 0,
-        },
+          bottom: 0
+        }
       },
       timeScale: {
         borderColor: theme.chart?.borderColor || alpha(theme.palette.divider, 0.1),
@@ -94,17 +94,17 @@ const LightweightChart = ({
         barSpacing: 3,
         fixLeftEdge: true,
         lockVisibleTimeRangeOnResize: true,
-        rightBarStaysOnScroll: true,
+        rightBarStaysOnScroll: true
       },
       handleScroll: {
         mouseWheel: true,
-        pressedMouseMove: true,
+        pressedMouseMove: true
       },
       handleScale: {
         axisPressedMouseMove: true,
         mouseWheel: true,
-        pinch: true,
-      },
+        pinch: true
+      }
     });
 
     chartRef.current = chart;
@@ -117,7 +117,9 @@ const LightweightChart = ({
       console.log(`Processing series ${index}: ${seriesConfig.name} (${seriesConfig.type})`);
 
       const processedData = data
-        .filter(item => item[seriesConfig.dataKey] !== null && item[seriesConfig.dataKey] !== undefined)
+        .filter(
+          (item) => item[seriesConfig.dataKey] !== null && item[seriesConfig.dataKey] !== undefined
+        )
         .map((item, idx) => {
           let value = parseFloat(item[seriesConfig.dataKey] || 0);
 
@@ -148,7 +150,7 @@ const LightweightChart = ({
             value: value
           };
         })
-        .filter(item => item !== null) // Remove invalid entries
+        .filter((item) => item !== null) // Remove invalid entries
         .sort((a, b) => a.time - b.time);
 
       if (processedData.length === 0) {
@@ -163,20 +165,23 @@ const LightweightChart = ({
       // Create the appropriate series type based on configuration
       if (seriesConfig.type === 'histogram' || seriesConfig.type === 'column') {
         // Check if this is a volume series in ROI view
-        const isVolumeInRoi = seriesConfig.isVolumeInRoi ||
-                              (seriesConfig.name && seriesConfig.name.toLowerCase().includes('volume') &&
-                               data.some(d => d.dailyroi !== undefined));
+        const isVolumeInRoi =
+          seriesConfig.isVolumeInRoi ||
+          (seriesConfig.name &&
+            seriesConfig.name.toLowerCase().includes('volume') &&
+            data.some((d) => d.dailyroi !== undefined));
 
         series = chart.addSeries(HistogramSeries, {
-          color: isVolumeInRoi ? alpha(seriesConfig.color || theme.palette.info.main, 0.3) :
-                                (seriesConfig.color || theme.palette.primary.main),
+          color: isVolumeInRoi
+            ? alpha(seriesConfig.color || theme.palette.info.main, 0.3)
+            : seriesConfig.color || theme.palette.primary.main,
           priceFormat: {
             type: 'volume',
             precision: 0,
-            minMove: 1,
+            minMove: 1
           },
           title: seriesConfig.name || seriesConfig.dataKey,
-          priceScaleId: isVolumeInRoi ? 'left' : 'right',
+          priceScaleId: isVolumeInRoi ? 'left' : 'right'
         });
       } else {
         // Default to line series
@@ -190,7 +195,7 @@ const LightweightChart = ({
           crosshairMarkerRadius: 4,
           lineStyle: 0,
           lineType: 2,
-          priceScaleId: 'right',
+          priceScaleId: 'right'
         });
       }
 
@@ -228,8 +233,8 @@ const LightweightChart = ({
     if (onClick) {
       chart.subscribeClick((param) => {
         if (param.time) {
-          const clickData = data.find(d => 
-            Math.floor(new Date(d.date).getTime() / 1000) === param.time
+          const clickData = data.find(
+            (d) => Math.floor(new Date(d.date).getTime() / 1000) === param.time
           );
           if (clickData) {
             onClick(clickData);
@@ -259,7 +264,7 @@ const LightweightChart = ({
             flexWrap: 'wrap',
             gap: 2,
             mb: 1.5,
-            px: 1,
+            px: 1
           }}
         >
           {series.map((seriesConfig, index) => (
@@ -269,7 +274,7 @@ const LightweightChart = ({
                 const newVisible = { ...visibleSeries, [index]: !visibleSeries[index] };
                 setVisibleSeries(newVisible);
                 if (seriesRefs.current[index]) {
-                  const seriesRef = seriesRefs.current.find(ref => ref.config === seriesConfig);
+                  const seriesRef = seriesRefs.current.find((ref) => ref.config === seriesConfig);
                   if (seriesRef) {
                     seriesRef.series.applyOptions({
                       visible: newVisible[index]
@@ -285,28 +290,36 @@ const LightweightChart = ({
                 opacity: visibleSeries[index] ? 1 : 0.4,
                 transition: 'all 0.2s ease',
                 '&:hover': {
-                  opacity: visibleSeries[index] ? 0.8 : 0.6,
-                },
+                  opacity: visibleSeries[index] ? 0.8 : 0.6
+                }
               }}
             >
               <Box
                 sx={{
                   width: 14,
-                  height: seriesConfig.type === 'column' || seriesConfig.type === 'histogram' ? 8 : 3,
+                  height:
+                    seriesConfig.type === 'column' || seriesConfig.type === 'histogram' ? 8 : 3,
                   backgroundColor: seriesConfig.color || theme.palette.primary.main,
-                  borderRadius: seriesConfig.type === 'column' || seriesConfig.type === 'histogram' ? '2px' : '4px',
+                  borderRadius:
+                    seriesConfig.type === 'column' || seriesConfig.type === 'histogram'
+                      ? '2px'
+                      : '4px'
                 }}
               />
-              <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ fontSize: '0.8rem', fontWeight: 500 }}
+              >
                 {seriesConfig.name || seriesConfig.dataKey}
               </Typography>
             </Box>
           ))}
         </Box>
       )}
-      
+
       <div ref={chartContainerRef} style={{ width: '100%' }} />
-      
+
       {hoveredData && (
         <Box
           sx={{
@@ -321,7 +334,7 @@ const LightweightChart = ({
             boxShadow: theme.shadows[4],
             backdropFilter: 'blur(8px)',
             WebkitBackdropFilter: 'blur(8px)',
-            zIndex: 1000,
+            zIndex: 1000
           }}
         >
           <Typography
@@ -341,7 +354,7 @@ const LightweightChart = ({
             })}
           </Typography>
           {Object.entries(hoveredData.prices).map(([key, value]) => {
-            const seriesConfig = series.find(s => s.dataKey === key);
+            const seriesConfig = series.find((s) => s.dataKey === key);
             const formattedValue = seriesConfig?.valueFormatter
               ? seriesConfig.valueFormatter(value)
               : value.toLocaleString();
@@ -353,15 +366,29 @@ const LightweightChart = ({
                     width: 10,
                     height: 10,
                     backgroundColor: seriesConfig?.color || theme.palette.primary.main,
-                    borderRadius: seriesConfig?.type === 'column' || seriesConfig?.type === 'histogram' ? '2px' : '50%',
+                    borderRadius:
+                      seriesConfig?.type === 'column' || seriesConfig?.type === 'histogram'
+                        ? '2px'
+                        : '50%',
                     flexShrink: 0
                   }}
                 />
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: theme.palette.text.secondary, fontSize: '0.7rem' }}
+                  >
                     {seriesConfig?.name || key}:
                   </Typography>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.primary, fontWeight: 600, fontSize: '0.7rem', ml: 1 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: theme.palette.text.primary,
+                      fontWeight: 600,
+                      fontSize: '0.7rem',
+                      ml: 1
+                    }}
+                  >
                     {formattedValue}
                   </Typography>
                 </Box>

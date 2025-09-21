@@ -19,7 +19,7 @@ export function themeCreator(themeName) {
   if (typeof themeName === 'boolean') {
     return themeName ? XrplToDarkTheme : XrplToLightTheme;
   }
-  
+
   // Return the requested theme or default to light theme
   return themeMap[themeName] || XrplToLightTheme;
 }

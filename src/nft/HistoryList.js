@@ -91,15 +91,16 @@ const TypeChip = styled(Chip)(({ theme, transactionType }) => ({
   height: 26,
   fontSize: '0.75rem',
   fontWeight: 600,
-  backgroundColor: transactionType === 'SALE' 
-    ? alpha(theme.palette.success.main, 0.1)
-    : alpha(theme.palette.info.main, 0.1),
-  color: transactionType === 'SALE'
-    ? theme.palette.success.dark
-    : theme.palette.info.dark,
-  border: `1px solid ${transactionType === 'SALE' 
-    ? alpha(theme.palette.success.main, 0.3)
-    : alpha(theme.palette.info.main, 0.3)}`,
+  backgroundColor:
+    transactionType === 'SALE'
+      ? alpha(theme.palette.success.main, 0.1)
+      : alpha(theme.palette.info.main, 0.1),
+  color: transactionType === 'SALE' ? theme.palette.success.dark : theme.palette.info.dark,
+  border: `1px solid ${
+    transactionType === 'SALE'
+      ? alpha(theme.palette.success.main, 0.3)
+      : alpha(theme.palette.info.main, 0.3)
+  }`,
   '& .MuiChip-icon': {
     color: 'inherit'
   }
@@ -133,7 +134,7 @@ function formatDate(dateString) {
   const now = new Date();
   const diffInMs = now - date;
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-  
+
   if (diffInDays === 0) {
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     if (diffInHours === 0) {
@@ -198,7 +199,6 @@ export default function HistoryList({ nft }) {
     getHistories();
   }, [sync, nft.NFTokenID]);
 
-
   if (loading) {
     return (
       <StyledPaper elevation={0}>
@@ -252,13 +252,15 @@ export default function HistoryList({ nft }) {
                     </Stack>
 
                     {row.type === 'SALE' && (
-                      <Box sx={{ 
-                        bgcolor: alpha(theme.palette.success.main, 0.05),
-                        borderRadius: 0.5,
-                        px: 1.5,
-                        py: 0.75,
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`
-                      }}>
+                      <Box
+                        sx={{
+                          bgcolor: alpha(theme.palette.success.main, 0.05),
+                          borderRadius: 0.5,
+                          px: 1.5,
+                          py: 0.75,
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`
+                        }}
+                      >
                         <PriceText variant="body2">
                           {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
                           {normalizeCurrencyCodeXummImpl(row.cost.currency)}
@@ -285,7 +287,12 @@ export default function HistoryList({ nft }) {
             </StyledTableHead>
             <TableBody>
               {sortedHists.map((row, index) => (
-                <Fade in key={row.uuid} timeout={300} style={{ transitionDelay: `${index * 30}ms` }}>
+                <Fade
+                  in
+                  key={row.uuid}
+                  timeout={300}
+                  style={{ transitionDelay: `${index * 30}ms` }}
+                >
                   <StyledTableRow>
                     <StyledTableCell>
                       <TypeChip
@@ -300,9 +307,7 @@ export default function HistoryList({ nft }) {
                         <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.light' }}>
                           <AccountCircleIcon sx={{ fontSize: 16 }} />
                         </Avatar>
-                        <AddressLink href={`/account/${row.account}`}>
-                          {row.account}
-                        </AddressLink>
+                        <AddressLink href={`/account/${row.account}`}>{row.account}</AddressLink>
                       </Stack>
                     </StyledTableCell>
                     <StyledTableCell align="right">
@@ -318,7 +323,12 @@ export default function HistoryList({ nft }) {
                       )}
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={0.5}>
+                      <Stack
+                        direction="row"
+                        alignItems="center"
+                        justifyContent="flex-end"
+                        spacing={0.5}
+                      >
                         <AccessTimeIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
                         <Typography variant="body2" color="text.secondary">
                           {formatDate(row.time)}

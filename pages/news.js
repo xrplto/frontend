@@ -26,12 +26,12 @@ const PaginationContainer = styled.div`
   box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
   backdrop-filter: blur(20px);
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 6px 16px rgba(0, 0, 0, 0.08)'};
   }
-  
+
   @media (max-width: 900px) {
     width: 100%;
     justify-content: center;
@@ -53,16 +53,17 @@ const NavButton = styled.button`
   color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
   padding: 0;
   transition: all 0.15s ease;
-  
+
   &:hover:not(:disabled) {
-    background: ${({ theme }) => theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.1)};
+    background: ${({ theme }) =>
+      theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.1)};
     transform: scale(1.05);
   }
-  
+
   &:active:not(:disabled) {
     transform: scale(0.95);
   }
-  
+
   &:disabled {
     color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.3)};
     cursor: not-allowed;
@@ -74,8 +75,14 @@ const PageButton = styled.button`
   height: 24px;
   border-radius: 8px;
   border: none;
-  background: ${props => props.selected ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main : 'transparent'};
-  color: ${props => props.selected ? (props.theme.pagination?.selectedTextColor || 'white') : (props.theme.palette.text.primary || 'inherit')};
+  background: ${(props) =>
+    props.selected
+      ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main
+      : 'transparent'};
+  color: ${(props) =>
+    props.selected
+      ? props.theme.pagination?.selectedTextColor || 'white'
+      : props.theme.palette.text.primary || 'inherit'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -83,18 +90,21 @@ const PageButton = styled.button`
   padding: 0 6px;
   margin: 0;
   font-size: 13px;
-  font-weight: ${props => props.selected ? 700 : 500};
+  font-weight: ${(props) => (props.selected ? 700 : 500)};
   transition: all 0.15s ease;
-  
+
   &:hover:not(:disabled) {
-    background: ${props => props.selected ? (props.theme.palette.primary.dark || '#1976D2') : (props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.1))};
-    transform: ${props => props.selected ? 'none' : 'translateY(-1px)'};
+    background: ${(props) =>
+      props.selected
+        ? props.theme.palette.primary.dark || '#1976D2'
+        : props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.1)};
+    transform: ${(props) => (props.selected ? 'none' : 'translateY(-1px)')};
   }
-  
+
   &:active:not(:disabled) {
     transform: scale(0.95);
   }
-  
+
   &:disabled {
     cursor: not-allowed;
     opacity: 0.3;
@@ -119,12 +129,12 @@ const InfoBox = styled.div`
   padding: 8px 14px;
   backdrop-filter: blur(20px);
   transition: all 0.2s ease;
-  
+
   &:hover {
     transform: translateY(-1px);
     box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 6px 16px rgba(0, 0, 0, 0.08)'};
   }
-  
+
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
@@ -146,7 +156,7 @@ const Chip = styled.span`
 const Text = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
-  font-weight: ${props => props.fontWeight || 500};
+  font-weight: ${(props) => props.fontWeight || 500};
 `;
 
 const PaginationWrapper = styled.div`
@@ -157,7 +167,7 @@ const PaginationWrapper = styled.div`
   margin-bottom: 1rem;
   gap: 1rem;
   flex-wrap: wrap;
-  
+
   @media (max-width: 900px) {
     flex-direction: column;
     align-items: stretch;
@@ -170,24 +180,23 @@ const CenterBox = styled.div`
   justify-content: center;
 `;
 
-
 const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave, isMobile }) => {
   const theme = useTheme();
   const themeMode = useSelector((state) => state.status.theme);
   const isDark = themeMode === 'dark';
   const [showAll, setShowAll] = useState(false);
-  
-  const sortedSources = useMemo(() => 
-    Object.entries(sources).sort(([, a], [, b]) => b.count - a.count),
+
+  const sortedSources = useMemo(
+    () => Object.entries(sources).sort(([, a], [, b]) => b.count - a.count),
     [sources]
   );
-  
+
   const displayLimit = isMobile ? 8 : 12;
-  const displayedSources = useMemo(() => 
-    showAll ? sortedSources : sortedSources.slice(0, displayLimit),
+  const displayedSources = useMemo(
+    () => (showAll ? sortedSources : sortedSources.slice(0, displayLimit)),
     [showAll, sortedSources, displayLimit]
   );
-  
+
   const totalSources = sortedSources.length;
   const hiddenCount = totalSources - displayLimit;
 
@@ -199,7 +208,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
   };
 
   return (
-    <div 
+    <div
       className={`${styles.sourcesMenuContainer} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
       style={containerStyle}
     >
@@ -226,7 +235,9 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
           onClick={() => onSourceSelect(null)}
           style={{
             borderColor: theme.palette.primary.main,
-            color: !selectedSource ? theme.palette.primary.contrastText : theme.palette.primary.main,
+            color: !selectedSource
+              ? theme.palette.primary.contrastText
+              : theme.palette.primary.main,
             background: !selectedSource ? theme.palette.primary.main : 'transparent',
             position: 'relative',
             overflow: 'hidden'
@@ -236,14 +247,15 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
         </button>
         {displayedSources.map(([source, data]) => {
           const sentiment = data.sentiment;
-          const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
+          const hasSentiment =
+            sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
           const isSelected = selectedSource === source;
-          
+
           // Calculate sentiment bar widths
           const bullishWidth = sentiment?.Bullish || 0;
           const bearishWidth = sentiment?.Bearish || 0;
           const neutralWidth = sentiment?.Neutral || 0;
-          
+
           return (
             <button
               key={source}
@@ -278,7 +290,10 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
               )}
               <span className={styles.chipContent} style={{ position: 'relative', zIndex: 1 }}>
                 <span>{source}</span>
-                <span className={styles.chipCount} style={{ marginRight: hasSentiment && !isMobile ? '0.5rem' : 0 }}>
+                <span
+                  className={styles.chipCount}
+                  style={{ marginRight: hasSentiment && !isMobile ? '0.5rem' : 0 }}
+                >
                   ({data.count})
                 </span>
                 {hasSentiment && !isMobile && (
@@ -286,11 +301,19 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
                     <span style={{ color: '#10B981', fontSize: '0.65rem', fontWeight: 600 }}>
                       {sentiment.Bullish}
                     </span>
-                    <span style={{ color: alpha(theme.palette.text.primary, 0.3), margin: '0 2px' }}>·</span>
+                    <span
+                      style={{ color: alpha(theme.palette.text.primary, 0.3), margin: '0 2px' }}
+                    >
+                      ·
+                    </span>
                     <span style={{ color: '#EF4444', fontSize: '0.65rem', fontWeight: 600 }}>
                       {sentiment.Bearish}
                     </span>
-                    <span style={{ color: alpha(theme.palette.text.primary, 0.3), margin: '0 2px' }}>·</span>
+                    <span
+                      style={{ color: alpha(theme.palette.text.primary, 0.3), margin: '0 2px' }}
+                    >
+                      ·
+                    </span>
                     <span style={{ color: '#F59E0B', fontSize: '0.65rem', fontWeight: 600 }}>
                       {sentiment.Neutral}
                     </span>
@@ -309,24 +332,16 @@ SourcesMenu.displayName = 'SourcesMenu';
 
 const SentimentSummary = memo(({ period, stats, isDark }) => {
   if (!stats) return null;
-  
+
   return (
     <div className={`${styles.sentimentSummary} ${isDark ? styles.dark : ''}`}>
-      <span className={styles.sentimentPeriod}>
-        {period}
-      </span>
+      <span className={styles.sentimentPeriod}>{period}</span>
       <div className={styles.sentimentValues}>
-        <span className={`${styles.sentimentValue} ${styles.bullish}`}>
-          {stats.bullish || 0}%
-        </span>
+        <span className={`${styles.sentimentValue} ${styles.bullish}`}>{stats.bullish || 0}%</span>
         <span className={styles.sentimentDivider}>·</span>
-        <span className={`${styles.sentimentValue} ${styles.bearish}`}>
-          {stats.bearish || 0}%
-        </span>
+        <span className={`${styles.sentimentValue} ${styles.bearish}`}>{stats.bearish || 0}%</span>
         <span className={styles.sentimentDivider}>·</span>
-        <span className={`${styles.sentimentValue} ${styles.neutral}`}>
-          {stats.neutral || 0}%
-        </span>
+        <span className={`${styles.sentimentValue} ${styles.neutral}`}>{stats.neutral || 0}%</span>
       </div>
     </div>
   );
@@ -342,7 +357,7 @@ function NewsPage() {
   const isDark = themeMode === 'dark';
   const isSyncWave = themeName === 'SyncWaveTheme';
   const [isMobile, setIsMobile] = useState(false);
-  
+
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -370,40 +385,52 @@ function NewsPage() {
   const [expandedArticles, setExpandedArticles] = useState({});
   const [searchSentimentScore, setSearchSentimentScore] = useState(null);
 
-  const filteredNews = useMemo(() => Array.isArray(news) ? news : [], [news]);
-  const totalPages = useMemo(() => Math.ceil(totalCount / itemsPerPage), [totalCount, itemsPerPage]);
+  const filteredNews = useMemo(() => (Array.isArray(news) ? news : []), [news]);
+  const totalPages = useMemo(
+    () => Math.ceil(totalCount / itemsPerPage),
+    [totalCount, itemsPerPage]
+  );
   const currentItems = filteredNews;
 
-  const handlePageChange = useCallback((event, value) => {
-    setCurrentPage(value);
-    const query = { page: value };
-    if (itemsPerPage !== 10) query.limit = itemsPerPage;
-    if (selectedSource) query.source = selectedSource;
-    if (searchQuery) query.q = searchQuery;
-    router.push({ pathname: '/news', query }, undefined, { shallow: true });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, [itemsPerPage, selectedSource, searchQuery, router]);
+  const handlePageChange = useCallback(
+    (event, value) => {
+      setCurrentPage(value);
+      const query = { page: value };
+      if (itemsPerPage !== 10) query.limit = itemsPerPage;
+      if (selectedSource) query.source = selectedSource;
+      if (searchQuery) query.q = searchQuery;
+      router.push({ pathname: '/news', query }, undefined, { shallow: true });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    },
+    [itemsPerPage, selectedSource, searchQuery, router]
+  );
 
-  const handleSourceSelect = useCallback((source) => {
-    setSelectedSource(source);
-    setCurrentPage(1);
-    const query = { page: 1 };
-    if (itemsPerPage !== 10) query.limit = itemsPerPage;
-    if (source) query.source = source;
-    if (searchQuery) query.q = searchQuery;
-    router.push({ pathname: '/news', query }, undefined, { shallow: true });
-  }, [itemsPerPage, searchQuery, router]);
+  const handleSourceSelect = useCallback(
+    (source) => {
+      setSelectedSource(source);
+      setCurrentPage(1);
+      const query = { page: 1 };
+      if (itemsPerPage !== 10) query.limit = itemsPerPage;
+      if (source) query.source = source;
+      if (searchQuery) query.q = searchQuery;
+      router.push({ pathname: '/news', query }, undefined, { shallow: true });
+    },
+    [itemsPerPage, searchQuery, router]
+  );
 
-  const handleSearch = useCallback((e) => {
-    e.preventDefault();
-    setSearchQuery(searchInput);
-    setCurrentPage(1);
-    const query = { page: 1 };
-    if (itemsPerPage !== 10) query.limit = itemsPerPage;
-    if (selectedSource) query.source = selectedSource;
-    if (searchInput) query.q = searchInput;
-    router.push({ pathname: '/news', query }, undefined, { shallow: true });
-  }, [searchInput, itemsPerPage, selectedSource, router]);
+  const handleSearch = useCallback(
+    (e) => {
+      e.preventDefault();
+      setSearchQuery(searchInput);
+      setCurrentPage(1);
+      const query = { page: 1 };
+      if (itemsPerPage !== 10) query.limit = itemsPerPage;
+      if (selectedSource) query.source = selectedSource;
+      if (searchInput) query.q = searchInput;
+      router.push({ pathname: '/news', query }, undefined, { shallow: true });
+    },
+    [searchInput, itemsPerPage, selectedSource, router]
+  );
 
   const toggleArticleExpansion = useCallback((articleId) => {
     setExpandedArticles((prev) => ({
@@ -445,24 +472,24 @@ function NewsPage() {
     const fetchNews = async () => {
       try {
         setLoading(true);
-        
+
         // Build query string from state
         const params = new URLSearchParams();
         params.append('page', currentPage);
         params.append('limit', itemsPerPage);
         if (selectedSource) params.append('source', selectedSource);
-        
+
         // Use search endpoint if there's a search query
-        const endpoint = searchQuery 
+        const endpoint = searchQuery
           ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(searchQuery)}&${params.toString()}`
           : `https://api.xrpl.to/api/news?${params.toString()}`;
-        
+
         const response = await fetch(endpoint);
         if (!response.ok) {
           throw new Error('Failed to fetch news');
         }
         const data = await response.json();
-        
+
         // Check if response has data array (both regular and search endpoints have this)
         if (data.data && Array.isArray(data.data)) {
           setNews(data.data);
@@ -470,14 +497,14 @@ function NewsPage() {
           if (data.pagination && data.pagination.total) {
             setTotalCount(data.pagination.total);
           }
-          
+
           // Set search sentiment score if available (from search endpoint)
           if (searchQuery && data.sentiment_score !== undefined) {
             setSearchSentimentScore(data.sentiment_score);
           } else {
             setSearchSentimentScore(null);
           }
-          
+
           // Only process sources if they exist (not present in search endpoint)
           if (data.sources) {
             const sourcesObj = data.sources.reduce((acc, source) => {
@@ -489,7 +516,7 @@ function NewsPage() {
             }, {});
             setSourcesStats(sourcesObj);
           }
-          
+
           // Use sentiment data from API if available (not present in search endpoint)
           if (data.sentiment) {
             setSentimentStats({
@@ -533,7 +560,6 @@ function NewsPage() {
           setTotalCount(0);
           setSearchSentimentScore(null);
         }
-
       } catch (error) {
         setError(error.message);
       } finally {
@@ -582,7 +608,6 @@ function NewsPage() {
     return titleMatch ? titleMatch[1] : htmlContent;
   }, []);
 
-
   // Get background and text styles from theme
   const backgroundStyle = {
     background: theme.palette.background.default,
@@ -591,8 +616,8 @@ function NewsPage() {
   };
 
   return (
-    <div 
-      className={`${styles.pageWrapper} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`} 
+    <div
+      className={`${styles.pageWrapper} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
       style={backgroundStyle}
     >
       <Topbar />
@@ -603,431 +628,512 @@ function NewsPage() {
             <div className={styles.spinner}></div>
           </div>
         ) : error ? (
-          <div className={styles.errorMessage} style={{ color: theme.palette.error.main }}>Error: {error}</div>
+          <div className={styles.errorMessage} style={{ color: theme.palette.error.main }}>
+            Error: {error}
+          </div>
         ) : (
           <>
-          <div className={`${styles.compactHeader} ${isDark ? styles.dark : ''}`}>
-            <div className={styles.headerContent}>
-              <div className={styles.titleSection}>
-                <h1 className={styles.compactTitle} style={{ color: theme.palette.primary.main }}>
-                  XRP News
-                  {totalCount > 0 && (
-                    <span className={styles.compactCount} style={{ color: theme.palette.text.secondary }}>
-                      {totalCount.toLocaleString()}
-                    </span>
-                  )}
-                </h1>
+            <div className={`${styles.compactHeader} ${isDark ? styles.dark : ''}`}>
+              <div className={styles.headerContent}>
+                <div className={styles.titleSection}>
+                  <h1 className={styles.compactTitle} style={{ color: theme.palette.primary.main }}>
+                    XRP News
+                    {totalCount > 0 && (
+                      <span
+                        className={styles.compactCount}
+                        style={{ color: theme.palette.text.secondary }}
+                      >
+                        {totalCount.toLocaleString()}
+                      </span>
+                    )}
+                  </h1>
+                </div>
+                <form onSubmit={handleSearch} className={styles.searchForm}>
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      borderRadius: '14px',
+                      px: 2.5,
+                      py: 1.5,
+                      height: '46px',
+                      minWidth: { xs: '100%', sm: '320px' },
+                      backgroundColor: 'transparent',
+                      backdropFilter: 'blur(10px) saturate(150%)',
+                      WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+                      border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.18)}`,
+                      boxShadow: 'none',
+                      transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                      position: 'relative',
+                      '&:hover': {
+                        backgroundColor: 'transparent',
+                        border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.25 : 0.35)}`,
+                        boxShadow: 'none',
+                        transform: 'translateY(-1px)'
+                      },
+                      '&:focus-within': {
+                        border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.35 : 0.45)}`,
+                        transform: 'translateY(-1px)'
+                      }
+                    }}
+                  >
+                    <SearchIcon
+                      sx={{
+                        fontSize: '1.3rem',
+                        mr: 2,
+                        color: alpha(theme.palette.primary.main, 0.6),
+                        transition: 'all 0.25s ease'
+                      }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search news..."
+                      aria-label="Search news articles"
+                      value={searchInput}
+                      onChange={(e) => setSearchInput(e.target.value)}
+                      style={{
+                        flex: 1,
+                        border: 'none',
+                        outline: 'none',
+                        background: 'transparent',
+                        fontSize: '0.96rem',
+                        color: theme.palette.text.primary,
+                        fontWeight: 500,
+                        letterSpacing: '0.02em',
+                        lineHeight: 1.2
+                      }}
+                    />
+                    {searchInput && (
+                      <>
+                        <IconButton
+                          type="button"
+                          onClick={() => {
+                            setSearchInput('');
+                            setSearchQuery('');
+                            setSearchSentimentScore(null);
+                            setCurrentPage(1);
+                            const query = { page: 1 };
+                            if (itemsPerPage !== 10) query.limit = itemsPerPage;
+                            if (selectedSource) query.source = selectedSource;
+                            router.push({ pathname: '/news', query }, undefined, { shallow: true });
+                          }}
+                          sx={{
+                            p: 0.5,
+                            mr: 1,
+                            color: alpha(theme.palette.text.primary, 0.5),
+                            '&:hover': {
+                              color: theme.palette.text.primary,
+                              backgroundColor: alpha(theme.palette.action.hover, 0.08)
+                            }
+                          }}
+                        >
+                          <ArrowForwardIcon sx={{ fontSize: 18 }} />
+                        </IconButton>
+                        <Box
+                          component="button"
+                          type="submit"
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            px: 2,
+                            py: 0.75,
+                            borderRadius: '8px',
+                            backgroundColor: theme.palette.primary.main,
+                            color: theme.palette.primary.contrastText,
+                            border: 'none',
+                            fontSize: '0.875rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s ease',
+                            '&:hover': {
+                              backgroundColor: theme.palette.primary.dark,
+                              transform: 'scale(1.02)'
+                            },
+                            '&:active': {
+                              transform: 'scale(0.98)'
+                            }
+                          }}
+                        >
+                          Search
+                        </Box>
+                      </>
+                    )}
+                  </Box>
+                </form>
               </div>
-              <form onSubmit={handleSearch} className={styles.searchForm}>
+            </div>
+
+            <Box
+              sx={{
+                background: 'transparent',
+                border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
+                borderRadius: '12px',
+                p: { xs: 1.5, sm: 2 },
+                mb: 2.5,
+                backdropFilter: 'blur(10px)',
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  borderColor:
+                    theme.palette.mode === 'dark'
+                      ? 'rgba(255, 255, 255, 0.1)'
+                      : 'rgba(0, 0, 0, 0.1)',
+                  transform: 'translateY(-2px)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                }
+              }}
+            >
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  mb: { xs: 1.5, sm: 2 }
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box
+                    sx={{
+                      fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                      fontWeight: 600,
+                      color: theme.palette.text.secondary,
+                      textTransform: 'uppercase'
+                    }}
+                  >
+                    {isMobile ? 'Sentiment' : 'Market Sentiment'}
+                  </Box>
+                  {searchQuery && searchSentimentScore !== null && (
+                    <Box
+                      sx={{
+                        backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                        color: theme.palette.primary.main,
+                        px: 0.75,
+                        py: 0.25,
+                        borderRadius: 0.5,
+                        fontSize: '0.65rem',
+                        fontWeight: 600
+                      }}
+                    >
+                      {searchSentimentScore}
+                    </Box>
+                  )}
+                </Box>
                 <Box
                   sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderRadius: '14px',
-                    px: 2.5,
-                    py: 1.5,
-                    height: '46px',
-                    minWidth: { xs: '100%', sm: '320px' },
-                    backgroundColor: 'transparent',
-                    backdropFilter: 'blur(10px) saturate(150%)',
-                    WebkitBackdropFilter: 'blur(10px) saturate(150%)',
-                    border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.12 : 0.18)}`,
-                    boxShadow: 'none',
-                    transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
-                    position: 'relative',
-                    '&:hover': {
-                      backgroundColor: 'transparent',
-                      border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.25 : 0.35)}`,
-                      boxShadow: 'none',
-                      transform: 'translateY(-1px)'
-                    },
-                    '&:focus-within': {
-                      border: `0.5px solid ${alpha(theme.palette.primary.main, isDark ? 0.35 : 0.45)}`,
-                      transform: 'translateY(-1px)'
-                    }
+                    display: { xs: 'none', sm: 'flex' },
+                    gap: 1.5,
+                    fontSize: '0.65rem',
+                    color: theme.palette.text.secondary,
+                    opacity: 0.8
                   }}
                 >
-                  <SearchIcon
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box
+                      sx={{ width: 6, height: 6, backgroundColor: '#10B981', borderRadius: '50%' }}
+                    />
+                    Bull
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box
+                      sx={{ width: 6, height: 6, backgroundColor: '#EF4444', borderRadius: '50%' }}
+                    />
+                    Bear
+                  </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Box
+                      sx={{ width: 6, height: 6, backgroundColor: '#F59E0B', borderRadius: '50%' }}
+                    />
+                    Neutral
+                  </Box>
+                </Box>
+              </Box>
+
+              <Box
+                sx={{
+                  display: 'grid',
+                  gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
+                  gap: { xs: 0.75, sm: 1.25 }
+                }}
+              >
+                {[
+                  { period: '24H', stats: sentimentStats.last24h },
+                  { period: '7D', stats: sentimentStats.last7d },
+                  { period: '30D', stats: sentimentStats.last30d },
+                  { period: 'ALL', stats: sentimentStats.all }
+                ].map((item) => (
+                  <Box
+                    key={item.period}
                     sx={{
-                      fontSize: '1.3rem',
-                      mr: 2,
-                      color: alpha(theme.palette.primary.main, 0.6),
-                      transition: 'all 0.25s ease'
+                      backgroundColor: alpha(theme.palette.background.paper, 0.4),
+                      borderRadius: '10px',
+                      p: { xs: 0.75, sm: 1.25 },
+                      textAlign: 'center',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                        transform: 'translateY(-1px)'
+                      }
                     }}
-                  />
-                  <input
-                    type="text"
-                    placeholder="Search news..."
-                    aria-label="Search news articles"
-                    value={searchInput}
-                    onChange={(e) => setSearchInput(e.target.value)}
-                    style={{
-                      flex: 1,
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontSize: '0.96rem',
-                      color: theme.palette.text.primary,
-                      fontWeight: 500,
-                      letterSpacing: '0.02em',
-                      lineHeight: 1.2
-                    }}
-                  />
-                  {searchInput && (
-                    <>
-                      <IconButton
-                        type="button"
-                        onClick={() => {
-                          setSearchInput('');
-                          setSearchQuery('');
-                          setSearchSentimentScore(null);
-                          setCurrentPage(1);
-                          const query = { page: 1 };
-                          if (itemsPerPage !== 10) query.limit = itemsPerPage;
-                          if (selectedSource) query.source = selectedSource;
-                          router.push({ pathname: '/news', query }, undefined, { shallow: true });
-                        }}
-                        sx={{
-                          p: 0.5,
-                          mr: 1,
-                          color: alpha(theme.palette.text.primary, 0.5),
-                          '&:hover': {
-                            color: theme.palette.text.primary,
-                            backgroundColor: alpha(theme.palette.action.hover, 0.08)
-                          }
-                        }}
-                      >
-                        <ArrowForwardIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
-                      <Box
-                        component="button"
-                        type="submit"
-                        sx={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          px: 2,
-                          py: 0.75,
-                          borderRadius: '8px',
-                          backgroundColor: theme.palette.primary.main,
-                          color: theme.palette.primary.contrastText,
-                          border: 'none',
-                          fontSize: '0.875rem',
-                          fontWeight: 600,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s ease',
-                          '&:hover': {
-                            backgroundColor: theme.palette.primary.dark,
-                            transform: 'scale(1.02)'
-                          },
-                          '&:active': {
-                            transform: 'scale(0.98)'
-                          }
-                        }}
-                      >
-                        Search
+                  >
+                    <Box
+                      sx={{
+                        fontSize: { xs: '0.65rem', sm: '0.7rem' },
+                        fontWeight: 700,
+                        color: theme.palette.text.primary,
+                        mb: { xs: 0.25, sm: 0.5 },
+                        letterSpacing: '0.5px'
+                      }}
+                    >
+                      {item.period}
+                    </Box>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        justifyContent: 'center',
+                        gap: { xs: 0, sm: 0.5 },
+                        fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                        fontWeight: 600
+                      }}
+                    >
+                      <Box sx={{ color: '#10B981' }}>
+                        {item.stats?.bullish || 0}
+                        <span style={{ fontSize: '0.5rem' }}>%</span>
                       </Box>
-                    </>
-                  )}
-                </Box>
-              </form>
-            </div>
-          </div>
-
-          <Box
-            sx={{
-              background: 'transparent',
-              border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
-              borderRadius: '12px',
-              p: { xs: 1.5, sm: 2 },
-              mb: 2.5,
-              backdropFilter: 'blur(10px)',
-              transition: 'all 0.2s ease',
-              '&:hover': {
-                borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                transform: 'translateY(-2px)',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-              }
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: { xs: 1.5, sm: 2 } }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <Box sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' }, fontWeight: 600, color: theme.palette.text.secondary, textTransform: 'uppercase' }}>
-                  {isMobile ? 'Sentiment' : 'Market Sentiment'}
-                </Box>
-                {searchQuery && searchSentimentScore !== null && (
-                  <Box sx={{ 
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main,
-                    px: 0.75,
-                    py: 0.25,
-                    borderRadius: 0.5,
-                    fontSize: '0.65rem',
-                    fontWeight: 600
-                  }}>
-                    {searchSentimentScore}
+                      <Box sx={{ color: '#EF4444', display: { xs: 'none', sm: 'block' } }}>
+                        {item.stats?.bearish || 0}%
+                      </Box>
+                      <Box sx={{ color: '#F59E0B', display: { xs: 'none', sm: 'block' } }}>
+                        {item.stats?.neutral || 0}%
+                      </Box>
+                    </Box>
                   </Box>
-                )}
-              </Box>
-              <Box sx={{ display: { xs: 'none', sm: 'flex' }, gap: 1.5, fontSize: '0.65rem', color: theme.palette.text.secondary, opacity: 0.8 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{ width: 6, height: 6, backgroundColor: '#10B981', borderRadius: '50%' }} />
-                  Bull
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{ width: 6, height: 6, backgroundColor: '#EF4444', borderRadius: '50%' }} />
-                  Bear
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box sx={{ width: 6, height: 6, backgroundColor: '#F59E0B', borderRadius: '50%' }} />
-                  Neutral
-                </Box>
+                ))}
               </Box>
             </Box>
-            
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' }, gap: { xs: 0.75, sm: 1.25 } }}>
-              {[
-                { period: '24H', stats: sentimentStats.last24h },
-                { period: '7D', stats: sentimentStats.last7d },
-                { period: '30D', stats: sentimentStats.last30d },
-                { period: 'ALL', stats: sentimentStats.all }
-              ].map((item) => (
-                <Box key={item.period} sx={{ 
-                  backgroundColor: alpha(theme.palette.background.paper, 0.4),
-                  borderRadius: '10px',
-                  p: { xs: 0.75, sm: 1.25 },
-                  textAlign: 'center',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                    transform: 'translateY(-1px)'
-                  }
-                }}>
-                  <Box sx={{ 
-                    fontSize: { xs: '0.65rem', sm: '0.7rem' }, 
-                    fontWeight: 700, 
-                    color: theme.palette.text.primary,
-                    mb: { xs: 0.25, sm: 0.5 },
-                    letterSpacing: '0.5px'
-                  }}>
-                    {item.period}
-                  </Box>
-                  <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'center', gap: { xs: 0, sm: 0.5 }, fontSize: { xs: '0.6rem', sm: '0.7rem' }, fontWeight: 600 }}>
-                    <Box sx={{ color: '#10B981' }}>{item.stats?.bullish || 0}<span style={{ fontSize: '0.5rem' }}>%</span></Box>
-                    <Box sx={{ color: '#EF4444', display: { xs: 'none', sm: 'block' } }}>{item.stats?.bearish || 0}%</Box>
-                    <Box sx={{ color: '#F59E0B', display: { xs: 'none', sm: 'block' } }}>{item.stats?.neutral || 0}%</Box>
-                  </Box>
-                </Box>
-              ))}
-            </Box>
-          </Box>
 
-          <SourcesMenu
-            sources={sourcesStats}
-            selectedSource={selectedSource}
-            onSourceSelect={handleSourceSelect}
-            isSyncWave={isSyncWave}
-            isMobile={isMobile}
-          />
+            <SourcesMenu
+              sources={sourcesStats}
+              selectedSource={selectedSource}
+              onSourceSelect={handleSourceSelect}
+              isSyncWave={isSyncWave}
+              isMobile={isMobile}
+            />
 
-          <div className={`${styles.newsGrid} ${isDark ? styles.dark : ''}`}>
-            {currentItems.length === 0 ? (
-              <div 
-                style={{
-                  gridColumn: '1 / -1',
-                  textAlign: 'center',
-                  padding: '4rem 2rem',
-                  color: theme.palette.text.secondary,
-                  fontSize: '1.1rem',
-                  fontWeight: 500
-                }}
-              >
-                No news found at the moment
-              </div>
-            ) : (
-              currentItems.map((article) => (
-              <div 
-                key={article._id} 
-                className={`${styles.newsCard} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
-                style={{
-                  background: 'transparent',
-                  border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
-                  color: theme.palette.text.primary,
-                  transition: 'all 0.3s ease',
-                  transform: 'translateY(0)',
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
-                  e.currentTarget.style.borderColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
-                  e.currentTarget.style.borderColor = theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)';
-                }}
-              >
-                <div className={`${styles.cardContent} ${isDark ? styles.dark : ''}`}>
-                  <div className={styles.cardHeader}>
-                    <h2 className={styles.articleTitle} style={{ color: theme.palette.text.primary }}>
-                      {extractTitle(article.title)}
-                    </h2>
-                    <div className={styles.sentimentBadge}>
-                      <span 
-                        className={styles.sentimentLabel}
-                        style={{ 
-                          backgroundColor: getSentimentColor(article.sentiment),
-                          transition: 'all 0.2s ease',
-                          transform: 'scale(1)'
-                        }}
-                        onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                        onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
-                      >
-                        {article.sentiment || 'Unknown'}
-                      </span>
-                    </div>
-                  </div>
-                  <div className={styles.articleContent}>
-                    <p className={styles.articleSummary} style={{ color: theme.palette.text.secondary }}>
-                      {article.summary}
-                    </p>
-                  </div>
-                  <div className={styles.divider}></div>
-                    {expandedArticles[article._id] && (
-                      <div className={styles.expandedContent}>
-                        {article.articleBody?.split('\n').map(
-                          (paragraph, index) =>
-                            paragraph.trim() && (
-                              <p
-                                key={`${article._id}-para-${index}`}
-                                className={styles.articleParagraph}
-                              >
-                                {paragraph}
-                              </p>
-                            )
-                        )}
-                      </div>
-                    )}
-                    <div className={`${styles.cardFooter} ${isMobile ? styles.mobile : ''}`}>
-                      <div className={styles.metaInfo}>
-                        <span className={styles.sourceMeta} style={{ color: theme.palette.text.secondary }}>
-                          {article.sourceName} •{' '}
-                          <time dateTime={article.pubDate}>
-                            {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
-                          </time>
-                        </span>
-                        {article.articleBody && (
-                          <button
-                            className={styles.expandButton}
-                            onClick={() => toggleArticleExpansion(article._id)}
+            <div className={`${styles.newsGrid} ${isDark ? styles.dark : ''}`}>
+              {currentItems.length === 0 ? (
+                <div
+                  style={{
+                    gridColumn: '1 / -1',
+                    textAlign: 'center',
+                    padding: '4rem 2rem',
+                    color: theme.palette.text.secondary,
+                    fontSize: '1.1rem',
+                    fontWeight: 500
+                  }}
+                >
+                  No news found at the moment
+                </div>
+              ) : (
+                currentItems.map((article) => (
+                  <div
+                    key={article._id}
+                    className={`${styles.newsCard} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+                    style={{
+                      background: 'transparent',
+                      border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,
+                      color: theme.palette.text.primary,
+                      transition: 'all 0.3s ease',
+                      transform: 'translateY(0)',
+                      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.boxShadow = '0 8px 24px rgba(0, 0, 0, 0.12)';
+                      e.currentTarget.style.borderColor =
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.12)'
+                          : 'rgba(0, 0, 0, 0.12)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.04)';
+                      e.currentTarget.style.borderColor =
+                        theme.palette.mode === 'dark'
+                          ? 'rgba(255, 255, 255, 0.06)'
+                          : 'rgba(0, 0, 0, 0.06)';
+                    }}
+                  >
+                    <div className={`${styles.cardContent} ${isDark ? styles.dark : ''}`}>
+                      <div className={styles.cardHeader}>
+                        <h2
+                          className={styles.articleTitle}
+                          style={{ color: theme.palette.text.primary }}
+                        >
+                          {extractTitle(article.title)}
+                        </h2>
+                        <div className={styles.sentimentBadge}>
+                          <span
+                            className={styles.sentimentLabel}
                             style={{
+                              backgroundColor: getSentimentColor(article.sentiment),
                               transition: 'all 0.2s ease',
                               transform: 'scale(1)'
                             }}
-                            onMouseEnter={(e) => e.target.style.transform = 'scale(1.05)'}
-                            onMouseLeave={(e) => e.target.style.transform = 'scale(1)'}
+                            onMouseEnter={(e) => (e.target.style.transform = 'scale(1.05)')}
+                            onMouseLeave={(e) => (e.target.style.transform = 'scale(1)')}
                           >
-                            {expandedArticles[article._id] ? 'Show Less' : 'Show More'}
-                          </button>
-                        )}
+                            {article.sentiment || 'Unknown'}
+                          </span>
+                        </div>
                       </div>
-                      <a
-                        href={article.sourceUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        aria-label="Read full article on external site"
-                        className={styles.readMoreLink}
-                      >
-                        Read full article →
-                      </a>
-                    </div>
-                </div>
-              </div>
-            )))}
-          </div>
-
-          {totalCount > 0 && (
-            <PaginationWrapper>
-              <InfoBox>
-                <Chip>{`${((currentPage - 1) * itemsPerPage) + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}</Chip>
-                <Text>articles</Text>
-                {searchQuery && (
-                  <>
-                    <Text fontWeight={400}>for</Text>
-                    <Text fontWeight={600}>"{searchQuery}"</Text>
-                  </>
-                )}
-                {selectedSource && !searchQuery && (
-                  <>
-                    <Text fontWeight={400}>from</Text>
-                    <Text fontWeight={600}>{selectedSource}</Text>
-                  </>
-                )}
-              </InfoBox>
-
-              {totalPages > 1 && (
-                <CenterBox>
-                  <PaginationContainer>
-                    <NavButton
-                      onClick={() => handlePageChange(null, 1)}
-                      disabled={currentPage === 1}
-                      title="First page"
-                    >
-                      <ArrowForwardIcon sx={{ fontSize: 14, transform: 'rotate(180deg)' }} />
-                    </NavButton>
-
-                    {(() => {
-                      const pages = [];
-                      if (totalPages <= 7) {
-                        for (let i = 1; i <= totalPages; i++) {
-                          pages.push(i);
-                        }
-                      } else {
-                        if (currentPage <= 3) {
-                          for (let i = 1; i <= 5; i++) pages.push(i);
-                          pages.push('...');
-                          pages.push(totalPages);
-                        } else if (currentPage >= totalPages - 2) {
-                          pages.push(1);
-                          pages.push('...');
-                          for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
-                        } else {
-                          pages.push(1);
-                          pages.push('...');
-                          for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
-                          pages.push('...');
-                          pages.push(totalPages);
-                        }
-                      }
-                      return pages.map((pageNum, idx) => {
-                        if (pageNum === '...') {
-                          return <PageEllipsis key={`ellipsis-${idx}`}>...</PageEllipsis>;
-                        }
-                        return (
-                          <PageButton
-                            key={pageNum}
-                            selected={pageNum === currentPage}
-                            onClick={() => handlePageChange(null, pageNum)}
+                      <div className={styles.articleContent}>
+                        <p
+                          className={styles.articleSummary}
+                          style={{ color: theme.palette.text.secondary }}
+                        >
+                          {article.summary}
+                        </p>
+                      </div>
+                      <div className={styles.divider}></div>
+                      {expandedArticles[article._id] && (
+                        <div className={styles.expandedContent}>
+                          {article.articleBody?.split('\n').map(
+                            (paragraph, index) =>
+                              paragraph.trim() && (
+                                <p
+                                  key={`${article._id}-para-${index}`}
+                                  className={styles.articleParagraph}
+                                >
+                                  {paragraph}
+                                </p>
+                              )
+                          )}
+                        </div>
+                      )}
+                      <div className={`${styles.cardFooter} ${isMobile ? styles.mobile : ''}`}>
+                        <div className={styles.metaInfo}>
+                          <span
+                            className={styles.sourceMeta}
+                            style={{ color: theme.palette.text.secondary }}
                           >
-                            {pageNum}
-                          </PageButton>
-                        );
-                      });
-                    })()}
-
-                    <NavButton
-                      onClick={() => handlePageChange(null, totalPages)}
-                      disabled={currentPage === totalPages}
-                      title="Last page"
-                    >
-                      <ArrowForwardIcon sx={{ fontSize: 14 }} />
-                    </NavButton>
-                  </PaginationContainer>
-                </CenterBox>
+                            {article.sourceName} •{' '}
+                            <time dateTime={article.pubDate}>
+                              {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
+                            </time>
+                          </span>
+                          {article.articleBody && (
+                            <button
+                              className={styles.expandButton}
+                              onClick={() => toggleArticleExpansion(article._id)}
+                              style={{
+                                transition: 'all 0.2s ease',
+                                transform: 'scale(1)'
+                              }}
+                              onMouseEnter={(e) => (e.target.style.transform = 'scale(1.05)')}
+                              onMouseLeave={(e) => (e.target.style.transform = 'scale(1)')}
+                            >
+                              {expandedArticles[article._id] ? 'Show Less' : 'Show More'}
+                            </button>
+                          )}
+                        </div>
+                        <a
+                          href={article.sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          aria-label="Read full article on external site"
+                          className={styles.readMoreLink}
+                        >
+                          Read full article →
+                        </a>
+                      </div>
+                    </div>
+                  </div>
+                ))
               )}
-            </PaginationWrapper>
-          )}
+            </div>
+
+            {totalCount > 0 && (
+              <PaginationWrapper>
+                <InfoBox>
+                  <Chip>{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}</Chip>
+                  <Text>articles</Text>
+                  {searchQuery && (
+                    <>
+                      <Text fontWeight={400}>for</Text>
+                      <Text fontWeight={600}>"{searchQuery}"</Text>
+                    </>
+                  )}
+                  {selectedSource && !searchQuery && (
+                    <>
+                      <Text fontWeight={400}>from</Text>
+                      <Text fontWeight={600}>{selectedSource}</Text>
+                    </>
+                  )}
+                </InfoBox>
+
+                {totalPages > 1 && (
+                  <CenterBox>
+                    <PaginationContainer>
+                      <NavButton
+                        onClick={() => handlePageChange(null, 1)}
+                        disabled={currentPage === 1}
+                        title="First page"
+                      >
+                        <ArrowForwardIcon sx={{ fontSize: 14, transform: 'rotate(180deg)' }} />
+                      </NavButton>
+
+                      {(() => {
+                        const pages = [];
+                        if (totalPages <= 7) {
+                          for (let i = 1; i <= totalPages; i++) {
+                            pages.push(i);
+                          }
+                        } else {
+                          if (currentPage <= 3) {
+                            for (let i = 1; i <= 5; i++) pages.push(i);
+                            pages.push('...');
+                            pages.push(totalPages);
+                          } else if (currentPage >= totalPages - 2) {
+                            pages.push(1);
+                            pages.push('...');
+                            for (let i = totalPages - 4; i <= totalPages; i++) pages.push(i);
+                          } else {
+                            pages.push(1);
+                            pages.push('...');
+                            for (let i = currentPage - 1; i <= currentPage + 1; i++) pages.push(i);
+                            pages.push('...');
+                            pages.push(totalPages);
+                          }
+                        }
+                        return pages.map((pageNum, idx) => {
+                          if (pageNum === '...') {
+                            return <PageEllipsis key={`ellipsis-${idx}`}>...</PageEllipsis>;
+                          }
+                          return (
+                            <PageButton
+                              key={pageNum}
+                              selected={pageNum === currentPage}
+                              onClick={() => handlePageChange(null, pageNum)}
+                            >
+                              {pageNum}
+                            </PageButton>
+                          );
+                        });
+                      })()}
+
+                      <NavButton
+                        onClick={() => handlePageChange(null, totalPages)}
+                        disabled={currentPage === totalPages}
+                        title="Last page"
+                      >
+                        <ArrowForwardIcon sx={{ fontSize: 14 }} />
+                      </NavButton>
+                    </PaginationContainer>
+                  </CenterBox>
+                )}
+              </PaginationWrapper>
+            )}
           </>
         )}
       </Container>

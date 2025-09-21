@@ -80,10 +80,14 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
   fontWeight: 700,
   fontSize: '0.8rem',
   flexShrink: 0,
-  background: rank === 1 ? 'linear-gradient(135deg, #FFD700, #FFA500)' :
-              rank === 2 ? 'linear-gradient(135deg, #E5E4E2, #BCC6CC)' :
-              rank === 3 ? 'linear-gradient(135deg, #CD7F32, #B87333)' :
-              alpha(theme.palette.action.selected, 0.6),
+  background:
+    rank === 1
+      ? 'linear-gradient(135deg, #FFD700, #FFA500)'
+      : rank === 2
+        ? 'linear-gradient(135deg, #E5E4E2, #BCC6CC)'
+        : rank === 3
+          ? 'linear-gradient(135deg, #CD7F32, #B87333)'
+          : alpha(theme.palette.action.selected, 0.6),
   color: rank <= 3 ? '#fff' : theme.palette.text.primary,
   boxShadow: rank <= 3 ? `0 1px 4px ${alpha('#FFD700', 0.2)}` : 'none',
   [theme.breakpoints.down('sm')]: {
@@ -144,14 +148,14 @@ const TrendingTokens = () => {
 
   const formatPrice = (price) => {
     if (!price) return `${currencySymbols[activeFiatCurrency]}0`;
-    const convertedPrice = activeFiatCurrency === 'XRP' ? price : (price / exchRate);
+    const convertedPrice = activeFiatCurrency === 'XRP' ? price : price / exchRate;
     const symbol = currencySymbols[activeFiatCurrency];
-    
+
     // Check if price has many leading zeros (better UX threshold)
     if (convertedPrice < 0.01) {
       const str = convertedPrice.toFixed(15);
       const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-      
+
       // Use compact notation for 4+ zeros (e.g., 0.0001 becomes 0.0₄1)
       if (zeros >= 4) {
         const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
@@ -159,7 +163,8 @@ const TrendingTokens = () => {
         const sigDigits = significant.slice(0, 4);
         return (
           <span style={{ fontSize: '0.75rem' }}>
-            {symbol}0.0<sub style={{ fontSize: '0.6rem' }}>{zeros}</sub>{sigDigits}
+            {symbol}0.0<sub style={{ fontSize: '0.6rem' }}>{zeros}</sub>
+            {sigDigits}
           </span>
         );
       }
@@ -180,8 +185,8 @@ const TrendingTokens = () => {
   const formatCompact = (value, suffix = '') => {
     if (!value) return '0';
     const symbol = currencySymbols[activeFiatCurrency];
-    const converted = activeFiatCurrency === 'XRP' ? value : (value / exchRate);
-    
+    const converted = activeFiatCurrency === 'XRP' ? value : value / exchRate;
+
     if (converted >= 1e9) return `${symbol}${(converted / 1e9).toFixed(1)}B${suffix}`;
     if (converted >= 1e6) return `${symbol}${(converted / 1e6).toFixed(1)}M${suffix}`;
     if (converted >= 1e3) return `${symbol}${(converted / 1e3).toFixed(1)}K${suffix}`;
@@ -203,29 +208,31 @@ const TrendingTokens = () => {
   return (
     <StyledCard elevation={0}>
       {/* Header */}
-      <Box sx={{ 
-        mb: 1.5, 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between',
-        px: { xs: 1, sm: 1.5 },
-        pt: { xs: 1, sm: 1.5 }
-      }}>
+      <Box
+        sx={{
+          mb: 1.5,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          px: { xs: 1, sm: 1.5 },
+          pt: { xs: 1, sm: 1.5 }
+        }}
+      >
         <Stack direction="row" alignItems="center" spacing={0.75}>
           <WhatshotIcon sx={{ color: '#ff6b35', fontSize: 18 }} />
           <Typography variant="h6" fontWeight={700} fontSize="0.9rem">
             Trending Tokens
           </Typography>
-          <Chip 
-            label="LIVE" 
-            size="small" 
-            sx={{ 
+          <Chip
+            label="LIVE"
+            size="small"
+            sx={{
               height: 16,
               fontSize: '0.5rem',
               bgcolor: alpha('#4caf50', 0.1),
               color: '#4caf50',
               fontWeight: 600
-            }} 
+            }}
           />
         </Stack>
         <Button
@@ -245,27 +252,39 @@ const TrendingTokens = () => {
       </Box>
 
       {/* Column Headers */}
-      <Box sx={{ 
-        display: 'flex', 
-        alignItems: 'center', 
-        gap: 1.5,
-        mb: 0.5,
-        px: { xs: 2, sm: 2.5 },
-        opacity: 0.7
-      }}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 1.5,
+          mb: 0.5,
+          px: { xs: 2, sm: 2.5 },
+          opacity: 0.7
+        }}
+      >
         <Box sx={{ width: 24 }} />
         <Box sx={{ width: 40 }} />
         <Box sx={{ flex: '1 1 auto' }} />
-        <Box sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(4, minmax(70px, 1fr))',
-          gap: 2,
-          ml: 'auto'
-        }}>
-          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>Price</Typography>
-          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>24h</Typography>
-          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>MCap</Typography>
-          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>Vol</Typography>
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, minmax(70px, 1fr))',
+            gap: 2,
+            ml: 'auto'
+          }}
+        >
+          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+            Price
+          </Typography>
+          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+            24h
+          </Typography>
+          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+            MCap
+          </Typography>
+          <Typography sx={{ fontSize: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+            Vol
+          </Typography>
         </Box>
       </Box>
 
@@ -275,20 +294,13 @@ const TrendingTokens = () => {
           const rank = index + 1;
           const priceChange = token.pro24h || 0;
           const isPositive = priceChange >= 0;
-          
+
           return (
-            <Link
-              key={token.id}
-              href={`/token/${token.slug}`}
-              underline="none"
-              color="inherit"
-            >
+            <Link key={token.id} href={`/token/${token.slug}`} underline="none" color="inherit">
               <TokenCard>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
                   {/* Rank */}
-                  <RankBadge rank={rank}>
-                    {rank}
-                  </RankBadge>
+                  <RankBadge rank={rank}>{rank}</RankBadge>
 
                   {/* Token Avatar */}
                   <Avatar
@@ -301,10 +313,10 @@ const TrendingTokens = () => {
                   {/* Token Info */}
                   <Box sx={{ flex: '1 1 auto', minWidth: 0 }}>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <Typography 
-                        variant="body2" 
+                      <Typography
+                        variant="body2"
                         fontWeight={700}
-                        sx={{ 
+                        sx={{
                           fontSize: '0.8rem',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
@@ -313,14 +325,12 @@ const TrendingTokens = () => {
                       >
                         {token.user}
                       </Typography>
-                      {token.verified && (
-                        <VerifiedIcon sx={{ fontSize: 14, color: '#1976d2' }} />
-                      )}
+                      {token.verified && <VerifiedIcon sx={{ fontSize: 14, color: '#1976d2' }} />}
                     </Stack>
-                    <Typography 
-                      variant="caption" 
+                    <Typography
+                      variant="caption"
                       color="text.secondary"
-                      sx={{ 
+                      sx={{
                         fontSize: '0.65rem',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
@@ -332,25 +342,26 @@ const TrendingTokens = () => {
                   </Box>
 
                   {/* Stats Grid */}
-                  <Box sx={{ 
-                    display: 'grid', 
-                    gridTemplateColumns: 'repeat(4, minmax(70px, 1fr))',
-                    gap: 2,
-                    ml: 'auto'
-                  }}>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(4, minmax(70px, 1fr))',
+                      gap: 2,
+                      ml: 'auto'
+                    }}
+                  >
                     <StatsBox>
-                      <Box className="value">
-                        {formatPrice(token.exch)}
-                      </Box>
+                      <Box className="value">{formatPrice(token.exch)}</Box>
                     </StatsBox>
 
                     <StatsBox>
                       <Stack direction="row" alignItems="center" spacing={0.25}>
-                        <Typography 
+                        <Typography
                           className="value"
                           sx={{ color: isPositive ? '#4caf50' : '#f44336' }}
                         >
-                          {isPositive ? '+' : ''}{priceChange.toFixed(1)}%
+                          {isPositive ? '+' : ''}
+                          {priceChange.toFixed(1)}%
                         </Typography>
                         {isPositive ? (
                           <TrendingUpIcon sx={{ fontSize: 10, color: '#4caf50' }} />
@@ -361,15 +372,11 @@ const TrendingTokens = () => {
                     </StatsBox>
 
                     <StatsBox>
-                      <Typography className="value">
-                        {formatCompact(token.marketcap)}
-                      </Typography>
+                      <Typography className="value">{formatCompact(token.marketcap)}</Typography>
                     </StatsBox>
 
                     <StatsBox>
-                      <Typography className="value">
-                        {formatCompact(token.vol24hxrp)}
-                      </Typography>
+                      <Typography className="value">{formatCompact(token.vol24hxrp)}</Typography>
                     </StatsBox>
                   </Box>
                 </Box>

@@ -1,23 +1,35 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { Box, IconButton, Menu, MenuItem, alpha, Tooltip, Typography, styled, Fade } from '@mui/material';
+import {
+  Box,
+  IconButton,
+  Menu,
+  MenuItem,
+  alpha,
+  Tooltip,
+  Typography,
+  styled,
+  Fade
+} from '@mui/material';
 import { currencyConfig, currencyIcons } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 import CheckIcon from '@mui/icons-material/Check';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const StyledButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-    ? alpha('#030310', 0.7)
-    : alpha(theme.palette.primary.main, 0.08),
+  backgroundColor:
+    theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+      ? alpha('#030310', 0.7)
+      : alpha(theme.palette.primary.main, 0.08),
   borderRadius: theme.spacing(1),
   padding: '4px 6px',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
   minWidth: 58,
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : alpha(theme.palette.primary.main, 0.12),
+    backgroundColor:
+      theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+        ? alpha(theme.palette.primary.main, 0.04)
+        : alpha(theme.palette.primary.main, 0.12),
     transform: 'translateY(-1px)',
     boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
   },
@@ -32,9 +44,10 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
     borderRadius: theme.spacing(1.5),
     minWidth: 140,
     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    background: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? `linear-gradient(180deg, ${alpha('#030310', 0.98)} 0%, ${alpha('#030310', 0.95)} 100%)`
-      : theme.palette.background.paper,
+    background:
+      theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+        ? `linear-gradient(180deg, ${alpha('#030310', 0.98)} 0%, ${alpha('#030310', 0.95)} 100%)`
+        : theme.palette.background.paper,
     backdropFilter: 'blur(20px)',
     boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
     '& .MuiList-root': {
@@ -53,9 +66,10 @@ const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
   gap: theme.spacing(1.5),
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : alpha(theme.palette.primary.main, 0.08),
+    backgroundColor:
+      theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
+        ? alpha(theme.palette.primary.main, 0.04)
+        : alpha(theme.palette.primary.main, 0.08),
     '& .currency-icon': {
       transform: 'scale(1.1)'
     }
@@ -122,9 +136,7 @@ export default function CurrencySwithcer() {
           aria-expanded={open ? 'true' : undefined}
         >
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <CurrencyIcon className="currency-icon">
-              {currencyIcons[activeCurrency]}
-            </CurrencyIcon>
+            <CurrencyIcon className="currency-icon">{currencyIcons[activeCurrency]}</CurrencyIcon>
             <Typography
               variant="body2"
               sx={{
@@ -163,12 +175,10 @@ export default function CurrencySwithcer() {
             selected={option === activeCurrency}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-              <CurrencyIcon className="currency-icon">
-                {currencyIcons[option]}
-              </CurrencyIcon>
-              <Typography 
-                variant="body2" 
-                sx={{ 
+              <CurrencyIcon className="currency-icon">{currencyIcons[option]}</CurrencyIcon>
+              <Typography
+                variant="body2"
+                sx={{
                   fontWeight: option === activeCurrency ? 600 : 500,
                   fontFamily: 'Inter, sans-serif'
                 }}

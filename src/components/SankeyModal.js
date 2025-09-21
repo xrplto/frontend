@@ -255,7 +255,10 @@ const SankeyModal = ({ open, onClose, account }) => {
           activity.tokensSold.set(currency, currentAmount + 1);
           scores.tokenSelling += 3;
         }
-      } else if (txData.TransactionType === 'AMMDeposit' || txData.TransactionType === 'AMMWithdraw') {
+      } else if (
+        txData.TransactionType === 'AMMDeposit' ||
+        txData.TransactionType === 'AMMWithdraw'
+      ) {
         activity.ammInteractions++;
         scores.ammInteractions += 8;
         scores.trading += 3;
@@ -277,9 +280,7 @@ const SankeyModal = ({ open, onClose, account }) => {
       activity.tradingDirection = 'seller';
     }
 
-    const sortedBought = Array.from(activity.tokensBought.entries()).sort(
-      (a, b) => b[1] - a[1]
-    );
+    const sortedBought = Array.from(activity.tokensBought.entries()).sort((a, b) => b[1] - a[1]);
     const sortedSold = Array.from(activity.tokensSold.entries()).sort((a, b) => b[1] - a[1]);
     activity.topTokens = [...sortedBought.slice(0, 3), ...sortedSold.slice(0, 3)].map(
       ([token]) => token
@@ -548,10 +549,7 @@ const SankeyModal = ({ open, onClose, account }) => {
       if (currency === 'XRP') return 'XRP';
       if (currency.length === 40) {
         try {
-          const decoded = Buffer.from(currency, 'hex')
-            .toString('utf8')
-            .replace(/\0/g, '')
-            .trim();
+          const decoded = Buffer.from(currency, 'hex').toString('utf8').replace(/\0/g, '').trim();
           return decoded || currency.substring(0, 8);
         } catch (e) {
           return currency.substring(0, 8);
@@ -801,9 +799,7 @@ const SankeyModal = ({ open, onClose, account }) => {
 
           if (sourceAccount === targetAccount) {
             const isDeposit = transactionType === 'AMMDeposit';
-            const amount = txData.Amount
-              ? extractCurrencyFromAmount(txData.Amount).value
-              : 1;
+            const amount = txData.Amount ? extractCurrencyFromAmount(txData.Amount).value : 1;
 
             if (isDeposit) {
               connectNodes(outflowHub, ammPoolId, amount, txData, {
@@ -909,8 +905,7 @@ const SankeyModal = ({ open, onClose, account }) => {
       ? links.filter((link) => {
           const hasSpamIndicators = link.spamIndicators && link.spamIndicators.spamScore > 30;
           const isMicroPayment =
-            link.spamIndicators &&
-            (link.spamIndicators.isMicro || link.spamIndicators.isDust);
+            link.spamIndicators && (link.spamIndicators.isMicro || link.spamIndicators.isDust);
           return hasSpamIndicators || isMicroPayment;
         })
       : links;
@@ -1219,9 +1214,9 @@ const SankeyModal = ({ open, onClose, account }) => {
                   <ArrowBackIcon fontSize="small" />
                 </IconButton>
               )}
-              
+
               <TimelineIcon sx={{ color: 'primary.main' }} />
-              
+
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 Transaction Flow Analysis
               </Typography>
@@ -1248,7 +1243,7 @@ const SankeyModal = ({ open, onClose, account }) => {
                 label="Spam Filter"
                 sx={{ m: 0 }}
               />
-              
+
               <IconButton onClick={handleClose} size="small">
                 <CloseIcon />
               </IconButton>
@@ -1259,7 +1254,7 @@ const SankeyModal = ({ open, onClose, account }) => {
           {accountInfo && (
             <Stack direction="row" spacing={1.5} alignItems="center" sx={{ mt: 1.5 }}>
               <AccountBalanceIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-              
+
               <Chip
                 label={`${accountInfo.address.slice(0, 8)}...${accountInfo.address.slice(-6)}`}
                 size="small"
@@ -1285,7 +1280,7 @@ const SankeyModal = ({ open, onClose, account }) => {
               {accountInfo.mainActivity && (
                 <>
                   <Divider orientation="vertical" flexItem sx={{ mx: 0.5 }} />
-                  
+
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography variant="body2" color="text.secondary">
                       Activity:
@@ -1297,8 +1292,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                         accountInfo.mainActivity.includes('Spam')
                           ? 'error'
                           : accountInfo.mainActivity.includes('Trader')
-                          ? 'info'
-                          : 'default'
+                            ? 'info'
+                            : 'default'
                       }
                       sx={{ fontWeight: 600 }}
                     />
@@ -1309,80 +1304,81 @@ const SankeyModal = ({ open, onClose, account }) => {
           )}
 
           {/* Token Summary */}
-          {accountDetails.has(currentAccount) && (() => {
-            const details = accountDetails.get(currentAccount);
-            const hasTradingActivity = 
-              details.tokensBought?.size > 0 || 
-              details.tokensSold?.size > 0 || 
-              details.tradingVolume > 0;
+          {accountDetails.has(currentAccount) &&
+            (() => {
+              const details = accountDetails.get(currentAccount);
+              const hasTradingActivity =
+                details.tokensBought?.size > 0 ||
+                details.tokensSold?.size > 0 ||
+                details.tradingVolume > 0;
 
-            if (!hasTradingActivity) return null;
+              if (!hasTradingActivity) return null;
 
-            return (
-              <Stack spacing={1.5} sx={{ mt: 1.5 }}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <SwapHorizIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
-                  
-                  {details.tokensBought?.size > 0 && (
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <Typography variant="caption" color="text.secondary">
-                        Bought:
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} color="success.main">
-                        {details.tokensBought.size} tokens
-                      </Typography>
-                    </Stack>
-                  )}
+              return (
+                <Stack spacing={1.5} sx={{ mt: 1.5 }}>
+                  <Stack direction="row" spacing={2} alignItems="center">
+                    <SwapHorizIcon sx={{ fontSize: 20, color: 'text.secondary' }} />
 
-                  {details.tokensSold?.size > 0 && (
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <Typography variant="caption" color="text.secondary">
-                        Sold:
-                      </Typography>
-                      <Typography variant="caption" fontWeight={600} color="error.main">
-                        {details.tokensSold.size} tokens
-                      </Typography>
-                    </Stack>
-                  )}
-
-                  {details.tradingVolume > 0 && (
-                    <>
-                      <Divider orientation="vertical" flexItem />
+                    {details.tokensBought?.size > 0 && (
                       <Stack direction="row" spacing={0.5} alignItems="center">
                         <Typography variant="caption" color="text.secondary">
-                          Volume:
+                          Bought:
                         </Typography>
-                        <Typography variant="caption" fontWeight={600}>
-                          {details.tradingVolume.toFixed(2)} XRP
+                        <Typography variant="caption" fontWeight={600} color="success.main">
+                          {details.tokensBought.size} tokens
                         </Typography>
                       </Stack>
-                    </>
+                    )}
+
+                    {details.tokensSold?.size > 0 && (
+                      <Stack direction="row" spacing={0.5} alignItems="center">
+                        <Typography variant="caption" color="text.secondary">
+                          Sold:
+                        </Typography>
+                        <Typography variant="caption" fontWeight={600} color="error.main">
+                          {details.tokensSold.size} tokens
+                        </Typography>
+                      </Stack>
+                    )}
+
+                    {details.tradingVolume > 0 && (
+                      <>
+                        <Divider orientation="vertical" flexItem />
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Typography variant="caption" color="text.secondary">
+                            Volume:
+                          </Typography>
+                          <Typography variant="caption" fontWeight={600}>
+                            {details.tradingVolume.toFixed(2)} XRP
+                          </Typography>
+                        </Stack>
+                      </>
+                    )}
+                  </Stack>
+
+                  {details.topTokens?.length > 0 && (
+                    <Stack direction="row" spacing={0.5} flexWrap="wrap">
+                      <Typography variant="caption" color="text.secondary">
+                        Top tokens:
+                      </Typography>
+                      {details.topTokens.slice(0, 5).map((token, index) => (
+                        <Chip
+                          key={index}
+                          label={getCurrencyDisplayName(token)}
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            '& .MuiChip-label': { px: 1 }
+                          }}
+                        />
+                      ))}
+                    </Stack>
                   )}
                 </Stack>
-
-                {details.topTokens?.length > 0 && (
-                  <Stack direction="row" spacing={0.5} flexWrap="wrap">
-                    <Typography variant="caption" color="text.secondary">
-                      Top tokens:
-                    </Typography>
-                    {details.topTokens.slice(0, 5).map((token, index) => (
-                      <Chip
-                        key={index}
-                        label={getCurrencyDisplayName(token)}
-                        size="small"
-                        variant="outlined"
-                        sx={{ 
-                          height: 20, 
-                          fontSize: '0.7rem',
-                          '& .MuiChip-label': { px: 1 }
-                        }}
-                      />
-                    ))}
-                  </Stack>
-                )}
-              </Stack>
-            );
-          })()}
+              );
+            })()}
         </Box>
 
         {/* Main Content */}
@@ -1449,8 +1445,8 @@ const SankeyModal = ({ open, onClose, account }) => {
                   <Typography variant="caption" color="text.secondary">
                     Spam ratio:
                   </Typography>
-                  <Typography 
-                    variant="caption" 
+                  <Typography
+                    variant="caption"
                     fontWeight={600}
                     color={spamStats.spamPercentage > 50 ? 'error.main' : 'warning.main'}
                   >

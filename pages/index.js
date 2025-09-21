@@ -11,7 +11,6 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 
-
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
     overflow: hidden;

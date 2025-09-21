@@ -55,7 +55,7 @@ const txCache = new LRUCache({
   max: 100,
   ttl: 1000 * 60 * 60, // 1 hour in milliseconds
   updateAgeOnGet: true,
-  updateAgeOnHas: true,
+  updateAgeOnHas: true
 });
 
 // Utility function to clear cache (useful for debugging)
@@ -995,7 +995,9 @@ const getTransactionDescription = (txData) => {
           `Offering: ${takerGets}`,
           `Requesting: ${takerPays}`,
           `Exchange rate: 1 ${getCurrency(TakerPays)} = ${(() => {
-            const rate = new Decimal(TakerGets.value || dropsToXrp(TakerGets)).div(TakerPays.value || dropsToXrp(TakerPays));
+            const rate = new Decimal(TakerGets.value || dropsToXrp(TakerGets)).div(
+              TakerPays.value || dropsToXrp(TakerPays)
+            );
             return rate.toFormat(rate.lt(0.000001) ? 15 : 8);
           })()} ${getCurrency(TakerGets)}`,
           OfferSequence > 0 ? `Replaces order #${OfferSequence}` : 'New order',
@@ -1260,7 +1262,11 @@ const TransactionSummaryCard = ({ txData }) => {
         {(Amount || deliveredAmount) && (
           <Box
             p={2}
-            sx={{ background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}
+            sx={{
+              background: 'transparent',
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              borderRadius: 2
+            }}
           >
             <Typography variant="caption" color="text.secondary">
               Amount
@@ -1883,8 +1889,8 @@ const TransactionDetails = ({ txData }) => {
           {/* Main Transaction Details */}
           <Grid item xs={12}>
             <Box
-              sx={{ 
-                p: 3, 
+              sx={{
+                p: 3,
                 background: 'transparent',
                 backdropFilter: 'none',
                 WebkitBackdropFilter: 'none',
@@ -2090,7 +2096,12 @@ const TransactionDetails = ({ txData }) => {
                 {clientInfo && clientInfo.name !== 'N/A' && (
                   <DetailRow label="Platform">
                     {clientInfo.url ? (
-                      <Link href={clientInfo.url} target="_blank" rel="noopener noreferrer" passHref>
+                      <Link
+                        href={clientInfo.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        passHref
+                      >
                         <Typography
                           component="a"
                           variant="body1"
@@ -2320,7 +2331,17 @@ const TransactionDetails = ({ txData }) => {
                             </Grid>
                           );
                           return (
-                            <Box key={offer.offerId} sx={{ p: 2, width: '100%', mb: 2, background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}>
+                            <Box
+                              key={offer.offerId}
+                              sx={{
+                                p: 2,
+                                width: '100%',
+                                mb: 2,
+                                background: 'transparent',
+                                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                                borderRadius: 2
+                              }}
+                            >
                               <Grid container spacing={2}>
                                 {isLoading ? (
                                   <Grid item xs={12}>
@@ -2680,7 +2701,15 @@ const TransactionDetails = ({ txData }) => {
                     )}
 
                     <DetailRow label="NFT Offer Details">
-                      <Box sx={{ p: 2, width: '100%', background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          width: '100%',
+                          background: 'transparent',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                          borderRadius: 2
+                        }}
+                      >
                         <Grid container spacing={1}>
                           {meta.offer_id && (
                             <DetailRow label="Offer" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
@@ -2821,7 +2850,15 @@ const TransactionDetails = ({ txData }) => {
                 {TransactionType === 'OracleSet' && (
                   <>
                     <DetailRow label="Oracle Data">
-                      <Box sx={{ p: 2, width: '100%', background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}`, borderRadius: 2 }}>
+                      <Box
+                        sx={{
+                          p: 2,
+                          width: '100%',
+                          background: 'transparent',
+                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                          borderRadius: 2
+                        }}
+                      >
                         <Grid container spacing={1}>
                           {typeof OracleDocumentID !== 'undefined' && (
                             <DetailRow
@@ -2982,12 +3019,17 @@ const TransactionDetails = ({ txData }) => {
                             <>
                               <Typography variant="body2">
                                 1 {displayExchange.got.currency} ={' '}
-                                {paidValue.div(gotValue).toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)}{' '}
+                                {paidValue
+                                  .div(gotValue)
+                                  .toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)}{' '}
                                 {displayExchange.paid.currency}
                               </Typography>
                               <Typography variant="body2">
                                 1 {displayExchange.paid.currency} ={' '}
-                                {gotValue.div(paidValue).toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)} {displayExchange.got.currency}
+                                {gotValue
+                                  .div(paidValue)
+                                  .toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)}{' '}
+                                {displayExchange.got.currency}
                               </Typography>
                             </>
                           );
@@ -3039,8 +3081,8 @@ const TransactionDetails = ({ txData }) => {
           {balanceChanges.length > 0 && isSuccess && (
             <Grid item xs={12}>
               <Box
-                sx={{ 
-                  p: 3, 
+                sx={{
+                  p: 3,
                   background: 'transparent',
                   backdropFilter: 'none',
                   WebkitBackdropFilter: 'none',
@@ -3056,7 +3098,11 @@ const TransactionDetails = ({ txData }) => {
                     <Card
                       key={account}
                       elevation={0}
-                      sx={{ p: 2, background: 'transparent', border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}
+                      sx={{
+                        p: 2,
+                        background: 'transparent',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                      }}
                     >
                       <Stack
                         direction={{ xs: 'column', sm: 'row' }}
@@ -3098,7 +3144,10 @@ const TransactionDetails = ({ txData }) => {
                               const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
 
                               return (
-                                <Box key={changeKey} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                <Box
+                                  key={changeKey}
+                                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                                >
                                   <Typography variant="body2" color={color} fontWeight="medium">
                                     {sign}
                                     {formatDecimal(new Decimal(change.value))}
@@ -3130,8 +3179,8 @@ const TransactionDetails = ({ txData }) => {
           {displayExchange && isSuccess && (
             <Grid item xs={12}>
               <Box
-                sx={{ 
-                  p: 3, 
+                sx={{
+                  p: 3,
                   background: 'transparent',
                   backdropFilter: 'none',
                   WebkitBackdropFilter: 'none',
@@ -3205,11 +3254,17 @@ const TransactionDetails = ({ txData }) => {
                           <>
                             <Typography variant="body2">
                               1 {displayExchange.got.currency} ={' '}
-                              {paidValue.div(gotValue).toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)} {displayExchange.paid.currency}
+                              {paidValue
+                                .div(gotValue)
+                                .toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)}{' '}
+                              {displayExchange.paid.currency}
                             </Typography>
                             <Typography variant="body2">
                               1 {displayExchange.paid.currency} ={' '}
-                              {gotValue.div(paidValue).toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)} {displayExchange.got.currency}
+                              {gotValue
+                                .div(paidValue)
+                                .toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)}{' '}
+                              {displayExchange.got.currency}
                             </Typography>
                           </>
                         );
@@ -3224,8 +3279,8 @@ const TransactionDetails = ({ txData }) => {
           {/* Transaction Link */}
           <Grid item xs={12}>
             <Box
-              sx={{ 
-                p: 2, 
+              sx={{
+                p: 2,
                 background: 'transparent',
                 backdropFilter: 'none',
                 WebkitBackdropFilter: 'none',
@@ -3413,10 +3468,7 @@ export async function getServerSideProps(context) {
   if (cachedData) {
     console.log(`Cache hit for transaction: ${hash}`);
     // Set cache headers for browser caching
-    context.res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=3600, stale-while-revalidate=86400'
-    );
+    context.res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     return {
       props: {
         txData: cachedData,
@@ -3431,10 +3483,10 @@ export async function getServerSideProps(context) {
     'https://s2.ripple.com:51234/',
     'https://xrpl.ws/'
   ];
-  
+
   let response;
   let lastError;
-  
+
   for (const node of xrplNodes) {
     try {
       response = await axios.post(node, {
@@ -3443,7 +3495,7 @@ export async function getServerSideProps(context) {
           {
             transaction: hash,
             binary: false,
-            ledger_index: "validated"
+            ledger_index: 'validated'
           }
         ]
       });
@@ -3454,13 +3506,12 @@ export async function getServerSideProps(context) {
       continue; // Try next node
     }
   }
-  
+
   if (!response) {
     throw lastError || new Error('All XRPL nodes failed');
   }
-  
-  try {
 
+  try {
     if (response.data.result.error === 'txnNotFound') {
       return {
         notFound: true
@@ -3485,16 +3536,13 @@ export async function getServerSideProps(context) {
     // }
 
     const txData = { ...rest, meta };
-    
+
     // Cache the successful response
     txCache.set(hash, txData);
     console.log(`Cached transaction: ${hash}`);
-    
+
     // Set cache headers for browser caching
-    context.res.setHeader(
-      'Cache-Control',
-      'public, s-maxage=3600, stale-while-revalidate=86400'
-    );
+    context.res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
 
     return {
       props: {

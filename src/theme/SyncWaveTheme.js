@@ -2,15 +2,15 @@ import { alpha, createTheme, darken, lighten } from '@mui/material/styles';
 
 // Florida Synthwave color palette
 const themeColors = {
-  primary: '#ff1493',      // Hot Pink
-  secondary: '#ff6b35',    // Vibrant Orange
-  success: '#7fffd4',      // Aquamarine
-  warning: '#ffd700',      // Gold
-  error: '#ff1744',        // Neon Red
-  info: '#00bfff',         // Deep Sky Blue
-  black: '#0d0818',        // Dark Purple Black
-  white: '#fff5ee',        // Seashell
-  primaryAlt: '#2d1b69',   // Deep Purple
+  primary: '#ff1493', // Hot Pink
+  secondary: '#ff6b35', // Vibrant Orange
+  success: '#7fffd4', // Aquamarine
+  warning: '#ffd700', // Gold
+  error: '#ff1744', // Neon Red
+  info: '#00bfff', // Deep Sky Blue
+  black: '#0d0818', // Dark Purple Black
+  white: '#fff5ee', // Seashell
+  primaryAlt: '#2d1b69', // Deep Purple
   trueWhite: '#ffffff'
 };
 
@@ -134,8 +134,8 @@ export const SyncWaveTheme = createTheme({
     h4: { fontFamily: "'JetBrains Mono', monospace" },
     h5: { fontFamily: "'JetBrains Mono', monospace" },
     h6: { fontFamily: "'JetBrains Mono', monospace" },
-    body1: { fontVariantNumeric: "tabular-nums" },
-    body2: { fontVariantNumeric: "tabular-nums" }
+    body1: { fontVariantNumeric: 'tabular-nums' },
+    body2: { fontVariantNumeric: 'tabular-nums' }
   },
   colors: {
     gradients: colors.gradients,
@@ -191,10 +191,10 @@ export const SyncWaveTheme = createTheme({
   spacing: 9,
   currency: {
     background1: alpha('#ff1493', 0.1),
-    background2: alpha('#ff6b35', 0.1), 
+    background2: alpha('#ff6b35', 0.1),
     border: `1px solid ${alpha('#ff1493', 0.3)}`
   },
-  
+
   walletDialog: {
     background: alpha('#2d1b69', 0.95),
     backgroundSecondary: alpha('#2d1b69', 0.6),
@@ -337,10 +337,10 @@ export const SyncWaveTheme = createTheme({
             width: '100%',
             height: '100%',
             background: 'linear-gradient(90deg, transparent, rgba(255, 107, 53, 0.4), transparent)',
-            transition: 'left 0.5s',
+            transition: 'left 0.5s'
           },
           '&:hover::before': {
-            left: '100%',
+            left: '100%'
           }
         },
         contained: {
@@ -407,7 +407,7 @@ export const SyncWaveTheme = createTheme({
         root: {
           borderColor: alpha('#ff1493', 0.2),
           '&::before, &::after': {
-            borderColor: alpha('#ff1493', 0.2),
+            borderColor: alpha('#ff1493', 0.2)
           }
         }
       }
@@ -449,10 +449,10 @@ export const SyncWaveTheme = createTheme({
         root: {
           '& .MuiOutlinedInput-root': {
             '& fieldset': {
-              borderColor: alpha('#ff1493', 0.3),
+              borderColor: alpha('#ff1493', 0.3)
             },
             '&:hover fieldset': {
-              borderColor: alpha('#ff1493', 0.5),
+              borderColor: alpha('#ff1493', 0.5)
             },
             '&.Mui-focused fieldset': {
               borderColor: themeColors.primary,
@@ -602,7 +602,7 @@ export const SyncWaveTheme = createTheme({
           '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
             borderRadius: 8,
             backgroundColor: alpha('#ff1493', 0.5),
-            border: `1px solid ${alpha('#ff1493', 0.3)}`,
+            border: `1px solid ${alpha('#ff1493', 0.3)}`
           },
           '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
             backgroundColor: alpha('#ff1493', 0.7),
@@ -625,29 +625,29 @@ export const SyncWaveTheme = createTheme({
         },
         '@keyframes neon-glow': {
           '0%': {
-            textShadow: '0 0 10px currentColor, 0 0 20px currentColor',
+            textShadow: '0 0 10px currentColor, 0 0 20px currentColor'
           },
           '50%': {
-            textShadow: '0 0 20px currentColor, 0 0 40px currentColor',
+            textShadow: '0 0 20px currentColor, 0 0 40px currentColor'
           },
           '100%': {
-            textShadow: '0 0 10px currentColor, 0 0 20px currentColor',
+            textShadow: '0 0 10px currentColor, 0 0 20px currentColor'
           }
         },
         '@keyframes scan-line': {
           '0%': {
-            transform: 'translateY(-100%)',
+            transform: 'translateY(-100%)'
           },
           '100%': {
-            transform: 'translateY(100%)',
+            transform: 'translateY(100%)'
           }
         },
         '@keyframes grid-move': {
           '0%': {
-            backgroundPosition: '0 0, 0 0, 0 0, 0 0',
+            backgroundPosition: '0 0, 0 0, 0 0, 0 0'
           },
           '100%': {
-            backgroundPosition: '50px 50px, -50px -50px, 100px 100px, -100px -100px',
+            backgroundPosition: '50px 50px, -50px -50px, 100px 100px, -100px -100px'
           }
         }
       }

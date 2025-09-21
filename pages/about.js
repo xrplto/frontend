@@ -34,7 +34,7 @@ const PageTitle = styled.h1`
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  
+
   @media (min-width: 768px) {
     font-size: 3.5rem;
   }
@@ -47,7 +47,7 @@ const PageSubtitle = styled.h5`
   font-size: 1.25rem;
   font-weight: 400;
   line-height: 1.6;
-  
+
   @media (prefers-color-scheme: dark) {
     color: rgba(255, 255, 255, 0.7);
   }
@@ -62,7 +62,7 @@ const GridContainer = styled.div`
 const TwoColumnGrid = styled.div`
   display: grid;
   gap: 32px;
-  
+
   @media (min-width: 768px) {
     grid-template-columns: 1fr 1fr;
   }
@@ -71,11 +71,11 @@ const TwoColumnGrid = styled.div`
 const ThreeColumnGrid = styled.div`
   display: grid;
   gap: 32px;
-  
+
   @media (min-width: 768px) {
     grid-template-columns: 1fr 1fr;
   }
-  
+
   @media (min-width: 1024px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
@@ -88,7 +88,7 @@ const Card = styled.div`
   padding: 32px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   height: 100%;
-  
+
   @media (prefers-color-scheme: dark) {
     background: linear-gradient(135deg, rgba(25, 118, 210, 0.08), rgba(156, 39, 176, 0.08));
     border-color: rgba(255, 255, 255, 0.12);
@@ -98,7 +98,7 @@ const Card = styled.div`
 const CardTitle = styled.h4`
   font-weight: 600;
   margin-bottom: 16px;
-  color: ${props => props.color || '#1976d2'};
+  color: ${(props) => props.color || '#1976d2'};
   font-size: 1.5rem;
   line-height: 1.334;
 `;
@@ -107,8 +107,8 @@ const BodyText = styled.p`
   line-height: 1.7;
   font-size: 1.1rem;
   margin: 0;
-  color: ${props => props.theme?.palette?.text?.primary || '#212121'};
-  
+  color: ${(props) => props.theme?.palette?.text?.primary || '#212121'};
+
   @media (prefers-color-scheme: dark) {
     color: rgba(255, 255, 255, 0.9);
   }
@@ -138,7 +138,7 @@ const TimelineDate = styled.div`
   font-size: 0.75rem;
   text-align: center;
   white-space: nowrap;
-  
+
   @media (prefers-color-scheme: dark) {
     background: rgba(0, 204, 136, 0.15);
   }
@@ -148,8 +148,8 @@ const TimelineEvent = styled.div`
   flex: 1;
   line-height: 1.4;
   font-size: 0.85rem;
-  color: ${props => props.theme?.palette?.text?.primary || '#212121'};
-  
+  color: ${(props) => props.theme?.palette?.text?.primary || '#212121'};
+
   @media (prefers-color-scheme: dark) {
     color: rgba(255, 255, 255, 0.9);
   }
@@ -158,7 +158,7 @@ const TimelineEvent = styled.div`
 const StyledLink = styled.a`
   color: #1976d2;
   text-decoration: none;
-  
+
   &:hover {
     text-decoration: underline;
   }
@@ -200,10 +200,10 @@ function AboutPage() {
             <Card>
               <CardTitle color="#1976d2">Our Mission</CardTitle>
               <BodyText>
-                At XRPL.to, we make XRPL tokens discoverable and efficient globally by
-                empowering retail users with unbiased, high-quality, and accurate information.
-                We strive to provide all relevant and current information on XRPL tokens,
-                currencies, and assets in a single, easy-to-find location.
+                At XRPL.to, we make XRPL tokens discoverable and efficient globally by empowering
+                retail users with unbiased, high-quality, and accurate information. We strive to
+                provide all relevant and current information on XRPL tokens, currencies, and assets
+                in a single, easy-to-find location.
               </BodyText>
             </Card>
 
@@ -211,9 +211,9 @@ function AboutPage() {
             <Card>
               <CardTitle color="#9c27b0">Our Story</CardTitle>
               <BodyText>
-                Founded in November 2021 by NFT Labs, XRPL.to provides up-to-date XRPL token
-                prices, charts, and data for emerging XRPL DEX markets. Our efforts have been
-                recognized by Bloomberg, New York Times, and Digital Trends.
+                Founded in November 2021 by NFT Labs, XRPL.to provides up-to-date XRPL token prices,
+                charts, and data for emerging XRPL DEX markets. Our efforts have been recognized by
+                Bloomberg, New York Times, and Digital Trends.
               </BodyText>
             </Card>
 
@@ -237,10 +237,10 @@ function AboutPage() {
             <Card>
               <CardTitle color="#ff6b6b">Market Insights</CardTitle>
               <BodyText>
-                We aggregate real-time data from the XRP Ledger DEX, providing comprehensive 
-                market insights for over 9,750 tokens. Our platform offers interactive charts, 
-                historical data analysis, and transparent price calculations sourced directly 
-                from on-chain data.
+                We aggregate real-time data from the XRP Ledger DEX, providing comprehensive market
+                insights for over 9,750 tokens. Our platform offers interactive charts, historical
+                data analysis, and transparent price calculations sourced directly from on-chain
+                data.
               </BodyText>
             </Card>
 
@@ -248,10 +248,10 @@ function AboutPage() {
             <Card>
               <CardTitle color="#4ecdc4">Trading & Portfolio</CardTitle>
               <BodyText>
-                Advanced trading tools including real-time order books, direct DEX trading, 
-                and portfolio tracking. Monitor your holdings, execute trades, and manage 
-                your digital assets with professional-grade tools designed for traders at 
-                every level of expertise.
+                Advanced trading tools including real-time order books, direct DEX trading, and
+                portfolio tracking. Monitor your holdings, execute trades, and manage your digital
+                assets with professional-grade tools designed for traders at every level of
+                expertise.
               </BodyText>
             </Card>
 
@@ -259,10 +259,9 @@ function AboutPage() {
             <Card>
               <CardTitle color="#ffe66d">NFT Marketplace</CardTitle>
               <BodyText>
-                Explore, buy, and sell NFTs directly on the XRP Ledger. Browse collections, 
-                view ownership history, and participate in the growing XRPL NFT ecosystem 
-                with detailed analytics and seamless trading experiences for digital 
-                collectibles.
+                Explore, buy, and sell NFTs directly on the XRP Ledger. Browse collections, view
+                ownership history, and participate in the growing XRPL NFT ecosystem with detailed
+                analytics and seamless trading experiences for digital collectibles.
               </BodyText>
             </Card>
           </ThreeColumnGrid>
@@ -273,13 +272,12 @@ function AboutPage() {
             <Card>
               <CardTitle color="#1976d2">How XRPL.to Works</CardTitle>
               <BodyText>
-                Our platform connects directly to the XRP Ledger, processing real-time data 
-                from every new ledger. Token prices are calculated using actual DEX trading 
-                data, ensuring accuracy and transparency. We automatically list all tokens 
-                on the ledger, providing comprehensive coverage of the ecosystem. Developers 
-                can access our data through our{' '}
-                <StyledLink href="/api-docs">comprehensive API</StyledLink>
-                {' '}for integration into their applications.
+                Our platform connects directly to the XRP Ledger, processing real-time data from
+                every new ledger. Token prices are calculated using actual DEX trading data,
+                ensuring accuracy and transparency. We automatically list all tokens on the ledger,
+                providing comprehensive coverage of the ecosystem. Developers can access our data
+                through our <StyledLink href="/api-docs">comprehensive API</StyledLink> for
+                integration into their applications.
               </BodyText>
             </Card>
 
@@ -287,11 +285,10 @@ function AboutPage() {
             <Card>
               <CardTitle color="#9c27b0">Get Involved</CardTitle>
               <BodyText>
-                Join millions of users tracking XRPL tokens with us. Connect through our 
-                social channels on Twitter, Telegram, Facebook, and Instagram. For token 
-                listing inquiries, refer to our listing policy and FAQ. Business partnerships 
-                and advertising opportunities are available - contact us at{' '}
-                <InlineSpan>hello@xrpl.to</InlineSpan>. 
+                Join millions of users tracking XRPL tokens with us. Connect through our social
+                channels on Twitter, Telegram, Facebook, and Instagram. For token listing inquiries,
+                refer to our listing policy and FAQ. Business partnerships and advertising
+                opportunities are available - contact us at <InlineSpan>hello@xrpl.to</InlineSpan>.
                 Check our careers page for open positions.
               </BodyText>
             </Card>

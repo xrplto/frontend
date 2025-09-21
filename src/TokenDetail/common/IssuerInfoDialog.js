@@ -31,7 +31,6 @@ import { tableCellClasses } from '@mui/material/TableCell';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 
-
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -69,7 +68,10 @@ const IssuerInfoDialogTitle = (props) => {
   const { children, onClose, ...other } = props;
 
   return (
-    <DialogTitle sx={{ m: 0, p: 2, backgroundColor: theme => theme.palette.background.paper }} {...other}>
+    <DialogTitle
+      sx={{ m: 0, p: 2, backgroundColor: (theme) => theme.palette.background.paper }}
+      {...other}
+    >
       {children}
       {onClose ? (
         <IconButton

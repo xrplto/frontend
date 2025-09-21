@@ -7,7 +7,7 @@ export const formatOrderbookData = (bookData, orderType = 'bids') => {
   }
 
   const orders = orderType === 'bids' ? bookData.bids : bookData.asks;
-  
+
   return orders.map((order, index) => ({
     price: parseFloat(order.rate),
     amount: parseFloat(order.amount),
@@ -31,8 +31,12 @@ export const calculateSpread = (bids, asks) => {
   }
 
   // Get the best bid (highest) and best ask (lowest)
-  const highestBid = Math.max(...bids.map(bid => bid.price).filter(p => !isNaN(p) && isFinite(p)));
-  const lowestAsk = Math.min(...asks.map(ask => ask.price).filter(p => !isNaN(p) && isFinite(p)));
+  const highestBid = Math.max(
+    ...bids.map((bid) => bid.price).filter((p) => !isNaN(p) && isFinite(p))
+  );
+  const lowestAsk = Math.min(
+    ...asks.map((ask) => ask.price).filter((p) => !isNaN(p) && isFinite(p))
+  );
 
   if (!isFinite(highestBid) || !isFinite(lowestAsk) || highestBid <= 0 || lowestAsk <= 0) {
     return {
@@ -62,11 +66,14 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
   let sumAmount = 0;
   let sumValue = 0;
 
-
   // Check if we're dealing with XRP
   const firstOffer = offers[0];
-  const isXRPGets = firstOffer && (typeof firstOffer.TakerGets === 'string' || firstOffer.TakerGets?.currency === 'XRP');
-  const isXRPPays = firstOffer && (typeof firstOffer.TakerPays === 'string' || firstOffer.TakerPays?.currency === 'XRP');
+  const isXRPGets =
+    firstOffer &&
+    (typeof firstOffer.TakerGets === 'string' || firstOffer.TakerGets?.currency === 'XRP');
+  const isXRPPays =
+    firstOffer &&
+    (typeof firstOffer.TakerPays === 'string' || firstOffer.TakerPays?.currency === 'XRP');
 
   // XRP is represented in drops (1 XRP = 1,000,000 drops)
   const XRP_MULTIPLIER = 1000000;
@@ -79,7 +86,7 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
 
     // For asks: we're selling curr1 for curr2 (TakerGets = curr1, TakerPays = curr2)
     // For bids: we're buying curr1 with curr2 (TakerGets = curr2, TakerPays = curr1)
-    
+
     if (orderType === 'asks') {
       // Asks: selling base currency (curr1) for quote currency (curr2)
       // TakerGets is what's being sold (quantity in base currency)
@@ -89,7 +96,7 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
       } else if (typeof offer.TakerGets === 'object') {
         quantity = parseFloat(offer.TakerGets.value) || 0;
       }
-      
+
       // TakerPays is what's being received (total in quote currency)
       if (typeof offer.TakerPays === 'string') {
         // XRP amount in drops
@@ -108,7 +115,7 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
       } else if (typeof offer.TakerGets === 'object') {
         total = parseFloat(offer.TakerGets.value) || 0;
       }
-      
+
       // TakerPays is what's being offered (quantity in base currency)
       if (typeof offer.TakerPays === 'string') {
         // XRP amount in drops
@@ -148,14 +155,13 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
   // Recalculate cumulative sums after sorting
   let cumSum = 0;
   let cumValue = 0;
-  processed.forEach(order => {
+  processed.forEach((order) => {
     cumSum += order.amount;
     cumValue += order.total;
     order.sumAmount = cumSum;
     order.sumValue = cumValue;
     order.avgPrice = cumSum > 0 ? cumValue / cumSum : 0;
   });
-
 
   return processed;
 };

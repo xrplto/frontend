@@ -82,4 +82,3 @@ export const selectExchangeRate = createSelector(
 );
 
 export default statusSlice.reducer;
-
