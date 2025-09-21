@@ -22,6 +22,11 @@ const Wrapper = muiStyled(Box)(({ theme }) => `
   flex: 1;
   margin: 0;
   padding: 0;
+
+  ${theme.breakpoints.down('md')} {
+    margin: 0;
+    padding: 0;
+  }
 `);
 
 const Controls = styled.div`
@@ -33,6 +38,7 @@ const Controls = styled.div`
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
   border-radius: 12px;
   border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  width: 100%;
 `;
 
 const ControlRow = styled.div`
@@ -261,12 +267,14 @@ const TableWrapper = styled.div`
   border-radius: 12px;
   border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
+  width: 100%;
 `;
 
 const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  min-width: 100%;
+  table-layout: auto;
 `;
 
 const Th = styled.th`
@@ -746,17 +754,26 @@ function RSIAnalysisPage({ data }) {
     return () => clearTimeout(timer);
   }, [drawHeatMap]);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <Wrapper>
-      {window.innerWidth > 600 && <Toolbar />}
-      {window.innerWidth > 600 && <Topbar />}
+      {!isMobile && <Toolbar />}
+      {!isMobile && <Topbar />}
       <Header />
-      {window.innerWidth <= 600 && <Topbar />}
+      {isMobile && <Topbar />}
 
-      <Container maxWidth="xl" sx={{ px: { xs: 1, sm: 2, md: 3 } }}>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Controls darkMode={darkMode}>
+      <Container maxWidth="xl">
+        <Controls darkMode={darkMode}>
               <ControlRow>
                 <MobileSection>
                   <Label darkMode={darkMode}>Timeframe:</Label>
@@ -992,29 +1009,27 @@ function RSIAnalysisPage({ data }) {
               </Table>
             </TableWrapper>
 
-            {tokens.length > 0 && (
-              <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                <Button
-                  darkMode={darkMode}
-                  onClick={() => updateParam('start', Math.max(0, params.start - params.limit))}
-                  disabled={params.start === 0}
-                >
-                  Previous
-                </Button>
-                <span style={{ padding: '10px', color: darkMode ? '#fff' : '#333' }}>
-                  Page {Math.floor(params.start / params.limit) + 1}
-                </span>
-                <Button
-                  darkMode={darkMode}
-                  onClick={() => updateParam('start', params.start + params.limit)}
-                  disabled={tokens.length < params.limit}
-                >
-                  Next
-                </Button>
-              </div>
-            )}
-          </Grid>
-        </Grid>
+        {tokens.length > 0 && (
+          <div style={{ marginTop: '20px', display: 'flex', gap: '10px', justifyContent: 'center' }}>
+            <Button
+              darkMode={darkMode}
+              onClick={() => updateParam('start', Math.max(0, params.start - params.limit))}
+              disabled={params.start === 0}
+            >
+              Previous
+            </Button>
+            <span style={{ padding: '10px', color: darkMode ? '#fff' : '#333' }}>
+              Page {Math.floor(params.start / params.limit) + 1}
+            </span>
+            <Button
+              darkMode={darkMode}
+              onClick={() => updateParam('start', params.start + params.limit)}
+              disabled={tokens.length < params.limit}
+            >
+              Next
+            </Button>
+          </div>
+        )}
       </Container>
 
       <ScrollToTop />
