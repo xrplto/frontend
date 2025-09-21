@@ -58,7 +58,12 @@
     "production": "next start -p 80",
     "export": "next export",
     "format": "prettier --write \"./**/*.{js,jsx,json}\" --config ./.prettierrc",
-    "build:prod": "cross-env NEXT_PUBLIC_ENV=production next build"
+    "build:prod": "cross-env NEXT_PUBLIC_ENV=production next build",
+    "test:rsi": "node test-rsi-api.js",
+    "test:rsi:dev": "API_URL=http://localhost:3000/api node test-rsi-api.js",
+    "test:rsi:prod": "API_URL=https://api.xrpl.to node test-rsi-api.js",
+    "test:timeframes": "node test-timeframe-uniqueness.js",
+    "test:timeframes:prod": "API_URL=https://api.xrpl.to node test-timeframe-uniqueness.js"
   },
   "devDependencies": {
     "@next/bundle-analyzer": "15.5.3",
