@@ -140,16 +140,16 @@ const Ranks = ({ profileAccount }) => {
 
   return (
     <Box sx={{
-      p: 3,
-      minHeight: '350px',
+      p: 2,
+      minHeight: '280px',
       background: theme.palette.mode === 'dark'
         ? alpha(theme.palette.background.paper, 0.4)
         : alpha(theme.palette.background.paper, 0.8),
       backdropFilter: 'blur(10px)',
       WebkitBackdropFilter: 'blur(10px)',
-      borderRadius: '16px',
+      borderRadius: '12px',
       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-      boxShadow: theme.shadows[2]
+      boxShadow: theme.shadows[1]
     }}>
       {loading ? (
         <Stack alignItems="center" justifyContent="center" sx={{ height: '100%' }}>
@@ -161,7 +161,7 @@ const Ranks = ({ profileAccount }) => {
       ) : (
         <>
           {purchased.length ? (
-            <Grid container spacing={2}>
+            <Grid container spacing={1.5}>
               {purchased.map((purchase) => {
                 if (ranks[purchase.feature]) {
                   const item = ranks[purchase.feature];
@@ -201,7 +201,7 @@ const Ranks = ({ profileAccount }) => {
                         <Box
                           sx={{
                             bgcolor: alpha(item.color, 0.12),
-                            p: 2.5,
+                            p: 2,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between'
@@ -225,7 +225,7 @@ const Ranks = ({ profileAccount }) => {
                           <Typography
                             variant="body2"
                             color="text.secondary"
-                            sx={{ mb: 1.5, fontSize: '0.9rem', lineHeight: 1.4 }}
+                            sx={{ mb: 1, fontSize: '0.9rem', lineHeight: 1.4 }}
                           >
                             {item.description}
                           </Typography>
@@ -250,7 +250,7 @@ const Ranks = ({ profileAccount }) => {
               justifyContent="center"
               spacing={2}
               sx={{
-                py: 6,
+                py: 4,
                 opacity: 0.8
               }}
             >

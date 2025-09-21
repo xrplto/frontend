@@ -235,15 +235,15 @@ const DeFiHistory = ({ account }) => {
           : alpha(theme.palette.background.paper, 0.9),
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        borderRadius: '16px',
+        borderRadius: '12px',
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        boxShadow: theme.shadows[2],
+        boxShadow: theme.shadows[1],
         overflow: 'hidden',
         transition: 'all 0.3s ease'
       }}
     >
       {loading ? (
-        <Stack alignItems="center" sx={{ py: isSmallScreen ? 8 : 12 }}>
+        <Stack alignItems="center" sx={{ py: isSmallScreen ? 4 : 6 }}>
           <Box sx={{ mb: 2 }}>
             <PulseLoader color={theme.palette.text.secondary} size={isSmallScreen ? 8 : 10} margin={3} />
           </Box>
@@ -259,8 +259,8 @@ const DeFiHistory = ({ account }) => {
             justifyContent="center"
             spacing={2}
             sx={{
-              py: isSmallScreen ? 6 : 10,
-              px: isSmallScreen ? 3 : 4
+              py: isSmallScreen ? 3 : 5,
+              px: isSmallScreen ? 2 : 3
             }}
           >
             <ErrorOutlineIcon sx={{ fontSize: isSmallScreen ? 40 : 48, color: alpha(theme.palette.text.primary, 0.3) }} />
@@ -280,8 +280,8 @@ const DeFiHistory = ({ account }) => {
             sx={{
               backgroundColor: 'transparent',
               '& .MuiTableCell-root': {
-                py: 2,
-                px: isSmallScreen ? 1.5 : 2.5,
+                py: 1,
+                px: isSmallScreen ? 1 : 1.5,
                 fontSize: isSmallScreen ? '0.8rem' : '0.9rem',
                 borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                 backgroundColor: 'transparent'
@@ -318,7 +318,7 @@ const DeFiHistory = ({ account }) => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              p: 2,
+              p: 1.5,
               background: alpha(theme.palette.background.default, 0.5),
               borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
               backdropFilter: 'blur(5px)'

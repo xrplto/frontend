@@ -205,9 +205,9 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
           }
         }}
       >
-        <Box sx={{ p: { xs: 0.5, sm: 0.75 } }}>
-          <Stack direction="row" spacing={{ xs: 0.75, sm: 1 }} alignItems="center">
-            <Stack direction="row" spacing={0.75} alignItems="center" flex={1}>
+        <Box sx={{ p: { xs: 0.4, sm: 0.6 } }}>
+          <Stack direction="row" spacing={{ xs: 0.6, sm: 0.8 }} alignItems="center">
+            <Stack direction="row" spacing={0.6} alignItems="center" flex={1}>
               <Avatar
                 src={isXRP ? '/xrp.svg' : `https://s1.xrpl.to/token/${token.md5}`}
                 sx={{
@@ -283,7 +283,7 @@ const TokenCard = ({ token, account, isXRP = false, exchRate }) => {
 
             <Stack 
               direction="row" 
-              spacing={{ xs: 3, sm: 4 }} 
+              spacing={{ xs: 2, sm: 3 }} 
               alignItems="center"
               sx={{ ml: 'auto' }}
             >
@@ -570,17 +570,17 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           : alpha(theme.palette.background.paper, 0.8),
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        borderRadius: '16px',
+        borderRadius: '12px',
         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        boxShadow: theme.shadows[2],
+        boxShadow: theme.shadows[1],
         overflow: 'hidden',
-        p: { xs: 2, sm: 3, md: 4 }
+        p: { xs: 1.5, sm: 2, md: 2.5 }
       }}
     >
-      <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+      <Grid container spacing={{ xs: 0.75, sm: 1 }}>
         {/* Asset Distribution Chart */}
-        <Grid item xs={12} md={4}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+        <Grid item xs={12} md={5}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <PieChartIcon sx={{ fontSize: 20, color: theme.palette.primary.main }} />
             <Typography
               variant="h6"
@@ -602,8 +602,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
               alignItems: 'center',
               justifyContent: 'center',
               position: 'relative',
-              minHeight: 260,
-              maxHeight: 280
+              minHeight: 200,
+              maxHeight: 220
             }}
           >
             {(() => {
@@ -641,7 +641,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                   <>
                     <Box sx={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
                       <ReactECharts
-                        style={{ height: '260px', width: '100%' }}
+                        style={{ height: '200px', width: '100%' }}
                         option={{
                           backgroundColor: 'transparent',
                           tooltip: {
@@ -703,7 +703,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                         textAlign: 'center',
                         pointerEvents: 'none',
                         zIndex: 0,
-                        p: 1,
+                        p: 0.75,
                         borderRadius: '50%',
                         background: 'transparent'
                       }}
@@ -749,8 +749,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
           </Box>
 
           {assetDistribution && assetDistribution.labels && (
-            <Box sx={{ mt: 1.5 }}>
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            <Box sx={{ mt: 1 }}>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.75 }}>
                 {assetDistribution.labels.slice(0, 3).map((label, index) => (
                   <Box
                     key={label}
@@ -758,7 +758,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      p: 1,
+                      p: 0.75,
                       borderRadius: '8px',
                       background: 'transparent',
                       border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
@@ -811,7 +811,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
         </Grid>
 
         {/* Trustlines */}
-        <Grid item xs={12} md={8}>
+        <Grid item xs={12} md={7}>
           <Stack spacing={1}>
             {/* Summary Card */}
             <Box
@@ -906,8 +906,8 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                 display: 'flex', 
                 justifyContent: 'center', 
                 alignItems: 'center', 
-                gap: 2,
-                mt: 1.5 
+                gap: 1.5,
+                mt: 1 
               }}>
                 <IconButton
                   size="small"

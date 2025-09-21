@@ -201,7 +201,7 @@ const StyledModal = styled(Modal)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   '& .MuiBackdrop-root': {
     backdropFilter: 'blur(5px)',
     backgroundColor: alpha(theme.palette.common.black, 0.5)
@@ -214,7 +214,7 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   maxWidth: 1000,
   maxHeight: '90vh',
   overflow: 'auto',
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
   background: theme.palette.mode === 'dark'
     ? alpha(theme.palette.background.paper, 0.95)
     : theme.palette.background.paper,
@@ -233,7 +233,7 @@ const OuterBorderContainer = styled(Box)(({ theme }) => ({
   WebkitBackdropFilter: 'blur(10px)',
   borderRadius: '16px',
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.5),
   boxShadow: theme.palette.mode === 'dark'
     ? `0 8px 32px ${alpha(theme.palette.common.black, 0.3)}`
     : `0 4px 20px ${alpha(theme.palette.common.black, 0.08)}`,
@@ -1783,7 +1783,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   return (
     <OverviewWrapper>
       <Container maxWidth={false} sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 2 }, maxWidth: '100%' }}>
-        <Grid container spacing={{ xs: 1.5, sm: 3 }}>
+        <Grid container spacing={{ xs: 1, sm: 2 }}>
           <Grid item xs={12} lg={3} order={{ xs: 2, lg: 1 }}>
             <OuterBorderContainer>
               <Stack sx={{ height: '100%', justifyContent: 'space-between' }}>
@@ -1792,7 +1792,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     color: theme.palette.text.primary,
                     flex: '1 1 auto'
                   }}
-                  spacing={{ xs: 1, sm: 1.5 }}
+                  spacing={{ xs: 0.75, sm: 1 }}
                 >
                   {/* XRP Address Section - removed nested container */}
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 }, p: { xs: 1.5, sm: 2 } }}>
@@ -2536,7 +2536,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </Box>
 
                 {/* Compact Stats Grid */}
-                <Grid container spacing={1}>
+                <Grid container spacing={0.75}>
                   <Grid item xs={6} sm={3}>
                     <Box
                       sx={{
@@ -3151,16 +3151,32 @@ export default function Portfolio({ account, limit, collection, type }) {
               </ModalContent>
             </StyledModal>
 
+            <Box sx={{ mt: 3, mb: 1 }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  color: theme.palette.text.primary,
+                  fontWeight: 700,
+                  fontSize: { xs: '1.2rem', sm: '1.4rem' },
+                  letterSpacing: '-0.02em',
+                  mb: 2
+                }}
+              >
+                Portfolio Details
+              </Typography>
+            </Box>
+
             <TabContext value={activeTab}>
               <Box
                 sx={{
-                  px: 3,
-                  py: 2,
+                  px: 2,
+                  py: 1.5,
                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   background: theme.palette.mode === 'dark'
                     ? alpha(theme.palette.background.default, 0.4)
                     : alpha(theme.palette.background.default, 0.6),
-                  backdropFilter: 'blur(5px)'
+                  backdropFilter: 'blur(5px)',
+                  borderRadius: '12px 12px 0 0'
                 }}
               >
                 <ToggleButtonGroup
@@ -3197,7 +3213,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   }}
                 >
                   <ToggleButton value="0">
-                    Tokens
+                    Portfolio
                   </ToggleButton>
                   <ToggleButton value="1">
                     NFTs
@@ -3213,9 +3229,10 @@ export default function Portfolio({ account, limit, collection, type }) {
                   account={account}
                   xrpBalance={xrpBalance}
                   onUpdateTotalValue={(value) => setTotalValue(value)}
+                  onTrustlinesData={(data) => {}}
                 />
               </TabPanel>
-              
+
               <TabPanel sx={{ p: 0 }} value="1">
                 <NFTPortfolio
                   account={account}
@@ -3224,7 +3241,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   type={type}
                 />
               </TabPanel>
-              
+
               <TabPanel sx={{ p: 0 }} value="2">
                 <Ranks profileAccount={account} />
               </TabPanel>
