@@ -365,17 +365,6 @@ const SankeyModal = ({ open, onClose, account }) => {
       }
     }
 
-    console.log('Target Account Activity Analysis:', {
-      account: accountAddress,
-      mainActivity: activity.mainActivity,
-      activityScore: activity.activityScore,
-      activities: Array.from(activity.activities),
-      totalTransactions: activity.totalTransactions,
-      tokensBought: Object.fromEntries(activity.tokensBought),
-      tokensSold: Object.fromEntries(activity.tokensSold),
-      topTokens: activity.topTokens,
-      tradingDirection: activity.tradingDirection
-    });
 
     return activity;
   };
@@ -413,22 +402,10 @@ const SankeyModal = ({ open, onClose, account }) => {
         ]
       });
 
-      console.log('RAW account_tx API Response:', {
-        account: currentAccount,
-        response: response.data,
-        fullResponse: response
-      });
 
       if (response.data && response.data.result && response.data.result.transactions) {
         const transactions = response.data.result.transactions;
 
-        console.log('Transactions Summary:', {
-          account: currentAccount,
-          totalTransactions: transactions.length,
-          firstTransaction: transactions[0],
-          lastTransaction: transactions[transactions.length - 1],
-          allTransactions: transactions
-        });
 
         const processedData = processTransactionsForSankey(transactions, currentAccount);
         setChartData(processedData);
@@ -671,13 +648,6 @@ const SankeyModal = ({ open, onClose, account }) => {
         const sourceAccount = txData.Account;
         const txResult = meta?.TransactionResult;
 
-        console.log(`Processing Transaction ${index + 1}:`, {
-          type: transactionType,
-          source: sourceAccount,
-          destination: txData.Destination,
-          result: txResult,
-          meta: meta
-        });
 
         if (transactionType === 'Payment') {
           const destinationAccount = txData.Destination;
@@ -851,12 +821,6 @@ const SankeyModal = ({ open, onClose, account }) => {
 
     setAccountDetails(accountDetailsMap);
 
-    console.log('Final Sankey Data:', {
-      nodes: Array.from(nodes),
-      links: links,
-      accountStats: Object.fromEntries(accountStats),
-      spamStats: spamStats
-    });
 
     return {
       nodes: Array.from(nodes),

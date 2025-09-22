@@ -239,7 +239,6 @@ export default function ExchHistory({ pair, md5 }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting exchanges!!!', err);
         });
     }
 

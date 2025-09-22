@@ -7,7 +7,6 @@ export default function NumberTooltip({ number, prepend = '', append = '', pos =
   if (numberTrim < 1 && numberTrim.toString().length > 10 && !numberTrim.toString().includes('e')) {
     numberTrim = fNumber(number);
     if (numberTrim < 1 && numberTrim.toString().length > 10) {
-      //console.log('NumberTooltip', number);
       numberTrim = '0.0...' + number.toString().slice(-4);
     }
   } else if (

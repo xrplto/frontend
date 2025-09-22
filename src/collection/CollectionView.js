@@ -2682,7 +2682,6 @@ export default function CollectionView({ collection }) {
         location.reload();
       })
       .catch((err) => {
-        console.log('Error on removing nfts!', err);
       });
   };
 

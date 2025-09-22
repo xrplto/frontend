@@ -815,7 +815,6 @@ export const FloatingPinnedChart = memo(() => {
           break;
       }
     } catch (err) {
-      console.log('Trustline creation error:', err);
       dispatch(updateProcess(0));
       enqueueSnackbar('Error creating trustline', { variant: 'error' });
     }

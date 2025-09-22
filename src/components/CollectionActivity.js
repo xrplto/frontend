@@ -285,9 +285,7 @@ export default function AccountTransactions({ creatorAccount }) {
     if (nftData[nftokenId]) return nftData[nftokenId]; // Return cached data
 
     try {
-      console.log('Fetching NFT data for:', nftokenId);
       const response = await axios.get(`https://api.xrpnft.com/api/nft/${nftokenId}`);
-      console.log('NFT API response:', response.data);
 
       if (response.data && response.data.res === 'success' && response.data.nft) {
         const nft = response.data.nft;
@@ -298,7 +296,6 @@ export default function AccountTransactions({ creatorAccount }) {
             )}`
           : null;
 
-        console.log('Thumbnail URL:', thumbnailUrl);
 
         const nftInfo = {
           name: nft.meta?.name || 'Unknown NFT',
@@ -306,7 +303,6 @@ export default function AccountTransactions({ creatorAccount }) {
           collection: nft.collection || 'Unknown Collection'
         };
 
-        console.log('Setting NFT data:', nftInfo);
         setNftData((prev) => ({ ...prev, [nftokenId]: nftInfo }));
         return nftInfo;
       }
@@ -431,7 +427,6 @@ export default function AccountTransactions({ creatorAccount }) {
 
   // Debug useEffect to monitor nftData changes
   useEffect(() => {
-    console.log('NFT Data updated:', nftData);
   }, [nftData]);
 
   const getTransactionIcon = (transactionType) => {

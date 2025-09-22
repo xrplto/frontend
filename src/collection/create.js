@@ -198,11 +198,9 @@ export default function CreateCollection({ showHeader = true, onCreate }) {
             setTaxon(ret.taxon + 1);
           }
         } catch (error) {
-          console.log(error);
         }
       })
       .catch((err) => {
-        console.log('err->>', err);
       })
       .then(function () {
         // Always executed

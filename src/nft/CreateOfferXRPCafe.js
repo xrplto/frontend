@@ -131,7 +131,6 @@ export default function CreateOfferXRPCafe({
           return;
         }
       } catch (err) {
-        console.log(err);
       }
       isRunning = false;
       counter--;
@@ -188,13 +187,11 @@ export default function CreateOfferXRPCafe({
         brokerFeePercentage // Add this line
       };
 
-      console.log('Create Offer request body:', body);
 
       const res = await axios.post(`${BASE_URL}/offers/create`, body, {
         headers: { 'x-access-token': accountToken }
       });
 
-      console.log('Response from /offers/create:', res.data);
 
       if (res.status === 200) {
         const uuid = res.data.data.uuid;

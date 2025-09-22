@@ -73,14 +73,12 @@ export default function NFTActionsBulk({ nft }) {
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
-            // console.log(`Mints: ${ret.mints}`);
             setMints(ret.mints);
             setXrpBalance(ret.xrpBalance);
             setPendingNfts(ret.pendingNfts);
           }
         })
         .catch((err) => {
-          console.log('Error on getting mint count!!!', err);
         })
         .then(function () {
           // always executed
@@ -119,7 +117,6 @@ export default function NFTActionsBulk({ nft }) {
         }
       })
       .catch((err) => {
-        console.log('Error on choosing NFT!!!', err);
       })
       .then(function () {
         // always executed

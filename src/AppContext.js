@@ -87,7 +87,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
     if (profile) {
       const parsedProfile = JSON.parse(profile);
-      console.log('AppContext - Loading profile from localStorage:', parsedProfile);
       setAccountProfile(parsedProfile);
     }
 
@@ -106,12 +105,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const doLogIn = (profile) => {
     // Debug logging for admin login
-    console.log('AppContext - doLogIn called with profile:', {
-      account: profile.account,
-      admin: profile.admin,
-      wallet_type: profile.wallet_type,
-      fullProfile: profile
-    });
 
     // Add token creation timestamp
     const profileWithTimestamp = {
@@ -161,16 +154,13 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     var counter = 150;
     if (openLogin) {
       timer = setInterval(async () => {
-        // console.log(counter + " " + isRunning, uuid);
         if (isRunning) return;
         isRunning = true;
         try {
           const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
           const ret = res?.data;
-          console.log('AppContext - Xaman login response:', ret);
           if (ret?.profile) {
             const profile = ret.profile;
-            console.log('AppContext - Xaman profile received:', profile);
             // setOpen(true);
             setOpenLogin(false);
             setOpenWalletModal(false);
@@ -285,13 +275,11 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting account pair balance info.', err);
         })
         .then(function () {
           // always executed
         });
     }
-    // console.log('account_info')
     getAccountInfo();
   }, [accountProfile, sync]);
 
@@ -331,7 +319,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
             setWatchList(res.data.watchlist);
           }
         })
-        .catch((err) => console.log('Error on getting watchlist!', err));
+        .catch((err) => {});
     };
     getWatchList();
   }, [accountProfile, sync, BASE_URL]);

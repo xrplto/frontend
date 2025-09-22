@@ -387,11 +387,7 @@ export default function SpinNFT({ collection, setView }) {
   // useEffect(() => {
   //     window.addEventListener("resize", () => {
   //         // setWindowSize({ width: window.innerWidth, height: window.innerHeight });
-  //         console.log({ width: window.innerWidth, height: window.innerHeight });
-  //         console.log(`Window innerHeight: ${window.innerHeight}`);
-  //         console.log(`Window outerHeight: ${window.outerHeight}`);
 
-  //         console.log(window.pageYOffset)
   //     });
   // }, []);
 
@@ -412,14 +408,12 @@ export default function SpinNFT({ collection, setView }) {
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
           if (ret) {
-            // console.log(`Mints: ${ret.mints}`);
             setMints(ret.mints);
             setXrpBalance(ret.xrpBalance);
             setPendingNfts(ret.pendingNfts);
           }
         })
         .catch((err) => {
-          console.log('Error on getting mint count!!!', err);
         })
         .then(function () {
           // always executed
@@ -478,7 +472,6 @@ export default function SpinNFT({ collection, setView }) {
         }
       })
       .catch((err) => {
-        console.log('Error on choosing NFT!!!', err);
       })
       .then(function () {
         // always executed

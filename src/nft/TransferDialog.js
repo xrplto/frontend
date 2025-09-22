@@ -203,7 +203,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     };
 
     async function getPayload() {
-      console.log(counter + ' ' + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -216,7 +215,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
           return;
         }
       } catch (err) {
-        console.log(err);
       }
       isRunning = false;
       counter--;

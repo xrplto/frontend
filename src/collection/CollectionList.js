@@ -951,11 +951,9 @@ export default function CollectionList({ type, category }) {
               setCollections(ret.collections);
             }
           } catch (error) {
-            console.log(error);
           }
         })
         .catch((err) => {
-          console.log('err->>', err);
         });
     };
     loadCollections();

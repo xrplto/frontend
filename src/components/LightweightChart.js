@@ -114,7 +114,6 @@ const LightweightChart = ({
     series.forEach((seriesConfig, index) => {
       if (!seriesConfig.visible) return;
 
-      console.log(`Processing series ${index}: ${seriesConfig.name} (${seriesConfig.type})`);
 
       const processedData = data
         .filter(
@@ -154,11 +153,9 @@ const LightweightChart = ({
         .sort((a, b) => a.time - b.time);
 
       if (processedData.length === 0) {
-        console.log(`No data for series ${index}`);
         return;
       }
 
-      console.log(`Series ${index} has ${processedData.length} data points`);
 
       let series;
 
@@ -199,7 +196,6 @@ const LightweightChart = ({
         });
       }
 
-      console.log(`Created ${seriesConfig.type || 'line'} series for ${seriesConfig.name}`);
 
       series.setData(processedData);
       seriesRefs.current.push({
@@ -207,7 +203,6 @@ const LightweightChart = ({
         config: seriesConfig
       });
 
-      console.log(`Series ${index} data set successfully`);
     });
 
     // Handle crosshair move

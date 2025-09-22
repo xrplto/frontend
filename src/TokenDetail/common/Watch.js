@@ -99,7 +99,6 @@ export default function Watch({ token }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting watchlist!', err);
         })
         .then(function () {
           // always executed
@@ -152,7 +151,6 @@ export default function Watch({ token }) {
         }
       }
     } catch (err) {
-      console.log(err);
     }
     setLoading(false);
   };

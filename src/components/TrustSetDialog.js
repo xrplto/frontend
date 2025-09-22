@@ -334,7 +334,6 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
     };
 
     async function getPayload() {
-      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -392,7 +391,6 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting account lines!!!', err);
         })
         .then(function () {
           // always executed
@@ -499,7 +497,6 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
           break;
       }
     } catch (err) {
-      console.log(err);
       dispatch(updateProcess(0));
       openSnackbar('Network error!', 'error');
     }
@@ -588,7 +585,6 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         setXamanStep(3);
       }
     } catch (err) {
-      console.log(err);
       openSnackbar('Network error!', 'error');
     }
   };

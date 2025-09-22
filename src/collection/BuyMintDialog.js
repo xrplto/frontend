@@ -152,7 +152,6 @@ export default function BuyMintDialog({
     var isRunning = false;
     var counter = 150;
     async function getPayload() {
-      console.log(counter + ' ' + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -177,7 +176,6 @@ export default function BuyMintDialog({
           return;
         }
       } catch (err) {
-        console.log(err);
       }
       isRunning = false;
       counter--;

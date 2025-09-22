@@ -49,12 +49,10 @@ export default function LoadingTextField({ type, value, uuid, setValid, startTex
             else setStatus(TEXT_INVALID);
           }
         } catch (error) {
-          console.log(error);
           setStatus(TEXT_INVALID);
         }
       })
       .catch((err) => {
-        console.log('err->>', err);
         setStatus(TEXT_INVALID);
       })
       .then(function () {

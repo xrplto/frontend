@@ -866,7 +866,6 @@ const Topbar = () => {
     const ws = new WebSocket('wss://api.xrpl.to/ws/sync');
 
     ws.onopen = () => {
-      console.log('WebSocket connected');
       setIsWsLoading(false);
     };
 
@@ -892,7 +891,6 @@ const Topbar = () => {
     };
 
     ws.onclose = () => {
-      console.log('WebSocket disconnected');
     };
 
     return () => {

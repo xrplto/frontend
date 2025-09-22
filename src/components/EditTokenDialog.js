@@ -178,11 +178,6 @@ export default function EditTokenDialog({ token, setToken }) {
       const accountToken = accountProfile.token;
 
       // Debug logging
-      console.log('Auth Debug:', {
-        accountAdmin,
-        accountToken: accountToken ? 'exists' : 'missing',
-        accountProfile
-      });
 
       if (!accountAdmin || !accountToken) {
         openSnackbar('Authentication required. Please connect your wallet.', 'error');
@@ -223,10 +218,6 @@ export default function EditTokenDialog({ token, setToken }) {
             res = await axios.post(`${BASE_URL}/admin/update_token`, body);*/
 
       // Log headers for debugging
-      console.log('Sending request with headers:', {
-        'x-access-account': accountAdmin,
-        'x-access-token': accountToken ? `${accountToken.substring(0, 20)}...` : 'missing'
-      });
 
       // Try using fetch API as an alternative to axios
       if (!accountToken) {
@@ -236,10 +227,6 @@ export default function EditTokenDialog({ token, setToken }) {
         return;
       }
 
-      console.log('Using fetch with headers:', {
-        'x-access-account': accountAdmin,
-        'x-access-token': 'token exists'
-      });
 
       res = await fetch(`${BASE_URL}/admin/update_token`, {
         method: 'POST',
@@ -391,7 +378,6 @@ export default function EditTokenDialog({ token, setToken }) {
         }
       })
       .catch((err) => {
-        // console.log("Error on getting created date!!!", err);
         openSnackbar('Date is still unknown, you can manually edit it', 'error');
       })
       .then(function () {

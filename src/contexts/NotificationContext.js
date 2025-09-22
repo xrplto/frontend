@@ -23,9 +23,7 @@ export const NotificationProvider = ({ children }) => {
   // Request notification permission automatically
   const requestNotificationPermission = useCallback(() => {
     if ('Notification' in window && Notification.permission === 'default' && !hasRequestedPermission) {
-      console.log('Requesting notification permission...');
       Notification.requestPermission().then((permission) => {
-        console.log('Notification permission result:', permission);
         setHasRequestedPermission(true);
       });
     }
@@ -39,7 +37,6 @@ export const NotificationProvider = ({ children }) => {
         const parsed = JSON.parse(saved);
         const activeNotifications = parsed.filter(n => !n.triggered);
         setNotifications(activeNotifications);
-        console.log('Loaded notifications:', activeNotifications.length);
         return activeNotifications;
       }
     } catch (e) {
@@ -59,7 +56,6 @@ export const NotificationProvider = ({ children }) => {
       // Update state directly instead of reloading to prevent key conflicts
       const activeNotifications = allNotifications.filter(n => !n.triggered);
       setNotifications(activeNotifications);
-      console.log('Saved notification, active count:', activeNotifications.length);
       return true;
     } catch (e) {
       console.error('Error saving notification:', e);
@@ -79,7 +75,6 @@ export const NotificationProvider = ({ children }) => {
         // Update state directly instead of reloading to prevent key conflicts
         const activeNotifications = allNotifications.filter(n => !n.triggered);
         setNotifications(activeNotifications);
-        console.log('Removed notification, active count:', activeNotifications.length);
         return true;
       }
     } catch (e) {
@@ -122,7 +117,6 @@ export const NotificationProvider = ({ children }) => {
       tokenGroups[notification.tokenMd5].push(notification);
     });
 
-    console.log('Checking prices for', Object.keys(tokenGroups).length, 'tokens');
 
     const triggered = [];
 
@@ -144,7 +138,6 @@ export const NotificationProvider = ({ children }) => {
           if (lastPrice === currentPrice) continue;
 
           lastPricesRef.current[tokenMd5] = currentPrice;
-          console.log(`Price update for ${tokenNotifications[0]?.tokenName}: ${currentPrice}`);
 
           // Check each notification for this token
           tokenNotifications.forEach(notification => {
@@ -154,7 +147,6 @@ export const NotificationProvider = ({ children }) => {
 
             if (shouldTrigger) {
               triggered.push({ ...notification, currentPrice });
-              console.log(`ALERT TRIGGERED: ${notification.tokenName} ${notification.alertType} ${notification.targetPrice} (current: ${currentPrice})`);
 
               // Show browser notification
               if (Notification.permission === 'granted') {
@@ -215,7 +207,6 @@ export const NotificationProvider = ({ children }) => {
           // Update state directly to prevent key conflicts
           const activeNotifications = allNotifications.filter(n => !n.triggered);
           setNotifications(activeNotifications);
-          console.log('Updated triggered notifications, active count:', activeNotifications.length);
         }
       } catch (e) {
         console.error('Error updating triggered notifications:', e);
@@ -227,7 +218,6 @@ export const NotificationProvider = ({ children }) => {
   const startMonitoring = useCallback(() => {
     if (intervalRef.current) return; // Already running
 
-    console.log('Starting price monitoring...');
     intervalRef.current = setInterval(() => {
       checkPrices();
     }, 30000); // Check every 30 seconds
@@ -241,7 +231,6 @@ export const NotificationProvider = ({ children }) => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
-      console.log('Stopped price monitoring');
     }
   }, []);
 
@@ -263,7 +252,6 @@ export const NotificationProvider = ({ children }) => {
         }
       }, 5000);
     } else {
-      console.log('Cannot test notification - permission not granted');
     }
   }, []);
 

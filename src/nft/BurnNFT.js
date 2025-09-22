@@ -52,7 +52,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
     var isRunning = false;
     var counter = 150;
     async function getPayload() {
-      console.log(counter + ' ' + isRunning, xummUuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -72,7 +71,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
           return;
         }
       } catch (err) {
-        console.log(err);
       }
       isRunning = false;
       counter--;

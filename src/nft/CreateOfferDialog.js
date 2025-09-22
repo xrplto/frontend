@@ -244,7 +244,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
     };
 
     async function getPayload() {
-      console.log(counter + ' ' + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -269,7 +268,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
           // return;
         }
       } catch (err) {
-        console.log(err);
       }
       isRunning = false;
       counter--;

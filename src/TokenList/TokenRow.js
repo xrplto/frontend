@@ -801,7 +801,6 @@ const DesktopTokenRow = ({
       case 'custom':
         // If customColumns is empty or undefined, show default columns
         if (!customColumns || customColumns.length === 0) {
-          console.log('Custom columns not set, showing default columns');
           return (
             <>
               {tokenCell}

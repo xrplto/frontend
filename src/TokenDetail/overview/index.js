@@ -134,7 +134,6 @@ const Overview = memo(
           }
         }
       } catch (err) {
-        console.log(err);
       }
       setLoading(false);
       if (finish) setShowEditor(false);

@@ -238,12 +238,8 @@ export default function EditCollection({ collection }) {
 
     if (type !== 'normal') {
       if (JSON.stringify(costs) !== JSON.stringify(collection.costs || [])) {
-        // console.log('different')
         return true;
       } else {
-        // console.log(costs.length);
-        // console.log(collection.costs.length);
-        // console.log('the same')
       }
     }
     return false;

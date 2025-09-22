@@ -514,12 +514,10 @@ export default function TokenList({
       ),
       onOpen: () => {
         if (WSS_FEED_URL) {
-          console.log('WebSocket connected to', WSS_FEED_URL);
         }
       },
       onClose: () => {
         if (WSS_FEED_URL) {
-          console.log('WebSocket disconnected');
         }
       }
     },
@@ -605,7 +603,7 @@ export default function TokenList({
               setTokens(ret.tokens);
             }
           })
-          .catch((err) => console.log('err->>', err))
+          .catch((err) => {})
           .finally(() => setSearch(filterName));
       }, 300),
     [

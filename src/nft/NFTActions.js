@@ -490,7 +490,6 @@ export default function NFTActions({ nft }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting nft offers list!!!', err);
         })
         .then(function () {
           // always executed
@@ -547,7 +546,6 @@ export default function NFTActions({ nft }) {
     };
 
     async function getPayload() {
-      console.log(counter + ' ' + isRunning, xummUuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -584,7 +582,6 @@ export default function NFTActions({ nft }) {
       try {
         client = new Client('wss://s1.ripple.com');
         await client.connect();
-        console.log('Connected to XRPL');
 
         const request = {
           command: 'nft_sell_offers',
@@ -592,7 +589,6 @@ export default function NFTActions({ nft }) {
         };
 
         const response = await client.request(request);
-        console.log('NFT Sell Offers:', JSON.stringify(response.result, null, 2));
 
         // Find the lowest valid sell offer
         let lowestOffer = null;
@@ -658,9 +654,7 @@ export default function NFTActions({ nft }) {
         if (client && client.isConnected()) {
           try {
             await client.disconnect();
-            console.log('Disconnected from XRPL');
           } catch (disconnectError) {
-            console.warn('Error disconnecting from XRPL:', disconnectError);
           }
         }
       }

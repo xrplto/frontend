@@ -202,11 +202,9 @@ export default function ImportCollection() {
             setTaxons(ret.taxons);
           }
         } catch (error) {
-          console.log(error);
         }
       })
       .catch((err) => {
-        console.log('err->>', err);
       })
       .then(function () {
         // Always executed

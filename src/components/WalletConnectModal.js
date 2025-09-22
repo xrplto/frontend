@@ -224,7 +224,6 @@ const WalletConnectModal = () => {
     isInstalled().then((response) => {
       if (response.result.isInstalled) {
         getPublicKey().then(async (response) => {
-          // console.log(`${response.result?.address} - ${response.result?.publicKey}`);
           const pubkey = response.result?.publicKey;
           //fetch nonce from /api/gem/nonce?pubkey=pubkey
           await axios
@@ -249,9 +248,7 @@ const WalletConnectModal = () => {
                       opts
                     )
                     .then((res) => {
-                      console.log('WalletConnectModal - GemWallet login response:', res.data);
                       const { profile } = res.data;
-                      console.log('WalletConnectModal - GemWallet profile received:', profile);
                       doLogIn({ ...profile, wallet_type: 'gem' });
                       setOpenWalletModal(false);
                     });
@@ -295,16 +292,13 @@ const WalletConnectModal = () => {
           }
         )
         .then((res) => {
-          console.log('WalletConnectModal - Crossmark login response:', res.data);
           const { profile } = res.data;
-          console.log('WalletConnectModal - Crossmark profile received:', profile);
           doLogIn({ ...profile, wallet_type: 'crossmark' });
           setOpenWalletModal(false);
         })
         .catch((err) => {});
       // }
     } catch (err) {
-      console.log(err);
     }
   };
 
