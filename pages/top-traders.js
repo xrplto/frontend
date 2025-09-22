@@ -66,7 +66,7 @@ const StyledTableCell = styled.th`
 `;
 
 const StyledTableRow = styled.tr`
-  background: ${({ theme, darkMode }) => darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(255, 255, 255, 0.98)'};
+  background: ${({ theme, darkMode }) => darkMode ? '#000' : '#fff'};
   border-bottom: 1px solid ${({ darkMode }) => darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   transition: all 0.3s;
   cursor: pointer;
@@ -178,9 +178,7 @@ const RankBadge = styled.div`
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: ${(props) => props.isTop3
-    ? `linear-gradient(135deg, ${props.theme.palette.warning.main}, ${props.theme.palette.warning.dark})`
-    : props.theme.palette.action.hover};
+  background: ${(props) => props.isTop3 ? '#000' : props.theme.palette.action.hover};
   display: flex;
   align-items: center;
   justify-content: center;
