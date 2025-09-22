@@ -1,13 +1,138 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
-// import { performance } from 'perf_hooks';
+import styled from '@emotion/styled';
+import { useTheme } from '@mui/material/styles';
+import { AppContext } from 'src/AppContext';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
+// Styled Components using the theme system
+const Container = styled.div`
+  max-width: 1536px;
+  margin: 0 auto;
+  padding: 0 24px;
+`;
+
+const FaqHeader = styled.div`
+  text-align: center;
+  margin: 48px 0;
+`;
+
+const GradientTitle = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #147DFE, #2196F3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+
+  @media (min-width: 768px) {
+    font-size: 3.5rem;
+  }
+`;
+
+const Subtitle = styled.h2`
+  font-size: 1.25rem;
+  color: ${(props) =>
+    props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.6)'
+      : 'rgba(0, 0, 0, 0.6)'};
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 400;
+`;
+
+const FaqList = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+`;
+
+const AccordionItem = styled.div`
+  margin-bottom: 16px;
+  background: ${(props) =>
+    props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.02)'
+      : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${(props) =>
+    props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.05)'
+      : 'rgba(0, 0, 0, 0.05)'};
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${(props) =>
+      props.theme?.palette?.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.04)'
+        : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${(props) =>
+      props.theme?.palette?.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.08)'
+        : 'rgba(0, 0, 0, 0.08)'};
+  }
+`;
+
+const AccordionHeader = styled.button`
+  width: 100%;
+  padding: 20px 24px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: ${(props) =>
+      props.theme?.palette?.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.06)'
+        : 'rgba(0, 0, 0, 0.06)'};
+  }
+`;
+
+const QuestionText = styled.span`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
+  padding-right: 16px;
+  flex: 1;
+`;
+
+const ExpandIcon = styled.svg`
+  color: ${(props) => props.theme?.palette?.primary?.main || '#147DFE'};
+  transition: transform 0.3s ease;
+  flex-shrink: 0;
+  transform: ${(props) => props.expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+`;
+
+const AccordionContent = styled.div`
+  max-height: ${(props) => props.expanded ? '500px' : '0'};
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+`;
+
+const AnswerText = styled.p`
+  padding: 0 24px 24px;
+  margin: 0;
+  line-height: 1.7;
+  font-size: 1.05rem;
+  color: ${(props) =>
+    props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.7)'
+      : 'rgba(0, 0, 0, 0.6)'};
+`;
+
 function FAQPage() {
   const [expandedIndex, setExpandedIndex] = useState(null);
+  const theme = useTheme();
+  const { darkMode } = useContext(AppContext);
 
   const toggleAccordion = (index) => {
     setExpandedIndex(expandedIndex === index ? null : index);
@@ -15,60 +140,60 @@ function FAQPage() {
 
   const faqs = [
     {
-      question: 'How are the prices calculated for the various cryptocurrencies on xrpl.to?',
+      question: 'How are the prices calculated for the various tokens on xrpl.to?',
       answer:
-        'The prices of cryptocurrencies on xrpl.to are determined by the market dynamics of the XRP Ledger decentralized exchange (DEX). The prices are based on the supply and demand of the tokens traded on the XRPL, taking into account the latest executed trades and order book data.'
+        'Prices are calculated live using all methods of trading available on the XRP Ledger. The prices reflect real-time market dynamics of the XRP Ledger decentralized exchange (DEX), incorporating data from all trading mechanisms including direct offers, automated market makers (AMMs), and order book transactions to provide the most accurate and current pricing.'
     },
     {
       question: 'What is the XRPL?',
       answer:
-        'The XRPL, or XRP Ledger, is an open-source blockchain and decentralized digital asset platform. It serves as the underlying technology for the XRP cryptocurrency and provides a secure and efficient infrastructure for issuing, transferring, and trading tokens.'
+        'The XRPL (XRP Ledger) is a fast, energy-efficient, and decentralized blockchain designed for digital payments and tokenization. Built with a unique consensus algorithm, it can process transactions in 3-5 seconds with minimal energy consumption. The XRPL supports native features like decentralized exchange (DEX), automated market makers (AMMs), multi-signing, escrow, and custom token issuance, making it ideal for DeFi applications, cross-border payments, and enterprise solutions.'
     },
     {
       question: 'How do I trade on xrpl.to?',
       answer:
-        'To trade on xrpl.to, you need to connect your XRP Ledger-compatible wallet to the DEX. You can use wallets such as XUMM, XRPL Wallet, or XRP Toolkit. Once connected, you can browse the available tokens, place buy or sell orders, and execute trades directly on the XRPL.'
+        'To trade on xrpl.to, you need to connect your XRP Ledger-compatible wallet to the DEX. You can use wallets such as Xaman, Crossmark, and Gem Wallet to trade at xrpl.to. Once connected, you can browse the available tokens, place buy or sell orders, and execute trades directly on the XRPL with full control of your assets.'
     },
     {
       question:
         'What is the difference between a decentralized exchange (DEX) and a centralized exchange?',
       answer:
-        "A decentralized exchange (DEX), like xrpl.to, operates on a blockchain network and allows users to trade cryptocurrencies directly from their wallets without relying on a centralized intermediary. In contrast, a centralized exchange (CEX) functions as a third-party platform that holds users' funds and facilitates trading on their behalf."
+        "A decentralized exchange (DEX), like xrpl.to, operates on a blockchain network and allows users to trade tokens directly from their wallets without relying on a centralized intermediary. In contrast, a centralized exchange (CEX) functions as a third-party platform that holds users' funds and facilitates trading on their behalf, requiring users to deposit their assets before trading."
     },
     {
       question: 'How secure is xrpl.to?',
       answer:
-        "Xrpl.to leverages the security and immutability of the XRP Ledger, which is a decentralized and well-established blockchain network. As a non-custodial DEX, xrpl.to does not hold users' funds, minimizing the risk of centralized hacks or theft. However, it's important to ensure the security of your own wallet and exercise caution when interacting with any online platform."
+        "Xrpl.to operates as a non-custodial interface to the XRP Ledger, meaning your funds never leave your wallet and remain under your complete control. The platform leverages the proven security of the XRP Ledger, which has operated without downtime since 2012 and uses a unique consensus mechanism validated by a global network of independent servers. All transactions are executed directly on-chain, eliminating counterparty risk. For maximum security, always verify transaction details before signing, use hardware wallets when possible, and never share your private keys or seed phrases."
     },
     {
       question: 'What are the fees for trading on xrpl.to?',
       answer:
-        'Xrpl.to operates with a fee structure that is typically lower compared to many centralized exchanges. The fees vary depending on the specific trade and the network congestion at the time. The fees primarily cover the transaction costs on the XRP Ledger, including network fees and ledger reserves.'
+        'There are no fees to trade on xrpl.to itself. The platform is completely free to use. However, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Additionally, some wallets like Xaman may charge their own fees, so we recommend checking your wallet\'s fee structure. These minimal network costs ensure fast transaction processing and network security.'
     },
     {
       question: 'How do I list my token on xrpl.to?',
       answer:
-        'To list your token on xrpl.to, you need to ensure that your token is compatible with the XRP Ledger and meets the necessary technical requirements. You can reach out to the xrpl.to team or follow the guidelines provided on the platform to initiate the listing process. Please note that listing decisions are subject to evaluation and compliance checks.'
+        'Tokens are automatically listed on xrpl.to if they meet all platform requirements. Your token needs to be compatible with the XRP Ledger and satisfy the necessary technical and compliance criteria. Once your token fulfills these requirements, it will appear on the platform without requiring manual submission or approval. For specific listing requirements or assistance, you can reach out to the xrpl.to team.'
     },
     {
       question: 'Can I participate in token sales or initial coin offerings (ICOs) on xrpl.to?',
       answer:
-        "Xrpl.to is primarily a decentralized exchange for trading existing tokens on the XRP Ledger. It does not directly facilitate token sales or ICOs. However, if a token sale is conducted using the XRP Ledger's decentralized issuance capabilities, you may be able to participate in such sales through compatible wallets."
+        "Xrpl.to functions as a decentralized exchange for trading tokens that are already issued on the XRP Ledger, rather than hosting token sales or ICOs directly. However, the XRP Ledger's native features enable decentralized token launches through mechanisms like liquidity pools, direct offers, and automated market makers (AMMs). Once tokens are issued and have liquidity, they become tradeable on xrpl.to. For participating in new token launches, you would typically interact directly with the token issuer or use your connected wallet to participate in on-chain distribution events."
     },
     {
       question: 'What is the difference between XRPL and XRP?',
       answer:
-        'XRPL stands for XRP Ledger, which is the underlying technology and blockchain network that powers the XRP cryptocurrency. XRP is the native digital asset of the XRP Ledger and serves as a bridge currency for facilitating fast and low-cost transactions between different currencies.'
+        'XRPL (XRP Ledger) is the blockchain infrastructure - a decentralized network that processes transactions and hosts applications like DEXs, AMMs, and smart contracts. XRP is the native token that runs on the XRPL, serving multiple functions: paying network transaction fees, providing liquidity for trading pairs, acting as a bridge currency between different assets, and securing the network through validator incentives. Think of XRPL as the highway system and XRP as the fuel that powers transactions on that highway.'
     },
     {
       question: 'Is xrpl.to available in my country?',
       answer:
-        "Xrpl.to is accessible to users worldwide, as long as they have an internet connection and a compatible XRP Ledger wallet. However, it's important to comply with the local regulations and legal requirements regarding cryptocurrency trading in your country."
+        "Xrpl.to is globally accessible as a decentralized interface to the XRP Ledger, available to anyone with an internet connection and a compatible wallet. Since the platform operates as a non-custodial DEX connecting directly to the blockchain, there are no geographic restrictions from our end. However, users are responsible for ensuring compliance with their local laws and regulations regarding digital asset trading. We recommend consulting with local legal experts if you're unsure about the regulatory status of token trading in your jurisdiction."
     },
     {
       question: 'Is there customer support available for xrpl.to?',
       answer:
-        'Xrpl.to provides customer support through various channels, including email and community forums. You can reach out to the xrpl.to support team for assistance with any platform-related inquiries, technical issues, or general feedback.'
+        'Yes, xrpl.to provides customer support through multiple channels to assist users. You can reach out to the team via X (Twitter) @xrplto for quick responses and updates, email for detailed inquiries, or community forums for peer support and discussions. The support team is available to help with platform-related questions, technical issues, troubleshooting, and general feedback about the platform.'
     }
   ];
 
@@ -78,23 +203,24 @@ function FAQPage() {
       <Topbar />
       <Header />
 
-      <div className="container">
-        <div className="faq-header">
-          <h1 className="gradient-title">Frequently Asked Questions</h1>
-          <h2 className="subtitle">Find answers to common questions about xrpl.to</h2>
-        </div>
+      <Container>
+        <FaqHeader>
+          <GradientTitle>Frequently Asked Questions</GradientTitle>
+          <Subtitle theme={theme}>Find answers to common questions about xrpl.to</Subtitle>
+        </FaqHeader>
 
-        <div className="faq-list">
+        <FaqList>
           {faqs.map((faq, index) => (
-            <div className="accordion-item" key={index}>
-              <button
-                className={`accordion-header ${expandedIndex === index ? 'expanded' : ''}`}
+            <AccordionItem key={index} theme={theme}>
+              <AccordionHeader
                 onClick={() => toggleAccordion(index)}
                 aria-expanded={expandedIndex === index}
+                theme={theme}
               >
-                <span className="question-text">{faq.question}</span>
-                <svg
-                  className="expand-icon"
+                <QuestionText theme={theme}>{faq.question}</QuestionText>
+                <ExpandIcon
+                  expanded={expandedIndex === index}
+                  theme={theme}
                   width="24"
                   height="24"
                   viewBox="0 0 24 24"
@@ -108,144 +234,17 @@ function FAQPage() {
                     strokeLinecap="round"
                     strokeLinejoin="round"
                   />
-                </svg>
-              </button>
-              <div className={`accordion-content ${expandedIndex === index ? 'expanded' : ''}`}>
-                <p className="answer-text">{faq.answer}</p>
-              </div>
-            </div>
+                </ExpandIcon>
+              </AccordionHeader>
+              <AccordionContent expanded={expandedIndex === index}>
+                <AnswerText theme={theme}>{faq.answer}</AnswerText>
+              </AccordionContent>
+            </AccordionItem>
           ))}
-        </div>
-      </div>
+        </FaqList>
+      </Container>
 
       <Footer />
-
-      <style jsx>{`
-        .container {
-          max-width: 1536px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .faq-header {
-          text-align: center;
-          margin: 48px 0;
-        }
-
-        .gradient-title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          background: linear-gradient(45deg, #9c27b0, #e91e63);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 16px;
-        }
-
-        @media (min-width: 768px) {
-          .gradient-title {
-            font-size: 3.5rem;
-          }
-        }
-
-        .subtitle {
-          font-size: 1.25rem;
-          color: rgba(0, 0, 0, 0.6);
-          max-width: 600px;
-          margin: 0 auto;
-          font-weight: 400;
-        }
-
-        .faq-list {
-          max-width: 900px;
-          margin: 0 auto;
-        }
-
-        .accordion-item {
-          margin-bottom: 16px;
-          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
-          border: 1px solid rgba(0, 0, 0, 0.12);
-          border-radius: 8px;
-          overflow: hidden;
-        }
-
-        .accordion-header {
-          width: 100%;
-          padding: 20px 24px;
-          background: transparent;
-          border: none;
-          text-align: left;
-          cursor: pointer;
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          transition: background-color 0.3s ease;
-        }
-
-        .accordion-header:hover {
-          background-color: rgba(33, 150, 243, 0.06);
-        }
-
-        .question-text {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: rgba(0, 0, 0, 0.87);
-          padding-right: 16px;
-          flex: 1;
-        }
-
-        .expand-icon {
-          color: #1976d2;
-          transition: transform 0.3s ease;
-          flex-shrink: 0;
-        }
-
-        .accordion-header.expanded .expand-icon {
-          transform: rotate(180deg);
-        }
-
-        .accordion-content {
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.3s ease;
-        }
-
-        .accordion-content.expanded {
-          max-height: 500px;
-        }
-
-        .answer-text {
-          padding: 0 24px 24px;
-          margin: 0;
-          line-height: 1.7;
-          font-size: 1.05rem;
-          color: rgba(0, 0, 0, 0.6);
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-          .subtitle {
-            color: rgba(255, 255, 255, 0.6);
-          }
-
-          .accordion-item {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-          }
-
-          .accordion-header:hover {
-            background-color: rgba(33, 150, 243, 0.12);
-          }
-
-          .question-text {
-            color: rgba(255, 255, 255, 0.87);
-          }
-
-          .answer-text {
-            color: rgba(255, 255, 255, 0.6);
-          }
-        }
-      `}</style>
     </div>
   );
 }
