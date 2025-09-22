@@ -52,7 +52,6 @@ const COMPANY = [
   { href: '/disclaimer', label: 'Disclaimer' }
 ];
 const SUPPORT = [
-  { href: 'https://hmc0r1fnxt5.typeform.com/to/jd3HUclQ', label: 'Request' },
   { href: '/faq', label: 'FAQ' }
 ];
 const SOCIALS = [
