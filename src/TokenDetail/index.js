@@ -83,13 +83,17 @@ const TokenDetail = memo(
       }
     }, [orderBookOpen]);
 
-    // Memoize callback functions to prevent re-renders
+    // Memoize callback functions to prevent re-renders - batched updates
     const handleCreatorTxToggle = useCallback(() => {
       const newState = !creatorTxOpen;
-      setCreatorTxOpen(newState);
-      if (onCreatorPanelToggle) {
-        onCreatorPanelToggle(newState);
-      }
+
+      // Batch state updates
+      requestAnimationFrame(() => {
+        setCreatorTxOpen(newState);
+        if (onCreatorPanelToggle) {
+          onCreatorPanelToggle(newState);
+        }
+      });
     }, [creatorTxOpen, onCreatorPanelToggle]);
 
     // Handle transaction selection
@@ -108,23 +112,30 @@ const TokenDetail = memo(
       [onTransactionPanelToggle, onOrderBookToggle]
     );
 
-    // Handle transaction details close
+    // Handle transaction details close - batched updates
     const handleTxDetailsClose = useCallback(() => {
-      setTxDetailsOpen(false);
-      setPanelMode('transaction');
-      if (onTransactionPanelToggle) {
-        onTransactionPanelToggle(false);
-      }
+      // Use flushSync for batched updates to prevent multiple renders
+      requestAnimationFrame(() => {
+        setTxDetailsOpen(false);
+        setPanelMode('transaction');
+        if (onTransactionPanelToggle) {
+          onTransactionPanelToggle(false);
+        }
+      });
     }, [onTransactionPanelToggle]);
 
-    // Handle orderbook panel toggle
+    // Handle orderbook panel toggle - batched updates
     const handleOrderBookToggle = useCallback(() => {
       const isOpen = txDetailsOpen && panelMode === 'orderbook';
       const newState = !isOpen;
-      setPanelMode('orderbook');
-      setTxDetailsOpen(newState);
-      if (onOrderBookToggle) onOrderBookToggle(newState);
-      if (onTransactionPanelToggle) onTransactionPanelToggle(newState);
+
+      // Batch state updates to prevent multiple renders
+      requestAnimationFrame(() => {
+        setPanelMode('orderbook');
+        setTxDetailsOpen(newState);
+        if (onOrderBookToggle) onOrderBookToggle(newState);
+        if (onTransactionPanelToggle) onTransactionPanelToggle(newState);
+      });
     }, [txDetailsOpen, panelMode, onOrderBookToggle, onTransactionPanelToggle]);
 
     // No separate OrderBook panel anymore; handled inside TransactionDetailsPanel

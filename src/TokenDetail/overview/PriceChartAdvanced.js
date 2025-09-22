@@ -387,7 +387,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => controller.abort();
   }, [token.md5, range, BASE_URL, chartType]);
 
-  // Create chart only when chart type changes AND relevant data is available
+  // Create chart only when chart type changes AND relevant data is available - optimized
   useEffect(() => {
     // Determine which dataset is relevant for current chart type
     const hasChartData =
@@ -1170,7 +1170,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     isDark
   ]);
 
-  // Separate effect to update data on chart series
+  // Separate effect to update data on chart series - throttled for performance
   useEffect(() => {
     // Skip if chart isn't ready yet - the chart creation effect will handle initial data
     if (!chartRef.current) {

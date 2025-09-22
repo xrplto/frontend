@@ -346,14 +346,32 @@ export default function PairsList({ token, pairs }) {
   const [scrollLeft, setScrollLeft] = useState(0);
 
   useEffect(() => {
+    // Throttled scroll handler to prevent excessive reflows
+    let rafId = null;
+
     const handleScroll = () => {
-      setScrollLeft(tableRef?.current?.scrollLeft > 0);
+      if (rafId) return; // Already scheduled
+
+      rafId = requestAnimationFrame(() => {
+        if (tableRef?.current) {
+          setScrollLeft(tableRef.current.scrollLeft > 0);
+        }
+        rafId = null;
+      });
     };
 
-    tableRef?.current?.addEventListener('scroll', handleScroll);
+    const currentRef = tableRef?.current;
+    if (currentRef) {
+      currentRef.addEventListener('scroll', handleScroll, { passive: true });
+    }
 
     return () => {
-      tableRef?.current?.removeEventListener('scroll', handleScroll);
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      if (currentRef) {
+        currentRef.removeEventListener('scroll', handleScroll);
+      }
     };
   }, []);
 

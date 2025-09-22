@@ -475,13 +475,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
 
   const WSS_URL = 'wss://xrplcluster.com';
 
-  // WebSocket for OrderBook
+  // WebSocket for OrderBook - optimized handlers
   const { sendJsonMessage } = useWebSocket(WSS_URL, {
     onOpen: () => {
-      setWsReady(true);
+      requestAnimationFrame(() => setWsReady(true));
     },
     onClose: () => {
-      setWsReady(false);
+      requestAnimationFrame(() => setWsReady(false));
     },
     shouldReconnect: (closeEvent) => true,
     onMessage: (event) => processOrderBookMessages(event)
