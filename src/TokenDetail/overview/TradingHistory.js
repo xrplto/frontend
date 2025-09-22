@@ -539,50 +539,72 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     }
   }, [tokenId, page, xrpOnly]);
 
-  // WebSocket message processor for OrderBook - optimized for performance
+  // Batch updates for better performance
+  const pendingUpdatesRef = useRef({ asks: null, bids: null });
+  const updateTimerRef = useRef(null);
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      // Cancel any pending animation frames
+      if (updateTimerRef.current) {
+        cancelAnimationFrame(updateTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Apply batched updates
+  const applyBatchedUpdates = useCallback(() => {
+    const updates = pendingUpdatesRef.current;
+    if (updates.asks || updates.bids) {
+      setOrderBookData(prev => ({
+        asks: updates.asks || prev.asks,
+        bids: updates.bids || prev.bids
+      }));
+      pendingUpdatesRef.current = { asks: null, bids: null };
+    }
+  }, []);
+
+  // WebSocket message processor - heavily optimized
   const processOrderBookMessages = useMemo(
     () =>
       throttle((event) => {
-        // Defer heavy processing to next tick to avoid blocking
-        requestAnimationFrame(() => {
+        // Parse in a try-catch to handle errors gracefully
+        let orderBook;
+        try {
+          orderBook = JSON.parse(event.data);
+        } catch (error) {
+          console.error('Failed to parse orderbook message:', error);
+          return;
+        }
+
+        if (!orderBook?.result || orderBook.status !== 'success') return;
+
+        const req = orderBook.id % 2;
+        const offers = orderBook.result.offers;
+
+        // Process in microtask to avoid blocking
+        queueMicrotask(() => {
           try {
-            const orderBook = JSON.parse(event.data);
-
-            if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-              const req = orderBook.id % 2;
-
-              // Use functional updates to avoid dependency on orderBookData
-              if (req === 1) {
-                setOrderBookData((prev) => {
-                  const parsed = formatOrderBook(
-                    orderBook.result.offers,
-                    ORDER_TYPE_ASKS,
-                    prev.asks
-                  );
-                  return { ...prev, asks: parsed };
-                });
-              }
-              if (req === 0) {
-                setOrderBookData((prev) => {
-                  const parsed = formatOrderBook(
-                    orderBook.result.offers,
-                    ORDER_TYPE_BIDS,
-                    prev.bids
-                  );
-                  return { ...prev, bids: parsed };
-                });
-                // Use longer timeout to reduce state updates
-                setTimeout(() => {
-                  setClearNewFlag(true);
-                }, 3000); // Increased from 2000ms to 3000ms
-              }
+            if (req === 1) {
+              // Process asks
+              const parsed = formatOrderBook(offers, ORDER_TYPE_ASKS, pendingUpdatesRef.current.asks || orderBookData.asks);
+              pendingUpdatesRef.current.asks = parsed;
+            } else if (req === 0) {
+              // Process bids
+              const parsed = formatOrderBook(offers, ORDER_TYPE_BIDS, pendingUpdatesRef.current.bids || orderBookData.bids);
+              pendingUpdatesRef.current.bids = parsed;
             }
+
+            // Batch updates using RAF for smooth rendering
+            if (updateTimerRef.current) cancelAnimationFrame(updateTimerRef.current);
+            updateTimerRef.current = requestAnimationFrame(applyBatchedUpdates);
           } catch (error) {
-            console.error('Error processing orderbook message:', error);
+            console.error('Error processing orderbook data:', error);
           }
         });
-      }, 100), // Throttle to max 10 updates per second
-    [] // Remove dependencies to prevent recreation
+      }, 150), // Increased throttle for better batching
+    [applyBatchedUpdates, orderBookData.asks, orderBookData.bids]
   );
 
   // OrderBook WebSocket request
@@ -626,14 +648,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     sendJsonMessage(cmdBid);
   }, [wsReady, selectedPair, sendJsonMessage]);
 
-  // Clear new flags effect
+  // Clear new flags effect - optimized with RAF
   useEffect(() => {
     if (clearNewFlag) {
-      setClearNewFlag(false);
-      setOrderBookData((prev) => ({
-        asks: prev.asks.map((ask) => ({ ...ask, isNew: false })),
-        bids: prev.bids.map((bid) => ({ ...bid, isNew: false }))
-      }));
+      requestAnimationFrame(() => {
+        setClearNewFlag(false);
+        setOrderBookData((prev) => ({
+          asks: prev.asks.map((ask) => ({ ...ask, isNew: false })),
+          bids: prev.bids.map((bid) => ({ ...bid, isNew: false }))
+        }));
+      });
     }
   }, [clearNewFlag]);
 
@@ -666,11 +690,210 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     setPage(newPage);
   };
 
-  const calculatePrice = (trade) => {
+  const calculatePrice = useCallback((trade) => {
     const xrpAmount = trade.got.currency === 'XRP' ? trade.got.value : trade.paid.value;
     const tokenAmount = trade.got.currency === 'XRP' ? trade.paid.value : trade.got.value;
     return parseFloat(xrpAmount) / parseFloat(tokenAmount);
-  };
+  }, []);
+
+  // Memoized trade list rendering
+  const renderedTrades = useMemo(() => {
+    return trades.map((trade, index) => {
+      const isBuy = trade.paid.currency === 'XRP';
+      const xrpAmount = getXRPAmount(trade);
+      const price = calculatePrice(trade);
+      const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
+
+      const amountData = isBuy ? trade.got : trade.paid;
+      const totalData = isBuy ? trade.paid : trade.got;
+
+      let addressToShow = trade.maker;
+      if (amm) {
+        if (trade.maker === amm) {
+          addressToShow = trade.taker;
+        } else if (trade.taker === amm) {
+          addressToShow = trade.maker;
+        }
+      }
+
+      return (
+        <TradeCard
+          key={trade._id}
+          isNew={newTradeIds.has(trade._id)}
+          tradetype={isBuy ? 'BUY' : 'SELL'}
+        >
+          <VolumeIndicator volume={volumePercentage} />
+          <CardContent sx={{ p: 0.75, '&:last-child': { pb: 0.75 } }}>
+            <Box
+              sx={{
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr 1fr',
+                  sm: '1.2fr 1.2fr 1.8fr',
+                  md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
+                },
+                gap: 1,
+                alignItems: 'center'
+              }}
+            >
+              {/* Time and Type */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  fontWeight="500"
+                  sx={{ minWidth: 'fit-content', fontSize: '0.65rem' }}
+                >
+                  {formatRelativeTime(trade.time)}
+                </Typography>
+                <TradeTypeChip
+                  label={isBuy ? 'BUY' : 'SELL'}
+                  tradetype={isBuy ? 'BUY' : 'SELL'}
+                  size="small"
+                />
+              </Box>
+
+              {/* Price */}
+              <Box sx={{ textAlign: { xs: 'left', md: 'left' } }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                >
+                  Price (XRP)
+                </Typography>
+                <Typography
+                  variant="body2"
+                  fontWeight="600"
+                  color="text.primary"
+                  sx={{ fontSize: '0.7rem' }}
+                >
+                  {formatPrice(price)}
+                </Typography>
+              </Box>
+
+              {/* Amount */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <img
+                  src={getTokenImageUrl(amountData.issuer, amountData.currency)}
+                  alt={decodeCurrency(amountData.currency)}
+                  style={{ width: 14, height: 14, borderRadius: '50%' }}
+                />
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                  >
+                    Amount
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    fontWeight="600"
+                    color="text.primary"
+                    sx={{ fontSize: '0.7rem' }}
+                  >
+                    {formatTradeValue(amountData.value)}{' '}
+                    {decodeCurrency(amountData.currency)}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Total */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <img
+                  src={getTokenImageUrl(totalData.issuer, totalData.currency)}
+                  alt={decodeCurrency(totalData.currency)}
+                  style={{ width: 14, height: 14, borderRadius: '50%' }}
+                />
+                <Box>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                  >
+                    Total
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    fontWeight="600"
+                    color="text.primary"
+                    sx={{ fontSize: '0.7rem' }}
+                  >
+                    {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
+                  </Typography>
+                </Box>
+              </Box>
+
+              {/* Maker/Taker */}
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
+                  <Link
+                    href={`/profile/${addressToShow}`}
+                    sx={{
+                      textDecoration: 'none',
+                      color: 'primary.main',
+                      fontWeight: '500',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                        color: 'primary.dark'
+                      }
+                    }}
+                  >
+                    <Typography
+                      variant="body2"
+                      fontWeight="500"
+                      sx={{ fontSize: '0.65rem', color: 'primary.main' }}
+                    >
+                      {addressToShow
+                        ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
+                        : ''}
+                    </Typography>
+                  </Link>
+                </Tooltip>
+                <SwapHorizIcon
+                  icon={getTradeSizeIcon(xrpAmount)}
+                  width="16"
+                  height="16"
+                  style={{ color: theme.palette.text.secondary }}
+                />
+              </Box>
+
+              {/* Actions */}
+              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <Tooltip title="View Transaction" arrow>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleTxClick(trade.hash)}
+                    sx={{
+                      color: `${theme.palette.primary.main} !important`,
+                      padding: '2px',
+                      '&:hover': {
+                        color: `${theme.palette.primary.dark} !important`,
+                        backgroundColor:
+                          theme.palette.mode === 'dark'
+                            ? 'rgba(255, 255, 255, 0.08)'
+                            : 'rgba(0, 0, 0, 0.04)',
+                        transform: 'scale(1.1)'
+                      },
+                      '& .MuiSvgIcon-root': {
+                        color: `${theme.palette.primary.main} !important`
+                      },
+                      '&:hover .MuiSvgIcon-root': {
+                        color: `${theme.palette.primary.dark} !important`
+                      }
+                    }}
+                  >
+                    <OpenInNewIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
+              </Box>
+            </Box>
+          </CardContent>
+        </TradeCard>
+      );
+    });
+  }, [trades, newTradeIds, amm, calculatePrice, theme, handleTxClick]);
 
 
   if (loading) {
@@ -798,201 +1021,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           </Box>
 
           <Stack spacing={0.3}>
-            {trades.map((trade, index) => {
-              const isBuy = trade.paid.currency === 'XRP';
-              const xrpAmount = getXRPAmount(trade);
-              const price = calculatePrice(trade);
-              const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
-
-              const amountData = isBuy ? trade.got : trade.paid;
-              const totalData = isBuy ? trade.paid : trade.got;
-
-              let addressToShow = trade.maker;
-              if (amm) {
-                if (trade.maker === amm) {
-                  addressToShow = trade.taker;
-                } else if (trade.taker === amm) {
-                  addressToShow = trade.maker;
-                }
-              }
-
-              return (
-                <TradeCard
-                  key={trade._id}
-                  isNew={newTradeIds.has(trade._id)}
-                  tradetype={isBuy ? 'BUY' : 'SELL'}
-                >
-                  <VolumeIndicator volume={volumePercentage} />
-                  <CardContent sx={{ p: 0.75, '&:last-child': { pb: 0.75 } }}>
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                          xs: '1fr 1fr',
-                          sm: '1.2fr 1.2fr 1.8fr',
-                          md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
-                        },
-                        gap: 1,
-                        alignItems: 'center'
-                      }}
-                    >
-                      {/* Time and Type */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          fontWeight="500"
-                          sx={{ minWidth: 'fit-content', fontSize: '0.65rem' }}
-                        >
-                          {formatRelativeTime(trade.time)}
-                        </Typography>
-                        <TradeTypeChip
-                          label={isBuy ? 'BUY' : 'SELL'}
-                          tradetype={isBuy ? 'BUY' : 'SELL'}
-                          size="small"
-                        />
-                      </Box>
-
-                      {/* Price */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'left' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
-                        >
-                          Price (XRP)
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          color="text.primary"
-                          sx={{ fontSize: '0.7rem' }}
-                        >
-                          {formatPrice(price)}
-                        </Typography>
-                      </Box>
-
-                      {/* Amount */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <img
-                          src={getTokenImageUrl(amountData.issuer, amountData.currency)}
-                          alt={decodeCurrency(amountData.currency)}
-                          style={{ width: 14, height: 14, borderRadius: '50%' }}
-                        />
-                        <Box>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
-                          >
-                            Amount
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            fontWeight="600"
-                            color="text.primary"
-                            sx={{ fontSize: '0.7rem' }}
-                          >
-                            {formatTradeValue(amountData.value)}{' '}
-                            {decodeCurrency(amountData.currency)}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Total */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <img
-                          src={getTokenImageUrl(totalData.issuer, totalData.currency)}
-                          alt={decodeCurrency(totalData.currency)}
-                          style={{ width: 14, height: 14, borderRadius: '50%' }}
-                        />
-                        <Box>
-                          <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
-                          >
-                            Total
-                          </Typography>
-                          <Typography
-                            variant="body2"
-                            fontWeight="600"
-                            color="text.primary"
-                            sx={{ fontSize: '0.7rem' }}
-                          >
-                            {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
-                          </Typography>
-                        </Box>
-                      </Box>
-
-                      {/* Maker/Taker */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                        <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
-                          <Link
-                            href={`/profile/${addressToShow}`}
-                            sx={{
-                              textDecoration: 'none',
-                              color: 'primary.main',
-                              fontWeight: '500',
-                              '&:hover': {
-                                textDecoration: 'underline',
-                                color: 'primary.dark'
-                              }
-                            }}
-                          >
-                            <Typography
-                              variant="body2"
-                              fontWeight="500"
-                              sx={{ fontSize: '0.65rem', color: 'primary.main' }}
-                            >
-                              {addressToShow
-                                ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
-                                : ''}
-                            </Typography>
-                          </Link>
-                        </Tooltip>
-                        <SwapHorizIcon
-                          icon={getTradeSizeIcon(xrpAmount)}
-                          width="16"
-                          height="16"
-                          style={{ color: theme.palette.text.secondary }}
-                        />
-                      </Box>
-
-                      {/* Actions */}
-                      <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-                        <Tooltip title="View Transaction" arrow>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleTxClick(trade.hash)}
-                            sx={{
-                              color: `${theme.palette.primary.main} !important`,
-                              padding: '2px',
-                              '&:hover': {
-                                color: `${theme.palette.primary.dark} !important`,
-                                backgroundColor:
-                                  theme.palette.mode === 'dark'
-                                    ? 'rgba(255, 255, 255, 0.08)'
-                                    : 'rgba(0, 0, 0, 0.04)',
-                                transform: 'scale(1.1)'
-                              },
-                              '& .MuiSvgIcon-root': {
-                                color: `${theme.palette.primary.main} !important`
-                              },
-                              '&:hover .MuiSvgIcon-root': {
-                                color: `${theme.palette.primary.dark} !important`
-                              }
-                            }}
-                          >
-                            <OpenInNewIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </TradeCard>
-              );
-            })}
+            {renderedTrades}
           </Stack>
 
           {totalPages > 1 && (
