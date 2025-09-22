@@ -1,4 +1,5 @@
-import React, { useState, useContext, memo, useMemo } from 'react';
+import React, { useState, useContext, memo, useMemo, useEffect, useRef } from 'react';
+import axios from 'axios';
 import {
   IconButton,
   Dialog,
@@ -25,10 +26,11 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Divider,
-  Link,
-  Avatar
+  Avatar,
+  Autocomplete,
+  CircularProgress,
+  ListItemAvatar
 } from '@mui/material';
-import NextLink from 'next/link';
 import { useTheme, alpha } from '@mui/material/styles';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -372,13 +374,18 @@ const NotificationRow = memo(({ notification, onDelete, currentPrice }) => {
               )}
               <Box>
                 {notification.tokenSlug && !notification.isManual ? (
-                  <NextLink href={`/token/${notification.tokenSlug}`} passHref>
-                    <Link sx={{ textDecoration: 'none', color: 'inherit', '&:hover': { color: theme.palette.primary.main } }}>
-                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
-                        {notification.tokenSymbol || notification.tokenName}
-                      </Typography>
-                    </Link>
-                  </NextLink>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '0.8rem',
+                      cursor: 'pointer',
+                      '&:hover': { color: theme.palette.primary.main }
+                    }}
+                    onClick={() => window.open(`/token/${notification.tokenSlug}`, '_blank')}
+                  >
+                    {notification.tokenSymbol || notification.tokenName}
+                  </Typography>
                 ) : (
                   <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
                     {notification.tokenSymbol || notification.tokenName}
@@ -574,16 +581,58 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
 // Add Form Component
 const AddNotificationForm = memo(({ onAdd, onCancel }) => {
   const theme = useTheme();
-  const [tokenSymbol, setTokenSymbol] = useState('');
+  const [selectedToken, setSelectedToken] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [showResults, setShowResults] = useState(false);
   const [targetPrice, setTargetPrice] = useState('');
   const [alertType, setAlertType] = useState('above');
   const [currency, setCurrency] = useState('USD');
   const [error, setError] = useState('');
 
+  // Search tokens
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setShowResults(false);
+      return;
+    }
+
+    const searchTokens = async () => {
+      setLoading(true);
+      try {
+        const response = await axios.post(`${process.env.API_URL}/search`, {
+          search: searchQuery
+        });
+        if (response.data?.tokens) {
+          setSearchResults(response.data.tokens.slice(0, 8));
+          setShowResults(true);
+        }
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchTokens, 300);
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  const handleTokenSelect = (token) => {
+    setSelectedToken(token);
+    setSearchQuery('');
+    setShowResults(false);
+    if (token.exch) {
+      setTargetPrice(token.exch.toString());
+    }
+  };
+
   const handleSubmit = () => {
     setError('');
-    if (!tokenSymbol.trim()) {
-      setError('Please enter a token symbol');
+    if (!selectedToken) {
+      setError('Please select a token');
       return;
     }
     if (!targetPrice || isNaN(targetPrice) || parseFloat(targetPrice) <= 0) {
@@ -592,22 +641,21 @@ const AddNotificationForm = memo(({ onAdd, onCancel }) => {
     }
 
     const newNotification = {
-      id: `notify-manual-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      tokenMd5: `manual-${tokenSymbol.toLowerCase()}-${Date.now()}`,
-      tokenName: tokenSymbol.toUpperCase(),
-      tokenSymbol: tokenSymbol.toUpperCase(),
-      tokenSlug: tokenSymbol.toLowerCase(),
+      id: `notify-search-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      tokenMd5: selectedToken.md5,
+      tokenName: selectedToken.name,
+      tokenSymbol: selectedToken.user,
+      tokenSlug: selectedToken.slug,
       targetPrice: parseFloat(targetPrice),
       alertType,
       currency,
       createdAt: new Date().toISOString(),
-      triggered: false,
-      isManual: true
+      triggered: false
     };
 
     const success = onAdd(newNotification);
     if (success) {
-      setTokenSymbol('');
+      setSelectedToken(null);
       setTargetPrice('');
       setError('');
       onCancel();
@@ -620,14 +668,87 @@ const AddNotificationForm = memo(({ onAdd, onCancel }) => {
     <Box sx={{ p: 2, background: alpha(theme.palette.background.paper, 0.8), borderRadius: '8px', mb: 2 }}>
       <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600 }}>Add Price Alert</Typography>
       <Stack spacing={2}>
-        <TextField
-          label="Token Symbol"
-          value={tokenSymbol}
-          onChange={(e) => setTokenSymbol(e.target.value.toUpperCase())}
-          size="small"
-          placeholder="e.g., XRP, BTC, ETH"
-          fullWidth
-        />
+        {/* Selected Token Display */}
+        {selectedToken && (
+          <Box sx={{ p: 1.5, background: alpha(theme.palette.primary.main, 0.1), borderRadius: '6px', border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}` }}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <Avatar src={`https://s1.xrpl.to/token/${selectedToken.md5}`} sx={{ width: 24, height: 24 }}>
+                {selectedToken.user?.[0]}
+              </Avatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.85rem' }}>
+                  {selectedToken.user}
+                </Typography>
+                <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.75rem' }}>
+                  {selectedToken.name} • Current: ${selectedToken.exch || '0.00'}
+                </Typography>
+              </Box>
+              <IconButton size="small" onClick={() => setSelectedToken(null)}>
+                <CloseIcon sx={{ fontSize: '16px' }} />
+              </IconButton>
+            </Stack>
+          </Box>
+        )}
+
+        {/* Token Search */}
+        {!selectedToken && (
+          <Box sx={{ position: 'relative' }}>
+            <TextField
+              label="Search Token"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              size="small"
+              placeholder="Search for tokens..."
+              fullWidth
+              InputProps={{
+                endAdornment: loading && <CircularProgress size={20} />
+              }}
+            />
+            {showResults && searchResults.length > 0 && (
+              <Box sx={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                zIndex: 1000,
+                background: theme.palette.background.paper,
+                border: `1px solid ${theme.palette.divider}`,
+                borderRadius: '4px',
+                maxHeight: '200px',
+                overflowY: 'auto',
+                boxShadow: theme.shadows[8]
+              }}>
+                {searchResults.map((token, index) => (
+                  <Box
+                    key={index}
+                    onClick={() => handleTokenSelect(token)}
+                    sx={{
+                      p: 1,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      '&:hover': { background: alpha(theme.palette.action.hover, 0.1) }
+                    }}
+                  >
+                    <Avatar src={`https://s1.xrpl.to/token/${token.md5}`} sx={{ width: 20, height: 20 }}>
+                      {token.user?.[0]}
+                    </Avatar>
+                    <Box sx={{ flex: 1 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>{token.user}</Typography>
+                      <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.7rem' }}>
+                        {token.name}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                      ${token.exch || '0.00'}
+                    </Typography>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
+        )}
         <Stack direction="row" spacing={1}>
           <FormControl size="small" sx={{ minWidth: 100 }}>
             <InputLabel>Type</InputLabel>
