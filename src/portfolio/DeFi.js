@@ -113,12 +113,6 @@ const DeFiHistory = ({ account }) => {
       const updatedArray = filteredTransactions.map((item) => {
         // Check SourceTag in tx object
         const sourceTag = item.tx.SourceTag;
-        console.log('Processing transaction:', {
-          type: item.tx.TransactionType,
-          hash: item.tx.hash,
-          sourceTag: sourceTag,
-          fullTx: item.tx
-        });
 
         // Determine source label based on SourceTag
         let sourceLabel;
@@ -192,7 +186,6 @@ const DeFiHistory = ({ account }) => {
 
       for (let i = 0; i < updatedArray.length; i++) {
         const eachTransaction = updatedArray[i];
-        console.log('Processed Transaction:', eachTransaction);
         if (typeof eachTransaction.Destination === 'undefined') {
           eachTransaction.Destination = 'XRPL';
         }

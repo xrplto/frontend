@@ -258,11 +258,6 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
   const isDark = theme.palette.mode === 'dark';
 
   useEffect(() => {
-    console.log('LightweightChart received data:', {
-      hasData: !!chartData,
-      seriesCount: chartData?.series?.length,
-      firstSeriesLength: chartData?.series?.[0]?.data?.length
-    });
 
     if (
       !chartContainerRef.current ||
@@ -270,7 +265,6 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
       !chartData.series ||
       chartData.series.length === 0
     ) {
-      console.log('LightweightChart: No data to render');
       return;
     }
 
@@ -279,7 +273,6 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
       await loadChartLibraries();
 
       if (!createChart) {
-        console.error('Chart library failed to load');
         return;
       }
 
@@ -293,7 +286,7 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
         try {
           chartRef.current.remove();
         } catch (e) {
-          console.error('Error removing chart:', e);
+          // Error removing chart
         }
         chartRef.current = null;
       }
@@ -344,18 +337,9 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
       // Add series
       const seriesRefs = [];
       chartData.series.forEach((serie, index) => {
-        console.log(
-          `Adding series ${index}:`,
-          serie.name,
-          serie.type,
-          'with',
-          serie.data.length,
-          'points'
-        );
 
         let series;
         if (serie.type === 'column') {
-          console.log(`Creating histogram series for ${serie.name}`);
           series = chart.addSeries(HistogramSeries, {
             color: index === 0 ? theme.palette.primary.main : alpha(theme.palette.info.main, 0.6),
             priceFormat: {
@@ -365,7 +349,6 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
             }
           });
         } else {
-          console.log(`Creating line series for ${serie.name}`);
           series = chart.addSeries(LineSeries, {
             color: index === 0 ? theme.palette.primary.main : theme.palette.success.main,
             lineWidth: 2,
@@ -389,7 +372,6 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
 
             // Validate timestamp
             if (isNaN(timestamp) || !isFinite(timestamp)) {
-              console.warn('Invalid timestamp for:', dateStr);
               return null;
             }
             return {
@@ -404,7 +386,6 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
             return index === 0 || item.time !== array[index - 1].time;
           });
 
-        console.log(`Series ${index} processed data points:`, data.length);
 
         if (data.length > 0) {
           series.setData(data);
@@ -536,7 +517,6 @@ export default function Portfolio({ account, limit, collection, type }) {
         // Set AMM status based on response
         setIsAmm(!!response.data?.AMM);
       } catch (error) {
-        console.warn('Error fetching trader stats:', error.message || error);
         // Set empty data on error - prevent runtime crashes
         setTraderStats({});
         setIsAmm(false);
@@ -569,7 +549,6 @@ export default function Portfolio({ account, limit, collection, type }) {
           setXrpBalance(0);
         }
       } catch (error) {
-        console.warn('Error fetching XRP balance:', error.message || error);
         setXrpBalance(0);
       } finally {
         setLoadingBalance(false);
@@ -588,11 +567,6 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   // Process ROI history data for the chart
   const processChartData = () => {
-    console.log('Processing ROI chart data:', {
-      hasTraderStats: !!traderStats,
-      hasRoiHistory: !!traderStats?.roiHistory,
-      roiHistoryLength: traderStats?.roiHistory?.length || 0
-    });
 
     if (!traderStats?.roiHistory || traderStats.roiHistory.length === 0) {
       return null;
@@ -632,22 +606,12 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
-    console.log('ROI Chart data processed:', {
-      seriesCount: chartData.series.length,
-      dataPoints: chartData.series[0]?.data?.length || 0,
-      categories: chartData.xaxis.categories.length
-    });
 
     return chartData;
   };
 
   // Process trade history data for the chart
   const processTradeHistoryData = () => {
-    console.log('Processing Trade History:', {
-      hasTraderStats: !!traderStats,
-      hasTradeHistory: !!traderStats?.tradeHistory,
-      tradeHistoryLength: traderStats?.tradeHistory?.length || 0
-    });
 
     if (!traderStats?.tradeHistory || traderStats.tradeHistory.length === 0) {
       return null;
@@ -683,20 +647,11 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
-    console.log('Trade History Chart data:', {
-      seriesCount: chartData.series.length,
-      dataPoints: chartData.series[0]?.data?.length || 0
-    });
 
     return chartData;
   };
 
   const processVolumeHistoryData = () => {
-    console.log('Processing Volume History:', {
-      hasTraderStats: !!traderStats,
-      hasVolumeHistory: !!traderStats?.volumeHistory,
-      volumeHistoryLength: traderStats?.volumeHistory?.length || 0
-    });
 
     if (!traderStats?.volumeHistory || traderStats.volumeHistory.length === 0) {
       return null;
@@ -716,7 +671,6 @@ export default function Portfolio({ account, limit, collection, type }) {
           type: 'column',
           data: recentHistory.map((item) => {
             const volume = item.h24Volume || 0;
-            console.log('Mapping volume:', item.date, volume);
             return volume;
           })
         },
@@ -736,12 +690,6 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
-    console.log('Volume History Chart data:', {
-      seriesCount: chartData.series.length,
-      dataPoints: chartData.series[0]?.data?.length || 0,
-      firstVolume: chartData.series[0]?.data?.[0],
-      lastVolume: chartData.series[0]?.data?.[chartData.series[0]?.data?.length - 1]
-    });
 
     return chartData;
   };
@@ -1646,7 +1594,6 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     } catch (error) {
       // Silently handle the error - NFT collections are optional
-      console.warn('Could not fetch NFT collections:', error.message);
       setCollections([]);
       setTotalValue(0);
     } finally {
@@ -1669,7 +1616,6 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   const renderChart = (chartData, options, type = 'line') => {
-    console.log('renderChart called with chartView:', chartView);
 
     // Need to get the original date data for proper timestamps
     let dateSource;
@@ -1689,13 +1635,6 @@ export default function Portfolio({ account, limit, collection, type }) {
       dateSource = sortedHistory;
     }
 
-    console.log('Date source:', {
-      chartView,
-      dateSourceLength: dateSource?.length,
-      firstDate: dateSource?.[0]?.date,
-      lastDate: dateSource?.[dateSource?.length - 1]?.date,
-      chartDataCategories: chartData.xaxis.categories.length
-    });
 
     // Convert chartData format to LightweightChart component format with proper dates
     const data = chartData.xaxis.categories.map((dateStr, index) => {
@@ -1703,11 +1642,7 @@ export default function Portfolio({ account, limit, collection, type }) {
       // Use the actual date from source data for proper timestamp
       if (dateSource && dateSource[index]) {
         item.date = dateSource[index].date;
-        console.log(
-          `Index ${index}: Using source date ${dateSource[index].date} for category "${dateStr}"`
-        );
       } else {
-        console.warn(`Index ${index}: No source date for category "${dateStr}", using fallback`);
 
         // Fallback: try to parse the formatted date string
         // For dates without year, we need to determine the correct year based on context
@@ -1768,17 +1703,6 @@ export default function Portfolio({ account, limit, collection, type }) {
         return value.toLocaleString();
       }
     }));
-
-    console.log('Converting chart data for LightweightChart:', {
-      chartView,
-      originalSeries: chartData.series.length,
-      convertedSeries: series.length,
-      dataPoints: data.length,
-      firstDate: data[0]?.date,
-      lastDate: data[data.length - 1]?.date,
-      sampleDataPoint: data[0],
-      seriesConfig: series
-    });
 
     return <LightweightChart data={data} series={series} height={isMobile ? 300 : 400} />;
   };

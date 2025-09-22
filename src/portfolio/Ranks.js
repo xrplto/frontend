@@ -99,7 +99,6 @@ const Ranks = ({ profileAccount }) => {
         });
 
         const result = res.data;
-        console.log('Response from /api/get-purchased-ranks:', result);
         const activePurchases = result.chatFeatures.filter((feature) => feature.status === true);
         setPurchased(activePurchases);
         setActiveRank(result.activeRank);

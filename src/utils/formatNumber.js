@@ -7,7 +7,6 @@ function formatDecimal(decimal, decimalPlaces = null) {
 }
 
 export function fNumber(num, flag = false) {
-  //console.log('fNumber... ', num);
   if (!num) return 0;
 
   const strNum = num.toString().trim();
@@ -43,15 +42,10 @@ export function fNumberWithCurreny(num, exchRate) {
 // TODO: Make round, not trim
 const trimDecimal = (num, threshold = 4) => {
   // former f, fp
-  //console.log('trimDecimal-ninit', num, typeof num, isNaN(num));
   num = typeof num === 'string' ? num : num.toString();
-  //console.log('trimDecimal-string', num, typeof num);
   num = num.includes('e') ? new Decimal(num).toFixed() : num;
-  //console.log('trimDecimal', num, typeof num);
   let match = num.match(new RegExp(`^[^.]+\.[0]*[1-9][0-9]{${threshold - 1}}`)); // TODO: Make round, not trim
-  //console.log('match', match);
   let ret = match ? match[0] : num;
-  //console.log('trimDecimal--', ret);
   return ret;
 };
 
