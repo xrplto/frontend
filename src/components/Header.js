@@ -44,7 +44,7 @@ import SidebarDrawer from './SidebarDrawer';
 const WalletConnectModal = lazy(() => import('./WalletConnectModal'));
 const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
-import GlobalNotificationButton from 'src/components/GlobalNotificationButton';
+import { GlobalNotificationButton } from 'src/components/PriceNotifications';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 
 // Iconify

@@ -23,7 +23,7 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import { PinChartButton, usePinnedCharts } from 'src/components/PinnedChartTracker';
-import ChartNotificationButton from 'src/components/ChartNotificationButton';
+import { ChartNotificationButton } from 'src/components/PriceNotifications';
 import { throttle } from 'src/utils/lodashLite';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
