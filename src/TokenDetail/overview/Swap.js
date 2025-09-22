@@ -1013,24 +1013,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           TakerGets = {
             currency: curr1.currency,
             issuer: curr1.issuer,
-            value: amount1.toString()
+            value: new Decimal(amount1).toFixed(6)
           };
           TakerPays = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: limitAmount2.toString()
+            value: new Decimal(limitAmount2).toFixed(6)
           };
         } else {
           // Selling curr1 to get curr2
           TakerGets = {
             currency: curr2.currency,
             issuer: curr2.issuer,
-            value: limitAmount2.toString()
+            value: new Decimal(limitAmount2).toFixed(6)
           };
           TakerPays = {
             currency: curr1.currency,
             issuer: curr1.issuer,
-            value: amount1.toString()
+            value: new Decimal(amount1).toFixed(6)
           };
         }
 
@@ -1076,14 +1076,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         SendMax = {
           currency: curr1.currency,
           issuer: curr1.issuer,
-          value: amount1.toString()
+          value: new Decimal(amount1).toFixed(6)
         };
 
         // Amount is what we want to receive (curr2)
         Amount = {
           currency: curr2.currency,
           issuer: curr2.issuer,
-          value: amount2.toString()
+          value: new Decimal(amount2).toFixed(6)
         };
 
         // Convert XRP amounts to drops
