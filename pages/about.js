@@ -7,6 +7,14 @@ import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
+import {
+  ShowChart,
+  SwapHoriz,
+  Palette,
+  TrendingUp,
+  Api,
+  FlashOn
+} from '@mui/icons-material';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -16,168 +24,265 @@ const PageWrapper = styled.div`
 `;
 
 const Container = styled.div`
-  max-width: 1536px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
   width: 100%;
 `;
 
-const PageHeader = styled.div`
+// Hero Section
+const HeroSection = styled.div`
   text-align: center;
-  margin: 48px 0;
+  padding: 80px 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, ${props => props.theme?.palette?.primary?.main}10 0%, transparent 70%);
+    animation: pulse 20s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1) rotate(0deg); }
+    50% { transform: scale(1.1) rotate(180deg); }
+  }
 `;
 
-const PageTitle = styled.h1`
-  margin-bottom: 16px;
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(45deg, #147DFE, #2196F3);
-  background-clip: text;
+const HeroTitle = styled.h1`
+  font-size: 3.5rem;
+  font-weight: 800;
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 1;
+  background: linear-gradient(135deg, #147DFE 0%, #00D4FF 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  @media (min-width: 768px) {
-    font-size: 3.5rem;
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
   }
 `;
 
-const PageSubtitle = styled.h5`
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.6)'
-      : 'rgba(0, 0, 0, 0.6)'};
-  max-width: 600px;
-  margin: 0 auto;
+const HeroSubtitle = styled.p`
   font-size: 1.25rem;
-  font-weight: 400;
-  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.secondary};
+  max-width: 600px;
+  margin: 0 auto 48px;
+  position: relative;
+  z-index: 1;
 `;
 
-const GridContainer = styled.div`
+// Stats Row
+const StatsRow = styled.div`
   display: grid;
-  gap: 32px;
-  margin-bottom: 48px;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 24px;
+  margin-bottom: 80px;
+  position: relative;
+  z-index: 1;
 `;
 
-const TwoColumnGrid = styled.div`
-  display: grid;
-  gap: 32px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-`;
-
-const ThreeColumnGrid = styled.div`
-  display: grid;
-  gap: 32px;
-
-  @media (min-width: 768px) {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  @media (min-width: 1024px) {
-    grid-template-columns: 1fr 1fr 1fr;
-  }
-`;
-
-const Card = styled.div`
-  background: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.02)'
-      : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.05)'};
-  border-radius: 12px;
-  padding: 32px;
-  height: 100%;
+const StatCard = styled.div`
+  text-align: center;
+  padding: 24px;
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border-radius: 16px;
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.05)'};
   backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+`;
+
+const StatNumber = styled.h2`
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 8px;
+`;
+
+const StatLabel = styled.p`
+  font-size: 0.9rem;
+  color: ${props => props.theme?.palette?.text?.secondary};
+  text-transform: uppercase;
+  letter-spacing: 1px;
+`;
+
+// Features Section
+const FeaturesSection = styled.div`
+  margin: 80px 0;
+`;
+
+const SectionTitle = styled.h2`
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 48px;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const FeatureGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 32px;
+  margin-bottom: 80px;
+`;
+
+const FeatureCard = styled.div`
+  position: relative;
+  padding: 40px 32px;
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
+    : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.01) 100%)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.06)'
+    : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 24px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: ${props => props.gradient || 'linear-gradient(90deg, #147DFE, #00D4FF)'};
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
 
   &:hover {
-    background: ${(props) =>
-      props.theme?.palette?.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${(props) =>
-      props.theme?.palette?.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.08)'
-        : 'rgba(0, 0, 0, 0.08)'};
+    transform: translateY(-4px);
+    border-color: ${props => props.theme?.palette?.primary?.main}30;
+
+    &::before {
+      transform: scaleX(1);
+    }
   }
 `;
 
-const CardTitle = styled.h4`
-  font-weight: 600;
-  margin-bottom: 16px;
-  color: ${(props) => props.color || '#1976d2'};
-  font-size: 1.5rem;
-  line-height: 1.334;
-`;
-
-const BodyText = styled.p`
-  line-height: 1.7;
-  font-size: 1.05rem;
-  margin: 0;
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.7)'
-      : 'rgba(0, 0, 0, 0.6)'};
-`;
-
-const TimelineContainer = styled.div`
+const FeatureIcon = styled.div`
+  width: 56px;
+  height: 56px;
+  margin-bottom: 24px;
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-top: 16px;
+  align-items: center;
+  justify-content: center;
+  background: ${props => props.gradient || 'linear-gradient(135deg, #147DFE, #00D4FF)'};
+  border-radius: 16px;
+  color: white;
+
+  .MuiSvgIcon-root {
+    font-size: 28px;
+  }
+`;
+
+const FeatureTitle = styled.h3`
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const FeatureText = styled.p`
+  font-size: 1rem;
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.secondary};
+`;
+
+// Timeline Section
+const TimelineSection = styled.div`
+  margin: 80px 0;
+  position: relative;
+`;
+
+const Timeline = styled.div`
+  position: relative;
+  max-width: 800px;
+  margin: 0 auto;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.1)'
+      : 'rgba(0, 0, 0, 0.1)'};
+    transform: translateX(-50%);
+
+    @media (max-width: 768px) {
+      left: 20px;
+    }
+  }
 `;
 
 const TimelineItem = styled.div`
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 0.9rem;
+  justify-content: ${props => props.align === 'right' ? 'flex-start' : 'flex-end'};
+  padding: 20px 0;
+  position: relative;
+
+  @media (max-width: 768px) {
+    justify-content: flex-start;
+    padding-left: 50px;
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 30px;
+    width: 12px;
+    height: 12px;
+    background: ${props => props.theme?.palette?.primary?.main};
+    border-radius: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+
+    @media (max-width: 768px) {
+      left: 20px;
+    }
+  }
+`;
+
+const TimelineContent = styled.div`
+  width: 45%;
+  padding: 20px;
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.03)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.06)'
+    : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+  }
 `;
 
 const TimelineDate = styled.div`
-  min-width: 100px;
-  padding: 2px 8px;
-  background: rgba(0, 204, 136, 0.1);
-  border-radius: 4px;
-  color: #00cc88;
+  font-size: 0.875rem;
   font-weight: 600;
-  font-size: 0.75rem;
-  text-align: center;
-  white-space: nowrap;
-
-  @media (prefers-color-scheme: dark) {
-    background: rgba(0, 204, 136, 0.15);
-  }
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 8px;
 `;
 
-const TimelineEvent = styled.div`
-  flex: 1;
-  line-height: 1.4;
-  font-size: 0.85rem;
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.7)'
-      : 'rgba(0, 0, 0, 0.6)'};
-`;
-
-const StyledLink = styled.a`
-  color: #1976d2;
-  text-decoration: none;
-
-  &:hover {
-    text-decoration: underline;
-  }
-`;
-
-const InlineSpan = styled.span`
-  color: #1976d2;
-  font-weight: 600;
+const TimelineText = styled.div`
+  font-size: 1rem;
+  color: ${props => props.theme?.palette?.text?.secondary};
 `;
 
 // FAQ Components
@@ -388,15 +493,21 @@ function AboutPage() {
     }
   ], []);
 
+  const features = [
+    { icon: ShowChart, title: 'Live Price Tracking', text: 'Real-time prices for 19,000+ tokens with advanced charts and analytics', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
+    { icon: SwapHoriz, title: 'DEX Trading', text: 'Trade directly on XRPL DEX with professional tools and order books', gradient: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+    { icon: Palette, title: 'NFT Marketplace', text: 'Explore and trade NFT collections with detailed ownership history', gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
+    { icon: TrendingUp, title: 'Portfolio Tracker', text: 'Monitor your holdings and track performance across all assets', gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
+    { icon: Api, title: 'API Access', text: 'Developer-friendly APIs for seamless integration and data access', gradient: 'linear-gradient(135deg, #fa709a, #fee140)' },
+    { icon: FlashOn, title: 'Lightning Fast', text: '3-5 second transactions with minimal fees on XRP Ledger', gradient: 'linear-gradient(135deg, #30cfd0, #330867)' }
+  ];
+
   const timelineData = [
     { date: 'Nov 2021', event: 'XRPL.to Launches' },
-    { date: 'Dec 2021', event: 'Reached 55,000 monthly page views' },
-    { date: 'Jul 2022', event: 'XRPL Grants Wave 3 Recipient' },
-    { date: 'Aug 2022', event: 'On-Ramp Fiat Integration' },
-    { date: 'Oct 2022', event: 'Weighted market cap for low liquidity tokens' },
-    { date: 'Feb 2023', event: 'Full XRPL History Implemented' },
-    { date: 'Apr 2023', event: 'Public API Documentation Released' },
-    { date: 'Aug 2025', event: 'Reached 40,000 unique monthly users' }
+    { date: 'Jul 2022', event: 'XRPL Grants Wave 3' },
+    { date: 'Feb 2023', event: 'Full XRPL History' },
+    { date: 'Apr 2023', event: 'Public API Released' },
+    { date: 'Aug 2025', event: '40,000 Monthly Users' }
   ];
 
   return (
@@ -405,113 +516,66 @@ function AboutPage() {
       <Header />
 
       <Container>
-        <PageHeader>
-          <PageTitle>About xrpl.to</PageTitle>
-          <PageSubtitle theme={theme}>
-            The largest price-tracking onchain app for tokenized assets on the XRPL ecosystem
-          </PageSubtitle>
-        </PageHeader>
+        {/* Hero Section */}
+        <HeroSection theme={theme}>
+          <HeroTitle>XRPL.to</HeroTitle>
+          <HeroSubtitle theme={theme}>
+            The premier analytics platform for the XRP Ledger ecosystem
+          </HeroSubtitle>
 
-        <GridContainer>
-          <ThreeColumnGrid>
-            {/* Mission Statement Card */}
-            <Card theme={theme}>
-              <CardTitle color="#1976d2">Our Mission</CardTitle>
-              <BodyText theme={theme}>
-                At XRPL.to, we make XRPL tokens discoverable and efficient globally by empowering
-                retail users with unbiased, high-quality, and accurate information. We strive to
-                provide all relevant and current information on XRPL tokens, currencies, and assets
-                in a single, easy-to-find location.
-              </BodyText>
-            </Card>
+          <StatsRow>
+            <StatCard theme={theme}>
+              <StatNumber theme={theme}>19,000+</StatNumber>
+              <StatLabel theme={theme}>Tokens Tracked</StatLabel>
+            </StatCard>
+            <StatCard theme={theme}>
+              <StatNumber theme={theme}>40,000+</StatNumber>
+              <StatLabel theme={theme}>Monthly Users</StatLabel>
+            </StatCard>
+            <StatCard theme={theme}>
+              <StatNumber theme={theme}>8M+</StatNumber>
+              <StatLabel theme={theme}>API Queries</StatLabel>
+            </StatCard>
+            <StatCard theme={theme}>
+              <StatNumber theme={theme}>3-5 sec</StatNumber>
+              <StatLabel theme={theme}>Transaction Speed</StatLabel>
+            </StatCard>
+          </StatsRow>
+        </HeroSection>
 
-            {/* Company Info Card */}
-            <Card theme={theme}>
-              <CardTitle color="#9c27b0">Our Story</CardTitle>
-              <BodyText theme={theme}>
-                Founded in November 2021 by NFT Labs, XRPL.to provides up-to-date XRPL token prices,
-                charts, and data for emerging XRPL DEX markets. Our efforts have been recognized by
-                Bloomberg, New York Times, and Digital Trends.
-              </BodyText>
-            </Card>
+        {/* Features Section */}
+        <FeaturesSection>
+          <SectionTitle theme={theme}>Platform Features</SectionTitle>
+          <FeatureGrid>
+            {features.map((feature, index) => {
+              const IconComponent = feature.icon;
+              return (
+                <FeatureCard key={index} theme={theme} gradient={feature.gradient}>
+                  <FeatureIcon gradient={feature.gradient}>
+                    <IconComponent />
+                  </FeatureIcon>
+                  <FeatureTitle theme={theme}>{feature.title}</FeatureTitle>
+                  <FeatureText theme={theme}>{feature.text}</FeatureText>
+                </FeatureCard>
+              );
+            })}
+          </FeatureGrid>
+        </FeaturesSection>
 
-            {/* Timeline Section */}
-            <Card theme={theme}>
-              <CardTitle color="#00cc88">Our Journey</CardTitle>
-              <TimelineContainer>
-                {timelineData.map((item) => (
-                  <TimelineItem key={item.date}>
-                    <TimelineDate>{item.date}</TimelineDate>
-                    <TimelineEvent theme={theme}>{item.event}</TimelineEvent>
-                  </TimelineItem>
-                ))}
-              </TimelineContainer>
-            </Card>
-          </ThreeColumnGrid>
-
-          {/* Platform Features Row */}
-          <ThreeColumnGrid>
-            {/* Market Insights Card */}
-            <Card theme={theme}>
-              <CardTitle color="#ff6b6b">Market Insights</CardTitle>
-              <BodyText theme={theme}>
-                We aggregate real-time data from the XRP Ledger DEX, providing comprehensive market
-                insights for over 9,750 tokens. Our platform offers interactive charts, historical
-                data analysis, and transparent price calculations sourced directly from on-chain
-                data.
-              </BodyText>
-            </Card>
-
-            {/* Trading Tools Card */}
-            <Card theme={theme}>
-              <CardTitle color="#4ecdc4">Trading & Portfolio</CardTitle>
-              <BodyText theme={theme}>
-                Advanced trading tools including real-time order books, direct DEX trading, and
-                portfolio tracking. Monitor your holdings, execute trades, and manage your digital
-                assets with professional-grade tools designed for traders at every level of
-                expertise.
-              </BodyText>
-            </Card>
-
-            {/* NFT Marketplace Card */}
-            <Card theme={theme}>
-              <CardTitle color="#ffe66d">NFT Marketplace</CardTitle>
-              <BodyText theme={theme}>
-                Explore, buy, and sell NFTs directly on the XRP Ledger. Browse collections, view
-                ownership history, and participate in the growing XRPL NFT ecosystem with detailed
-                analytics and seamless trading experiences for digital collectibles.
-              </BodyText>
-            </Card>
-          </ThreeColumnGrid>
-
-          {/* Community Row */}
-          <TwoColumnGrid>
-            {/* How It Works Card */}
-            <Card theme={theme}>
-              <CardTitle color="#1976d2">How XRPL.to Works</CardTitle>
-              <BodyText theme={theme}>
-                Our platform connects directly to the XRP Ledger, processing real-time data from
-                every new ledger. Token prices are calculated using actual DEX trading data,
-                ensuring accuracy and transparency. We automatically list all tokens on the ledger,
-                providing comprehensive coverage of the ecosystem. Developers can access our data
-                through our <StyledLink href="/api-docs">comprehensive API</StyledLink> for
-                integration into their applications.
-              </BodyText>
-            </Card>
-
-            {/* Get Involved Card */}
-            <Card theme={theme}>
-              <CardTitle color="#9c27b0">Get Involved</CardTitle>
-              <BodyText theme={theme}>
-                Join millions of users tracking XRPL tokens with us. Connect through our social
-                channels on Twitter, Telegram, Facebook, and Instagram. For token listing inquiries,
-                refer to our listing policy and FAQ. Business partnerships and advertising
-                opportunities are available - contact us at <InlineSpan>hello@xrpl.to</InlineSpan>.
-                Check our careers page for open positions.
-              </BodyText>
-            </Card>
-          </TwoColumnGrid>
-        </GridContainer>
+        {/* Timeline Section */}
+        <TimelineSection>
+          <SectionTitle theme={theme}>Our Journey</SectionTitle>
+          <Timeline theme={theme}>
+            {timelineData.map((item, index) => (
+              <TimelineItem key={index} align={index % 2 === 0 ? 'left' : 'right'} theme={theme}>
+                <TimelineContent theme={theme}>
+                  <TimelineDate theme={theme}>{item.date}</TimelineDate>
+                  <TimelineText theme={theme}>{item.event}</TimelineText>
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        </TimelineSection>
 
         {/* FAQ Section */}
         <FaqSection theme={theme}>
