@@ -24,8 +24,10 @@ import {
   ListItem,
   ListItemText,
   ListItemSecondaryAction,
-  Divider
+  Divider,
+  Link
 } from '@mui/material';
+import NextLink from 'next/link';
 import { useTheme, alpha } from '@mui/material/styles';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
@@ -130,6 +132,7 @@ export const ChartNotificationButton = ({ token, currentPrice }) => {
       tokenMd5: token.md5,
       tokenName: token.name,
       tokenSymbol: token.symbol || token.code,
+      tokenSlug: token.slug,
       targetPrice: price,
       alertType,
       currency: activeFiatCurrency,
@@ -351,9 +354,19 @@ const NotificationRow = memo(({ notification, onDelete, currentPrice }) => {
                 )}
               </Box>
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
-                  {notification.tokenSymbol || notification.tokenName}
-                </Typography>
+                {notification.tokenSlug && !notification.isManual ? (
+                  <NextLink href={`/token/${notification.tokenSlug}`} passHref>
+                    <Link sx={{ textDecoration: 'none', color: 'inherit', '&:hover': { color: theme.palette.primary.main } }}>
+                      <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                        {notification.tokenSymbol || notification.tokenName}
+                      </Typography>
+                    </Link>
+                  </NextLink>
+                ) : (
+                  <Typography variant="body2" sx={{ fontWeight: 600, fontSize: '0.8rem' }}>
+                    {notification.tokenSymbol || notification.tokenName}
+                  </Typography>
+                )}
                 <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem' }}>
                   {notification.alertType === 'above' ? 'Above' : 'Below'} {formatPrice(notification.targetPrice, notification.currency)}
                 </Typography>
@@ -438,7 +451,7 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
   React.useEffect(() => {
     const fetchCurrentPrices = async () => {
       if (notifications.length === 0) return;
-      const uniqueTokens = [...new Set(notifications.map(n => n.tokenMd5))];
+      const uniqueTokens = [...new Set(notifications.map(n => n.tokenMd5).filter(md5 => !md5.startsWith('manual-')))];
       const prices = {};
 
       for (const tokenMd5 of uniqueTokens) {
@@ -450,7 +463,7 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
               const data = await response.json();
               if (data.ohlc && data.ohlc.length > 0) {
                 const latestCandle = data.ohlc[data.ohlc.length - 1];
-                prices[notification.tokenSymbol] = parseFloat(latestCandle[4]);
+                prices[tokenMd5] = parseFloat(latestCandle[4]);
               }
             }
           }
@@ -529,7 +542,7 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
                   key={notification.id}
                   notification={notification}
                   onDelete={removeNotification}
-                  currentPrice={currentPrices[notification.tokenSymbol]}
+                  currentPrice={currentPrices[notification.tokenMd5]}
                 />
               ))}
             </Stack>
@@ -565,6 +578,7 @@ const AddNotificationForm = memo(({ onAdd, onCancel }) => {
       tokenMd5: `manual-${tokenSymbol.toLowerCase()}-${Date.now()}`,
       tokenName: tokenSymbol.toUpperCase(),
       tokenSymbol: tokenSymbol.toUpperCase(),
+      tokenSlug: tokenSymbol.toLowerCase(),
       targetPrice: parseFloat(targetPrice),
       alertType,
       currency,
