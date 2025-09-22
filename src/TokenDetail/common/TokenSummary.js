@@ -981,6 +981,7 @@ const TokenSummary = memo(
                   alt={`${name} token`}
                   width={isMobile ? 42 : 64}
                   height={isMobile ? 42 : 64}
+                  priority={true}
                   style={{
                     borderRadius: isMobile ? '10px' : '16px',
                     objectFit: 'cover',
