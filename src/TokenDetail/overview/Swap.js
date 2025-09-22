@@ -1689,7 +1689,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         color="primary"
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       >
-                        {accountPairBalance?.curr1.value}
+{accountPairBalance?.curr1.value
+                          ? new Decimal(accountPairBalance.curr1.value).toFixed(6).replace(/\.?0+$/, '')
+                          : '0'}
                       </Typography>
                     </Typography>
                     <Stack direction="row" spacing={0.25}>
@@ -1805,7 +1807,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         color="primary"
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       >
-                        {accountPairBalance?.curr2.value}
+{accountPairBalance?.curr2.value
+                          ? new Decimal(accountPairBalance.curr2.value).toFixed(6).replace(/\.?0+$/, '')
+                          : '0'}
                       </Typography>
                     </Typography>
                   </Stack>
