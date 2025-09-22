@@ -761,7 +761,7 @@ export default function TopTraders() {
         {loading ? (
           <Box>
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} variant="rectangular" height={60} sx={{ mb: 1, borderRadius: '8px' }} />
+              <Skeleton key={`top-traders-skeleton-${i}`} variant="rectangular" height={60} sx={{ mb: 1, borderRadius: '8px' }} />
             ))}
           </Box>
         ) : error ? (

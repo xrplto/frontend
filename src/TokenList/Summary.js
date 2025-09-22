@@ -471,7 +471,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             </div>
             {tooltip.data.tokensInvolved.slice(0, 3).map((token, i) => (
               <div
-                key={i}
+                key={`tooltip-token-${i}-${token.md5 || token.name}`}
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -769,7 +769,7 @@ export default function Summary() {
           <div style={{ width: '100%', paddingBottom: '0' }}>
             <Grid cols={8} mdCols={4} smCols={3}>
               {[...Array(7)].map((_, i) => (
-                <MetricBox key={i}>
+                <MetricBox key={`summary-skeleton-${i}`}>
                   <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
                   <Skeleton height="20px" width="80%" />
                 </MetricBox>

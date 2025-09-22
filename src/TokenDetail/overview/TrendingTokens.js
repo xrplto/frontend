@@ -198,7 +198,7 @@ const TrendingTokens = () => {
       <StyledCard elevation={0} sx={{ p: 2 }}>
         <Stack spacing={1}>
           {[...Array(5)].map((_, i) => (
-            <Skeleton key={i} variant="rounded" height={72} />
+            <Skeleton key={`trending-skeleton-${i}`} variant="rounded" height={72} />
           ))}
         </Stack>
       </StyledCard>
@@ -296,7 +296,7 @@ const TrendingTokens = () => {
           const isPositive = priceChange >= 0;
 
           return (
-            <Link key={token.id} href={`/token/${token.slug}`} underline="none" color="inherit">
+            <Link key={token.md5 || token.slug || `trending-${index}`} href={`/token/${token.slug}`} underline="none" color="inherit">
               <TokenCard>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
                   {/* Rank */}

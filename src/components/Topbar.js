@@ -1273,7 +1273,7 @@ const Topbar = () => {
                 </Typography>
                 <Box style={{ marginTop: '16px' }}>
                   {[...Array(5)].map((_, i) => (
-                    <Box key={i} style={{ marginBottom: '8px' }}>
+                    <Box key={`topbar-skeleton-${i}`} style={{ marginBottom: '8px' }}>
                       <SkeletonLoader style={{ height: '60px', borderRadius: '8px' }} />
                     </Box>
                   ))}

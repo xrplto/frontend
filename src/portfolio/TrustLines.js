@@ -1060,7 +1060,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     for (let i = start; i < end; i++) {
                       pages.push(
                         <Button
-                          key={i}
+                          key={`trustlines-page-${i}`}
                           size="small"
                           variant={currentPage === i ? 'contained' : 'text'}
                           onClick={() => handlePageChange(i)}

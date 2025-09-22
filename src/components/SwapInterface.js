@@ -2691,7 +2691,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             {loadingTokens ? (
               <Grid container spacing={1}>
                 {[...Array(8)].map((_, i) => (
-                  <Grid item xs={6} sm={4} md={3} key={i}>
+                  <Grid item xs={6} sm={4} md={3} key={`swap-skeleton-${i}`}>
                     <Paper sx={{ p: 1, borderRadius: 1 }}>
                       <Stack direction="row" spacing={1} alignItems="center">
                         <Skeleton variant="circular" width={32} height={32} />
