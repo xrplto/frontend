@@ -239,13 +239,220 @@ class TokenListPerformance {
   }
 }
 
+// TokenDetail specific performance tracking
+class TokenDetailPerformance {
+  constructor() {
+    this.componentMetrics = {};
+    this.chartRenders = [];
+    this.wsUpdates = [];
+    this.apiCalls = [];
+    this.tabSwitches = [];
+    this.heavyOperations = [];
+  }
+
+  // Track component-specific renders
+  trackComponentRender(componentName, duration) {
+    if (!this.componentMetrics[componentName]) {
+      this.componentMetrics[componentName] = {
+        renders: 0,
+        totalTime: 0,
+        avgTime: 0,
+        maxTime: 0,
+        slowRenders: 0
+      };
+    }
+
+    const metric = this.componentMetrics[componentName];
+    metric.renders++;
+    metric.totalTime += duration;
+    metric.avgTime = metric.totalTime / metric.renders;
+    metric.maxTime = Math.max(metric.maxTime, duration);
+
+    if (duration > 16) { // Slow render threshold
+      metric.slowRenders++;
+      console.warn(`TokenDetail: Slow render in ${componentName}: ${duration.toFixed(2)}ms`);
+    }
+  }
+
+  // Track chart rendering performance
+  trackChartRender(chartType, dataPoints, duration) {
+    const chartData = {
+      type: chartType,
+      dataPoints,
+      duration,
+      timestamp: Date.now()
+    };
+
+    this.chartRenders.push(chartData);
+
+    // Keep last 30 chart renders
+    if (this.chartRenders.length > 30) {
+      this.chartRenders.shift();
+    }
+
+    // Alert for slow chart renders
+    if (duration > 100) {
+      console.warn(`TokenDetail: Slow chart render (${chartType}): ${duration.toFixed(2)}ms with ${dataPoints} points`);
+    }
+  }
+
+  // Track WebSocket updates
+  trackWSUpdate(updateType, processingTime) {
+    const update = {
+      type: updateType,
+      processingTime,
+      timestamp: Date.now()
+    };
+
+    this.wsUpdates.push(update);
+
+    // Keep last 50 updates
+    if (this.wsUpdates.length > 50) {
+      this.wsUpdates.shift();
+    }
+
+    // Alert for slow updates
+    if (processingTime > 10) {
+      console.warn(`TokenDetail: Slow WS update (${updateType}): ${processingTime.toFixed(2)}ms`);
+    }
+  }
+
+  // Track API call performance
+  trackAPICall(endpoint, duration, dataSize) {
+    const apiCall = {
+      endpoint,
+      duration,
+      dataSize,
+      timestamp: Date.now()
+    };
+
+    this.apiCalls.push(apiCall);
+
+    // Keep last 30 API calls
+    if (this.apiCalls.length > 30) {
+      this.apiCalls.shift();
+    }
+
+    // Alert for slow API calls
+    if (duration > 1000) {
+      console.warn(`TokenDetail: Slow API call to ${endpoint}: ${duration.toFixed(2)}ms`);
+    }
+  }
+
+  // Track tab switching performance
+  trackTabSwitch(fromTab, toTab, duration) {
+    const tabSwitch = {
+      from: fromTab,
+      to: toTab,
+      duration,
+      timestamp: Date.now()
+    };
+
+    this.tabSwitches.push(tabSwitch);
+
+    // Keep last 20 tab switches
+    if (this.tabSwitches.length > 20) {
+      this.tabSwitches.shift();
+    }
+
+    // Alert for slow tab switches
+    if (duration > 50) {
+      console.warn(`TokenDetail: Slow tab switch from ${fromTab} to ${toTab}: ${duration.toFixed(2)}ms`);
+    }
+  }
+
+  // Track heavy operations like data processing
+  trackHeavyOperation(operation, itemsProcessed, duration) {
+    const op = {
+      operation,
+      itemsProcessed,
+      duration,
+      throughput: itemsProcessed / (duration / 1000), // items per second
+      timestamp: Date.now()
+    };
+
+    this.heavyOperations.push(op);
+
+    // Keep last 20 operations
+    if (this.heavyOperations.length > 20) {
+      this.heavyOperations.shift();
+    }
+
+    // Alert for slow operations
+    if (duration > 100) {
+      console.warn(`TokenDetail: Heavy operation ${operation} took ${duration.toFixed(2)}ms for ${itemsProcessed} items`);
+    }
+  }
+
+  // Get comprehensive report
+  getReport() {
+    // Calculate component metrics summary
+    const componentSummary = Object.entries(this.componentMetrics).map(([name, metrics]) => ({
+      component: name,
+      renders: metrics.renders,
+      avgTime: metrics.avgTime.toFixed(2) + 'ms',
+      maxTime: metrics.maxTime.toFixed(2) + 'ms',
+      slowRenders: metrics.slowRenders
+    }));
+
+    // Calculate chart metrics
+    const chartMetrics = this.chartRenders.length > 0 ? {
+      totalRenders: this.chartRenders.length,
+      avgDuration: (this.chartRenders.reduce((sum, c) => sum + c.duration, 0) / this.chartRenders.length).toFixed(2) + 'ms',
+      avgDataPoints: Math.round(this.chartRenders.reduce((sum, c) => sum + c.dataPoints, 0) / this.chartRenders.length),
+      slowRenders: this.chartRenders.filter(c => c.duration > 100).length
+    } : null;
+
+    // Calculate WS metrics
+    const wsMetrics = this.wsUpdates.length > 0 ? {
+      totalUpdates: this.wsUpdates.length,
+      avgProcessingTime: (this.wsUpdates.reduce((sum, u) => sum + u.processingTime, 0) / this.wsUpdates.length).toFixed(2) + 'ms',
+      slowUpdates: this.wsUpdates.filter(u => u.processingTime > 10).length
+    } : null;
+
+    // Calculate API metrics
+    const apiMetrics = this.apiCalls.length > 0 ? {
+      totalCalls: this.apiCalls.length,
+      avgDuration: (this.apiCalls.reduce((sum, a) => sum + a.duration, 0) / this.apiCalls.length).toFixed(2) + 'ms',
+      slowCalls: this.apiCalls.filter(a => a.duration > 1000).length
+    } : null;
+
+    // Calculate tab switch metrics
+    const tabMetrics = this.tabSwitches.length > 0 ? {
+      totalSwitches: this.tabSwitches.length,
+      avgDuration: (this.tabSwitches.reduce((sum, t) => sum + t.duration, 0) / this.tabSwitches.length).toFixed(2) + 'ms',
+      slowSwitches: this.tabSwitches.filter(t => t.duration > 50).length
+    } : null;
+
+    return {
+      components: componentSummary,
+      charts: chartMetrics,
+      websocket: wsMetrics,
+      api: apiMetrics,
+      tabs: tabMetrics,
+      heavyOps: this.heavyOperations.slice(-5) // Last 5 heavy operations
+    };
+  }
+
+  // Clear all metrics
+  clear() {
+    this.componentMetrics = {};
+    this.chartRenders = [];
+    this.wsUpdates = [];
+    this.apiCalls = [];
+    this.tabSwitches = [];
+    this.heavyOperations = [];
+  }
+}
+
 // Global instances - only create in browser environment
-let memoryMonitor, performanceTracker, tokenListPerformance;
+let memoryMonitor, performanceTracker, tokenListPerformance, tokenDetailPerformance;
 
 if (typeof window !== 'undefined') {
   memoryMonitor = new MemoryMonitor();
   performanceTracker = new PerformanceTracker();
   tokenListPerformance = new TokenListPerformance();
+  tokenDetailPerformance = new TokenDetailPerformance();
 
   // Don't start monitoring immediately - only on demand
   // memoryMonitor.start();
@@ -256,6 +463,7 @@ if (typeof window !== 'undefined') {
     console.log('Memory:', memoryMonitor.getReport());
     console.log('General:', performanceTracker.getReport());
     console.log('TokenList:', tokenListPerformance.getReport());
+    console.log('TokenDetail:', tokenDetailPerformance.getReport());
     console.groupEnd();
   };
 
@@ -265,7 +473,41 @@ if (typeof window !== 'undefined') {
     tokenListPerformance.renderCount = 0;
     tokenListPerformance.wsMessageCount = 0;
     tokenListPerformance.rowRenderTimes = [];
+    tokenDetailPerformance.clear();
     console.log('Performance data cleared');
+  };
+
+  // Add TokenDetail specific debug function
+  window.getTokenDetailMetrics = () => {
+    const report = tokenDetailPerformance.getReport();
+    console.group('TokenDetail Performance Metrics');
+
+    if (report.components.length > 0) {
+      console.table(report.components);
+    }
+
+    if (report.charts) {
+      console.log('Chart Metrics:', report.charts);
+    }
+
+    if (report.websocket) {
+      console.log('WebSocket Metrics:', report.websocket);
+    }
+
+    if (report.api) {
+      console.log('API Metrics:', report.api);
+    }
+
+    if (report.tabs) {
+      console.log('Tab Switch Metrics:', report.tabs);
+    }
+
+    if (report.heavyOps.length > 0) {
+      console.log('Recent Heavy Operations:');
+      console.table(report.heavyOps);
+    }
+
+    console.groupEnd();
   };
 } else {
   // Server-side fallbacks
@@ -285,9 +527,19 @@ if (typeof window !== 'undefined') {
     onRowRender: () => {},
     getReport: () => null
   };
+  tokenDetailPerformance = {
+    trackComponentRender: () => {},
+    trackChartRender: () => {},
+    trackWSUpdate: () => {},
+    trackAPICall: () => {},
+    trackTabSwitch: () => {},
+    trackHeavyOperation: () => {},
+    getReport: () => null,
+    clear: () => {}
+  };
 }
 
-export { memoryMonitor, performanceTracker, tokenListPerformance };
+export { memoryMonitor, performanceTracker, tokenListPerformance, tokenDetailPerformance };
 
 // React Profiler component for wrapping TokenList
 export const TokenListProfiler = ({ children }) => {
@@ -311,4 +563,72 @@ export const TokenListProfiler = ({ children }) => {
       {children}
     </React.Profiler>
   );
+};
+
+// React Profiler component for wrapping TokenDetail components
+export const TokenDetailProfiler = ({ children, componentName }) => {
+  // Disable profiler in production and when not debugging
+  if (typeof window === 'undefined' || !React.Profiler || !tokenDetailPerformance || process.env.NODE_ENV === 'production') {
+    return children;
+  }
+
+  // Only profile if explicitly enabled via localStorage
+  const profilingEnabled = typeof window !== 'undefined' && window.localStorage?.getItem('enableTokenDetailProfiling') === 'true';
+
+  if (!profilingEnabled) {
+    return children;
+  }
+
+  const handleRender = (id, phase, actualDuration) => {
+    tokenDetailPerformance.trackComponentRender(componentName || id, actualDuration);
+  };
+
+  return (
+    <React.Profiler
+      id={componentName || "TokenDetailComponent"}
+      onRender={handleRender}
+    >
+      {children}
+    </React.Profiler>
+  );
+};
+
+// Hook for tracking TokenDetail performance
+export const useTokenDetailPerformance = () => {
+  const startTime = React.useRef(0);
+
+  const startOperation = () => {
+    startTime.current = performance.now();
+  };
+
+  const endOperation = (operationType, details = {}) => {
+    if (startTime.current === 0) return;
+
+    const duration = performance.now() - startTime.current;
+    startTime.current = 0;
+
+    if (!tokenDetailPerformance) return;
+
+    switch (operationType) {
+      case 'chart':
+        tokenDetailPerformance.trackChartRender(details.chartType, details.dataPoints || 0, duration);
+        break;
+      case 'ws':
+        tokenDetailPerformance.trackWSUpdate(details.updateType, duration);
+        break;
+      case 'api':
+        tokenDetailPerformance.trackAPICall(details.endpoint, duration, details.dataSize || 0);
+        break;
+      case 'tab':
+        tokenDetailPerformance.trackTabSwitch(details.from, details.to, duration);
+        break;
+      case 'heavy':
+        tokenDetailPerformance.trackHeavyOperation(details.operation, details.items || 0, duration);
+        break;
+      default:
+        tokenDetailPerformance.trackComponentRender(operationType, duration);
+    }
+  };
+
+  return { startOperation, endOperation };
 };
