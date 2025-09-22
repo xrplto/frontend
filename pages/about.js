@@ -537,8 +537,8 @@ function AboutPage() {
               <StatLabel theme={theme}>API Queries</StatLabel>
             </StatCard>
             <StatCard theme={theme}>
-              <StatNumber theme={theme}>3-5 sec</StatNumber>
-              <StatLabel theme={theme}>Transaction Speed</StatLabel>
+              <StatNumber theme={theme}>Live</StatNumber>
+              <StatLabel theme={theme}>Data</StatLabel>
             </StatCard>
           </StatsRow>
         </HeroSection>

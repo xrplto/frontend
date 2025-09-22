@@ -48,7 +48,6 @@ const PRODUCTS = [
 ];
 const COMPANY = [
   { href: '/about', label: 'About' },
-  { href: '/faq', label: 'FAQ' },
   { href: '/terms', label: 'Terms' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/disclaimer', label: 'Disclaimer' }
