@@ -1,8 +1,9 @@
 import React, { useContext } from 'react';
 import Image from 'next/image';
 import NextLink from 'next/link';
-import { Box, Container, Link, Typography } from '@mui/material';
+import { Box, Container, Link, Typography, IconButton, Tooltip } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
+import { Twitter, Send, Reddit, Forum } from '@mui/icons-material';
 import { AppContext } from 'src/AppContext';
 
 const Root = styled('footer')(({ theme }) => ({
@@ -47,30 +48,29 @@ const PRODUCTS = [
 ];
 const COMPANY = [
   { href: '/about', label: 'About' },
+  { href: '/faq', label: 'FAQ' },
   { href: '/terms', label: 'Terms' },
   { href: '/privacy', label: 'Privacy' },
   { href: '/disclaimer', label: 'Disclaimer' }
 ];
-const SUPPORT = [
-  { href: '/faq', label: 'FAQ' }
-];
 const SOCIALS = [
-  { href: 'https://twitter.com/xrplto', label: 'Twitter' },
-  { href: 'https://t.me/xrplto/', label: 'Telegram' },
-  { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit' },
-  { href: 'https://xrpl.to/discord/', label: 'Discord' }
+  { href: 'https://twitter.com/xrplto', label: 'Twitter', Icon: Twitter },
+  { href: 'https://t.me/xrplto/', label: 'Telegram', Icon: Send },
+  { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit', Icon: Reddit },
+  { href: 'https://xrpl.to/discord/', label: 'Discord', Icon: Forum }
 ];
 
 // Extract nested component to top level and memoize
 const Group = React.memo(({ label, items }) => (
-  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.25 }}>
+  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
     <Typography
       variant="caption"
       sx={{
         textTransform: 'uppercase',
         letterSpacing: 0.6,
         fontWeight: 700,
-        color: (t) => alpha(t.palette.primary.main, 0.8)
+        color: (t) => alpha(t.palette.primary.main, 0.8),
+        fontSize: '0.75rem'
       }}
     >
       {label}
@@ -79,7 +79,7 @@ const Group = React.memo(({ label, items }) => (
       •
     </Typography>
     {items.map((it, idx) => (
-      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.8 }}>
         <FooterLink href={it.href}>{it.label}</FooterLink>
         {idx < items.length - 1 && (
           <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>
@@ -88,6 +88,36 @@ const Group = React.memo(({ label, items }) => (
         )}
       </Box>
     ))}
+  </Box>
+));
+
+const SocialIcons = React.memo(() => (
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+    {SOCIALS.map((social) => {
+      const { Icon } = social;
+      return (
+        <Tooltip key={social.label} title={social.label} arrow>
+          <IconButton
+            component="a"
+            href={social.href}
+            target="_blank"
+            rel="noreferrer noopener"
+            size="small"
+            sx={{
+              color: 'text.secondary',
+              padding: 0.5,
+              transition: 'all .15s ease',
+              '&:hover': {
+                color: 'primary.main',
+                backgroundColor: (t) => alpha(t.palette.primary.main, 0.06)
+              }
+            }}
+          >
+            <Icon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      );
+    })}
   </Box>
 ));
 
@@ -130,7 +160,7 @@ function Footer() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 3,
+              gap: 2.5,
               flex: 1,
               justifyContent: 'flex-end',
               flexWrap: 'wrap'
@@ -138,8 +168,7 @@ function Footer() {
           >
             <Group label="Products" items={PRODUCTS} />
             <Group label="Company" items={COMPANY} />
-            <Group label="Support" items={SUPPORT} />
-            <Group label="Socials" items={SOCIALS} />
+            <SocialIcons />
           </Box>
         </Box>
       </Container>
