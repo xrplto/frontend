@@ -666,8 +666,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     setLoading(true);
     fetchTradingHistory();
 
-    // Increase polling interval to reduce load
-    const intervalId = setInterval(fetchTradingHistory, 5000); // Changed from 3000ms to 5000ms
+    // Sync with ledger updates every 4 seconds
+    const intervalId = setInterval(fetchTradingHistory, 4000);
 
     return () => clearInterval(intervalId);
   }, [fetchTradingHistory]);
@@ -679,8 +679,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     // Initial request
     requestOrderBook();
 
-    // Reduce frequency of orderbook requests
-    const timer = setInterval(() => requestOrderBook(), 6000); // Increased from 4000ms to 6000ms
+    // Sync orderbook requests with ledger updates
+    const timer = setInterval(() => requestOrderBook(), 4000);
 
     return () => clearInterval(timer);
   }, [wsReady, selectedPair, requestOrderBook]);

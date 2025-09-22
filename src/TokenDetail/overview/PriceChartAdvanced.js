@@ -327,7 +327,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     fetchData();
 
-    // Set up 4-second refresh interval - but only if user is not zoomed
+    // Sync with ledger updates every 4 seconds - but only if user is not zoomed
     const interval = setInterval(() => {
       if (!isUserZoomedRef.current) {
         fetchData(true);
