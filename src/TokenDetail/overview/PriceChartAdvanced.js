@@ -826,12 +826,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       const rect = container.getBoundingClientRect();
       const newWidth = rect.width || container.clientWidth;
 
-      console.log('Fullscreen change:', {
-        isFullscreen,
-        newWidth,
-        newHeight,
-        chartExists: !!chartRef.current
-      });
 
       // Try to resize first
       if (chartRef.current) {
@@ -853,7 +847,6 @@ const PriceChartAdvanced = memo(({ token }) => {
             timeScale.fitContent();
           }
 
-          console.log('Chart resized successfully');
         } catch (error) {
           console.error('Resize failed, forcing recreation:', error);
           // Force chart recreation on next render

@@ -35,7 +35,7 @@ const PairsSelect = memo(({ token, pair, setPair }) => {
           }
         }
       })
-      .catch((err) => console.log('Error getting pairs:', err))
+      .catch((err) => {})
       .finally(() => mountedRef.current && setIsLoading(false));
   }, [token.md5, pair, setPair, isLoading]);
 

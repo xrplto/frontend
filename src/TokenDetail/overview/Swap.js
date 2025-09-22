@@ -641,7 +641,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
       const req = orderBook.id % 2;
-      //console.log(`Received id ${orderBook.id}`)
       if (req === 1) {
         const parsed = processOrderbookOffers(orderBook.result.offers, 'asks');
         setAsks(parsed);
@@ -672,7 +671,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           }
         })
         .catch((err) => {
-          console.log('Error on getting details!!!', err);
         });
 
       // Check trustlines - implement pagination to fetch all trustlines
@@ -719,7 +717,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           return [];
         } catch (error) {
-          console.log('Error fetching trustlines:', error);
           return [];
         }
       };
@@ -844,7 +841,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           setHasTrustline2(hasCurr2Trustline);
         })
         .catch((err) => {
-          console.log('Error getting trustlines:', err);
         });
     }
 
@@ -867,7 +863,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           }
         })
         .catch((err) => {
-          console.log('Error on getting token info!', err);
         })
         .then(function () {
           // always executed
@@ -890,7 +885,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   // Debug useEffect to track amount1 changes
   useEffect(() => {
-    console.log('amount1 changed to:', amount1, 'at', new Date().toISOString());
     if (amount1 === '' && amount1 !== undefined) {
       console.trace('amount1 was cleared - stack trace:');
     }
@@ -947,7 +941,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     };
 
     async function getPayload() {
-      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
@@ -1199,7 +1192,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           break;
       }
     } catch (err) {
-      console.log('err', err);
       dispatch(updateProcess(0));
     }
     setLoading(false);
@@ -1223,12 +1215,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       // Log only when debugging is needed
       if (amt > 0) {
-        console.log('calcQuantity:', {
-          amount: amt,
-          active,
-          revert,
-          rates: { tokenExch1, tokenExch2 }
-        });
       }
 
       // Use the original token order for rate calculations
@@ -1241,19 +1227,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
       // For XRP pairs, use direct conversion based on original token order
       if (token1IsXRP || token2IsXRP) {
-        console.log('Handling XRP pair calculation:', {
-          token1IsXRP,
-          token2IsXRP,
-          rate1: rate1.toNumber(),
-          rate2: rate2.toNumber(),
-          active,
-          amount: amt,
-          revert
-        });
 
         // For XRP pairs, use simple rate calculation - no orderbook
         if (rate1.eq(0) && rate2.eq(0)) {
-          console.log('Both rates are 0, cannot calculate');
           return '';
         }
 
@@ -1315,22 +1291,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           result = amt;
         }
 
-        console.log('XRP calculation result:', {
-          input: amt,
-          rate1: rate1.toNumber(),
-          rate2: rate2.toNumber(),
-          result,
-          token1IsXRP,
-          token2IsXRP,
-          active,
-          revert
-        });
 
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       } else {
         // For non-XRP pairs, use simple rate calculation too
         if (rate1.eq(0) || rate2.eq(0)) {
-          console.log('Missing rates for non-XRP pair, cannot calculate');
           return '';
         }
 
@@ -1346,7 +1311,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       }
     } catch (e) {
-      console.log('Error in price calculation:', e);
       return '';
     }
   };
@@ -1592,7 +1556,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           break;
       }
     } catch (err) {
-      console.log('Trustline creation error:', err);
       dispatch(updateProcess(0));
       enqueueSnackbar(
         `Failed to create trustline: ${
@@ -2344,13 +2307,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           1 {curr1.name} ={' '}
           {(() => {
             // Minimal debug logging
-            console.log('Exchange rate calc:', {
-              curr1: curr1?.name,
-              curr2: curr2?.name,
-              tokenExch1,
-              tokenExch2,
-              revert
-            });
 
             // Use amount-based calculation but verify it's correct
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
@@ -2362,14 +2318,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               const displayRate = amt2 / amt1;
 
               // But let's verify this makes sense
-              console.log('Amount-based calculation check:', {
-                amount1: amt1,
-                amount2: amt2,
-                curr1Name: curr1?.name,
-                curr2Name: curr2?.name,
-                displayRate: displayRate,
-                formula: `${amt2} / ${amt1} = ${displayRate}`
-              });
 
               // Verify the rate makes sense by checking against the expected rates
               const expectedRate = (() => {
@@ -2402,11 +2350,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               const ratioDiff = Math.abs(displayRate - expectedRate) / expectedRate;
 
               if (ratioDiff > tolerance) {
-                console.log('WARNING: Calculated rate differs significantly from expected', {
-                  displayRate,
-                  expectedRate,
-                  difference: `${(ratioDiff * 100).toFixed(1)}%`
-                });
                 // Fall through to use the correct calculation below
               } else {
                 return displayRate.toFixed(6);
@@ -2417,8 +2360,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             const token1IsXRP = token1?.currency === 'XRP';
             const token2IsXRP = token2?.currency === 'XRP';
 
-            console.log('token1IsXRP:', token1IsXRP);
-            console.log('token2IsXRP:', token2IsXRP);
 
             // The rates depend on the original token order (token1/token2), not the display order (curr1/curr2)
             // When token1=XRP, token2=RLUSD: tokenExch1=1, tokenExch2=XRP per RLUSD
@@ -2427,9 +2368,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             let calculatedRate;
 
             if (revert) {
-              console.log('Revert is true - currencies are swapped');
-              console.log('curr1 is now:', curr1?.name, '(was token2)');
-              console.log('curr2 is now:', curr2?.name, '(was token1)');
 
               // When reverted:
               // - If original was XRP/RLUSD, now it's RLUSD/XRP
@@ -2440,53 +2378,32 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 // Now showing: RLUSD/XRP
                 // tokenExch2 is RLUSD-to-XRP rate (e.g., 0.311)
                 calculatedRate = tokenExch2;
-                console.log(
-                  'Case: RLUSD -> XRP (reverted from XRP/RLUSD), rate = tokenExch2 =',
-                  calculatedRate
-                );
               } else if (!token1IsXRP && token2IsXRP) {
                 // Original: token1=RLUSD, token2=XRP
                 // Now showing: XRP/RLUSD
                 // tokenExch1 is RLUSD-to-XRP rate (e.g., 0.311)
                 // Need XRP-to-RLUSD rate, so invert it
                 calculatedRate = 1 / tokenExch1;
-                console.log(
-                  'Case: XRP -> RLUSD (reverted from RLUSD/XRP), rate = 1/tokenExch1 =',
-                  calculatedRate
-                );
               } else {
                 // Non-XRP pair
                 calculatedRate = tokenExch2 / tokenExch1;
-                console.log(
-                  'Case: Token -> Token (reverted), rate = tokenExch2/tokenExch1 =',
-                  calculatedRate
-                );
               }
             } else {
-              console.log('Revert is false - normal order');
               // Normal order: curr1 = token1, curr2 = token2
               if (token1IsXRP && !token2IsXRP) {
                 // curr1 is XRP, curr2 is Token
                 // Need XRP to Token rate, which is 1/tokenExch2
                 calculatedRate = 1 / tokenExch2;
-                console.log('Case: XRP -> Token (normal), rate = 1/tokenExch2 =', calculatedRate);
               } else if (!token1IsXRP && token2IsXRP) {
                 // curr1 is Token, curr2 is XRP
                 // Need Token to XRP rate, which is tokenExch1
                 calculatedRate = tokenExch1;
-                console.log('Case: Token -> XRP (normal), rate = tokenExch1 =', calculatedRate);
               } else {
                 // Non-XRP pair
                 calculatedRate = tokenExch1 / tokenExch2;
-                console.log(
-                  'Case: Token -> Token (normal), rate = tokenExch1/tokenExch2 =',
-                  calculatedRate
-                );
               }
             }
 
-            console.log('Final calculated rate:', calculatedRate);
-            console.log('=== End Exchange Rate Debug ===');
 
             return calculatedRate.toFixed(6);
           })()}{' '}

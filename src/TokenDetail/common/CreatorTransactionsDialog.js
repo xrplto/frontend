@@ -716,7 +716,6 @@ const CreatorTransactionsDialog = memo(
         });
 
         client.on('disconnected', () => {
-          console.log('WebSocket disconnected');
           setIsSubscribed(false);
           handleReconnect();
         });
@@ -793,7 +792,6 @@ const CreatorTransactionsDialog = memo(
       const backoffTime = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
 
       reconnectTimeoutRef.current = setTimeout(() => {
-        console.log(`Attempting to reconnect (attempt ${reconnectAttemptsRef.current})...`);
         if (clientRef.current) {
           clientRef.current.removeAllListeners();
           clientRef.current = null;

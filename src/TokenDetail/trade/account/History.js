@@ -284,7 +284,6 @@ export default function History({ token }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting exchanges!!!', err);
         })
         .then(function () {
           setLoading(false);

@@ -180,14 +180,7 @@ const TokenSummary = memo(
     // Debug logging for admin status
     useEffect(() => {
       if (accountProfile) {
-        console.log('TokenSummary - Account Profile:', {
-          account: accountProfile.account,
-          isAdmin: accountProfile.isAdmin,
-          admin: accountProfile.admin,
-          fullProfile: accountProfile
-        });
       } else {
-        console.log('TokenSummary - No account profile found');
       }
     }, [accountProfile]);
     const [prevPrice, setPrevPrice] = useState(null);
@@ -423,7 +416,6 @@ const TokenSummary = memo(
           }
         })
         .catch((err) => {
-          console.log('Error on getting account lines!!!', err);
         });
     }, [trustToken, accountProfile, sync, issuer, currency, BASE_URL]);
 

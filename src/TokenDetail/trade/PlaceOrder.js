@@ -201,7 +201,6 @@ export default function PlaceOrder({
     };
 
     async function getPayload() {
-      // console.log(counter + " " + isRunning, uuid);
       if (isRunning) return;
       isRunning = true;
       try {
