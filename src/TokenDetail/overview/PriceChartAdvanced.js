@@ -23,6 +23,7 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
 import { PinChartButton, usePinnedCharts } from 'src/components/PinnedChartTracker';
+import ChartNotificationButton from 'src/components/ChartNotificationButton';
 import { throttle } from 'src/utils/lodashLite';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -1636,6 +1637,11 @@ const PriceChartAdvanced = memo(({ token }) => {
                 activeFiatCurrency={activeFiatCurrency}
               />
 
+              <ChartNotificationButton
+                token={token}
+                currentPrice={data && data.length > 0 ? data[data.length - 1].close : null}
+              />
+
               <IconButton
                 size="small"
                 onClick={handleFullscreen}
@@ -1717,6 +1723,12 @@ const PriceChartAdvanced = memo(({ token }) => {
                       : 'Pin Chart'}
                   </Box>
                 </MenuItem>
+                <Box sx={{ px: 1, py: 0.5, display: 'flex', justifyContent: 'center' }}>
+                  <ChartNotificationButton
+                    token={token}
+                    currentPrice={data && data.length > 0 ? data[data.length - 1].close : null}
+                  />
+                </Box>
                 <Divider />
               </>
             )}
