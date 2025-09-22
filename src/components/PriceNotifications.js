@@ -90,9 +90,9 @@ export const GlobalNotificationButton = ({ sidebarOpen, onSidebarToggle }) => {
             }}
           >
             {hasActiveNotifications ? (
-              <NotificationsActiveIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.4rem' } }} />
+              <NotificationsActiveIcon sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }} />
             ) : (
-              <NotificationsIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.4rem' } }} />
+              <NotificationsIcon sx={{ fontSize: { xs: '1.1rem', sm: '1.25rem' } }} />
             )}
           </Badge>
         </IconButton>
