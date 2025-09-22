@@ -20,6 +20,7 @@ class MemoryMonitor {
   constructor() {
     this.samples = [];
     this.isMonitoring = false;
+    this.timeoutId = null;
   }
 
   start() {
@@ -30,6 +31,10 @@ class MemoryMonitor {
 
   stop() {
     this.isMonitoring = false;
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
   }
 
   monitor() {
@@ -46,8 +51,8 @@ class MemoryMonitor {
 
       this.samples.push(sample);
 
-      // Keep only last 50 samples to reduce memory usage
-      if (this.samples.length > 50) {
+      // Keep only last 20 samples to reduce memory usage
+      if (this.samples.length > 20) {
         this.samples.shift();
       }
 
@@ -57,14 +62,14 @@ class MemoryMonitor {
         const growth = sample.usedJSHeapSize - prev.usedJSHeapSize;
         const growthMB = growth / (1024 * 1024);
 
-        if (growthMB > 10) { // Alert for >10MB growth (reduced sensitivity)
+        if (growthMB > 20) { // Alert for >20MB growth (much reduced sensitivity)
           console.warn(`Memory spike detected: +${growthMB.toFixed(2)}MB`, sample);
         }
       }
     }
 
-    // Check again in 2 seconds (reduced frequency)
-    setTimeout(() => this.monitor(), 2000);
+    // Check again in 5 seconds (much reduced frequency)
+    this.timeoutId = setTimeout(() => this.monitor(), 5000);
   }
 
   getReport() {
@@ -242,8 +247,8 @@ if (typeof window !== 'undefined') {
   performanceTracker = new PerformanceTracker();
   tokenListPerformance = new TokenListPerformance();
 
-  // Start monitoring immediately
-  memoryMonitor.start();
+  // Don't start monitoring immediately - only on demand
+  // memoryMonitor.start();
 
   // Add global performance debug functions
   window.getPerformanceReport = () => {
@@ -286,7 +291,15 @@ export { memoryMonitor, performanceTracker, tokenListPerformance };
 
 // React Profiler component for wrapping TokenList
 export const TokenListProfiler = ({ children }) => {
-  if (typeof window === 'undefined' || !React.Profiler || !performanceTracker) {
+  // Disable profiler in production and when not debugging
+  if (typeof window === 'undefined' || !React.Profiler || !performanceTracker || process.env.NODE_ENV === 'production') {
+    return children;
+  }
+
+  // Only profile if explicitly enabled via localStorage
+  const profilingEnabled = typeof window !== 'undefined' && window.localStorage?.getItem('enableProfiling') === 'true';
+
+  if (!profilingEnabled) {
     return children;
   }
 

@@ -420,37 +420,39 @@ function TokenListComponent({
         }
       });
 
-      // Use startTransition for non-urgent updates
-      startTransition(() => {
-        if (latestMetrics) dispatch(update_metrics(latestMetrics));
+      // Batch updates without startTransition to reduce overhead
+      if (latestMetrics) {
+        requestAnimationFrame(() => dispatch(update_metrics(latestMetrics)));
+      }
 
-        if (aggregatedTokens.size > 0) {
-          setTokens((prevTokens) => {
-            // Create a map for O(1) lookups
-            const tokenMap = new Map(prevTokens.map(t => [t.md5, t]));
-            let hasChanges = false;
+      if (aggregatedTokens.size > 0) {
+        setTokens((prevTokens) => {
+          // Only update if we have actual changes
+          if (aggregatedTokens.size === 0) return prevTokens;
 
-            aggregatedTokens.forEach((update, md5) => {
-              const existing = tokenMap.get(md5);
-              if (existing && (
-                existing.exch !== update.exch ||
-                existing.pro24h !== update.pro24h ||
-                existing.vol24hxrp !== update.vol24hxrp
-              )) {
-                hasChanges = true;
-                tokenMap.set(md5, {
-                  ...existing,
-                  ...update,
-                  time: Date.now(),
-                  bearbull: existing.exch > update.exch ? -1 : 1
-                });
-              }
-            });
-
-            return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
+          // Use faster array iteration
+          let hasChanges = false;
+          const result = prevTokens.map(token => {
+            const update = aggregatedTokens.get(token.md5);
+            if (update && (
+              token.exch !== update.exch ||
+              token.pro24h !== update.pro24h ||
+              token.vol24hxrp !== update.vol24hxrp
+            )) {
+              hasChanges = true;
+              return {
+                ...token,
+                ...update,
+                time: Date.now(),
+                bearbull: token.exch > update.exch ? -1 : 1
+              };
+            }
+            return token;
           });
-        }
-      });
+
+          return hasChanges ? result : prevTokens;
+        });
+      }
 
       wsProcessing.current = false;
       // Continue processing if more messages
@@ -574,7 +576,7 @@ function TokenListComponent({
         const start = page * rows;
         const ntag = tag || '';
         const watchAccount = showWatchList ? accountProfile?.account || '' : '';
-        const limit = rows === 9999 ? 10000 : rows;
+        const limit = Math.min(rows === 9999 ? 100 : rows, 100); // Cap at 100 tokens
 
         axios
           .get(
@@ -584,12 +586,14 @@ function TokenListComponent({
             if (res.status === 200 && res.data) {
               const ret = res.data;
               dispatch(update_filteredCount(ret));
-              setTokens(ret.tokens);
+              // Allow up to 50 tokens as requested
+              const limitedTokens = ret.tokens.slice(0, 50);
+              setTokens(limitedTokens);
             }
           })
           .catch((err) => {})
           .finally(() => setSearch(filterName));
-      }, 300),
+      }, 500), // Increased throttle time
     [
       accountProfile,
       filterName,
@@ -687,29 +691,16 @@ function TokenListComponent({
   }, [rows, tokens.length, isMobile]);
 
   const visibleTokens = useMemo(() => {
-    // Limit to max 50 tokens initially for better performance
+    // Display up to 50 tokens for better user experience
     const maxRows = Math.min(rows === 9999 ? 50 : rows, 50);
     return tokens.slice(0, maxRows);
   }, [tokens, rows]);
 
-  // Use deferred value for smoother updates during rapid WebSocket messages
-  const deferredTokens = useDeferredValue(visibleTokens);
-  const isDeferring = deferredTokens !== visibleTokens;
+  // Skip deferred value to reduce re-renders
+  const deferredTokens = visibleTokens;
+  const isDeferring = false;
 
-  // Reduce unnecessary DOM manipulations
-  useEffect(() => {
-    if (visibleTokens.length > 0 && visibleTokens.length <= 10) {
-      // Only apply will-change for small lists
-      const container = tableContainerRef.current;
-      if (container) {
-        container.style.willChange = 'scroll-position';
-        const timer = setTimeout(() => {
-          if (container) container.style.willChange = 'auto';
-        }, 500);
-        return () => clearTimeout(timer);
-      }
-    }
-  }, [visibleTokens.length]);
+  // Remove DOM manipulation effect entirely to reduce overhead
 
   return (
     <>

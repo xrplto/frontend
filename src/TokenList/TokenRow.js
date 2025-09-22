@@ -103,10 +103,11 @@ const OptimizedChart = memo(
           showGradient={false}
           lineWidth={1}
           opts={{
-            renderer: 'canvas', // Use canvas for better performance than SVG
+            renderer: 'svg', // Use SVG to reduce memory usage
             width: 260,
             height: 60,
-            devicePixelRatio: 1
+            devicePixelRatio: 1,
+            animation: false
           }}
         />
       </div>
@@ -854,8 +855,8 @@ const DesktopTokenRow = ({
                       style={{ width: '100%', height: '100%' }}
                       animation={false}
                       showGradient={false}
-                      lineWidth={1.5}
-                      opts={{ renderer: 'svg', width: 260, height: 60 }}
+                      lineWidth={1}
+                      opts={{ renderer: 'svg', width: 260, height: 60, devicePixelRatio: 1 }}
                     />
                   </div>
                 ) : (
@@ -1028,8 +1029,8 @@ const DesktopTokenRow = ({
                         style={{ width: '100%', height: '100%' }}
                         animation={false}
                         showGradient={false}
-                        lineWidth={1.5}
-                        opts={{ renderer: 'svg', width: 260, height: 60 }}
+                        lineWidth={1}
+                        opts={{ renderer: 'svg', width: 260, height: 60, devicePixelRatio: 1 }}
                       />
                     </div>
                   ) : (
