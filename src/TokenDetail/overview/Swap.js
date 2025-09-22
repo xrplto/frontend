@@ -421,7 +421,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     errMsg = '';
     isSufficientBalance = false;
 
-    // Check trustlines first
+    // Check trustlines first - prioritize curr1
     if (!hasTrustline1 && curr1.currency !== 'XRP') {
       const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
       errMsg = `No trustline for ${displayName}`;
@@ -1357,13 +1357,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const handlePlaceOrder = (e) => {
-    // Check if we need to create trustlines first
-    if (
-      isLoggedIn &&
-      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
-    ) {
-      const missingCurrency = !hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2;
-      onCreateTrustline(missingCurrency);
+    // Check if we need to create trustlines first - prioritize curr1
+    if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
+      onCreateTrustline(curr1);
+      return;
+    }
+    if (isLoggedIn && !hasTrustline2 && curr2.currency !== 'XRP') {
+      onCreateTrustline(curr2);
       return;
     }
 
@@ -1450,15 +1450,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const handleMsg = () => {
     if (isProcessing === 1) return 'Pending Exchanging';
 
-    // Check for missing trustlines
-    if (
-      isLoggedIn &&
-      ((!hasTrustline1 && curr1.currency !== 'XRP') || (!hasTrustline2 && curr2.currency !== 'XRP'))
-    ) {
-      const missingToken =
-        !hasTrustline1 && curr1.currency !== 'XRP'
-          ? getCurrencyDisplayName(curr1.currency, token1?.name)
-          : getCurrencyDisplayName(curr2.currency, token2?.name);
+    // Check for missing trustlines - prioritize curr1 first
+    if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
+      const missingToken = getCurrencyDisplayName(curr1.currency, token1?.name);
+      return `Set Trustline for ${missingToken}`;
+    }
+    if (isLoggedIn && !hasTrustline2 && curr2.currency !== 'XRP') {
+      const missingToken = getCurrencyDisplayName(curr2.currency, token2?.name);
       return `Set Trustline for ${missingToken}`;
     }
 
@@ -2518,28 +2516,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           <ConnectWallet pair={pair} />
         )}
         {/* Inline guidance for trustlines and balance */}
-        {isLoggedIn && errMsg && (
-          <Alert
-            severity={errMsg.toLowerCase().includes('trustline') ? 'warning' : 'error'}
-            sx={{ mt: 1 }}
-          >
-            <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
-              <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
-                {errMsg}
-              </Typography>
-              {errMsg.toLowerCase().includes('trustline') && (
-                <Button
-                  size="small"
-                  variant="outlined"
-                  onClick={() =>
-                    onCreateTrustline(!hasTrustline1 && curr1.currency !== 'XRP' ? curr1 : curr2)
-                  }
-                  sx={{ textTransform: 'none' }}
-                >
-                  Create Trustline
-                </Button>
-              )}
-            </Stack>
+        {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
+          <Alert severity="error" sx={{ mt: 1 }}>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+              {errMsg}
+            </Typography>
           </Alert>
         )}
       </Stack>
