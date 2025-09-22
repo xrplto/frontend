@@ -49,10 +49,9 @@ import { useNotifications } from 'src/contexts/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
 
 // Global Header Button
-export const GlobalNotificationButton = () => {
+export const GlobalNotificationButton = ({ sidebarOpen, onSidebarToggle }) => {
   const theme = useTheme();
   const { notifications } = useNotifications();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const activeNotifications = notifications.filter(n => !n.triggered);
   const hasActiveNotifications = activeNotifications.length > 0;
@@ -61,7 +60,7 @@ export const GlobalNotificationButton = () => {
     <>
       <Tooltip title={`Price Alerts${hasActiveNotifications ? ` (${activeNotifications.length})` : ''}`}>
         <IconButton
-          onClick={() => setSidebarOpen(true)}
+          onClick={() => onSidebarToggle?.(true)}
           sx={{
             padding: { xs: '8px', sm: '10px' },
             minWidth: { xs: '40px', sm: '44px' },
@@ -98,7 +97,7 @@ export const GlobalNotificationButton = () => {
           </Badge>
         </IconButton>
       </Tooltip>
-      <NotificationSidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <NotificationSidebar open={sidebarOpen} onClose={() => onSidebarToggle?.(false)} />
     </>
   );
 };
@@ -513,12 +512,16 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
       PaperProps={{
         sx: {
           width: { md: 320, lg: 360, xl: 380 },
+          minWidth: { md: 316 },
           top: { xs: 56, sm: 56, md: 56 },
           height: 'calc(100vh - 56px)',
           borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          backgroundColor: theme.palette.background.paper
+          backgroundColor: theme.palette.background.paper,
+          boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+          overflow: 'hidden'
         }
       }}
+      ModalProps={{ keepMounted: true }}
     >
       <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
         <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>

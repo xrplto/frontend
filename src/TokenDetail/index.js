@@ -46,7 +46,8 @@ const TokenDetail = memo(
     onTransactionPanelToggle,
     transactionPanelOpen,
     onOrderBookToggle,
-    orderBookOpen
+    orderBookOpen,
+    notificationPanelOpen
   }) => {
     const { darkMode } = useContext(AppContext);
     const theme = useTheme();
@@ -148,9 +149,15 @@ const TokenDetail = memo(
             flex: 1,
             minWidth: 0, // Prevent content overflow
             pr: {
-              md: txDetailsOpen ? (panelMode === 'orderbook' ? '288px' : '256px') : 0,
-              lg: txDetailsOpen ? (panelMode === 'orderbook' ? '328px' : '272px') : 0,
-              xl: txDetailsOpen ? (panelMode === 'orderbook' ? '368px' : '288px') : 0
+              md: txDetailsOpen
+                ? (panelMode === 'orderbook' ? '288px' : '256px')
+                : notificationPanelOpen ? '320px' : 0,
+              lg: txDetailsOpen
+                ? (panelMode === 'orderbook' ? '328px' : '272px')
+                : notificationPanelOpen ? '360px' : 0,
+              xl: txDetailsOpen
+                ? (panelMode === 'orderbook' ? '368px' : '288px')
+                : notificationPanelOpen ? '380px' : 0
             },
             pl: {
               md: creatorTxOpen ? '240px' : 0,

@@ -34,6 +34,7 @@ function Detail({ data }) {
   const [creatorPanelOpen, setCreatorPanelOpen] = useState(false);
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
   const [orderBookOpen, setOrderBookOpen] = useState(false);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
 
   useWebSocket(WSS_FEED_URL, {
@@ -81,12 +82,15 @@ function Detail({ data }) {
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
       <Topbar />
-      <Header />
+      <Header
+        notificationPanelOpen={notificationPanelOpen}
+        onNotificationPanelToggle={setNotificationPanelOpen}
+      />
 
       <Container
-        maxWidth={creatorPanelOpen || transactionPanelOpen || orderBookOpen ? false : 'xl'}
+        maxWidth={creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen ? false : 'xl'}
         sx={
-          creatorPanelOpen || transactionPanelOpen || orderBookOpen
+          creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen
             ? { width: '100%', px: 2 }
             : undefined
         }
@@ -100,6 +104,7 @@ function Detail({ data }) {
           transactionPanelOpen={transactionPanelOpen}
           onOrderBookToggle={(open) => setOrderBookOpen(open)}
           orderBookOpen={orderBookOpen}
+          notificationPanelOpen={notificationPanelOpen}
         />
       </Container>
 

@@ -271,7 +271,7 @@ const StyledMenuItem = styled(MenuItem, {
 `
 );
 
-function Header(props) {
+function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) {
   const { t } = useTranslation(); // set translation const
   const theme = useTheme();
   const dispatch = useDispatch();
@@ -865,7 +865,10 @@ function Header(props) {
                     />
                   </Link>
                 )}
-                <GlobalNotificationButton />
+                <GlobalNotificationButton
+                  sidebarOpen={notificationPanelOpen}
+                  onSidebarToggle={onNotificationPanelToggle}
+                />
                 <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
               </Stack>
             )}
