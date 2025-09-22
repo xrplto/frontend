@@ -62,7 +62,7 @@ function MaintenanceView({ isMobile }) {
           alignItems="center"
           style={{ minHeight: '60vh' }}
         >
-          <Grid item xs={12} sm={8} md={6}>
+          <Grid size={{ xs: 12, sm: 8, md: 6 }}>
             <MaintenanceMessage>
               <h1>Under Maintenance</h1>
               <p>We're currently performing some updates to improve our service.</p>
@@ -128,7 +128,7 @@ function Overview({ data }) {
 
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid item xs={12} md={12} lg={12}>
+          <Grid size={12}>
             {data && data.tags ? (
               <>
                 <TokenList tags={data.tags} tokens={tokens} tMap={tMap} setTokens={setTokens} />

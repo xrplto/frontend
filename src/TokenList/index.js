@@ -20,26 +20,10 @@ import VirtualizedTokenList from './VirtualizedTokenList';
 import React, { memo, lazy, Suspense } from 'react';
 import { debounce, throttle } from 'src/utils/lodashLite';
 import { useRouter } from 'next/router';
+import { TokenListProfiler, memoryMonitor, performanceTracker, tokenListPerformance } from 'src/performance/setup';
 
-// Optimized memoization for high-frequency updates
-const MemoizedTokenRow = memo(TokenRow, (prevProps, nextProps) => {
-  const prev = prevProps.token;
-  const next = nextProps.token;
-
-  // Check all critical fields
-  const criticalFields = ['exch', 'pro24h', 'pro5m', 'pro1h', 'pro7d', 'vol24hxrp', 'marketcap', 'holders', 'supply', 'vol24htx'];
-  for (const field of criticalFields) {
-    if (prev[field] !== next[field]) return false;
-  }
-
-  // Check non-token props
-  if (prevProps.watchList !== nextProps.watchList ||
-      prevProps.exchRate !== nextProps.exchRate ||
-      prevProps.viewMode !== nextProps.viewMode ||
-      prevProps.customColumns !== nextProps.customColumns) return false;
-
-  return true;
-});
+// Simple memoization
+const MemoizedTokenRow = memo(TokenRow);
 const LazyEditTokenDialog = lazy(
   () => import(/* webpackChunkName: "edit-token-dialog" */ 'src/components/EditTokenDialog')
 );
@@ -174,7 +158,7 @@ const ButtonRow = styled.div`
   margin-top: 20px;
 `;
 
-export default function TokenList({
+function TokenListComponent({
   showWatchList,
   tag,
   tagName,
@@ -333,7 +317,7 @@ export default function TokenList({
           const scrollLeft = tableContainerRef.current.scrollLeft;
           setScrollLeft(scrollLeft > 0);
         }
-      }, 100),
+      }, 150), // Increased throttle time for smoother scrolling
     []
   );
 
@@ -380,7 +364,7 @@ export default function TokenList({
             setScrollTopLength(0);
           }
         }
-      }, 100),
+      }, 150), // Increased throttle time
     []
   );
 
@@ -416,10 +400,10 @@ export default function TokenList({
     if (wsProcessing.current || wsMessageQueue.current.length === 0) return;
     wsProcessing.current = true;
 
-    const messages = wsMessageQueue.current.splice(0, 100);
+    const messages = wsMessageQueue.current.splice(0, 50); // Reduced batch size for smoother updates
 
-    // Process in microtask to avoid blocking
-    queueMicrotask(() => {
+    // Use requestAnimationFrame for smoother visual updates
+    requestAnimationFrame(() => {
       const aggregatedTokens = new Map();
       let latestMetrics = null;
 
@@ -442,35 +426,28 @@ export default function TokenList({
 
         if (aggregatedTokens.size > 0) {
           setTokens((prevTokens) => {
-            // Use a more efficient update pattern
-            const updates = new Map();
+            // Create a map for O(1) lookups
+            const tokenMap = new Map(prevTokens.map(t => [t.md5, t]));
+            let hasChanges = false;
 
-            aggregatedTokens.forEach((newToken, md5) => {
-              updates.set(md5, newToken);
-            });
-
-            // Only recreate array if we have updates
-            if (updates.size === 0) return prevTokens;
-
-            return prevTokens.map((token) => {
-              const update = updates.get(token.md5);
-              if (update) {
-                // Only update if values actually changed
-                if (
-                  token.exch !== update.exch ||
-                  token.pro24h !== update.pro24h ||
-                  token.vol24hxrp !== update.vol24hxrp
-                ) {
-                  return {
-                    ...token,
-                    ...update,
-                    time: Date.now(),
-                    bearbull: token.exch > update.exch ? -1 : 1
-                  };
-                }
+            aggregatedTokens.forEach((update, md5) => {
+              const existing = tokenMap.get(md5);
+              if (existing && (
+                existing.exch !== update.exch ||
+                existing.pro24h !== update.pro24h ||
+                existing.vol24hxrp !== update.vol24hxrp
+              )) {
+                hasChanges = true;
+                tokenMap.set(md5, {
+                  ...existing,
+                  ...update,
+                  time: Date.now(),
+                  bearbull: existing.exch > update.exch ? -1 : 1
+                });
               }
-              return token;
             });
+
+            return hasChanges ? Array.from(tokenMap.values()) : prevTokens;
           });
         }
       });
@@ -478,7 +455,7 @@ export default function TokenList({
       wsProcessing.current = false;
       // Continue processing if more messages
       if (wsMessageQueue.current.length > 0) {
-        requestIdleCallback(() => processWebSocketQueue(), { timeout: 30 });
+        requestIdleCallback(() => processWebSocketQueue(), { timeout: 100 });
       }
     });
   }, [dispatch, setTokens, startTransition]);
@@ -495,6 +472,9 @@ export default function TokenList({
           try {
             const json = JSON.parse(event.data);
 
+            // Track WebSocket message
+            tokenListPerformance.onWSMessage();
+
             // Queue the message
             wsMessageQueue.current.push(json);
 
@@ -504,8 +484,8 @@ export default function TokenList({
             }
 
             wsProcessTimer.current = setTimeout(() => {
-              requestIdleCallback(() => processWebSocketQueue(), { timeout: 50 });
-            }, 16); // Batch messages with 16ms delay (60fps)
+              requestIdleCallback(() => processWebSocketQueue(), { timeout: 100 });
+            }, 32); // Batch messages with 32ms delay (30fps for smoother updates)
           } catch (err) {
             console.error('Error parsing WebSocket message:', err);
           }
@@ -578,11 +558,15 @@ export default function TokenList({
     return () => {
       if (wsProcessTimer.current) {
         clearTimeout(wsProcessTimer.current);
+        wsProcessTimer.current = null;
       }
       wsMessageQueue.current = [];
       wsProcessing.current = false;
+      // Clean up any pending animations
+      if (handleScrollX.cancel) handleScrollX.cancel();
+      if (handleScrollY.cancel) handleScrollY.cancel();
     };
-  }, []);
+  }, [handleScrollX, handleScrollY]);
 
   const debouncedLoadTokens = useMemo(
     () =>
@@ -624,7 +608,9 @@ export default function TokenList({
   );
 
   useEffect(() => {
-    if (sync > 0) debouncedLoadTokens();
+    if (sync > 0) {
+      debouncedLoadTokens();
+    }
   }, [debouncedLoadTokens, sync]);
 
   const onChangeWatchList = useCallback(
@@ -701,7 +687,8 @@ export default function TokenList({
   }, [rows, tokens.length, isMobile]);
 
   const visibleTokens = useMemo(() => {
-    const maxRows = rows === 9999 ? tokens.length : rows;
+    // Limit to max 50 tokens initially for better performance
+    const maxRows = Math.min(rows === 9999 ? 50 : rows, 50);
     return tokens.slice(0, maxRows);
   }, [tokens, rows]);
 
@@ -709,19 +696,18 @@ export default function TokenList({
   const deferredTokens = useDeferredValue(visibleTokens);
   const isDeferring = deferredTokens !== visibleTokens;
 
-  // Preload TokenRow component properties to avoid layout calculations
+  // Reduce unnecessary DOM manipulations
   useEffect(() => {
-    if (visibleTokens.length > 0) {
-      requestAnimationFrame(() => {
-        // Force browser to calculate styles ahead of time
-        const container = tableContainerRef.current;
-        if (container) {
-          container.style.willChange = 'scroll-position';
-          setTimeout(() => {
-            container.style.willChange = 'auto';
-          }, 1000);
-        }
-      });
+    if (visibleTokens.length > 0 && visibleTokens.length <= 10) {
+      // Only apply will-change for small lists
+      const container = tableContainerRef.current;
+      if (container) {
+        container.style.willChange = 'scroll-position';
+        const timer = setTimeout(() => {
+          if (container) container.style.willChange = 'auto';
+        }, 500);
+        return () => clearTimeout(timer);
+      }
     }
   }, [visibleTokens.length]);
 
@@ -1228,5 +1214,14 @@ export default function TokenList({
         </Suspense>
       </ToolbarContainer>
     </>
+  );
+}
+
+// Export with performance profiler
+export default function TokenList(props) {
+  return (
+    <TokenListProfiler>
+      <TokenListComponent {...props} />
+    </TokenListProfiler>
   );
 }

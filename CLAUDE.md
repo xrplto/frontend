@@ -6,8 +6,36 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### DO NOT RUN THESE COMMANDS
 1. **DO NOT START `npm run dev`** - Development server should not be started
-2. **DO NOT RUN `npm run build`** - Build process should not be initiated  
+2. **DO NOT RUN `npm run build`** - Build process should not be initiated
 3. **DO NOT RUN `npm install`** - Package installation should not be executed
+
+### PERFORMANCE AND DEBUGGING RULES
+1. **NEVER DISABLE FEATURES TO FIX PERFORMANCE ISSUES**
+   - Always fix the root cause, don't remove functionality
+   - Users expect features to work, not disappear
+   - Performance problems must be solved through optimization, not feature removal
+
+2. **PROPER DEBUGGING APPROACH**
+   - Profile and identify the exact bottleneck
+   - Optimize hot paths (frequent function calls, large loops)
+   - Use memoization, caching, and lazy loading appropriately
+   - Implement virtualization for large lists
+   - Fix memory leaks at their source
+
+3. **FORBIDDEN SHORTCUTS**
+   - ❌ Commenting out chart components
+   - ❌ Disabling animations or visual effects
+   - ❌ Removing useTheme() calls without proper optimization
+   - ❌ Replacing libraries with placeholder content
+   - ❌ Temporarily disabling WebSocket updates
+
+4. **CORRECT OPTIMIZATION PATTERNS**
+   - ✅ Memoize expensive calculations with useMemo
+   - ✅ Use React.memo with proper comparison functions
+   - ✅ Implement intersection observers for lazy loading
+   - ✅ Cache theme values to reduce context reads
+   - ✅ Optimize rendering with virtualization for large lists
+   - ✅ Use requestAnimationFrame for smooth animations
 
 ### Understanding User Requirements
 1. **Read the ENTIRE request carefully**

@@ -36,26 +36,36 @@ const OptimizedChart = memo(
     useEffect(() => {
       if (!chartRef.current) return;
 
-      observerRef.current = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            if (observerRef.current) {
-              observerRef.current.disconnect();
-            }
-          }
-        },
-        {
-          rootMargin: '100px',
-          threshold: 0.01
-        }
-      );
+      // Delay observer creation slightly to avoid initial render overhead
+      const timer = setTimeout(() => {
+        if (!chartRef.current) return;
 
-      observerRef.current.observe(chartRef.current);
+        observerRef.current = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setIsVisible(true);
+              if (observerRef.current) {
+                observerRef.current.disconnect();
+                observerRef.current = null;
+              }
+            }
+          },
+          {
+            rootMargin: '200px', // Increased for earlier loading
+            threshold: 0.01
+          }
+        );
+
+        if (chartRef.current) {
+          observerRef.current.observe(chartRef.current);
+        }
+      }, 50);
 
       return () => {
+        clearTimeout(timer);
         if (observerRef.current) {
           observerRef.current.disconnect();
+          observerRef.current = null;
         }
       };
     }, []);
@@ -286,26 +296,36 @@ const OptimizedImage = memo(
     useEffect(() => {
       if (priority || !imgRef.current) return;
 
-      observerRef.current = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsInView(true);
-            if (observerRef.current) {
-              observerRef.current.disconnect();
-            }
-          }
-        },
-        {
-          rootMargin: '50px',
-          threshold: 0.01
-        }
-      );
+      // Delay observer creation to reduce initial overhead
+      const timer = setTimeout(() => {
+        if (!imgRef.current) return;
 
-      observerRef.current.observe(imgRef.current);
+        observerRef.current = new IntersectionObserver(
+          ([entry]) => {
+            if (entry.isIntersecting) {
+              setIsInView(true);
+              if (observerRef.current) {
+                observerRef.current.disconnect();
+                observerRef.current = null;
+              }
+            }
+          },
+          {
+            rootMargin: '100px', // Increased margin
+            threshold: 0.01
+          }
+        );
+
+        if (imgRef.current) {
+          observerRef.current.observe(imgRef.current);
+        }
+      }, 20);
 
       return () => {
+        clearTimeout(timer);
         if (observerRef.current) {
           observerRef.current.disconnect();
+          observerRef.current = null;
         }
       };
     }, [priority]);
@@ -1149,7 +1169,7 @@ const DesktopTokenRow = ({
   );
 };
 
-const FTokenRow = React.memo(
+const FTokenRow = memo(
   function FTokenRow({
     time,
     token,
@@ -1227,11 +1247,11 @@ const FTokenRow = React.memo(
 
     const sparklineUrl = useMemo(() => {
       if (!BASE_URL || !md5 || isMobile) return null;
-      // Use 15 second cache for /new page, 5 minutes for others
+      // Use 30 second cache for /new page, 10 minutes for others
       const isNewPage = window.location.pathname === '/new';
-      const cacheMs = isNewPage ? 15000 : 300000; // 15s or 5min
+      const cacheMs = isNewPage ? 30000 : 600000; // 30s or 10min
       const cacheTime = Math.floor(Date.now() / cacheMs);
-      return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=100&cache=${cacheTime}`;
+      return `${BASE_URL}/sparkline/${md5}?period=24h&lightweight=true&maxPoints=50&cache=${cacheTime}`;
     }, [BASE_URL, md5, isMobile]);
 
     if (isMobile) {
@@ -1275,31 +1295,26 @@ const FTokenRow = React.memo(
     const prev = prevProps.token;
     const next = nextProps.token;
 
-    // Only re-render if critical data changes
-    if (prev.exch !== next.exch) return false;
-    if (prev.pro24h !== next.pro24h) return false;
-    if (prev.pro5m !== next.pro5m) return false;
-    if (prev.pro1h !== next.pro1h) return false;
-    if (prev.pro7d !== next.pro7d) return false;
-    if (prev.bearbull !== next.bearbull) return false;
-    if (prev.vol24hxrp !== next.vol24hxrp) return false;
-    if (prev.marketcap !== next.marketcap) return false;
-    if (prev.tvl !== next.tvl) return false;
-    if (prevProps.exchRate !== nextProps.exchRate) return false;
-    if (prevProps.isLoggedIn !== nextProps.isLoggedIn) return false;
-    if (prevProps.darkMode !== nextProps.darkMode) return false;
-    if (prevProps.isMobile !== nextProps.isMobile) return false;
-
-    if (prevProps.watchList !== nextProps.watchList) {
-      const prevInWatchlist = prevProps.watchList.includes(prev.md5);
-      const nextInWatchlist = nextProps.watchList.includes(next.md5);
-      if (prevInWatchlist !== nextInWatchlist) return false;
-    }
-
-    // Check if view mode changed
-    if (prevProps.viewMode !== nextProps.viewMode) return false;
-
-    return true;
+    // Only re-render if critical data changes - optimized checks
+    return (
+      prev.exch === next.exch &&
+      prev.pro24h === next.pro24h &&
+      prev.pro5m === next.pro5m &&
+      prev.pro1h === next.pro1h &&
+      prev.pro7d === next.pro7d &&
+      prev.bearbull === next.bearbull &&
+      prev.vol24hxrp === next.vol24hxrp &&
+      prev.marketcap === next.marketcap &&
+      prev.tvl === next.tvl &&
+      prevProps.exchRate === nextProps.exchRate &&
+      prevProps.isLoggedIn === nextProps.isLoggedIn &&
+      prevProps.darkMode === nextProps.darkMode &&
+      prevProps.isMobile === nextProps.isMobile &&
+      prevProps.viewMode === nextProps.viewMode &&
+      // Watchlist check
+      (prevProps.watchList === nextProps.watchList ||
+        (prevProps.watchList.includes(prev.md5) === nextProps.watchList.includes(next.md5)))
+    );
   }
 );
 
