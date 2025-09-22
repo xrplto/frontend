@@ -24,8 +24,8 @@ const FooterLink = ({ href, children }) => {
       rel={external ? 'noreferrer noopener' : undefined}
       sx={{
         color: 'text.secondary',
-        fontSize: '0.86rem',
-        px: 0.5,
+        fontSize: '0.7rem',
+        px: 0.3,
         borderRadius: 1,
         transition: 'all .15s ease',
         '&:hover': {
@@ -44,13 +44,8 @@ const PRODUCTS = [
   { href: '/swap', label: 'Token Swap' },
   { href: '/market-metrics', label: 'Market Metrics' },
   { href: '/top-traders', label: 'Top Traders' },
-  { href: '/api-docs', label: 'Token API' }
-];
-const COMPANY = [
-  { href: '/about', label: 'About' },
-  { href: '/terms', label: 'Terms' },
-  { href: '/privacy', label: 'Privacy' },
-  { href: '/disclaimer', label: 'Disclaimer' }
+  { href: '/api-docs', label: 'Token API' },
+  { href: '/about', label: 'About' }
 ];
 const SOCIALS = [
   { href: 'https://twitter.com/xrplto', label: 'Twitter', Icon: Twitter },
@@ -60,25 +55,10 @@ const SOCIALS = [
 ];
 
 // Extract nested component to top level and memoize
-const Group = React.memo(({ label, items }) => (
-  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-    <Typography
-      variant="caption"
-      sx={{
-        textTransform: 'uppercase',
-        letterSpacing: 0.6,
-        fontWeight: 700,
-        color: (t) => alpha(t.palette.primary.main, 0.8),
-        fontSize: '0.75rem'
-      }}
-    >
-      {label}
-    </Typography>
-    <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.4) }}>
-      •
-    </Typography>
+const Group = React.memo(({ items }) => (
+  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.4 }}>
     {items.map((it, idx) => (
-      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.8 }}>
+      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4 }}>
         <FooterLink href={it.href}>{it.label}</FooterLink>
         {idx < items.length - 1 && (
           <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>
@@ -165,8 +145,7 @@ function Footer() {
               flexWrap: 'wrap'
             }}
           >
-            <Group label="Products" items={PRODUCTS} />
-            <Group label="Company" items={COMPANY} />
+            <Group items={PRODUCTS} />
             <SocialIcons />
           </Box>
         </Box>
