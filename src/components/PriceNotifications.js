@@ -25,7 +25,8 @@ import {
   ListItemText,
   ListItemSecondaryAction,
   Divider,
-  Link
+  Link,
+  Avatar
 } from '@mui/material';
 import NextLink from 'next/link';
 import { useTheme, alpha } from '@mui/material/styles';
@@ -37,6 +38,10 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import GpsFixedIcon from '@mui/icons-material/GpsFixed';
+import MonitorIcon from '@mui/icons-material/Monitor';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import InfoIcon from '@mui/icons-material/Info';
 import { AppContext } from 'src/AppContext';
 import { useNotifications } from 'src/contexts/NotificationContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -267,7 +272,10 @@ export const ChartNotificationButton = ({ token, currentPrice }) => {
           {Notification.permission === 'granted' && (
             <Alert severity="success" sx={{ mt: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="body2">✓ Browser notifications enabled</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <CheckCircleIcon sx={{ fontSize: '16px' }} />
+                  <Typography variant="body2">Browser notifications enabled</Typography>
+                </Box>
                 <Button size="small" onClick={testNotification}>Test</Button>
               </Box>
             </Alert>
@@ -333,26 +341,35 @@ const NotificationRow = memo(({ notification, onDelete, currentPrice }) => {
         <Stack spacing={1}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Stack direction="row" alignItems="center" spacing={1}>
-              <Box
-                sx={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: '4px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  background: alpha(
-                    notification.alertType === 'above' ? theme.palette.success.main : theme.palette.warning.main,
-                    0.15
-                  )
-                }}
-              >
-                {notification.alertType === 'above' ? (
-                  <TrendingUpIcon sx={{ fontSize: '14px', color: theme.palette.success.main }} />
-                ) : (
-                  <TrendingDownIcon sx={{ fontSize: '14px', color: theme.palette.warning.main }} />
-                )}
-              </Box>
+              {!notification.isManual && notification.tokenMd5 ? (
+                <Avatar
+                  src={`https://s1.xrpl.to/token/${notification.tokenMd5}`}
+                  sx={{ width: 24, height: 24 }}
+                >
+                  {notification.tokenSymbol?.[0]}
+                </Avatar>
+              ) : (
+                <Box
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: alpha(
+                      notification.alertType === 'above' ? theme.palette.success.main : theme.palette.warning.main,
+                      0.15
+                    )
+                  }}
+                >
+                  {notification.alertType === 'above' ? (
+                    <TrendingUpIcon sx={{ fontSize: '14px', color: theme.palette.success.main }} />
+                  ) : (
+                    <TrendingDownIcon sx={{ fontSize: '14px', color: theme.palette.warning.main }} />
+                  )}
+                </Box>
+              )}
               <Box>
                 {notification.tokenSlug && !notification.isManual ? (
                   <NextLink href={`/token/${notification.tokenSlug}`} passHref>
@@ -401,7 +418,8 @@ const NotificationRow = memo(({ notification, onDelete, currentPrice }) => {
 
           <Stack direction="row" alignItems="center" justifyContent="space-between">
             <Chip
-              label={priceAnalysis?.isTriggered ? "🎯 TARGET HIT" : "📊 MONITORING"}
+              icon={priceAnalysis?.isTriggered ? <GpsFixedIcon sx={{ fontSize: '12px !important' }} /> : <MonitorIcon sx={{ fontSize: '12px !important' }} />}
+              label={priceAnalysis?.isTriggered ? "TARGET HIT" : "MONITORING"}
               size="small"
               sx={{
                 height: '20px',
@@ -515,7 +533,7 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
             </Stack>
           </Stack>
           {Notification.permission === 'granted' && (
-            <Alert severity="success" sx={{ mt: 1, fontSize: '0.8rem' }}>✓ Browser notifications enabled</Alert>
+            <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mt: 1, fontSize: '0.8rem' }}>Browser notifications enabled</Alert>
           )}
         </Box>
 
