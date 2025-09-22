@@ -1,12 +1,199 @@
-import React from 'react';
-import axios from 'axios';
-// import { performance } from 'perf_hooks';
+import React, { memo } from 'react';
+import styled from '@emotion/styled';
+import { useTheme } from '@mui/material/styles';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { BASE_URL } from 'src/utils/constants';
+
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+`;
+
+const PageHeader = styled.div`
+  text-align: center;
+  margin: 48px 0;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #1976d2, #42a5f5);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+
+  @media (min-width: 768px) {
+    font-size: 3.5rem;
+  }
+`;
+
+const DateChip = styled.span`
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid ${props => props.theme?.palette?.primary?.main};
+  border-radius: 16px;
+  color: ${props => props.theme?.palette?.primary?.main};
+  font-size: 1rem;
+`;
+
+const IntroCard = styled.div`
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.05)'};
+  border-radius: 12px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 32px;
+`;
+
+const SectionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const SectionCard = styled.div`
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.05)'};
+  border-radius: 12px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  height: 100%;
+
+  &:hover {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.04)'
+      : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.08)'};
+  }
+
+  &.main-card {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08))'
+      : 'linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03))'};
+    border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.12)'
+      : 'rgba(0, 0, 0, 0.12)'};
+  }
+
+  &.contact-card {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(33, 150, 243, 0.1))'
+      : 'linear-gradient(135deg, rgba(156, 39, 176, 0.06), rgba(33, 150, 243, 0.06))'};
+    border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.12)'
+      : 'rgba(0, 0, 0, 0.12)'};
+  }
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 24px;
+
+  &.primary {
+    color: #1976d2;
+  }
+
+  &.secondary {
+    color: #9c27b0;
+  }
+
+  &.center {
+    text-align: center;
+  }
+`;
+
+const SectionContent = styled.p`
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.primary};
+
+  &.center {
+    text-align: center;
+    line-height: 1.7;
+  }
+`;
+
+const SubsectionTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 8px;
+
+  &.secondary {
+    color: #9c27b0;
+  }
+`;
+
+const SubsectionText = styled.p`
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const IntroText = styled.p`
+  line-height: 1.7;
+  font-size: 1.1rem;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const Divider = styled.hr`
+  margin: 16px 0;
+  border: 0;
+  border-top: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.12)'
+    : 'rgba(0, 0, 0, 0.12)'};
+`;
+
+const NoteText = styled.p`
+  color: ${props => props.theme?.palette?.text?.secondary};
+  font-size: 0.875rem;
+  line-height: 1.4;
+`;
+
+const Timeline = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+`;
+
+const TimelineDate = styled.span`
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid ${props => props.theme?.palette?.primary?.main};
+  border-radius: 16px;
+  color: ${props => props.theme?.palette?.primary?.main};
+  font-weight: 600;
+`;
+
+const TimelineText = styled.p`
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
 
 function PrivacyPage() {
+  const theme = useTheme();
   const sections = [
     {
       title: 'No Data Collection',
@@ -82,329 +269,80 @@ function PrivacyPage() {
       <Topbar />
       <Header />
 
-      <div className="container">
-        <div className="privacy-header">
-          <h1 className="gradient-title">Privacy Policy</h1>
-          <span className="date-chip">Effective Date: May 27, 2023</span>
-        </div>
+      <Container>
+        <PageHeader>
+          <PageTitle>Privacy Policy</PageTitle>
+          <DateChip theme={theme}>Effective Date: May 27, 2023</DateChip>
+        </PageHeader>
 
-        {/* Introduction Card */}
-        <div className="intro-card">
-          <p className="intro-text">
+        <IntroCard theme={theme}>
+          <IntroText theme={theme}>
             At xrpl.to, your privacy is absolute. We do not collect, store, or process any personal
             information whatsoever. We will never contact you, send you emails, or communicate with
             you in any way. This Privacy Policy confirms our commitment to zero data collection and
             complete user anonymity when using our decentralized interface to the XRP Ledger.
-          </p>
-        </div>
+          </IntroText>
+        </IntroCard>
 
-        <div className="sections-grid">
-          {/* Main Policy Sections */}
+        <SectionsGrid>
           {sections.map((section) => (
-            <div className="section-card main-card" key={section.title}>
-              <h2 className="section-title primary">{section.title}</h2>
-              <div className="subsections">
+            <SectionCard theme={theme} className="main-card" key={section.title}>
+              <SectionTitle theme={theme} className="primary">{section.title}</SectionTitle>
+              <div>
                 {section.content.map((item, itemIndex) => (
-                  <div className="subsection" key={`${section.title}-${item.subtitle}`}>
-                    <h3 className="subsection-title secondary">{item.subtitle}</h3>
-                    <p className="subsection-text">{item.text}</p>
+                  <div key={`${section.title}-${item.subtitle}`} style={{ marginBottom: '24px' }}>
+                    <SubsectionTitle theme={theme} className="secondary">{item.subtitle}</SubsectionTitle>
+                    <SubsectionText theme={theme}>{item.text}</SubsectionText>
                   </div>
                 ))}
               </div>
-            </div>
+            </SectionCard>
           ))}
 
-          {/* Additional Sections */}
           {additionalSections.map((section, index) => (
-            <div className="section-card" key={section.title}>
-              <h3 className="section-title">{section.title}</h3>
-              <p className="section-content">{section.text}</p>
-            </div>
+            <SectionCard theme={theme} key={section.title}>
+              <SectionTitle theme={theme}>{section.title}</SectionTitle>
+              <SectionContent theme={theme}>{section.text}</SectionContent>
+            </SectionCard>
           ))}
 
-          {/* Important Notice Section */}
-          <div className="section-card full-width contact-card">
-            <h2 className="section-title secondary center">Important Notice</h2>
-            <div className="contact-content">
-              <p className="section-content center">
+          <SectionCard theme={theme} className="full-width contact-card">
+            <SectionTitle theme={theme} className="secondary center">Important Notice</SectionTitle>
+            <div>
+              <SectionContent theme={theme} className="center">
                 <strong>xrpl.to will NEVER contact you.</strong> We do not have your email or any
                 contact information. If someone claims to represent xrpl.to and contacts you, it is
                 a scam. Report it immediately.
-              </p>
-              <hr className="divider" />
-              <p className="note-text">
+              </SectionContent>
+              <Divider theme={theme} />
+              <NoteText theme={theme}>
                 This Privacy Policy applies only to xrpl.to. Third-party services linked from our
                 platform may have different privacy practices. Since we collect no data, any
                 information you provide to third parties is solely your responsibility.
-              </p>
+              </NoteText>
             </div>
-          </div>
+          </SectionCard>
 
-          {/* Timeline Card */}
-          <div className="section-card full-width">
-            <h3 className="section-title center">Policy Updates</h3>
-            <div className="timeline">
-              <span className="timeline-date">May 27, 2023</span>
-              <p className="timeline-text">Privacy Policy Creation</p>
-            </div>
-          </div>
-        </div>
-      </div>
+          <SectionCard theme={theme} className="full-width">
+            <SectionTitle theme={theme} className="center">Policy Updates</SectionTitle>
+            <Timeline>
+              <TimelineDate theme={theme}>May 27, 2023</TimelineDate>
+              <TimelineText theme={theme}>Privacy Policy Creation</TimelineText>
+            </Timeline>
+          </SectionCard>
+        </SectionsGrid>
+      </Container>
 
       <Footer />
-
-      <style jsx>{`
-        .container {
-          max-width: 1536px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .privacy-header {
-          text-align: center;
-          margin: 48px 0;
-        }
-
-        .gradient-title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          background: linear-gradient(45deg, #1976d2, #42a5f5);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 16px;
-        }
-
-        @media (min-width: 768px) {
-          .gradient-title {
-            font-size: 3.5rem;
-          }
-        }
-
-        .date-chip {
-          display: inline-block;
-          padding: 8px 16px;
-          border: 1px solid #1976d2;
-          border-radius: 16px;
-          color: #1976d2;
-          font-size: 1rem;
-        }
-
-        .intro-card {
-          background: white;
-          border-radius: 8px;
-          padding: 32px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          margin-bottom: 32px;
-        }
-
-        .intro-text {
-          line-height: 1.7;
-          font-size: 1.1rem;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .sections-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 32px;
-          margin-bottom: 48px;
-        }
-
-        @media (min-width: 768px) {
-          .sections-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        .section-card {
-          background: white;
-          border-radius: 8px;
-          padding: 32px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          height: 100%;
-        }
-
-        .section-card.main-card {
-          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
-          border: 1px solid rgba(0, 0, 0, 0.12);
-        }
-
-        .section-card.contact-card {
-          background: linear-gradient(135deg, rgba(156, 39, 176, 0.06), rgba(33, 150, 243, 0.06));
-          border: 1px solid rgba(0, 0, 0, 0.12);
-        }
-
-        .section-card.full-width {
-          grid-column: 1 / -1;
-        }
-
-        .section-title {
-          font-size: 1.5rem;
-          font-weight: 600;
-          color: #1976d2;
-          margin-bottom: 24px;
-        }
-
-        .section-title.primary {
-          color: #1976d2;
-        }
-
-        .section-title.secondary {
-          color: #9c27b0;
-        }
-
-        .section-title.center {
-          text-align: center;
-        }
-
-        .section-content {
-          line-height: 1.6;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .section-content.center {
-          text-align: center;
-          line-height: 1.7;
-        }
-
-        .subsections {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        .subsection-title {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: #1976d2;
-          margin-bottom: 8px;
-        }
-
-        .subsection-title.secondary {
-          color: #9c27b0;
-        }
-
-        .subsection-text {
-          line-height: 1.6;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .contact-content {
-          text-align: center;
-        }
-
-        .email-link {
-          color: #1976d2;
-          font-weight: 600;
-        }
-
-        .divider {
-          margin: 16px 0;
-          border: 0;
-          border-top: 1px solid rgba(0, 0, 0, 0.12);
-        }
-
-        .note-text {
-          color: rgba(0, 0, 0, 0.6);
-          font-size: 0.875rem;
-          line-height: 1.4;
-        }
-
-        .timeline {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 24px;
-        }
-
-        .timeline-date {
-          display: inline-block;
-          padding: 6px 12px;
-          border: 1px solid #1976d2;
-          border-radius: 16px;
-          color: #1976d2;
-          font-weight: 600;
-        }
-
-        .timeline-text {
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-          .intro-card,
-          .section-card {
-            background: #1e1e1e;
-          }
-
-          .section-card.main-card {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-          }
-
-          .section-card.contact-card {
-            background: linear-gradient(135deg, rgba(156, 39, 176, 0.1), rgba(33, 150, 243, 0.1));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-          }
-
-          .intro-text,
-          .section-content,
-          .subsection-text,
-          .timeline-text {
-            color: rgba(255, 255, 255, 0.87);
-          }
-
-          .note-text {
-            color: rgba(255, 255, 255, 0.6);
-          }
-
-          .divider {
-            border-top: 1px solid rgba(255, 255, 255, 0.12);
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
-export default PrivacyPage;
+export default memo(PrivacyPage);
 
-// This function gets called at build time on server-side.
-// It may be called again, on a serverless function, if
-// revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/api/banxa/currencies
-  // const BASE_URL = process.env.API_URL;
-  let data = null;
-  try {
-    // var t1 = performance.now();
-    // const res = await axios.get(`${BASE_URL}/banxa/currencies`);
-    // data = res.data;
-    // var t2 = performance.now();
-    // var dt = (t2 - t1).toFixed(2);
-    // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
-  } catch (e) {
-    console.log(e);
-  }
-  let ret = {};
-  if (data) {
-    let ogp = {};
-
-    ogp.canonical = 'https://xrpl.to';
-    ogp.title = 'Privacy Policy';
-    ogp.url = 'https://xrpl.to/';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-    //ogp.desc = 'Meta description here';
-
-    ret = { data, ogp };
-  }
-
   return {
-    props: ret, // will be passed to the page component as props
-    // Next.js will attempt to re-generate the page:
-    // - When a request comes in
-    // - At most once every 10 seconds
-    revalidate: 10 // In seconds
+    props: {},
+    revalidate: 10
   };
 }

@@ -1,12 +1,161 @@
-import React from 'react';
-import axios from 'axios';
-// import { performance } from 'perf_hooks';
+import React, { memo } from 'react';
+import styled from '@emotion/styled';
+import { useTheme } from '@mui/material/styles';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { BASE_URL } from 'src/utils/constants';
+
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+`;
+
+const PageHeader = styled.div`
+  text-align: center;
+  margin: 48px 0;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #ff9800, #f57c00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+
+  @media (min-width: 768px) {
+    font-size: 3.5rem;
+  }
+`;
+
+const Subtitle = styled.h2`
+  font-size: 1.25rem;
+  color: ${props => props.theme?.palette?.text?.secondary};
+  max-width: 600px;
+  margin: 0 auto;
+  font-weight: 400;
+`;
+
+const AlertCard = styled.div`
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 32px;
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 152, 0, 0.1)'
+    : 'rgba(255, 152, 0, 0.05)'};
+  border: 1px solid ${props => props.theme?.palette?.warning?.main};
+`;
+
+const SectionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const SectionCard = styled.div`
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.05)'};
+  border-radius: 12px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.04)'
+      : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.08)'};
+  }
+
+  &.warning-card {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(244, 67, 54, 0.08))'
+      : 'linear-gradient(135deg, rgba(255, 152, 0, 0.03), rgba(244, 67, 54, 0.03))'};
+    border: 1px solid rgba(255, 152, 0, 0.18);
+  }
+
+  &.success-card {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(76, 175, 80, 0.08), rgba(33, 150, 243, 0.08))'
+      : 'linear-gradient(135deg, rgba(76, 175, 80, 0.03), rgba(33, 150, 243, 0.03))'};
+    border: 1px solid rgba(76, 175, 80, 0.18);
+  }
+
+  &.info-card {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(33, 150, 243, 0.08))'
+      : 'linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(33, 150, 243, 0.03))'};
+    border: 1px solid rgba(33, 150, 243, 0.18);
+  }
+
+  &.footer-card {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08))'
+      : 'linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03))'};
+    border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.12)'
+      : 'rgba(0, 0, 0, 0.12)'};
+    text-align: center;
+    margin-top: 32px;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 24px;
+
+  &.warning {
+    color: #ff9800;
+  }
+
+  &.success {
+    color: #4caf50;
+  }
+
+  &.info {
+    color: #2196f3;
+  }
+`;
+
+const SectionContent = styled.p`
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const AlertTitle = styled.h3`
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #e65100;
+  margin-bottom: 12px;
+`;
+
+const AlertMessage = styled.p`
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const EmailLink = styled.span`
+  color: ${props => props.theme?.palette?.primary?.main};
+  font-weight: 600;
+`;
 
 function DisclaimerPage() {
+  const theme = useTheme();
   const disclaimerSections = [
     {
       title: 'No Investment Advice',
@@ -40,272 +189,48 @@ function DisclaimerPage() {
       <Topbar />
       <Header />
 
-      <div className="container">
-        <div className="disclaimer-header">
-          <h1 className="gradient-title">Disclaimer</h1>
-          <h2 className="subtitle">Important legal information and disclosures</h2>
-        </div>
+      <Container>
+        <PageHeader>
+          <PageTitle>Disclaimer</PageTitle>
+          <Subtitle theme={theme}>Important legal information and disclosures</Subtitle>
+        </PageHeader>
 
-        {/* Important Notice */}
-        <div className="alert alert-warning">
-          <h3 className="alert-title">Important Notice</h3>
-          <p className="alert-message">
+        <AlertCard theme={theme}>
+          <AlertTitle>Important Notice</AlertTitle>
+          <AlertMessage theme={theme}>
             Please read this disclaimer carefully before using xrpl.to. By accessing and using this
             website, you acknowledge and agree to the terms outlined below.
-          </p>
-        </div>
+          </AlertMessage>
+        </AlertCard>
 
-        <div className="sections-grid">
+        <SectionsGrid>
           {disclaimerSections.map((section) => (
-            <div className={`section-card ${section.type}-card`} key={section.title}>
-              <h2 className={`section-title ${section.type}`}>{section.title}</h2>
-              <p className="section-content">{section.content}</p>
-            </div>
+            <SectionCard theme={theme} className={`${section.type}-card`} key={section.title}>
+              <SectionTitle theme={theme} className={section.type}>{section.title}</SectionTitle>
+              <SectionContent theme={theme}>{section.content}</SectionContent>
+            </SectionCard>
           ))}
-        </div>
+        </SectionsGrid>
 
-        {/* Footer Notice */}
-        <div className="footer-card">
-          <h3 className="footer-title">Questions or Concerns?</h3>
-          <p className="footer-text">
+        <SectionCard theme={theme} className="footer-card">
+          <SectionTitle theme={theme}>Questions or Concerns?</SectionTitle>
+          <SectionContent theme={theme}>
             If you have any questions about this disclaimer or need clarification on any of these
-            terms, please contact us at <span className="email-link">hello@xrpl.to</span>
-          </p>
-        </div>
-      </div>
+            terms, please contact us at <EmailLink theme={theme}>hello@xrpl.to</EmailLink>
+          </SectionContent>
+        </SectionCard>
+      </Container>
 
       <Footer />
-
-      <style jsx>{`
-        .container {
-          max-width: 1536px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .disclaimer-header {
-          text-align: center;
-          margin: 48px 0;
-        }
-
-        .gradient-title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          background: linear-gradient(45deg, #ff9800, #f57c00);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 16px;
-        }
-
-        @media (min-width: 768px) {
-          .gradient-title {
-            font-size: 3.5rem;
-          }
-        }
-
-        .subtitle {
-          font-size: 1.25rem;
-          color: rgba(0, 0, 0, 0.6);
-          max-width: 600px;
-          margin: 0 auto;
-          font-weight: 400;
-        }
-
-        .alert {
-          padding: 20px;
-          border-radius: 8px;
-          margin-bottom: 32px;
-        }
-
-        .alert-warning {
-          background: #fff3e0;
-          border: 1px solid #ff9800;
-        }
-
-        .alert-title {
-          font-size: 1.2rem;
-          font-weight: 600;
-          color: #e65100;
-          margin-bottom: 12px;
-        }
-
-        .alert-message {
-          font-size: 1.1rem;
-          line-height: 1.6;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .sections-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 32px;
-          margin-bottom: 48px;
-        }
-
-        @media (min-width: 768px) {
-          .sections-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        .section-card {
-          background: white;
-          border-radius: 8px;
-          padding: 32px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          height: 100%;
-        }
-
-        .section-card.warning-card {
-          background: linear-gradient(135deg, rgba(255, 152, 0, 0.03), rgba(244, 67, 54, 0.03));
-          border: 1px solid rgba(255, 152, 0, 0.18);
-        }
-
-        .section-card.success-card {
-          background: linear-gradient(135deg, rgba(76, 175, 80, 0.03), rgba(33, 150, 243, 0.03));
-          border: 1px solid rgba(76, 175, 80, 0.18);
-        }
-
-        .section-card.info-card {
-          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(33, 150, 243, 0.03));
-          border: 1px solid rgba(33, 150, 243, 0.18);
-        }
-
-        .section-title {
-          font-size: 1.5rem;
-          font-weight: 600;
-          margin-bottom: 24px;
-        }
-
-        .section-title.warning {
-          color: #ff9800;
-        }
-
-        .section-title.success {
-          color: #4caf50;
-        }
-
-        .section-title.info {
-          color: #2196f3;
-        }
-
-        .section-content {
-          line-height: 1.7;
-          font-size: 1.05rem;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .footer-card {
-          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
-          border: 1px solid rgba(0, 0, 0, 0.12);
-          border-radius: 8px;
-          padding: 32px;
-          text-align: center;
-          margin-top: 32px;
-        }
-
-        .footer-title {
-          font-size: 1.25rem;
-          font-weight: 600;
-          color: rgba(0, 0, 0, 0.87);
-          margin-bottom: 16px;
-        }
-
-        .footer-text {
-          line-height: 1.7;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .email-link {
-          color: #1976d2;
-          font-weight: 600;
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-          .subtitle {
-            color: rgba(255, 255, 255, 0.6);
-          }
-
-          .alert-warning {
-            background: rgba(255, 152, 0, 0.15);
-            border: 1px solid #ff9800;
-          }
-
-          .alert-message {
-            color: rgba(255, 255, 255, 0.87);
-          }
-
-          .section-card {
-            background: #1e1e1e;
-          }
-
-          .section-card.warning-card {
-            background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(244, 67, 54, 0.08));
-          }
-
-          .section-card.success-card {
-            background: linear-gradient(135deg, rgba(76, 175, 80, 0.08), rgba(33, 150, 243, 0.08));
-          }
-
-          .section-card.info-card {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(33, 150, 243, 0.08));
-          }
-
-          .section-content,
-          .footer-title,
-          .footer-text {
-            color: rgba(255, 255, 255, 0.87);
-          }
-
-          .footer-card {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
-export default DisclaimerPage;
+export default memo(DisclaimerPage);
 
-// This function gets called at build time on server-side.
-// It may be called again, on a serverless function, if
-// revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/api/banxa/currencies
-  // const BASE_URL = process.env.API_URL;
-  let data = null;
-  try {
-    // var t1 = performance.now();
-    // const res = await axios.get(`${BASE_URL}/banxa/currencies`);
-    // data = res.data;
-    // var t2 = performance.now();
-    // var dt = (t2 - t1).toFixed(2);
-    // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
-  } catch (e) {
-    console.log(e);
-  }
-  let ret = {};
-  if (data) {
-    let ogp = {};
-
-    ogp.canonical = 'https://xrpl.to';
-    ogp.title = 'Disclaimer';
-    ogp.url = 'https://xrpl.to/';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-    //ogp.desc = 'Meta description here';
-
-    ret = { data, ogp };
-  }
-
   return {
-    props: ret, // will be passed to the page component as props
-    // Next.js will attempt to re-generate the page:
-    // - When a request comes in
-    // - At most once every 10 seconds
-    revalidate: 10 // In seconds
+    props: {},
+    revalidate: 10
   };
 }

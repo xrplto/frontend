@@ -1,12 +1,113 @@
-import React from 'react';
+import React, { memo } from 'react';
+import styled from '@emotion/styled';
 import axios from 'axios';
-// import { performance } from 'perf_hooks';
+import { useTheme } from '@mui/material/styles';
 import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
 
+const Container = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+`;
+
+const PageHeader = styled.div`
+  text-align: center;
+  margin: 48px 0;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #147DFE, #2196F3);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+
+  @media (min-width: 768px) {
+    font-size: 3.5rem;
+  }
+`;
+
+const DateChip = styled.span`
+  display: inline-block;
+  padding: 8px 16px;
+  border: 1px solid ${props => props.theme?.palette?.primary?.main};
+  border-radius: 16px;
+  color: ${props => props.theme?.palette?.primary?.main};
+  font-size: 1rem;
+`;
+
+const SectionsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  margin-bottom: 48px;
+
+  @media (min-width: 768px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const SectionCard = styled.div`
+  background: ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(0, 0, 0, 0.05)'};
+  border-radius: 12px;
+  padding: 32px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.04)'
+      : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${props => props.theme?.palette?.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.08)'};
+  }
+
+  &.full-width {
+    grid-column: 1 / -1;
+  }
+`;
+
+const SectionTitle = styled.h2`
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 24px;
+`;
+
+const SectionContent = styled.p`
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.primary};
+`;
+
+const SubsectionTitle = styled.h3`
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: ${props => props.theme?.palette?.primary?.main};
+  margin-bottom: 8px;
+`;
+
+const SubsectionText = styled.p`
+  line-height: 1.6;
+  color: ${props => props.theme?.palette?.text?.secondary};
+`;
+
+const EmailLink = styled.span`
+  color: ${props => props.theme?.palette?.primary?.main};
+  font-weight: 600;
+`;
+
 function TermsPage() {
+  const theme = useTheme();
   const termsSections = [
     {
       title: 'Acceptance of Terms',
@@ -133,271 +234,70 @@ function TermsPage() {
       <Topbar />
       <Header />
 
-      <div className="container">
-        <div className="terms-header">
-          <h1 className="gradient-title">Terms and Conditions</h1>
-          <span className="date-chip">Last updated: May 27, 2023</span>
-        </div>
+      <Container>
+        <PageHeader>
+          <PageTitle>Terms and Conditions</PageTitle>
+          <DateChip theme={theme}>Last updated: May 27, 2023</DateChip>
+        </PageHeader>
 
-        <div className="sections-grid">
-          {/* Main Terms Sections */}
+        <SectionsGrid>
           {termsSections.map((section) => (
-            <div className="section-card main-card" key={section.title}>
-              <h2 className="section-title success">{section.title}</h2>
+            <SectionCard theme={theme} key={section.title}>
+              <SectionTitle theme={theme}>{section.title}</SectionTitle>
               {section.content ? (
-                <p className="section-content">{section.content}</p>
+                <SectionContent theme={theme}>{section.content}</SectionContent>
               ) : (
-                <div className="subsections">
+                <div>
                   {section.subsections.map((item) => (
-                    <div className="subsection" key={`${section.title}-${item.subtitle}`}>
-                      <h3 className="subsection-title">{item.subtitle}</h3>
-                      <p className="subsection-text">{item.text}</p>
+                    <div key={`${section.title}-${item.subtitle}`} style={{ marginBottom: '24px' }}>
+                      <SubsectionTitle theme={theme}>{item.subtitle}</SubsectionTitle>
+                      <SubsectionText theme={theme}>{item.text}</SubsectionText>
                     </div>
                   ))}
                 </div>
               )}
-            </div>
+            </SectionCard>
           ))}
 
-          {/* Additional Sections */}
           {additionalSections.map((section) => (
-            <div className="section-card" key={section.title}>
-              <h3 className="section-title">{section.title}</h3>
-              <p className="section-content">{section.content}</p>
-            </div>
+            <SectionCard theme={theme} key={section.title}>
+              <SectionTitle theme={theme}>{section.title}</SectionTitle>
+              <SectionContent theme={theme}>{section.content}</SectionContent>
+            </SectionCard>
           ))}
 
-          {/* Disclaimer and Limitation Section */}
-          <div className="section-card full-width warning-card">
-            <h2 className="section-title warning">Disclaimer and Limitation of Liability</h2>
-            <div className="subsections">
+          <SectionCard theme={theme} className="full-width">
+            <SectionTitle theme={theme}>Disclaimer and Limitation of Liability</SectionTitle>
+            <div>
               {disclaimerSubsections.map((item) => (
-                <div className="subsection" key={item.subtitle}>
-                  <h3 className="subsection-title error">{item.subtitle}</h3>
-                  <p className="subsection-text">{item.text}</p>
+                <div key={item.subtitle} style={{ marginBottom: '24px' }}>
+                  <SubsectionTitle theme={theme}>{item.subtitle}</SubsectionTitle>
+                  <SubsectionText theme={theme}>{item.text}</SubsectionText>
                 </div>
               ))}
             </div>
-          </div>
+          </SectionCard>
 
-          {/* Contact Section */}
-          <div className="section-card full-width contact-card">
-            <h2 className="section-title">Contact Us</h2>
-            <p className="section-content center">
+          <SectionCard theme={theme} className="full-width" style={{ textAlign: 'center' }}>
+            <SectionTitle theme={theme}>Contact Us</SectionTitle>
+            <SectionContent theme={theme}>
               If you have any questions about this Agreement, please contact us at{' '}
-              <span className="email-link">hello@xrpl.to</span>
-            </p>
-          </div>
-        </div>
-      </div>
+              <EmailLink theme={theme}>hello@xrpl.to</EmailLink>
+            </SectionContent>
+          </SectionCard>
+        </SectionsGrid>
+      </Container>
 
       <Footer />
-
-      <style jsx>{`
-        .container {
-          max-width: 1536px;
-          margin: 0 auto;
-          padding: 0 24px;
-        }
-
-        .terms-header {
-          text-align: center;
-          margin: 48px 0;
-        }
-
-        .gradient-title {
-          font-size: 2.5rem;
-          font-weight: 700;
-          background: linear-gradient(45deg, #2e7d32, #66bb6a);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 16px;
-        }
-
-        @media (min-width: 768px) {
-          .gradient-title {
-            font-size: 3.5rem;
-          }
-        }
-
-        .date-chip {
-          display: inline-block;
-          padding: 8px 16px;
-          border: 1px solid #66bb6a;
-          border-radius: 16px;
-          color: #66bb6a;
-          font-size: 1rem;
-        }
-
-        .sections-grid {
-          display: grid;
-          grid-template-columns: 1fr;
-          gap: 32px;
-          margin-bottom: 48px;
-        }
-
-        @media (min-width: 768px) {
-          .sections-grid {
-            grid-template-columns: 1fr 1fr;
-          }
-        }
-
-        .section-card {
-          background: white;
-          border-radius: 8px;
-          padding: 32px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-          height: 100%;
-        }
-
-        .section-card.main-card {
-          background: linear-gradient(135deg, rgba(102, 187, 106, 0.03), rgba(33, 150, 243, 0.03));
-          border: 1px solid rgba(0, 0, 0, 0.12);
-        }
-
-        .section-card.warning-card {
-          background: linear-gradient(135deg, rgba(255, 152, 0, 0.03), rgba(244, 67, 54, 0.03));
-          border: 1px solid rgba(255, 152, 0, 0.18);
-        }
-
-        .section-card.contact-card {
-          background: linear-gradient(135deg, rgba(33, 150, 243, 0.03), rgba(156, 39, 176, 0.03));
-          border: 1px solid rgba(0, 0, 0, 0.12);
-        }
-
-        .section-card.full-width {
-          grid-column: 1 / -1;
-        }
-
-        .section-title {
-          font-size: 1.5rem;
-          font-weight: 600;
-          color: #1976d2;
-          margin-bottom: 24px;
-        }
-
-        .section-title.success {
-          color: #2e7d32;
-        }
-
-        .section-title.warning {
-          color: #ff9800;
-        }
-
-        .section-content {
-          line-height: 1.6;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .section-content.center {
-          text-align: center;
-          line-height: 1.7;
-        }
-
-        .subsections {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
-        .subsection-title {
-          font-size: 1.125rem;
-          font-weight: 600;
-          color: #1976d2;
-          margin-bottom: 8px;
-        }
-
-        .subsection-title.error {
-          color: #f44336;
-        }
-
-        .subsection-text {
-          line-height: 1.6;
-          color: rgba(0, 0, 0, 0.87);
-        }
-
-        .email-link {
-          color: #1976d2;
-          font-weight: 600;
-        }
-
-        /* Dark mode support */
-        @media (prefers-color-scheme: dark) {
-          .section-card {
-            background: #1e1e1e;
-          }
-
-          .section-card.main-card {
-            background: linear-gradient(
-              135deg,
-              rgba(102, 187, 106, 0.08),
-              rgba(33, 150, 243, 0.08)
-            );
-            border: 1px solid rgba(255, 255, 255, 0.12);
-          }
-
-          .section-card.warning-card {
-            background: linear-gradient(135deg, rgba(255, 152, 0, 0.08), rgba(244, 67, 54, 0.08));
-          }
-
-          .section-card.contact-card {
-            background: linear-gradient(135deg, rgba(33, 150, 243, 0.08), rgba(156, 39, 176, 0.08));
-            border: 1px solid rgba(255, 255, 255, 0.12);
-          }
-
-          .section-content,
-          .subsection-text {
-            color: rgba(255, 255, 255, 0.87);
-          }
-
-          .date-chip {
-            color: #66bb6a;
-            border-color: #66bb6a;
-          }
-        }
-      `}</style>
     </div>
   );
 }
 
-export default TermsPage;
+export default memo(TermsPage);
 
-// This function gets called at build time on server-side.
-// It may be called again, on a serverless function, if
-// revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  // https://api.xrpl.to/api/banxa/currencies
-  // const BASE_URL = process.env.API_URL;
-  let data = null;
-  try {
-    // var t1 = performance.now();
-    // const res = await axios.get(`${BASE_URL}/banxa/currencies`);
-    // data = res.data;
-    // var t2 = performance.now();
-    // var dt = (t2 - t1).toFixed(2);
-    // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
-  } catch (e) {
-    console.log(e);
-  }
-  let ret = {};
-  if (data) {
-    let ogp = {};
-
-    ogp.canonical = 'https://xrpl.to';
-    ogp.title = 'Terms of use';
-    ogp.url = 'https://xrpl.to/';
-    ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-    //ogp.desc = 'Meta description here';
-
-    ret = { data, ogp };
-  }
-
   return {
-    props: ret, // will be passed to the page component as props
-    // Next.js will attempt to re-generate the page:
-    // - When a request comes in
-    // - At most once every 10 seconds
-    revalidate: 10 // In seconds
+    props: {},
+    revalidate: 10
   };
 }
