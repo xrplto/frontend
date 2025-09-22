@@ -1470,7 +1470,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const onFillMax = () => {
     // The MAX button is always for the top input (amount1) which shows curr1.value
-    if (accountPairBalance?.curr1.value > 0) setAmount1(accountPairBalance?.curr1.value);
+    if (accountPairBalance?.curr1.value > 0) {
+      const val = accountPairBalance.curr1.value;
+      setAmount1(val);
+      // Trigger counterpart calculation similar to manual input
+      const hasValidRates =
+        curr1?.currency === 'XRP' || curr2?.currency === 'XRP'
+          ? tokenExch1 > 0 || tokenExch2 > 0
+          : tokenExch1 > 0 && tokenExch2 > 0;
+      if (hasValidRates) {
+        const calculatedValue = calcQuantity(val, 'AMOUNT');
+        if (calculatedValue && calculatedValue !== '0') setAmount2(calculatedValue);
+      }
+    }
   };
 
   const onFillPercent = (pct) => {
