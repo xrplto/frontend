@@ -387,47 +387,29 @@ function getInitPair(token) {
   return pair;
 }
 
-const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
-  if (offers.length < 1) return [];
+const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers = []) => {
+  if (!offers || offers.length < 1) return [];
 
-  const getCurrency = offers[0].TakerGets?.currency || 'XRP';
-  const payCurrency = offers[0].TakerPays?.currency || 'XRP';
+  // Cache first offer checks
+  const firstOffer = offers[0];
+  const getCurrency = firstOffer.TakerGets?.currency || 'XRP';
+  const payCurrency = firstOffer.TakerPays?.currency || 'XRP';
 
-  let multiplier = 1;
+  // Pre-calculate multiplier
   const isBID = orderType === ORDER_TYPE_BIDS;
+  const multiplier = getCurrency === 'XRP' ? 1_000_000 :
+                    payCurrency === 'XRP' ? 0.000_001 : 1;
 
-  if (isBID) {
-    if (getCurrency === 'XRP') multiplier = 1_000_000;
-    else if (payCurrency === 'XRP') multiplier = 0.000_001;
-  } else {
-    if (getCurrency === 'XRP') multiplier = 1_000_000;
-    else if (payCurrency === 'XRP') multiplier = 0.000_001;
-  }
+  // Create old offers set more efficiently
+  const oldOfferIds = new Set(arrOffers.map(offer => offer.id));
 
+  // Process offers with single pass
   const array = [];
   let sumAmount = 0;
   let sumValue = 0;
 
-  let mapOldOffers = new Map();
-  for (var offer of arrOffers) {
-    mapOldOffers.set(offer.id, true);
-  }
-
-  for (let i = 0; i < offers.length; i++) {
-    const offer = offers[i];
-    const obj = {
-      id: '',
-      price: 0,
-      amount: 0,
-      value: 0,
-      sumAmount: 0,
-      sumValue: 0,
-      avgPrice: 0,
-      sumGets: 0,
-      sumPays: 0,
-      isNew: false
-    };
-
+  // Use for...of for better performance
+  for (const offer of offers) {
     const id = `${offer.Account}:${offer.Sequence}`;
     const gets = offer.taker_gets_funded || offer.TakerGets;
     const pays = offer.taker_pays_funded || offer.TakerPays;
@@ -436,37 +418,38 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers) => {
     const takerGets = gets.value || gets;
 
     const amount = Number(isBID ? takerPays : takerGets);
-    const price = isBID ? Math.pow(offer.quality * multiplier, -1) : offer.quality * multiplier;
+
+    // Skip zero amounts early
+    if (amount <= 0) continue;
+
+    // Optimize power calculation
+    const price = isBID ? 1 / (offer.quality * multiplier) : offer.quality * multiplier;
     const value = amount * price;
 
     sumAmount += amount;
     sumValue += value;
-    obj.id = id;
-    obj.price = price;
-    obj.amount = amount;
-    obj.value = value;
-    obj.sumAmount = sumAmount;
-    obj.sumValue = sumValue;
 
-    if (sumAmount > 0) obj.avgPrice = sumValue / sumAmount;
-    else obj.avgPrice = 0;
-
-    obj.isNew = !mapOldOffers.has(id);
-
-    if (amount > 0) array.push(obj);
+    // Create object with calculated values
+    array.push({
+      id,
+      price,
+      amount,
+      value,
+      sumAmount,
+      sumValue,
+      avgPrice: sumValue / sumAmount,
+      sumGets: 0,
+      sumPays: 0,
+      isNew: !oldOfferIds.has(id)
+    });
   }
 
-  const sortedArrayByPrice = [...array].sort((a, b) => {
-    let result = 0;
-    if (orderType === ORDER_TYPE_BIDS) {
-      result = b.price - a.price;
-    } else {
-      result = a.price - b.price;
-    }
-    return result;
+  // Sort in place for better performance
+  array.sort((a, b) => {
+    return orderType === ORDER_TYPE_BIDS ? b.price - a.price : a.price - b.price;
   });
 
-  return sortedArrayByPrice;
+  return array;
 };
 
 const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
@@ -556,36 +539,50 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     }
   }, [tokenId, page, xrpOnly]);
 
-  // WebSocket message processor for OrderBook - throttled for performance
+  // WebSocket message processor for OrderBook - optimized for performance
   const processOrderBookMessages = useMemo(
     () =>
       throttle((event) => {
-        const orderBook = JSON.parse(event.data);
+        // Defer heavy processing to next tick to avoid blocking
+        requestAnimationFrame(() => {
+          try {
+            const orderBook = JSON.parse(event.data);
 
-        if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-          const req = orderBook.id % 2;
-          if (req === 1) {
-            const parsed = formatOrderBook(
-              orderBook.result.offers,
-              ORDER_TYPE_ASKS,
-              orderBookData.asks
-            );
-            setOrderBookData((prev) => ({ ...prev, asks: parsed }));
+            if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
+              const req = orderBook.id % 2;
+
+              // Use functional updates to avoid dependency on orderBookData
+              if (req === 1) {
+                setOrderBookData((prev) => {
+                  const parsed = formatOrderBook(
+                    orderBook.result.offers,
+                    ORDER_TYPE_ASKS,
+                    prev.asks
+                  );
+                  return { ...prev, asks: parsed };
+                });
+              }
+              if (req === 0) {
+                setOrderBookData((prev) => {
+                  const parsed = formatOrderBook(
+                    orderBook.result.offers,
+                    ORDER_TYPE_BIDS,
+                    prev.bids
+                  );
+                  return { ...prev, bids: parsed };
+                });
+                // Use longer timeout to reduce state updates
+                setTimeout(() => {
+                  setClearNewFlag(true);
+                }, 3000); // Increased from 2000ms to 3000ms
+              }
+            }
+          } catch (error) {
+            console.error('Error processing orderbook message:', error);
           }
-          if (req === 0) {
-            const parsed = formatOrderBook(
-              orderBook.result.offers,
-              ORDER_TYPE_BIDS,
-              orderBookData.bids
-            );
-            setOrderBookData((prev) => ({ ...prev, bids: parsed }));
-            setTimeout(() => {
-              setClearNewFlag(true);
-            }, 2000);
-          }
-        }
+        });
       }, 100), // Throttle to max 10 updates per second
-    [orderBookData.asks, orderBookData.bids]
+    [] // Remove dependencies to prevent recreation
   );
 
   // OrderBook WebSocket request
@@ -644,16 +641,23 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     previousTradesRef.current = new Set();
     setLoading(true);
     fetchTradingHistory();
-    const intervalId = setInterval(fetchTradingHistory, 3000);
+
+    // Increase polling interval to reduce load
+    const intervalId = setInterval(fetchTradingHistory, 5000); // Changed from 3000ms to 5000ms
+
     return () => clearInterval(intervalId);
   }, [fetchTradingHistory]);
 
-  // OrderBook WebSocket effect
+  // OrderBook WebSocket effect - optimized polling
   useEffect(() => {
     if (!wsReady || !selectedPair) return;
 
+    // Initial request
     requestOrderBook();
-    const timer = setInterval(() => requestOrderBook(), 4000);
+
+    // Reduce frequency of orderbook requests
+    const timer = setInterval(() => requestOrderBook(), 6000); // Increased from 4000ms to 6000ms
+
     return () => clearInterval(timer);
   }, [wsReady, selectedPair, requestOrderBook]);
 

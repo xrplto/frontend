@@ -931,18 +931,20 @@ const CreatorTransactionsDialog = memo(
 
               <Stack direction="row" spacing={0.5}>
                 <Tooltip title="Refresh">
-                  <IconButton
-                    size="small"
-                    onClick={refresh}
-                    disabled={loading}
-                    sx={{
-                      '&:hover': {
-                        background: alpha(theme.palette.primary.main, 0.1)
-                      }
-                    }}
-                  >
-                    <RefreshIcon sx={{ fontSize: 18 }} />
-                  </IconButton>
+                  <span>
+                    <IconButton
+                      size="small"
+                      onClick={refresh}
+                      disabled={loading}
+                      sx={{
+                        '&:hover': {
+                          background: alpha(theme.palette.primary.main, 0.1)
+                        }
+                      }}
+                    >
+                      <RefreshIcon sx={{ fontSize: 18 }} />
+                    </IconButton>
+                  </span>
                 </Tooltip>
                 <IconButton
                   size="small"
