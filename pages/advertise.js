@@ -627,7 +627,7 @@ export default function Advertise() {
 
               <Box p={4}>
                 <Grid container spacing={3} mb={3}>
-                  <Grid item xs={12}>
+                  <Grid size={{ xs: 12 }}>
                     <Autocomplete
                       value={selectedToken}
                       onChange={(event, newValue) => setSelectedToken(newValue)}
@@ -785,7 +785,7 @@ export default function Advertise() {
                 </Grid>
 
                 <Grid container spacing={3} alignItems="center">
-                  <Grid item xs={12} md={7}>
+                  <Grid size={{ xs: 12, md: 7 }}>
                     <TextField
                       fullWidth
                       label="Number of Impressions"
@@ -833,7 +833,7 @@ export default function Advertise() {
                       }
                     />
                   </Grid>
-                  <Grid item xs={12} md={5}>
+                  <Grid size={{ xs: 12, md: 5 }}>
                     {customImpressions && parseInt(customImpressions) > 0 ? (
                       <Paper
                         elevation={0}
@@ -955,7 +955,7 @@ export default function Advertise() {
                   </Stack>
                   <Grid container spacing={1}>
                     {pricingTiers.map((tier, index) => (
-                      <Grid item xs={12} sm={6} key={index}>
+                      <Grid size={{ xs: 12 }} sm={6} key={index}>
                         <Paper
                           elevation={0}
                           sx={{
@@ -1268,7 +1268,7 @@ export default function Advertise() {
 
                     {accountProfile && accountProfile.account ? (
                       <Grid container spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12 }} sm={6}>
                           <Button
                             variant="contained"
                             color="primary"
@@ -1289,7 +1289,7 @@ export default function Advertise() {
                             {process.status === 'processing' ? 'Processing...' : 'Pay with Wallet'}
                           </Button>
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid size={{ xs: 12 }} sm={6}>
                           <Button
                             variant="outlined"
                             size="large"

@@ -2524,7 +2524,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
               {name}
             </Typography>
             <Grid container alignItems="center" spacing={0.1}>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Stack
                   direction="row"
                   alignItems="center"
@@ -2554,7 +2554,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
                   )}
                 </Stack>
               </Grid>
-              <Grid item xs={12}>
+              <Grid size={{ xs: 12 }}>
                 <Typography variant="caption" color="text.secondary">
                   {collectionData.nftsForSale} listed
                 </Typography>

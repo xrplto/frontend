@@ -16,7 +16,7 @@ function CommunityRulesPage() {
 
       <Container maxWidth="xl">
         <Grid container spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Typography variant="h1" sx={{ my: 4 }}>
               Community Rules
             </Typography>

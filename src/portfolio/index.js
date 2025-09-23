@@ -46,6 +46,7 @@ const activeRankColors = {
 };
 const rankGlowEffect = {};
 import axios from 'axios';
+import { memoryMonitor, performanceTracker, TokenDetailProfiler, useTokenDetailPerformance } from '../performance/setup';
 
 // Get base URL from environment
 const BASE_URL = process.env.API_URL;
@@ -497,6 +498,9 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [isAmm, setIsAmm] = useState(false);
 
+  // Performance monitoring hooks
+  const { startOperation, endOperation } = useTokenDetailPerformance();
+
   // Fallback value for theme.palette.divider
   const dividerColor = theme?.palette?.divider || '#ccc';
 
@@ -511,15 +515,24 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   useEffect(() => {
     const fetchTraderStats = async () => {
+      startOperation();
       try {
         const response = await axiosInstance.get(`${BASE_URL}/analytics/trader-stats/${account}`);
         setTraderStats(response.data);
         // Set AMM status based on response
         setIsAmm(!!response.data?.AMM);
+        endOperation('api', {
+          endpoint: '/analytics/trader-stats',
+          dataSize: JSON.stringify(response.data).length
+        });
       } catch (error) {
         // Set empty data on error - prevent runtime crashes
         setTraderStats({});
         setIsAmm(false);
+        endOperation('api', {
+          endpoint: '/analytics/trader-stats',
+          dataSize: 0
+        });
       } finally {
         setLoading(false);
       }
@@ -527,6 +540,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
     const fetchXrpBalance = async () => {
       setLoadingBalance(true);
+      startOperation();
       try {
         const response = await axiosInstance.post('https://xrplcluster.com/', {
           method: 'account_info',
@@ -548,8 +562,16 @@ export default function Portfolio({ account, limit, collection, type }) {
         } else {
           setXrpBalance(0);
         }
+        endOperation('api', {
+          endpoint: 'xrplcluster.com/account_info',
+          dataSize: JSON.stringify(response.data).length
+        });
       } catch (error) {
         setXrpBalance(0);
+        endOperation('api', {
+          endpoint: 'xrplcluster.com/account_info',
+          dataSize: 0
+        });
       } finally {
         setLoadingBalance(false);
       }
@@ -561,12 +583,38 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   }, [account]);
 
+  // Performance monitoring lifecycle
+  useEffect(() => {
+    startOperation();
+
+    // Start memory monitoring
+    if (memoryMonitor) {
+      memoryMonitor.start();
+    }
+
+    // Track component initialization
+    setTimeout(() => {
+      endOperation('heavy', {
+        operation: 'portfolio-initialization',
+        items: 1
+      });
+    }, 10);
+
+    return () => {
+      // Stop memory monitoring on unmount
+      if (memoryMonitor) {
+        memoryMonitor.stop();
+      }
+    };
+  }, [startOperation, endOperation]);
+
   const handleChange = (_, newValue) => {
     setActiveTab(newValue);
   };
 
   // Process ROI history data for the chart
   const processChartData = () => {
+    startOperation();
 
     if (!traderStats?.roiHistory || traderStats.roiHistory.length === 0) {
       return null;
@@ -606,6 +654,10 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
+    endOperation('heavy', {
+      operation: 'process-chart-data',
+      items: sortedHistory.length
+    });
 
     return chartData;
   };
@@ -1575,6 +1627,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
   const fetchCollections = async () => {
     setLoadingCollections(true);
+    startOperation();
     try {
       const response = await axiosInstance.post(
         'https://api.xrpnft.com/api/account/collectedCreated',
@@ -1592,10 +1645,18 @@ export default function Portfolio({ account, limit, collection, type }) {
         setCollections(response.data.nfts || []);
         setTotalValue(response.data.totalValue || 0);
       }
+      endOperation('api', {
+        endpoint: 'api.xrpnft.com/collectedCreated',
+        dataSize: JSON.stringify(response.data).length
+      });
     } catch (error) {
       // Silently handle the error - NFT collections are optional
       setCollections([]);
       setTotalValue(0);
+      endOperation('api', {
+        endpoint: 'api.xrpnft.com/collectedCreated',
+        dataSize: 0
+      });
     } finally {
       setLoadingCollections(false);
     }
@@ -1616,6 +1677,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   const renderChart = (chartData, options, type = 'line') => {
+    startOperation();
 
     // Need to get the original date data for proper timestamps
     let dateSource;
@@ -1704,7 +1766,14 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     }));
 
-    return <LightweightChart data={data} series={series} height={isMobile ? 300 : 400} />;
+    const chartComponent = <LightweightChart data={data} series={series} height={isMobile ? 300 : 400} />;
+
+    endOperation('chart', {
+      chartType: chartView,
+      dataPoints: data.length
+    });
+
+    return chartComponent;
   };
 
   // Commented out empty useEffect that was causing infinite reloads
@@ -1733,13 +1802,14 @@ export default function Portfolio({ account, limit, collection, type }) {
   }
 
   return (
-    <OverviewWrapper>
+    <TokenDetailProfiler componentName="Portfolio">
+      <OverviewWrapper>
       <Container
         maxWidth={false}
         sx={{ mt: { xs: 1, sm: 3 }, px: { xs: 1, sm: 2 }, maxWidth: '100%' }}
       >
         <Grid container spacing={{ xs: 1, sm: 2 }}>
-          <Grid item xs={12} lg={3} order={{ xs: 2, lg: 1 }}>
+          <Grid size={{ xs: 12, lg: 3 }} order={{ xs: 2, lg: 1 }}>
             <OuterBorderContainer>
               <Stack sx={{ height: '100%', justifyContent: 'space-between' }}>
                 <Stack
@@ -2445,7 +2515,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             </OuterBorderContainer>
           </Grid>
 
-          <Grid item xs={12} lg={9} order={{ xs: 1, lg: 2 }}>
+          <Grid size={{ xs: 12, lg: 9 }} order={{ xs: 1, lg: 2 }}>
             {/* Compact Performance Section */}
             <Box sx={{ mb: 2, width: '100%' }}>
               <Box
@@ -2531,7 +2601,7 @@ export default function Portfolio({ account, limit, collection, type }) {
 
                 {/* Compact Stats Grid */}
                 <Grid container spacing={0.75}>
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
                         p: 1,
@@ -2669,7 +2739,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
                         p: 1,
@@ -2731,7 +2801,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
                         p: 1,
@@ -2782,7 +2852,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
                         p: 1,
@@ -2903,7 +2973,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     </Box>
                   </Grid>
 
-                  <Grid item xs={6} sm={3}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
                         p: 1,
@@ -3334,5 +3404,6 @@ export default function Portfolio({ account, limit, collection, type }) {
         </Grid>
       </Container>
     </OverviewWrapper>
+    </TokenDetailProfiler>
   );
 }

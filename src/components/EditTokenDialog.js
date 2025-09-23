@@ -670,12 +670,12 @@ export default function EditTokenDialog({ token, setToken }) {
                   {tags &&
                     tags.map((tag, idx) => {
                       return (
-                        <Grid item key={md5 + idx + tag}>
+                        <Grid key={md5 + idx + tag}>
                           <Chip size="small" label={tag} onDelete={handleDeleteTags(tag)} />
                         </Grid>
                       );
                     })}
-                  <Grid item>
+                  <Grid>
                     <IconButton
                       onClick={handleAddTagClickOpen}
                       size="small"

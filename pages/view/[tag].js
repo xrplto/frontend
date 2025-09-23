@@ -45,10 +45,10 @@ function Overview({ data }) {
 
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid item xs={12} md={12} lg={8}>
+          <Grid size={{ xs: 12, md: 12 }} lg={8}>
             <SummaryTag tagName={data.tagName} />
           </Grid>
-          <Grid item xs={12} md={12} lg={12}>
+          <Grid size={{ xs: 12, md: 12 }} lg={12}>
             <TokenList
               tag={data.tag}
               tagName={data.tagName}

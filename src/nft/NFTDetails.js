@@ -546,7 +546,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {/* Basic Info */}
       <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
         <Grid container spacing={1}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Stack direction="row" justifyContent="space-between" alignItems="center">
               <Box>
                 <Label>Collection</Label>
@@ -572,7 +572,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           </Grid>
 
           {(strDateTime || volume > 0) && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
                 {strDateTime && (
                   <Stack direction="row" alignItems="center" spacing={0.25}>
@@ -608,7 +608,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               const rarity = total > 0 && count > 0 ? ((count * 100) / total).toFixed(2) : 0;
 
               return (
-                <Grid item key={`${type}-${value}`} xs={6} sm={4} md={3}>
+                <Grid key={`${type}-${value}`} size={{ xs: 6, sm: 4, md: 3 }}>
                   <Paper
                     sx={{
                       p: 0.5,
@@ -660,7 +660,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         <SectionTitle>Details</SectionTitle>
 
         <Grid container spacing={0.5}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Stack direction="row" alignItems="center" spacing={0.5}>
               <Label sx={{ mb: 0 }}>Flags:</Label>
               <Box sx={{ transform: 'scale(0.85)', transformOrigin: 'left' }}>
@@ -669,7 +669,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             </Stack>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Stack spacing={0.5}>
               <Stack direction="row" alignItems="center">
                 <Label sx={{ mb: 0, minWidth: 40 }}>Owner:</Label>
@@ -705,14 +705,14 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             </Stack>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
               <Label sx={{ mb: 0 }}>Fee:</Label>
               <Value sx={{ fontSize: '0.65rem' }}>{transferFee}%</Value>
             </Stack>
           </Grid>
 
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Stack direction="row" alignItems="center" sx={{ mt: 0.5 }}>
               <Label sx={{ mb: 0, minWidth: 60 }}>TokenID:</Label>
               <Link

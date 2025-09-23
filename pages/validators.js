@@ -366,7 +366,7 @@ function ValidatorsPage({
               <>
                 {/* Summary Cards */}
                 <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -384,7 +384,7 @@ function ValidatorsPage({
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -405,7 +405,7 @@ function ValidatorsPage({
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -423,7 +423,7 @@ function ValidatorsPage({
                       </CardContent>
                     </Card>
                   </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
+                  <Grid size={{ xs: 12, sm: 6, md: 3 }}>
                     <Card>
                       <CardContent>
                         <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -451,7 +451,7 @@ function ValidatorsPage({
                 {/* Validator Performance Section - 3 columns */}
                 {validators.length > 0 && validatorPerformance.best.length > 0 && (
                   <Grid container spacing={3} sx={{ mb: 4 }}>
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                       <Card>
                         <CardContent>
                           <Typography
@@ -513,7 +513,7 @@ function ValidatorsPage({
                       </Card>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                       <Card>
                         <CardContent>
                           <Typography
@@ -586,7 +586,7 @@ function ValidatorsPage({
                       </Card>
                     </Grid>
 
-                    <Grid item xs={12} md={4}>
+                    <Grid size={{ xs: 12, md: 4 }}>
                       <Card>
                         <CardContent>
                           <Typography
@@ -716,7 +716,7 @@ function ValidatorsPage({
                 {/* Version Distribution Chart */}
                 {validators.length > 0 && (
                   <Grid container spacing={3} sx={{ mb: 4 }}>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Card>
                         <CardContent>
                           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -817,7 +817,7 @@ function ValidatorsPage({
                         </CardContent>
                       </Card>
                     </Grid>
-                    <Grid item xs={12} md={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                       <Card>
                         <CardContent>
                           <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
@@ -919,7 +919,7 @@ function ValidatorsPage({
                               </Typography>
 
                               <Grid container spacing={2}>
-                                <Grid item xs={6}>
+                                <Grid size={{ xs: 6 }}>
                                   <Typography variant="body2" color="text.secondary">
                                     Ledger Index
                                   </Typography>
@@ -927,7 +927,7 @@ function ValidatorsPage({
                                     {formatLedgerIndex(validator.ledger_index)}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Grid size={{ xs: 6 }}>
                                   <Typography variant="body2" color="text.secondary">
                                     Last Seen
                                   </Typography>
@@ -1096,7 +1096,7 @@ function ValidatorsPage({
                               </Box>
 
                               <Grid container spacing={2}>
-                                <Grid item xs={6}>
+                                <Grid size={{ xs: 6 }}>
                                   <Typography variant="body2" color="text.secondary">
                                     Last Seen
                                   </Typography>
@@ -1104,7 +1104,7 @@ function ValidatorsPage({
                                     {formatRelativeTime(node.last_seen)}
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={6}>
+                                <Grid size={{ xs: 6 }}>
                                   <Typography variant="body2" color="text.secondary">
                                     Uptime
                                   </Typography>
@@ -1324,7 +1324,7 @@ function ValidatorsPage({
                                 </Typography>
 
                                 <Grid container spacing={2}>
-                                  <Grid item xs={4}>
+                                  <Grid size={{ xs: 4 }}>
                                     <Typography variant="body2" color="text.secondary">
                                       Support
                                     </Typography>
@@ -1332,7 +1332,7 @@ function ValidatorsPage({
                                       {amendment.count}/{amendment.validations}
                                     </Typography>
                                   </Grid>
-                                  <Grid item xs={4}>
+                                  <Grid size={{ xs: 4 }}>
                                     <Typography variant="body2" color="text.secondary">
                                       Threshold
                                     </Typography>
@@ -1340,7 +1340,7 @@ function ValidatorsPage({
                                       {amendment.threshold}
                                     </Typography>
                                   </Grid>
-                                  <Grid item xs={4}>
+                                  <Grid size={{ xs: 4 }}>
                                     <Typography variant="body2" color="text.secondary">
                                       Version
                                     </Typography>

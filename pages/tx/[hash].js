@@ -131,12 +131,12 @@ const JsonViewer = ({ data }) => (
 
 const DetailRow = ({ label, children, ...props }) => (
   <Grid container item xs={12} sx={{ mb: 2, pb: 2, ...props }}>
-    <Grid item xs={12} md={3}>
+    <Grid size={{ xs: 12, md: 3 }}>
       <Typography variant="body1" sx={{ color: 'text.secondary' }}>
         {label}
       </Typography>
     </Grid>
-    <Grid item xs={12} md={9}>
+    <Grid size={{ xs: 12, md: 9 }}>
       {children}
     </Grid>
   </Grid>
@@ -1887,7 +1887,7 @@ const TransactionDetails = ({ txData }) => {
 
         <Grid container spacing={3}>
           {/* Main Transaction Details */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Box
               sx={{
                 p: 3,
@@ -2344,12 +2344,12 @@ const TransactionDetails = ({ txData }) => {
                             >
                               <Grid container spacing={2}>
                                 {isLoading ? (
-                                  <Grid item xs={12}>
+                                  <Grid size={{ xs: 12 }}>
                                     <Typography>Loading NFT data...</Typography>
                                   </Grid>
                                 ) : nftInfo && !nftInfo.error ? (
                                   <>
-                                    <Grid item xs={12} md={4}>
+                                    <Grid size={{ xs: 12, md: 4 }}>
                                       {(() => {
                                         const imageUrl = getNftImageUrl(nftInfo);
                                         if (!imageUrl) return null;
@@ -2367,12 +2367,12 @@ const TransactionDetails = ({ txData }) => {
                                         );
                                       })()}
                                     </Grid>
-                                    <Grid item xs={12} md={8}>
+                                    <Grid size={{ xs: 12, md: 8 }}>
                                       {fallbackView}
                                     </Grid>
                                   </>
                                 ) : (
-                                  <Grid item xs={12}>
+                                  <Grid size={{ xs: 12 }}>
                                     {fallbackView}
                                   </Grid>
                                 )}
@@ -2453,7 +2453,7 @@ const TransactionDetails = ({ txData }) => {
                         <Typography>Loading NFT data...</Typography>
                       ) : acceptedNftInfo ? (
                         <Grid container spacing={2}>
-                          <Grid item xs={12} md={4}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             {(() => {
                               const imageUrl = getNftImageUrl(acceptedNftInfo);
                               if (!imageUrl) return null;
@@ -2471,7 +2471,7 @@ const TransactionDetails = ({ txData }) => {
                               );
                             })()}
                           </Grid>
-                          <Grid item xs={12} md={8}>
+                          <Grid size={{ xs: 12, md: 8 }}>
                             <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Link href={`/nft/${acceptedNftInfo.NFTokenID}`} passHref>
                                 <Typography
@@ -2626,7 +2626,7 @@ const TransactionDetails = ({ txData }) => {
                     ) : offerNftInfo ? (
                       <DetailRow label="NFT Data">
                         <Grid container spacing={2}>
-                          <Grid item xs={12} md={4}>
+                          <Grid size={{ xs: 12, md: 4 }}>
                             {(() => {
                               const imageUrl = getNftImageUrl(offerNftInfo);
                               if (!imageUrl) return null;
@@ -2644,7 +2644,7 @@ const TransactionDetails = ({ txData }) => {
                               );
                             })()}
                           </Grid>
-                          <Grid item xs={12} md={8}>
+                          <Grid size={{ xs: 12, md: 8 }}>
                             <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Link href={`/nft/${offerNftInfo.NFTokenID}`} passHref>
                                 <Typography
@@ -2754,7 +2754,7 @@ const TransactionDetails = ({ txData }) => {
                   <>
                     <DetailRow label="NFT Data">
                       <Grid container spacing={2}>
-                        <Grid item xs={12} md={4}>
+                        <Grid size={{ xs: 12, md: 4 }}>
                           {mintedNftInfoLoading ? (
                             <Typography>Loading NFT image...</Typography>
                           ) : (
@@ -2776,7 +2776,7 @@ const TransactionDetails = ({ txData }) => {
                             })()
                           )}
                         </Grid>
-                        <Grid item xs={12} md={8}>
+                        <Grid size={{ xs: 12, md: 8 }}>
                           {meta.nftoken_id && (
                             <DetailRow label="NFT" sx={{ mb: 1, pb: 1, borderBottom: 'none' }}>
                               <Link href={`/nft/${meta.nftoken_id}`} passHref>
@@ -3079,7 +3079,7 @@ const TransactionDetails = ({ txData }) => {
 
           {/* Affected Accounts */}
           {balanceChanges.length > 0 && isSuccess && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Box
                 sx={{
                   p: 3,
@@ -3177,7 +3177,7 @@ const TransactionDetails = ({ txData }) => {
 
           {/* Exchange Information */}
           {displayExchange && isSuccess && (
-            <Grid item xs={12}>
+            <Grid size={{ xs: 12 }}>
               <Box
                 sx={{
                   p: 3,
@@ -3277,7 +3277,7 @@ const TransactionDetails = ({ txData }) => {
           )}
 
           {/* Transaction Link */}
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Box
               sx={{
                 p: 2,

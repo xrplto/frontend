@@ -39,7 +39,7 @@ function OGPTestPage({ imageUrls }) {
 
             <Grid container spacing={2}>
               {imageUrls.map((url, index) => (
-                <Grid item xs={12} sm={6} md={4} key={index}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                   <Paper elevation={2} sx={{ p: 1 }}>
                     <Typography variant="subtitle2" gutterBottom>
                       Image {index + 1}
@@ -73,7 +73,7 @@ function OGPTestPage({ imageUrls }) {
         </Card>
 
         <Grid container spacing={4}>
-          <Grid item xs={12} md={8}>
+          <Grid size={{ xs: 12, md: 8 }}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>
@@ -101,7 +101,7 @@ function OGPTestPage({ imageUrls }) {
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={4}>
+          <Grid size={{ xs: 12, md: 4 }}>
             <Card elevation={2}>
               <CardContent>
                 <Typography variant="h5" gutterBottom>

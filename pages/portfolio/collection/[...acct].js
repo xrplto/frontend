@@ -176,7 +176,7 @@ export default function CollectedCreatedNFTs({ type, account, limit, collection 
         )}
         <Grid container spacing={1} justifyContent="space-between" mt={1}>
           {showFilter && (
-            <Grid item xs={12} md={3} xl={2} pt={0.5}>
+            <Grid size={{ xs: 12, md: 3 }} xl={2} pt={0.5}>
               <FilterDetail
                 onSaleCount={onSaleCount}
                 filter={filter}
@@ -187,7 +187,7 @@ export default function CollectedCreatedNFTs({ type, account, limit, collection 
               />
             </Grid>
           )}
-          <Grid item xs={12} md={showFilter ? 9 : 12} xl={showFilter ? 10 : 12}>
+          <Grid size={{ xs: 12, md: showFilter ? 9 : 12 }} xl={showFilter ? 10 : 12}>
             {loading && (
               <Stack alignItems="center">
                 <PulseLoader color={darkMode ? '#007B55' : '#5569ff'} size={10} />

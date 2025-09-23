@@ -208,13 +208,13 @@ function NftListToolbar({ count, rows, setRows, page, setPage }) {
 
   return (
     <Grid container spacing={2} alignItems="center" sx={{ mt: 2, mb: 2 }}>
-      <Grid item xs={12} md={4}>
+      <Grid size={{ xs: 12, md: 4 }}>
         <StyledTypography variant="body2">
           Showing {start} - {end} out of {count}
         </StyledTypography>
       </Grid>
 
-      <Grid item xs={12} md={4}>
+      <Grid size={{ xs: 12, md: 4 }}>
         <Stack alignItems="center">
           <StyledBox>
             <StyledPagination
@@ -227,7 +227,7 @@ function NftListToolbar({ count, rows, setRows, page, setPage }) {
         </Stack>
       </Grid>
 
-      <Grid item xs={12} md={4}>
+      <Grid size={{ xs: 12, md: 4 }}>
         <Stack
           direction="row"
           alignItems="center"

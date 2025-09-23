@@ -31,7 +31,7 @@ const OverView = ({ account, limit, collection, type, tab }) => {
 
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
-          <Grid item xs={12}>
+          <Grid size={{ xs: 12 }}>
             <Portfolio
               account={account}
               limit={limit}

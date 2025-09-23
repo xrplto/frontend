@@ -607,7 +607,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
     >
       <Grid container spacing={{ xs: 0.75, sm: 1 }}>
         {/* Asset Distribution Chart */}
-        <Grid item xs={12} md={5}>
+        <Grid size={{ xs: 12, md: 5 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
             <PieChartIcon sx={{ fontSize: 20, color: theme.palette.primary.main }} />
             <Typography
@@ -878,7 +878,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
         </Grid>
 
         {/* Trustlines */}
-        <Grid item xs={12} md={7}>
+        <Grid size={{ xs: 12, md: 7 }}>
           <Stack spacing={1}>
             {/* Summary Card */}
             <Box

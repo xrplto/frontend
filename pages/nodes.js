@@ -198,7 +198,7 @@ function NodesPage() {
           {!loading && !error && nodes.length > 0 && (
             <>
               <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -213,7 +213,7 @@ function NodesPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -234,7 +234,7 @@ function NodesPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Card>
                     <CardContent>
                       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -249,7 +249,7 @@ function NodesPage() {
                     </CardContent>
                   </Card>
                 </Grid>
-                <Grid item xs={12} md={3}>
+                <Grid size={{ xs: 12, md: 3 }}>
                   <Card>
                     <CardContent>
                       <Typography color="text.secondary" variant="body2" sx={{ mb: 1 }}>
@@ -290,7 +290,7 @@ function NodesPage() {
                       </Box>
 
                       <Grid container spacing={2}>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">
                             Last Seen
                           </Typography>
@@ -298,7 +298,7 @@ function NodesPage() {
                             {formatRelativeTime(node.last_seen)}
                           </Typography>
                         </Grid>
-                        <Grid item xs={6}>
+                        <Grid size={{ xs: 6 }}>
                           <Typography variant="body2" color="text.secondary">
                             Uptime
                           </Typography>
