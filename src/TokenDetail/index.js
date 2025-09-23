@@ -7,6 +7,7 @@ import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
 // Components
 import { AppContext } from 'src/AppContext';
 
+
 // Lazy load all heavy components
 const Overview = dynamic(() => import('./overview'), {
   loading: () => <div style={{ height: '400px' }} />,
@@ -97,8 +98,8 @@ const TokenDetail = memo(
     }, [creatorTxOpen, onCreatorPanelToggle]);
 
     // Handle transaction selection
-    const handleSelectTransaction = useCallback(
-      (hash) => {
+    const handleSelectTransaction = useCallback((hash) => {
+      requestAnimationFrame(() => {
         setSelectedTxHash(hash);
         setPanelMode('transaction');
         setTxDetailsOpen(true);
@@ -108,13 +109,11 @@ const TokenDetail = memo(
         if (onOrderBookToggle) {
           onOrderBookToggle(false);
         }
-      },
-      [onTransactionPanelToggle, onOrderBookToggle]
-    );
+      });
+    }, [onTransactionPanelToggle, onOrderBookToggle]);
 
     // Handle transaction details close - batched updates
     const handleTxDetailsClose = useCallback(() => {
-      // Use flushSync for batched updates to prevent multiple renders
       requestAnimationFrame(() => {
         setTxDetailsOpen(false);
         setPanelMode('transaction');

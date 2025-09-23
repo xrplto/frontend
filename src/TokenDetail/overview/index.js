@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { memo, useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { useState, useEffect, useContext } from 'react';
 
@@ -8,6 +8,7 @@ import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Box } from '@m
 
 // Context
 import { AppContext } from 'src/AppContext';
+
 
 // Markdown editor removed for build simplicity
 
@@ -78,6 +79,7 @@ const Overview = memo(
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || '');
     const [pairs, setPairs] = useState([]);
+    const pairsCache = useRef(new Map());
 
     // Markdown parser removed for build simplicity
 
@@ -85,23 +87,39 @@ const Overview = memo(
       setDescription(text);
     }, []);
 
-    // Fetch pairs data
+    // Fetch pairs data with caching and debouncing
     useEffect(() => {
-      const fetchPairs = async () => {
+      if (!token.md5) return;
+
+      // Check cache first
+      if (pairsCache.current.has(token.md5)) {
+        requestAnimationFrame(() => setPairs(pairsCache.current.get(token.md5)));
+        return;
+      }
+
+      const timeoutId = setTimeout(async () => {
         try {
-          const response = await fetch(`${BASE_URL}/pairs?md5=${token.md5}`);
+          const controller = new AbortController();
+          const fetchTimeoutId = setTimeout(() => controller.abort(), 5000);
+
+          const response = await fetch(`${BASE_URL}/pairs?md5=${token.md5}`, {
+            signal: controller.signal
+          });
+          clearTimeout(fetchTimeoutId);
+
           const data = await response.json();
           if (data.pairs) {
-            setPairs(data.pairs);
+            pairsCache.current.set(token.md5, data.pairs);
+            requestAnimationFrame(() => setPairs(data.pairs));
           }
         } catch (error) {
-          console.error('Error fetching pairs:', error);
+          if (error.name !== 'AbortError') {
+            console.error('Error fetching pairs:', error);
+          }
         }
-      };
+      }, 300);
 
-      if (token.md5) {
-        fetchPairs();
-      }
+      return () => clearTimeout(timeoutId);
     }, [token.md5, BASE_URL]);
 
     const onApplyDescription = useCallback(async () => {
@@ -124,19 +142,21 @@ const Overview = memo(
         if (res.status === 200) {
           const ret = res.data;
           if (ret.status) {
-            token.description = description;
-            openSnackbar('Successful!', 'success');
-            finish = true;
+            requestAnimationFrame(() => {
+              token.description = description;
+              openSnackbar('Successful!', 'success');
+              finish = true;
+              if (finish) setShowEditor(false);
+            });
           } else {
-            // { status: false, data: null, err: 'ERR_URL_SLUG' }
             const err = ret.err;
             openSnackbar(err, 'error');
           }
         }
       } catch (err) {
+        console.error('Update description failed:', err);
       }
-      setLoading(false);
-      if (finish) setShowEditor(false);
+      requestAnimationFrame(() => setLoading(false));
     }, [token, description, accountProfile, BASE_URL, setLoading, openSnackbar]);
 
     let user = token.user;
