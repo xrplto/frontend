@@ -99,7 +99,7 @@ export default function ConfirmAcceptOfferDialog({ open, setOpen, offer, onConti
       <ConfirmDialogTitle id="customized-dialog-title" onClose={handleClose}>
         <Stack direction="row" spacing={1} alignItems="center">
           <CheckCircleOutlineIcon color="primary" />
-          <Typography variant="h6" color="primary.main">
+          <Typography variant="h6" component="span" color="primary.main">
             Confirm Offer
           </Typography>
         </Stack>

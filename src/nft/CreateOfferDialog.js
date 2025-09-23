@@ -104,6 +104,7 @@ const OfferDialogTitle = (props) => {
     >
       <Typography
         variant="h6"
+        component="span"
         sx={{
           fontWeight: 600,
           color: theme.palette.primary.main,

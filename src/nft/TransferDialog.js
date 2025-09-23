@@ -382,7 +382,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         }}
       >
         <StyledDialogTitle onClose={!isLoading ? handleClose : undefined}>
-          <Typography variant="h6">Transfer NFT</Typography>
+          <Typography variant="h6" component="span">Transfer NFT</Typography>
         </StyledDialogTitle>
 
         <Divider />

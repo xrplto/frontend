@@ -87,7 +87,9 @@ const TransactionCard = styled(Paper)(({ theme }) => ({
   }
 }));
 
-const TypeChip = styled(Chip)(({ theme, transactionType }) => ({
+const TypeChip = styled(Chip, {
+  shouldForwardProp: (prop) => prop !== 'transactionType'
+})(({ theme, transactionType }) => ({
   height: 26,
   fontSize: '0.75rem',
   fontWeight: 600,

@@ -599,7 +599,7 @@ export default function SpinNFT({ collection, setView }) {
                                 */}
               </Stack>
             </CardWrapper>
-          </Grid>
+          </Box>
 
           <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start' }}>
             <Stack spacing={2} sx={{ mt: 3, mb: 6 }}>
