@@ -85,14 +85,14 @@ export default function HistoryToolbar({ count, rows, setRows, page, setPage }) 
   };
 
   return (
-    <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0 }}>
-      <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 0 }}>
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         <Stack alignItems="center">
           <Pagination page={page + 1} onChange={handleChangePage} count={page_count} size="small" />
         </Stack>
-      </Grid>
+      </Box>
 
-      <Grid container item xs={6} md={4} lg={4}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Chip
             label={`${start}-${end} of ${fIntNumber(count)}`}
@@ -109,15 +109,13 @@ export default function HistoryToolbar({ count, rows, setRows, page, setPage }) 
             entries
           </Typography>
         </Box>
-      </Grid>
 
-      <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-        <Stack alignItems="center">
-          <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
-        </Stack>
-      </Grid>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Stack alignItems="center">
+            <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
+          </Stack>
+        </Box>
 
-      <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
         <RowsSelector>
           <ViewList fontSize="small" color="action" />
           <Typography variant="body2" sx={{ fontWeight: 500, color: 'text.secondary' }}>
@@ -129,7 +127,7 @@ export default function HistoryToolbar({ count, rows, setRows, page, setPage }) 
             <MenuItem value={10}>10</MenuItem>
           </CustomSelect>
         </RowsSelector>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 }

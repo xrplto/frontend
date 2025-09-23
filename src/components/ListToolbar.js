@@ -74,8 +74,8 @@ export default function ListToolbar({ count, rows, setRows, page, setPage }) {
   };
 
   return (
-    <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 0 }}>
-      <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 0 }}>
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         <Stack alignItems="center">
           <StyledBox>
             <Pagination
@@ -86,25 +86,23 @@ export default function ListToolbar({ count, rows, setRows, page, setPage }) {
             />
           </StyledBox>
         </Stack>
-      </Grid>
+      </Box>
 
-      <Grid container item xs={6} md={4} lg={4}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
         <StyledTypography variant="body2">
           Showing {start} - {end} out of {count}
         </StyledTypography>
-      </Grid>
 
-      <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-        <Stack alignItems="center">
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Stack alignItems="center">
+            <StyledBox>
+              <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
+            </StyledBox>
+          </Stack>
+        </Box>
+
+        <Stack direction="row" alignItems="center" sx={{ pr: 1 }}>
           <StyledBox>
-            <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
-          </StyledBox>
-        </Stack>
-      </Grid>
-
-      <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
-        <Stack direction="row" alignItems="center" sx={{ width: '100%', pr: 1 }}>
-          <StyledBox sx={{ maxWidth: '100%' }}>
             <StyledTypography variant="body2">Show Rows</StyledTypography>
             <CustomSelect value={rows} onChange={handleChangeRows}>
               <MenuItem value={20}>20</MenuItem>
@@ -113,7 +111,7 @@ export default function ListToolbar({ count, rows, setRows, page, setPage }) {
             </CustomSelect>
           </StyledBox>
         </Stack>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 }

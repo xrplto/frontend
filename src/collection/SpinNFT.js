@@ -538,8 +538,8 @@ export default function SpinNFT({ collection, setView }) {
       </Stack>
 
       <Container maxWidth="lg" sx={{ pl: 0, pr: 0 }}>
-        <Grid container rowSpacing={2} alignItems="center" sx={{ mb: 10 }}>
-          <Grid container item xs={12} md={6} justifyContent="center" alignItems="center">
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center', mb: 10 }}>
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
             <CardWrapper>
               <img
                 src={spinImgUrl}
@@ -601,7 +601,7 @@ export default function SpinNFT({ collection, setView }) {
             </CardWrapper>
           </Grid>
 
-          <Grid container item xs={12} md={6} justifyContent="flex-start" alignItems="flex-start">
+          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start' }}>
             <Stack spacing={2} sx={{ mt: 3, mb: 6 }}>
               <Typography variant="p5">
                 Get a {type} NFT from the{' '}
@@ -679,8 +679,8 @@ export default function SpinNFT({ collection, setView }) {
                 </Link>
               </Stack>
             </Stack>
-          </Grid>
-        </Grid>
+          </Box>
+        </Box>
       </Container>
 
       {/* <Stack sx={{mt:5, minHeight: '20vh'}}>

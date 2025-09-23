@@ -837,19 +837,30 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
   };
 
   return (
-    <Grid
-      container
-      rowSpacing={isMobile ? 1 : 2}
-      alignItems="center"
-      sx={{ mt: 0, px: isMobile ? 1 : 0 }}
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: isMobile ? 1 : 2,
+        mt: 0,
+        px: isMobile ? 1 : 0
+      }}
     >
-      <Grid container item xs={12} sx={{ display: { xs: 'block', md: 'none' } }}>
+      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
         <Stack alignItems="center">
           <Pagination page={page + 1} onChange={handleChangePage} count={page_count} size="small" />
         </Stack>
-      </Grid>
+      </Box>
 
-      <Grid container item xs={6} md={4} lg={4}>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 1
+        }}
+      >
         <Typography
           variant="body2"
           sx={{
@@ -860,15 +871,13 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
         >
           {isMobile ? `${start}-${end} of ${total}` : `Showing ${start} - ${end} out of ${total}`}
         </Typography>
-      </Grid>
 
-      <Grid container item xs={0} md={4} lg={4} sx={{ display: { xs: 'none', md: 'block' } }}>
-        <Stack alignItems="center">
-          <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
-        </Stack>
-      </Grid>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+          <Stack alignItems="center">
+            <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
+          </Stack>
+        </Box>
 
-      <Grid container item xs={6} md={4} lg={4} justifyContent="flex-end">
         <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
           <Typography
             variant="body2"
@@ -906,8 +915,8 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
             </MenuItem>
           </CustomSelect>
         </Stack>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 
