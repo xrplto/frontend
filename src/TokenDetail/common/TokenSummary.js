@@ -1214,7 +1214,7 @@ const TokenSummary = memo(
                       {(() => {
                         const symbol = currencySymbols[activeFiatCurrency];
                         const rawPrice =
-                          activeFiatCurrency === 'XRP' ? exch : exch / metrics[activeFiatCurrency];
+                          activeFiatCurrency === 'XRP' ? exch : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : 0);
 
                         if (rawPrice && rawPrice < 0.001) {
                           const str = rawPrice.toFixed(15);
@@ -1779,7 +1779,7 @@ const TokenSummary = memo(
                           const rawPrice =
                             activeFiatCurrency === 'XRP'
                               ? exch
-                              : exch / metrics[activeFiatCurrency];
+                              : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : 0);
 
                           // Check if price has many leading zeros
                           if (rawPrice && rawPrice < 0.001) {
@@ -1855,7 +1855,7 @@ const TokenSummary = memo(
                           >
                             {currencySymbols[activeFiatCurrency]}
                             {formatValue(
-                              range24h.min * (metrics.USD / metrics[activeFiatCurrency])
+                              range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1)
                             )}
                           </Typography>
                         </Stack>
@@ -1910,7 +1910,7 @@ const TokenSummary = memo(
                           >
                             {currencySymbols[activeFiatCurrency]}
                             {formatValue(
-                              range24h.max * (metrics.USD / metrics[activeFiatCurrency])
+                              range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1)
                             )}
                           </Typography>
                           <Typography
@@ -2017,7 +2017,7 @@ const TokenSummary = memo(
                     sx={{ fontSize: '0.75rem', fontWeight: 700, color: theme.palette.success.main }}
                   >
                     {currencySymbols[activeFiatCurrency]}
-                    {formatValue(range24h.min * (metrics.USD / metrics[activeFiatCurrency]))}
+                    {formatValue(range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
                   </Typography>
 
                   <Typography
@@ -2042,7 +2042,7 @@ const TokenSummary = memo(
                     sx={{ fontSize: '0.75rem', fontWeight: 700, color: theme.palette.error.main }}
                   >
                     {currencySymbols[activeFiatCurrency]}
-                    {formatValue(range24h.max * (metrics.USD / metrics[activeFiatCurrency]))}
+                    {formatValue(range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
                   </Typography>
                 </Stack>
 
