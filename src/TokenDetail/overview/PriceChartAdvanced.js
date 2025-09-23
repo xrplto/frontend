@@ -83,7 +83,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const chartCreatedRef = useRef(false);
   const scaleFactorRef = useRef(1);
 
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
   const isDark = theme.palette.mode === 'dark';
 
   const chartTypeIcons = {
@@ -771,7 +771,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         chartRef.current = null;
       }
     };
-  }, [chartType, isDark, isMobile, data, holderData, theme, activeFiatCurrency]);
+  }, [chartType, isDark, isMobile, data, holderData, theme]);
 
   // Handle fullscreen resize - recreate chart if needed
   useEffect(() => {
