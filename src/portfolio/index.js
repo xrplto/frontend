@@ -2698,7 +2698,7 @@ export default function Portfolio({ account, limit, collection, type }) {
             <Box sx={{ mb: 2, width: '100%' }}>
               <Box
                 sx={{
-                  p: { xs: 1.5, sm: 2 },
+                  p: { xs: 1.25, sm: 1.5 },
                   borderRadius: '12px',
                   background:
                     theme.palette.mode === 'dark'
@@ -2718,7 +2718,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'space-between',
-                    mb: 2,
+                    mb: 1.5,
                     gap: 1
                   }}
                 >
@@ -2778,12 +2778,12 @@ export default function Portfolio({ account, limit, collection, type }) {
                 </Box>
 
                 {/* Compact Stats Grid */}
-                <Grid container spacing={0.75}>
+                <Grid container spacing={0.5}>
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
-                        p: 1,
-                        borderRadius: '8px',
+                        p: 0.75,
+                        borderRadius: '6px',
                         background: alpha(
                           (() => {
                             let roiValue;
@@ -2804,7 +2804,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               ? theme.palette.success.main
                               : theme.palette.error.main;
                           })(),
-                          0.06
+                          0.05
                         ),
                         border: `1px solid ${alpha(
                           (() => {
@@ -2826,7 +2826,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               ? theme.palette.success.main
                               : theme.palette.error.main;
                           })(),
-                          0.15
+                          0.12
                         )}`,
                         transition: 'all 0.15s ease',
                         '&:hover': {
@@ -2853,26 +2853,26 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 ? theme.palette.success.main
                                 : theme.palette.error.main;
                             })(),
-                            0.08
+                            0.07
                           )
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 0.25,
+                          mb: 0.125,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px'
+                          letterSpacing: '0.2px'
                         }}
                       >
                         ROI
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
+                          fontSize: { xs: '0.85rem', sm: '0.95rem' },
                           fontWeight: 700,
                           color: (() => {
                             let roiValue;
@@ -2920,31 +2920,31 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
-                        p: 1,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.primary.main, 0.06),
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                        p: 0.75,
+                        borderRadius: '6px',
+                        background: alpha(theme.palette.primary.main, 0.05),
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
                         transition: 'all 0.15s ease',
                         '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.08)
+                          background: alpha(theme.palette.primary.main, 0.07)
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 0.25,
+                          mb: 0.125,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px'
+                          letterSpacing: '0.2px'
                         }}
                       >
                         Volume
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
+                          fontSize: { xs: '0.85rem', sm: '0.95rem' },
                           fontWeight: 700,
                           color: theme.palette.primary.main,
                           lineHeight: 1
@@ -2967,9 +2967,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                         <Typography
                           component="span"
                           sx={{
-                            fontSize: '0.65rem',
+                            fontSize: '0.6rem',
                             color: theme.palette.text.secondary,
-                            ml: 0.25,
+                            ml: 0.2,
                             fontWeight: 500
                           }}
                         >
@@ -2982,31 +2982,31 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
-                        p: 1,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.success.main, 0.06),
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                        p: 0.75,
+                        borderRadius: '6px',
+                        background: alpha(theme.palette.success.main, 0.05),
+                        border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
                         transition: 'all 0.15s ease',
                         '&:hover': {
-                          background: alpha(theme.palette.success.main, 0.08)
+                          background: alpha(theme.palette.success.main, 0.07)
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 0.25,
+                          mb: 0.125,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px'
+                          letterSpacing: '0.2px'
                         }}
                       >
                         Trades
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
+                          fontSize: { xs: '0.85rem', sm: '0.95rem' },
                           fontWeight: 700,
                           color: theme.palette.success.main,
                           lineHeight: 1
@@ -3033,8 +3033,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                   <Grid size={{ xs: 6, sm: 3 }}>
                     <Box
                       sx={{
-                        p: 1,
-                        borderRadius: '8px',
+                        p: 0.75,
+                        borderRadius: '6px',
                         background: alpha(
                           (() => {
                             let profitValue;
@@ -3053,7 +3053,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               ? theme.palette.success.main
                               : theme.palette.error.main;
                           })(),
-                          0.06
+                          0.05
                         ),
                         border: `1px solid ${alpha(
                           (() => {
@@ -3073,7 +3073,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                               ? theme.palette.success.main
                               : theme.palette.error.main;
                           })(),
-                          0.15
+                          0.12
                         )}`,
                         transition: 'all 0.15s ease',
                         '&:hover': {
@@ -3090,26 +3090,26 @@ export default function Portfolio({ account, limit, collection, type }) {
                                 ? theme.palette.success.main
                                 : theme.palette.error.main;
                             })(),
-                            0.08
+                            0.07
                           )
                         }
                       }}
                     >
                       <Typography
                         sx={{
-                          fontSize: '0.65rem',
+                          fontSize: '0.6rem',
                           color: alpha(theme.palette.text.secondary, 0.8),
                           fontWeight: 600,
-                          mb: 0.25,
+                          mb: 0.125,
                           textTransform: 'uppercase',
-                          letterSpacing: '0.3px'
+                          letterSpacing: '0.2px'
                         }}
                       >
                         Profit/Loss
                       </Typography>
                       <Typography
                         sx={{
-                          fontSize: { xs: '0.95rem', sm: '1.1rem' },
+                          fontSize: { xs: '0.85rem', sm: '0.95rem' },
                           fontWeight: 700,
                           color: (() => {
                             let profitValue;
