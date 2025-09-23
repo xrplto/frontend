@@ -48,6 +48,13 @@ export const NotificationProvider = ({ children }) => {
   // Save notification
   const saveNotification = useCallback((newNotification) => {
     try {
+      // Request permission when user adds a notification if not already granted
+      if ('Notification' in window && Notification.permission === 'default' && !hasRequestedPermission) {
+        Notification.requestPermission().then((permission) => {
+          setHasRequestedPermission(true);
+        });
+      }
+
       const saved = localStorage.getItem('priceNotifications');
       let allNotifications = saved ? JSON.parse(saved) : [];
       allNotifications.push(newNotification);
@@ -61,7 +68,7 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error saving notification:', e);
       return false;
     }
-  }, []);
+  }, [hasRequestedPermission]);
 
   // Remove notification
   const removeNotification = useCallback((notificationId) => {
@@ -251,15 +258,35 @@ export const NotificationProvider = ({ children }) => {
           // Already closed
         }
       }, 5000);
-    } else {
+    } else if (Notification.permission === 'default') {
+      // Request permission when user clicks test
+      Notification.requestPermission().then((permission) => {
+        setHasRequestedPermission(true);
+        if (permission === 'granted') {
+          // Retry test notification after permission granted
+          const testNotif = new Notification('🔔 Test Notification', {
+            body: 'Price notifications are working correctly!',
+            icon: '/icons/icon-192x192.png',
+            tag: 'test-notification',
+            requireInteraction: true
+          });
+
+          setTimeout(() => {
+            try {
+              testNotif.close();
+            } catch (e) {
+              // Already closed
+            }
+          }, 5000);
+        }
+      });
     }
   }, []);
 
   // Initialize on mount
   useEffect(() => {
-    requestNotificationPermission();
     loadNotifications();
-  }, [requestNotificationPermission, loadNotifications]);
+  }, [loadNotifications]);
 
   // Start/stop monitoring based on notifications
   useEffect(() => {
