@@ -1275,8 +1275,8 @@ export const FloatingPinnedChart = memo(() => {
     // Add both mouse and touch event listeners
     document.addEventListener('mousemove', handleMove);
     document.addEventListener('mouseup', handleEnd);
-    document.addEventListener('touchmove', handleMove, { passive: false });
-    document.addEventListener('touchend', handleEnd);
+    document.addEventListener('touchmove', handleMove, { passive: true });
+    document.addEventListener('touchend', handleEnd, { passive: true });
 
     return () => {
       document.removeEventListener('mousemove', handleMove);
