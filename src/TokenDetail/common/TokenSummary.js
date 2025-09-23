@@ -348,11 +348,11 @@ const TokenSummary = memo(
     const convertedMarketCap =
       marketcap && metrics[activeFiatCurrency]
         ? new Decimal(marketcap).div(metrics[activeFiatCurrency]).toNumber()
-        : 0;
+        : marketcap || 0;
     const convertedVolume =
       vol24hxrp && metrics[activeFiatCurrency]
         ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency]).toNumber()
-        : 0;
+        : vol24hxrp || 0;
 
     const metricsData = [
       {
@@ -1214,7 +1214,7 @@ const TokenSummary = memo(
                       {(() => {
                         const symbol = currencySymbols[activeFiatCurrency];
                         const rawPrice =
-                          activeFiatCurrency === 'XRP' ? exch : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : 0);
+                          activeFiatCurrency === 'XRP' ? exch : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : exch);
 
                         if (rawPrice && rawPrice < 0.001) {
                           const str = rawPrice.toFixed(15);
@@ -1779,7 +1779,7 @@ const TokenSummary = memo(
                           const rawPrice =
                             activeFiatCurrency === 'XRP'
                               ? exch
-                              : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : 0);
+                              : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : exch);
 
                           // Check if price has many leading zeros
                           if (rawPrice && rawPrice < 0.001) {

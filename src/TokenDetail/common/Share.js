@@ -479,7 +479,7 @@ export default function Share({ token }) {
                   }}
                 >
                   {currencySymbols[activeFiatCurrency]}{' '}
-                  {fNumber(exch / metrics[activeFiatCurrency])}
+                  {fNumber(exch / (metrics[activeFiatCurrency] || 1))}
                 </Typography>
               </PriceCard>
 

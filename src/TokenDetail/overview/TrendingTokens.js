@@ -121,7 +121,7 @@ const TrendingTokens = () => {
   const theme = useTheme();
   const { darkMode, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
-  const exchRate = metrics[activeFiatCurrency];
+  const exchRate = metrics[activeFiatCurrency] || 1;
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   const [trendingList, setTrendingList] = useState([]);
@@ -148,7 +148,7 @@ const TrendingTokens = () => {
 
   const formatPrice = (price) => {
     if (!price) return `${currencySymbols[activeFiatCurrency]}0`;
-    const convertedPrice = activeFiatCurrency === 'XRP' ? price : price / exchRate;
+    const convertedPrice = activeFiatCurrency === 'XRP' ? price : price / (exchRate || 1);
     const symbol = currencySymbols[activeFiatCurrency];
 
     // Check if price has many leading zeros (better UX threshold)
@@ -185,7 +185,7 @@ const TrendingTokens = () => {
   const formatCompact = (value, suffix = '') => {
     if (!value) return '0';
     const symbol = currencySymbols[activeFiatCurrency];
-    const converted = activeFiatCurrency === 'XRP' ? value : value / exchRate;
+    const converted = activeFiatCurrency === 'XRP' ? value : value / (exchRate || 1);
 
     if (converted >= 1e9) return `${symbol}${(converted / 1e9).toFixed(1)}B${suffix}`;
     if (converted >= 1e6) return `${symbol}${(converted / 1e6).toFixed(1)}M${suffix}`;
