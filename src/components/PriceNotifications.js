@@ -165,7 +165,7 @@ export const ChartNotificationButton = ({ token, currentPrice }) => {
         onClick={() => setOpen(true)}
         sx={{
           ml: 1,
-          p: 1,
+          p: 0.5,
           color: hasActiveNotifications ? theme.palette.warning.main : 'inherit',
           background: hasActiveNotifications ? `linear-gradient(135deg, ${theme.palette.warning.main}15, ${theme.palette.warning.main}08)` : 'transparent',
           border: hasActiveNotifications ? `1px solid ${theme.palette.warning.main}30` : '1px solid transparent',
