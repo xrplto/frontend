@@ -205,7 +205,7 @@ const PriceChartAdvanced = memo(({ token }) => {
             setLoading(true);
           }
         }
-        const apiRange = range === 'ALL' ? '1Y' : range;
+        const apiRange = range;
         const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
 
         const response = await axios.get(endpoint, { signal: requestController.signal });
@@ -1492,7 +1492,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" sx={{ fontSize: '1rem' }}>
             {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} •{' '}
-            {range === 'ALL' ? '1Y' : range}
+            {range}
           </Typography>
           {athData.price && chartType !== 'holders' && (
             <Box
