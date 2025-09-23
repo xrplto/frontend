@@ -558,7 +558,9 @@ export const TokenListProfiler = ({ children }) => {
   return (
     <React.Profiler
       id="TokenList"
-      onRender={performanceTracker.trackRender.bind(performanceTracker)}
+      onRender={(id, phase, actualDuration, baseDuration, startTime, commitTime) =>
+        performanceTracker.trackRender(id, phase, actualDuration, baseDuration, startTime, commitTime)
+      }
     >
       {children}
     </React.Profiler>

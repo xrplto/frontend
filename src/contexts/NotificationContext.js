@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import axios from 'axios';
 import { currencySymbols } from 'src/utils/constants';
 
@@ -306,7 +306,7 @@ export const NotificationProvider = ({ children }) => {
     };
   }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     notifications,
     saveNotification,
     removeNotification,
@@ -314,7 +314,7 @@ export const NotificationProvider = ({ children }) => {
     requestNotificationPermission,
     hasRequestedPermission,
     formatPrice
-  };
+  }), [notifications, saveNotification, removeNotification, testNotification, requestNotificationPermission, hasRequestedPermission, formatPrice]);
 
   return (
     <NotificationContext.Provider value={value}>

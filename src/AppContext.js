@@ -445,7 +445,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 }
 
 export function ContextProvider({ children, data, openSnackbar }) {
-  const [store] = useState(() => configureRedux(data));
+  const [store, setStore] = useState(() => configureRedux(data));
 
   return (
     <Provider store={store}>
