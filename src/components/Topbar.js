@@ -1395,20 +1395,26 @@ const Topbar = () => {
                             );
                           })()}
                           {trade.hash && (
-                            <a
-                              href={txPath}
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(txPath, '_blank');
+                              }}
                               style={{
                                 width: '14px',
                                 height: '14px',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
-                                color: themeColors.textSecondary
+                                color: themeColors.textSecondary,
+                                background: 'transparent',
+                                border: 'none',
+                                cursor: 'pointer',
+                                padding: 0
                               }}
-                              onClick={(e) => e.stopPropagation()}
                             >
                               <LinkIcon />
-                            </a>
+                            </button>
                           )}
                         </Box>
                       </Box>

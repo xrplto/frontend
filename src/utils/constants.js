@@ -19,6 +19,20 @@ import CurrencyYenRoundedIcon from '@mui/icons-material/CurrencyYenRounded';
 import CurrencyYuanRoundedIcon from '@mui/icons-material/CurrencyYuanRounded';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
+// Custom XRP Icon component
+const XRPIcon = ({ sx, ...props }) => (
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    style={{ fontSize: '18px', ...sx }}
+    {...props}
+  >
+    <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
 const CryptoJS = require('crypto-js');
 
 export const BASE_URL = 'https://api.xrpl.to/api';
@@ -349,7 +363,7 @@ export const currencyIcons = {
   EUR: <EuroRoundedIcon {...defaultCurrencyIconProps} />,
   JPY: <CurrencyYenRoundedIcon {...defaultCurrencyIconProps} />,
   CNY: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />,
-  XRP: <CurrencyExchangeIcon sx={{ fontSize: 18 }} />
+  XRP: <XRPIcon />
 };
 
 export const currencySymbols = {

@@ -20,7 +20,7 @@ export function throttle(fn, wait = 100) {
     fn.apply(lastCtx, lastArgs);
     lastArgs = lastCtx = undefined;
   }
-  return function throttled(...args) {
+  function throttled(...args) {
     const now = Date.now();
     const remaining = wait - (now - last);
     lastCtx = this;
@@ -37,7 +37,15 @@ export function throttle(fn, wait = 100) {
         run(Date.now());
       }, remaining);
     }
+  }
+  throttled.cancel = function() {
+    if (timeout) {
+      clearTimeout(timeout);
+      timeout = undefined;
+    }
+    lastArgs = lastCtx = undefined;
   };
+  return throttled;
 }
 
 export function isEqual(a, b) {

@@ -5,7 +5,6 @@ import {
   Menu,
   MenuItem,
   alpha,
-  Tooltip,
   Typography,
   styled,
   Fade
@@ -13,89 +12,110 @@ import {
 import { currencyConfig, currencyIcons } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 import CheckIcon from '@mui/icons-material/Check';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const StyledButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor:
-    theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-      ? alpha('#030310', 0.7)
-      : alpha(theme.palette.primary.main, 0.08),
-  borderRadius: theme.spacing(1),
-  padding: '4px 6px',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  minWidth: 58,
+const StyledButton = styled('button')(({ theme, open }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(0.5),
+  padding: '6px 8px',
+  background: theme.palette.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.04)'
+    : 'rgba(0, 0, 0, 0.02)',
+  border: `1px solid ${theme.palette.mode === 'dark'
+    ? 'rgba(255, 255, 255, 0.08)'
+    : 'rgba(0, 0, 0, 0.08)'}`,
+  borderRadius: '6px',
+  cursor: 'pointer',
+  transition: 'all 0.2s ease',
+  fontFamily: 'inherit',
+  fontSize: '0.75rem',
+  fontWeight: 500,
+  color: theme.palette.text.primary,
+  minWidth: '60px',
+  height: '32px',
+  position: 'relative',
   '&:hover': {
-    backgroundColor:
-      theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-        ? alpha(theme.palette.primary.main, 0.04)
-        : alpha(theme.palette.primary.main, 0.12),
-    transform: 'translateY(-1px)',
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+    background: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.06)'
+      : 'rgba(0, 0, 0, 0.04)',
+    borderColor: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.12)'
+      : 'rgba(0, 0, 0, 0.12)',
   },
-  '&:active': {
-    transform: 'translateY(0)'
+  '&:focus': {
+    outline: `2px solid ${theme.palette.primary.main}`,
+    outlineOffset: '2px',
+  },
+  '& .expand-icon': {
+    fontSize: '14px',
+    opacity: 0.7,
+    transition: 'transform 0.2s ease',
+    transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
   }
 }));
 
 const StyledMenu = styled(Menu)(({ theme }) => ({
   '& .MuiPaper-root': {
-    marginTop: theme.spacing(0.5),
-    borderRadius: theme.spacing(1.5),
-    minWidth: 140,
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    background:
-      theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-        ? `linear-gradient(180deg, ${alpha('#030310', 0.98)} 0%, ${alpha('#030310', 0.95)} 100%)`
-        : theme.palette.background.paper,
-    backdropFilter: 'blur(20px)',
-    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.12)}`,
+    marginTop: '4px',
+    borderRadius: '8px',
+    minWidth: '120px',
+    maxWidth: '140px',
+    border: `1px solid ${theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.12)'
+      : 'rgba(0, 0, 0, 0.12)'}`,
+    background: theme.palette.mode === 'dark'
+      ? 'rgba(0, 0, 0, 0.95)'
+      : 'rgba(255, 255, 255, 0.95)',
+    backdropFilter: 'blur(12px)',
+    boxShadow: theme.palette.mode === 'dark'
+      ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+      : '0 4px 20px rgba(0, 0, 0, 0.1)',
     '& .MuiList-root': {
-      padding: theme.spacing(0.5)
+      padding: '4px'
     }
   }
 }));
 
-const StyledMenuItem = styled(MenuItem)(({ theme }) => ({
-  borderRadius: theme.spacing(1),
-  padding: theme.spacing(1, 1.5),
-  minHeight: 40,
+const StyledMenuItem = styled(MenuItem)(({ theme, selected }) => ({
+  borderRadius: '6px',
+  padding: '8px 10px',
+  minHeight: '36px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  gap: theme.spacing(1.5),
-  transition: 'all 0.2s ease',
+  gap: '8px',
+  margin: '1px 0',
+  transition: 'all 0.15s ease',
+  fontSize: '0.75rem',
+  background: selected
+    ? theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.05)'
+    : 'transparent',
   '&:hover': {
-    backgroundColor:
-      theme.palette.mode === 'dark' && theme.palette.primary.main === '#00ffff'
-        ? alpha(theme.palette.primary.main, 0.04)
-        : alpha(theme.palette.primary.main, 0.08),
-    '& .currency-icon': {
-      transform: 'scale(1.1)'
-    }
+    backgroundColor: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.06)'
+      : 'rgba(0, 0, 0, 0.04)',
   },
   '&.Mui-selected': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.12),
+    backgroundColor: theme.palette.mode === 'dark'
+      ? 'rgba(255, 255, 255, 0.08)'
+      : 'rgba(0, 0, 0, 0.05)',
     '&:hover': {
-      backgroundColor: alpha(theme.palette.primary.main, 0.16)
+      backgroundColor: theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, 0.1)'
+        : 'rgba(0, 0, 0, 0.06)',
     }
   }
 }));
 
-const CurrencyIcon = styled(Box)({
+const CurrencyIcon = styled('span')({
   display: 'flex',
   alignItems: 'center',
-  fontSize: '1.1rem',
-  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+  fontSize: '0.9rem',
+  lineHeight: 1
 });
-
-const ArrowIcon = styled(KeyboardArrowDownIcon)(({ theme, open }) => ({
-  fontSize: '1rem',
-  marginLeft: theme.spacing(0.25),
-  transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-  opacity: 0.7
-}));
 
 export default function CurrencySwithcer() {
   const { activeFiatCurrency, toggleFiatCurrency } = useContext(AppContext);
@@ -127,32 +147,20 @@ export default function CurrencySwithcer() {
 
   return (
     <Box>
-      <Tooltip title="Select currency" arrow placement="bottom">
-        <StyledButton
-          onClick={handleClick}
-          size="small"
-          aria-controls={open ? 'currency-menu' : undefined}
-          aria-haspopup="true"
-          aria-expanded={open ? 'true' : undefined}
-        >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-            <CurrencyIcon className="currency-icon">{currencyIcons[activeCurrency]}</CurrencyIcon>
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: '0.7rem',
-                fontWeight: 600,
-                color: (theme) => theme.palette.text.primary,
-                fontFamily: 'Inter, sans-serif',
-                letterSpacing: '0.01em'
-              }}
-            >
-              {activeCurrency}
-            </Typography>
-            <ArrowIcon open={open} />
-          </Box>
-        </StyledButton>
-      </Tooltip>
+      <StyledButton
+        open={open}
+        onClick={handleClick}
+        aria-controls={open ? 'currency-menu' : undefined}
+        aria-haspopup="true"
+        aria-expanded={open ? 'true' : undefined}
+        aria-label="Select currency"
+      >
+        <CurrencyIcon>{currencyIcons[activeCurrency]}</CurrencyIcon>
+        <span style={{ fontWeight: 600, letterSpacing: '0.02em' }}>
+          {activeCurrency}
+        </span>
+        <ExpandMoreIcon className="expand-icon" />
+      </StyledButton>
       <StyledMenu
         id="currency-menu"
         anchorEl={anchorEl}
@@ -161,11 +169,11 @@ export default function CurrencySwithcer() {
         TransitionComponent={Fade}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'right'
+          horizontal: 'center'
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'right'
+          horizontal: 'center'
         }}
       >
         {availableFiatCurrencies.map((option) => (
@@ -174,13 +182,14 @@ export default function CurrencySwithcer() {
             onClick={() => handleChange(option)}
             selected={option === activeCurrency}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
-              <CurrencyIcon className="currency-icon">{currencyIcons[option]}</CurrencyIcon>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CurrencyIcon>{currencyIcons[option]}</CurrencyIcon>
               <Typography
                 variant="body2"
                 sx={{
                   fontWeight: option === activeCurrency ? 600 : 500,
-                  fontFamily: 'Inter, sans-serif'
+                  fontSize: '0.75rem',
+                  color: 'text.primary'
                 }}
               >
                 {option}
@@ -189,9 +198,9 @@ export default function CurrencySwithcer() {
             {option === activeCurrency && (
               <CheckIcon
                 sx={{
-                  fontSize: 18,
-                  color: 'primary.main',
-                  animation: 'fadeIn 0.2s ease'
+                  fontSize: 14,
+                  color: 'text.secondary',
+                  opacity: 0.7
                 }}
               />
             )}
