@@ -112,147 +112,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     isUserZoomedRef.current = isUserZoomed;
   }, [isUserZoomed]);
 
-  const convertScientificToRegular = useCallback((value) => {
-    if (typeof value === 'string') {
-      value = parseFloat(value);
-    }
-    return Number(value);
-  }, []);
-
-  // Scale factor for very small prices to help with tick generation
-  const getScaleFactor = useCallback((data) => {
-    if (!data || data.length === 0) return 1;
-    const maxPrice = Math.max(
-      ...data.map((d) => Math.max(d.high || d.close || d.value || d.open || 0))
-    );
-    if (maxPrice < 0.000000001) return 1000000000000;
-    if (maxPrice < 0.00000001) return 100000000000;
-    if (maxPrice < 0.0000001) return 10000000000;
-    if (maxPrice < 0.000001) return 1000000000;
-    if (maxPrice < 0.00001) return 100000000;
-    if (maxPrice < 0.0001) return 10000000;
-    if (maxPrice < 0.001) return 1000000;
-    if (maxPrice < 0.01) return 100000;
-    if (maxPrice < 0.1) return 10000;
-    if (maxPrice < 1) return 1000;
-    return 1;
-  }, []);
-
-  const calculateSMA = useCallback((data, period) => {
-    const sma = [];
-    for (let i = period - 1; i < data.length; i++) {
-      let sum = 0;
-      for (let j = 0; j < period; j++) {
-        sum += data[i - j].value || data[i - j].close;
-      }
-      sma.push({
-        time: data[i].time,
-        value: sum / period
-      });
-    }
-    return sma;
-  }, []);
-
-  const calculateEMA = useCallback((data, period) => {
-    const ema = [];
-    const multiplier = 2 / (period + 1);
-
-    let sum = 0;
-    for (let i = 0; i < period; i++) {
-      sum += data[i].value || data[i].close;
-    }
-    ema.push({
-      time: data[period - 1].time,
-      value: sum / period
-    });
-
-    for (let i = period; i < data.length; i++) {
-      const currentValue = data[i].value || data[i].close;
-      const previousEMA = ema[ema.length - 1].value;
-      const currentEMA = (currentValue - previousEMA) * multiplier + previousEMA;
-      ema.push({
-        time: data[i].time,
-        value: currentEMA
-      });
-    }
-    return ema;
-  }, []);
-
-  const calculateBollingerBands = useCallback(
-    (data, period = 20, stdDev = 2) => {
-      const sma = calculateSMA(data, period);
-      const bands = [];
-
-      for (let i = 0; i < sma.length; i++) {
-        const dataIndex = i + period - 1;
-        let sum = 0;
-
-        for (let j = 0; j < period; j++) {
-          const value = data[dataIndex - j].value || data[dataIndex - j].close;
-          sum += Math.pow(value - sma[i].value, 2);
-        }
-
-        const variance = sum / period;
-        const standardDeviation = Math.sqrt(variance);
-
-        bands.push({
-          time: sma[i].time,
-          upper: sma[i].value + stdDev * standardDeviation,
-          middle: sma[i].value,
-          lower: sma[i].value - stdDev * standardDeviation
-        });
-      }
-
-      return bands;
-    },
-    [calculateSMA]
-  );
-
-  const calculateRSI = useCallback((data, period = 14) => {
-    if (data.length < period + 1) return [];
-
-    const rsi = [];
-    let gains = 0;
-    let losses = 0;
-
-    // Calculate initial average gain and loss
-    for (let i = 1; i <= period; i++) {
-      const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
-      if (change > 0) {
-        gains += change;
-      } else {
-        losses += Math.abs(change);
-      }
-    }
-
-    let avgGain = gains / period;
-    let avgLoss = losses / period;
-
-    // Calculate RSI for the first period
-    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-    rsi.push({
-      time: data[period].time,
-      value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
-    });
-
-    // Calculate RSI for remaining periods using Wilder's smoothing
-    for (let i = period + 1; i < data.length; i++) {
-      const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
-      const gain = change > 0 ? change : 0;
-      const loss = change < 0 ? Math.abs(change) : 0;
-
-      avgGain = (avgGain * (period - 1) + gain) / period;
-      avgLoss = (avgLoss * (period - 1) + loss) / period;
-
-      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-      rsi.push({
-        time: data[i].time,
-        value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
-      });
-    }
-
-    return rsi;
-  }, []);
 
   // Fetch price data
   useEffect(() => {
@@ -263,6 +122,64 @@ const PriceChartAdvanced = memo(({ token }) => {
     let mounted = true;
     let currentRequest = null;
     let isRequestInProgress = false;
+
+    // Move helper functions inside to avoid dependency issues
+    const convertScientific = (value) => {
+      if (typeof value === 'string') {
+        value = parseFloat(value);
+      }
+      if (typeof value !== 'number' || isNaN(value)) {
+        return 0;
+      }
+      if (Math.abs(value) < 1e-10) {
+        return 0;
+      }
+      const isScientific = value.toString().includes('e');
+      if (isScientific) {
+        const [base, exponent] = value.toString().split('e');
+        const exp = parseInt(exponent);
+        if (exp < -10) {
+          const precision = Math.min(Math.abs(exp) + 2, 20);
+          return parseFloat(value.toFixed(precision));
+        }
+      }
+      return value;
+    };
+
+    const calcRSI = (data, period = 14) => {
+      if (data.length < period + 1) return [];
+      const rsi = [];
+      let avgGain = 0;
+      let avgLoss = 0;
+      for (let i = 1; i <= period; i++) {
+        const change = data[i].close - data[i - 1].close;
+        if (change >= 0) {
+          avgGain += change;
+        } else {
+          avgLoss += Math.abs(change);
+        }
+      }
+      avgGain /= period;
+      avgLoss /= period;
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      rsi.push({
+        time: data[period].time,
+        value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
+      });
+      for (let i = period + 1; i < data.length; i++) {
+        const change = data[i].close - data[i - 1].close;
+        const gain = change >= 0 ? change : 0;
+        const loss = change < 0 ? Math.abs(change) : 0;
+        avgGain = (avgGain * (period - 1) + gain) / period;
+        avgLoss = (avgLoss * (period - 1) + loss) / period;
+        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+        rsi.push({
+          time: data[i].time,
+          value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
+        });
+      }
+      return rsi;
+    };
 
     const fetchData = async (isUpdate = false) => {
       // Skip if unmounted or request already in progress
@@ -297,12 +214,12 @@ const PriceChartAdvanced = memo(({ token }) => {
           const processedData = response.data.ohlc
             .map((candle) => ({
               time: Math.floor(candle[0] / 1000), // Convert ms to seconds
-              open: convertScientificToRegular(candle[1]),
-              high: convertScientificToRegular(candle[2]),
-              low: convertScientificToRegular(candle[3]),
-              close: convertScientificToRegular(candle[4]),
-              value: convertScientificToRegular(candle[4]),
-              volume: convertScientificToRegular(candle[5]) || 0
+              open: convertScientific(candle[1]),
+              high: convertScientific(candle[2]),
+              low: convertScientific(candle[3]),
+              close: convertScientific(candle[4]),
+              value: convertScientific(candle[4]),
+              volume: convertScientific(candle[5]) || 0
             }))
             .sort((a, b) => a.time - b.time); // Ensure chronological order
 
@@ -321,7 +238,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           });
 
           // Calculate RSI values for tooltip display
-          const rsiData = calculateRSI(processedData, 14);
+          const rsiData = calcRSI(processedData, 14);
           const rsiMap = {};
           rsiData.forEach((r) => {
             rsiMap[r.time] = r.value;
@@ -914,6 +831,102 @@ const PriceChartAdvanced = memo(({ token }) => {
   useEffect(() => {
     if (!chartRef.current || !data || data.length === 0 || chartType === 'holders') return;
 
+    // Define calculation functions inside useEffect
+    const calculateSMA = (data, period) => {
+      const sma = [];
+      for (let i = period - 1; i < data.length; i++) {
+        let sum = 0;
+        for (let j = 0; j < period; j++) {
+          sum += data[i - j].value || data[i - j].close;
+        }
+        sma.push({
+          time: data[i].time,
+          value: sum / period
+        });
+      }
+      return sma;
+    };
+
+    const calculateEMA = (data, period) => {
+      const ema = [];
+      const multiplier = 2 / (period + 1);
+      let sum = 0;
+      for (let i = 0; i < period; i++) {
+        sum += data[i].value || data[i].close;
+      }
+      ema.push({
+        time: data[period - 1].time,
+        value: sum / period
+      });
+      for (let i = period; i < data.length; i++) {
+        const currentValue = data[i].value || data[i].close;
+        const previousEMA = ema[ema.length - 1].value;
+        const currentEMA = (currentValue - previousEMA) * multiplier + previousEMA;
+        ema.push({
+          time: data[i].time,
+          value: currentEMA
+        });
+      }
+      return ema;
+    };
+
+    const calculateBollingerBands = (data, period = 20, stdDev = 2) => {
+      const sma = calculateSMA(data, period);
+      const bands = [];
+      for (let i = 0; i < sma.length; i++) {
+        const dataIndex = i + period - 1;
+        let sum = 0;
+        for (let j = 0; j < period; j++) {
+          const value = data[dataIndex - j].value || data[dataIndex - j].close;
+          sum += Math.pow(value - sma[i].value, 2);
+        }
+        const variance = sum / period;
+        const standardDeviation = Math.sqrt(variance);
+        bands.push({
+          time: sma[i].time,
+          upper: sma[i].value + stdDev * standardDeviation,
+          middle: sma[i].value,
+          lower: sma[i].value - stdDev * standardDeviation
+        });
+      }
+      return bands;
+    };
+
+    const calculateRSI = (data, period = 14) => {
+      if (data.length < period + 1) return [];
+      const rsi = [];
+      let gains = 0;
+      let losses = 0;
+      for (let i = 1; i <= period; i++) {
+        const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
+        if (change > 0) {
+          gains += change;
+        } else {
+          losses += Math.abs(change);
+        }
+      }
+      let avgGain = gains / period;
+      let avgLoss = losses / period;
+      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+      rsi.push({
+        time: data[period].time,
+        value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
+      });
+      for (let i = period + 1; i < data.length; i++) {
+        const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
+        const gain = change > 0 ? change : 0;
+        const loss = change < 0 ? Math.abs(change) : 0;
+        avgGain = (avgGain * (period - 1) + gain) / period;
+        avgLoss = (avgLoss * (period - 1) + loss) / period;
+        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
+        rsi.push({
+          time: data[i].time,
+          value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
+        });
+      }
+      return rsi;
+    };
+
     // Remove all existing indicator series
     Object.values(indicatorSeriesRef.current).forEach((series) => {
       if (series && chartRef.current) {
@@ -1205,10 +1218,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     data,
     chartType,
     athData,
-    calculateSMA,
-    calculateEMA,
-    calculateBollingerBands,
-    calculateRSI,
     isDark
   ]);
 
@@ -1223,6 +1232,25 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (!chartData || chartData.length === 0) {
       return;
     }
+
+    // Scale factor for very small prices to help with tick generation
+    const getScaleFactor = (data) => {
+      if (!data || data.length === 0) return 1;
+      const maxPrice = Math.max(
+        ...data.map((d) => Math.max(d.high || d.close || d.value || d.open || 0))
+      );
+      if (maxPrice < 0.000000001) return 1000000000000;
+      if (maxPrice < 0.00000001) return 100000000000;
+      if (maxPrice < 0.0000001) return 10000000000;
+      if (maxPrice < 0.000001) return 1000000000;
+      if (maxPrice < 0.00001) return 100000000;
+      if (maxPrice < 0.0001) return 10000000;
+      if (maxPrice < 0.001) return 1000000;
+      if (maxPrice < 0.01) return 100000;
+      if (maxPrice < 0.1) return 10000;
+      if (maxPrice < 1) return 1000;
+      return 1;
+    };
 
     // Save current zoom state before updating
     if (chartRef.current && chartRef.current.timeScale) {
@@ -1397,7 +1425,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
 
     // The tooltip will maintain its position automatically since we're not recreating the chart
-  }, [data, holderData, chartType, isDark, range, theme, isMobile, getScaleFactor]);
+  }, [data, holderData, chartType, isDark, range, theme, isMobile]);
 
   const handleIndicatorToggle = useCallback((indicator) => {
     // Special handling for RSI
