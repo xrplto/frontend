@@ -364,7 +364,7 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
         }
 
         // Convert data to lightweight-charts format and sort by time
-        const data = serie.data
+        const allDataPoints = serie.data
           .map((value, idx) => {
             const dateStr = chartData.xaxis.categories[idx];
             // Parse date more carefully
@@ -375,9 +375,12 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
             if (isNaN(timestamp) || !isFinite(timestamp)) {
               return null;
             }
+
+            const parsedValue = parseFloat(value);
             return {
               time: Math.floor(timestamp),
-              value: parseFloat(value) || 0
+              value: isNaN(parsedValue) ? null : parsedValue,
+              originalIndex: idx
             };
           })
           .filter((item) => item !== null) // Remove invalid entries
@@ -386,6 +389,44 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
             // Remove duplicates - keep only the first occurrence of each timestamp
             return index === 0 || item.time !== array[index - 1].time;
           });
+
+        // Fill gaps with appropriate values for trading data
+        const data = allDataPoints.map((item, idx) => {
+          if (item.value !== null) {
+            return {
+              time: item.time,
+              value: item.value
+            };
+          }
+
+          // For trading data, missing values should typically be 0 (no trading activity)
+          // Only interpolate for cumulative metrics that should maintain their value
+          let fillValue = 0;
+
+          // Check if this is a cumulative metric (should maintain previous value)
+          const serieName = serie.name.toLowerCase();
+          const isCumulative = serieName.includes('cumulative');
+
+          if (isCumulative) {
+            // For cumulative metrics, carry forward the last known value
+            let prevValue = null;
+            for (let i = idx - 1; i >= 0; i--) {
+              if (allDataPoints[i].value !== null) {
+                prevValue = allDataPoints[i].value;
+                break;
+              }
+            }
+            fillValue = prevValue !== null ? prevValue : 0;
+          } else {
+            // For daily metrics (ROI, Volume, Trades), missing data means 0 activity
+            fillValue = 0;
+          }
+
+          return {
+            time: item.time,
+            value: fillValue
+          };
+        });
 
 
         if (data.length > 0) {
@@ -627,28 +668,69 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
+    // Generate complete date range from first to last date
+    const firstDate = new Date(sortedHistory[0].date);
+    const lastDate = new Date(sortedHistory[sortedHistory.length - 1].date);
+    const allDates = [];
+
+    for (let d = new Date(firstDate); d <= lastDate; d.setDate(d.getDate() + 1)) {
+      allDates.push(new Date(d));
+    }
+
+    // Create a map of existing data for quick lookup
+    const dataMap = new Map();
+    sortedHistory.forEach(item => {
+      const dateKey = new Date(item.date).toISOString().split('T')[0];
+      dataMap.set(dateKey, item);
+    });
+
+    // Fill complete timeline with data or defaults
+    let lastCumulativeRoi = 0;
+    const completeData = allDates.map(date => {
+      const dateKey = date.toISOString().split('T')[0];
+      const existingData = dataMap.get(dateKey);
+
+      if (existingData) {
+        lastCumulativeRoi = existingData.cumulativeRoi || lastCumulativeRoi;
+        return {
+          date: date,
+          dailyRoi: existingData.dailyRoi || 0,
+          cumulativeRoi: lastCumulativeRoi,
+          volume: existingData.volume || 0
+        };
+      } else {
+        // Missing data - user didn't trade this day
+        return {
+          date: date,
+          dailyRoi: 0, // No trading = 0 daily ROI
+          cumulativeRoi: lastCumulativeRoi, // Carry forward cumulative
+          volume: 0 // No trading = 0 volume
+        };
+      }
+    });
+
     const chartData = {
       series: [
         {
           name: 'Daily ROI',
           type: 'line',
-          data: sortedHistory.map((item) => item.dailyRoi || 0)
+          data: completeData.map((item) => item.dailyRoi)
         },
         {
           name: 'Cumulative ROI',
           type: 'line',
-          data: sortedHistory.map((item) => item.cumulativeRoi || 0)
+          data: completeData.map((item) => item.cumulativeRoi)
         },
         {
           name: 'Volume',
           type: 'column',
           // Scale down volume to make bars smaller relative to ROI lines
-          data: sortedHistory.map((item) => (item.volume || 0) * 0.0001) // Scale factor for visual balance
+          data: completeData.map((item) => (item.volume || 0) * 0.0001) // Scale factor for visual balance
         }
       ],
       xaxis: {
-        categories: sortedHistory.map((item) =>
-          new Date(item.date).toLocaleDateString('en-US', {
+        categories: completeData.map((item) =>
+          item.date.toLocaleDateString('en-US', {
             year: 'numeric',
             month: 'short',
             day: 'numeric'
@@ -670,25 +752,60 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    // Use full history to match ROI chart date range
-    const recentHistory = sortedHistory;
+    // Generate complete date range from first to last date
+    const firstDate = new Date(sortedHistory[0].date);
+    const lastDate = new Date(sortedHistory[sortedHistory.length - 1].date);
+    const allDates = [];
+
+    for (let d = new Date(firstDate); d <= lastDate; d.setDate(d.getDate() + 1)) {
+      allDates.push(new Date(d));
+    }
+
+    // Create a map of existing data for quick lookup
+    const dataMap = new Map();
+    sortedHistory.forEach(item => {
+      const dateKey = new Date(item.date).toISOString().split('T')[0];
+      dataMap.set(dateKey, item);
+    });
+
+    // Fill complete timeline with data or defaults
+    let lastCumulativeTrades = 0;
+    const completeData = allDates.map(date => {
+      const dateKey = date.toISOString().split('T')[0];
+      const existingData = dataMap.get(dateKey);
+
+      if (existingData) {
+        lastCumulativeTrades = existingData.cumulativeTrades || lastCumulativeTrades;
+        return {
+          date: date,
+          trades: existingData.trades || 0,
+          cumulativeTrades: lastCumulativeTrades
+        };
+      } else {
+        return {
+          date: date,
+          trades: 0, // No trading = 0 trades
+          cumulativeTrades: lastCumulativeTrades // Carry forward cumulative
+        };
+      }
+    });
 
     const chartData = {
       series: [
         {
           name: 'Daily Trades',
           type: 'column',
-          data: recentHistory.map((item) => item.trades || 0)
+          data: completeData.map((item) => item.trades)
         },
         {
           name: 'Cumulative Trades',
           type: 'line',
-          data: recentHistory.map((item) => item.cumulativeTrades || 0)
+          data: completeData.map((item) => item.cumulativeTrades)
         }
       ],
       xaxis: {
-        categories: recentHistory.map((item) =>
-          new Date(item.date).toLocaleDateString('en-US', {
+        categories: completeData.map((item) =>
+          item.date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric'
           })
@@ -700,7 +817,6 @@ export default function Portfolio({ account, limit, collection, type }) {
   }, [traderStats?.tradeHistory]);
 
   const processVolumeHistoryData = useMemo(() => {
-
     if (!traderStats?.volumeHistory || traderStats.volumeHistory.length === 0) {
       return null;
     }
@@ -709,28 +825,60 @@ export default function Portfolio({ account, limit, collection, type }) {
       (a, b) => new Date(a.date) - new Date(b.date)
     );
 
-    // Use full history to match ROI chart date range
-    const recentHistory = sortedHistory;
+    // Generate complete date range from first to last date
+    const firstDate = new Date(sortedHistory[0].date);
+    const lastDate = new Date(sortedHistory[sortedHistory.length - 1].date);
+    const allDates = [];
+
+    for (let d = new Date(firstDate); d <= lastDate; d.setDate(d.getDate() + 1)) {
+      allDates.push(new Date(d));
+    }
+
+    // Create a map of existing data for quick lookup
+    const dataMap = new Map();
+    sortedHistory.forEach(item => {
+      const dateKey = new Date(item.date).toISOString().split('T')[0];
+      dataMap.set(dateKey, item);
+    });
+
+    // Fill complete timeline with data or defaults
+    let lastCumulativeVolume = 0;
+    const completeData = allDates.map(date => {
+      const dateKey = date.toISOString().split('T')[0];
+      const existingData = dataMap.get(dateKey);
+
+      if (existingData) {
+        lastCumulativeVolume = existingData.cumulativeVolume || lastCumulativeVolume;
+        return {
+          date: date,
+          h24Volume: existingData.h24Volume || 0,
+          cumulativeVolume: lastCumulativeVolume
+        };
+      } else {
+        return {
+          date: date,
+          h24Volume: 0, // No trading = 0 volume
+          cumulativeVolume: lastCumulativeVolume // Carry forward cumulative
+        };
+      }
+    });
 
     const chartData = {
       series: [
         {
           name: 'Daily Volume',
           type: 'column',
-          data: recentHistory.map((item) => {
-            const volume = item.h24Volume || 0;
-            return volume;
-          })
+          data: completeData.map((item) => item.h24Volume)
         },
         {
           name: 'Cumulative Volume',
           type: 'line',
-          data: recentHistory.map((item) => item.cumulativeVolume || 0)
+          data: completeData.map((item) => item.cumulativeVolume)
         }
       ],
       xaxis: {
-        categories: recentHistory.map((item) =>
-          new Date(item.date).toLocaleDateString('en-US', {
+        categories: completeData.map((item) =>
+          item.date.toLocaleDateString('en-US', {
             month: 'short',
             day: 'numeric'
           })
@@ -3188,8 +3336,8 @@ export default function Portfolio({ account, limit, collection, type }) {
                       chartView === 'roi'
                         ? processChartData
                         : chartView === 'activity'
-                          ? processTradeHistoryData()
-                          : processVolumeHistoryData();
+                          ? processTradeHistoryData
+                          : processVolumeHistoryData;
 
                     if (chartData && chartData.series && chartData.series.length > 0) {
                       const lastValues = chartData.series.map((s) => s.data[s.data.length - 1]);
@@ -3256,9 +3404,9 @@ export default function Portfolio({ account, limit, collection, type }) {
                         if (chartView === 'roi') {
                           chartData = processChartData;
                         } else if (chartView === 'activity') {
-                          chartData = processTradeHistoryData();
+                          chartData = processTradeHistoryData;
                         } else if (chartView === 'volume') {
-                          chartData = processVolumeHistoryData();
+                          chartData = processVolumeHistoryData;
                         }
 
                         if (!chartData || !chartData.series || chartData.series.length === 0) {
@@ -3333,11 +3481,11 @@ export default function Portfolio({ account, limit, collection, type }) {
                   </IconButton>
                 </Box>
                 <Box sx={{ height: 600, width: '100%' }}>
-                  {selectedChart === 'roi' && renderChart(processChartData(), chartOptions)}
+                  {selectedChart === 'roi' && renderChart(processChartData, chartOptions)}
                   {selectedChart === 'activity' &&
-                    renderChart(processTradeHistoryData(), tradeHistoryOptions)}
+                    renderChart(processTradeHistoryData, tradeHistoryOptions)}
                   {selectedChart === 'volume' &&
-                    renderChart(processVolumeHistoryData(), volumeHistoryOptions)}
+                    renderChart(processVolumeHistoryData, volumeHistoryOptions)}
                 </Box>
               </ModalContent>
             </StyledModal>

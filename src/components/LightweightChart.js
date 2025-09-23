@@ -115,18 +115,9 @@ const LightweightChart = ({
       if (!seriesConfig.visible) return;
 
 
-      const processedData = data
-        .filter(
-          (item) => item[seriesConfig.dataKey] !== null && item[seriesConfig.dataKey] !== undefined
-        )
+      // First pass: create all data points with timestamps, handling missing values
+      const allDataPoints = data
         .map((item, idx) => {
-          let value = parseFloat(item[seriesConfig.dataKey] || 0);
-
-          // Scale down large values to fit lightweight-charts limits
-          if (Math.abs(value) > 1000000000) {
-            value = value / 1000000; // Convert to millions
-          }
-
           // Parse date with better error handling
           let timestamp;
           const dateValue = item.date || item.time;
@@ -144,13 +135,83 @@ const LightweightChart = ({
 
           timestamp = Math.floor(parsedDate.getTime() / 1000);
 
+          let value = item[seriesConfig.dataKey];
+
+          // Handle missing values - mark as null for now, we'll interpolate later
+          if (value === null || value === undefined) {
+            return {
+              time: timestamp,
+              value: null,
+              originalIndex: idx
+            };
+          }
+
+          value = parseFloat(value || 0);
+
+          // Scale down large values to fit lightweight-charts limits
+          if (Math.abs(value) > 1000000000) {
+            value = value / 1000000; // Convert to millions
+          }
+
           return {
             time: timestamp,
-            value: value
+            value: value,
+            originalIndex: idx
           };
         })
-        .filter((item) => item !== null) // Remove invalid entries
+        .filter((item) => item !== null) // Remove invalid entries (only date parsing errors)
         .sort((a, b) => a.time - b.time);
+
+      // Second pass: interpolate missing values or use previous value
+      const processedData = allDataPoints.map((item, idx) => {
+        if (item.value !== null) {
+          return {
+            time: item.time,
+            value: item.value,
+            isInterpolated: false
+          };
+        }
+
+        // Handle missing value by interpolation or using previous value
+        let interpolatedValue = 0;
+
+        // Find previous non-null value
+        let prevValue = null;
+        for (let i = idx - 1; i >= 0; i--) {
+          if (allDataPoints[i].value !== null) {
+            prevValue = allDataPoints[i].value;
+            break;
+          }
+        }
+
+        // Find next non-null value
+        let nextValue = null;
+        for (let i = idx + 1; i < allDataPoints.length; i++) {
+          if (allDataPoints[i].value !== null) {
+            nextValue = allDataPoints[i].value;
+            break;
+          }
+        }
+
+        // Interpolate or use fallback
+        if (prevValue !== null && nextValue !== null) {
+          // Linear interpolation
+          interpolatedValue = prevValue + (nextValue - prevValue) * 0.5;
+        } else if (prevValue !== null) {
+          // Use previous value
+          interpolatedValue = prevValue;
+        } else if (nextValue !== null) {
+          // Use next value
+          interpolatedValue = nextValue;
+        }
+        // else keep as 0 (default)
+
+        return {
+          time: item.time,
+          value: interpolatedValue,
+          isInterpolated: true
+        };
+      });
 
       if (processedData.length === 0) {
         return;
