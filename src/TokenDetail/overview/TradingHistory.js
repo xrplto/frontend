@@ -44,7 +44,6 @@ import {
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import CloseIcon from '@mui/icons-material/Close';
 import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
 import PairsList from 'src/TokenDetail/market/PairsList';
@@ -851,12 +850,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     </Typography>
                   </Link>
                 </Tooltip>
-                <SwapHorizIcon
-                  icon={getTradeSizeIcon(xrpAmount)}
-                  width="16"
-                  height="16"
-                  style={{ color: theme.palette.text.secondary }}
-                />
               </Box>
 
               {/* Actions */}

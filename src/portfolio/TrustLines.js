@@ -418,16 +418,31 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
 
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
 
-  useWebSocket(WSS_FEED_URL, {
-    onMessage: (event) => {
+  // Throttle WebSocket updates to reduce render cycles
+  const messageHandlerRef = useRef();
+  messageHandlerRef.current = useMemo(() => {
+    let lastUpdate = 0;
+    const UPDATE_INTERVAL = 1000; // Update at most once per second
+
+    return (event) => {
+      const now = Date.now();
+      if (now - lastUpdate < UPDATE_INTERVAL) return;
+
       try {
         const json = JSON.parse(event.data);
         dispatch(update_metrics(json));
+        lastUpdate = now;
       } catch (err) {
-        console.error(err);
+        // Silently ignore parsing errors to reduce console noise
       }
-    },
-    shouldReconnect: () => true
+    };
+  }, [dispatch]);
+
+  useWebSocket(WSS_FEED_URL, {
+    onMessage: messageHandlerRef.current,
+    shouldReconnect: () => true,
+    reconnectAttempts: 10,
+    reconnectInterval: 3000
   });
 
   // Fetch trustlines with pagination

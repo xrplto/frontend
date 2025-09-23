@@ -443,7 +443,7 @@ const LightweightChartComponent = React.memo(({ chartData, isMobile, theme }) =>
           chart.applyOptions({ width: chartContainerRef.current.clientWidth });
         }
       };
-      window.addEventListener('resize', handleResize);
+      window.addEventListener('resize', handleResize, { passive: true });
 
       return () => {
         window.removeEventListener('resize', handleResize);
@@ -603,9 +603,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   };
 
   // Process ROI history data for the chart
-  const processChartData = () => {
-    startOperation();
-
+  const processChartData = useMemo(() => {
     if (!traderStats?.roiHistory || traderStats.roiHistory.length === 0) {
       return null;
     }
@@ -644,17 +642,11 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
-    endOperation('heavy', {
-      operation: 'process-chart-data',
-      items: sortedHistory.length
-    });
-
     return chartData;
-  };
+  }, [traderStats?.roiHistory]);
 
   // Process trade history data for the chart
-  const processTradeHistoryData = () => {
-
+  const processTradeHistoryData = useMemo(() => {
     if (!traderStats?.tradeHistory || traderStats.tradeHistory.length === 0) {
       return null;
     }
@@ -689,11 +681,10 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
-
     return chartData;
-  };
+  }, [traderStats?.tradeHistory]);
 
-  const processVolumeHistoryData = () => {
+  const processVolumeHistoryData = useMemo(() => {
 
     if (!traderStats?.volumeHistory || traderStats.volumeHistory.length === 0) {
       return null;
@@ -732,9 +723,8 @@ export default function Portfolio({ account, limit, collection, type }) {
       }
     };
 
-
     return chartData;
-  };
+  }, [traderStats?.volumeHistory]);
 
   const chartOptions = {
     yAxis: [
