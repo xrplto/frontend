@@ -260,21 +260,40 @@ const PriceChartAdvanced = memo(({ token }) => {
       return;
     }
 
-    const controller = new AbortController();
+    let mounted = true;
+    let currentRequest = null;
+    let isRequestInProgress = false;
 
     const fetchData = async (isUpdate = false) => {
+      // Skip if unmounted or request already in progress
+      if (!mounted || isRequestInProgress) {
+        return;
+      }
+
+      // Cancel any ongoing request only if it exists
+      if (currentRequest && !currentRequest.signal.aborted) {
+        currentRequest.abort();
+      }
+
+      // Create new controller for this specific request
+      const requestController = new AbortController();
+      currentRequest = requestController;
+      isRequestInProgress = true;
+
       try {
-        if (isUpdate) {
-          setIsUpdating(true);
-        } else {
-          setLoading(true);
+        if (mounted) {
+          if (isUpdate) {
+            setIsUpdating(true);
+          } else {
+            setLoading(true);
+          }
         }
         const apiRange = range === 'ALL' ? '1Y' : range;
         const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
 
-        const response = await axios.get(endpoint, { signal: controller.signal });
+        const response = await axios.get(endpoint, { signal: requestController.signal });
 
-        if (response.data?.ohlc && response.data.ohlc.length > 0) {
+        if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc
             .map((candle) => ({
               time: Math.floor(candle[0] / 1000), // Convert ms to seconds
@@ -307,21 +326,31 @@ const PriceChartAdvanced = memo(({ token }) => {
           rsiData.forEach((r) => {
             rsiMap[r.time] = r.value;
           });
-          setRsiValues(rsiMap);
-          rsiValuesRef.current = rsiMap;
+          if (mounted) {
+            setRsiValues(rsiMap);
+            rsiValuesRef.current = rsiMap;
+          }
 
-          setLoading(false);
-          setIsUpdating(false);
+          if (mounted) {
+            setLoading(false);
+            setIsUpdating(false);
+          }
         } else {
-          setLoading(false);
-          setIsUpdating(false);
+          if (mounted) {
+            setLoading(false);
+            setIsUpdating(false);
+          }
         }
       } catch (error) {
-        if (!axios.isCancel(error)) {
+        if (!axios.isCancel(error) && error.code !== 'ERR_CANCELED' && error.name !== 'AbortError') {
           console.error('Chart fetch error:', error.message);
         }
-        setLoading(false);
-        setIsUpdating(false);
+        if (mounted) {
+          setLoading(false);
+          setIsUpdating(false);
+        }
+      } finally {
+        isRequestInProgress = false;
       }
     };
 
@@ -329,31 +358,37 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     // Sync with ledger updates every 4 seconds - but only if user is not zoomed
     const interval = setInterval(() => {
-      if (!isUserZoomedRef.current) {
+      if (!isUserZoomedRef.current && mounted) {
         fetchData(true);
       }
     }, 4000);
 
     return () => {
-      controller.abort();
+      mounted = false;
+      if (currentRequest) {
+        currentRequest.abort();
+      }
       clearInterval(interval);
     };
-  }, [token.md5, range, BASE_URL, activeFiatCurrency, convertScientificToRegular, calculateRSI]);
+  }, [token.md5, range, BASE_URL, activeFiatCurrency]);
 
   // Fetch holder data
   useEffect(() => {
     if (!token?.md5 || chartType !== 'holders') return;
 
+    let mounted = true;
     const controller = new AbortController();
 
     const fetchHolderData = async () => {
       try {
-        setLoading(true);
+        if (mounted) {
+          setLoading(true);
+        }
         const endpoint = `${BASE_URL}/graphrich/${token.md5}?range=${range}`;
 
         const response = await axios.get(endpoint, { signal: controller.signal });
 
-        if (response.data?.history && response.data.history.length > 0) {
+        if (mounted && response.data?.history && response.data.history.length > 0) {
           const processedData = response.data.history
             .map((item) => ({
               time: Math.floor(item.time / 1000),
@@ -370,21 +405,28 @@ const PriceChartAdvanced = memo(({ token }) => {
               return index === array.length - 1 || item.time !== array[index + 1].time;
             });
 
-          setHolderData(processedData);
-          holderDataRef.current = processedData;
-          setLoading(false);
+          if (mounted) {
+            setHolderData(processedData);
+            holderDataRef.current = processedData;
+            setLoading(false);
+          }
         }
       } catch (error) {
-        if (!axios.isCancel(error)) {
+        if (!axios.isCancel(error) && error.code !== 'ERR_CANCELED' && error.name !== 'AbortError') {
           console.error('Holder data error:', error);
         }
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
 
     fetchHolderData();
 
-    return () => controller.abort();
+    return () => {
+      mounted = false;
+      controller.abort();
+    };
   }, [token.md5, range, BASE_URL, chartType]);
 
   // Create chart only when chart type changes AND relevant data is available - optimized
