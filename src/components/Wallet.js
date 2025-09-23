@@ -288,11 +288,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }}
         >
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
-                Wallet Details
-              </Typography>
-            </Stack>
+            <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+              Wallet Details
+            </Typography>
 
             <Stack direction="row" spacing={0.5}>
               <CopyToClipboard
@@ -345,24 +343,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               </IconButton>
             </Stack>
           </Stack>
-
-          {accountLogin && (
-            <Typography
-              variant="caption"
-              sx={{
-                color: alpha(theme.palette.text.secondary, 0.7),
-                fontSize: '0.7rem',
-                display: 'block',
-                mt: 0.25,
-                fontFamily: 'monospace',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis'
-              }}
-            >
-              {accountLogin.slice(0, 16)}...{accountLogin.slice(-8)}
-            </Typography>
-          )}
         </Box>
 
         {/* Scrollable Content */}
