@@ -494,7 +494,7 @@ export default function Portfolio({ account, limit, collection, type }) {
   const [loading, setLoading] = useState(true);
   const [selectedChart, setSelectedChart] = useState(null);
   const [chartView, setChartView] = useState('roi');
-  const [xrpBalance, setXrpBalance] = useState(null);
+  const [xrpBalance, setXrpBalance] = useState({ total: 0, reserved: 0, available: 0 });
   const [loadingBalance, setLoadingBalance] = useState(true);
   const [isAmm, setIsAmm] = useState(false);
 
@@ -557,17 +557,32 @@ export default function Portfolio({ account, limit, collection, type }) {
         if (response.data && response.data.result && response.data.result.account_data) {
           // XRP balance is stored in drops (1 XRP = 1,000,000 drops)
           const balanceInDrops = response.data.result.account_data.Balance;
-          const balanceInXrp = parseInt(balanceInDrops) / 1000000;
-          setXrpBalance(balanceInXrp);
+          const totalBalance = parseInt(balanceInDrops) / 1000000;
+
+          // Calculate reserve requirements
+          // Base reserve: 1 XRP per account
+          // Owner reserve: 0.2 XRP per owned object (trustlines, offers, escrows, etc.)
+          const ownerCount = response.data.result.account_data.OwnerCount || 0;
+          const baseReserve = 1; // 1 XRP base reserve
+          const ownerReserve = 0.2; // 0.2 XRP per object
+          const totalReserve = baseReserve + (ownerCount * ownerReserve);
+          const availableBalance = Math.max(0, totalBalance - totalReserve);
+
+          // Store both total and available balance
+          setXrpBalance({
+            total: totalBalance,
+            reserved: totalReserve,
+            available: availableBalance
+          });
         } else {
-          setXrpBalance(0);
+          setXrpBalance({ total: 0, reserved: 0, available: 0 });
         }
         endOperation('api', {
           endpoint: 'xrplcluster.com/account_info',
           dataSize: JSON.stringify(response.data).length
         });
       } catch (error) {
-        setXrpBalance(0);
+        setXrpBalance({ total: 0, reserved: 0, available: 0 });
         endOperation('api', {
           endpoint: 'xrplcluster.com/account_info',
           dataSize: 0
@@ -2038,24 +2053,59 @@ export default function Portfolio({ account, limit, collection, type }) {
                         </Typography>
                       </Box>
                       {loadingBalance ? (
-                        <Skeleton width={80} height={20} sx={{ borderRadius: '4px' }} />
+                        <Skeleton width={80} height={60} sx={{ borderRadius: '4px' }} />
                       ) : (
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: 700,
-                            color: theme.palette.primary.main,
-                            fontSize: '1.1rem'
-                          }}
-                        >
-                          {xrpBalance !== null
-                            ? xrpBalance.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                              })
-                            : '0.00'}{' '}
-                          XRP
-                        </Typography>
+                        <Box sx={{ textAlign: 'right' }}>
+                          <Typography
+                            variant="body2"
+                            sx={{
+                              fontWeight: 700,
+                              color: theme.palette.text.primary,
+                              fontSize: '1.1rem',
+                              lineHeight: 1.2
+                            }}
+                          >
+                            {xrpBalance?.total !== undefined
+                              ? xrpBalance.total.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })
+                              : '0.00'}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: alpha(theme.palette.error.main, 0.8),
+                              fontSize: '0.7rem',
+                              display: 'block',
+                              lineHeight: 1.1
+                            }}
+                          >
+                            Reserved {xrpBalance?.reserved !== undefined
+                              ? xrpBalance.reserved.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })
+                              : '0.00'}
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              fontSize: '0.7rem',
+                              fontWeight: 600,
+                              display: 'block',
+                              lineHeight: 1.1
+                            }}
+                          >
+                            Available {xrpBalance?.available !== undefined
+                              ? xrpBalance.available.toLocaleString(undefined, {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2
+                                })
+                              : '0.00'}
+                          </Typography>
+                        </Box>
                       )}
                     </Box>
 
@@ -3363,7 +3413,7 @@ export default function Portfolio({ account, limit, collection, type }) {
               <TabPanel sx={{ p: 0 }} value="0">
                 <TrustLines
                   account={account}
-                  xrpBalance={xrpBalance}
+                  xrpBalance={xrpBalance?.available || 0}
                   onUpdateTotalValue={(value) => setTotalValue(value)}
                   onTrustlinesData={(data) => {}}
                 />
