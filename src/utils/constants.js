@@ -362,7 +362,7 @@ export const currencyIcons = {
   USD: <AttachMoneyRoundedIcon {...defaultCurrencyIconProps} />,
   EUR: <EuroRoundedIcon {...defaultCurrencyIconProps} />,
   JPY: <CurrencyYenRoundedIcon {...defaultCurrencyIconProps} />,
-  CNY: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />,
+  CNH: <CurrencyYuanRoundedIcon {...defaultCurrencyIconProps} />,
   XRP: <XRPIcon />
 };
 
@@ -370,12 +370,12 @@ export const currencySymbols = {
   USD: '$ ',
   EUR: '€ ',
   JPY: '¥ ',
-  CNY: '¥ ',
+  CNH: '¥ ',
   XRP: '✕ '
 };
 
 export const currencyConfig = {
-  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNY'],
+  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
   activeFiatCurrency: 'XRP'
 };
 

@@ -1323,11 +1323,12 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     }
 
-    // Check if this is a range change
+    // Check if this is a range change or currency change
     const isRangeChange = lastChartTypeRef.current !== `${chartType}-${range}`;
+    const isCurrencyChange = activeFiatCurrencyRef.current !== activeFiatCurrency;
 
     // Update series data - use update for the last bar if it's an auto-update
-    const isAutoUpdate = !isRangeChange && dataRef.current && chartData.length > 0;
+    const isAutoUpdate = !isRangeChange && !isCurrencyChange && dataRef.current && chartData.length > 0;
 
     if (chartType === 'candles' && candleSeriesRef.current) {
       // Calculate scale factor for small prices
@@ -1406,11 +1407,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     }
 
     // Don't call fitContent on auto-updates - preserve user's zoom
-    // Only fit content on initial load or range change
-    if (isRangeChange) {
-      // This is a range change or initial load, fit content
+    // Only fit content on initial load, range change, or currency change
+    if (isRangeChange || isCurrencyChange) {
+      // This is a range/currency change or initial load, fit content
       chartRef.current.timeScale().fitContent();
       lastChartTypeRef.current = `${chartType}-${range}`;
+      // Update currency ref after processing
+      activeFiatCurrencyRef.current = activeFiatCurrency;
     } else if (zoomStateRef.current) {
       // This is an auto-update, restore the saved zoom
       setTimeout(() => {
