@@ -62,9 +62,9 @@ export const GlobalNotificationButton = ({ sidebarOpen, onSidebarToggle }) => {
         <IconButton
           onClick={() => onSidebarToggle?.(true)}
           sx={{
-            padding: { xs: '8px', sm: '10px' },
-            minWidth: { xs: '40px', sm: '44px' },
-            minHeight: { xs: '40px', sm: '44px' },
+            padding: { xs: '4px', sm: '6px' },
+            minWidth: { xs: '28px', sm: '32px' },
+            minHeight: { xs: '28px', sm: '32px' },
             color: hasActiveNotifications ? theme.palette.warning.main : theme.palette.text.secondary,
             background: hasActiveNotifications ? alpha(theme.palette.warning.main, 0.08) : 'transparent',
             border: hasActiveNotifications ? `1px solid ${alpha(theme.palette.warning.main, 0.2)}` : `1px solid transparent`,
