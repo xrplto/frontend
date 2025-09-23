@@ -693,8 +693,19 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                     <Box sx={{ position: 'relative', width: '100%', height: '100%', zIndex: 1 }}>
                       <ReactECharts
                         style={{ height: '200px', width: '100%' }}
+                        opts={{
+                          renderer: 'svg',
+                          // Add passive event listeners to improve scroll performance
+                          devicePixelRatio: window.devicePixelRatio || 1
+                        }}
+                        onEvents={{
+                          // Prevent unnecessary re-renders
+                          'finished': () => {}
+                        }}
                         option={{
                           backgroundColor: 'transparent',
+                          // Disable animations that cause performance issues
+                          animation: false,
                           tooltip: {
                             trigger: 'item',
                             backgroundColor:
@@ -738,16 +749,10 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                                 borderRadius: 2,
                                 borderColor: theme.palette.background.paper,
                                 borderWidth: 1
-                              },
-                              animationType: 'scale',
-                              animationEasing: 'elasticOut',
-                              animationDelay: function (idx) {
-                                return Math.random() * 200;
                               }
                             }
                           ]
                         }}
-                        opts={{ renderer: 'svg' }}
                       />
                     </Box>
                     <Box

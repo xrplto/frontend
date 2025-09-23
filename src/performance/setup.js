@@ -62,14 +62,14 @@ class MemoryMonitor {
         const growth = sample.usedJSHeapSize - prev.usedJSHeapSize;
         const growthMB = growth / (1024 * 1024);
 
-        if (growthMB > 20) { // Alert for >20MB growth (much reduced sensitivity)
+        if (growthMB > 50) { // Alert for >50MB growth (only major spikes)
           console.warn(`Memory spike detected: +${growthMB.toFixed(2)}MB`, sample);
         }
       }
     }
 
-    // Check again in 5 seconds (much reduced frequency)
-    this.timeoutId = setTimeout(() => this.monitor(), 5000);
+    // Check again in 10 seconds (reduced frequency to minimize overhead)
+    this.timeoutId = setTimeout(() => this.monitor(), 10000);
   }
 
   getReport() {

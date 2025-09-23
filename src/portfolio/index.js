@@ -583,22 +583,12 @@ export default function Portfolio({ account, limit, collection, type }) {
     }
   }, [account]);
 
-  // Performance monitoring lifecycle
+  // Performance monitoring lifecycle - simplified to reduce overhead
   useEffect(() => {
-    startOperation();
-
-    // Start memory monitoring
-    if (memoryMonitor) {
+    // Only monitor in development mode
+    if (process.env.NODE_ENV === 'development' && memoryMonitor) {
       memoryMonitor.start();
     }
-
-    // Track component initialization
-    setTimeout(() => {
-      endOperation('heavy', {
-        operation: 'portfolio-initialization',
-        items: 1
-      });
-    }, 10);
 
     return () => {
       // Stop memory monitoring on unmount
@@ -606,7 +596,7 @@ export default function Portfolio({ account, limit, collection, type }) {
         memoryMonitor.stop();
       }
     };
-  }, [startOperation, endOperation]);
+  }, []);
 
   const handleChange = (_, newValue) => {
     setActiveTab(newValue);

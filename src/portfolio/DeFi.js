@@ -49,18 +49,20 @@ const DeFiHistory = ({ account }) => {
   const [abortController, setAbortController] = useState(null);
 
   useEffect(() => {
+    // Create controller for this effect
+    const controller = new AbortController();
+
     if (account) {
       accountHistory();
     }
 
     return () => {
-      // Cleanup: disconnect client on unmount
-      if (client.isConnected()) {
-        client.disconnect();
-      }
+      // Cleanup: abort any pending requests
+      controller.abort();
       if (abortController) {
         abortController.abort();
       }
+      // Don't disconnect shared client - it may be used elsewhere
     };
   }, [account]);
 
