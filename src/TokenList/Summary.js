@@ -756,7 +756,7 @@ export default function Summary() {
   const xrpPrice =
     activeFiatCurrency === 'XRP'
       ? Rate(1, metrics.USD || 1)
-      : Rate(1, metrics[activeFiatCurrency] || 1);
+      : Rate(1, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1);
 
   const xrpPriceSymbol =
     activeFiatCurrency === 'XRP' ? currencySymbols.USD : currencySymbols[activeFiatCurrency];
