@@ -721,6 +721,12 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                           backgroundColor: 'transparent',
                           // Disable animations that cause performance issues
                           animation: false,
+                          // Disable brush and other interactions that add event listeners
+                          brush: {
+                            toolbox: []
+                          },
+                          // Disable zoom and pan interactions
+                          dataZoom: [],
                           tooltip: {
                             trigger: 'item',
                             backgroundColor:
@@ -754,11 +760,10 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
                                 show: false
                               },
                               emphasis: {
-                                itemStyle: {
-                                  shadowBlur: 10,
-                                  shadowOffsetX: 0,
-                                  shadowColor: 'rgba(0, 0, 0, 0.5)'
-                                }
+                                disabled: true // Disable emphasis to reduce event listeners
+                              },
+                              select: {
+                                disabled: true // Disable selection interactions
                               },
                               itemStyle: {
                                 borderRadius: 2,
