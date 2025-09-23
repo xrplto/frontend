@@ -179,7 +179,7 @@ function TokenListComponent({
   } = useContext(AppContext);
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
-  const exchRate = metrics[activeFiatCurrency] || 1;
+  const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {

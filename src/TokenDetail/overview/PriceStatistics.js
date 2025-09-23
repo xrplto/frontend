@@ -694,7 +694,7 @@ export default function PriceStatistics({ token }) {
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
-                {fNumber(amount * (exch / (metrics[activeFiatCurrency] || 1)))}
+                {fNumber(amount * (exch / (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)))}
               </Typography>
             </ModernTableCell>
           </TableRow>

@@ -554,7 +554,7 @@ export default function Summary() {
   const [isLoading, setIsLoading] = useState(true);
   const theme = useTheme();
 
-  const fiatRate = metrics[activeFiatCurrency] || 1;
+  const fiatRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
 
   const getChartOption = () => ({
     grid: {

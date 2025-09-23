@@ -346,12 +346,12 @@ const TokenSummary = memo(
 
     // Metrics data
     const convertedMarketCap =
-      marketcap && metrics[activeFiatCurrency]
-        ? new Decimal(marketcap).div(metrics[activeFiatCurrency]).toNumber()
+      marketcap && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+        ? new Decimal(marketcap).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
         : marketcap || 0;
     const convertedVolume =
-      vol24hxrp && metrics[activeFiatCurrency]
-        ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency]).toNumber()
+      vol24hxrp && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null))
+        ? new Decimal(vol24hxrp).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber()
         : vol24hxrp || 0;
 
     const metricsData = [
@@ -367,7 +367,7 @@ const TokenSummary = memo(
       },
       {
         title: 'TVL',
-        value: `${currencySymbols[activeFiatCurrency]}${formatValue(tvl || 0)}`,
+        value: `${currencySymbols[activeFiatCurrency]}${formatValue(tvl && (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null)) ? new Decimal(tvl).div(metrics[activeFiatCurrency] || metrics.CNY || 1).toNumber() : tvl || 0)}`,
         color: theme.palette.info.main
       },
       {
@@ -1214,7 +1214,7 @@ const TokenSummary = memo(
                       {(() => {
                         const symbol = currencySymbols[activeFiatCurrency];
                         const rawPrice =
-                          activeFiatCurrency === 'XRP' ? exch : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : exch);
+                          activeFiatCurrency === 'XRP' ? exch : (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ? exch / (metrics[activeFiatCurrency] || metrics.CNY) : exch);
 
                         if (rawPrice && rawPrice < 0.001) {
                           const str = rawPrice.toFixed(15);
@@ -1232,7 +1232,7 @@ const TokenSummary = memo(
                         return (
                           <NumberTooltip
                             prepend={symbol}
-                            number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                            number={fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
                           />
                         );
                       })()}
@@ -1779,7 +1779,7 @@ const TokenSummary = memo(
                           const rawPrice =
                             activeFiatCurrency === 'XRP'
                               ? exch
-                              : (metrics[activeFiatCurrency] ? exch / metrics[activeFiatCurrency] : exch);
+                              : (metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) ? exch / (metrics[activeFiatCurrency] || metrics.CNY) : exch);
 
                           // Check if price has many leading zeros
                           if (rawPrice && rawPrice < 0.001) {
@@ -1809,7 +1809,7 @@ const TokenSummary = memo(
                           return (
                             <NumberTooltip
                               prepend={symbol}
-                              number={fNumberWithCurreny(exch, metrics[activeFiatCurrency])}
+                              number={fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
                             />
                           );
                         })()}

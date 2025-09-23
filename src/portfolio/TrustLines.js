@@ -398,7 +398,7 @@ export default function TrustLines({ account, xrpBalance, onUpdateTotalValue, on
   const dispatch = useDispatch();
   const { sync, activeFiatCurrency, darkMode } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
-  const exchRate = metrics[activeFiatCurrency] || 1;
+  const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
   const BASE_URL = process.env.API_URL;
 
   const [loading, setLoading] = useState(false);
