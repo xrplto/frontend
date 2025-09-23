@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import {
   useTheme,
@@ -3136,7 +3136,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                   (() => {
                     const chartData =
                       chartView === 'roi'
-                        ? processChartData()
+                        ? processChartData
                         : chartView === 'activity'
                           ? processTradeHistoryData()
                           : processVolumeHistoryData();
@@ -3204,7 +3204,7 @@ export default function Portfolio({ account, limit, collection, type }) {
                       {(() => {
                         let chartData = null;
                         if (chartView === 'roi') {
-                          chartData = processChartData();
+                          chartData = processChartData;
                         } else if (chartView === 'activity') {
                           chartData = processTradeHistoryData();
                         } else if (chartView === 'volume') {
