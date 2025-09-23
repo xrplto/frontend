@@ -830,38 +830,30 @@ export default function Summary() {
                 <Stack direction="column" spacing="2px">
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Stables</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
                           new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber()
                         )}
                       </MetricValue>
-                      <PercentageChange
-                        style={{ fontSize: '0.7rem' }}
-                        isPositive={(metrics.global?.gStableVolumePro || 0) >= 0}
-                      >
-                        {(metrics.global?.gStableVolumePro || 0) >= 0 ? '▲' : '▼'}
-                        {Math.abs(metrics.global?.gStableVolumePro || 0).toFixed(1)}%
-                      </PercentageChange>
+                      <VolumePercentage>
+                        ({((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%)
+                      </VolumePercentage>
                     </div>
                   </Stack>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Memes</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                       <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
                           new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber()
                         )}
                       </MetricValue>
-                      <PercentageChange
-                        style={{ fontSize: '0.7rem' }}
-                        isPositive={(metrics.global?.gMemeVolumePro || 0) >= 0}
-                      >
-                        {(metrics.global?.gMemeVolumePro || 0) >= 0 ? '▲' : '▼'}
-                        {Math.abs(metrics.global?.gMemeVolumePro || 0).toFixed(1)}%
-                      </PercentageChange>
+                      <VolumePercentage>
+                        ({((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%)
+                      </VolumePercentage>
                     </div>
                   </Stack>
                 </Stack>
