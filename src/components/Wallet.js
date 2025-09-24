@@ -164,6 +164,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const anchorRef = useRef(null);
   const [showingSeed, setShowingSeed] = useState(false);
   const [currentSeed, setCurrentSeed] = useState('');
+  const [showAllAccounts, setShowAllAccounts] = useState(false);
   const {
     setActiveProfile,
     accountProfile,
@@ -550,71 +551,82 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
               <>
                 <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: alpha(theme.palette.text.secondary, 0.7),
-                      mb: 0.5,
-                      display: 'block'
-                    }}
-                  >
-                    Other Accounts
-                  </Typography>
-                  {profiles.map((profile, idx) => {
-                    const account = profile.account;
-
-                    if (account === accountLogin) return null;
-
-                    const accountLogo = profile.logo;
-                    const logoImageUrl = accountLogo
-                      ? `https://s1.xrpl.to/profile/${accountLogo}`
-                      : getHashIcon(account);
-
-                    return (
-                      <Box
-                        key={'account' + idx}
-                        sx={{
-                          p: 1,
-                          borderRadius: '8px',
-                          cursor: 'pointer',
-                          '&:hover': {
-                            background: alpha(theme.palette.primary.main, 0.08)
-                          }
-                        }}
-                        onClick={() => {
-                          setActiveProfile(account);
-                          setOpen(false);
-                        }}
+                  <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha(theme.palette.text.secondary, 0.7),
+                        display: 'block'
+                      }}
+                    >
+                      Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length})
+                    </Typography>
+                    {profiles.filter((profile) => profile.account !== accountLogin).length > 5 && (
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={() => setShowAllAccounts(!showAllAccounts)}
+                        sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
                       >
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                          <TokenImage alt="photoURL" src={logoImageUrl} width={24} height={24} />
-                          <Box sx={{ flex: 1, minWidth: 0 }}>
-                            <Typography
-                              variant="caption"
-                              sx={{ fontWeight: 500, display: 'block' }}
+                        {showAllAccounts ? 'Show Less' : 'Show More'}
+                      </Button>
+                    )}
+                  </Stack>
+                  {profiles
+                    .filter((profile) => profile.account !== accountLogin)
+                    .slice(0, showAllAccounts ? undefined : 5)
+                    .map((profile, idx) => {
+                      const account = profile.account;
+                      const accountLogo = profile.logo;
+                      const logoImageUrl = accountLogo
+                        ? `https://s1.xrpl.to/profile/${accountLogo}`
+                        : getHashIcon(account);
+
+                      return (
+                        <Box
+                          key={'account' + idx}
+                          sx={{
+                            p: 1,
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            '&:hover': {
+                              background: alpha(theme.palette.primary.main, 0.08)
+                            }
+                          }}
+                          onClick={() => {
+                            setActiveProfile(account);
+                            setOpen(false);
+                          }}
+                        >
+                          <Stack direction="row" alignItems="center" spacing={1}>
+                            <TokenImage alt="photoURL" src={logoImageUrl} width={24} height={24} />
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography
+                                variant="caption"
+                                sx={{ fontWeight: 500, display: 'block' }}
+                              >
+                                {truncateAccount(account, 8)}
+                              </Typography>
+                            </Box>
+                            <IconButton
+                              size="small"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeProfile(account);
+                              }}
+                              sx={{
+                                padding: '2px',
+                                '&:hover': {
+                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
+                                }
+                              }}
                             >
-                              {truncateAccount(account, 8)}
-                            </Typography>
-                          </Box>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              removeProfile(account);
-                            }}
-                            sx={{
-                              padding: '2px',
-                              '&:hover': {
-                                backgroundColor: alpha(theme.palette.error.main, 0.1)
-                              }
-                            }}
-                          >
-                            <CloseIcon sx={{ fontSize: 14 }} />
-                          </IconButton>
-                        </Stack>
-                      </Box>
-                    );
-                  })}
+                              <CloseIcon sx={{ fontSize: 14 }} />
+                            </IconButton>
+                          </Stack>
+                        </Box>
+                      );
+                    })}
                 </Box>
                 <Divider />
               </>
@@ -1037,113 +1049,122 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             {/* Other Accounts Section */}
             {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
               <Box sx={{ py: 1 }}>
-                <Typography
-                  variant="overline"
-                  sx={{
-                    fontSize: '0.7rem',
-                    fontWeight: 600,
-                    color: theme.palette.text.secondary,
-                    px: 3,
-                    py: 1,
-                    display: 'block'
-                  }}
-                >
-                  Other Accounts
-                </Typography>
-                {profiles.map((profile, idx) => {
-                  const account = profile.account;
-
-                  if (account === accountLogin) return null;
-
-                  const accountLogo = profile.logo;
-                  const logoImageUrl = accountLogo
-                    ? `https://s1.xrpl.to/profile/${accountLogo}`
-                    : getHashIcon(account);
-
-                  return (
-                    <MenuItem
-                      key={'account' + idx}
-                      sx={{
-                        typography: 'body2',
-                        py: 1.5,
-                        px: 3,
-                        borderRadius: 0,
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                        }
-                      }}
-                      onClick={() => {
-                        setActiveProfile(account);
-                        setOpen(false);
-                      }}
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 3, py: 1 }}>
+                  <Typography
+                    variant="overline"
+                    sx={{
+                      fontSize: '0.7rem',
+                      fontWeight: 600,
+                      color: theme.palette.text.secondary
+                    }}
+                  >
+                    Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length})
+                  </Typography>
+                  {profiles.filter((profile) => profile.account !== accountLogin).length > 5 && (
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => setShowAllAccounts(!showAllAccounts)}
+                      sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
                     >
-                      <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-                        <IconButton
-                          sx={{
-                            padding: 0,
-                            width: 44,
-                            height: 44,
-                            ...(open && {
-                              '&:before': {
-                                zIndex: 1,
-                                content: "''",
-                                width: '100%',
-                                height: '100%',
-                                borderRadius: '50%',
-                                position: 'absolute',
-                                bgcolor: (theme) => alpha(theme.palette.grey[900], 0.72)
-                              }
-                            })
-                          }}
-                        >
-                          <TokenImage alt="photoURL" src={logoImageUrl} width={40} height={40} />
-                        </IconButton>
-                        <Box sx={{ flex: 1, minWidth: 0 }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {truncateAccount(account)}
-                          </Typography>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <SwapHorizIcon
-                              sx={{ fontSize: 14, color: theme.palette.text.secondary }}
-                            />
-                            <Typography variant="caption" color="text.secondary">
-                              Switch Account
-                            </Typography>
-                          </Stack>
-                        </Box>
-                        <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
-                          <CopyToClipboard
-                            text={account}
-                            onCopy={() => openSnackbar('Address copied!', 'success')}
+                      {showAllAccounts ? 'Show Less' : 'Show More'}
+                    </Button>
+                  )}
+                </Stack>
+                {profiles
+                  .filter((profile) => profile.account !== accountLogin)
+                  .slice(0, showAllAccounts ? undefined : 5)
+                  .map((profile, idx) => {
+                    const account = profile.account;
+                    const accountLogo = profile.logo;
+                    const logoImageUrl = accountLogo
+                      ? `https://s1.xrpl.to/profile/${accountLogo}`
+                      : getHashIcon(account);
+
+                    return (
+                      <MenuItem
+                        key={'account' + idx}
+                        sx={{
+                          typography: 'body2',
+                          py: 1.5,
+                          px: 3,
+                          borderRadius: 0,
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                          }
+                        }}
+                        onClick={() => {
+                          setActiveProfile(account);
+                          setOpen(false);
+                        }}
+                      >
+                        <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
+                          <IconButton
+                            sx={{
+                              padding: 0,
+                              width: 44,
+                              height: 44,
+                              ...(open && {
+                                '&:before': {
+                                  zIndex: 1,
+                                  content: "''",
+                                  width: '100%',
+                                  height: '100%',
+                                  borderRadius: '50%',
+                                  position: 'absolute',
+                                  bgcolor: (theme) => alpha(theme.palette.grey[900], 0.72)
+                                }
+                              })
+                            }}
                           >
-                            <Tooltip title="Copy Address">
-                              <IconButton size="small">
-                                <ContentCopyIcon fontSize="small" />
+                            <TokenImage alt="photoURL" src={logoImageUrl} width={40} height={40} />
+                          </IconButton>
+                          <Box sx={{ flex: 1, minWidth: 0 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                              {truncateAccount(account)}
+                            </Typography>
+                            <Stack direction="row" alignItems="center" spacing={1}>
+                              <SwapHorizIcon
+                                sx={{ fontSize: 14, color: theme.palette.text.secondary }}
+                              />
+                              <Typography variant="caption" color="text.secondary">
+                                Switch Account
+                              </Typography>
+                            </Stack>
+                          </Box>
+                          <Stack direction="row" spacing={0.5} onClick={(e) => e.stopPropagation()}>
+                            <CopyToClipboard
+                              text={account}
+                              onCopy={() => openSnackbar('Address copied!', 'success')}
+                            >
+                              <Tooltip title="Copy Address">
+                                <IconButton size="small">
+                                  <ContentCopyIcon fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </CopyToClipboard>
+                            <Tooltip title="Remove Account">
+                              <IconButton
+                                size="small"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeProfile(account);
+                                }}
+                                sx={{
+                                  color: theme.palette.error.main,
+                                  '&:hover': {
+                                    backgroundColor: alpha(theme.palette.error.main, 0.1)
+                                  }
+                                }}
+                              >
+                                <CloseIcon fontSize="small" />
                               </IconButton>
                             </Tooltip>
-                          </CopyToClipboard>
-                          <Tooltip title="Remove Account">
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeProfile(account);
-                              }}
-                              sx={{
-                                color: theme.palette.error.main,
-                                '&:hover': {
-                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
-                                }
-                              }}
-                            >
-                              <CloseIcon fontSize="small" />
-                            </IconButton>
-                          </Tooltip>
+                          </Stack>
                         </Stack>
-                      </Stack>
-                    </MenuItem>
-                  );
-                })}
+                      </MenuItem>
+                    );
+                  })}
               </Box>
             )}
 

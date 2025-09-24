@@ -41,8 +41,8 @@ const DeviceLoginPage = () => {
 
     console.log('Generating device accounts for passkey ID:', passkeyId);
 
-    // Simplified approach: Generate first 5 accounts directly
-    for (let i = 0; i < 5; i++) {
+    // Simplified approach: Generate first 100 accounts directly
+    for (let i = 0; i < 100; i++) {
       const wallet = generateWallet(passkeyId, i);
       console.log(`Generated account ${i}: ${wallet.address}`);
 
