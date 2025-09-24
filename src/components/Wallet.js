@@ -46,6 +46,7 @@ import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-mat
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import KeyIcon from '@mui/icons-material/Key';
+import WarningIcon from '@mui/icons-material/Warning';
 
 // Context
 import { useContext } from 'react';
@@ -164,6 +165,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const anchorRef = useRef(null);
   const [showingSeed, setShowingSeed] = useState(false);
   const [currentSeed, setCurrentSeed] = useState('');
+  const [seedBlurred, setSeedBlurred] = useState(true);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const {
     setActiveProfile,
@@ -253,6 +255,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         setCurrentSeed(wallet.seed);
         setShowingSeed(true);
+        setSeedBlurred(true);
       }
     } catch (err) {
       openSnackbar('Failed to show seed: ' + err.message, 'error');
@@ -460,9 +463,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Box>
                   <Typography
                     variant="caption"
-                    sx={{ color: alpha(theme.palette.error.main, 0.9), mb: 0.5, display: 'block', fontWeight: 600 }}
+                    sx={{
+                      color: alpha(theme.palette.error.main, 0.9),
+                      mb: 0.5,
+                      display: 'flex',
+                      alignItems: 'center',
+                      fontWeight: 600
+                    }}
                   >
-                    ⚠️ Wallet Seed - Keep Private & Offline
+                    <WarningIcon sx={{ fontSize: '0.75rem', mr: 0.5 }} />
+                    Wallet Seed - Keep Private & Offline
                   </Typography>
                   <Typography
                     variant="caption"
@@ -478,12 +488,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       borderRadius: '8px',
                       wordBreak: 'break-all',
                       fontFamily: 'monospace',
-                      fontSize: '0.75rem'
+                      fontSize: '0.75rem',
+                      filter: seedBlurred ? 'blur(4px)' : 'none',
+                      transition: 'filter 0.2s ease',
+                      cursor: seedBlurred ? 'pointer' : 'default'
                     }}
+                    onClick={() => seedBlurred && setSeedBlurred(false)}
                   >
                     {currentSeed}
                   </Box>
                   <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<VisibilityIcon />}
+                      onClick={() => setSeedBlurred(!seedBlurred)}
+                    >
+                      {seedBlurred ? 'Reveal' : 'Blur'}
+                    </Button>
                     <CopyToClipboard
                       text={currentSeed}
                       onCopy={() => openSnackbar('Seed copied!', 'success')}
@@ -543,6 +565,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   </Typography>
                 </Box>
               </Stack>
+
+              {accountProfile?.wallet_type === 'device' && (
+                <Button
+                  size="small"
+                  onClick={handleShowSeed}
+                  sx={{
+                    mt: 1,
+                    py: 0.5,
+                    px: 1,
+                    minHeight: 'auto',
+                    fontSize: '0.7rem',
+                    color: theme.palette.error.main,
+                    backgroundColor: 'transparent',
+                    border: `1px dashed ${alpha(theme.palette.error.main, 0.3)}`,
+                    borderRadius: '4px',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.error.main, 0.05)
+                    }
+                  }}
+                >
+                  <WarningIcon sx={{ fontSize: '0.8rem', mr: 0.5 }} />
+                  <KeyIcon sx={{ fontSize: '0.8rem', mr: 0.5 }} />
+                  Seed
+                </Button>
+              )}
             </Box>
 
             <Divider />
@@ -665,25 +712,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   </Button>
                 </Link>
 
-                {accountProfile?.wallet_type === 'device' && (
-                  <Button
-                    size="small"
-                    startIcon={<KeyIcon />}
-                    onClick={handleShowSeed}
-                    sx={{
-                      width: '100%',
-                      justifyContent: 'flex-start',
-                      textTransform: 'none',
-                      color: theme.palette.text.primary,
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                      }
-                    }}
-                  >
-                    Show Seed
-                  </Button>
-                )}
-
                 <Button
                   size="small"
                   startIcon={<AddCircleOutlineIcon />}
@@ -707,6 +735,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 >
                   More Accounts
                 </Button>
+
 
                 <Button
                   size="small"
