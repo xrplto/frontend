@@ -796,7 +796,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               id="logo-container-mobile"
               sx={{
                 mr: 0,
-                ml: { xs: 1, sm: 0 },
+                ml: 0,
                 display: { xs: 'flex', sm: 'none' },
                 '& img': {
                   maxHeight: '28px',
