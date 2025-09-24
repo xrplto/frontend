@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
-import { Box, Container, Typography, Button, Card, CardContent, Alert, CircularProgress } from '@mui/material';
-import { Warning as WarningIcon } from '@mui/icons-material';
+import { Box, Container, Typography, Button, Card, CardContent, Alert, CircularProgress, Link } from '@mui/material';
+import { Warning as WarningIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 
 // Base64url encoding helper
@@ -124,7 +124,7 @@ const DeviceLoginPage = () => {
       // Check if platform authenticator is available (Windows Hello, Touch ID, etc.)
       const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       if (!available) {
-        setError('Windows Hello, Touch ID, or Face ID is not set up on this device. Please enable biometric authentication in your device settings first.');
+        setError('setup_required');
         setStatus('idle');
         return;
       }
@@ -165,11 +165,11 @@ const DeviceLoginPage = () => {
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
           setError('Passkeys not supported on this device or browser.');
         } else if (innerErr.message?.includes('InvalidStateError') || innerErr.message?.includes('saving')) {
-          setError('Windows Hello not set up. Please enable Windows Hello, Touch ID, or Face ID in your device settings first.');
+          setError('setup_required');
         } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
           setError('Cancelled. Please try again and allow the security prompt.');
         } else {
-          setError('Setup failed. Please ensure Windows Hello, Touch ID, or Face ID is enabled on your device.');
+          setError('setup_required');
         }
         setStatus('idle');
         return;
@@ -352,8 +352,34 @@ const DeviceLoginPage = () => {
           </Alert>
 
           {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
+            <Alert severity={error === 'setup_required' ? 'info' : 'error'} sx={{ mb: 2 }}>
+              {error === 'setup_required' ? (
+                <Box>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Windows Hello Setup Required</strong>
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1.5 }}>
+                    Please enable Windows Hello, Touch ID, or Face ID to use device login:
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    1. Go to <strong>Settings → Accounts → Sign-in options</strong>
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1.5 }}>
+                    2. Set up PIN, Fingerprint, or Face recognition
+                  </Typography>
+                  <Link
+                    href="https://www.microsoft.com/en-us/windows/tips/windows-hello"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                  >
+                    Learn how to set up Windows Hello
+                    <OpenInNewIcon fontSize="small" />
+                  </Link>
+                </Box>
+              ) : (
+                error
+              )}
             </Alert>
           )}
 
