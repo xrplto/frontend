@@ -65,6 +65,7 @@ function Overview({ data }) {
 
   const [revert, setRevert] = useState(false);
   const [pair, setPair] = useState(DEFAULT_PAIR);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
   const [bids, setBids] = useState([]); // Orderbook Bids
   const [asks, setAsks] = useState([]); // Orderbook Asks
@@ -154,9 +155,12 @@ function Overview({ data }) {
     <Root>
       <Toolbar id="back-to-top-anchor" />
       <Topbar />
-      <Header />
+      <Header
+        notificationPanelOpen={notificationPanelOpen}
+        onNotificationPanelToggle={setNotificationPanelOpen}
+      />
 
-      <Container maxWidth="lg" sx={{ py: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 1, sm: 2 } }}>
+      <Container maxWidth={notificationPanelOpen ? false : "lg"} sx={{ py: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 1, sm: 2 } }}>
         <Box
           sx={{
             display: 'flex',

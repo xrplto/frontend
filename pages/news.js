@@ -357,6 +357,7 @@ function NewsPage() {
   const isDark = themeMode === 'dark';
   const isSyncWave = themeName === 'SyncWaveTheme';
   const [isMobile, setIsMobile] = useState(false);
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
   useEffect(() => {
     const checkMobile = () => {
@@ -617,8 +618,11 @@ function NewsPage() {
       style={backgroundStyle}
     >
       <Topbar />
-      <Header />
-      <Container maxWidth="xl">
+      <Header
+        notificationPanelOpen={notificationPanelOpen}
+        onNotificationPanelToggle={setNotificationPanelOpen}
+      />
+      <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         {loading ? (
           <div className={styles.loadingContainer}>
             <div className={styles.spinner}></div>

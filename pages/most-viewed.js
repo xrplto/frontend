@@ -30,6 +30,7 @@ function getInitialTokens(data) {
 
 function MostViewedPage({ data }) {
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
+  const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const tMap = useMemo(() => {
     const map = new Map();
     for (const t of tokens) {
@@ -45,10 +46,13 @@ function MostViewedPage({ data }) {
       {/* Only show Toolbar on desktop - remove on mobile to eliminate spacing */}
       {!isMobile && <Toolbar id="back-to-top-anchor" />}
       {!isMobile ? <Topbar /> : ''}
-      <Header />
+      <Header
+        notificationPanelOpen={notificationPanelOpen}
+        onNotificationPanelToggle={setNotificationPanelOpen}
+      />
       {isMobile ? <Topbar /> : ''}
 
-      <Container maxWidth="xl">
+      <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         <Box
           sx={{
             width: '100%',
