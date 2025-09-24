@@ -72,7 +72,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-const ConnectWallet = dynamic(() => import('src/components/ConnectWallet'), {
+const ConnectWallet = dynamic(() => import('src/components/WalletConnectModal').then(mod => ({ default: mod.ConnectWallet })), {
   loading: () => <Button fullWidth>Loading wallet...</Button>,
   ssr: false
 });

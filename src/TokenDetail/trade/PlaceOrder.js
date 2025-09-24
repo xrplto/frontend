@@ -17,7 +17,7 @@ import { createOffer, isInstalled } from '@gemwallet/api';
 import sdk from '@crossmarkio/sdk';
 
 // Components
-import ConnectWallet from 'src/components/ConnectWallet';
+import { ConnectWallet } from 'src/components/WalletConnectModal';
 import QRDialog from 'src/components/QRDialog';
 import { enqueueSnackbar } from 'notistack';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';

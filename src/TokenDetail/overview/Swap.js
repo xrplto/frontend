@@ -24,7 +24,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import ConnectWallet from 'src/components/ConnectWallet';
+import { ConnectWallet } from 'src/components/WalletConnectModal';
 import QRDialog from 'src/components/QRDialog';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
