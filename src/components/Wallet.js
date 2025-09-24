@@ -168,6 +168,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [seedBlurred, setSeedBlurred] = useState(true);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [accountsActivation, setAccountsActivation] = useState({});
+  const [visibleAccountCount, setVisibleAccountCount] = useState(5);
+  const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const {
     setActiveProfile,
     accountProfile,
@@ -186,36 +188,100 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     doLogIn
   } = useContext(AppContext);
 
+  const checkAccountActivity = useCallback(async (address) => {
+    try {
+      const client = new Client('wss://s1.ripple.com', { connectionTimeout: 1000 });
+      await client.connect();
+      const response = await client.request({
+        command: 'account_info',
+        account: address,
+        ledger_index: 'validated'
+      });
+      await client.disconnect();
+      const balance = parseFloat(response.result.account_data.Balance) / 1000000;
+      return balance >= 1; // Account is activated if it has at least 1 XRP
+    } catch (err) {
+      // Fallback to s2.ripple.com
+      try {
+        const client = new Client('wss://s2.ripple.com', { connectionTimeout: 1000 });
+        await client.connect();
+        const response = await client.request({
+          command: 'account_info',
+          account: address,
+          ledger_index: 'validated'
+        });
+        await client.disconnect();
+        const balance = parseFloat(response.result.account_data.Balance) / 1000000;
+        return balance >= 1;
+      } catch (fallbackErr) {
+        console.log(`Account ${address.slice(0,8)}... activation check failed:`, fallbackErr.message);
+        return false; // Account not found/activated
+      }
+    }
+  }, []);
+
   useEffect(() => {
-    const checkAllAccountsActivation = async () => {
+    const checkVisibleAccountsActivation = async () => {
+      if (profiles.length === 0) return;
+
+      setIsCheckingActivation(true);
       const startTime = performance.now();
 
-      const activationPromises = profiles.map(async (profile) => {
-        const isActive = await checkAccountActivity(profile.account);
-        return { account: profile.account, isActive };
-      });
+      // Get visible accounts (exclude current account, then take first visibleAccountCount)
+      const otherAccounts = profiles.filter(profile => profile.account !== accountProfile?.account);
+      const visibleAccounts = otherAccounts.slice(0, visibleAccountCount);
+      const uncheckedAccounts = visibleAccounts.filter(
+        profile => !(profile.account in accountsActivation)
+      );
 
-      const results = await Promise.all(activationPromises);
+      // Also check current account if not already checked
+      if (accountProfile?.account && !(accountProfile.account in accountsActivation)) {
+        uncheckedAccounts.unshift({ account: accountProfile.account });
+      }
 
-      const activationStatus = {};
-      const activeCount = results.filter(r => r.isActive).length;
+      if (uncheckedAccounts.length === 0) {
+        setIsCheckingActivation(false);
+        return;
+      }
 
-      results.forEach(({ account, isActive }) => {
-        activationStatus[account] = isActive;
-      });
+      console.log(`🔍 Checking ${uncheckedAccounts.length} accounts...`);
+
+      // Process in smaller batches to avoid rate limiting
+      const batchSize = 3;
+      const newActivationStatus = { ...accountsActivation };
+      let activeCount = 0;
+
+      for (let i = 0; i < uncheckedAccounts.length; i += batchSize) {
+        const batch = uncheckedAccounts.slice(i, i + batchSize);
+        const batchPromises = batch.map(async (profile) => {
+          const isActive = await checkAccountActivity(profile.account);
+          return { account: profile.account, isActive };
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        batchResults.forEach(({ account, isActive }) => {
+          newActivationStatus[account] = isActive;
+          if (isActive) activeCount++;
+        });
+
+        // Add delay between batches to avoid rate limiting
+        if (i + batchSize < uncheckedAccounts.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
 
       const endTime = performance.now();
       const duration = endTime - startTime;
+      const totalActive = Object.values(newActivationStatus).filter(Boolean).length;
 
-      console.log(`✅ Account activation check: ${activeCount}/${profiles.length} active (${duration.toFixed(0)}ms)`);
+      console.log(`✅ Checked ${uncheckedAccounts.length} accounts: ${totalActive}/${Object.keys(newActivationStatus).length} active (${duration.toFixed(0)}ms)`);
 
-      setAccountsActivation(activationStatus);
+      setAccountsActivation(newActivationStatus);
+      setIsCheckingActivation(false);
     };
 
-    if (profiles.length > 0) {
-      checkAllAccountsActivation();
-    }
-  }, [profiles]);
+    checkVisibleAccountsActivation();
+  }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity]);
 
   const generateWalletFromPasskey = (passkeyId, accountIndex = 0) => {
     const baseHash = CryptoJS.SHA256(passkeyId).toString();
@@ -243,28 +309,39 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const checkAccountActivity = useCallback(async (address) => {
-    // Use XRPL WebSocket directly since API is unreliable
-    return await checkWithXRPL(address);
-  }, []);
-
   const checkWithXRPL = useCallback(async (address) => {
-    try {
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
-      const accountInfo = await client.request({
-        command: 'account_info',
-        account: address,
-        ledger_index: 'validated'
-      });
-      await client.disconnect();
+    const servers = ['wss://s2.ripple.com', 'wss://s1.ripple.com'];
 
-      const balance = parseFloat(accountInfo.result.account_data.Balance) / 1000000;
-      // Account is activated if it has at least 1 XRP base reserve
-      return balance >= 1;
-    } catch (err) {
-      return false;
+    for (const server of servers) {
+      let client = null;
+      try {
+        client = new Client(server, { connectionTimeout: 2000 });
+        await client.connect();
+        const accountInfo = await client.request({
+          command: 'account_info',
+          account: address,
+          ledger_index: 'validated'
+        });
+
+        const balance = parseFloat(accountInfo.result.account_data.Balance) / 1000000;
+        // Account is activated if it has at least 1 XRP base reserve
+        return balance >= 1;
+      } catch (err) {
+        // Try next server
+        continue;
+      } finally {
+        if (client && client.isConnected()) {
+          try {
+            await client.disconnect();
+          } catch (e) {
+            // Ignore disconnect errors
+          }
+        }
+      }
     }
+
+    // All servers failed - account not found/activated
+    return false;
   }, []);
 
   const handleShowSeed = async () => {
@@ -665,22 +742,39 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         display: 'block'
                       }}
                     >
-                      Other Accounts ({profiles.filter(p => p.wallet_type === 'device').length} total)
+                      Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length} total)
+                      {isCheckingActivation && (
+                        <Typography
+                          variant="caption"
+                          sx={{ color: theme.palette.primary.main, ml: 1 }}
+                        >
+                          Checking...
+                        </Typography>
+                      )}
                     </Typography>
-                    {profiles.filter((profile) => profile.account !== accountLogin).length > 10 && (
-                      <Button
-                        size="small"
-                        variant="text"
-                        onClick={() => setShowAllAccounts(!showAllAccounts)}
-                        sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
-                      >
-                        {showAllAccounts ? 'Show Less' : 'Show More'}
-                      </Button>
-                    )}
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => {
+                        const otherAccountsCount = profiles.filter((profile) => profile.account !== accountLogin).length;
+                        if (visibleAccountCount >= otherAccountsCount) {
+                          setVisibleAccountCount(5);
+                        } else {
+                          setVisibleAccountCount(prev => prev + 5);
+                        }
+                      }}
+                      disabled={isCheckingActivation}
+                      sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
+                    >
+                      {visibleAccountCount >= profiles.filter((profile) => profile.account !== accountLogin).length
+                        ? 'Show Less'
+                        : `Show More (+5)`
+                      }
+                    </Button>
                   </Stack>
                   {profiles
                     .filter((profile) => profile.account !== accountLogin)
-                    .slice(0, showAllAccounts ? undefined : 10)
+                    .slice(0, visibleAccountCount)
                     .map((profile, idx) => {
                       const account = profile.account;
                       const accountLogo = profile.logo;
@@ -1187,21 +1281,38 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     }}
                   >
                     Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length})
+                    {isCheckingActivation && (
+                      <Typography
+                        variant="caption"
+                        sx={{ color: theme.palette.primary.main, ml: 1, fontSize: '0.65rem' }}
+                      >
+                        Checking...
+                      </Typography>
+                    )}
                   </Typography>
-                  {profiles.filter((profile) => profile.account !== accountLogin).length > 5 && (
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => setShowAllAccounts(!showAllAccounts)}
-                      sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
-                    >
-                      {showAllAccounts ? 'Show Less' : 'Show More'}
-                    </Button>
-                  )}
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => {
+                      const otherAccountsCount = profiles.filter((profile) => profile.account !== accountLogin).length;
+                      if (visibleAccountCount >= otherAccountsCount) {
+                        setVisibleAccountCount(5);
+                      } else {
+                        setVisibleAccountCount(prev => prev + 5);
+                      }
+                    }}
+                    disabled={isCheckingActivation}
+                    sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
+                  >
+                    {visibleAccountCount >= profiles.filter((profile) => profile.account !== accountLogin).length
+                      ? 'Show Less'
+                      : `Show More (+5)`
+                    }
+                  </Button>
                 </Stack>
                 {profiles
                   .filter((profile) => profile.account !== accountLogin)
-                  .slice(0, showAllAccounts ? undefined : 5)
+                  .slice(0, visibleAccountCount)
                   .map((profile, idx) => {
                     const account = profile.account;
                     const accountLogo = profile.logo;
