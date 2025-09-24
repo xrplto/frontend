@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useCallback } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
 import { startAuthentication } from '@simplewebauthn/browser';
@@ -188,15 +188,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   useEffect(() => {
     const checkAllAccountsActivation = async () => {
-      console.log('Checking activation for profiles:', profiles);
-      const activationStatus = {};
-      for (const profile of profiles) {
-        console.log('Checking account:', profile.account);
+      const startTime = performance.now();
+
+      const activationPromises = profiles.map(async (profile) => {
         const isActive = await checkAccountActivity(profile.account);
-        activationStatus[profile.account] = isActive;
-        console.log(`${profile.account}: ${isActive ? 'ACTIVE' : 'NOT ACTIVATED'}`);
-      }
-      console.log('Final activation status:', activationStatus);
+        return { account: profile.account, isActive };
+      });
+
+      const results = await Promise.all(activationPromises);
+
+      const activationStatus = {};
+      const activeCount = results.filter(r => r.isActive).length;
+
+      results.forEach(({ account, isActive }) => {
+        activationStatus[account] = isActive;
+      });
+
+      const endTime = performance.now();
+      const duration = endTime - startTime;
+
+      console.log(`✅ Account activation check: ${activeCount}/${profiles.length} active (${duration.toFixed(0)}ms)`);
+
       setAccountsActivation(activationStatus);
     };
 
@@ -231,25 +243,29 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const checkAccountActivity = async (address) => {
+  const checkAccountActivity = useCallback(async (address) => {
+    // Use XRPL WebSocket directly since API is unreliable
+    return await checkWithXRPL(address);
+  }, []);
+
+  const checkWithXRPL = useCallback(async (address) => {
     try {
-      console.log('Fetching for address:', address);
-      const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
-      const data = await response.json();
-      console.log('API response for', address, ':', data);
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+      const accountInfo = await client.request({
+        command: 'account_info',
+        account: address,
+        ledger_index: 'validated'
+      });
+      await client.disconnect();
 
-      // If status is false, account is not activated
-      if (data.status === false) {
-        return false;
-      }
-
-      // If result is success, account is activated
-      return data.result === 'success' && data.account === address;
+      const balance = parseFloat(accountInfo.result.account_data.Balance) / 1000000;
+      // Account is activated if it has at least 1 XRP base reserve
+      return balance >= 1;
     } catch (err) {
-      console.error('Error checking account:', address, err);
       return false;
     }
-  };
+  }, []);
 
   const handleShowSeed = async () => {
     try {
