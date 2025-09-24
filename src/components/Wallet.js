@@ -561,7 +561,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     >
                       Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length})
                     </Typography>
-                    {profiles.filter((profile) => profile.account !== accountLogin).length > 5 && (
+                    {profiles.filter((profile) => profile.account !== accountLogin).length > 10 && (
                       <Button
                         size="small"
                         variant="text"
@@ -574,7 +574,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   </Stack>
                   {profiles
                     .filter((profile) => profile.account !== accountLogin)
-                    .slice(0, showAllAccounts ? undefined : 5)
+                    .slice(0, showAllAccounts ? undefined : 10)
                     .map((profile, idx) => {
                       const account = profile.account;
                       const accountLogo = profile.logo;
