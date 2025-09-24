@@ -278,6 +278,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const deviceProfiles = profiles.filter(p => p.wallet_type === 'device');
         const startIndex = deviceProfiles.length; // Use count as starting index
 
+        console.log('Current device accounts:', deviceProfiles.length);
+        console.log('Starting index:', startIndex);
+
         // Generate 5 new accounts
         const newAccounts = [];
         for (let i = 0; i < 5; i++) {
@@ -292,11 +295,28 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           };
 
           newAccounts.push(profile);
+          console.log(`Generated account ${startIndex + i}:`, wallet.address);
         }
 
-        // Add all accounts using doLogIn sequentially, ending with first account as active
-        newAccounts.forEach(profile => doLogIn(profile));
-        doLogIn(newAccounts[0]); // Set first account as active
+        console.log('Total new accounts generated:', newAccounts.length);
+
+        // Add first account to set as active
+        doLogIn(newAccounts[0]);
+
+        // Add remaining accounts to localStorage directly
+        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+        for (let i = 1; i < newAccounts.length; i++) {
+          const profile = { ...newAccounts[i], tokenCreatedAt: Date.now() };
+          const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+
+          if (!currentProfiles.find(p => p.account === profile.account)) {
+            currentProfiles.push(profile);
+            window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+          }
+        }
+
+        // Reload to refresh React context from localStorage
+        setTimeout(() => window.location.reload(), 100);
 
         console.log('Generated 5 new accounts:', newAccounts.map(p => ({
           address: p.account,
