@@ -18,7 +18,7 @@ import styled from '@emotion/styled';
 import ClearIcon from '@mui/icons-material/Clear';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
-import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
+import { AccountBalanceWallet as AccountBalanceWalletIcon, Security as SecurityIcon } from '@mui/icons-material';
 import { enqueueSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 
@@ -527,7 +527,7 @@ const WalletConnectModal = () => {
                     color: 'white'
                   }}
                 >
-                  🔐
+                  <SecurityIcon />
                 </Box>
                 <Stack sx={{ flexGrow: 1 }}>
                   <Stack direction="row" alignItems="center" spacing={0.8}>

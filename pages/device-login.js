@@ -1,5 +1,6 @@
 import { useState, useContext, useEffect } from 'react';
 import { Box, Container, Typography, Button, Card, CardContent, Alert, CircularProgress } from '@mui/material';
+import { Warning as WarningIcon } from '@mui/icons-material';
 import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
 
 // Base64url encoding helper
@@ -311,12 +312,17 @@ const DeviceLoginPage = () => {
           </Typography>
 
           <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
-            <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
-              ⚠️ Important: One Passkey = One Set of Wallets
-            </Typography>
-            <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
-              Each passkey creates different XRPL accounts. Use the same passkey across devices to access the same wallets.
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
+              <WarningIcon sx={{ fontSize: 20, mt: 0.25 }} />
+              <Box>
+                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Important: One Passkey = One Set of Wallets
+                </Typography>
+                <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+                  Each passkey creates different XRPL accounts. Use the same passkey across devices to access the same wallets.
+                </Typography>
+              </Box>
+            </Box>
           </Alert>
 
           {error && (
