@@ -1,6 +1,9 @@
 import { useRef } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
+import { startAuthentication } from '@simplewebauthn/browser';
+import { Wallet as XRPLWallet } from 'xrpl';
+import CryptoJS from 'crypto-js';
 
 // Material
 import {
@@ -172,8 +175,62 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     handleOpen,
     handleClose,
     handleLogin,
-    handleLogout
+    handleLogout,
+    doLogIn
   } = useContext(AppContext);
+
+  const generateWalletFromPasskey = (passkeyId, accountIndex = 0) => {
+    const baseHash = CryptoJS.SHA256(passkeyId).toString();
+    const indexedHash = CryptoJS.SHA256(baseHash + accountIndex.toString()).toString();
+    const entropy = [];
+    for (let i = 0; i < 32; i++) {
+      entropy.push(parseInt(indexedHash.substr(i * 2, 2), 16));
+    }
+    return XRPLWallet.fromEntropy(entropy);
+  };
+
+  const handleAddPasskeyAccount = async () => {
+    try {
+      const passkeyId = localStorage.getItem('passkey-id');
+      if (!passkeyId) {
+        openSnackbar('No device login found. Please login with Device Login first.', 'error');
+        return;
+      }
+
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const challengeB64 = btoa(String.fromCharCode(...challenge))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+
+      await startAuthentication({
+        challenge: challengeB64,
+        timeout: 60000,
+        userVerification: 'required',
+        allowCredentials: [{
+          id: passkeyId,
+          type: 'public-key',
+        }],
+      });
+
+      const existingAccounts = profiles.filter(p => p.wallet_type === 'device').length;
+      const newWallet = generateWalletFromPasskey(passkeyId, existingAccounts);
+
+      const profile = {
+        account: newWallet.address,
+        address: newWallet.address,
+        publicKey: newWallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0'
+      };
+
+      doLogIn(profile);
+      openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');
+      setOpen(false);
+    } catch (err) {
+      openSnackbar('Failed to create new account: ' + err.message, 'error');
+    }
+  };
   const accountLogin = accountProfile?.account;
   const accountLogo = accountProfile?.logo;
   const accountTotalXrp = accountProfile?.xrp;
@@ -448,7 +505,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Button
                   size="small"
                   startIcon={<AddCircleOutlineIcon />}
-                  onClick={() => setOpenWalletModal(true)}
+                  onClick={() => {
+                    const hasDeviceAccount = profiles.some(p => p.wallet_type === 'device');
+                    if (hasDeviceAccount) {
+                      handleAddPasskeyAccount();
+                    } else {
+                      setOpenWalletModal(true);
+                    }
+                  }}
                   sx={{
                     width: '100%',
                     justifyContent: 'flex-start',
@@ -935,7 +999,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     transform: 'translateY(-1px)'
                   }
                 }}
-                onClick={() => setOpenWalletModal(true)}
+                onClick={() => {
+                  const hasDeviceAccount = profiles.some(p => p.wallet_type === 'device');
+                  if (hasDeviceAccount) {
+                    handleAddPasskeyAccount();
+                  } else {
+                    setOpenWalletModal(true);
+                  }
+                }}
               >
                 <Stack direction="row" spacing={2} alignItems="center">
                   <AddCircleOutlineIcon sx={{ color: 'inherit' }} />

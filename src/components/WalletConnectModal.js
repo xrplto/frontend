@@ -505,13 +505,30 @@ const WalletConnectModal = () => {
                 direction="row"
                 spacing={2}
                 alignItems="center"
-                onClick={() => window.open('/device-login', '_blank')}
+                onClick={() => {
+                  const popup = window.open('/device-login', 'device-login', 'width=500,height=600,scrollbars=yes,resizable=yes');
+                  const checkClosed = setInterval(() => {
+                    if (popup.closed) {
+                      clearInterval(checkClosed);
+                      setOpenWalletModal(false);
+                    }
+                  }, 1000);
+                }}
               >
-                <WalletIcon
-                  src="/static/device-login.svg"
-                  alt="Device Login"
-                  className="wallet-icon"
-                />
+                <Box
+                  sx={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(45deg, #2196F3 0%, #21CBF3 100%)',
+                    color: 'white'
+                  }}
+                >
+                  🔐
+                </Box>
                 <Stack sx={{ flexGrow: 1 }}>
                   <Stack direction="row" alignItems="center" spacing={0.8}>
                     <Typography
@@ -534,7 +551,7 @@ const WalletConnectModal = () => {
                       fontSize: '0.8rem'
                     }}
                   >
-                    Hardware Device
+                    Passkey/Biometric
                   </Typography>
                 </Stack>
               </WalletItem>

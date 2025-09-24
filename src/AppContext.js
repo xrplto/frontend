@@ -83,6 +83,18 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   }, []);
 
   useEffect(() => {
+    // Listen for device login messages from popup
+    const handleMessage = (event) => {
+      if (event.data.type === 'DEVICE_LOGIN_SUCCESS') {
+        doLogIn(event.data.profile);
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  useEffect(() => {
     const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);
     //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
     if (profile) {
