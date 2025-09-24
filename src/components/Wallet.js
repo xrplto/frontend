@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
 import { startAuthentication } from '@simplewebauthn/browser';
@@ -167,6 +167,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [currentSeed, setCurrentSeed] = useState('');
   const [seedBlurred, setSeedBlurred] = useState(true);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
+  const [accountsActivation, setAccountsActivation] = useState({});
   const {
     setActiveProfile,
     accountProfile,
@@ -184,6 +185,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     handleLogout,
     doLogIn
   } = useContext(AppContext);
+
+  useEffect(() => {
+    const checkAllAccountsActivation = async () => {
+      const activationStatus = {};
+      for (const profile of profiles) {
+        const isActive = await checkAccountActivity(profile.account);
+        activationStatus[profile.account] = isActive;
+      }
+      setAccountsActivation(activationStatus);
+    };
+
+    if (profiles.length > 0) {
+      checkAllAccountsActivation();
+    }
+  }, [profiles]);
 
   const generateWalletFromPasskey = (passkeyId, accountIndex = 0) => {
     const baseHash = CryptoJS.SHA256(passkeyId).toString();
@@ -213,15 +229,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const checkAccountActivity = async (address) => {
     try {
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
-      const accountInfo = await client.request({
-        command: 'account_info',
-        account: address,
-        ledger_index: 'validated'
-      });
-      await client.disconnect();
-      return accountInfo.result.account_data !== undefined;
+      const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
+      const data = await response.json();
+      return data.status !== false && data.result === 'success' && data.account === address;
     } catch (err) {
       return false;
     }
@@ -446,10 +456,29 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     {truncateAccount(accountLogin)}
                   </Typography>
                   <Stack direction="row" spacing={0.5} alignItems="center">
-                    <ActiveIndicator />
-                    <Typography variant="caption" sx={{ color: theme.palette.success.main }}>
-                      Active
-                    </Typography>
+                    {accountsActivation[accountLogin] === false ? (
+                      <>
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            backgroundColor: theme.palette.error.main
+                          }}
+                        />
+                        <Typography variant="caption" sx={{ color: theme.palette.error.main }}>
+                          Not Activated
+                        </Typography>
+                      </>
+                    ) : (
+                      <>
+                        <ActiveIndicator />
+                        <Typography variant="caption" sx={{ color: theme.palette.success.main }}>
+                          Active
+                        </Typography>
+                      </>
+                    )}
                   </Stack>
                 </Box>
               </Stack>
@@ -654,6 +683,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               >
                                 {truncateAccount(account, 8)}
                               </Typography>
+                              {accountsActivation[account] === false && (
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    color: theme.palette.error.main,
+                                    fontSize: '0.65rem',
+                                    fontWeight: 600
+                                  }}
+                                >
+                                  Not Activated
+                                </Typography>
+                              )}
                             </Box>
                             <IconButton
                               size="small"
@@ -882,19 +923,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     {truncateAccount(accountLogin)}
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center">
-                    <ActiveIndicator />
-                    <Chip
-                      label="Active Account"
-                      size="small"
-                      variant="outlined"
-                      sx={{
-                        height: 20,
-                        fontSize: '0.7rem',
-                        borderColor: alpha(theme.palette.success.main, 0.3),
-                        color: theme.palette.success.main,
-                        backgroundColor: alpha(theme.palette.success.main, 0.1)
-                      }}
-                    />
+                    {accountsActivation[accountLogin] === false ? (
+                      <>
+                        <Box
+                          sx={{
+                            width: 8,
+                            height: 8,
+                            borderRadius: '50%',
+                            flexShrink: 0,
+                            backgroundColor: theme.palette.error.main
+                          }}
+                        />
+                        <Chip
+                          label="Not Activated"
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            borderColor: alpha(theme.palette.error.main, 0.3),
+                            color: theme.palette.error.main,
+                            backgroundColor: alpha(theme.palette.error.main, 0.1)
+                          }}
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <ActiveIndicator />
+                        <Chip
+                          label="Active Account"
+                          size="small"
+                          variant="outlined"
+                          sx={{
+                            height: 20,
+                            fontSize: '0.7rem',
+                            borderColor: alpha(theme.palette.success.main, 0.3),
+                            color: theme.palette.success.main,
+                            backgroundColor: alpha(theme.palette.success.main, 0.1)
+                          }}
+                        />
+                      </>
+                    )}
                   </Stack>
                 </Box>
                 <Stack direction="row" spacing={0.5}>
@@ -1157,7 +1226,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 sx={{ fontSize: 14, color: theme.palette.text.secondary }}
                               />
                               <Typography variant="caption" color="text.secondary">
-                                Switch Account
+                                {accountsActivation[account] === false ? 'Not Activated' : 'Switch Account'}
                               </Typography>
                             </Stack>
                           </Box>
