@@ -576,7 +576,7 @@ function TokenListComponent({
         const start = page * rows;
         const ntag = tag || '';
         const watchAccount = showWatchList ? accountProfile?.account || '' : '';
-        const limit = Math.min(rows === 9999 ? 100 : rows, 100); // Cap at 100 tokens
+        const limit = rows;
 
         axios
           .get(
@@ -586,9 +586,8 @@ function TokenListComponent({
             if (res.status === 200 && res.data) {
               const ret = res.data;
               dispatch(update_filteredCount(ret));
-              // Allow up to 50 tokens as requested
-              const limitedTokens = ret.tokens.slice(0, 50);
-              setTokens(limitedTokens);
+              // Use all tokens returned by API
+              setTokens(ret.tokens || []);
             }
           })
           .catch((err) => {})
@@ -685,14 +684,13 @@ function TokenListComponent({
   const [enableVirtualization, setEnableVirtualization] = useState(false);
 
   useEffect(() => {
-    // Enable virtualization for lists > 100 items or when rows = 9999
-    const shouldVirtualize = rows > 100 || rows === 9999 || tokens.length > 100;
-    setEnableVirtualization(shouldVirtualize && !isMobile); // Only on desktop for now
+    // Disable virtualization to prevent UI issues
+    setEnableVirtualization(false);
   }, [rows, tokens.length, isMobile]);
 
   const visibleTokens = useMemo(() => {
-    // Display up to 50 tokens for better user experience
-    const maxRows = Math.min(rows === 9999 ? 50 : rows, 50);
+    // Display tokens based on rows setting
+    const maxRows = rows;
     return tokens.slice(0, maxRows);
   }, [tokens, rows]);
 
@@ -1127,6 +1125,7 @@ function TokenListComponent({
               isMobile={true}
               isLoggedIn={!!accountProfile?.account}
               viewMode={viewMode}
+              rows={rows}
               customColumns={customColumns}
             />
           ))}
@@ -1187,6 +1186,7 @@ function TokenListComponent({
                   isLoggedIn={!!accountProfile?.account}
                   viewMode={viewMode}
                   customColumns={customColumns}
+                  rows={rows}
                 />
               ))}
             </StyledTableBody>

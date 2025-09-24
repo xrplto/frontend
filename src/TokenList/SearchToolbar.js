@@ -962,15 +962,13 @@ const SearchToolbar = memo(function SearchToolbar({
               id="rows-per-page-select"
               darkMode={darkMode}
               value={rows}
-              onChange={(e) => setRows(e.target.value === 'all' ? 9999 : parseInt(e.target.value))}
+              onChange={(e) => setRows(parseInt(e.target.value))}
               noMargin
               aria-label="Select number of rows to display"
             >
               <option value="20">20</option>
               <option value="50">50</option>
               <option value="100">100</option>
-              <option value="300">300</option>
-              <option value="all">All</option>
             </RowsSelector>
           </>
         </Stack>

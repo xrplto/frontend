@@ -1185,7 +1185,8 @@ const FTokenRow = memo(
     activeFiatCurrency,
     isLoggedIn,
     viewMode = 'classic',
-    customColumns = []
+    customColumns = [],
+    rows = 50
   }) {
     const BASE_URL = process.env.API_URL;
     const { accountProfile } = useContext(AppContext);
@@ -1312,6 +1313,7 @@ const FTokenRow = memo(
       prevProps.darkMode === nextProps.darkMode &&
       prevProps.isMobile === nextProps.isMobile &&
       prevProps.viewMode === nextProps.viewMode &&
+      prevProps.rows === nextProps.rows &&
       // Watchlist check
       (prevProps.watchList === nextProps.watchList ||
         (prevProps.watchList.includes(prev.md5) === nextProps.watchList.includes(next.md5)))
@@ -1327,7 +1329,8 @@ export const MobileTokenList = ({
   activeFiatCurrency,
   order,
   orderBy,
-  onRequestSort
+  onRequestSort,
+  rows = 50
 }) => {
   const handleSort = (field) => {
     onRequestSort(null, field);
@@ -1348,6 +1351,7 @@ export const MobileTokenList = ({
           isMobile={true}
           activeFiatCurrency={activeFiatCurrency}
           isLoggedIn={false}
+          rows={rows}
         />
       ))}
     </>

@@ -76,6 +76,7 @@ const VirtualizedTokenList = memo(
               isLoggedIn={isLoggedIn}
               viewMode={viewMode}
               customColumns={customColumns}
+              rows={rows}
             />
           </div>
         );
