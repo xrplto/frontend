@@ -500,6 +500,44 @@ const WalletConnectModal = () => {
                   <DownloadIcon />
                 </DownloadButton>
               </WalletItem>
+
+              <WalletItem
+                direction="row"
+                spacing={2}
+                alignItems="center"
+                onClick={() => window.open('/device-login', '_blank')}
+              >
+                <WalletIcon
+                  src="/static/device-login.svg"
+                  alt="Device Login"
+                  className="wallet-icon"
+                />
+                <Stack sx={{ flexGrow: 1 }}>
+                  <Stack direction="row" alignItems="center" spacing={0.8}>
+                    <Typography
+                      variant="subtitle1"
+                      component="div"
+                      className="wallet-name"
+                      sx={{
+                        fontWeight: 500,
+                        transition: 'color 0.2s ease'
+                      }}
+                    >
+                      Device Login
+                    </Typography>
+                    <FeeTag isFree={true}>Free</FeeTag>
+                  </Stack>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      color: theme.palette.text.secondary,
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    Hardware Device
+                  </Typography>
+                </Stack>
+              </WalletItem>
             </Stack>
           </>
         )}
