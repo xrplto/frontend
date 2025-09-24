@@ -112,47 +112,11 @@ const DeviceLoginPage = () => {
       setStatus('registering');
       setError('');
 
-      // First try to authenticate with existing passkey
-      try {
-        const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
-        const challenge = base64urlEncode(challengeBuffer);
+      console.log('Starting passkey registration...');
 
-        const authResponse = await startAuthentication({
-          challenge: challenge,
-          timeout: 10000, // Short timeout for quick check
-          userVerification: 'required'
-        });
-
-        if (authResponse.id) {
-          // Existing passkey found, use it instead of creating new one
-          setStatus('discovering');
-          const allAccounts = await discoverAllAccounts(authResponse.id);
-
-          if (allAccounts.length === 0) {
-            const wallet = generateWallet(authResponse.id, 0);
-            allAccounts.push({
-              account: wallet.address,
-              address: wallet.address,
-              publicKey: wallet.publicKey,
-              wallet_type: 'device',
-              xrp: '0'
-            });
-          }
-
-          doLogIn(allAccounts[0]);
-          if (window.opener) {
-            window.opener.postMessage({
-              type: 'DEVICE_LOGIN_SUCCESS',
-              profile: allAccounts[0],
-              allDeviceAccounts: allAccounts
-            }, '*');
-          }
-          setStatus('success');
-          setTimeout(() => window.close(), 10000);
-          return;
-        }
-      } catch (err) {
-        // No existing passkey, continue with registration
+      // Check if WebAuthn is supported
+      if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
       }
 
       // Generate random values and encode as base64url
@@ -161,6 +125,7 @@ const DeviceLoginPage = () => {
       const userId = base64urlEncode(userIdBuffer);
       const challenge = base64urlEncode(challengeBuffer);
 
+      console.log('Calling startRegistration directly...');
       const registrationResponse = await startRegistration({
         rp: {
           name: 'XRPL.to',
@@ -180,6 +145,8 @@ const DeviceLoginPage = () => {
           userVerification: 'required',
         },
       });
+
+      console.log('Registration response:', registrationResponse);
 
       if (registrationResponse.id) {
         const wallet = generateWallet(registrationResponse.id);
