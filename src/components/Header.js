@@ -797,6 +797,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               sx={{
                 mr: 0,
                 ml: 0,
+                pl: 0,
                 display: { xs: 'flex', sm: 'none' },
                 '& img': {
                   maxHeight: '28px',
@@ -804,7 +805,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 }
               }}
             >
-              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '28px' }} />
+              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '28px', paddingLeft: 0 }} />
             </Box>
           )}
 

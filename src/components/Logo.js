@@ -24,7 +24,8 @@ function Logo({ style }) {
   const logoStyle = {
     paddingLeft: 0,
     paddingRight: 0,
-    paddingTop: 3,
+    paddingTop: 0,
+    margin: 0,
     display: 'inline-flex',
     transition: 'opacity 0.3s',
     cursor: 'pointer',
