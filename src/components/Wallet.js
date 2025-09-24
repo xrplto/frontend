@@ -190,33 +190,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const checkAccountActivity = useCallback(async (address) => {
     try {
-      const client = new Client('wss://s1.ripple.com', { connectionTimeout: 1000 });
-      await client.connect();
-      const response = await client.request({
-        command: 'account_info',
-        account: address,
-        ledger_index: 'validated'
-      });
-      await client.disconnect();
-      const balance = parseFloat(response.result.account_data.Balance) / 1000000;
-      return balance >= 1; // Account is activated if it has at least 1 XRP
-    } catch (err) {
-      // Fallback to s2.ripple.com
-      try {
-        const client = new Client('wss://s2.ripple.com', { connectionTimeout: 1000 });
-        await client.connect();
-        const response = await client.request({
-          command: 'account_info',
-          account: address,
-          ledger_index: 'validated'
-        });
-        await client.disconnect();
-        const balance = parseFloat(response.result.account_data.Balance) / 1000000;
+      const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
+      const data = await response.json();
+      if (data.account_data && data.account_data.Balance) {
+        const balance = parseFloat(data.account_data.Balance) / 1000000;
         return balance >= 1;
-      } catch (fallbackErr) {
-        console.log(`Account ${address.slice(0,8)}... activation check failed:`, fallbackErr.message);
-        return false; // Account not found/activated
       }
+      return false;
+    } catch (err) {
+      return false;
     }
   }, []);
 
