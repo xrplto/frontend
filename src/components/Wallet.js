@@ -282,9 +282,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         console.log('Current device accounts:', deviceProfiles.length);
         console.log('Starting index:', startIndex);
 
-        // Generate 5 new accounts
+        // Generate 100 new accounts
         const newAccounts = [];
-        for (let i = 0; i < 5; i++) {
+        for (let i = 0; i < 100; i++) {
           const wallet = generateWalletFromPasskey(authResponse.id, startIndex + i);
 
           const profile = {
@@ -324,7 +324,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           index: startIndex + newAccounts.indexOf(p)
         })));
 
-        openSnackbar(`5 new accounts created starting with ${newAccounts[0].account.slice(0, 8)}...`, 'success');
+        openSnackbar(`${newAccounts.length} new accounts created starting with ${newAccounts[0].account.slice(0, 8)}...`, 'success');
         setOpen(false);
       }
     } catch (err) {
@@ -559,7 +559,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         display: 'block'
                       }}
                     >
-                      Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length})
+                      Other Accounts ({profiles.filter(p => p.wallet_type === 'device').length} total)
                     </Typography>
                     {profiles.filter((profile) => profile.account !== accountLogin).length > 10 && (
                       <Button
@@ -1206,7 +1206,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       More Accounts
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Generate 5 more device accounts
+                      Generate 100 more device accounts
                     </Typography>
                   </Box>
                 </Stack>
