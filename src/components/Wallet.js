@@ -231,35 +231,28 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
-      const passkeyId = localStorage.getItem('passkey-id');
-      if (!passkeyId) {
-        openSnackbar('No passkey found', 'error');
-        return;
-      }
-
       const challenge = crypto.getRandomValues(new Uint8Array(32));
       const challengeB64 = btoa(String.fromCharCode(...challenge))
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '');
 
-      await startAuthentication({
+      // Authenticate with any available passkey
+      const authResponse = await startAuthentication({
         challenge: challengeB64,
         timeout: 60000,
-        userVerification: 'required',
-        allowCredentials: [{
-          id: passkeyId,
-          type: 'public-key',
-        }],
+        userVerification: 'required'
       });
 
-      // Find account index
-      const deviceProfiles = profiles.filter(p => p.wallet_type === 'device');
-      const currentIndex = deviceProfiles.findIndex(p => p.account === accountProfile.account);
-      const wallet = generateWalletFromPasskey(passkeyId, currentIndex);
+      if (authResponse.id) {
+        // Find account index
+        const deviceProfiles = profiles.filter(p => p.wallet_type === 'device');
+        const currentIndex = deviceProfiles.findIndex(p => p.account === accountProfile.account);
+        const wallet = generateWalletFromPasskey(authResponse.id, currentIndex);
 
-      setCurrentSeed(wallet.seed);
-      setShowingSeed(true);
+        setCurrentSeed(wallet.seed);
+        setShowingSeed(true);
+      }
     } catch (err) {
       openSnackbar('Failed to show seed: ' + err.message, 'error');
     }
@@ -267,63 +260,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleAddPasskeyAccount = async () => {
     try {
-      const passkeyId = localStorage.getItem('passkey-id');
-      if (!passkeyId) {
-        openSnackbar('No device login found. Please login with Device Login first.', 'error');
-        return;
-      }
-
       const challenge = crypto.getRandomValues(new Uint8Array(32));
       const challengeB64 = btoa(String.fromCharCode(...challenge))
         .replace(/\+/g, '-')
         .replace(/\//g, '_')
         .replace(/=/g, '');
 
-      await startAuthentication({
+      // Authenticate with any available passkey
+      const authResponse = await startAuthentication({
         challenge: challengeB64,
         timeout: 60000,
-        userVerification: 'required',
-        allowCredentials: [{
-          id: passkeyId,
-          type: 'public-key',
-        }],
+        userVerification: 'required'
       });
 
-      // Find next unused account index by checking on-chain activity
-      let accountIndex = 0;
-      const maxChecks = 10;
-      while (accountIndex < maxChecks) {
-        const testWallet = generateWalletFromPasskey(passkeyId, accountIndex);
-        const balance = await checkAccountBalance(testWallet.address);
-        const hasActivity = await checkAccountActivity(testWallet.address);
+      if (authResponse.id) {
+        // Find the next account index based on existing device accounts
+        const deviceProfiles = profiles.filter(p => p.wallet_type === 'device');
+        const nextIndex = deviceProfiles.length; // Use count as next index
 
-        // Use this index if account has no activity (never been created)
-        if (balance === 0 && !hasActivity) break;
-        accountIndex++;
+        const newWallet = generateWalletFromPasskey(authResponse.id, nextIndex);
+
+        const profile = {
+          account: newWallet.address,
+          address: newWallet.address,
+          publicKey: newWallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0'
+        };
+
+        doLogIn(profile);
+
+        console.log('New account details:', {
+          address: newWallet.address,
+          seed: newWallet.seed,
+          privateKey: newWallet.privateKey,
+          publicKey: newWallet.publicKey,
+          accountIndex: nextIndex
+        });
+
+        openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');
+        setOpen(false);
       }
-
-      const newWallet = generateWalletFromPasskey(passkeyId, accountIndex);
-
-      const profile = {
-        account: newWallet.address,
-        address: newWallet.address,
-        publicKey: newWallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0'
-      };
-
-      doLogIn(profile);
-
-      console.log('New account details:', {
-        address: newWallet.address,
-        seed: newWallet.seed,
-        privateKey: newWallet.privateKey,
-        publicKey: newWallet.publicKey,
-        accountIndex: accountIndex
-      });
-
-      openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');
-      setOpen(false);
     } catch (err) {
       openSnackbar('Failed to create new account: ' + err.message, 'error');
     }

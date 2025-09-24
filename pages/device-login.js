@@ -35,68 +35,17 @@ const DeviceLoginPage = () => {
     return wallet;
   };
 
-  const checkAccountBalance = async (address) => {
-    try {
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
-      const response = await client.request({
-        command: 'account_info',
-        account: address,
-        ledger_index: 'validated'
-      });
-      await client.disconnect();
-      return parseFloat(response.result.account_data.Balance) / 1000000; // Convert drops to XRP
-    } catch (err) {
-      return 0; // Account doesn't exist or has 0 balance
-    }
-  };
-
-  const checkAccountActivity = async (address) => {
-    try {
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
-
-      // Check if account exists (has been created/activated)
-      const accountInfo = await client.request({
-        command: 'account_info',
-        account: address,
-        ledger_index: 'validated'
-      });
-
-      await client.disconnect();
-      return accountInfo.result.account_data !== undefined; // Account exists
-    } catch (err) {
-      return false; // Account doesn't exist
-    }
-  };
 
   const discoverAllAccounts = async (passkeyId) => {
     const accounts = [];
 
-    // Zero-knowledge approach: Check accounts 0-9 for any activity
-    // Include accounts that have either:
-    // 1. Current balance > 0
-    // 2. Transaction history (account exists on ledger)
-    for (let i = 0; i < 10; i++) {
+    console.log('Generating device accounts for passkey ID:', passkeyId);
+
+    // Simplified approach: Generate first 5 accounts directly
+    for (let i = 0; i < 5; i++) {
       const wallet = generateWallet(passkeyId, i);
-      const balance = await checkAccountBalance(wallet.address);
-      const hasActivity = await checkAccountActivity(wallet.address);
+      console.log(`Generated account ${i}: ${wallet.address}`);
 
-      // Include account if it has balance OR transaction history OR is first 3 accounts
-      if (balance > 0 || hasActivity || i < 3) {
-        accounts.push({
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: balance.toString()
-        });
-      }
-    }
-
-    // Always include at least the first account
-    if (accounts.length === 0) {
-      const wallet = generateWallet(passkeyId, 0);
       accounts.push({
         account: wallet.address,
         address: wallet.address,
@@ -106,6 +55,7 @@ const DeviceLoginPage = () => {
       });
     }
 
+    console.log(`Generated ${accounts.length} device accounts`);
     return accounts;
   };
 
@@ -273,9 +223,25 @@ const DeviceLoginPage = () => {
         setStatus('discovering');
 
         // Discover all accounts with balances
-        const allAccounts = await discoverAllAccounts(authResponse.id);
+        let allAccounts;
+        try {
+          allAccounts = await discoverAllAccounts(authResponse.id);
+          console.log('Discovered accounts:', allAccounts);
+        } catch (discoveryError) {
+          console.error('Account discovery failed:', discoveryError);
+          // Fallback: create first account manually
+          const wallet = generateWallet(authResponse.id, 0);
+          allAccounts = [{
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0'
+          }];
+        }
 
         if (allAccounts.length === 0) {
+          console.log('No accounts discovered, creating first account');
           // No accounts with balance found, create first one
           const wallet = generateWallet(authResponse.id, 0);
           const firstAccount = {
