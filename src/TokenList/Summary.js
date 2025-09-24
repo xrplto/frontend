@@ -37,7 +37,11 @@ const Container = styled.div`
 
   @media (max-width: 600px) {
     margin-top: 0;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 2px;
   }
 `;
 
@@ -62,8 +66,12 @@ const Grid = styled.div`
   }
 
   @media (max-width: 600px) {
-    grid-template-columns: repeat(${(props) => props.smCols || 2}, 1fr);
-    gap: 12px;
+    grid-template-columns: repeat(${(props) => props.smCols || 1}, 1fr);
+    gap: 4px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 3px;
   }
 `;
 
@@ -94,9 +102,15 @@ const MetricBox = styled.div`
   }
 
   @media (max-width: 600px) {
-    padding: 12px;
-    min-height: 60px;
-    border-radius: 8px;
+    padding: 8px;
+    min-height: 45px;
+    border-radius: 6px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 6px;
+    min-height: 40px;
+    border-radius: 4px;
   }
 `;
 
@@ -110,8 +124,13 @@ const MetricTitle = styled.span`
   line-height: 1.2;
 
   @media (max-width: 600px) {
-    font-size: 0.65rem;
-    margin-bottom: 2px;
+    font-size: 0.55rem;
+    margin-bottom: 1px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.5rem;
+    margin-bottom: 0;
   }
 `;
 
@@ -125,8 +144,13 @@ const MetricValue = styled.span`
   letter-spacing: -0.02em;
 
   @media (max-width: 600px) {
-    font-size: 1rem;
-    margin-bottom: 2px;
+    font-size: 0.8rem;
+    margin-bottom: 1px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.75rem;
+    margin-bottom: 0;
   }
 `;
 
@@ -147,7 +171,12 @@ const PercentageChange = styled.span`
   font-family: inherit;
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
+    font-size: 0.6rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.55rem;
+    gap: 1px;
   }
 `;
 
@@ -159,7 +188,11 @@ const VolumePercentage = styled.span`
   letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.5rem;
+    font-size: 0.45rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.4rem;
   }
 `;
 
@@ -171,7 +204,11 @@ const ContentTypography = styled.span`
   letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
+    font-size: 0.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.45rem;
   }
 `;
 
@@ -235,7 +272,15 @@ const ChartMetricBox = styled(MetricBox)`
   grid-column: span 2;
   overflow: visible;
 
+  @media (max-width: 900px) {
+    grid-column: 1 / -1;
+  }
+
   @media (max-width: 600px) {
+    grid-column: 1 / -1;
+  }
+
+  @media (max-width: 480px) {
     grid-column: 1 / -1;
   }
 `;
@@ -763,7 +808,7 @@ export default function Summary() {
 
   return (
     <Container>
-      <Stack spacing="8px">
+      <Stack spacing="6px">
         {/* Main Metrics Section */}
         {isLoading ? (
           <div style={{ width: '100%', paddingBottom: '0' }}>
@@ -778,7 +823,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={7} mdCols={4} smCols={2}>
+            <Grid cols={7} mdCols={3} smCols={2}>
               <MetricBox>
                 <MetricTitle>Market Cap</MetricTitle>
                 <MetricValue>
@@ -827,10 +872,10 @@ export default function Summary() {
 
               <MetricBox>
                 <MetricTitle>Category Volume</MetricTitle>
-                <Stack direction="column" spacing="2px">
+                <Stack direction="column" spacing="1px">
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Stables</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                       <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
@@ -844,7 +889,7 @@ export default function Summary() {
                   </Stack>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Memes</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                       <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
@@ -861,10 +906,10 @@ export default function Summary() {
 
               <MetricBox>
                 <MetricTitle>Market Indicators</MetricTitle>
-                <Stack direction="column" spacing="2px">
+                <Stack direction="column" spacing="1px">
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Sentiment</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                       <MetricValue
                         style={{
                           fontSize: '0.9rem',
@@ -913,7 +958,7 @@ export default function Summary() {
                   </Stack>
                   <Stack direction="row" alignItems="center" justifyContent="space-between">
                     <ContentTypography style={{ fontSize: '0.65rem' }}>Avg RSI</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
                       <MetricValue
                         style={{
                           fontSize: '0.9rem',
@@ -951,7 +996,7 @@ export default function Summary() {
                 </Stack>
               </MetricBox>
 
-              <MetricBox style={{ gridColumn: 'span 2' }}>
+              <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
                 <TokenChart
                   data={chartData}
@@ -959,7 +1004,7 @@ export default function Summary() {
                   activeFiatCurrency={activeFiatCurrency}
                   darkMode={darkMode}
                 />
-              </MetricBox>
+              </ChartMetricBox>
             </Grid>
           </div>
         )}
