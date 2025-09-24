@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
 import { startAuthentication } from '@simplewebauthn/browser';
@@ -45,6 +45,7 @@ import HelpIcon from '@mui/icons-material/Help';
 import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import KeyIcon from '@mui/icons-material/Key';
 
 // Context
 import { useContext } from 'react';
@@ -161,6 +162,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const { t } = useTranslation();
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const anchorRef = useRef(null);
+  const [showingSeed, setShowingSeed] = useState(false);
+  const [currentSeed, setCurrentSeed] = useState('');
   const {
     setActiveProfile,
     accountProfile,
@@ -187,6 +190,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       entropy.push(parseInt(indexedHash.substr(i * 2, 2), 16));
     }
     return XRPLWallet.fromEntropy(entropy);
+  };
+
+  const handleShowSeed = async () => {
+    try {
+      if (accountProfile?.wallet_type !== 'device') {
+        openSnackbar('Seed display only available for device accounts', 'error');
+        return;
+      }
+
+      const passkeyId = localStorage.getItem('passkey-id');
+      if (!passkeyId) {
+        openSnackbar('No passkey found', 'error');
+        return;
+      }
+
+      const challenge = crypto.getRandomValues(new Uint8Array(32));
+      const challengeB64 = btoa(String.fromCharCode(...challenge))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=/g, '');
+
+      await startAuthentication({
+        challenge: challengeB64,
+        timeout: 60000,
+        userVerification: 'required',
+        allowCredentials: [{
+          id: passkeyId,
+          type: 'public-key',
+        }],
+      });
+
+      // Find account index
+      const deviceProfiles = profiles.filter(p => p.wallet_type === 'device');
+      const currentIndex = deviceProfiles.findIndex(p => p.account === accountProfile.account);
+      const wallet = generateWalletFromPasskey(passkeyId, currentIndex);
+
+      setCurrentSeed(wallet.seed);
+      setShowingSeed(true);
+    } catch (err) {
+      openSnackbar('Failed to show seed: ' + err.message, 'error');
+    }
   };
 
   const handleAddPasskeyAccount = async () => {
@@ -229,6 +273,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Update account count for future logins
       const currentCount = parseInt(localStorage.getItem('device-account-count') || '1');
       localStorage.setItem('device-account-count', (currentCount + 1).toString());
+
+      console.log('New account details:', {
+        address: newWallet.address,
+        seed: newWallet.seed,
+        privateKey: newWallet.privateKey,
+        publicKey: newWallet.publicKey,
+        accountIndex: existingAccounts
+      });
 
       openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');
       setOpen(false);
@@ -358,6 +410,52 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             </Box>
 
             <Divider />
+
+            {/* Seed Display Section */}
+            {showingSeed && (
+              <>
+                <Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}
+                  >
+                    Wallet Seed (Keep Private!)
+                  </Typography>
+                  <Box
+                    sx={{
+                      p: 1.5,
+                      backgroundColor: alpha(theme.palette.error.main, 0.05),
+                      border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                      borderRadius: '8px',
+                      wordBreak: 'break-all',
+                      fontFamily: 'monospace',
+                      fontSize: '0.75rem'
+                    }}
+                  >
+                    {currentSeed}
+                  </Box>
+                  <Stack direction="row" spacing={1} sx={{ mt: 1 }}>
+                    <CopyToClipboard
+                      text={currentSeed}
+                      onCopy={() => openSnackbar('Seed copied!', 'success')}
+                    >
+                      <Button size="small" variant="outlined" startIcon={<ContentCopyIcon />}>
+                        Copy
+                      </Button>
+                    </CopyToClipboard>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      color="error"
+                      onClick={() => setShowingSeed(false)}
+                    >
+                      Hide
+                    </Button>
+                  </Stack>
+                </Box>
+                <Divider />
+              </>
+            )}
 
             {/* Balance Section */}
             <Box>
@@ -506,6 +604,25 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     View Full Profile
                   </Button>
                 </Link>
+
+                {accountProfile?.wallet_type === 'device' && (
+                  <Button
+                    size="small"
+                    startIcon={<KeyIcon />}
+                    onClick={handleShowSeed}
+                    sx={{
+                      width: '100%',
+                      justifyContent: 'flex-start',
+                      textTransform: 'none',
+                      color: theme.palette.text.primary,
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.08)
+                      }
+                    }}
+                  >
+                    Show Seed
+                  </Button>
+                )}
 
                 <Button
                   size="small"
