@@ -911,24 +911,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     />
                   </Link>
                 )}
-                {accountProfile && (
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      px: 2,
-                      py: 0.5,
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      borderRadius: '16px',
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      color: theme.palette.primary.main,
-                      fontFamily: 'monospace',
-                      fontSize: '0.8rem',
-                      mr: 1
-                    }}
-                  >
-                    {accountProfile.address?.slice(0, 6)}...{accountProfile.address?.slice(-4)}
-                  </Typography>
-                )}
                 <GlobalNotificationButton
                   sidebarOpen={notificationPanelOpen}
                   onSidebarToggle={onNotificationPanelToggle}
