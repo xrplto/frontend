@@ -188,11 +188,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   useEffect(() => {
     const checkAllAccountsActivation = async () => {
+      console.log('Checking activation for profiles:', profiles);
       const activationStatus = {};
       for (const profile of profiles) {
+        console.log('Checking account:', profile.account);
         const isActive = await checkAccountActivity(profile.account);
         activationStatus[profile.account] = isActive;
+        console.log(`${profile.account}: ${isActive ? 'ACTIVE' : 'NOT ACTIVATED'}`);
       }
+      console.log('Final activation status:', activationStatus);
       setAccountsActivation(activationStatus);
     };
 
@@ -229,10 +233,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const checkAccountActivity = async (address) => {
     try {
+      console.log('Fetching for address:', address);
       const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
       const data = await response.json();
-      return data.status !== false && data.result === 'success' && data.account === address;
+      console.log('API response for', address, ':', data);
+
+      // If status is false, account is not activated
+      if (data.status === false) {
+        return false;
+      }
+
+      // If result is success, account is activated
+      return data.result === 'success' && data.account === address;
     } catch (err) {
+      console.error('Error checking account:', address, err);
       return false;
     }
   };
