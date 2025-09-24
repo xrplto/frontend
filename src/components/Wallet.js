@@ -208,6 +208,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
+  const checkAccountActivity = async (address) => {
+    try {
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+      const accountInfo = await client.request({
+        command: 'account_info',
+        account: address,
+        ledger_index: 'validated'
+      });
+      await client.disconnect();
+      return accountInfo.result.account_data !== undefined;
+    } catch (err) {
+      return false;
+    }
+  };
+
   const handleShowSeed = async () => {
     try {
       if (accountProfile?.wallet_type !== 'device') {
@@ -273,13 +289,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }],
       });
 
-      // Find next unused account index by checking which accounts exist on-chain
+      // Find next unused account index by checking on-chain activity
       let accountIndex = 0;
       const maxChecks = 10;
       while (accountIndex < maxChecks) {
         const testWallet = generateWalletFromPasskey(passkeyId, accountIndex);
         const balance = await checkAccountBalance(testWallet.address);
-        if (balance === 0) break;
+        const hasActivity = await checkAccountActivity(testWallet.address);
+
+        // Use this index if account has no activity (never been created)
+        if (balance === 0 && !hasActivity) break;
         accountIndex++;
       }
 
@@ -294,11 +313,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       doLogIn(profile);
-
-      // Update the stored count for this passkey
-      const passkeyCountKey = `passkey-count-${passkeyId}`;
-      const currentStoredCount = parseInt(localStorage.getItem(passkeyCountKey) || '5');
-      localStorage.setItem(passkeyCountKey, Math.max(currentStoredCount, accountIndex + 1).toString());
 
       console.log('New account details:', {
         address: newWallet.address,

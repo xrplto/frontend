@@ -49,24 +49,39 @@ const DeviceLoginPage = () => {
     }
   };
 
+  const checkAccountActivity = async (address) => {
+    try {
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      // Check if account exists (has been created/activated)
+      const accountInfo = await client.request({
+        command: 'account_info',
+        account: address,
+        ledger_index: 'validated'
+      });
+
+      await client.disconnect();
+      return accountInfo.result.account_data !== undefined; // Account exists
+    } catch (err) {
+      return false; // Account doesn't exist
+    }
+  };
+
   const discoverAllAccounts = async (passkeyId) => {
     const accounts = [];
 
-    // Check if we have a stored account count for this passkey
-    const storedCount = localStorage.getItem(`passkey-count-${passkeyId}`);
-    const minAccounts = storedCount ? parseInt(storedCount) : 5; // Default to 5 wallets
-
-    // Always check at least the minimum number of accounts, plus a few extra for funded discovery
-    const maxCheck = Math.max(minAccounts, 10);
-
-    for (let i = 0; i < maxCheck; i++) {
+    // Zero-knowledge approach: Check accounts 0-9 for any activity
+    // Include accounts that have either:
+    // 1. Current balance > 0
+    // 2. Transaction history (account exists on ledger)
+    for (let i = 0; i < 10; i++) {
       const wallet = generateWallet(passkeyId, i);
       const balance = await checkAccountBalance(wallet.address);
+      const hasActivity = await checkAccountActivity(wallet.address);
 
-      // Include account if:
-      // 1. It's within the minimum count (always show these)
-      // 2. It has a balance > 0 (funded accounts)
-      if (i < minAccounts || balance > 0) {
+      // Include account if it has balance OR transaction history OR is first 3 accounts
+      if (balance > 0 || hasActivity || i < 3) {
         accounts.push({
           account: wallet.address,
           address: wallet.address,
@@ -75,6 +90,18 @@ const DeviceLoginPage = () => {
           xrp: balance.toString()
         });
       }
+    }
+
+    // Always include at least the first account
+    if (accounts.length === 0) {
+      const wallet = generateWallet(passkeyId, 0);
+      accounts.push({
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0'
+      });
     }
 
     return accounts;
