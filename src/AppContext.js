@@ -87,12 +87,24 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     const handleMessage = (event) => {
       if (event.data.type === 'DEVICE_LOGIN_SUCCESS') {
         doLogIn(event.data.profile);
+
+        // If multiple device accounts exist, restore them all
+        if (event.data.allDeviceAccounts && event.data.allDeviceAccounts.length > 1) {
+          const allProfiles = [...profiles];
+          event.data.allDeviceAccounts.forEach(deviceProfile => {
+            if (!allProfiles.find(p => p.account === deviceProfile.account)) {
+              allProfiles.push(deviceProfile);
+            }
+          });
+          setProfiles(allProfiles);
+          window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
+        }
       }
     };
 
     window.addEventListener('message', handleMessage);
     return () => window.removeEventListener('message', handleMessage);
-  }, []);
+  }, [profiles]);
 
   useEffect(() => {
     const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);

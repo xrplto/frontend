@@ -225,6 +225,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       doLogIn(profile);
+
+      // Update account count for future logins
+      const currentCount = parseInt(localStorage.getItem('device-account-count') || '1');
+      localStorage.setItem('device-account-count', (currentCount + 1).toString());
+
       openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');
       setOpen(false);
     } catch (err) {

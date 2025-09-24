@@ -21,13 +21,13 @@ const DeviceLoginPage = () => {
   const { doLogIn } = useContext(AppContext);
   const router = useRouter();
 
-  const generateWallet = (passkeyId) => {
-    // Create entropy array from passkey ID hash
-    const hash = CryptoJS.SHA256(passkeyId).toString();
-    // Convert hex string to array of numbers for entropy
+  const generateWallet = (passkeyId, accountIndex = 0) => {
+    // Create entropy array from passkey ID hash with account index
+    const baseHash = CryptoJS.SHA256(passkeyId).toString();
+    const indexedHash = CryptoJS.SHA256(baseHash + accountIndex.toString()).toString();
     const entropy = [];
     for (let i = 0; i < 32; i++) {
-      entropy.push(parseInt(hash.substr(i * 2, 2), 16));
+      entropy.push(parseInt(indexedHash.substr(i * 2, 2), 16));
     }
     const wallet = Wallet.fromEntropy(entropy);
     return wallet;
@@ -126,24 +126,35 @@ const DeviceLoginPage = () => {
       });
 
       if (authResponse.id) {
-        const wallet = generateWallet(authResponse.id);
+        // Get the number of accounts that were created with this passkey
+        const accountCount = parseInt(localStorage.getItem('device-account-count') || '1');
 
-        const profile = {
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0'
-        };
-
-        doLogIn(profile);
-        setStatus('success');
-
-        // Notify parent window
-        if (window.opener) {
-          window.opener.postMessage({ type: 'DEVICE_LOGIN_SUCCESS', profile }, '*');
+        // Generate all accounts from the passkey
+        const allAccounts = [];
+        for (let i = 0; i < accountCount; i++) {
+          const wallet = generateWallet(authResponse.id, i);
+          allAccounts.push({
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0'
+          });
         }
 
+        // Login with the first account
+        doLogIn(allAccounts[0]);
+
+        // Notify parent to restore all device accounts
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'DEVICE_LOGIN_SUCCESS',
+            profile: allAccounts[0],
+            allDeviceAccounts: allAccounts
+          }, '*');
+        }
+
+        setStatus('success');
         setTimeout(() => {
           window.close();
         }, 2000);
@@ -213,13 +224,15 @@ const DeviceLoginPage = () => {
               </Button>
             )}
 
-            {hasRegisteredPasskey && (
+            {!hasRegisteredPasskey && (
               <Button
-                variant="outlined"
+                variant="text"
+                size="small"
                 onClick={handleRegister}
                 disabled={status !== 'idle'}
+                sx={{ mt: 1 }}
               >
-                Setup New Device
+                Register This Device
               </Button>
             )}
           </Box>
