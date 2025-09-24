@@ -337,6 +337,18 @@ export const FloatingPinnedChart = memo(() => {
   const [loading, setLoading] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
   const [selectedRange, setSelectedRange] = useState('1D');
+
+  // Mobile detection
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < theme.breakpoints.values.sm);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, [theme.breakpoints.values.sm]);
   const [showSwap, setShowSwap] = useState(false);
   const [swapAmount, setSwapAmount] = useState('');
   const [swapFromXRP, setSwapFromXRP] = useState(true); // XRP at top by default
@@ -1098,12 +1110,12 @@ export const FloatingPinnedChart = memo(() => {
 
     // Create new chart
     const chart = createChart(chartContainerRef.current, {
-      width: 300,
-      height: 180,
+      width: isMobile ? 248 : 300,
+      height: isMobile ? 160 : 180,
       layout: {
         background: { type: 'solid', color: 'transparent' },
         textColor: theme.palette.text.primary,
-        fontSize: 11,
+        fontSize: isMobile ? 10 : 11,
         fontFamily: "'Segoe UI', Roboto, Arial, sans-serif"
       },
       grid: {
@@ -1207,7 +1219,8 @@ export const FloatingPinnedChart = memo(() => {
 
     const handleResize = () => {
       if (chartContainerRef.current && chart) {
-        chart.applyOptions({ width: 300 });
+        const newWidth = window.innerWidth < theme.breakpoints.values.sm ? 248 : 300;
+        chart.applyOptions({ width: newWidth });
       }
     };
 
@@ -1224,7 +1237,7 @@ export const FloatingPinnedChart = memo(() => {
         chartRef.current = null;
       }
     };
-  }, [data, activePinnedChart, theme, isDark, isMinimized]);
+  }, [data, activePinnedChart, theme, isDark, isMinimized, isMobile]);
 
   // Handle dragging with mouse and touch support
   useEffect(() => {
@@ -1239,8 +1252,8 @@ export const FloatingPinnedChart = memo(() => {
       const newY = clientY - dragStart.current.y;
 
       // Get current chart dimensions
-      const chartWidth = 320;
-      const chartHeight = isMinimized ? 60 : 450; // Approximate heights
+      const chartWidth = isMobile ? 280 : 320;
+      const chartHeight = isMinimized ? 60 : (isMobile ? 380 : 450); // Approximate heights
 
       // Constrain to viewport with smart edge detection
       const padding = 10;
@@ -1311,9 +1324,6 @@ export const FloatingPinnedChart = memo(() => {
     }
   };
 
-  const handleClose = () => {
-    setIsVisible(!isVisible);
-  };
 
   const handleMinimize = () => {
     setIsMinimized(!isMinimized);
@@ -1350,21 +1360,34 @@ export const FloatingPinnedChart = memo(() => {
   return (
     <>
       <Paper
-        elevation={isDraggingState ? 12 : 6}
+        elevation={isDraggingState ? 16 : 8}
         sx={{
           position: 'fixed',
           left: miniChartPosition.x,
           top: miniChartPosition.y,
-          width: isVisible ? 320 : 160,
+          width: isVisible ? (isMobile ? 280 : 320) : (isMobile ? 120 : 160),
           zIndex: 1300,
-          bgcolor: isDark ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
-          borderRadius: 2,
+          bgcolor: isDark ? 'rgba(18, 18, 18, 0.96)' : 'rgba(255, 255, 255, 0.96)',
+          backdropFilter: 'blur(16px)',
+          border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
+          borderRadius: 3,
           overflow: 'hidden',
-          transition: isDraggingState ? 'none' : 'all 0.3s ease',
-          transform: isDraggingState ? 'scale(1.02)' : 'scale(1)',
-          boxShadow: isDraggingState ? '0 10px 40px rgba(0,0,0,0.3)' : undefined
+          transition: isDraggingState ? 'none' : 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          transform: isDraggingState ? 'scale(1.03) rotate(0.5deg)' : 'scale(1)',
+          boxShadow: isDraggingState
+            ? '0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1)'
+            : `0 8px 32px ${alpha(theme.palette.common.black, isDark ? 0.6 : 0.15)}`,
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '1px',
+            background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.primary.main, 0.5)} 50%, transparent 100%)`,
+            opacity: isDraggingState ? 1 : 0,
+            transition: 'opacity 0.2s ease'
+          }
         }}
       >
         {/* Header */}
@@ -1376,32 +1399,79 @@ export const FloatingPinnedChart = memo(() => {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            p: 1,
-            bgcolor: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)',
-            borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`,
+            p: 1.5,
+            background: isDark
+              ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
+              : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.01) 100%)',
+            borderBottom: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
             cursor: 'move',
             userSelect: 'none',
             touchAction: 'none',
+            transition: 'all 0.2s ease',
+            '&:hover': {
+              bgcolor: isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'
+            },
             '&:active': {
               bgcolor: isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'
             }
           }}
         >
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <DragIndicatorIcon fontSize="small" sx={{ opacity: 0.5 }} />
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {activePinnedChart.token.name}
-            </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flex: 1, minWidth: 0 }}>
+            <DragIndicatorIcon fontSize="small" sx={{ opacity: 0.4, flexShrink: 0 }} />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+              <img
+                src={`https://s1.xrpl.to/token/${activePinnedChart.token.md5}`}
+                width={24}
+                height={24}
+                style={{ borderRadius: '50%', flexShrink: 0 }}
+                onError={(e) => (e.target.src = '/static/alt.webp')}
+                alt={activePinnedChart.token.name}
+              />
+              <Box sx={{ minWidth: 0, flex: 1 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontWeight: 600,
+                    fontSize: '0.9rem',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {activePinnedChart.token.symbol || activePinnedChart.token.code}
+                </Typography>
+                {currentPrice && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: 'text.secondary',
+                      fontSize: '0.7rem',
+                      display: 'block',
+                      lineHeight: 1
+                    }}
+                  >
+                    {currencySymbols[activePinnedChart.activeFiatCurrency] || ''}
+                    {currentPrice < 0.01 ? currentPrice.toFixed(6) : currentPrice.toFixed(4)}
+                  </Typography>
+                )}
+              </Box>
+            </Box>
             {currentPrice && priceChange && (
               <Chip
                 size="small"
                 label={`${Number(priceChange) > 0 ? '+' : ''}${priceChange}%`}
                 sx={{
-                  height: 20,
+                  height: 22,
                   fontSize: '0.7rem',
-                  bgcolor:
-                    Number(priceChange) > 0 ? alpha('#4caf50', 0.15) : alpha('#f44336', 0.15),
-                  color: Number(priceChange) > 0 ? '#4caf50' : '#f44336'
+                  fontWeight: 600,
+                  bgcolor: Number(priceChange) > 0
+                    ? alpha('#4caf50', isDark ? 0.2 : 0.1)
+                    : alpha('#f44336', isDark ? 0.2 : 0.1),
+                  color: Number(priceChange) > 0 ? '#4caf50' : '#f44336',
+                  border: `1px solid ${Number(priceChange) > 0 ? alpha('#4caf50', 0.3) : alpha('#f44336', 0.3)}`,
+                  '& .MuiChip-label': {
+                    px: 1
+                  }
                 }}
               />
             )}
@@ -1422,9 +1492,6 @@ export const FloatingPinnedChart = memo(() => {
                 </IconButton>
               </>
             )}
-            <IconButton size="small" onClick={handleClose}>
-              {isVisible ? <CloseIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-            </IconButton>
           </Box>
         </Box>
 
@@ -1482,16 +1549,43 @@ export const FloatingPinnedChart = memo(() => {
 
         {/* Chart Content */}
         {isVisible && (
-          <Collapse in={!isMinimized}>
-            <Box sx={{ p: 1 }}>
+          <Collapse
+            in={!isMinimized}
+            timeout={300}
+            easing="cubic-bezier(0.4, 0, 0.2, 1)"
+          >
+            <Box
+              sx={{
+                p: isMobile ? 1 : 1.5,
+                background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.02)} 0%, transparent 100%)`
+              }}
+            >
               {/* Range selector */}
-              <ButtonGroup size="small" fullWidth sx={{ mb: 1 }}>
+              <ButtonGroup
+                size={isMobile ? 'small' : 'medium'}
+                fullWidth
+                sx={{
+                  mb: isMobile ? 1 : 1.5,
+                  '& .MuiButton-root': {
+                    borderColor: alpha(theme.palette.divider, 0.3),
+                    transition: 'all 0.2s ease'
+                  }
+                }}
+              >
                 {['1D', '7D', '1M', '3M'].map((range) => (
                   <Button
                     key={range}
                     onClick={() => setSelectedRange(range)}
                     variant={selectedRange === range ? 'contained' : 'outlined'}
-                    sx={{ fontSize: '0.7rem', py: 0.25 }}
+                    sx={{
+                      fontSize: isMobile ? '0.7rem' : '0.75rem',
+                      py: isMobile ? 0.25 : 0.5,
+                      fontWeight: selectedRange === range ? 600 : 400,
+                      ...(selectedRange === range && {
+                        boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`,
+                        transform: 'scale(1.02)'
+                      })
+                    }}
                   >
                     {range}
                   </Button>
@@ -1499,18 +1593,43 @@ export const FloatingPinnedChart = memo(() => {
               </ButtonGroup>
 
               {/* Chart */}
-              <Box sx={{ position: 'relative', height: 180 }}>
+              <Box
+                sx={{
+                  position: 'relative',
+                  height: isMobile ? 160 : 180,
+                  borderRadius: 1,
+                  overflow: 'hidden',
+                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  bgcolor: alpha(theme.palette.background.paper, 0.3)
+                }}
+              >
                 {loading ? (
                   <Box
                     sx={{
                       display: 'flex',
+                      flexDirection: 'column',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      height: '100%'
+                      height: '100%',
+                      gap: 1
                     }}
                   >
-                    <Typography variant="caption" color="text.secondary">
-                      Loading...
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        border: `2px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                        borderTop: `2px solid ${theme.palette.primary.main}`,
+                        borderRadius: '50%',
+                        animation: 'spin 1s linear infinite',
+                        '@keyframes spin': {
+                          '0%': { transform: 'rotate(0deg)' },
+                          '100%': { transform: 'rotate(360deg)' }
+                        }
+                      }}
+                    />
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                      Loading chart data...
                     </Typography>
                   </Box>
                 ) : (
@@ -1525,15 +1644,25 @@ export const FloatingPinnedChart = memo(() => {
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    mt: 1,
-                    pt: 1,
-                    borderTop: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'}`
+                    mt: 1.5,
+                    pt: 1.5,
+                    borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    background: `linear-gradient(90deg, ${alpha(theme.palette.background.paper, 0.05)} 0%, transparent 100%)`,
+                    borderRadius: 1,
+                    p: 1
                   }}
                 >
-                  <Typography variant="caption" color="text.secondary">
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                     Current Price
                   </Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      fontWeight: 600,
+                      fontSize: '0.85rem',
+                      color: priceChange && Number(priceChange) > 0 ? '#4caf50' : priceChange && Number(priceChange) < 0 ? '#f44336' : 'text.primary'
+                    }}
+                  >
                     {currencySymbols[activePinnedChart.activeFiatCurrency] || ''}
                     {currentPrice < 0.01 ? currentPrice.toFixed(8) : currentPrice.toFixed(4)}
                   </Typography>
@@ -1556,13 +1685,19 @@ export const FloatingPinnedChart = memo(() => {
                     Quick Swap
                   </Typography>
 
-                  <Stack spacing={1}>
+                  <Stack spacing={1.5}>
                     <Box
                       sx={{
-                        p: 1,
-                        bgcolor: alpha(theme.palette.background.paper, 0.05),
-                        borderRadius: 1,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                        p: 1.5,
+                        bgcolor: alpha(theme.palette.background.paper, 0.08),
+                        borderRadius: 2,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.background.paper, 0.12),
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                        }
                       }}
                     >
                       <Stack spacing={0.5}>
@@ -1647,8 +1782,15 @@ export const FloatingPinnedChart = memo(() => {
                         size="small"
                         onClick={() => setSwapFromXRP(!swapFromXRP)}
                         sx={{
-                          bgcolor: alpha(theme.palette.primary.main, 0.1),
-                          '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
+                          bgcolor: alpha(theme.palette.primary.main, 0.15),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                          transition: 'all 0.2s ease',
+                          transform: 'rotate(0deg)',
+                          '&:hover': {
+                            bgcolor: alpha(theme.palette.primary.main, 0.25),
+                            transform: 'rotate(180deg) scale(1.1)',
+                            boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`
+                          }
                         }}
                       >
                         <SwapVertIcon fontSize="small" />
@@ -1657,13 +1799,19 @@ export const FloatingPinnedChart = memo(() => {
 
                     <Box
                       sx={{
-                        p: 1,
-                        bgcolor: alpha(theme.palette.background.paper, 0.05),
-                        borderRadius: 1,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                        p: 1.5,
+                        bgcolor: alpha(theme.palette.background.paper, 0.08),
+                        borderRadius: 2,
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        transition: 'all 0.2s ease',
+                        '&:hover': {
+                          bgcolor: alpha(theme.palette.background.paper, 0.12),
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                        }
                       }}
                     >
-                      <Stack spacing={0.5}>
+                      <Stack spacing={0.8}>
                         <Typography
                           variant="caption"
                           sx={{ fontSize: '0.6rem', color: 'text.secondary' }}
@@ -1745,7 +1893,7 @@ export const FloatingPinnedChart = memo(() => {
                     <Button
                       fullWidth
                       variant="contained"
-                      size="small"
+                      size="medium"
                       onClick={async () => {
                         // Check if we need to set trustline first
                         // swapFromXRP = true means we're buying the token (XRP -> Token)
@@ -1758,11 +1906,24 @@ export const FloatingPinnedChart = memo(() => {
                         }
                       }}
                       sx={{
-                        fontSize: '0.75rem',
-                        py: 0.75,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.main, 0.7)} 100%)`,
+                        fontSize: '0.8rem',
+                        py: 1,
+                        fontWeight: 600,
+                        borderRadius: 2,
+                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`,
+                        boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
+                        transition: 'all 0.2s ease',
                         '&:hover': {
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 1)} 0%, ${alpha(theme.palette.primary.main, 0.8)} 100%)`
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 1.1)} 0%, ${theme.palette.primary.main} 100%)`,
+                          transform: 'translateY(-1px)',
+                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.4)}`
+                        },
+                        '&:active': {
+                          transform: 'translateY(0px)'
+                        },
+                        '&:disabled': {
+                          background: alpha(theme.palette.action.disabled, 0.1),
+                          color: theme.palette.action.disabled
                         }
                       }}
                       disabled={!accountProfile?.account || !swapAmount || swapAmount === '0'}
