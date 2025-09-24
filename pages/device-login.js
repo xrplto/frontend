@@ -150,10 +150,11 @@ const DeviceLoginPage = () => {
           },
         });
       } catch (innerErr) {
-        // Re-throw with normalized error for outer catch block
-        const error = new Error(innerErr.message || 'Registration failed');
-        error.name = innerErr.name || innerErr.cause?.name || 'Error';
-        throw error;
+        // Handle cancellation directly here
+        console.log('User cancelled registration:', innerErr);
+        setError('Cancelled. Please try again and allow the security prompt.');
+        setStatus('idle');
+        return;
       }
 
       console.log('Registration response:', registrationResponse);
@@ -232,10 +233,11 @@ const DeviceLoginPage = () => {
           userVerification: 'required'
         });
       } catch (innerErr) {
-        // Re-throw with normalized error for outer catch block
-        const error = new Error(innerErr.message || 'Authentication failed');
-        error.name = innerErr.name || innerErr.cause?.name || 'Error';
-        throw error;
+        // Handle cancellation directly here
+        console.log('User cancelled authentication:', innerErr);
+        setError('Cancelled. Please try again and allow the security prompt.');
+        setStatus('idle');
+        return;
       }
 
       console.log('Authentication successful:', authResponse);
