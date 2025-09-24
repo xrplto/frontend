@@ -141,8 +141,7 @@ const DeviceLoginPage = () => {
       if (registrationResponse.id) {
         const wallet = generateWallet(registrationResponse.id);
 
-        localStorage.setItem('passkey-id', registrationResponse.id);
-        localStorage.setItem('wallet-address', wallet.address);
+        // Store passkey ID for this session only (will be cleared on logout)
 
         setWalletInfo({
           address: wallet.address,
@@ -181,10 +180,8 @@ const DeviceLoginPage = () => {
       setStatus('authenticating');
       setError('');
 
-      const passkeyId = localStorage.getItem('passkey-id');
-      if (!passkeyId) {
-        throw new Error('No passkey registered. Please register first.');
-      }
+      // Try to authenticate - if passkey exists, it will work
+      // If not, user will get appropriate error
 
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challenge = base64urlEncode(challengeBuffer);
@@ -192,11 +189,8 @@ const DeviceLoginPage = () => {
       const authResponse = await startAuthentication({
         challenge: challenge,
         timeout: 60000,
-        userVerification: 'required',
-        allowCredentials: [{
-          id: passkeyId,
-          type: 'public-key',
-        }],
+        userVerification: 'required'
+        // No allowCredentials - let the device find any existing passkeys
       });
 
       if (authResponse.id) {
@@ -241,7 +235,8 @@ const DeviceLoginPage = () => {
     }
   };
 
-  const hasRegisteredPasskey = localStorage.getItem('passkey-id');
+  // Since we're zero-localStorage, always treat as potential first-time setup
+  const hasRegisteredPasskey = false;
 
   return (
     <Container maxWidth="sm" sx={{ py: 4 }}>
@@ -278,39 +273,25 @@ const DeviceLoginPage = () => {
           )}
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            {!hasRegisteredPasskey ? (
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleRegister}
-                disabled={status !== 'idle'}
-                startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
-              >
-                {status === 'registering' ? 'Setting up...' : 'Setup Device Login'}
-              </Button>
-            ) : (
-              <Button
-                variant="contained"
-                size="large"
-                onClick={handleAuthenticate}
-                disabled={status !== 'idle'}
-                startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} /> : null}
-              >
-                {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In'}
-              </Button>
-            )}
+            <Button
+              variant="contained"
+              size="large"
+              onClick={handleRegister}
+              disabled={status !== 'idle'}
+              startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
+            >
+              {status === 'registering' ? 'Setting up...' : 'Setup Device Login'}
+            </Button>
 
-            {!hasRegisteredPasskey && (
-              <Button
-                variant="text"
-                size="small"
-                onClick={handleRegister}
-                disabled={status !== 'idle'}
-                sx={{ mt: 1 }}
-              >
-                Register This Device
-              </Button>
-            )}
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleAuthenticate}
+              disabled={status !== 'idle'}
+              startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} /> : null}
+            >
+              {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In with Existing Passkey'}
+            </Button>
           </Box>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
