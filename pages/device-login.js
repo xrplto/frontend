@@ -128,25 +128,33 @@ const DeviceLoginPage = () => {
 
       console.log('Calling startRegistration directly...');
 
-      const registrationResponse = await startRegistration({
-        rp: {
-          name: 'XRPL.to',
-          id: window.location.hostname,
-        },
-        user: {
-          id: userId,
-          name: `xrplto-${Date.now()}@xrpl.to`,
-          displayName: 'XRPL.to User',
-        },
-        challenge: challenge,
-        pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-        timeout: 60000,
-        attestation: 'none',
-        authenticatorSelection: {
-          authenticatorAttachment: 'platform',
-          userVerification: 'required',
-        },
-      });
+      let registrationResponse;
+      try {
+        registrationResponse = await startRegistration({
+          rp: {
+            name: 'XRPL.to',
+            id: window.location.hostname,
+          },
+          user: {
+            id: userId,
+            name: `xrplto-${Date.now()}@xrpl.to`,
+            displayName: 'XRPL.to User',
+          },
+          challenge: challenge,
+          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+          timeout: 60000,
+          attestation: 'none',
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
+          },
+        });
+      } catch (innerErr) {
+        // Re-throw with normalized error for outer catch block
+        const error = new Error(innerErr.message || 'Registration failed');
+        error.name = innerErr.name || innerErr.cause?.name || 'Error';
+        throw error;
+      }
 
       console.log('Registration response:', registrationResponse);
 
@@ -184,12 +192,16 @@ const DeviceLoginPage = () => {
     } catch (err) {
       console.error('Registration error:', err);
 
-      if (err.name === 'NotAllowedError') {
-        setError('Registration cancelled. Please try again and select an authentication method.');
-      } else if (err.name === 'AbortError') {
-        setError('Registration timed out. Please try again.');
+      // Handle WebAuthnError and DOMException
+      const errorName = err.name || err.cause?.name;
+      const errorMessage = err.message || err.cause?.message || '';
+
+      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
+        setError('Cancelled. Please try again and allow the security prompt.');
+      } else if (errorName === 'AbortError') {
+        setError('Timed out. Please try again.');
       } else {
-        setError('Registration failed: ' + err.message);
+        setError('Failed: ' + errorMessage);
       }
       setStatus('idle');
     }
@@ -212,11 +224,19 @@ const DeviceLoginPage = () => {
 
       console.log('Trying authentication only...');
 
-      const authResponse = await startAuthentication({
-        challenge: challenge,
-        timeout: 60000,
-        userVerification: 'required'
-      });
+      let authResponse;
+      try {
+        authResponse = await startAuthentication({
+          challenge: challenge,
+          timeout: 60000,
+          userVerification: 'required'
+        });
+      } catch (innerErr) {
+        // Re-throw with normalized error for outer catch block
+        const error = new Error(innerErr.message || 'Authentication failed');
+        error.name = innerErr.name || innerErr.cause?.name || 'Error';
+        throw error;
+      }
 
       console.log('Authentication successful:', authResponse);
 
@@ -259,12 +279,16 @@ const DeviceLoginPage = () => {
     } catch (err) {
       console.error('Authentication error:', err);
 
-      if (err.name === 'NotAllowedError') {
-        setError('Authentication cancelled or no passkeys found. Try "Create New Passkey" if this is your first time.');
-      } else if (err.name === 'AbortError') {
-        setError('Authentication timed out. Please try again.');
+      // Handle WebAuthnError and DOMException
+      const errorName = err.name || err.cause?.name;
+      const errorMessage = err.message || err.cause?.message || '';
+
+      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
+        setError('Cancelled. Please try again and allow the security prompt.');
+      } else if (errorName === 'AbortError') {
+        setError('Timed out. Please try again.');
       } else {
-        setError('Authentication failed: ' + err.message);
+        setError('Failed: ' + errorMessage);
       }
       setStatus('idle');
     }
