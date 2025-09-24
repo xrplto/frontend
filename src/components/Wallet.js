@@ -587,7 +587,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 >
                   <WarningIcon sx={{ fontSize: '0.8rem', mr: 0.5 }} />
                   <KeyIcon sx={{ fontSize: '0.8rem', mr: 0.5 }} />
-                  Seed
+                  Backup Seed
                 </Button>
               )}
             </Box>
