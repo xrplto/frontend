@@ -112,6 +112,49 @@ const DeviceLoginPage = () => {
       setStatus('registering');
       setError('');
 
+      // First try to authenticate with existing passkey
+      try {
+        const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+        const challenge = base64urlEncode(challengeBuffer);
+
+        const authResponse = await startAuthentication({
+          challenge: challenge,
+          timeout: 10000, // Short timeout for quick check
+          userVerification: 'required'
+        });
+
+        if (authResponse.id) {
+          // Existing passkey found, use it instead of creating new one
+          setStatus('discovering');
+          const allAccounts = await discoverAllAccounts(authResponse.id);
+
+          if (allAccounts.length === 0) {
+            const wallet = generateWallet(authResponse.id, 0);
+            allAccounts.push({
+              account: wallet.address,
+              address: wallet.address,
+              publicKey: wallet.publicKey,
+              wallet_type: 'device',
+              xrp: '0'
+            });
+          }
+
+          doLogIn(allAccounts[0]);
+          if (window.opener) {
+            window.opener.postMessage({
+              type: 'DEVICE_LOGIN_SUCCESS',
+              profile: allAccounts[0],
+              allDeviceAccounts: allAccounts
+            }, '*');
+          }
+          setStatus('success');
+          setTimeout(() => window.close(), 10000);
+          return;
+        }
+      } catch (err) {
+        // No existing passkey, continue with registration
+      }
+
       // Generate random values and encode as base64url
       const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
@@ -125,7 +168,7 @@ const DeviceLoginPage = () => {
         },
         user: {
           id: userId,
-          name: `user-${Date.now()}@xrpl.to`,
+          name: `xrplto-${Date.now()}@xrpl.to`,
           displayName: 'XRPL.to User',
         },
         challenge: challenge,
@@ -170,7 +213,15 @@ const DeviceLoginPage = () => {
         }, 10000);
       }
     } catch (err) {
-      setError('Registration failed: ' + err.message);
+      console.error('Registration error:', err);
+
+      if (err.name === 'NotAllowedError') {
+        setError('Registration cancelled. Please try again and select an authentication method.');
+      } else if (err.name === 'AbortError') {
+        setError('Registration timed out. Please try again.');
+      } else {
+        setError('Registration failed: ' + err.message);
+      }
       setStatus('idle');
     }
   };
@@ -180,18 +231,24 @@ const DeviceLoginPage = () => {
       setStatus('authenticating');
       setError('');
 
-      // Try to authenticate - if passkey exists, it will work
-      // If not, user will get appropriate error
+      console.log('Starting WebAuthn authentication...');
+
+      // Check if WebAuthn is supported
+      if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
+      }
 
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challenge = base64urlEncode(challengeBuffer);
 
+      console.log('Trying authentication only...');
       const authResponse = await startAuthentication({
         challenge: challenge,
         timeout: 60000,
         userVerification: 'required'
-        // No allowCredentials - let the device find any existing passkeys
       });
+
+      console.log('Authentication successful:', authResponse);
 
       if (authResponse.id) {
         setStatus('discovering');
@@ -230,7 +287,15 @@ const DeviceLoginPage = () => {
         }, 2000);
       }
     } catch (err) {
-      setError('Authentication failed: ' + err.message);
+      console.error('Authentication error:', err);
+
+      if (err.name === 'NotAllowedError') {
+        setError('Authentication cancelled or no passkeys found. Try "Create New Passkey" if this is your first time.');
+      } else if (err.name === 'AbortError') {
+        setError('Authentication timed out. Please try again.');
+      } else {
+        setError('Authentication failed: ' + err.message);
+      }
       setStatus('idle');
     }
   };
@@ -276,22 +341,26 @@ const DeviceLoginPage = () => {
             <Button
               variant="contained"
               size="large"
-              onClick={handleRegister}
-              disabled={status !== 'idle'}
-              startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
-            >
-              {status === 'registering' ? 'Setting up...' : 'Setup Device Login'}
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="large"
               onClick={handleAuthenticate}
               disabled={status !== 'idle'}
               startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} /> : null}
             >
               {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In with Existing Passkey'}
             </Button>
+
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={handleRegister}
+              disabled={status !== 'idle'}
+              startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
+            >
+              {status === 'registering' ? 'Creating passkey...' : 'Create New Passkey'}
+            </Button>
+
+            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
+              Use existing passkey to sign in, or create a new one
+            </Typography>
           </Box>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
