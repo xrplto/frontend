@@ -21,6 +21,7 @@ const DeviceLoginPage = () => {
   const { doLogIn } = useContext(AppContext);
   const router = useRouter();
 
+
   const generateWallet = (passkeyId, accountIndex = 0) => {
     // Create entropy array from passkey ID hash with account index
     const baseHash = CryptoJS.SHA256(passkeyId).toString();
@@ -126,6 +127,7 @@ const DeviceLoginPage = () => {
       const challenge = base64urlEncode(challengeBuffer);
 
       console.log('Calling startRegistration directly...');
+
       const registrationResponse = await startRegistration({
         rp: {
           name: 'XRPL.to',
@@ -209,6 +211,7 @@ const DeviceLoginPage = () => {
       const challenge = base64urlEncode(challengeBuffer);
 
       console.log('Trying authentication only...');
+
       const authResponse = await startAuthentication({
         challenge: challenge,
         timeout: 60000,
@@ -277,9 +280,18 @@ const DeviceLoginPage = () => {
           <Typography variant="h4" gutterBottom>
             Device Login
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
+          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
             Use your device's biometric authentication to securely access your XRPL wallet
           </Typography>
+
+          <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+              ⚠️ Important: One Passkey = One Set of Wallets
+            </Typography>
+            <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+              Each passkey creates different XRPL accounts. Use the same passkey across devices to access the same wallets.
+            </Typography>
+          </Alert>
 
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -321,13 +333,23 @@ const DeviceLoginPage = () => {
               onClick={handleRegister}
               disabled={status !== 'idle'}
               startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
+              sx={{
+                borderColor: 'warning.main',
+                color: 'warning.main',
+                '&:hover': {
+                  borderColor: 'warning.dark',
+                  backgroundColor: 'warning.light',
+                  opacity: 0.1
+                }
+              }}
             >
               {status === 'registering' ? 'Creating passkey...' : 'Create New Passkey'}
             </Button>
 
-            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center' }}>
-              Use existing passkey to sign in, or create a new one
+            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', mt: 1 }}>
+              First time? Use "Create New Passkey" • Returning? Use "Sign In with Existing Passkey"
             </Typography>
+
           </Box>
 
           <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
