@@ -276,29 +276,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (authResponse.id) {
         // Find the next account index based on existing device accounts
         const deviceProfiles = profiles.filter(p => p.wallet_type === 'device');
-        const nextIndex = deviceProfiles.length; // Use count as next index
+        const startIndex = deviceProfiles.length; // Use count as starting index
 
-        const newWallet = generateWalletFromPasskey(authResponse.id, nextIndex);
+        // Generate 5 new accounts
+        const newAccounts = [];
+        for (let i = 0; i < 5; i++) {
+          const wallet = generateWalletFromPasskey(authResponse.id, startIndex + i);
 
-        const profile = {
-          account: newWallet.address,
-          address: newWallet.address,
-          publicKey: newWallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0'
-        };
+          const profile = {
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0'
+          };
 
-        doLogIn(profile);
+          newAccounts.push(profile);
+        }
 
-        console.log('New account details:', {
-          address: newWallet.address,
-          seed: newWallet.seed,
-          privateKey: newWallet.privateKey,
-          publicKey: newWallet.publicKey,
-          accountIndex: nextIndex
-        });
+        // Add all accounts using doLogIn sequentially, ending with first account as active
+        newAccounts.forEach(profile => doLogIn(profile));
+        doLogIn(newAccounts[0]); // Set first account as active
 
-        openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');
+        console.log('Generated 5 new accounts:', newAccounts.map(p => ({
+          address: p.account,
+          index: startIndex + newAccounts.indexOf(p)
+        })));
+
+        openSnackbar(`5 new accounts created starting with ${newAccounts[0].account.slice(0, 8)}...`, 'success');
         setOpen(false);
       }
     } catch (err) {
@@ -668,7 +673,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     }
                   }}
                 >
-                  Add Account
+                  More Accounts
                 </Button>
 
                 <Button
@@ -1157,10 +1162,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   <AddCircleOutlineIcon sx={{ color: 'inherit' }} />
                   <Box>
                     <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                      Add Account
+                      More Accounts
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Connect additional wallets
+                      Generate 5 more device accounts
                     </Typography>
                   </Box>
                 </Stack>
