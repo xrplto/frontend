@@ -20,14 +20,37 @@ export const NotificationProvider = ({ children }) => {
 
   const BASE_URL = process.env.API_URL;
 
-  // Request notification permission automatically
+  // Request notification permission (only on user interaction)
   const requestNotificationPermission = useCallback(() => {
-    if ('Notification' in window && Notification.permission === 'default' && !hasRequestedPermission) {
-      Notification.requestPermission().then((permission) => {
-        setHasRequestedPermission(true);
-      });
+    if (!('Notification' in window)) {
+      console.log('Notifications not supported');
+      return Promise.resolve('denied');
     }
-  }, [hasRequestedPermission]);
+
+    if (Notification.permission !== 'default') {
+      return Promise.resolve(Notification.permission);
+    }
+
+    // Defensive promise/callback handling
+    return new Promise((resolve) => {
+      const result = Notification.requestPermission((permission) => {
+        // Callback version for older browsers
+        setHasRequestedPermission(true);
+        resolve(permission);
+      });
+
+      // Promise version for modern browsers
+      if (result && typeof result.then === 'function') {
+        result.then((permission) => {
+          setHasRequestedPermission(true);
+          resolve(permission);
+        }).catch(() => {
+          setHasRequestedPermission(true);
+          resolve('denied');
+        });
+      }
+    });
+  }, []);
 
   // Load all notifications from localStorage
   const loadNotifications = useCallback(() => {
@@ -48,13 +71,6 @@ export const NotificationProvider = ({ children }) => {
   // Save notification
   const saveNotification = useCallback((newNotification) => {
     try {
-      // Request permission when user adds a notification if not already granted
-      if ('Notification' in window && Notification.permission === 'default' && !hasRequestedPermission) {
-        Notification.requestPermission().then((permission) => {
-          setHasRequestedPermission(true);
-        });
-      }
-
       const saved = localStorage.getItem('priceNotifications');
       let allNotifications = saved ? JSON.parse(saved) : [];
       allNotifications.push(newNotification);
@@ -68,7 +84,7 @@ export const NotificationProvider = ({ children }) => {
       console.error('Error saving notification:', e);
       return false;
     }
-  }, [hasRequestedPermission]);
+  }, []);
 
   // Remove notification
   const removeNotification = useCallback((notificationId) => {
@@ -156,37 +172,31 @@ export const NotificationProvider = ({ children }) => {
               triggered.push({ ...notification, currentPrice });
 
               // Show browser notification
-              if (Notification.permission === 'granted') {
-                const symbol = notification.tokenSymbol || notification.tokenName;
-                const formattedPrice = formatPrice(currentPrice, currency);
-                const targetPrice = formatPrice(notification.targetPrice, currency);
-
-                const browserNotification = new Notification(`🔔 ${symbol} Price Alert`, {
-                  body: `Price ${notification.alertType} ${targetPrice}\nCurrent: ${formattedPrice}`,
-                  icon: '/icons/icon-192x192.png',
-                  tag: `price-alert-${notification.id}`,
-                  requireInteraction: true,
-                  silent: false
-                });
-
-                // Play sound if possible
+              if ('Notification' in window && Notification.permission === 'granted') {
                 try {
-                  const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+D1u2UfBDSH0fLRfC4NJHPJQuB8PQgPabLx5qZaFQpBmOH3sWcfBDJ90fDOci0KHW3B6+OOPwhAgOHtp2EZBz2H0fLNeSLNJHXFQNeMNQ');
-                  audio.play().catch(() => {
-                    // Silent fail if audio doesn't work
-                  });
-                } catch (e) {
-                  // Silent fail
-                }
+                  const symbol = notification.tokenSymbol || notification.tokenName;
+                  const formattedPrice = formatPrice(currentPrice, currency);
+                  const targetPrice = formatPrice(notification.targetPrice, currency);
 
-                // Auto-close after 15 seconds
-                setTimeout(() => {
-                  try {
-                    browserNotification.close();
-                  } catch (e) {
-                    // Already closed
-                  }
-                }, 15000);
+                  const browserNotification = new Notification(`🔔 ${symbol} Price Alert`, {
+                    body: `Price ${notification.alertType} ${targetPrice}\nCurrent: ${formattedPrice}`,
+                    icon: '/icons/icon-192x192.png',
+                    tag: `price-alert-${notification.id}`,
+                    requireInteraction: false,
+                    silent: false
+                  });
+
+                  // Auto-close after 15 seconds
+                  setTimeout(() => {
+                    try {
+                      browserNotification.close();
+                    } catch (e) {
+                      // Already closed
+                    }
+                  }, 15000);
+                } catch (e) {
+                  console.error('Error creating notification:', e);
+                }
               }
             }
           });
@@ -242,33 +252,42 @@ export const NotificationProvider = ({ children }) => {
   }, []);
 
   // Test notification
-  const testNotification = useCallback(() => {
-    if (Notification.permission === 'granted') {
-      const testNotif = new Notification('🔔 Test Notification', {
-        body: 'Price notifications are working correctly!',
-        icon: '/icons/icon-192x192.png',
-        tag: 'test-notification',
-        requireInteraction: true
-      });
+  const testNotification = useCallback(async () => {
+    if (!('Notification' in window)) {
+      console.log('Notifications not supported in this browser');
+      return;
+    }
 
-      setTimeout(() => {
-        try {
-          testNotif.close();
-        } catch (e) {
-          // Already closed
-        }
-      }, 5000);
-    } else if (Notification.permission === 'default') {
-      // Request permission when user clicks test
-      Notification.requestPermission().then((permission) => {
-        setHasRequestedPermission(true);
+    if (Notification.permission === 'granted') {
+      try {
+        const testNotif = new Notification('🔔 Test Notification', {
+          body: 'Price notifications are working correctly!',
+          icon: '/icons/icon-192x192.png',
+          tag: 'test-notification',
+          requireInteraction: false
+        });
+
+        setTimeout(() => {
+          try {
+            testNotif.close();
+          } catch (e) {
+            // Already closed
+          }
+        }, 5000);
+      } catch (e) {
+        console.error('Error creating test notification:', e);
+      }
+    } else {
+      // Request permission first
+      try {
+        const permission = await requestNotificationPermission();
         if (permission === 'granted') {
           // Retry test notification after permission granted
           const testNotif = new Notification('🔔 Test Notification', {
             body: 'Price notifications are working correctly!',
             icon: '/icons/icon-192x192.png',
             tag: 'test-notification',
-            requireInteraction: true
+            requireInteraction: false
           });
 
           setTimeout(() => {
@@ -279,9 +298,11 @@ export const NotificationProvider = ({ children }) => {
             }
           }, 5000);
         }
-      });
+      } catch (e) {
+        console.error('Error requesting permission or creating notification:', e);
+      }
     }
-  }, []);
+  }, [requestNotificationPermission]);
 
   // Initialize on mount
   useEffect(() => {

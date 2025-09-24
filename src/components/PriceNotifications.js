@@ -106,7 +106,7 @@ export const GlobalNotificationButton = ({ sidebarOpen, onSidebarToggle }) => {
 export const ChartNotificationButton = ({ token, currentPrice }) => {
   const theme = useTheme();
   const { activeFiatCurrency } = useContext(AppContext);
-  const { notifications, saveNotification, testNotification, formatPrice } = useNotifications();
+  const { notifications, saveNotification, testNotification, formatPrice, requestNotificationPermission } = useNotifications();
   const [open, setOpen] = useState(false);
   const [targetPrice, setTargetPrice] = useState('');
   const [alertType, setAlertType] = useState('above');
@@ -116,7 +116,7 @@ export const ChartNotificationButton = ({ token, currentPrice }) => {
     n.tokenMd5 === token.md5 || n.tokenSymbol === (token.symbol || token.code)
   );
 
-  const handleAddNotification = () => {
+  const handleAddNotification = async () => {
     setError('');
     if (!targetPrice || isNaN(targetPrice) || parseFloat(targetPrice) <= 0) {
       setError('Please enter a valid price');
@@ -131,6 +131,20 @@ export const ChartNotificationButton = ({ token, currentPrice }) => {
     if (exists) {
       setError('This notification already exists');
       return;
+    }
+
+    // Request permission if needed
+    if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'default') {
+      try {
+        const permission = await requestNotificationPermission();
+        if (permission !== 'granted') {
+          setError('Notification permission is required');
+          return;
+        }
+      } catch (e) {
+        setError('Could not request notification permission');
+        return;
+      }
     }
 
     const newNotification = {
