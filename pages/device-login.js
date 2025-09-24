@@ -121,6 +121,14 @@ const DeviceLoginPage = () => {
         throw new Error('WebAuthn not supported in this browser');
       }
 
+      // Check if platform authenticator is available (Windows Hello, Touch ID, etc.)
+      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (!available) {
+        setError('Windows Hello, Touch ID, or Face ID is not set up on this device. Please enable biometric authentication in your device settings first.');
+        setStatus('idle');
+        return;
+      }
+
       // Generate random values and encode as base64url
       const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
@@ -151,9 +159,18 @@ const DeviceLoginPage = () => {
           },
         });
       } catch (innerErr) {
-        // Handle cancellation directly here
-        console.log('User cancelled registration:', innerErr);
-        setError('Cancelled. Please try again and allow the security prompt.');
+        // Handle specific passkey setup errors
+        console.log('Registration error:', innerErr);
+
+        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
+          setError('Passkeys not supported on this device or browser.');
+        } else if (innerErr.message?.includes('InvalidStateError') || innerErr.message?.includes('saving')) {
+          setError('Windows Hello not set up. Please enable Windows Hello, Touch ID, or Face ID in your device settings first.');
+        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
+          setError('Cancelled. Please try again and allow the security prompt.');
+        } else {
+          setError('Setup failed. Please ensure Windows Hello, Touch ID, or Face ID is enabled on your device.');
+        }
         setStatus('idle');
         return;
       }
@@ -234,9 +251,18 @@ const DeviceLoginPage = () => {
           userVerification: 'required'
         });
       } catch (innerErr) {
-        // Handle cancellation directly here
-        console.log('User cancelled authentication:', innerErr);
-        setError('Cancelled. Please try again and allow the security prompt.');
+        // Handle specific authentication errors
+        console.log('Authentication error:', innerErr);
+
+        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
+          setError('Passkeys not supported on this device or browser.');
+        } else if (innerErr.message?.includes('InvalidStateError')) {
+          setError('Windows Hello not set up. Please enable Windows Hello, Touch ID, or Face ID in your device settings first.');
+        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
+          setError('Cancelled. Please try again and allow the security prompt.');
+        } else {
+          setError('Authentication failed. Please ensure Windows Hello, Touch ID, or Face ID is enabled on your device.');
+        }
         setStatus('idle');
         return;
       }
