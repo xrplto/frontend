@@ -1,7 +1,11 @@
 import { useState, useContext, useEffect } from 'react';
 import { Box, Container, Typography, Button, Card, CardContent, Alert, CircularProgress, Link } from '@mui/material';
 import { Warning as WarningIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
-import { startRegistration, startAuthentication } from '@simplewebauthn/browser';
+import { AppContext } from 'src/AppContext';
+import { useRouter } from 'next/router';
+
+// Lazy load heavy dependencies
+let startRegistration, startAuthentication, Wallet, CryptoJS;
 
 // Base64url encoding helper
 const base64urlEncode = (buffer) => {
@@ -10,17 +14,32 @@ const base64urlEncode = (buffer) => {
     .replace(/\//g, '_')
     .replace(/=/g, '');
 };
-import { Wallet, Client } from 'xrpl';
-import CryptoJS from 'crypto-js';
-import { AppContext } from 'src/AppContext';
-import { useRouter } from 'next/router';
 
 const DeviceLoginPage = () => {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
+  const [isLoadingDeps, setIsLoadingDeps] = useState(false);
   const { doLogIn } = useContext(AppContext);
   const router = useRouter();
+
+  // Lazy load heavy dependencies
+  const loadDependencies = async () => {
+    if (!startRegistration || !startAuthentication || !Wallet || !CryptoJS) {
+      setIsLoadingDeps(true);
+      const [webauthnModule, xrplModule, cryptoModule] = await Promise.all([
+        import('@simplewebauthn/browser'),
+        import('xrpl'),
+        import('crypto-js')
+      ]);
+
+      startRegistration = webauthnModule.startRegistration;
+      startAuthentication = webauthnModule.startAuthentication;
+      Wallet = xrplModule.Wallet;
+      CryptoJS = cryptoModule.default;
+      setIsLoadingDeps(false);
+    }
+  };
 
 
   const generateWallet = (passkeyId, accountIndex = 0) => {
@@ -39,23 +58,32 @@ const DeviceLoginPage = () => {
   const discoverAllAccounts = async (passkeyId) => {
     const accounts = [];
 
-    console.log('Generating device accounts for passkey ID:', passkeyId);
+    // Optimized approach: Generate accounts in batches with yielding
+    const batchSize = 10;
+    const totalAccounts = 100;
 
-    // Simplified approach: Generate first 100 accounts directly
-    for (let i = 0; i < 100; i++) {
-      const wallet = generateWallet(passkeyId, i);
-      console.log(`Generated account ${i}: ${wallet.address}`);
+    for (let batch = 0; batch < Math.ceil(totalAccounts / batchSize); batch++) {
+      const batchStart = batch * batchSize;
+      const batchEnd = Math.min(batchStart + batchSize, totalAccounts);
 
-      accounts.push({
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0'
-      });
+      // Generate batch of accounts
+      for (let i = batchStart; i < batchEnd; i++) {
+        const wallet = generateWallet(passkeyId, i);
+        accounts.push({
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0'
+        });
+      }
+
+      // Yield to main thread after each batch
+      if (batch < Math.ceil(totalAccounts / batchSize) - 1) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
     }
 
-    console.log(`Generated ${accounts.length} device accounts`);
     return accounts;
   };
 
@@ -64,7 +92,8 @@ const DeviceLoginPage = () => {
       setStatus('registering');
       setError('');
 
-      console.log('Starting passkey registration...');
+      // Load dependencies first
+      await loadDependencies();
 
       // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
@@ -84,8 +113,6 @@ const DeviceLoginPage = () => {
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
       const userId = base64urlEncode(userIdBuffer);
       const challenge = base64urlEncode(challengeBuffer);
-
-      console.log('Calling startRegistration directly...');
 
       let registrationResponse;
       try {
@@ -110,7 +137,6 @@ const DeviceLoginPage = () => {
         });
       } catch (innerErr) {
         // Handle specific passkey setup errors
-        console.log('Registration error:', innerErr);
 
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
           setError('Passkeys not supported on this device or browser.');
@@ -125,7 +151,6 @@ const DeviceLoginPage = () => {
         return;
       }
 
-      console.log('Registration response:', registrationResponse);
 
       if (registrationResponse.id) {
         const wallet = generateWallet(registrationResponse.id);
@@ -181,7 +206,8 @@ const DeviceLoginPage = () => {
       setStatus('authenticating');
       setError('');
 
-      console.log('Starting WebAuthn authentication...');
+      // Load dependencies first
+      await loadDependencies();
 
       // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
@@ -190,8 +216,6 @@ const DeviceLoginPage = () => {
 
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challenge = base64urlEncode(challengeBuffer);
-
-      console.log('Trying authentication only...');
 
       let authResponse;
       try {
@@ -202,7 +226,6 @@ const DeviceLoginPage = () => {
         });
       } catch (innerErr) {
         // Handle specific authentication errors
-        console.log('Authentication error:', innerErr);
 
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
           setError('Passkeys not supported on this device or browser.');
@@ -217,8 +240,6 @@ const DeviceLoginPage = () => {
         return;
       }
 
-      console.log('Authentication successful:', authResponse);
-
       if (authResponse.id) {
         setStatus('discovering');
 
@@ -226,9 +247,7 @@ const DeviceLoginPage = () => {
         let allAccounts;
         try {
           allAccounts = await discoverAllAccounts(authResponse.id);
-          console.log('Discovered accounts:', allAccounts);
         } catch (discoveryError) {
-          console.error('Account discovery failed:', discoveryError);
           // Fallback: create first account manually
           const wallet = generateWallet(authResponse.id, 0);
           allAccounts = [{
@@ -241,7 +260,6 @@ const DeviceLoginPage = () => {
         }
 
         if (allAccounts.length === 0) {
-          console.log('No accounts discovered, creating first account');
           // No accounts with balance found, create first one
           const wallet = generateWallet(authResponse.id, 0);
           const firstAccount = {
@@ -288,6 +306,11 @@ const DeviceLoginPage = () => {
       setStatus('idle');
     }
   };
+
+  // Preload dependencies when component mounts
+  useEffect(() => {
+    loadDependencies();
+  }, []);
 
   // Since we're zero-localStorage, always treat as potential first-time setup
   const hasRegisteredPasskey = false;
@@ -366,12 +389,21 @@ const DeviceLoginPage = () => {
             </Alert>
           )}
 
+          {isLoadingDeps && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CircularProgress size={16} />
+                <Typography variant="body2">Loading security modules...</Typography>
+              </Box>
+            </Alert>
+          )}
+
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
             <Button
               variant="contained"
               size="large"
               onClick={handleAuthenticate}
-              disabled={status !== 'idle'}
+              disabled={status !== 'idle' || isLoadingDeps}
               startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} /> : null}
             >
               {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In with Existing Passkey'}
@@ -381,7 +413,7 @@ const DeviceLoginPage = () => {
               variant="outlined"
               size="large"
               onClick={handleRegister}
-              disabled={status !== 'idle'}
+              disabled={status !== 'idle' || isLoadingDeps}
               startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
               sx={{
                 borderColor: 'warning.main',
