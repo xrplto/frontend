@@ -417,9 +417,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Box>
                   <Typography
                     variant="caption"
-                    sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, display: 'block' }}
+                    sx={{ color: alpha(theme.palette.error.main, 0.9), mb: 0.5, display: 'block', fontWeight: 600 }}
                   >
-                    Wallet Seed (Keep Private!)
+                    ⚠️ Wallet Seed - Keep Private & Offline
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{ color: alpha(theme.palette.error.main, 0.8), mb: 1, display: 'block', fontSize: '0.7rem' }}
+                  >
+                    Never provide this seed to anyone. Store offline securely.
                   </Typography>
                   <Box
                     sx={{
