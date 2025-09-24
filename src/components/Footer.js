@@ -24,8 +24,8 @@ const FooterLink = ({ href, children }) => {
       rel={external ? 'noreferrer noopener' : undefined}
       sx={{
         color: 'text.secondary',
-        fontSize: '0.7rem',
-        px: 0.3,
+        fontSize: { xs: '0.6rem', md: '0.7rem' },
+        px: { xs: 0.2, md: 0.3 },
         borderRadius: 1,
         transition: 'all .15s ease',
         '&:hover': {
@@ -56,12 +56,12 @@ const SOCIALS = [
 
 // Extract nested component to top level and memoize
 const Group = React.memo(({ items }) => (
-  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: 0.4 }}>
+  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 0.2, md: 0.4 } }}>
     {items.map((it, idx) => (
-      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.4 }}>
+      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: { xs: 0.2, md: 0.4 } }}>
         <FooterLink href={it.href}>{it.label}</FooterLink>
         {idx < items.length - 1 && (
-          <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3) }}>
+          <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3), fontSize: { xs: '0.6rem', md: '0.7rem' } }}>
             /
           </Typography>
         )}
@@ -71,7 +71,7 @@ const Group = React.memo(({ items }) => (
 ));
 
 const SocialIcons = React.memo(() => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.3, md: 0.5 } }}>
     {SOCIALS.map((social) => {
       const { Icon } = social;
       return (
@@ -84,7 +84,7 @@ const SocialIcons = React.memo(() => (
             size="small"
             sx={{
               color: 'text.secondary',
-              padding: 0.5,
+              padding: { xs: 0.3, md: 0.5 },
               transition: 'all .15s ease',
               '&:hover': {
                 color: 'primary.main',
@@ -139,7 +139,7 @@ function Footer() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: 2.5,
+              gap: { xs: 1.5, md: 2.5 },
               flex: 1,
               justifyContent: 'flex-end',
               flexWrap: 'wrap'
