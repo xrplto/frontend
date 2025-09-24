@@ -3,19 +3,31 @@ import { format, formatDistanceToNow } from 'date-fns';
 // ----------------------------------------------------------------------
 
 export function fDate(date) {
-  return format(new Date(date), 'dd MMMM yyyy');
+  if (!date) return '';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return '';
+  return format(dateObj, 'dd MMMM yyyy');
 }
 
 export function fDateTime(date) {
-  return format(new Date(date), 'dd MMM yyyy HH:mm');
+  if (!date) return '';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return '';
+  return format(dateObj, 'dd MMM yyyy HH:mm');
 }
 
 export function fDateTimeSuffix(date) {
-  return format(new Date(date), 'dd/MM/yyyy hh:mm p');
+  if (!date) return '';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return '';
+  return format(dateObj, 'dd/MM/yyyy hh:mm p');
 }
 
 export function fToNow(date) {
-  return formatDistanceToNow(new Date(date), {
+  if (!date) return '';
+  const dateObj = new Date(date);
+  if (isNaN(dateObj.getTime())) return '';
+  return formatDistanceToNow(dateObj, {
     addSuffix: true
   });
 }

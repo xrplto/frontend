@@ -675,7 +675,7 @@ export default function PriceStatistics({ token }) {
                 }}
                 noWrap
               >
-                Diluted Market Cap
+                Fully Diluted Market Cap
               </Typography>
             </ModernTableCell>
             <ModernTableCell align="left">
