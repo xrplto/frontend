@@ -270,7 +270,7 @@ export const ChartNotificationButton = ({ token, currentPrice }) => {
             </Box>
           )}
 
-          {Notification.permission === 'granted' && (
+          {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted' && (
             <Alert severity="success" sx={{ mt: 2 }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -542,7 +542,7 @@ export const NotificationSidebar = memo(({ open, onClose }) => {
               </IconButton>
             </Stack>
           </Stack>
-          {Notification.permission === 'granted' && (
+          {typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted' && (
             <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mt: 1, fontSize: '0.8rem' }}>Browser notifications enabled</Alert>
           )}
         </Box>
