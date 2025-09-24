@@ -2,7 +2,7 @@ import { useRef, useState } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
 import { startAuthentication } from '@simplewebauthn/browser';
-import { Wallet as XRPLWallet } from 'xrpl';
+import { Wallet as XRPLWallet, Client } from 'xrpl';
 import CryptoJS from 'crypto-js';
 
 // Material
@@ -192,6 +192,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     return XRPLWallet.fromEntropy(entropy);
   };
 
+  const checkAccountBalance = async (address) => {
+    try {
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+      const response = await client.request({
+        command: 'account_info',
+        account: address,
+        ledger_index: 'validated'
+      });
+      await client.disconnect();
+      return parseFloat(response.result.account_data.Balance) / 1000000;
+    } catch (err) {
+      return 0;
+    }
+  };
+
   const handleShowSeed = async () => {
     try {
       if (accountProfile?.wallet_type !== 'device') {
@@ -257,8 +273,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }],
       });
 
-      const existingAccounts = profiles.filter(p => p.wallet_type === 'device').length;
-      const newWallet = generateWalletFromPasskey(passkeyId, existingAccounts);
+      // Find next unused account index by checking which accounts exist on-chain
+      let accountIndex = 0;
+      const maxChecks = 10;
+      while (accountIndex < maxChecks) {
+        const testWallet = generateWalletFromPasskey(passkeyId, accountIndex);
+        const balance = await checkAccountBalance(testWallet.address);
+        if (balance === 0) break;
+        accountIndex++;
+      }
+
+      const newWallet = generateWalletFromPasskey(passkeyId, accountIndex);
 
       const profile = {
         account: newWallet.address,
@@ -270,16 +295,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       doLogIn(profile);
 
-      // Update account count for future logins
-      const currentCount = parseInt(localStorage.getItem('device-account-count') || '1');
-      localStorage.setItem('device-account-count', (currentCount + 1).toString());
+      // Update the stored count for this passkey
+      const passkeyCountKey = `passkey-count-${passkeyId}`;
+      const currentStoredCount = parseInt(localStorage.getItem(passkeyCountKey) || '5');
+      localStorage.setItem(passkeyCountKey, Math.max(currentStoredCount, accountIndex + 1).toString());
 
       console.log('New account details:', {
         address: newWallet.address,
         seed: newWallet.seed,
         privateKey: newWallet.privateKey,
         publicKey: newWallet.publicKey,
-        accountIndex: existingAccounts
+        accountIndex: accountIndex
       });
 
       openSnackbar(`New account created: ${newWallet.address.slice(0, 8)}...`, 'success');

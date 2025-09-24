@@ -9,7 +9,7 @@ const base64urlEncode = (buffer) => {
     .replace(/\//g, '_')
     .replace(/=/g, '');
 };
-import { Wallet } from 'xrpl';
+import { Wallet, Client } from 'xrpl';
 import CryptoJS from 'crypto-js';
 import { AppContext } from 'src/AppContext';
 import { useRouter } from 'next/router';
@@ -31,6 +31,53 @@ const DeviceLoginPage = () => {
     }
     const wallet = Wallet.fromEntropy(entropy);
     return wallet;
+  };
+
+  const checkAccountBalance = async (address) => {
+    try {
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+      const response = await client.request({
+        command: 'account_info',
+        account: address,
+        ledger_index: 'validated'
+      });
+      await client.disconnect();
+      return parseFloat(response.result.account_data.Balance) / 1000000; // Convert drops to XRP
+    } catch (err) {
+      return 0; // Account doesn't exist or has 0 balance
+    }
+  };
+
+  const discoverAllAccounts = async (passkeyId) => {
+    const accounts = [];
+
+    // Check if we have a stored account count for this passkey
+    const storedCount = localStorage.getItem(`passkey-count-${passkeyId}`);
+    const minAccounts = storedCount ? parseInt(storedCount) : 5; // Default to 5 wallets
+
+    // Always check at least the minimum number of accounts, plus a few extra for funded discovery
+    const maxCheck = Math.max(minAccounts, 10);
+
+    for (let i = 0; i < maxCheck; i++) {
+      const wallet = generateWallet(passkeyId, i);
+      const balance = await checkAccountBalance(wallet.address);
+
+      // Include account if:
+      // 1. It's within the minimum count (always show these)
+      // 2. It has a balance > 0 (funded accounts)
+      if (i < minAccounts || balance > 0) {
+        accounts.push({
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: balance.toString()
+        });
+      }
+    }
+
+    return accounts;
   };
 
   const handleRegister = async () => {
@@ -126,20 +173,22 @@ const DeviceLoginPage = () => {
       });
 
       if (authResponse.id) {
-        // Get the number of accounts that were created with this passkey
-        const accountCount = parseInt(localStorage.getItem('device-account-count') || '1');
+        setStatus('discovering');
 
-        // Generate all accounts from the passkey
-        const allAccounts = [];
-        for (let i = 0; i < accountCount; i++) {
-          const wallet = generateWallet(authResponse.id, i);
-          allAccounts.push({
+        // Discover all accounts with balances
+        const allAccounts = await discoverAllAccounts(authResponse.id);
+
+        if (allAccounts.length === 0) {
+          // No accounts with balance found, create first one
+          const wallet = generateWallet(authResponse.id, 0);
+          const firstAccount = {
             account: wallet.address,
             address: wallet.address,
             publicKey: wallet.publicKey,
             wallet_type: 'device',
             xrp: '0'
-          });
+          };
+          allAccounts.push(firstAccount);
         }
 
         // Login with the first account
@@ -218,9 +267,9 @@ const DeviceLoginPage = () => {
                 size="large"
                 onClick={handleAuthenticate}
                 disabled={status !== 'idle'}
-                startIcon={status === 'authenticating' ? <CircularProgress size={20} /> : null}
+                startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} /> : null}
               >
-                {status === 'authenticating' ? 'Authenticating...' : 'Sign In'}
+                {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In'}
               </Button>
             )}
 
