@@ -38,7 +38,6 @@ import SettingsIcon from '@mui/icons-material/Settings';
 // import AssignmentReturnedIcon from '@mui/icons-material/AssignmentReturned';
 // import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 // import ImportExportIcon from '@mui/icons-material/ImportExport';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import LogoutIcon from '@mui/icons-material/Logout';
 // import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
@@ -216,7 +215,6 @@ const WalletContent = ({
   profiles,
   onClose,
   onAccountSwitch,
-  onMoreAccounts,
   onLogout,
   onRemoveProfile,
   openSnackbar,
@@ -437,29 +435,6 @@ const WalletContent = ({
         display: 'flex',
         gap: 1
       }}>
-        {!isEmbedded && (
-          <Button
-            fullWidth
-            onClick={onMoreAccounts}
-            sx={{
-              py: 1.5,
-              borderRadius: '5px',
-              background: alpha(theme.palette.primary.main, 0.1),
-              color: theme.palette.primary.main,
-              fontWeight: 600,
-              fontSize: '0.85rem',
-              textTransform: 'none',
-              '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.15)
-              }
-            }}
-          >
-            <AddCircleOutlineIcon sx={{ fontSize: 18, mr: 1 }} />
-            Add Account
-          </Button>
-        )}
-
-
         <Button
           onClick={onLogout}
           sx={{
@@ -879,20 +854,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const handleMoreAccounts = async () => {
-    // Check if we already have device wallets in profiles
-    const deviceWalletsInProfiles = profiles.filter(p => p.wallet_type === 'device');
-
-    // If no existing device wallets, show device login to create/access them
-    if (deviceWalletsInProfiles.length === 0) {
-      setShowDeviceLogin(true);
-      setOpen(true);
-      return;
-    }
-
-    // If we already have device wallets, show info message
-    openSnackbar(`You already have ${deviceWalletsInProfiles.length} device wallets. Use authentication to access them.`, 'info');
-  };
 
   const handleAddPasskeyAccount = async () => {
     try {
@@ -1111,7 +1072,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setActiveProfile(account);
                     setOpen(false);
                   }}
-                  onMoreAccounts={handleMoreAccounts}
                   onLogout={handleLogout}
                   onRemoveProfile={removeProfile}
                   openSnackbar={openSnackbar}
