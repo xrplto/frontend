@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
 
 // Lazy load heavy dependencies
-let startRegistration, startAuthentication, CryptoJS, scrypt;
+let startRegistration, startAuthentication, CryptoJS, scrypt, base64URLStringToBuffer;
 
 // Material
 import {
@@ -82,14 +82,17 @@ const base64urlEncode = (buffer) => {
     .replace(/=/g, '');
 };
 
-// Secure deterministic wallet generation using scrypt with PBKDF2 fallback
-const generateSecureDeterministicWallet = async (credentialId, accountIndex) => {
-  // Use only truly deterministic entropy sources (stable across sessions/devices)
-  // Note: Removed screen resolution and other variable device characteristics
-  // to ensure wallet recovery consistency
+// Secure deterministic wallet generation using scrypt with PBKDF2 fallback and signature entropy
+const generateSecureDeterministicWallet = async (credentialId, accountIndex, signatureEntropy) => {
+  // Requires signature-based entropy for enhanced security
+  // Note: signatureEntropy provides user authentication proof and additional randomness
 
-  // Combine stable entropy sources
-  const baseEntropy = `passkey-wallet-v2-${credentialId}-${accountIndex}`;
+  if (!signatureEntropy) {
+    throw new Error('Signature entropy is required for secure wallet generation');
+  }
+
+  // Enhanced security: includes signature from user authentication
+  const baseEntropy = `passkey-wallet-v3-${credentialId}-${accountIndex}-${signatureEntropy}`;
   const combinedEntropy = CryptoJS.SHA256(baseEntropy).toString();
   const salt = `salt-${credentialId}-enhanced-v2`;
 
@@ -127,13 +130,100 @@ const generateSecureDeterministicWallet = async (credentialId, accountIndex) => 
   return XRPLWallet.fromSeed(seed);
 };
 
+// Generate signature-based entropy by requesting WebAuthn authentication
+const generateSignatureEntropy = async (credentialId) => {
+  if (!startAuthentication) {
+    throw new Error('WebAuthn authentication not available - ensure dependencies are loaded');
+  }
+
+  if (!window.PublicKeyCredential) {
+    throw new Error('WebAuthn not supported in this browser');
+  }
+
+  try {
+    // Generate a random challenge for signature
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const challengeB64 = base64urlEncode(challenge);
+
+    console.log('🔐 Requesting WebAuthn authentication for entropy generation...');
+
+    // Create proper WebAuthn options structure
+    const optionsJSON = {
+      challenge: challengeB64,
+      timeout: 30000,
+      userVerification: 'required'
+      // Note: Not specifying allowCredentials to work with any available credential
+      // The credentialId is used later for entropy generation
+    };
+
+    // Request WebAuthn authentication with proper SimpleWebAuthn call structure
+    const authResponse = await startAuthentication({ optionsJSON });
+
+    if (authResponse && authResponse.response && authResponse.response.signature) {
+      // Use the signature as entropy (first 32 bytes)
+      const signature = authResponse.response.signature;
+
+      // Convert base64url signature to Uint8Array
+      let signatureArray;
+      if (typeof signature === 'string') {
+        try {
+          // Decode base64url string
+          if (base64URLStringToBuffer) {
+            const signatureBuffer = base64URLStringToBuffer(signature);
+            signatureArray = new Uint8Array(signatureBuffer);
+          } else {
+            // Fallback: manual base64url decode
+            const normalizedSignature = signature.replace(/-/g, '+').replace(/_/g, '/');
+            const padding = '='.repeat((4 - normalizedSignature.length % 4) % 4);
+            const base64String = normalizedSignature + padding;
+            const signatureBuffer = Uint8Array.from(atob(base64String), c => c.charCodeAt(0));
+            signatureArray = signatureBuffer;
+          }
+        } catch (decodeError) {
+          console.warn('Failed to decode signature string, treating as raw bytes:', decodeError);
+          // If decode fails, try to get bytes from string directly
+          signatureArray = new Uint8Array(Array.from(signature, c => c.charCodeAt(0)));
+        }
+      } else if (signature instanceof ArrayBuffer) {
+        signatureArray = new Uint8Array(signature);
+      } else {
+        signatureArray = new Uint8Array(signature);
+      }
+
+      const entropyBytes = signatureArray.slice(0, 32);
+      const entropyHex = Array.from(entropyBytes).map(b => b.toString(16).padStart(2, '0')).join('');
+      console.log('✅ Signature entropy generated successfully', entropyHex.length, 'chars');
+      return entropyHex;
+    } else {
+      throw new Error('WebAuthn authentication did not return a valid signature');
+    }
+  } catch (error) {
+    console.error('❌ Signature entropy generation failed:', error);
+
+    // Provide more specific error messages
+    if (error.name === 'NotAllowedError') {
+      throw new Error('User cancelled authentication or authentication not allowed');
+    } else if (error.name === 'NotSupportedError') {
+      throw new Error('WebAuthn authentication not supported on this device');
+    } else if (error.name === 'SecurityError') {
+      throw new Error('Security error during authentication - ensure HTTPS connection');
+    } else if (error.name === 'AbortError') {
+      throw new Error('Authentication timed out - please try again');
+    } else {
+      throw new Error(`Authentication failed: ${error.message}`);
+    }
+  }
+};
+
 // Test function to verify deterministic wallet generation consistency
 const testWalletConsistency = async () => {
   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
     try {
       const testCredId = 'test-credential-id-12345';
-      const wallet1 = await generateSecureDeterministicWallet(testCredId, 0);
-      const wallet2 = await generateSecureDeterministicWallet(testCredId, 0);
+      const testSignature = 'test-signature-entropy-12345'; // Mock signature for testing
+
+      const wallet1 = await generateSecureDeterministicWallet(testCredId, 0, testSignature);
+      const wallet2 = await generateSecureDeterministicWallet(testCredId, 0, testSignature);
 
       const isConsistent = wallet1.address === wallet2.address &&
                           wallet1.seed === wallet2.seed;
@@ -143,7 +233,8 @@ const testWalletConsistency = async () => {
         address1: wallet1.address.slice(0, 10) + '...',
         address2: wallet2.address.slice(0, 10) + '...',
         seedMatch: wallet1.seed === wallet2.seed,
-        algorithm: scrypt && typeof scrypt.scrypt === 'function' ? 'scrypt' : 'PBKDF2-enhanced'
+        algorithm: scrypt && typeof scrypt.scrypt === 'function' ? 'scrypt' : 'PBKDF2-enhanced',
+        note: 'Using mock signature entropy for testing'
       });
     } catch (error) {
       console.error('Wallet consistency test failed:', error);
@@ -412,7 +503,7 @@ const WalletContent = ({
             textAlign: 'center'
           }}>
             <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700, color: theme.palette.warning.main }}>
-              {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'}
+              {Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'}
             </Typography>
             <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Reserved</Typography>
           </Box>
@@ -590,6 +681,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       startRegistration = webauthnModule.startRegistration;
       startAuthentication = webauthnModule.startAuthentication;
+      base64URLStringToBuffer = webauthnModule.base64URLStringToBuffer;
       CryptoJS = cryptoModule.default;
       scrypt = scryptModule || null;
       setIsLoadingDeps(false);
@@ -604,13 +696,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const checkAccountActivity = useCallback(async (address) => {
     try {
       const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
+
+      // Handle non-200 responses (like 500 errors)
+      if (!response.ok) {
+        console.warn(`Account info request failed for ${address}: ${response.status} ${response.statusText}`);
+        return false;
+      }
+
       const data = await response.json();
       if (data.account_data && data.account_data.Balance) {
-        const balance = parseFloat(data.account_data.Balance) / 500000;
-        return balance >= 1;
+        const balance = parseFloat(data.account_data.Balance) / 1000000; // XRP drops to XRP conversion (1 XRP = 1,000,000 drops)
+        return balance >= 1; // Consider active if has at least 1 XRP
       }
       return false;
     } catch (err) {
+      console.warn(`Failed to check activity for account ${address}:`, err.message);
       return false;
     }
   }, []);
@@ -680,8 +780,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const generateWalletsFromDeviceKey = async (deviceKeyId) => {
     const wallets = [];
+
+    // Generate signature entropy - required for secure wallet generation
+    console.log('🔐 Requesting user authentication for wallet generation...');
+
+    // Let the actual authentication error bubble up instead of catching it
+    const signatureEntropy = await generateSignatureEntropy(deviceKeyId);
+
+    console.log('🔐 Signature entropy result:', signatureEntropy ? 'SUCCESS' : 'FAILED');
+    console.log('🔐 Signature entropy length:', signatureEntropy ? signatureEntropy.length : 'N/A');
+
+    if (!signatureEntropy) {
+      throw new Error('WebAuthn authentication returned empty signature entropy');
+    }
+
+    console.log('🔐 Enhanced security: Using signature-based entropy');
+
     for (let i = 0; i < 5; i++) {
-      const wallet = await generateSecureDeterministicWallet(deviceKeyId, i);
+      const wallet = await generateSecureDeterministicWallet(deviceKeyId, i, signatureEntropy);
       const walletData = {
         deviceKeyId,
         accountIndex: i,
@@ -713,9 +829,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const challenge = base64urlEncode(challengeBuffer);
 
       const authResponse = await startAuthentication({
-        challenge: challenge,
-        timeout: 30000,
-        userVerification: 'required'
+        optionsJSON: {
+          challenge: challenge,
+          timeout: 30000,
+          userVerification: 'required'
+        }
       });
 
       if (authResponse.id) {
@@ -884,9 +1002,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       let authResponse;
       try {
         authResponse = await startAuthentication({
-          challenge: challenge,
-          timeout: 60000,
-          userVerification: 'required'
+          optionsJSON: {
+            challenge: challenge,
+            timeout: 60000,
+            userVerification: 'required'
+          }
         });
       } catch (innerErr) {
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
@@ -986,9 +1106,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Authenticate with any available passkey
       const authResponse = await startAuthentication({
-        challenge: challengeB64,
-        timeout: 60000,
-        userVerification: 'required'
+        optionsJSON: {
+          challenge: challengeB64,
+          timeout: 60000,
+          userVerification: 'required'
+        }
       });
 
       if (authResponse.id) {
