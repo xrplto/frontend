@@ -745,6 +745,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   }, []);
 
+  // Suppress WebAuthn NotAllowedError in development
+  useEffect(() => {
+    const originalError = console.error;
+    console.error = (...args) => {
+      if (args[0]?.includes?.('NotAllowedError') && args[0]?.includes?.('webauthn')) {
+        return; // Suppress WebAuthn errors
+      }
+      originalError.apply(console, args);
+    };
+
+    return () => {
+      console.error = originalError;
+    };
+  }, []);
+
   useEffect(() => {
     const checkVisibleAccountsActivation = async () => {
       if (profiles.length === 0) return;
@@ -903,10 +918,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
   const handleRegister = async () => {
-    try {
-      setStatus('registering');
-      setError('');
+    setStatus('registering');
+    setError('');
 
+    // Add global error handler for WebAuthn errors
+    const originalOnError = window.onerror;
+    const originalUnhandledRejection = window.onunhandledrejection;
+
+    window.onerror = (msg, url, lineNo, columnNo, error) => {
+      if (error && error.name === 'NotAllowedError') {
+        console.log('Caught NotAllowedError in onerror');
+        setError('Cancelled. Please try again and allow the security prompt.');
+        setStatus('idle');
+        return true; // Prevent default error handling
+      }
+      return false;
+    };
+
+    window.onunhandledrejection = (event) => {
+      if (event.reason && event.reason.name === 'NotAllowedError') {
+        console.log('Caught NotAllowedError in unhandledrejection');
+        setError('Cancelled. Please try again and allow the security prompt.');
+        setStatus('idle');
+        event.preventDefault(); // Prevent error from showing in console
+        return;
+      }
+    };
+
+    try {
       await loadDependencies();
 
       if (!window.PublicKeyCredential) {
@@ -938,7 +977,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         user: {
           id: userId,
           name: `xrplto-${Date.now()}@xrpl.to`,
-          displayName: 'XRPL.to User',
+          displayName: `xrplto-${Date.now()}@xrpl.to`, // Same as name to avoid Chrome bug
         },
         challenge: challenge,
         pubKeyCredParams: [
@@ -959,21 +998,33 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       console.log('Registration options:', registrationOptions);
 
       let registrationResponse;
+
       try {
         registrationResponse = await startRegistration({ optionsJSON: registrationOptions });
-      } catch (innerErr) {
-        console.error('Registration inner error:', innerErr);
-        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
-          setError('Passkeys not supported on this device or browser.');
-        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
-          setError('Cancelled. Please try again and allow the security prompt.');
-        } else if (innerErr.message?.includes('AbortError') || innerErr.message?.includes('timeout')) {
-          setError('Request timed out. Please try again.');
-        } else {
-          setError(`Passkey creation failed: ${innerErr.message}`);
+      } catch (error) {
+        // Handle WebAuthnError properly according to SimpleWebAuthn docs
+        console.error('WebAuthn registration error:', error);
+
+        // Check the error name property as documented
+        switch (error.name) {
+          case 'NotAllowedError':
+            setError('Registration cancelled or not allowed. Please try again.');
+            break;
+          case 'InvalidStateError':
+            setError('A passkey is already registered. Try signing in instead.');
+            break;
+          case 'AbortError':
+            setError('Registration timed out. Please try again.');
+            break;
+          case 'NotSupportedError':
+            setError('Passkeys not supported on this device or browser.');
+            break;
+          default:
+            setError(`Registration failed: ${error.message || 'Unknown error'}`);
         }
+
         setStatus('idle');
-        return;
+        return; // Exit the function
       }
 
       if (registrationResponse.id) {
@@ -1041,6 +1092,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setError('Failed: ' + errorMessage);
       }
       setStatus('idle');
+    } finally {
+      // Restore original error handlers
+      window.onerror = originalOnError;
+      window.onunhandledrejection = originalUnhandledRejection;
     }
   };
 
