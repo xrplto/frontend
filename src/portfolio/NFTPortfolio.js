@@ -28,7 +28,7 @@ import { PulseLoader } from 'react-spinners';
 import { AppContext } from 'src/AppContext';
 import { useRouter } from 'next/router';
 import { alpha } from '@mui/material/styles';
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/normalizers';
 import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber } from 'src/utils/formatNumber';
 import { getNftCoverUrl } from 'src/utils/parse/utils';
@@ -202,7 +202,7 @@ function NFTCard({ nft, handleRemove, smallSize = false }) {
                 label={
                   cost.currency === 'XRP'
                     ? `✕ ${fNumber(cost.amount)}`
-                    : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`
+                    : `${fNumber(cost.amount)} ${normalizeCurrencyCode(cost.currency)}`
                 }
                 size="small"
                 sx={{

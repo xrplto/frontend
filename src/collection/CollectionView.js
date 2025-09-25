@@ -109,7 +109,7 @@ import { getMinterName } from 'src/utils/constants';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
 import { formatMonthYear } from 'src/utils/formatTime';
 import { getNftCoverUrl } from 'src/utils/parse/utils';
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/normalizers';
 
 // Styled Components with optimized styles
 const MainContainer = styled(Box)({
@@ -808,7 +808,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 {cost
                   ? cost.currency === 'XRP'
                     ? `✕ ${fNumber(cost.amount)}`
-                    : `${fNumber(cost.amount)} ${normalizeCurrencyCodeXummImpl(cost.currency)}`
+                    : `${fNumber(cost.amount)} ${normalizeCurrencyCode(cost.currency)}`
                   : `✕ ${fNumber(amount)}`}
               </Typography>
             )}

@@ -32,7 +32,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   const accountToken = accountProfile?.token;
 
   const [openScanQR, setOpenScanQR] = useState(false);
-  const [xummUuid, setXummUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
 
@@ -53,7 +52,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/burn/one/${xummUuid}?account=${accountLogin}`, {
           headers: { 'x-access-token': accountToken }
         });
         const resolved_at = ret.data?.resolved_at;
@@ -85,7 +83,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, xummUuid]);
 
   const onBurnNFTXumm = async () => {
     if (!accountLogin || !accountToken) {
@@ -107,52 +104,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       };
 
       switch (wallet_type) {
-        case 'xaman':
-          const body = { account: accountLogin, NFTokenID, owner: account, user_token };
-
-          const res = await axios.post(`${BASE_URL}/burn/one`, body, {
-            headers: { 'x-access-token': accountToken }
-          });
-
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setXummUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-          }
-          break;
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-              await submitTransaction({
-                transaction: burnTxData
-              }).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
-            }
-          });
-          break;
-        case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(burnTxData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-            } else {
-              dispatch(updateProcess(3));
-            }
-          });
-          break;
       }
     } catch (err) {
       console.error(err);
@@ -162,14 +113,12 @@ export default function BurnNFT({ nft, onHandleBurn }) {
     setLoading(false);
   };
 
-  const onDisconnectXumm = async (uuid) => {
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
         headers: { 'x-access-token': accountToken }
       });
       if (res.status === 200) {
-        setXummUuid(null);
       }
     } catch (err) {}
     setLoading(false);
@@ -177,7 +126,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(xummUuid);
   };
 
   const handleBurnNFT = () => {

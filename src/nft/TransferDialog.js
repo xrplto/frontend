@@ -262,52 +262,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       };
 
       switch (wallet_type) {
-        case 'xaman':
-          const body = { account, NFTokenID, owner, user_token, destination };
-
-          const res = await axios.post(`${BASE_URL}/offers/transfer`, body, {
-            headers: { 'x-access-token': accountToken }
-          });
-
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-          }
-          break;
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-              await submitTransaction({
-                transaction: transferTxData
-              }).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
-            }
-          });
-          break;
-        case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(transferTxData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-            } else {
-              dispatch(updateProcess(3));
-            }
-          });
-          break;
       }
     } catch (err) {
       console.error(err);
@@ -317,7 +271,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     setLoading(false);
   };
 
-  const onDisconnectXumm = async (uuid) => {
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
@@ -332,7 +285,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
   };
 
   const handleClose = () => {

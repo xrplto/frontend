@@ -38,7 +38,7 @@ import { AppContext } from 'src/AppContext';
 
 // Utils
 import { fNumber } from 'src/utils/formatNumber';
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/normalizers';
 import { formatDateTime } from 'src/utils/formatTime';
 
 // Components
@@ -411,8 +411,8 @@ export default function History({ token }) {
                   {hists.map((row, idx) => {
                     const { _id, maker, taker, seq, paid, got, ledger, hash, time } = row;
 
-                    const paidName = normalizeCurrencyCodeXummImpl(paid.currency);
-                    const gotName = normalizeCurrencyCodeXummImpl(got.currency);
+                    const paidName = normalizeCurrencyCode(paid.currency);
+                    const gotName = normalizeCurrencyCode(got.currency);
                     const md51 = getMD5(paid.issuer, paid.currency);
 
                     let exch;

@@ -452,7 +452,6 @@ export default function NFTActions({ nft }) {
   const [openSelectPrice, setOpenSelectPrice] = useState(false);
 
   const [openScanQR, setOpenScanQR] = useState(false);
-  const [xummUuid, setXummUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
   const [qrType, setQrType] = useState('NFTokenAcceptOffer');
@@ -507,7 +506,6 @@ export default function NFTActions({ nft }) {
 
     async function getDispatchResult() {
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
         const res = ret.data.data.response;
         // const account = res.account;
         const dispatched_result = res.dispatched_result;
@@ -549,7 +547,6 @@ export default function NFTActions({ nft }) {
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
         const resolved_at = ret.data?.resolved_at;
         // const dispatched_result = ret.data?.dispatched_result;
         if (resolved_at) {
@@ -572,7 +569,6 @@ export default function NFTActions({ nft }) {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, xummUuid, sync]);
 
   useEffect(() => {
     async function getLowestSellOffer() {
@@ -719,7 +715,6 @@ export default function NFTActions({ nft }) {
         else newQrType += ' [Buy Offer]';
 
         setQrType(newQrType);
-        setXummUuid(newUuid);
         setQrUrl(qrlink);
         setNextUrl(nextlink);
         setOpenScanQR(true);
@@ -730,24 +725,19 @@ export default function NFTActions({ nft }) {
     setPageLoading(false);
   };
 
-  const onDisconnectXumm = async () => {
     setPageLoading(true);
     try {
-      const res = await axios.delete(`${BASE_URL}/offers/acceptcancel/${xummUuid}`);
       // if (res.status === 200) {
-      //     setXummUuid(null);
       // }
     } catch (err) {
       console.error(err);
     }
-    setXummUuid(null);
 
     setPageLoading(false);
   };
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm();
   };
 
   const getValidOffers = (offers, isSell) => {

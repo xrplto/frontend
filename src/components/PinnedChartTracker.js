@@ -627,73 +627,8 @@ export const FloatingPinnedChart = memo(() => {
       transactionData.Memos = configureMemos('', '', memoData);
 
       switch (wallet_type) {
-        case 'xaman':
-          setAppLoading(true);
-          setTransactionType('Payment');
-          const body = {
-            ...transactionData,
-            user_token
-          };
 
-          const res = await axios.post(`${BASE_URL}/offer/payment`, body);
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
 
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-            enqueueSnackbar('Please approve the swap in your wallet', { variant: 'info' });
-          }
-          break;
-
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-              await submitTransaction({
-                transaction: transactionData
-              }).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                    dispatch(updateProcess(0));
-                    setSwapAmount('');
-                  }, 1500);
-                  enqueueSnackbar('Swap successful!', { variant: 'success' });
-                } else {
-                  dispatch(updateProcess(3));
-                  enqueueSnackbar('Swap failed', { variant: 'error' });
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-
-        case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-              setTimeout(() => {
-                setSync(sync + 1);
-                dispatch(updateProcess(0));
-                setSwapAmount('');
-              }, 1500);
-              enqueueSnackbar('Swap successful!', { variant: 'success' });
-            } else {
-              dispatch(updateProcess(3));
-              enqueueSnackbar('Swap failed', { variant: 'error' });
-            }
-          });
-          break;
 
         default:
           enqueueSnackbar('Unsupported wallet type', { variant: 'error' });
@@ -743,82 +678,8 @@ export const FloatingPinnedChart = memo(() => {
       LimitAmount.value = '1000000000'; // Set a high trust limit
 
       switch (wallet_type) {
-        case 'xaman':
-          setAppLoading(true);
-          setTransactionType('TrustSet');
-          const body = { LimitAmount, Flags, user_token };
-          const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
 
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
 
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-            enqueueSnackbar('Please approve the trustline in your wallet', { variant: 'info' });
-          }
-          break;
-
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              const trustSet = {
-                flags: Flags,
-                limitAmount: LimitAmount
-              };
-
-              dispatch(updateProcess(1));
-              await setTrustline(trustSet).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                    setHasTrustline(true); // Update local state
-                  }, 1500);
-                  enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
-                } else {
-                  dispatch(updateProcess(3));
-                  enqueueSnackbar('Failed to create trustline', { variant: 'error' });
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-
-        case 'crossmark':
-          const trustSet = {
-            Flags: Flags,
-            LimitAmount: LimitAmount
-          };
-
-          dispatch(updateProcess(1));
-          await sdk.methods
-            .signAndSubmitAndWait({
-              ...trustSet,
-              Account: accountProfile.account,
-              TransactionType: 'TrustSet'
-            })
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-                setTimeout(() => {
-                  setSync(sync + 1);
-                  setHasTrustline(true); // Update local state
-                }, 1500);
-                enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
-              } else {
-                dispatch(updateProcess(3));
-                enqueueSnackbar('Failed to create trustline', { variant: 'error' });
-              }
-            });
-          break;
 
         default:
           enqueueSnackbar('Unsupported wallet type', { variant: 'error' });

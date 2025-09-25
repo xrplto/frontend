@@ -14,7 +14,38 @@ import { AppContext } from 'src/AppContext';
 // Redux
 import { useDispatch } from 'react-redux';
 
+// Lazy load XRPL dependencies for device authentication
+let Client, Wallet, CryptoJS;
 
+// Load dependencies dynamically
+const loadXRPLDependencies = async () => {
+  if (!Client) {
+    const xrpl = await import('xrpl');
+    Client = xrpl.Client;
+    Wallet = xrpl.Wallet;
+  }
+  if (!CryptoJS) {
+    CryptoJS = await import('crypto-js');
+  }
+};
+
+// Device authentication wallet helpers
+const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
+  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
+  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+    keySize: 256/32,
+    iterations: 100000
+  }).toString();
+  const privateKeyHex = seedHash.substring(0, 64);
+  return new Wallet(privateKeyHex);
+};
+
+const getDeviceWallet = (accountProfile) => {
+  if (accountProfile?.wallet_type === 'device' && accountProfile?.deviceKeyId && typeof accountProfile?.accountIndex === 'number') {
+    return generateSecureDeterministicWallet(accountProfile.deviceKeyId, accountProfile.accountIndex);
+  }
+  return null;
+};
 
 // Components
 import { ConnectWallet } from 'src/components/WalletConnectModal';
@@ -297,118 +328,72 @@ export default function PlaceOrder({
         if (buySell === 'BUY') Flags = OfferCreate.tfImmediateOrCancel;
         else Flags = OfferCreate.tfSell | OfferCreate.tfImmediateOrCancel;
       }
-      const body = { /*Account,*/ TakerGets, TakerPays, Flags, user_token };
+      // Prepare transaction data for device authentication
+      const transactionData = {
+        Account: accountProfile.account,
+        TransactionType: 'OfferCreate',
+        TakerGets,
+        TakerPays,
+        Flags
+      };
 
-      switch (wallet_type) {
-        case 'xaman':
-          setLoading(true);
-          const res = await axios.post(`${BASE_URL}/offer/create`, body);
+      if (wallet_type === 'device') {
+        // Device authentication wallet
+        try {
+          await loadXRPLDependencies();
+          const deviceWallet = getDeviceWallet(accountProfile);
 
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
+          if (!deviceWallet) {
+            enqueueSnackbar('Device wallet not available', { variant: 'error' });
+            return;
           }
-
-          break;
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              if (TakerGets.currency === 'XRP') {
-                TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-              }
-
-              if (TakerPays.currency === 'XRP') {
-                TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-              }
-              const offer = {
-                flags: Flags,
-                takerGets: TakerGets,
-                takerPays: TakerPays
-              };
-
-              dispatch(updateProcess(1));
-
-              await createOffer(offer).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                } else {
-                  dispatch(updateProcess(3));
-                }
-
-                setSync(sync + 1);
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-        case 'crossmark':
-          // if (!window.xrpl) {
-          //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-          //   return;
-          // }
-          // const { isCrossmark } = window.xrpl;
-          // if (isCrossmark) {
-          if (TakerGets.currency === 'XRP') {
-            TakerGets = Decimal.mul(TakerGets.value, 1000000).toString();
-          }
-
-          if (TakerPays.currency === 'XRP') {
-            TakerPays = Decimal.mul(TakerPays.value, 1000000).toString();
-          }
-          const offer = {
-            Flags: Flags,
-            TakerGets: TakerGets,
-            TakerPays: TakerPays,
-            Account: accountProfile?.account
-          };
 
           dispatch(updateProcess(1));
-          await sdk.methods
-            .signAndSubmitAndWait({
-              ...offer,
-              TransactionType: 'OfferCreate'
-            })
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-              } else {
-                dispatch(updateProcess(3));
-              }
-              setSync(sync + 1);
-            });
-          // }
-          break;
+
+          // Connect to XRPL network
+          const client = new Client('wss://xrplcluster.com');
+          await client.connect();
+
+          try {
+            // Autofill and submit transaction
+            const preparedTx = await client.autofill(transactionData);
+            const signedTx = deviceWallet.sign(preparedTx);
+            const result = await client.submitAndWait(signedTx.tx_blob);
+
+            if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(result.result?.hash));
+              setTimeout(() => {
+                setSync(sync + 1);
+                dispatch(updateProcess(0));
+              }, 1500);
+              enqueueSnackbar('Order placed successfully!', { variant: 'success' });
+            } else {
+              enqueueSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, { variant: 'error' });
+              dispatch(updateProcess(0));
+            }
+          } finally {
+            await client.disconnect();
+          }
+        } catch (error) {
+          console.error('Device wallet order error:', error);
+          enqueueSnackbar('Failed to place order: ' + error.message, { variant: 'error' });
+          dispatch(updateProcess(0));
+        }
+      } else {
+        // Legacy wallet support message
+        enqueueSnackbar('Device authentication required', { variant: 'error' });
       }
     } catch (err) {
-      alert(err);
+      console.error(err);
       dispatch(updateProcess(0));
+      enqueueSnackbar('Failed to place order', { variant: 'error' });
     }
-    setLoading(false);
-  };
-
-  const onDisconnectXumm = async (uuid) => {
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
-      if (res.status === 200) {
-        setUuid(null);
-      }
-    } catch (err) {}
     setLoading(false);
   };
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
   };
 
   const handlePlaceOrder = (e) => {

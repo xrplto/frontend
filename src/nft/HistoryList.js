@@ -35,7 +35,7 @@ import { PulseLoader } from 'react-spinners';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { normalizeCurrencyCodeXummImpl } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/normalizers';
 import { fNumber } from 'src/utils/formatNumber';
 
 // Styled components
@@ -265,7 +265,7 @@ export default function HistoryList({ nft }) {
                       >
                         <PriceText variant="body2">
                           {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
-                          {normalizeCurrencyCodeXummImpl(row.cost.currency)}
+                          {normalizeCurrencyCode(row.cost.currency)}
                         </PriceText>
                       </Box>
                     )}
@@ -316,7 +316,7 @@ export default function HistoryList({ nft }) {
                       {row.type === 'SALE' && row.cost ? (
                         <PriceText>
                           {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
-                          {normalizeCurrencyCodeXummImpl(row.cost.currency)}
+                          {normalizeCurrencyCode(row.cost.currency)}
                         </PriceText>
                       ) : (
                         <Typography variant="body2" color="text.secondary">

@@ -41,9 +41,38 @@ import { normalizeCurrencyCode } from 'src/utils/parse/utils';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Wallet SDK
+// Lazy load XRPL dependencies for device authentication
+let Client, Wallet, CryptoJS;
 
+// Load dependencies dynamically
+const loadXRPLDependencies = async () => {
+  if (!Client) {
+    const xrpl = await import('xrpl');
+    Client = xrpl.Client;
+    Wallet = xrpl.Wallet;
+  }
+  if (!CryptoJS) {
+    CryptoJS = await import('crypto-js');
+  }
+};
 
+// Device authentication wallet helpers
+const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
+  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
+  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+    keySize: 256/32,
+    iterations: 100000
+  }).toString();
+  const privateKeyHex = seedHash.substring(0, 64);
+  return new Wallet(privateKeyHex);
+};
+
+const getDeviceWallet = (accountProfile) => {
+  if (accountProfile?.wallet_type === 'device' && accountProfile?.deviceKeyId && typeof accountProfile?.accountIndex === 'number') {
+    return generateSecureDeterministicWallet(accountProfile.deviceKeyId, accountProfile.accountIndex);
+  }
+  return null;
+};
 
 // Components
 import QRDialog from 'src/components/QRDialog';
@@ -309,13 +338,11 @@ export default function Orders({ pair }) {
 
   const handleCancel = (event, seq) => {
     const wallet_type = accountProfile?.wallet_type;
-    if (wallet_type === 'gem') {
-      onOfferCancelGem(seq);
-    } else if (wallet_type === 'crossmark') {
-      onOfferCancelCrossmark(seq);
+    if (wallet_type === 'device') {
+      onOfferCancelDevice(seq);
     } else {
-      // Default to Xaman/XUMM
-      onOfferCancelXumm(seq);
+      // Legacy wallet support
+      openSnackbar('Device authentication required', 'error');
     }
   };
 
@@ -356,103 +383,57 @@ export default function Orders({ pair }) {
     };
   }, [openScanQR, uuid]);
 
-  const onOfferCancelGem = async (seq) => {
+  const onOfferCancelDevice = async (seq) => {
     setLoading(true);
     try {
-      const gemInstalled = await isGemInstalled();
-      if (gemInstalled) {
+      if (accountProfile?.wallet_type === 'device') {
+        await loadXRPLDependencies();
+        const deviceWallet = getDeviceWallet(accountProfile);
+
+        if (!deviceWallet) {
+          openSnackbar('Device wallet not available', 'error');
+          setLoading(false);
+          return;
+        }
+
         const transaction = {
           TransactionType: 'OfferCancel',
           Account: accountProfile.account,
           OfferSequence: seq,
-          Fee: '12' // Add fee as required by XRPL
+          Fee: '12'
         };
 
-        // GemWallet expects the transaction wrapped in a transaction property
-        const result = await submitTransaction({ transaction });
+        // Connect to XRPL network
+        const client = new Client('wss://xrplcluster.com');
+        await client.connect();
 
-        if (
-          result &&
-          (result.type === 'response' || result.result?.meta?.TransactionResult === 'tesSUCCESS')
-        ) {
-          setSync(sync + 1);
-          openSnackbar('Offer cancelled successfully', 'success');
-        } else {
-          openSnackbar('Failed to cancel offer', 'error');
+        try {
+          // Autofill and submit transaction
+          const preparedTx = await client.autofill(transaction);
+          const signedTx = deviceWallet.sign(preparedTx);
+          const result = await client.submitAndWait(signedTx.tx_blob);
+
+          if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
+            setSync(sync + 1);
+            openSnackbar('Offer cancelled successfully', 'success');
+          } else {
+            openSnackbar('Failed to cancel offer: ' + result.result?.meta?.TransactionResult, 'error');
+          }
+        } finally {
+          await client.disconnect();
         }
       } else {
-        openSnackbar('GemWallet is not installed', 'error');
+        openSnackbar('Device authentication required', 'error');
       }
     } catch (err) {
-      console.error('Error cancelling offer with GemWallet:', err);
+      console.error('Error cancelling offer:', err);
       openSnackbar(err.message || 'Failed to cancel offer', 'error');
     }
-    setLoading(false);
-  };
-
-  const onOfferCancelCrossmark = async (seq) => {
-    setLoading(true);
-    try {
-      const transaction = {
-        TransactionType: 'OfferCancel',
-        Account: accountProfile.account,
-        OfferSequence: seq
-      };
-
-      const response = await sdk.methods.signAndSubmitAndWait(transaction);
-
-      if (response?.response?.data?.meta?.isSuccess) {
-        setSync(sync + 1);
-        openSnackbar('Offer cancelled successfully', 'success');
-      } else {
-        openSnackbar('Failed to cancel offer', 'error');
-      }
-    } catch (err) {
-      console.error('Error cancelling offer with Crossmark:', err);
-      openSnackbar(err.message || 'Failed to cancel offer', 'error');
-    }
-    setLoading(false);
-  };
-
-  const onOfferCancelXumm = async (seq) => {
-    setLoading(true);
-    try {
-      const OfferSequence = seq;
-      const user_token = accountProfile.user_token;
-      const body = { OfferSequence, user_token };
-
-      const res = await axios.post(`${BASE_URL}/offer/cancel`, body);
-
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
-
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
-      }
-    } catch (err) {
-      alert(err);
-    }
-    setLoading(false);
-  };
-
-  const onDisconnectXumm = async (uuid) => {
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
-      if (res.status === 200) {
-        setUuid(null);
-      }
-    } catch (err) {}
     setLoading(false);
   };
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
   };
 
   const tableRef = useRef(null);

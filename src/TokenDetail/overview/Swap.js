@@ -40,6 +40,39 @@ import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
 import TransactionDetailsPanel from 'src/TokenDetail/common/TransactionDetailsPanel';
+
+// Lazy load XRPL dependencies for device authentication
+let Client, Wallet, CryptoJS;
+
+// Load dependencies dynamically
+const loadXRPLDependencies = async () => {
+  if (!Client) {
+    const xrpl = await import('xrpl');
+    Client = xrpl.Client;
+    Wallet = xrpl.Wallet;
+  }
+  if (!CryptoJS) {
+    CryptoJS = await import('crypto-js');
+  }
+};
+
+// Device authentication wallet helpers
+const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
+  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
+  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+    keySize: 256/32,
+    iterations: 100000
+  }).toString();
+  const privateKeyHex = seedHash.substring(0, 64);
+  return new Wallet(privateKeyHex);
+};
+
+const getDeviceWallet = (accountProfile) => {
+  if (accountProfile?.wallet_type === 'device' && accountProfile?.deviceKeyId && typeof accountProfile?.accountIndex === 'number') {
+    return generateSecureDeterministicWallet(accountProfile.deviceKeyId, accountProfile.accountIndex);
+  }
+  return null;
+};
 const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
 const DepthChart = React.lazy(() => import('src/TokenDetail/trade/DepthChart'));
 
@@ -1118,78 +1151,56 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         };
       }
 
-      switch (wallet_type) {
-        case 'xaman':
-          setLoading(true);
-          setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
-          const body = {
-            ...transactionData,
-            user_token
-          };
+      if (wallet_type === 'device') {
+        // Device authentication wallet
+        try {
+          await loadXRPLDependencies();
+          const deviceWallet = getDeviceWallet(accountProfile);
 
-          const endpoint =
-            orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
-          const res = await axios.post(endpoint, body);
-
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
+          if (!deviceWallet) {
+            enqueueSnackbar('Device wallet not available', { variant: 'error' });
+            return;
           }
 
-          break;
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-
-              await submitTransaction({
-                transaction: transactionData
-              }).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                    dispatch(updateProcess(0));
-                  }, 1500);
-                  setIsSwapped(!isSwapped);
-                  // Clear amounts after successful swap
-                  setAmount1('');
-                  setAmount2('');
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-        case 'crossmark':
           dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
+          setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
+
+          // Connect to XRPL network
+          const client = new Client('wss://xrplcluster.com');
+          await client.connect();
+
+          try {
+            // Autofill and submit transaction
+            const preparedTx = await client.autofill(transactionData);
+            const signedTx = deviceWallet.sign(preparedTx);
+            const result = await client.submitAndWait(signedTx.tx_blob);
+
+            if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
               dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
+              dispatch(updateTxHash(result.result?.hash));
               setTimeout(() => {
                 setSync(sync + 1);
                 dispatch(updateProcess(0));
               }, 1500);
               setIsSwapped(!isSwapped);
-              // Clear amounts after successful swap
               setAmount1('');
               setAmount2('');
+              enqueueSnackbar('Successfully Swapped!', { variant: 'success' });
             } else {
-              dispatch(updateProcess(3));
+              enqueueSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, { variant: 'error' });
+              dispatch(updateProcess(0));
             }
-          });
-          break;
+          } finally {
+            await client.disconnect();
+          }
+        } catch (error) {
+          console.error('Device wallet transaction error:', error);
+          enqueueSnackbar('Transaction failed: ' + error.message, { variant: 'error' });
+          dispatch(updateProcess(0));
+        }
+      } else {
+        // Legacy wallet support message
+        enqueueSnackbar('Device authentication required', { variant: 'error' });
       }
     } catch (err) {
       dispatch(updateProcess(0));
@@ -1480,80 +1491,61 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       LimitAmount.currency = currency.currency;
       LimitAmount.value = '1000000000'; // Set a high trust limit
 
-      switch (wallet_type) {
-        case 'xaman':
-          setLoading(true);
-          setTransactionType('TrustSet'); // Set correct transaction type
-          const body = { LimitAmount, Flags, user_token };
-          const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
+      if (wallet_type === 'device') {
+        // Device authentication wallet
+        try {
+          await loadXRPLDependencies();
+          const deviceWallet = getDeviceWallet(accountProfile);
 
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
+          if (!deviceWallet) {
+            enqueueSnackbar('Device wallet not available', { variant: 'error' });
+            return;
           }
-          break;
-
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              const trustSet = {
-                flags: Flags,
-                limitAmount: LimitAmount
-              };
-
-              dispatch(updateProcess(1));
-              await setTrustline(trustSet).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                  }, 1500);
-                  enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
-                } else {
-                  dispatch(updateProcess(3));
-                  enqueueSnackbar('Failed to create trustline', { variant: 'error' });
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-
-        case 'crossmark':
-          const trustSet = {
-            Flags: Flags,
-            LimitAmount: LimitAmount
-          };
 
           dispatch(updateProcess(1));
-          await sdk.methods
-            .signAndSubmitAndWait({
-              ...trustSet,
-              Account: accountProfile.account,
-              TransactionType: 'TrustSet'
-            })
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-                setTimeout(() => {
-                  setSync(sync + 1);
-                }, 1500);
-                enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
-              } else {
-                dispatch(updateProcess(3));
-                enqueueSnackbar('Failed to create trustline', { variant: 'error' });
-              }
-            });
-          break;
+          setTransactionType('TrustSet');
+
+          // Prepare TrustSet transaction
+          const trustSetTransaction = {
+            Account: accountProfile.account,
+            TransactionType: 'TrustSet',
+            LimitAmount,
+            Flags
+          };
+
+          // Connect to XRPL network
+          const client = new Client('wss://xrplcluster.com');
+          await client.connect();
+
+          try {
+            // Autofill and submit transaction
+            const preparedTx = await client.autofill(trustSetTransaction);
+            const signedTx = deviceWallet.sign(preparedTx);
+            const result = await client.submitAndWait(signedTx.tx_blob);
+
+            if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(result.result?.hash));
+              setTimeout(() => {
+                setSync(sync + 1);
+                dispatch(updateProcess(0));
+              }, 1500);
+              enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+            } else {
+              enqueueSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, { variant: 'error' });
+              dispatch(updateProcess(0));
+            }
+          } finally {
+            await client.disconnect();
+          }
+        } catch (error) {
+          console.error('Device wallet trustline error:', error);
+          enqueueSnackbar('Failed to create trustline: ' + error.message, { variant: 'error' });
+          dispatch(updateProcess(0));
+        }
+      } else {
+        // Legacy wallet support message
+        enqueueSnackbar('Device authentication required', { variant: 'error' });
       }
     } catch (err) {
       dispatch(updateProcess(0));

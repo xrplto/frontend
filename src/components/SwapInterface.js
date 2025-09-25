@@ -1323,92 +1323,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       transactionData.Memos = configureMemos('', '', memoData);
 
       switch (wallet_type) {
-        case 'xaman':
-          setLoading(true);
-          setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
-          const body = {
-            ...transactionData,
-            user_token
-          };
-
-          const endpoint =
-            orderType === 'limit' ? `${BASE_URL}/offer/create` : `${BASE_URL}/offer/payment`;
-          const res = await axios.post(endpoint, body);
-
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-          }
-
-          break;
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-
-              await submitTransaction({
-                transaction: transactionData
-              }).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                    dispatch(updateProcess(0));
-                  }, 1500);
-                  setIsSwapped(!isSwapped);
-                  // Clear amounts after successful swap
-                  setAmount1('');
-                  setAmount2('');
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-        case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-              setTimeout(() => {
-                setSync(sync + 1);
-                dispatch(updateProcess(0));
-              }, 1500);
-              setIsSwapped(!isSwapped);
-              // Clear amounts after successful swap
-              setAmount1('');
-              setAmount2('');
-            } else {
-              dispatch(updateProcess(3));
-            }
-          });
-          break;
       }
     } catch (err) {
       dispatch(updateProcess(0));
     }
-    setLoading(false);
-  };
-
-  const onDisconnectXumm = async (uuid) => {
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
-      if (res.status === 200) {
-        setUuid(null);
-      }
-    } catch (err) {}
     setLoading(false);
   };
 
@@ -1471,7 +1389,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
   };
 
   const handlePlaceOrder = (e) => {
@@ -1672,171 +1589,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   const getWalletTypeDisplay = (walletType) => {
     switch (walletType) {
-      case 'xaman':
-        return 'Xaman';
-      case 'gem':
-        return 'GemWallet';
-      case 'crossmark':
-        return 'Crossmark';
+      case 'device':
+        return 'Device Authentication';
       default:
-        return walletType || 'Unknown';
+        return 'Unknown';
     }
-  };
-
-  const onCreateTrustline = async (currency) => {
-    if (!accountProfile || !accountProfile.account) return;
-
-    try {
-      const Account = accountProfile.account;
-      const user_token = accountProfile.user_token;
-      const wallet_type = accountProfile.wallet_type;
-
-      const Flags = 0x00020000; // Standard trustline flag
-      let LimitAmount = {};
-      LimitAmount.issuer = currency.issuer;
-      LimitAmount.currency = currency.currency;
-      LimitAmount.value = '1000000000'; // Set a high trust limit
-
-      switch (wallet_type) {
-        case 'xaman':
-          setLoading(true);
-          setTransactionType('TrustSet'); // Set correct transaction type
-          const body = { LimitAmount, Flags, user_token };
-          const res = await axios.post(`${BASE_URL}/xumm/trustset`, body);
-
-          if (res.status === 200) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-          }
-          break;
-
-        case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              const trustSet = {
-                flags: Flags,
-                limitAmount: LimitAmount
-              };
-
-              dispatch(updateProcess(1));
-              await setTrustline(trustSet).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                  }, 1500);
-                } else {
-                  dispatch(updateProcess(3));
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
-          break;
-
-        case 'crossmark':
-          const trustSet = {
-            Flags: Flags,
-            LimitAmount: LimitAmount
-          };
-
-          dispatch(updateProcess(1));
-          await sdk.methods
-            .signAndSubmitAndWait({
-              ...trustSet,
-              Account: accountProfile.account,
-              TransactionType: 'TrustSet'
-            })
-            .then(({ response }) => {
-              if (response.data.meta.isSuccess) {
-                dispatch(updateProcess(2));
-                dispatch(updateTxHash(response.data.resp.result?.hash));
-                setTimeout(() => {
-                  setSync(sync + 1);
-                }, 1500);
-              } else {
-                dispatch(updateProcess(3));
-              }
-            });
-          break;
-
-        case 'device':
-          try {
-            // Import XRPL for transaction signing
-            const { Client, TrustSet, Wallet: XRPLWallet } = await import('xrpl');
-
-            dispatch(updateProcess(1));
-
-            // Get the device wallet's private key
-            const profile = accountProfile;
-            if (!profile.deviceKeyId || profile.accountIndex === undefined) {
-              throw new Error('Device wallet information missing');
-            }
-
-            // Recreate the deterministic wallet
-            const { default: CryptoJS } = await import('crypto-js');
-            const entropyString = `passkey-wallet-${profile.deviceKeyId}-${profile.accountIndex}-`;
-            const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${profile.deviceKeyId}`, {
-              keySize: 256/32,
-              iterations: 50000
-            }).toString();
-            const privateKeyHex = seedHash.substring(0, 64);
-
-            // Create XRPL wallet from private key
-            const wallet = new XRPLWallet(privateKeyHex);
-
-            // Connect to XRPL
-            const client = new Client('wss://xrplcluster.com');
-            await client.connect();
-
-            // Create TrustSet transaction
-            const trustSetTx = {
-              TransactionType: 'TrustSet',
-              Account: Account,
-              LimitAmount: LimitAmount,
-              Flags: Flags
-            };
-
-            // Submit transaction
-            const result = await client.submitAndWait(trustSetTx, { wallet });
-
-            await client.disconnect();
-
-            if (result.result.meta.TransactionResult === 'tesSUCCESS') {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(result.result.hash));
-              setTimeout(() => {
-                setSync(sync + 1);
-                dispatch(updateProcess(0));
-              }, 1500);
-              enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
-            } else {
-              throw new Error('Transaction failed');
-            }
-          } catch (error) {
-            dispatch(updateProcess(3));
-            enqueueSnackbar(`Failed to create trustline: ${error.message}`, { variant: 'error' });
-          }
-          break;
-      }
-    } catch (err) {
-      dispatch(updateProcess(0));
-      enqueueSnackbar(
-        `Failed to create trustline: ${
-          err.response?.data?.message || err.message || 'Unknown error'
-        }`,
-        { variant: 'error' }
-      );
-    }
-    setLoading(false);
   };
 
   // Helper function to create URL-friendly currency string

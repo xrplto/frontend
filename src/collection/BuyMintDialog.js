@@ -240,7 +240,6 @@ export default function BuyMintDialog({
     setLoading(false);
   };
 
-  const onDisconnectXumm = async (uuid) => {
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/spin/buymint/${uuid}`, {
@@ -255,7 +254,6 @@ export default function BuyMintDialog({
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
   };
 
   const handleClose = () => {

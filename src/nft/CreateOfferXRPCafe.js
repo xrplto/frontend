@@ -212,10 +212,8 @@ export default function CreateOfferXRPCafe({
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
   };
 
-  const onDisconnectXumm = async (uuid) => {
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
