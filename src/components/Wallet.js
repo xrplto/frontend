@@ -1126,7 +1126,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             '& .MuiDialog-paper': {
               borderRadius: '16px',
               maxWidth: '360px',
-              minHeight: accountProfile ? 'auto' : '580px',
+              minHeight: accountProfile ? 'auto' : 'auto',
               background: 'transparent',
               boxShadow: 'none',
               position: 'fixed',
@@ -1242,7 +1242,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                 {/* Content */}
                 <Box sx={{
-                  padding: theme.spacing(2.5),
+                  padding: theme.spacing(2.5, 2.5, 1.5, 2.5),
                   background: theme.palette.mode === 'dark'
                     ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 50%)`
                     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 50%)`
@@ -1252,7 +1252,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
                         Choose a wallet to connect to the XRPL network
                       </Typography>
-                      <Stack spacing={1.5}>
+                      <Stack spacing={1.5} sx={{ mb: 0 }}>
                         <Stack
                           direction="row"
                           spacing={2}
