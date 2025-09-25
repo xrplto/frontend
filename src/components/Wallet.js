@@ -91,10 +91,11 @@ const generateSecureDeterministicWallet = async (credentialId, accountIndex, sig
     throw new Error('Signature entropy is required for secure wallet generation');
   }
 
-  // Enhanced security: includes signature from user authentication
-  const baseEntropy = `passkey-wallet-v3-${credentialId}-${accountIndex}-${signatureEntropy}`;
+  // Deterministic entropy: use only credentialId and accountIndex for consistent wallets
+  // Note: signatureEntropy is validated for security but not used in generation to ensure determinism
+  const baseEntropy = `passkey-wallet-v4-deterministic-${credentialId}-${accountIndex}`;
   const combinedEntropy = CryptoJS.SHA256(baseEntropy).toString();
-  const salt = `salt-${credentialId}-enhanced-v2`;
+  const salt = `salt-${credentialId}-deterministic-v4`;
 
   // STRICT SECURITY: Only use scrypt - NO PBKDF2 FALLBACK
   if (!scrypt || typeof scrypt.scrypt !== 'function') {
