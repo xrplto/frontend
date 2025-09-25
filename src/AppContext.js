@@ -88,8 +88,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       if (event.data.type === 'DEVICE_LOGIN_SUCCESS') {
         doLogIn(event.data.profile);
 
-        // If multiple device accounts exist, restore them all
-        if (event.data.allDeviceAccounts && event.data.allDeviceAccounts.length > 1) {
+        // If device accounts exist, restore them all
+        if (event.data.allDeviceAccounts && event.data.allDeviceAccounts.length >= 1) {
           const allProfiles = [...profiles];
           event.data.allDeviceAccounts.forEach(deviceProfile => {
             if (!allProfiles.find(p => p.account === deviceProfile.account)) {
@@ -399,6 +399,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       accountProfile,
       setActiveProfile,
       profiles,
+      setProfiles,
       removeProfile,
       doLogIn,
       doLogOut,

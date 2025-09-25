@@ -182,7 +182,9 @@ const WalletConnectModal = () => {
   const {
     openWalletModal,
     setOpenWalletModal,
-    doLogIn
+    doLogIn,
+    profiles,
+    setProfiles
   } = useContext(AppContext);
 
   // Lazy load heavy dependencies
@@ -324,11 +326,32 @@ const WalletConnectModal = () => {
       if (registrationResponse.id) {
         // Generate 5 wallets for this device key
         const wallets = [];
+        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+
         for (let i = 0; i < 5; i++) {
           const wallet = generateWallet();
           const walletData = storeWallet(registrationResponse.id, wallet, i);
           wallets.push(walletData);
+
+          // Add to profiles localStorage
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!currentProfiles.find(p => p.account === profile.address)) {
+            currentProfiles.push(profile);
+          }
         }
+
+        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+
+        // Update profiles state immediately
+        const allProfiles = [...profiles];
+        wallets.forEach(walletData => {
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!allProfiles.find(p => p.account === profile.account)) {
+            allProfiles.push(profile);
+          }
+        });
+        setProfiles(allProfiles);
 
         // Store first wallet info for display
         setWalletInfo({
@@ -337,12 +360,15 @@ const WalletConnectModal = () => {
           deviceKeyId: registrationResponse.id
         });
 
+
         doLogIn(wallets[0]);
         setStatus('success');
 
+        // Close modal after brief delay to show success
         setTimeout(() => {
-          handleClose();
-        }, 3000);
+          setOpenWalletModal(false);
+          setStatus('idle');
+        }, 2000);
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -413,17 +439,41 @@ const WalletConnectModal = () => {
         } else {
           // No wallets found for this device key - create 5 new ones
           const wallets = [];
+          const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+          const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+
           for (let i = 0; i < 5; i++) {
             const wallet = generateWallet();
             const walletData = storeWallet(authResponse.id, wallet, i);
             wallets.push(walletData);
+
+            // Add to profiles localStorage
+            const profile = { ...walletData, tokenCreatedAt: Date.now() };
+            if (!currentProfiles.find(p => p.account === profile.address)) {
+              currentProfiles.push(profile);
+            }
           }
 
-          doLogIn(wallets[0]);
-          setStatus('success');
-          setTimeout(() => {
-            handleClose();
-          }, 2000);
+          window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+
+        // Update profiles state immediately
+        const allProfiles = [...profiles];
+        wallets.forEach(walletData => {
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!allProfiles.find(p => p.account === profile.account)) {
+            allProfiles.push(profile);
+          }
+        });
+        setProfiles(allProfiles);
+
+        doLogIn(wallets[0]);
+        setStatus('success');
+
+        // Close modal after brief delay to show success
+        setTimeout(() => {
+          setOpenWalletModal(false);
+          setStatus('idle');
+        }, 1000);
         }
       }
     } catch (err) {

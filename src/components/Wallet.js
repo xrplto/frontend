@@ -174,6 +174,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setActiveProfile,
     accountProfile,
     profiles,
+    setProfiles,
     removeProfile,
     openSnackbar,
     darkMode,
@@ -302,6 +303,37 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     openSnackbar('Seed display not available for device wallets - seeds are stored securely and not accessible', 'info');
   };
 
+  const handleMoreAccounts = async () => {
+    // First check if we already have device wallets stored
+    const storedWallets = getStoredWallets();
+
+    if (storedWallets.length >= 5) {
+      // We have 5+ wallets already, check if they're in profiles
+      const deviceWallets = storedWallets.filter(w => w.wallet_type === 'device');
+      const deviceWalletsInProfiles = profiles.filter(p => p.wallet_type === 'device');
+
+      if (deviceWalletsInProfiles.length < deviceWallets.length) {
+        // Some device wallets are missing from profiles, add them
+        const allProfiles = [...profiles];
+        deviceWallets.forEach(deviceWallet => {
+          if (!allProfiles.find(p => p.account === deviceWallet.account)) {
+            allProfiles.push(deviceWallet);
+          }
+        });
+        setProfiles(allProfiles);
+        window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
+        openSnackbar(`Loaded ${deviceWallets.length} device wallets`, 'success');
+        return;
+      } else {
+        openSnackbar(`You already have ${deviceWalletsInProfiles.length} device wallets`, 'info');
+        return;
+      }
+    }
+
+    // No existing device wallets found, proceed with creating new ones
+    setOpenWalletModal(true);
+  };
+
   const handleAddPasskeyAccount = async () => {
     try {
       const challenge = crypto.getRandomValues(new Uint8Array(32));
@@ -320,18 +352,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (authResponse.id) {
         // Check if this device key already has a wallet
         const storedWallets = getStoredWallets();
-        const existingWallet = storedWallets.find(w => w.deviceKeyId === authResponse.id);
+        const existingWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
 
-        if (existingWallet) {
-          // Use existing wallet (first one found)
-          doLogIn(existingWallet);
-          const deviceWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
-          openSnackbar(`Switched to device wallet ${existingWallet.address.slice(0, 8)}... (${deviceWallets.length} total)`, 'success');
+
+        if (existingWallets.length > 0) {
+          // Use existing wallets - update profiles directly
+          doLogIn(existingWallets[0]);
+
+          // Directly update profiles state with all existing wallets
+          const allProfiles = [...profiles];
+          existingWallets.forEach(deviceProfile => {
+            if (!allProfiles.find(p => p.account === deviceProfile.account)) {
+              allProfiles.push(deviceProfile);
+            }
+          });
+          setProfiles(allProfiles);
+          window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
+
+          openSnackbar(`Switched to device wallet ${existingWallets[0].address.slice(0, 8)}... (${existingWallets.length} total)`, 'success');
         } else {
           // Create 5 new random wallets for this device key
           const wallets = [];
           const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
           const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+
 
           for (let i = 0; i < 5; i++) {
             const wallet = XRPLWallet.generate();
@@ -346,8 +390,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
 
           window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
-          doLogIn(wallets[0]);
-          openSnackbar(`5 device wallets created starting with ${wallets[0].address.slice(0, 8)}...`, 'success');
+
+          // Directly update profiles state with all new wallets
+          const allProfiles = [...profiles];
+          wallets.forEach(deviceProfile => {
+            if (!allProfiles.find(p => p.account === deviceProfile.account)) {
+              allProfiles.push(deviceProfile);
+            }
+          });
+          setProfiles(allProfiles);
+
+          // Also post message as backup
+          window.postMessage({
+            type: 'DEVICE_LOGIN_SUCCESS',
+            profile: wallets[0],
+            allDeviceAccounts: wallets
+          }, '*');
+
+          openSnackbar(`5 device wallets created: ${wallets.map(w => w.address.slice(0, 6)).join(', ')}...`, 'success');
         }
 
         setOpen(false);
@@ -632,119 +692,99 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
             <Divider />
 
-            {/* Other Accounts Section */}
-            {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
-              <>
-                <Box>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.5 }}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: alpha(theme.palette.text.secondary, 0.7),
-                        display: 'block'
-                      }}
-                    >
-                      Other Accounts ({profiles.filter((profile) => profile.account !== accountLogin).length} total)
-                      {isCheckingActivation && (
-                        <Typography
-                          variant="caption"
-                          sx={{ color: theme.palette.primary.main, ml: 1 }}
-                        >
-                          Checking...
-                        </Typography>
-                      )}
+            {/* Device Wallets Section */}
+            <Box>
+              <Typography
+                variant="caption"
+                sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 1, display: 'block' }}
+              >
+                Device Wallets ({profiles.filter(p => p.wallet_type === 'device').length})
+              </Typography>
+
+              {/* Current Active Wallet */}
+              <Box sx={{
+                p: 1.5,
+                mb: 1,
+                borderRadius: '8px',
+                background: alpha(theme.palette.primary.main, 0.1),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+              }}>
+                <Stack direction="row" alignItems="center" spacing={1.5}>
+                  <TokenImage alt="photoURL" src={logoImageUrl} width={28} height={28} />
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      Active: {truncateAccount(accountLogin, 6)}
                     </Typography>
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => {
-                        const otherAccountsCount = profiles.filter((profile) => profile.account !== accountLogin).length;
-                        if (visibleAccountCount >= otherAccountsCount) {
-                          setVisibleAccountCount(5);
-                        } else {
-                          setVisibleAccountCount(prev => prev + 5);
+                    <Typography variant="caption" sx={{ color: theme.palette.primary.main }}>
+                      ✓ Current Wallet
+                    </Typography>
+                  </Box>
+                </Stack>
+              </Box>
+
+              {/* Other Device Wallets */}
+              <Stack spacing={0.5}>
+                {profiles
+                  .filter(p => p.wallet_type === 'device' && p.account !== accountLogin)
+                  .slice(0, 4)
+                  .map((profile, idx) => (
+                    <Box
+                      key={profile.account}
+                      sx={{
+                        p: 1,
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        background: alpha(theme.palette.background.paper, 0.5),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                        '&:hover': {
+                          background: alpha(theme.palette.primary.main, 0.05),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                         }
                       }}
-                      disabled={isCheckingActivation}
-                      sx={{ fontSize: '0.7rem', minWidth: 'auto', p: 0.5 }}
+                      onClick={() => {
+                        setActiveProfile(profile.account);
+                        setOpen(false);
+                      }}
                     >
-                      {visibleAccountCount >= profiles.filter((profile) => profile.account !== accountLogin).length
-                        ? 'Show Less'
-                        : `Show More (+5)`
-                      }
-                    </Button>
-                  </Stack>
-                  {profiles
-                    .filter((profile) => profile.account !== accountLogin)
-                    .slice(0, visibleAccountCount)
-                    .map((profile, idx) => {
-                      const account = profile.account;
-                      const accountLogo = profile.logo;
-                      const logoImageUrl = accountLogo
-                        ? `https://s1.xrpl.to/profile/${accountLogo}`
-                        : getHashIcon(account);
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <TokenImage
+                          alt="photoURL"
+                          src={getHashIcon(profile.account)}
+                          width={20}
+                          height={20}
+                        />
+                        <Typography variant="caption" sx={{ flex: 1, fontWeight: 500 }}>
+                          Wallet {idx + 2}: {truncateAccount(profile.account, 6)}
+                        </Typography>
+                        <Typography variant="caption" sx={{
+                          color: accountsActivation[profile.account] === false ?
+                            theme.palette.error.main : theme.palette.success.main,
+                          fontSize: '0.6rem'
+                        }}>
+                          {accountsActivation[profile.account] === false ? '○' : '●'}
+                        </Typography>
+                      </Stack>
+                    </Box>
+                  ))}
+              </Stack>
 
-                      return (
-                        <Box
-                          key={'account' + idx}
-                          sx={{
-                            p: 1,
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            '&:hover': {
-                              background: alpha(theme.palette.primary.main, 0.08)
-                            }
-                          }}
-                          onClick={() => {
-                            setActiveProfile(account);
-                            setOpen(false);
-                          }}
-                        >
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <TokenImage alt="photoURL" src={logoImageUrl} width={24} height={24} />
-                            <Box sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography
-                                variant="caption"
-                                sx={{ fontWeight: 500, display: 'block' }}
-                              >
-                                {truncateAccount(account, 8)}
-                              </Typography>
-                              {accountsActivation[account] === false && (
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: theme.palette.error.main,
-                                    fontSize: '0.65rem',
-                                    fontWeight: 600
-                                  }}
-                                >
-                                  Not Activated
-                                </Typography>
-                              )}
-                            </Box>
-                            <IconButton
-                              size="small"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeProfile(account);
-                              }}
-                              sx={{
-                                padding: '2px',
-                                '&:hover': {
-                                  backgroundColor: alpha(theme.palette.error.main, 0.1)
-                                }
-                              }}
-                            >
-                              <CloseIcon sx={{ fontSize: 14 }} />
-                            </IconButton>
-                          </Stack>
-                        </Box>
-                      );
-                    })}
-                </Box>
-                <Divider />
-              </>
-            )}
+              {/* Show message if less than 5 wallets exist */}
+              {profiles.filter(p => p.wallet_type === 'device').length < 5 && (
+                <Typography
+                  variant="caption"
+                  sx={{
+                    color: alpha(theme.palette.warning.main, 0.8),
+                    fontSize: '0.65rem',
+                    mt: 1,
+                    display: 'block'
+                  }}
+                >
+                  {5 - profiles.filter(p => p.wallet_type === 'device').length} more wallets will be created on next connection
+                </Typography>
+              )}
+            </Box>
+
+            <Divider />
 
             {/* Actions Section */}
             <Box>
@@ -782,9 +822,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Button
                   size="small"
                   startIcon={<AddCircleOutlineIcon />}
-                  onClick={() => {
-                    setOpenWalletModal(true);
-                  }}
+                  onClick={handleMoreAccounts}
                   sx={{
                     width: '100%',
                     justifyContent: 'flex-start',
@@ -1326,9 +1364,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     transform: 'translateY(-1px)'
                   }
                 }}
-                onClick={() => {
-                  setOpenWalletModal(true);
-                }}
+                onClick={handleMoreAccounts}
               >
                 <Stack direction="row" spacing={2} alignItems="center">
                   <AddCircleOutlineIcon sx={{ color: 'inherit' }} />
