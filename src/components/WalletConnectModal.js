@@ -1,21 +1,17 @@
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Divider from '@mui/material/Divider';
 import IconButton from '@mui/material/IconButton';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
-import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import styled from '@emotion/styled';
 import ClearIcon from '@mui/icons-material/Clear';
-import DownloadIcon from '@mui/icons-material/Download';
 import { AccountBalanceWallet as AccountBalanceWalletIcon, Security as SecurityIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
@@ -80,7 +76,9 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   }
 }));
 
-const WalletItem = styled(Stack)(({ theme }) => ({
+const WalletItem = styled(Stack, {
+  shouldForwardProp: (prop) => !['component'].includes(prop)
+})(({ theme }) => ({
   padding: theme.spacing(1.5, 2),
   cursor: 'pointer',
   borderRadius: '12px',
@@ -91,53 +89,21 @@ const WalletItem = styled(Stack)(({ theme }) => ({
   backdropFilter: 'blur(10px)',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   transition: 'all 0.2s ease',
-  '&:hover': {
+  '&:hover, &:focus': {
     background:
       theme.palette.mode === 'dark'
         ? alpha(theme.palette.background.paper, 0.6)
         : alpha(theme.palette.background.paper, 0.8),
     border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
     transform: 'translateY(-1px)',
+    outline: 'none',
     '& .wallet-name': {
       color: theme.palette.primary.main
     }
   }
 }));
 
-const WalletIcon = styled('img')(({ theme }) => ({
-  width: '36px',
-  height: '36px',
-  borderRadius: '8px',
-  transition: 'transform 0.2s ease'
-}));
 
-const DownloadButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: 'transparent',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  borderRadius: '6px',
-  padding: theme.spacing(0.5),
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    backgroundColor: 'transparent',
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`
-  },
-  '& .MuiSvgIcon-root': {
-    color: theme.palette.primary.main,
-    fontSize: '1rem'
-  }
-}));
-
-const StyledDivider = styled(Divider)(({ theme }) => ({
-  borderColor: alpha(theme.palette.divider, 0.06),
-  margin: theme.spacing(0.5, 0)
-}));
-
-const ModalTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: '1.25rem',
-  color: theme.palette.text.primary,
-  marginBottom: theme.spacing(1.5)
-}));
 
 const FeeTag = styled('div')(({ theme, isFree }) => ({
   padding: theme.spacing(0.25, 0.5),
@@ -151,33 +117,30 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
   border: `1px solid ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`
 }));
 
-const RecommendedChip = styled('div')(({ theme }) => ({
-  padding: theme.spacing(0.25, 0.5),
-  borderRadius: '4px',
-  fontSize: '0.7rem',
-  fontWeight: 500,
-  textTransform: 'uppercase',
-  display: 'inline-block',
-  background: 'transparent',
-  color: theme.palette.info.main,
-  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-}));
 
 
 const WalletConnectModal = () => {
   const theme = useTheme();
-  const { t } = useTranslation();
-  const BASE_URL = process.env.API_URL;
 
   const {
-    darkMode,
     openWalletModal,
-    setOpenWalletModal,
-    doLogIn
+    setOpenWalletModal
   } = useContext(AppContext);
 
   const handleClose = () => {
     setOpenWalletModal(false);
+  };
+
+  const handleWalletConnect = () => {
+    const popup = window.open('/device-login', 'device-login', 'width=500,height=600,scrollbars=yes,resizable=yes');
+    if (!popup) return;
+
+    const checkClosed = setInterval(() => {
+      if (popup.closed) {
+        clearInterval(checkClosed);
+        setOpenWalletModal(false);
+      }
+    }, 1000);
   };
 
 
@@ -186,35 +149,52 @@ const WalletConnectModal = () => {
     <StyledDialog
       open={openWalletModal}
       onClose={handleClose}
-      aria-labelledby="scroll-dialog-title"
-      aria-describedby="scroll-dialog-description"
+      aria-labelledby="wallet-connect-title"
+      aria-describedby="wallet-connect-description"
+      maxWidth={false}
       sx={{ zIndex: 9999 }}
     >
       <StyledDialogTitle>
-        <Stack direction="row" justifyContent="end">
-          <ActionButton onClick={handleClose}>
+        <Stack direction="row" justifyContent="space-between" alignItems="center">
+          <Typography
+            id="wallet-connect-title"
+            variant="h6"
+            component="h2"
+            sx={{ fontWeight: 600, color: theme.palette.text.primary }}
+          >
+            Connect Wallet
+          </Typography>
+          <ActionButton onClick={handleClose} aria-label="Close dialog">
             <ClearIcon />
           </ActionButton>
         </Stack>
       </StyledDialogTitle>
 
       <StyledDialogContent>
-        <ModalTitle variant="modal">Connect Wallet</ModalTitle>
-        <Stack spacing={1.5}>
+        <Typography
+          id="wallet-connect-description"
+          variant="body2"
+          sx={{ color: theme.palette.text.secondary, mb: 2 }}
+        >
+          Choose a wallet to connect to the XRPL network
+        </Typography>
+        <Stack spacing={1.5} component="nav" role="list">
 
               <WalletItem
                 direction="row"
                 spacing={2}
                 alignItems="center"
-                onClick={() => {
-                  const popup = window.open('/device-login', 'device-login', 'width=500,height=600,scrollbars=yes,resizable=yes');
-                  const checkClosed = setInterval(() => {
-                    if (popup.closed) {
-                      clearInterval(checkClosed);
-                      setOpenWalletModal(false);
-                    }
-                  }, 1000);
+                onClick={handleWalletConnect}
+                component="button"
+                role="listitem"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleWalletConnect();
+                  }
                 }}
+                sx={{ border: 'none', textAlign: 'left', width: '100%' }}
               >
                 <Box
                   sx={{
