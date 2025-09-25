@@ -994,29 +994,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <Stack direction="row" spacing={1} sx={{ mr: 1 }}>
                   <CurrencySwitcher />
                   <ThemeSwitcher />
-
-
-                  {/* API Button */}
-                  <Chip
-                    label="API"
-                    size="small"
-                    clickable
-                    component="a"
-                    href="/api-docs"
-                    sx={{
-                      height: 32,
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      bgcolor: alpha(theme.palette.text.primary, 0.05),
-                      color: theme.palette.text.primary,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      textDecoration: 'none',
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.text.primary, 0.1),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.3)}`
-                      }
-                    }}
-                  />
                 </Stack>
 
                 <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />

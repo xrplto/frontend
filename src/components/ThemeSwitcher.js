@@ -83,9 +83,9 @@ export default function ThemeSwitcher() {
           backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
           borderRadius: '6px',
           padding: '4px',
-          minWidth: '26px',
-          width: '26px',
-          height: '26px',
+          minWidth: '32px',
+          width: '32px',
+          height: '32px',
           '&:hover': {
             backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
           }

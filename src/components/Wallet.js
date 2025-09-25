@@ -19,7 +19,8 @@ import {
   IconButton,
   Link,
   MenuItem,
-  Popover,
+  Dialog,
+  DialogContent,
   Stack,
   Tooltip,
   Typography,
@@ -102,7 +103,6 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
     theme.palette.mode === 'dark'
       ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
       : `linear-gradient(145deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.grey[50], 0.95)} 100%)`,
-  backdropFilter: 'blur(30px) saturate(150%)',
   border: `1px solid ${theme.palette.mode === 'dark'
     ? alpha(theme.palette.common.white, 0.05)
     : alpha(theme.palette.common.black, 0.05)}`,
@@ -129,7 +129,6 @@ const BalanceCard = styled(Card)(({ theme }) => ({
     : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${theme.palette.common.white} 100%)`,
   border: 'none',
   borderRadius: 20,
-  backdropFilter: 'blur(20px)',
   boxShadow: 'none',
   position: 'relative',
   overflow: 'visible',
@@ -158,7 +157,6 @@ const ReserveCard = styled(Box)(({ theme }) => ({
   border: 'none',
   borderRadius: 16,
   padding: theme.spacing(2),
-  backdropFilter: 'blur(10px)',
   position: 'relative',
   transition: 'all 0.3s ease',
   '&::before': {
@@ -183,6 +181,398 @@ function truncateAccount(str, length = 9) {
   if (!str) return '';
   return str.slice(0, length) + '...' + str.slice(length * -1);
 }
+
+// Shared component for consistent wallet content across both modes
+const WalletContent = ({
+  theme,
+  accountLogin,
+  accountBalance,
+  accountTotalXrp,
+  accountsActivation,
+  profiles,
+  onClose,
+  onAccountSwitch,
+  onMoreAccounts,
+  onLogout,
+  onRemoveProfile,
+  openSnackbar,
+  isEmbedded = false
+}) => {
+  return (
+    <>
+      {/* Header */}
+      <Box sx={{
+        p: 2,
+        background: theme.palette.mode === 'dark'
+          ? 'rgba(0,0,0,0.3)'
+          : 'rgba(255,255,255,0.7)',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        position: 'relative',
+        zIndex: 1
+      }}>
+        <Stack direction="row" alignItems="center" justifyContent="space-between">
+          <Stack direction="row" spacing={isEmbedded ? 1.5 : 2} alignItems="center">
+            <Box sx={{
+              width: isEmbedded ? 8 : 10,
+              height: isEmbedded ? 8 : 10,
+              borderRadius: '2px',
+              background: accountsActivation[accountLogin] === false
+                ? theme.palette.error.main
+                : `linear-gradient(45deg, #00ff88, #00ffff)`,
+              boxShadow: accountsActivation[accountLogin] !== false
+                ? isEmbedded ? '0 0 15px rgba(0,255,136,0.4)' : '0 0 20px rgba(0,255,136,0.5)'
+                : 'none'
+            }} />
+            <Typography sx={{
+              fontFamily: 'monospace',
+              fontSize: isEmbedded ? '0.8rem' : '0.85rem',
+              fontWeight: 600,
+              letterSpacing: '0.5px'
+            }}>
+              {truncateAccount(accountLogin, 8)}
+            </Typography>
+          </Stack>
+          <IconButton size="small" onClick={onClose}>
+            <CloseIcon sx={{ fontSize: 16 }} />
+          </IconButton>
+        </Stack>
+      </Box>
+
+      {/* Balance Display */}
+      <Box sx={{
+        p: isEmbedded ? 3 : 4,
+        textAlign: 'center',
+        background: theme.palette.mode === 'dark'
+          ? 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%)'
+          : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%)'
+      }}>
+        <Typography sx={{
+          fontSize: isEmbedded ? '2.5rem' : '3.5rem',
+          fontWeight: 900,
+          lineHeight: 1,
+          fontFamily: 'system-ui',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          backgroundClip: 'text',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          mb: isEmbedded ? 0.5 : 1
+        }}>
+          {accountBalance?.curr1?.value || '0'}
+        </Typography>
+        <Typography sx={{
+          fontSize: isEmbedded ? '0.7rem' : '0.75rem',
+          textTransform: 'uppercase',
+          letterSpacing: isEmbedded ? '1.5px' : '2px',
+          opacity: 0.5,
+          fontWeight: 600
+        }}>
+          XRP Balance
+        </Typography>
+      </Box>
+
+      {/* Stats Grid */}
+      <Box sx={{ px: isEmbedded ? 2 : 3, pb: isEmbedded ? 2 : 3 }}>
+        <Box sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 1,
+          mb: isEmbedded ? 2 : 3
+        }}>
+          <Box sx={{
+            p: isEmbedded ? 1.5 : 2,
+            borderRadius: isEmbedded ? '8px' : '12px',
+            background: alpha(theme.palette.primary.main, 0.05),
+            textAlign: 'center'
+          }}>
+            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700 }}>
+              {accountBalance?.curr1?.value || '0'}
+            </Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.6rem' : '0.65rem', opacity: 0.7 }}>Available</Typography>
+          </Box>
+          <Box sx={{
+            p: isEmbedded ? 1.5 : 2,
+            borderRadius: isEmbedded ? '8px' : '12px',
+            background: alpha(theme.palette.warning.main, 0.05),
+            textAlign: 'center'
+          }}>
+            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700, color: theme.palette.warning.main }}>
+              {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'}
+            </Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.6rem' : '0.65rem', opacity: 0.7 }}>Reserved</Typography>
+          </Box>
+          <Box sx={{
+            p: isEmbedded ? 1.5 : 2,
+            borderRadius: isEmbedded ? '8px' : '12px',
+            background: alpha(theme.palette.success.main, 0.05),
+            textAlign: 'center'
+          }}>
+            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700 }}>
+              {accountTotalXrp || '0'}
+            </Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.6rem' : '0.65rem', opacity: 0.7 }}>Total</Typography>
+          </Box>
+        </Box>
+
+        {/* Action Buttons - Only show for popover mode */}
+        {!isEmbedded && (
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
+            <Link
+              underline="none"
+              color="inherit"
+              href={`/profile/${accountLogin}`}
+              rel="noreferrer noopener nofollow"
+            >
+              <Button
+                fullWidth
+                onClick={onClose}
+                sx={{
+                  py: 2,
+                  borderRadius: '12px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  '&:hover': {
+                    transform: 'translateY(-2px)',
+                    boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)'
+                  }
+                }}
+              >
+                <Stack spacing={0.5} alignItems="center">
+                  <AccountBalanceWalletIcon />
+                  <Typography sx={{ fontSize: '0.75rem' }}>Wallet</Typography>
+                </Stack>
+              </Button>
+            </Link>
+
+            <CopyToClipboard
+              text={accountLogin}
+              onCopy={() => openSnackbar('Address copied!', 'success')}
+            >
+              <Button
+                fullWidth
+                sx={{
+                  py: 2,
+                  borderRadius: '12px',
+                  background: alpha(theme.palette.text.primary, 0.05),
+                  color: theme.palette.text.primary,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  '&:hover': {
+                    background: alpha(theme.palette.text.primary, 0.1)
+                  }
+                }}
+              >
+                <Stack spacing={0.5} alignItems="center">
+                  <ContentCopyIcon />
+                  <Typography sx={{ fontSize: '0.75rem' }}>Copy</Typography>
+                </Stack>
+              </Button>
+            </CopyToClipboard>
+          </Box>
+        )}
+      </Box>
+
+      {/* Accounts List */}
+      {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
+        <Box sx={{
+          maxHeight: isEmbedded ? 'none' : 200,
+          overflowY: isEmbedded ? 'visible' : 'auto',
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          borderBottom: isEmbedded ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          flex: isEmbedded ? 1 : 'none'
+        }}>
+          <Typography sx={{
+            px: 2,
+            py: 1,
+            fontSize: isEmbedded ? '0.65rem' : '0.7rem',
+            fontWeight: 600,
+            opacity: 0.5,
+            textTransform: 'uppercase',
+            letterSpacing: '1px'
+          }}>
+            Switch Account
+          </Typography>
+          {profiles
+            .filter((profile) => profile.account !== accountLogin)
+            .slice(0, isEmbedded ? 6 : undefined)
+            .map((profile, idx) => {
+              const account = profile.account;
+              return (
+                <Box
+                  key={'account' + idx}
+                  onClick={() => onAccountSwitch(account)}
+                  sx={{
+                    px: 2,
+                    py: isEmbedded ? 1.2 : 1.5,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    transition: 'background 0.2s',
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.05)
+                    }
+                  }}
+                >
+                  <Stack direction="row" spacing={isEmbedded ? 1 : 1.5} alignItems="center">
+                    <Box sx={{
+                      width: isEmbedded ? 6 : 8,
+                      height: isEmbedded ? 6 : 8,
+                      borderRadius: '50%',
+                      background: accountsActivation[account] === false
+                        ? theme.palette.error.main
+                        : theme.palette.success.main
+                    }} />
+                    <Typography sx={{
+                      fontFamily: 'monospace',
+                      fontSize: isEmbedded ? '0.75rem' : '0.8rem'
+                    }}>
+                      {truncateAccount(account, 8)}
+                    </Typography>
+                  </Stack>
+                  <IconButton
+                    size="small"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRemoveProfile(account);
+                    }}
+                    sx={{ opacity: isEmbedded ? 0.3 : 0.5, '&:hover': { opacity: 1 } }}
+                  >
+                    <CloseIcon sx={{ fontSize: isEmbedded ? 12 : 14 }} />
+                  </IconButton>
+                </Box>
+              );
+            })}
+        </Box>
+      )}
+
+      {/* Bottom Actions */}
+      <Box sx={{
+        p: 2,
+        borderTop: isEmbedded ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none',
+        display: 'flex',
+        gap: 1
+      }}>
+        {isEmbedded ? (
+          <>
+            <Link
+              underline="none"
+              color="inherit"
+              href={`/profile/${accountLogin}`}
+              rel="noreferrer noopener nofollow"
+              sx={{ flex: 1 }}
+            >
+              <Button
+                fullWidth
+                onClick={onClose}
+                sx={{
+                  py: 1.2,
+                  borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  textTransform: 'none',
+                  '&:hover': {
+                    transform: 'translateY(-1px)',
+                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
+                  }
+                }}
+              >
+                <Stack spacing={0.3} alignItems="center">
+                  <AccountBalanceWalletIcon sx={{ fontSize: 16 }} />
+                  <Typography sx={{ fontSize: '0.65rem' }}>Wallet</Typography>
+                </Stack>
+              </Button>
+            </Link>
+
+            <CopyToClipboard
+              text={accountLogin}
+              onCopy={() => openSnackbar('Address copied!', 'success')}
+            >
+              <Button
+                sx={{
+                  px: 2,
+                  py: 1.2,
+                  borderRadius: '8px',
+                  background: alpha(theme.palette.text.primary, 0.05),
+                  color: theme.palette.text.primary,
+                  fontWeight: 600,
+                  fontSize: '0.8rem',
+                  textTransform: 'none',
+                  '&:hover': {
+                    background: alpha(theme.palette.text.primary, 0.1)
+                  }
+                }}
+              >
+                <ContentCopyIcon sx={{ fontSize: 16 }} />
+              </Button>
+            </CopyToClipboard>
+          </>
+        ) : (
+          <Button
+            fullWidth
+            onClick={onMoreAccounts}
+            sx={{
+              py: 1.5,
+              borderRadius: '10px',
+              background: alpha(theme.palette.primary.main, 0.1),
+              color: theme.palette.primary.main,
+              fontWeight: 600,
+              fontSize: '0.85rem',
+              textTransform: 'none',
+              '&:hover': {
+                background: alpha(theme.palette.primary.main, 0.15)
+              }
+            }}
+          >
+            <AddCircleOutlineIcon sx={{ fontSize: 18, mr: 1 }} />
+            Add Account
+          </Button>
+        )}
+
+        <Button
+          onClick={isEmbedded ? onMoreAccounts : undefined}
+          sx={{
+            px: isEmbedded ? 2 : 3,
+            py: isEmbedded ? 1.2 : 1.5,
+            borderRadius: isEmbedded ? '8px' : '10px',
+            background: alpha(theme.palette.primary.main, 0.1),
+            color: theme.palette.primary.main,
+            fontWeight: 600,
+            fontSize: isEmbedded ? '0.8rem' : '0.85rem',
+            textTransform: 'none',
+            '&:hover': {
+              background: alpha(theme.palette.primary.main, 0.15)
+            }
+          }}
+        >
+          <AddCircleOutlineIcon sx={{ fontSize: isEmbedded ? 16 : 18 }} />
+        </Button>
+
+        <Button
+          onClick={onLogout}
+          sx={{
+            px: isEmbedded ? 2 : 3,
+            py: isEmbedded ? 1.2 : 1.5,
+            borderRadius: isEmbedded ? '8px' : '10px',
+            background: alpha(theme.palette.error.main, 0.1),
+            color: theme.palette.error.main,
+            fontWeight: 600,
+            fontSize: isEmbedded ? '0.8rem' : '0.85rem',
+            textTransform: 'none',
+            '&:hover': {
+              background: alpha(theme.palette.error.main, 0.15)
+            }
+          }}
+        >
+          <LogoutIcon sx={{ fontSize: isEmbedded ? 16 : 18 }} />
+        </Button>
+      </Box>
+    </>
+  );
+};
 
 export default function Wallet({ style, embedded = false, onClose, buttonOnly = false }) {
   const theme = useTheme();
@@ -447,333 +837,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       : getHashIcon(accountLogin);
   }
 
-  // Embedded panel mode - positioned by PageLayout
-  if (embedded && accountProfile && open) {
-    return (
-      <Box
-        sx={{
-          width: '100%',
-          height: '100%',
-          background: theme.palette.background.default,
-          borderLeft: `1px solid ${alpha(theme.palette.divider, 0.1)} !important`,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          position: 'relative'
-        }}
-      >
-        {/* Animated Background */}
-        <Box sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.02,
-          backgroundImage: `repeating-linear-gradient(
-            45deg,
-            ${theme.palette.primary.main} 0px,
-            ${theme.palette.primary.main} 1px,
-            transparent 1px,
-            transparent 12px
-          )`,
-          animation: 'slide 15s linear infinite',
-          '@keyframes slide': {
-            '0%': { transform: 'translate(0, 0)' },
-            '100%': { transform: 'translate(12px, 12px)' }
-          },
-          pointerEvents: 'none'
-        }} />
-
-        {/* Header */}
-        <Box sx={{
-          p: 2,
-          background: theme.palette.mode === 'dark'
-            ? 'rgba(0,0,0,0.3)'
-            : 'rgba(255,255,255,0.7)',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          position: 'relative',
-          zIndex: 1
-        }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Stack direction="row" spacing={1.5} alignItems="center">
-              <Box sx={{
-                width: 8,
-                height: 8,
-                borderRadius: '2px',
-                background: accountsActivation[accountLogin] === false
-                  ? theme.palette.error.main
-                  : `linear-gradient(45deg, #00ff88, #00ffff)`,
-                boxShadow: accountsActivation[accountLogin] !== false
-                  ? '0 0 15px rgba(0,255,136,0.4)'
-                  : 'none'
-              }} />
-              <Typography sx={{
-                fontFamily: 'monospace',
-                fontSize: '0.8rem',
-                fontWeight: 600
-              }}>
-                {truncateAccount(accountLogin, 8)}
-              </Typography>
-            </Stack>
-            <IconButton size="small" onClick={onClose || handleClose}>
-              <CloseIcon sx={{ fontSize: 16 }} />
-            </IconButton>
-          </Stack>
-        </Box>
-
-        {/* Giant Balance */}
-        <Box sx={{
-          p: 3,
-          textAlign: 'center',
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%)'
-            : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%)'
-        }}>
-          <Typography sx={{
-            fontSize: '2.5rem',
-            fontWeight: 900,
-            lineHeight: 1,
-            fontFamily: 'system-ui',
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            mb: 0.5
-          }}>
-            {accountBalance?.curr1?.value || '0'}
-          </Typography>
-          <Typography sx={{
-            fontSize: '0.7rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1.5px',
-            opacity: 0.5,
-            fontWeight: 600
-          }}>
-            XRP Balance
-          </Typography>
-        </Box>
-
-        {/* Stats */}
-        <Box sx={{ px: 2, pb: 2 }}>
-          <Box sx={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: 1,
-            mb: 2
-          }}>
-            <Box sx={{
-              p: 1.5,
-              borderRadius: '8px',
-              background: alpha(theme.palette.primary.main, 0.05),
-              textAlign: 'center'
-            }}>
-              <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>
-                {accountBalance?.curr1?.value || '0'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.6rem', opacity: 0.7 }}>Available</Typography>
-            </Box>
-            <Box sx={{
-              p: 1.5,
-              borderRadius: '8px',
-              background: alpha(theme.palette.warning.main, 0.05),
-              textAlign: 'center'
-            }}>
-              <Typography sx={{ fontSize: '1rem', fontWeight: 700, color: theme.palette.warning.main }}>
-                {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.6rem', opacity: 0.7 }}>Reserved</Typography>
-            </Box>
-            <Box sx={{
-              p: 1.5,
-              borderRadius: '8px',
-              background: alpha(theme.palette.success.main, 0.05),
-              textAlign: 'center'
-            }}>
-              <Typography sx={{ fontSize: '1rem', fontWeight: 700 }}>
-                {accountTotalXrp || '0'}
-              </Typography>
-              <Typography sx={{ fontSize: '0.6rem', opacity: 0.7 }}>Total</Typography>
-            </Box>
-          </Box>
-        </Box>
-
-
-        {/* Account List */}
-        <Box sx={{
-          flex: 1,
-          overflowY: 'auto',
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-        }}>
-          <Typography sx={{
-            px: 2,
-            py: 1,
-            fontSize: '0.65rem',
-            fontWeight: 600,
-            opacity: 0.5,
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}>
-            Switch Account
-          </Typography>
-          {profiles
-            .filter((profile) => profile.account !== accountLogin)
-            .slice(0, 6)
-            .map((profile, idx) => {
-              const account = profile.account;
-              return (
-                <Box
-                  key={'account' + idx}
-                  onClick={() => {
-                    setActiveProfile(account);
-                    setOpen(false);
-                  }}
-                  sx={{
-                    px: 2,
-                    py: 1.2,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    transition: 'background 0.2s',
-                    '&:hover': {
-                      background: alpha(theme.palette.primary.main, 0.05)
-                    }
-                  }}
-                >
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Box sx={{
-                      width: 6,
-                      height: 6,
-                      borderRadius: '50%',
-                      background: accountsActivation[account] === false
-                        ? theme.palette.error.main
-                        : theme.palette.success.main
-                    }} />
-                    <Typography sx={{
-                      fontFamily: 'monospace',
-                      fontSize: '0.75rem'
-                    }}>
-                      {truncateAccount(account, 8)}
-                    </Typography>
-                  </Stack>
-                  <IconButton
-                    size="small"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      removeProfile(account);
-                    }}
-                    sx={{ opacity: 0.3, '&:hover': { opacity: 1 } }}
-                  >
-                    <CloseIcon sx={{ fontSize: 12 }} />
-                  </IconButton>
-                </Box>
-              );
-            })}
-        </Box>
-
-        {/* Bottom Actions */}
-        <Box sx={{
-          p: 2,
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          display: 'flex',
-          gap: 1
-        }}>
-          <Link
-            underline="none"
-            color="inherit"
-            href={`/profile/${accountLogin}`}
-            rel="noreferrer noopener nofollow"
-            sx={{ flex: 1 }}
-          >
-            <Button
-              fullWidth
-              onClick={() => setOpen(false)}
-              sx={{
-                py: 1.2,
-                borderRadius: '8px',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                color: 'white',
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                textTransform: 'none',
-                '&:hover': {
-                  transform: 'translateY(-1px)',
-                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
-                }
-              }}
-            >
-              <Stack spacing={0.3} alignItems="center">
-                <AccountBalanceWalletIcon sx={{ fontSize: 16 }} />
-                <Typography sx={{ fontSize: '0.65rem' }}>Wallet</Typography>
-              </Stack>
-            </Button>
-          </Link>
-
-          <CopyToClipboard
-            text={accountLogin}
-            onCopy={() => openSnackbar('Address copied!', 'success')}
-          >
-            <Button
-              sx={{
-                px: 2,
-                py: 1.2,
-                borderRadius: '8px',
-                background: alpha(theme.palette.text.primary, 0.05),
-                color: theme.palette.text.primary,
-                fontWeight: 600,
-                fontSize: '0.8rem',
-                textTransform: 'none',
-                '&:hover': {
-                  background: alpha(theme.palette.text.primary, 0.1)
-                }
-              }}
-            >
-              <ContentCopyIcon sx={{ fontSize: 16 }} />
-            </Button>
-          </CopyToClipboard>
-
-          <Button
-            onClick={handleMoreAccounts}
-            sx={{
-              px: 2,
-              py: 1.2,
-              borderRadius: '8px',
-              background: alpha(theme.palette.primary.main, 0.1),
-              color: theme.palette.primary.main,
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              textTransform: 'none',
-              '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.15)
-              }
-            }}
-          >
-            <AddCircleOutlineIcon sx={{ fontSize: 16 }} />
-          </Button>
-
-          <Button
-            onClick={handleLogout}
-            sx={{
-              px: 2,
-              py: 1.2,
-              borderRadius: '8px',
-              background: alpha(theme.palette.error.main, 0.1),
-              color: theme.palette.error.main,
-              fontWeight: 600,
-              fontSize: '0.8rem',
-              textTransform: 'none',
-              '&:hover': {
-                background: alpha(theme.palette.error.main, 0.15)
-              }
-            }}
-          >
-            <LogoutIcon sx={{ fontSize: 16 }} />
-          </Button>
-        </Box>
-      </Box>
-    );
-  }
 
   // Default button mode with popover
   return (
@@ -781,13 +844,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       <button
         onClick={() => {
           if (accountProfile) {
-            // If buttonOnly, don't open popover, just toggle the embedded panel
-            if (buttonOnly) {
-              // Just toggle the embedded panel state
-              setOpen(!open);
-            } else {
-              handleOpen();
-            }
+            setOpen(!open);
           } else {
             setOpenWalletModal(true);
           }
@@ -840,28 +897,33 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         {!accountProfile && <span>{t('Connect')}</span>}
       </button>
 
-      {accountProfile && !buttonOnly && (
-        <Popover
+      {accountProfile && (
+        <Dialog
           open={open}
           onClose={handleClose}
-          anchorEl={anchorRef.current}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-          TransitionComponent={Fade}
-          transitionDuration={300}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              ml: 0.5,
+          maxWidth="sm"
+          fullWidth
+          disableEnforceFocus
+          disableAutoFocus
+          disableRestoreFocus
+          hideBackdrop
+          sx={{
+            '& .MuiDialog-paper': {
+              borderRadius: '16px',
+              maxWidth: '420px',
               background: 'transparent',
               boxShadow: 'none',
-              border: 'none',
-              minWidth: 420,
-              maxWidth: 420
+              position: 'fixed',
+              top: '48px',
+              right: '16px',
+              left: 'auto',
+              transform: 'none',
+              margin: 0
             }
           }}
         >
-          <StyledPopoverPaper>
+          <DialogContent sx={{ p: 0 }}>
+            <StyledPopoverPaper>
             {/* Animated Background Pattern */}
             <Box sx={{
               position: 'absolute',
@@ -885,304 +947,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               pointerEvents: 'none'
             }} />
 
-            {/* Minimal Header */}
-            <Box sx={{
-              p: 2,
-              background: theme.palette.mode === 'dark'
-                ? 'rgba(0,0,0,0.4)'
-                : 'rgba(255,255,255,0.8)',
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-            }}>
-              <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Box sx={{
-                    width: 10,
-                    height: 10,
-                    borderRadius: '2px',
-                    background: accountsActivation[accountLogin] === false
-                      ? theme.palette.error.main
-                      : `linear-gradient(45deg, #00ff88, #00ffff)`,
-                    boxShadow: accountsActivation[accountLogin] !== false
-                      ? '0 0 20px rgba(0,255,136,0.5)'
-                      : 'none'
-                  }} />
-                  <Typography sx={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.85rem',
-                    fontWeight: 600,
-                    letterSpacing: '0.5px'
-                  }}>
-                    {truncateAccount(accountLogin, 8)}
-                  </Typography>
-                </Stack>
-                <Stack direction="row" spacing={0.5}>
-                  <IconButton size="small" onClick={() => setOpen(false)}>
-                    <CloseIcon sx={{ fontSize: 16 }} />
-                  </IconButton>
-                </Stack>
-              </Stack>
-            </Box>
-
-            {/* Main Content Area */}
-            <Box sx={{ p: 0 }}>
-              {/* Giant Balance Display */}
-              <Box sx={{
-                p: 4,
-                textAlign: 'center',
-                background: theme.palette.mode === 'dark'
-                  ? 'linear-gradient(180deg, rgba(0,0,0,0.2) 0%, transparent 100%)'
-                  : 'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, transparent 100%)'
-              }}>
-                <Typography sx={{
-                  fontSize: '3.5rem',
-                  fontWeight: 900,
-                  lineHeight: 1,
-                  fontFamily: 'system-ui',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  mb: 1
-                }}>
-                  {accountBalance?.curr1?.value || '0'}
-                </Typography>
-                <Typography sx={{
-                  fontSize: '0.75rem',
-                  textTransform: 'uppercase',
-                  letterSpacing: '2px',
-                  opacity: 0.5,
-                  fontWeight: 600
-                }}>
-                  XRP Balance
-                </Typography>
-              </Box>
-
-              {/* Stats Grid */}
-              <Box sx={{ px: 3, pb: 3 }}>
-                <Box sx={{
-                  display: 'grid',
-                  gridTemplateColumns: '1fr 1fr 1fr',
-                  gap: 1,
-                  mb: 3
-                }}>
-                  <Box sx={{
-                    p: 2,
-                    borderRadius: '12px',
-                    background: alpha(theme.palette.primary.main, 0.05),
-                    textAlign: 'center'
-                  }}>
-                    <Typography sx={{ fontSize: '1.2rem', fontWeight: 700 }}>
-                      {accountBalance?.curr1?.value || '0'}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.65rem', opacity: 0.7 }}>Available</Typography>
-                  </Box>
-                  <Box sx={{
-                    p: 2,
-                    borderRadius: '12px',
-                    background: alpha(theme.palette.warning.main, 0.05),
-                    textAlign: 'center'
-                  }}>
-                    <Typography sx={{ fontSize: '1.2rem', fontWeight: 700, color: theme.palette.warning.main }}>
-                      {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.65rem', opacity: 0.7 }}>Reserved</Typography>
-                  </Box>
-                  <Box sx={{
-                    p: 2,
-                    borderRadius: '12px',
-                    background: alpha(theme.palette.success.main, 0.05),
-                    textAlign: 'center'
-                  }}>
-                    <Typography sx={{ fontSize: '1.2rem', fontWeight: 700 }}>
-                      {accountTotalXrp || '0'}
-                    </Typography>
-                    <Typography sx={{ fontSize: '0.65rem', opacity: 0.7 }}>Total</Typography>
-                  </Box>
-                </Box>
-
-                {/* Action Buttons Grid */}
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    href={`/profile/${accountLogin}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Button
-                      fullWidth
-                      onClick={() => setOpen(false)}
-                      sx={{
-                        py: 2,
-                        borderRadius: '12px',
-                        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                        color: 'white',
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        '&:hover': {
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)'
-                        }
-                      }}
-                    >
-                      <Stack spacing={0.5} alignItems="center">
-                        <AccountBalanceWalletIcon />
-                        <Typography sx={{ fontSize: '0.75rem' }}>Wallet</Typography>
-                      </Stack>
-                    </Button>
-                  </Link>
-
-                  <CopyToClipboard
-                    text={accountLogin}
-                    onCopy={() => openSnackbar('Address copied!', 'success')}
-                  >
-                    <Button
-                      fullWidth
-                      sx={{
-                        py: 2,
-                        borderRadius: '12px',
-                        background: alpha(theme.palette.text.primary, 0.05),
-                        color: theme.palette.text.primary,
-                        fontWeight: 600,
-                        textTransform: 'none',
-                        '&:hover': {
-                          background: alpha(theme.palette.text.primary, 0.1)
-                        }
-                      }}
-                    >
-                      <Stack spacing={0.5} alignItems="center">
-                        <ContentCopyIcon />
-                        <Typography sx={{ fontSize: '0.75rem' }}>Copy</Typography>
-                      </Stack>
-                    </Button>
-                  </CopyToClipboard>
-                </Box>
-              </Box>
-            </Box>
-
-
-            {/* Accounts List - Minimal */}
-            {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
-              <Box sx={{
-                maxHeight: 200,
-                overflowY: 'auto',
-                borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-              }}>
-                <Typography sx={{
-                  px: 2,
-                  py: 1,
-                  fontSize: '0.7rem',
-                  fontWeight: 600,
-                  opacity: 0.5,
-                  textTransform: 'uppercase',
-                  letterSpacing: '1px'
-                }}>
-                  Switch Account
-                </Typography>
-                {profiles
-                  .filter((profile) => profile.account !== accountLogin)
-                  .map((profile, idx) => {
-                    const account = profile.account;
-                    return (
-                      <Box
-                        key={'account' + idx}
-                        onClick={() => {
-                          setActiveProfile(account);
-                          setOpen(false);
-                        }}
-                        sx={{
-                          px: 2,
-                          py: 1.5,
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          transition: 'background 0.2s',
-                          '&:hover': {
-                            background: alpha(theme.palette.primary.main, 0.05)
-                          }
-                        }}
-                      >
-                        <Stack direction="row" spacing={1.5} alignItems="center">
-                          <Box sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: '50%',
-                            background: accountsActivation[account] === false
-                              ? theme.palette.error.main
-                              : theme.palette.success.main
-                          }} />
-                          <Typography sx={{
-                            fontFamily: 'monospace',
-                            fontSize: '0.8rem'
-                          }}>
-                            {truncateAccount(account, 8)}
-                          </Typography>
-                        </Stack>
-                        <IconButton
-                          size="small"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeProfile(account);
-                          }}
-                          sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}
-                        >
-                          <CloseIcon sx={{ fontSize: 14 }} />
-                        </IconButton>
-                      </Box>
-                    );
-                  })}
-              </Box>
-            )}
-
-
-            {/* Bottom Actions - Ultra Minimal */}
-            <Box sx={{
-              p: 2,
-              display: 'flex',
-              gap: 1
-            }}>
-              <Button
-                fullWidth
-                onClick={handleMoreAccounts}
-                sx={{
-                  py: 1.5,
-                  borderRadius: '10px',
-                  background: alpha(theme.palette.primary.main, 0.1),
-                  color: theme.palette.primary.main,
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: alpha(theme.palette.primary.main, 0.15)
-                  }
-                }}
-              >
-                <AddCircleOutlineIcon sx={{ fontSize: 18, mr: 1 }} />
-                Add Account
-              </Button>
-
-              <Button
-                onClick={handleLogout}
-                sx={{
-                  px: 3,
-                  py: 1.5,
-                  borderRadius: '10px',
-                  background: alpha(theme.palette.error.main, 0.1),
-                  color: theme.palette.error.main,
-                  fontWeight: 600,
-                  fontSize: '0.85rem',
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: alpha(theme.palette.error.main, 0.15)
-                  }
-                }}
-              >
-                <LogoutIcon sx={{ fontSize: 18 }} />
-              </Button>
-            </Box>
-          </StyledPopoverPaper>
-        </Popover>
+            <WalletContent
+              theme={theme}
+              accountLogin={accountLogin}
+              accountBalance={accountBalance}
+              accountTotalXrp={accountTotalXrp}
+              accountsActivation={accountsActivation}
+              profiles={profiles}
+              onClose={() => setOpen(false)}
+              onAccountSwitch={(account) => {
+                setActiveProfile(account);
+                setOpen(false);
+              }}
+              onMoreAccounts={handleMoreAccounts}
+              onLogout={handleLogout}
+              onRemoveProfile={removeProfile}
+              openSnackbar={openSnackbar}
+              isEmbedded={false}
+            />
+            </StyledPopoverPaper>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

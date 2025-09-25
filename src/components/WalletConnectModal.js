@@ -60,8 +60,6 @@ const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntro
 };
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(20px)',
-  WebkitBackdropFilter: 'blur(20px)',
   '& .MuiBackdrop-root': {
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.5)'
   },
@@ -71,8 +69,6 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
       (theme.palette.mode === 'dark'
         ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`
         : `linear-gradient(135deg, ${alpha('#FFFFFF', 0.95)} 0%, ${alpha('#FFFFFF', 0.85)} 100%)`),
-    backdropFilter: 'blur(40px) saturate(200%)',
-    WebkitBackdropFilter: 'blur(40px) saturate(200%)',
     border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
     boxShadow: theme.palette.mode === 'dark'
       ? `0 8px 32px ${alpha(theme.palette.common.black, 0.4)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
@@ -92,8 +88,6 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
     (theme.palette.mode === 'dark'
       ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`
       : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 100%)`),
-  backdropFilter: 'blur(20px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
   borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.12)}`,
   position: 'relative',
   '&::before': {
@@ -112,8 +106,6 @@ const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   background: theme.palette.mode === 'dark'
     ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 100%)`
     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 100%)`,
-  backdropFilter: 'blur(20px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
   position: 'relative'
 }));
 
@@ -121,8 +113,6 @@ const ActionButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: alpha(theme.palette.background.paper, 0.6),
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   borderRadius: theme.general?.borderRadiusSm || '8px',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
   transition: 'all 0.2s ease',
   '&:hover': {
     backgroundColor: alpha(theme.palette.background.paper, 0.8),
@@ -149,8 +139,6 @@ const WalletItem = styled(Stack, {
   background: theme.palette.mode === 'dark'
     ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`
     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
-  backdropFilter: 'blur(20px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -191,9 +179,7 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
     : `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.15)} 0%, ${alpha(theme.palette.warning.main, 0.08)} 100%)`,
   color: isFree ? theme.palette.success.main : theme.palette.warning.main,
   border: `1px solid ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.3)}`,
-  boxShadow: `0 1px 3px ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`,
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)'
+  boxShadow: `0 1px 3px ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`
 }));
 
 
@@ -782,8 +768,6 @@ export const ConnectWallet = () => {
           0 2px 10px ${alpha(theme.palette.primary.main, 0.2)},
           inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}
         `,
-        backdropFilter: 'blur(10px) saturate(150%)',
-        WebkitBackdropFilter: 'blur(10px) saturate(150%)',
         transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         willChange: 'transform',
         '@keyframes gradient': {

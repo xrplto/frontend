@@ -186,29 +186,11 @@ function AppPageLayout({ children }) {
       {/* Main content with padding for fixed headers */}
       <div
         style={{
-          paddingTop: isApiDocsPage ? '0' : '56px',
-          marginRight: accountProfile && open ? '350px' : '0',
-          transition: 'margin-right 0.3s ease'
+          paddingTop: isApiDocsPage ? '0' : '56px'
         }}
       >
         {children}
       </div>
-
-      {/* Embedded wallet panel - positioned below header */}
-      {accountProfile && open && (
-        <div
-          style={{
-            position: 'fixed',
-            top: '56px',
-            right: '0',
-            width: '350px',
-            height: 'calc(100vh - 48px)',
-            zIndex: 1000
-          }}
-        >
-          <Wallet embedded={true} />
-        </div>
-      )}
     </div>
   );
 }
