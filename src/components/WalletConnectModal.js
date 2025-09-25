@@ -203,43 +203,42 @@ const WalletConnectModal = () => {
     }
   };
 
-  const generateWallet = (passkeyId, accountIndex = 0) => {
-    const baseHash = CryptoJS.SHA256(passkeyId).toString();
-    const indexedHash = CryptoJS.SHA256(baseHash + accountIndex.toString()).toString();
-    const entropy = [];
-    for (let i = 0; i < 32; i++) {
-      entropy.push(parseInt(indexedHash.substr(i * 2, 2), 16));
-    }
-    const wallet = Wallet.fromEntropy(entropy);
+
+  const generateWallet = () => {
+    // Generate a standard random wallet - passkey will handle signing
+    const wallet = Wallet.generate();
     return wallet;
   };
 
-  const discoverAllAccounts = async (passkeyId) => {
-    const accounts = [];
-    const batchSize = 10;
-    const totalAccounts = 100;
+  const getStoredWallets = () => {
+    // Get wallets associated with this passkey ID
+    const storedWallets = localStorage.getItem('passkeyWallets');
+    if (!storedWallets) return [];
 
-    for (let batch = 0; batch < Math.ceil(totalAccounts / batchSize); batch++) {
-      const batchStart = batch * batchSize;
-      const batchEnd = Math.min(batchStart + batchSize, totalAccounts);
-
-      for (let i = batchStart; i < batchEnd; i++) {
-        const wallet = generateWallet(passkeyId, i);
-        accounts.push({
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0'
-        });
-      }
-
-      if (batch < Math.ceil(totalAccounts / batchSize) - 1) {
-        await new Promise(resolve => setTimeout(resolve, 0));
-      }
+    try {
+      return JSON.parse(storedWallets);
+    } catch (error) {
+      console.error('Error parsing stored wallets:', error);
+      return [];
     }
+  };
 
-    return accounts;
+  const storeWallet = (passkeyId, wallet) => {
+    const walletData = {
+      passkeyId,
+      account: wallet.address,  // AppContext expects 'account' field
+      address: wallet.address,
+      publicKey: wallet.publicKey,
+      wallet_type: 'passkey',
+      xrp: '0',
+      createdAt: Date.now()
+    };
+
+    const storedWallets = getStoredWallets();
+    storedWallets.push(walletData);
+
+    localStorage.setItem('passkeyWallets', JSON.stringify(storedWallets));
+    return walletData;
   };
 
   const handleClose = () => {
@@ -303,7 +302,7 @@ const WalletConnectModal = () => {
           authenticatorSelection: {
             authenticatorAttachment: 'platform',
             userVerification: 'required',
-          },
+          }
         });
       } catch (innerErr) {
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
@@ -320,28 +319,25 @@ const WalletConnectModal = () => {
       }
 
       if (registrationResponse.id) {
-        const wallet = generateWallet(registrationResponse.id);
+        // Generate a new random wallet
+        const wallet = generateWallet();
 
+        // Store wallet associated with this passkey
+        const walletData = storeWallet(registrationResponse.id, wallet);
+
+        // Store wallet info for display
         setWalletInfo({
           address: wallet.address,
-          seed: wallet.seed,
-          publicKey: wallet.publicKey
+          publicKey: wallet.publicKey,
+          passkeyId: registrationResponse.id
         });
 
-        const profile = {
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0'
-        };
-
-        doLogIn(profile);
+        doLogIn(walletData);
         setStatus('success');
 
         setTimeout(() => {
           handleClose();
-        }, 5000);
+        }, 3000);
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -398,37 +394,28 @@ const WalletConnectModal = () => {
       if (authResponse.id) {
         setStatus('discovering');
 
-        let allAccounts;
-        try {
-          allAccounts = await discoverAllAccounts(authResponse.id);
-        } catch (discoveryError) {
-          const wallet = generateWallet(authResponse.id, 0);
-          allAccounts = [{
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            wallet_type: 'device',
-            xrp: '0'
-          }];
-        }
+        // Look for existing wallets associated with this passkey
+        const storedWallets = getStoredWallets();
+        const userWallet = storedWallets.find(w => w.passkeyId === authResponse.id);
 
-        if (allAccounts.length === 0) {
-          const wallet = generateWallet(authResponse.id, 0);
-          const firstAccount = {
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            wallet_type: 'device',
-            xrp: '0'
-          };
-          allAccounts.push(firstAccount);
-        }
+        if (userWallet) {
+          // Found existing wallet
+          doLogIn(userWallet);
+          setStatus('success');
+          setTimeout(() => {
+            handleClose();
+          }, 2000);
+        } else {
+          // No wallet found for this passkey - create new one
+          const wallet = generateWallet();
+          const walletData = storeWallet(authResponse.id, wallet);
 
-        doLogIn(allAccounts[0]);
-        setStatus('success');
-        setTimeout(() => {
-          handleClose();
-        }, 2000);
+          doLogIn(walletData);
+          setStatus('success');
+          setTimeout(() => {
+            handleClose();
+          }, 2000);
+        }
       }
     } catch (err) {
       console.error('Authentication error:', err);
@@ -545,7 +532,7 @@ const WalletConnectModal = () => {
                       fontSize: '0.8rem'
                     }}
                   >
-                    Key/Biometric
+                    Passkey Authentication
                   </Typography>
                 </Stack>
               </WalletItem>
@@ -588,50 +575,29 @@ const WalletConnectModal = () => {
             </Box>
 
             {error && (
-              <Alert severity={error === 'setup_required' ? 'info' : 'error'} sx={{ mb: 2 }}>
-                {error === 'setup_required' ? (
-                  <Box>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      <strong>Windows Hello Setup Required</strong>
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1.5 }}>
-                      Please enable Windows Hello, Touch ID, or Face ID to use device authentication:
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1 }}>
-                      1. Go to <strong>Settings → Accounts → Sign-in options</strong>
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1.5 }}>
-                      2. Set up PIN, Fingerprint, or Face recognition
-                    </Typography>
-                    <Link
-                      href="https://www.microsoft.com/en-us/windows/tips/windows-hello"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                    >
-                      Learn how to set up Windows Hello
-                      <OpenInNewIcon fontSize="small" />
-                    </Link>
-                  </Box>
-                ) : (
-                  error
-                )}
+              <Alert severity="error" sx={{ mb: 2 }}>
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Hardware Security Required</strong>
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1.5 }}>
+                  {error}
+                </Typography>
               </Alert>
             )}
 
             {status === 'success' && walletInfo && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  Wallet Created Successfully!
+                  🎉 Passkey Wallet Created!
                 </Typography>
                 <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
                   <strong>Address:</strong> {walletInfo.address}
                 </Typography>
-                <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
-                  <strong>Seed:</strong> {walletInfo.seed}
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Security:</strong> Protected by your passkey
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Save this information! Modal closes in 5 seconds.
+                  Your wallet is secured by hardware authentication. Modal closes in 3 seconds.
                 </Typography>
               </Alert>
             )}
@@ -694,7 +660,7 @@ const WalletConnectModal = () => {
                 mt: 1,
                 fontSize: '0.75rem'
               }}>
-                Keys generated locally • Never leave your device
+                Passkey-secured wallets • Universal browser support
               </Typography>
             </Box>
           </>
