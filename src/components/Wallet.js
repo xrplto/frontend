@@ -45,6 +45,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import HelpIcon from '@mui/icons-material/Help';
 import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import KeyIcon from '@mui/icons-material/Key';
 import WarningIcon from '@mui/icons-material/Warning';
@@ -675,6 +676,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
 
         setDisplaySeed(seed);
+        setSeedBlurred(true);
       }
     } catch (err) {
       setSeedAuthStatus('error');
@@ -1157,7 +1159,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <BackupIcon sx={{ color: theme.palette.warning.main }} />
                           {accountProfile?.wallet_type === 'device' ? 'Backup Private Key' : 'Backup Seed Phrase'}
                         </Typography>
-                        <IconButton size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); }}>
+                        <IconButton size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); setSeedBlurred(true); }}>
                           <CloseIcon sx={{ fontSize: 16 }} />
                         </IconButton>
                       </Box>
@@ -1175,8 +1177,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
                               ⚠️ Keep this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed phrase'} secure
                             </Typography>
-                            <Typography variant="body2">
+                            <Typography variant="body2" sx={{ mb: 1 }}>
                               Anyone with access to this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed'} can control your wallet. Store it safely offline.
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', opacity: 0.8 }}>
+                              Address: {accountLogin}
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.7rem', opacity: 0.7, mt: 0.5 }}>
+                              This backup only restores funds in this specific wallet address.
                             </Typography>
                           </Alert>
 
@@ -1186,26 +1194,45 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             background: alpha(theme.palette.background.paper, 0.8),
                             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                             fontFamily: 'monospace',
-                            fontSize: '0.9rem',
+                            fontSize: '0.75rem',
                             wordBreak: 'break-all',
-                            lineHeight: 1.5
-                          }}>
+                            lineHeight: 1.5,
+                            filter: seedBlurred ? 'blur(5px)' : 'none',
+                            transition: 'filter 0.3s ease',
+                            cursor: seedBlurred ? 'pointer' : 'default',
+                            userSelect: seedBlurred ? 'none' : 'auto'
+                          }}
+                          onClick={seedBlurred ? () => setSeedBlurred(false) : undefined}
+                          title={seedBlurred ? 'Click to reveal seed' : ''}
+                          >
                             {displaySeed}
                           </Box>
 
-                          <CopyToClipboard
-                            text={displaySeed}
-                            onCopy={() => openSnackbar('Seed copied to clipboard', 'success')}
-                          >
+                          <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-start' }}>
                             <Button
                               variant="outlined"
-                              startIcon={<ContentCopyIcon />}
+                              startIcon={seedBlurred ? <VisibilityIcon /> : <VisibilityOffIcon />}
                               size="small"
-                              sx={{ alignSelf: 'flex-start' }}
+                              onClick={() => setSeedBlurred(!seedBlurred)}
                             >
-                              Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
+                              {seedBlurred ? 'Reveal' : 'Hide'} {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
                             </Button>
-                          </CopyToClipboard>
+                            <CopyToClipboard
+                              text={displaySeed}
+                              onCopy={() => {
+                                setSeedBlurred(false);
+                                openSnackbar('Seed copied to clipboard', 'success');
+                              }}
+                            >
+                              <Button
+                                variant="outlined"
+                                startIcon={<ContentCopyIcon />}
+                                size="small"
+                              >
+                                Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
+                              </Button>
+                            </CopyToClipboard>
+                          </Stack>
                         </>
                       )}
 
