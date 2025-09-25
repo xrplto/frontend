@@ -46,7 +46,6 @@ import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
-const WalletConnectModal = lazy(() => import('./WalletConnectModal'));
 const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
 import { GlobalNotificationButton } from 'src/components/PriceNotifications';
@@ -849,9 +848,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             </Box>
           )}
 
-          <Suspense fallback={null}>
-            <WalletConnectModal />
-          </Suspense>
 
           {fullSearch && (
             <NavSearchBar

@@ -1,9 +1,10 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
-import { startAuthentication } from '@simplewebauthn/browser';
 import { Wallet as XRPLWallet } from 'xrpl';
-import CryptoJS from 'crypto-js';
+
+// Lazy load heavy dependencies
+let startRegistration, startAuthentication, CryptoJS;
 
 // Material
 import {
@@ -48,6 +49,10 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import KeyIcon from '@mui/icons-material/Key';
 import WarningIcon from '@mui/icons-material/Warning';
+import SecurityIcon from '@mui/icons-material/Security';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import CircularProgress from '@mui/material/CircularProgress';
+import Alert from '@mui/material/Alert';
 
 // Context
 import { useContext } from 'react';
@@ -67,6 +72,25 @@ import { useTranslation } from 'react-i18next';
 
 // Utils
 import { getHashIcon } from 'src/utils/extra';
+
+// Base64url encoding helper
+const base64urlEncode = (buffer) => {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+};
+
+// Secure deterministic wallet generation using PBKDF2 with high entropy
+const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
+  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
+  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+    keySize: 256/32,
+    iterations: 100000
+  }).toString();
+  const privateKeyHex = seedHash.substring(0, 64);
+  return new XRPLWallet(privateKeyHex);
+};
 
 // const pair = {
 //   '534F4C4F00000000000000000000000000000000': 'SOLO',
@@ -586,6 +610,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [accountsActivation, setAccountsActivation] = useState({});
   const [visibleAccountCount, setVisibleAccountCount] = useState(5);
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
+  const [showDeviceLogin, setShowDeviceLogin] = useState(false);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+  const [walletInfo, setWalletInfo] = useState(null);
+  const [isLoadingDeps, setIsLoadingDeps] = useState(false);
   const {
     setActiveProfile,
     accountProfile,
@@ -595,6 +624,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     openSnackbar,
     darkMode,
     setOpenWalletModal,
+    openWalletModal,
     open,
     setOpen,
     accountBalance,
@@ -604,6 +634,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     handleLogout,
     doLogIn
   } = useContext(AppContext);
+
+  // Lazy load heavy dependencies
+  const loadDependencies = async () => {
+    if (!startRegistration || !startAuthentication || !CryptoJS) {
+      setIsLoadingDeps(true);
+      const [webauthnModule, cryptoModule] = await Promise.all([
+        import('@simplewebauthn/browser'),
+        import('crypto-js')
+      ]);
+
+      startRegistration = webauthnModule.startRegistration;
+      startAuthentication = webauthnModule.startAuthentication;
+      CryptoJS = cryptoModule.default;
+      setIsLoadingDeps(false);
+    }
+  };
 
   const checkAccountActivity = useCallback(async (address) => {
     try {
@@ -719,6 +765,248 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     openSnackbar('Seed display not available for device wallets - seeds are stored securely and not accessible', 'info');
   };
 
+  const handleWalletConnect = () => {
+    setShowDeviceLogin(true);
+  };
+
+  const handleGoBack = () => {
+    setShowDeviceLogin(false);
+    setStatus('idle');
+    setError('');
+    setWalletInfo(null);
+  };
+
+  const handleRegister = async () => {
+    try {
+      setStatus('registering');
+      setError('');
+
+      await loadDependencies();
+
+      if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
+      }
+
+      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (!available) {
+        setError('setup_required');
+        setStatus('idle');
+        return;
+      }
+
+      const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const userId = base64urlEncode(userIdBuffer);
+      const challenge = base64urlEncode(challengeBuffer);
+
+      let registrationResponse;
+      try {
+        registrationResponse = await startRegistration({
+          rp: {
+            name: 'XRPL.to',
+            id: window.location.hostname,
+          },
+          user: {
+            id: userId,
+            name: `xrplto-${Date.now()}@xrpl.to`,
+            displayName: 'XRPL.to User',
+          },
+          challenge: challenge,
+          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+          timeout: 60000,
+          attestation: 'none',
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
+          }
+        });
+      } catch (innerErr) {
+        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
+          setError('Passkeys not supported on this device or browser.');
+        } else if (innerErr.message?.includes('InvalidStateError') || innerErr.message?.includes('saving')) {
+          setError('setup_required');
+        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
+          setError('Cancelled. Please try again and allow the security prompt.');
+        } else {
+          setError('setup_required');
+        }
+        setStatus('idle');
+        return;
+      }
+
+      if (registrationResponse.id) {
+        // Generate 5 wallets for this device key
+        const wallets = [];
+        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+
+        for (let i = 0; i < 5; i++) {
+          const wallet = generateSecureDeterministicWallet(registrationResponse.id, i);
+          const walletData = storeWallet(registrationResponse.id, wallet, i);
+          wallets.push(walletData);
+
+          // Add to profiles localStorage
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!currentProfiles.find(p => p.account === profile.address)) {
+            currentProfiles.push(profile);
+          }
+        }
+
+        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+
+        // Update profiles state immediately
+        const allProfiles = [...profiles];
+        wallets.forEach(walletData => {
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!allProfiles.find(p => p.account === profile.account)) {
+            allProfiles.push(profile);
+          }
+        });
+        setProfiles(allProfiles);
+
+        // Store first wallet info for display
+        setWalletInfo({
+          address: wallets[0].address,
+          publicKey: wallets[0].publicKey,
+          deviceKeyId: registrationResponse.id
+        });
+
+        doLogIn(wallets[0]);
+        setStatus('success');
+
+        // Close modal after brief delay to show success
+        setTimeout(() => {
+          setOpenWalletModal(false);
+          setStatus('idle');
+          setShowDeviceLogin(false);
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+
+      const errorName = err.name || err.cause?.name;
+      const errorMessage = err.message || err.cause?.message || '';
+
+      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
+        setError('Cancelled. Please try again and allow the security prompt.');
+      } else if (errorName === 'AbortError') {
+        setError('Timed out. Please try again.');
+      } else {
+        setError('Failed: ' + errorMessage);
+      }
+      setStatus('idle');
+    }
+  };
+
+  const handleAuthenticate = async () => {
+    try {
+      setStatus('authenticating');
+      setError('');
+
+      await loadDependencies();
+
+      if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
+      }
+
+      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const challenge = base64urlEncode(challengeBuffer);
+
+      let authResponse;
+      try {
+        authResponse = await startAuthentication({
+          challenge: challenge,
+          timeout: 60000,
+          userVerification: 'required'
+        });
+      } catch (innerErr) {
+        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
+          setError('Passkeys not supported on this device or browser.');
+        } else if (innerErr.message?.includes('InvalidStateError')) {
+          setError('Windows Hello not set up. Please enable Windows Hello, Touch ID, or Face ID in your device settings first.');
+        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
+          setError('Cancelled. Please try again and allow the security prompt.');
+        } else {
+          setError('Authentication failed. Please ensure Windows Hello, Touch ID, or Face ID is enabled on your device.');
+        }
+        setStatus('idle');
+        return;
+      }
+
+      if (authResponse.id) {
+        setStatus('discovering');
+
+        // Look for existing wallets associated with this device key
+        const storedWallets = getStoredWallets();
+        const userWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
+        const nextAccountIndex = userWallets.length; // Start from next available index
+
+        // Always create 5 new wallets
+        const wallets = [];
+        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+
+        for (let i = 0; i < 5; i++) {
+          const wallet = generateSecureDeterministicWallet(authResponse.id, nextAccountIndex + i);
+          const walletData = storeWallet(authResponse.id, wallet, nextAccountIndex + i);
+          wallets.push(walletData);
+
+          // Add to profiles localStorage
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!currentProfiles.find(p => p.account === profile.address)) {
+            currentProfiles.push(profile);
+          }
+        }
+
+        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+
+        // Update profiles state immediately
+        const allProfiles = [...profiles];
+        wallets.forEach(walletData => {
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!allProfiles.find(p => p.account === profile.account)) {
+            allProfiles.push(profile);
+          }
+        });
+        setProfiles(allProfiles);
+
+        // Set wallet info for success message
+        setWalletInfo({
+          address: wallets[0].address,
+          publicKey: wallets[0].publicKey,
+          deviceKeyId: authResponse.id,
+          isAdditional: userWallets.length > 0,
+          totalWallets: userWallets.length + 5
+        });
+
+        // Always login with the first newly created wallet
+        doLogIn(wallets[0]);
+        setStatus('success');
+
+        // Close modal after brief delay to show success
+        setTimeout(() => {
+          setOpenWalletModal(false);
+          setStatus('idle');
+          setShowDeviceLogin(false);
+        }, 1000);
+      }
+    } catch (err) {
+      console.error('Authentication error:', err);
+
+      const errorName = err.name || err.cause?.name;
+      const errorMessage = err.message || err.cause?.message || '';
+
+      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
+        setError('Cancelled. Please try again and allow the security prompt.');
+      } else if (errorName === 'AbortError') {
+        setError('Timed out. Please try again.');
+      } else {
+        setError('Failed: ' + errorMessage);
+      }
+      setStatus('idle');
+    }
+  };
+
   const handleMoreAccounts = async () => {
     // First check if we already have device wallets stored
     const storedWallets = getStoredWallets();
@@ -739,8 +1027,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       return;
     }
 
-    // Always allow creating more wallets - open the modal
-    setOpenWalletModal(true);
+    // Always allow creating more wallets - show device login
+    setShowDeviceLogin(true);
   };
 
   const handleAddPasskeyAccount = async () => {
@@ -857,26 +1145,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
         style={{
           background: accountProfile
-            ? theme.palette.primary.main
+            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
             : theme.palette.mode === 'dark'
-              ? '#2d3436'
-              : '#ffffff',
+              ? 'linear-gradient(135deg, #2d3436 0%, #1e2124 100%)'
+              : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
           border: accountProfile
             ? `1px solid ${theme.palette.primary.dark}`
             : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,
           borderRadius: '6px',
           height: '32px',
-          padding: '0 12px',
+          padding: accountProfile ? '0 10px' : '0 6px',
+          minWidth: accountProfile ? '120px' : '70px',
           color: accountProfile ? '#ffffff' : theme.palette.mode === 'dark' ? '#ffffff' : '#2d3436',
-          fontSize: '14px',
-          fontWeight: '500',
+          fontSize: '13px',
+          fontWeight: '600',
           fontFamily: 'inherit',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          gap: '6px',
-          transition: 'all 0.2s ease',
-          outline: 'none'
+          justifyContent: 'space-between',
+          gap: '8px',
+          transition: 'all 0.3s ease',
+          outline: 'none',
+          boxShadow: accountProfile
+            ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
+            : '0 2px 4px rgba(0,0,0,0.1)'
         }}
         onMouseEnter={(e) => {
           e.target.style.opacity = '0.9';
@@ -888,29 +1181,66 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }}
         title={accountProfile ? 'Account Details' : t('Connect Wallet')}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M21,18V19A2,2 0 0,1 19,21H5C3.89,21 3,20.1 3,19V5A2,2 0 0,1 5,3H19A2,2 0 0,1 21,5V6H12C10.89,6 10,6.9 10,8V16A2,2 0 0,0 12,18M12,16H22V8H12M16,13.5A1.5,1.5 0 0,1 14.5,12A1.5,1.5 0 0,1 16,10.5A1.5,1.5 0 0,1 17.5,12A1.5,1.5 0 0,1 16,13.5Z" />
-        </svg>
-        {accountProfile && (
-          <span style={{ fontFamily: 'monospace' }}>{truncateAccount(accountLogin, 6)}</span>
+{accountProfile ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+            <div style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: accountsActivation[accountLogin] === false
+                ? '#ef5350'
+                : 'linear-gradient(45deg, #4caf50, #8bc34a)',
+              boxShadow: accountsActivation[accountLogin] !== false
+                ? '0 0 8px rgba(76, 175, 80, 0.5)'
+                : '0 0 8px rgba(239, 83, 80, 0.5)'
+            }} />
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1 }}>
+              <span style={{
+                fontFamily: 'monospace',
+                fontSize: '11px',
+                opacity: 0.9,
+                lineHeight: '1.2'
+              }}>
+                {truncateAccount(accountLogin, 6)}
+              </span>
+              <span style={{
+                fontSize: '13px',
+                fontWeight: '700',
+                lineHeight: '1.2'
+              }}>
+                {accountBalance?.curr1?.value || '0'} XRP
+              </span>
+            </div>
+            <svg width="6" height="6" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.6 }}>
+              <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+            </svg>
+          </div>
+        ) : (
+          <span>{t('Connect')}</span>
         )}
-        {!accountProfile && <span>{t('Connect')}</span>}
       </button>
 
-      {accountProfile && (
-        <Dialog
-          open={open}
-          onClose={handleClose}
+      <Dialog
+          open={open || (openWalletModal && !accountProfile)}
+          onClose={() => {
+            setOpen(false);
+            if (!accountProfile) setOpenWalletModal(false);
+            setShowDeviceLogin(false);
+            setStatus('idle');
+            setError('');
+            setWalletInfo(null);
+          }}
           maxWidth="sm"
           fullWidth
           disableEnforceFocus
           disableAutoFocus
           disableRestoreFocus
-          hideBackdrop
+          hideBackdrop={true}
           sx={{
             '& .MuiDialog-paper': {
               borderRadius: '16px',
-              maxWidth: '420px',
+              maxWidth: '360px',
+              minHeight: accountProfile ? 'auto' : '580px',
               background: 'transparent',
               boxShadow: 'none',
               position: 'fixed',
@@ -919,56 +1249,319 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               left: 'auto',
               transform: 'none',
               margin: 0
-            }
+            },
+            zIndex: 9999
           }}
         >
           <DialogContent sx={{ p: 0 }}>
             <StyledPopoverPaper>
-            {/* Animated Background Pattern */}
-            <Box sx={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              opacity: 0.03,
-              backgroundImage: `repeating-linear-gradient(
-                45deg,
-                ${theme.palette.primary.main} 0px,
-                ${theme.palette.primary.main} 1px,
-                transparent 1px,
-                transparent 15px
-              )`,
-              animation: 'slide 20s linear infinite',
-              '@keyframes slide': {
-                '0%': { transform: 'translate(0, 0)' },
-                '100%': { transform: 'translate(15px, 15px)' }
-              },
-              pointerEvents: 'none'
-            }} />
+            {accountProfile ? (
+              <>
+                {/* Animated Background Pattern */}
+                <Box sx={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  opacity: 0.03,
+                  backgroundImage: `repeating-linear-gradient(
+                    45deg,
+                    ${theme.palette.primary.main} 0px,
+                    ${theme.palette.primary.main} 1px,
+                    transparent 1px,
+                    transparent 15px
+                  )`,
+                  animation: 'slide 20s linear infinite',
+                  '@keyframes slide': {
+                    '0%': { transform: 'translate(0, 0)' },
+                    '100%': { transform: 'translate(15px, 15px)' }
+                  },
+                  pointerEvents: 'none'
+                }} />
 
-            <WalletContent
-              theme={theme}
-              accountLogin={accountLogin}
-              accountBalance={accountBalance}
-              accountTotalXrp={accountTotalXrp}
-              accountsActivation={accountsActivation}
-              profiles={profiles}
-              onClose={() => setOpen(false)}
-              onAccountSwitch={(account) => {
-                setActiveProfile(account);
-                setOpen(false);
-              }}
-              onMoreAccounts={handleMoreAccounts}
-              onLogout={handleLogout}
-              onRemoveProfile={removeProfile}
-              openSnackbar={openSnackbar}
-              isEmbedded={false}
-            />
+                <WalletContent
+                  theme={theme}
+                  accountLogin={accountLogin}
+                  accountBalance={accountBalance}
+                  accountTotalXrp={accountTotalXrp}
+                  accountsActivation={accountsActivation}
+                  profiles={profiles}
+                  onClose={() => setOpen(false)}
+                  onAccountSwitch={(account) => {
+                    setActiveProfile(account);
+                    setOpen(false);
+                  }}
+                  onMoreAccounts={handleMoreAccounts}
+                  onLogout={handleLogout}
+                  onRemoveProfile={removeProfile}
+                  openSnackbar={openSnackbar}
+                  isEmbedded={false}
+                />
+              </>
+            ) : (
+              // WalletConnect Modal Content with full styling
+              <Box sx={{
+                borderRadius: theme.general?.borderRadiusLg || '16px',
+                background: theme.walletDialog?.background ||
+                  (theme.palette.mode === 'dark'
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`
+                    : `linear-gradient(135deg, ${alpha('#FFFFFF', 0.95)} 0%, ${alpha('#FFFFFF', 0.85)} 100%)`),
+                border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
+                boxShadow: theme.palette.mode === 'dark'
+                  ? `0 8px 32px ${alpha(theme.palette.common.black, 0.4)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+                  : `0 8px 32px ${alpha(theme.palette.common.black, 0.15)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.8)}`,
+                overflow: 'hidden'
+              }}>
+                {/* Header */}
+                <Box sx={{
+                  padding: theme.spacing(2, 2.5),
+                  background: theme.walletDialog?.backgroundSecondary ||
+                    (theme.palette.mode === 'dark'
+                      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`
+                      : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 100%)`),
+                  borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.12)}`,
+                  position: 'relative',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '1px',
+                    background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.primary.main, 0.3)} 50%, transparent 100%)`
+                  }
+                }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                      Connect Wallet
+                    </Typography>
+                    <IconButton
+                      onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
+                      sx={{
+                        backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                        borderRadius: theme.general?.borderRadiusSm || '8px',
+                        '&:hover': {
+                          backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+                          transform: 'scale(1.05)'
+                        }
+                      }}
+                    >
+                      <CloseIcon sx={{ fontSize: 14 }} />
+                    </IconButton>
+                  </Stack>
+                </Box>
+
+                {/* Content */}
+                <Box sx={{
+                  padding: theme.spacing(2.5),
+                  background: theme.palette.mode === 'dark'
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 100%)`
+                    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 100%)`
+                }}>
+                  {!showDeviceLogin ? (
+                    <>
+                      <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
+                        Choose a wallet to connect to the XRPL network
+                      </Typography>
+                      <Stack spacing={1.5}>
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                          onClick={handleWalletConnect}
+                          sx={{
+                            padding: theme.spacing(1.8, 2.2),
+                            cursor: 'pointer',
+                            borderRadius: theme.general?.borderRadius || '12px',
+                            background: theme.palette.mode === 'dark'
+                              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`
+                              : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': {
+                              background: theme.palette.mode === 'dark'
+                                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`
+                                : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                              border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+                              transform: 'translateY(-2px) scale(1.02)',
+                              boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Box sx={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: theme.general?.borderRadiusSm || '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+                            color: 'white',
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
+                          }}>
+                            <SecurityIcon sx={{ fontSize: '1.4rem' }} />
+                          </Box>
+                          <Stack sx={{ flexGrow: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                              Device Login
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
+                              Device Authentication
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </Stack>
+                    </>
+                  ) : (
+                    <>
+                      <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 2,
+                        p: 1.5,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
+                        borderRadius: 2,
+                        border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
+                      }}>
+                        <IconButton
+                          onClick={handleGoBack}
+                          sx={{
+                            mr: 1.5,
+                            flexShrink: 0,
+                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                            borderRadius: '8px',
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                              transform: 'scale(1.05)'
+                            }
+                          }}
+                        >
+                          <ArrowBackIcon />
+                        </IconButton>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
+                          Key Authentication
+                        </Typography>
+                        <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
+                      </Box>
+
+                      <Box sx={{
+                        mb: 2,
+                        p: 1.5,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 100%)`,
+                        border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                        borderRadius: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}>
+                        <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
+                          One Key = One Set of Wallets
+                        </Typography>
+                      </Box>
+
+                      {error && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Hardware Security Required</strong>
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1.5 }}>
+                            {error}
+                          </Typography>
+                        </Alert>
+                      )}
+
+                      {status === 'success' && walletInfo && (
+                        <Alert severity="success" sx={{ mb: 2 }}>
+                          <Typography variant="subtitle2" gutterBottom>
+                            🎉 {walletInfo.isAdditional ? `5 Additional Device Wallets Created!` : `5 Device Wallets Created!`}
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Wallets Created:</strong> 5 new wallets
+                          </Typography>
+                          <Typography variant="body2" sx={{ mb: 1 }}>
+                            <strong>Total Wallets:</strong> {walletInfo.totalWallets} | <strong>Security:</strong> Protected by your device key
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            Your wallet is secured by hardware authentication.
+                          </Typography>
+                        </Alert>
+                      )}
+
+                      {isLoadingDeps && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <CircularProgress size={16} />
+                            <Typography variant="body2">Loading security modules...</Typography>
+                          </Box>
+                        </Alert>
+                      )}
+
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                        <Button
+                          variant="contained"
+                          size="large"
+                          fullWidth
+                          onClick={handleAuthenticate}
+                          disabled={status !== 'idle' || isLoadingDeps}
+                          startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={18} color="inherit" /> : <SecurityIcon />}
+                          sx={{
+                            py: 1.2,
+                            fontSize: '0.95rem',
+                            fontWeight: 600,
+                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                            '&:hover': {
+                              background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
+                            }
+                          }}
+                        >
+                          {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering...' : 'Sign In (Existing Key)'}
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          size="large"
+                          fullWidth
+                          onClick={handleRegister}
+                          disabled={status !== 'idle' || isLoadingDeps}
+                          startIcon={status === 'registering' ? <CircularProgress size={18} color="inherit" /> : <SecurityIcon />}
+                          sx={{
+                            py: 1.2,
+                            fontSize: '0.95rem',
+                            fontWeight: 600,
+                            borderColor: theme.palette.warning.main,
+                            color: theme.palette.warning.main,
+                            '&:hover': {
+                              borderColor: theme.palette.warning.dark,
+                              backgroundColor: alpha(theme.palette.warning.main, 0.08)
+                            }
+                          }}
+                        >
+                          {status === 'registering' ? 'Creating...' : 'Create New Key'}
+                        </Button>
+
+                        <Typography variant="caption" sx={{
+                          textAlign: 'center',
+                          color: 'text.secondary',
+                          mt: 1,
+                          fontSize: '0.75rem'
+                        }}>
+                          Device-secured wallets • Universal browser support
+                        </Typography>
+                      </Box>
+                    </>
+                  )}
+                </Box>
+              </Box>
+            )}
             </StyledPopoverPaper>
           </DialogContent>
         </Dialog>
-      )}
     </div>
   );
 }

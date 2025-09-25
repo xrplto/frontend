@@ -659,8 +659,8 @@ const WalletConnectModal = () => {
                 <Typography variant="subtitle2" gutterBottom>
                   🎉 {walletInfo.isAdditional ? `5 Additional Device Wallets Created!` : `5 Device Wallets Created!`}
                 </Typography>
-                <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
-                  <strong>First Wallet:</strong> {walletInfo.address}
+                <Typography variant="body2" sx={{ mb: 1 }}>
+                  <strong>Wallets Created:</strong> 5 new wallets
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
                   <strong>Total Wallets:</strong> {walletInfo.totalWallets} | <strong>Security:</strong> Protected by your device key
