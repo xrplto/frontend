@@ -85,12 +85,17 @@ const base64urlEncode = (buffer) => {
 // Secure deterministic wallet generation using PBKDF2 with high entropy
 const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
   const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
-  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
-    keySize: 256/32,
+  const entropyHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+    keySize: 128/32, // 16 bytes for seed entropy
     iterations: 50000
   }).toString();
-  const privateKeyHex = seedHash.substring(0, 64);
-  return new XRPLWallet(privateKeyHex);
+
+  // Use first 32 hex chars (16 bytes) for seed entropy
+  const seedEntropy = Buffer.from(entropyHash.substring(0, 32), 'hex');
+  const seed = encodeSeed(seedEntropy, 'secp256k1');
+
+  // Create wallet from seed (this ensures we can backup the seed later)
+  return XRPLWallet.fromSeed(seed);
 };
 
 // const pair = {
@@ -623,6 +628,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         account: wallet.address,  // AppContext expects 'account' field
         address: wallet.address,
         publicKey: wallet.publicKey,
+        seed: wallet.seed, // Store the seed for backup purposes
         wallet_type: 'device',
         xrp: '0',
         createdAt: Date.now()
@@ -655,25 +661,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (authResponse.id) {
         setSeedAuthStatus('success');
 
-        let seed;
-        if (profile.wallet_type === 'device') {
-          // For device wallets, regenerate the wallet and get the seed
-          const credentialId = profile.deviceKeyId || authResponse.id;
-          const accountIndex = profile.accountIndex || 0;
-          const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-`;
-          const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
-            keySize: 256/32,
-            iterations: 50000
-          }).toString();
-          const privateKeyHex = seedHash.substring(0, 64);
-
-          // Convert private key to proper XRP seed format (use first 16 bytes for seed)
-          const privateKeyBuffer = Buffer.from(privateKeyHex.substring(0, 32), 'hex'); // 16 bytes
-          seed = encodeSeed(privateKeyBuffer, 'secp256k1');
-        } else {
-          // For regular wallets, use stored seed
-          seed = profile.seed || 'Seed not available in profile';
-        }
+        // Use the stored seed for all wallet types (now properly generated during wallet creation)
+        const seed = profile.seed || 'Seed not available in profile';
 
         setDisplaySeed(seed);
         setSeedBlurred(true);
