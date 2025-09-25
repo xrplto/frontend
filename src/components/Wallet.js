@@ -1163,23 +1163,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {seedAuthStatus === 'success' && (
                         <>
                           <Alert severity="warning">
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                              ⚠️ Keep this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed phrase'} secure
+                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.8rem' }}>
+                              Keep this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed phrase'} secure
                             </Typography>
-                            <Typography variant="body2" sx={{ mb: 1 }}>
+                            <Typography variant="body2" sx={{ mb: 1, fontSize: '0.75rem' }}>
                               Anyone with access to this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed'} can control your wallet. Store it safely offline.
                             </Typography>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem', opacity: 0.8 }}>
+                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.65rem', opacity: 0.8, wordBreak: 'break-all' }}>
                               Address: {accountLogin}
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.7rem', opacity: 0.7, mt: 0.5 }}>
+                            <Typography variant="body2" sx={{ fontSize: '0.65rem', opacity: 0.7, mt: 0.5 }}>
                               This backup only restores funds in this specific wallet address.
                             </Typography>
                           </Alert>
 
                           <Box sx={{
-                            p: 2,
-                            borderRadius: 2,
+                            py: 0.75,
+                            px: 1,
+                            borderRadius: 1,
                             background: alpha(theme.palette.background.paper, 0.8),
                             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                             fontFamily: 'monospace',
@@ -1209,7 +1210,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <CopyToClipboard
                               text={displaySeed}
                               onCopy={() => {
-                                setSeedBlurred(false);
                                 openSnackbar('Seed copied to clipboard', 'success');
                               }}
                             >
