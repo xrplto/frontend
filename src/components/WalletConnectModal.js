@@ -556,64 +556,35 @@ const WalletConnectModal = () => {
             <Box sx={{
               display: 'flex',
               alignItems: 'center',
-              mb: 3,
-              p: 2,
+              mb: 2,
+              p: 1.5,
               background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
               borderRadius: 2,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
             }}>
-              <ActionButton onClick={handleGoBack} aria-label="Go back" sx={{ mr: 2, flexShrink: 0 }}>
+              <ActionButton onClick={handleGoBack} aria-label="Go back" sx={{ mr: 1.5, flexShrink: 0 }}>
                 <ArrowBackIcon />
               </ActionButton>
-              <Box sx={{ flex: 1 }}>
-                <Typography
-                  variant="h6"
-                  sx={{
-                    fontWeight: 600,
-                    mb: 0.5,
-                    color: theme.palette.primary.main,
-                    fontSize: '1.1rem'
-                  }}
-                >
-                  Device Authentication
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    color: theme.palette.text.secondary,
-                    lineHeight: 1.4
-                  }}
-                >
-                  Secure wallet access using your device's biometric authentication
-                </Typography>
-              </Box>
-              <SecurityIcon sx={{
-                fontSize: 28,
-                color: theme.palette.primary.main,
-                opacity: 0.7,
-                ml: 1
-              }} />
+              <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
+                Device Authentication
+              </Typography>
+              <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
             </Box>
 
             <Box sx={{
-              mb: 3,
-              p: 2,
-              textAlign: 'left',
-              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.light, 0.04)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-              borderRadius: 2
+              mb: 2,
+              p: 1.5,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+              borderRadius: 2,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1
             }}>
-              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
-                <SecurityIcon sx={{ fontSize: 22, mt: 0.25, color: theme.palette.info.main }} />
-                <Box>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: theme.palette.info.main }}>
-                    Important: One Passkey = One Set of Wallets
-                  </Typography>
-                  <Typography variant="body2" sx={{ opacity: 0.9, lineHeight: 1.5 }}>
-                    Each passkey creates different XRPL accounts. Use the same passkey across devices to access the same wallets.
-                  </Typography>
-                </Box>
-              </Box>
+              <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
+              <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
+                One Passkey = One Set of Wallets
+              </Typography>
             </Box>
 
             {error && (
@@ -674,94 +645,57 @@ const WalletConnectModal = () => {
               </Alert>
             )}
 
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
-              {/* Primary Action - Sign In */}
-              <Box sx={{
-                p: 2,
-                background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.light, 0.04)} 100%)`,
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
-              }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, color: theme.palette.success.main }}>
-                  Returning User
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.4 }}>
-                  Use your existing passkey to access your XRPL accounts
-                </Typography>
-                <Button
-                  variant="contained"
-                  size="large"
-                  fullWidth
-                  onClick={handleAuthenticate}
-                  disabled={status !== 'idle' || isLoadingDeps}
-                  startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} color="inherit" /> : <SecurityIcon />}
-                  sx={{
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`,
-                    '&:hover': {
-                      background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
-                      boxShadow: `0 6px 16px ${alpha(theme.palette.success.main, 0.4)}`
-                    }
-                  }}
-                >
-                  {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering Accounts...' : 'Sign In with Existing Passkey'}
-                </Button>
-              </Box>
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+              <Button
+                variant="contained"
+                size="large"
+                fullWidth
+                onClick={handleAuthenticate}
+                disabled={status !== 'idle' || isLoadingDeps}
+                startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={18} color="inherit" /> : <SecurityIcon />}
+                sx={{
+                  py: 1.2,
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                  '&:hover': {
+                    background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
+                  }
+                }}
+              >
+                {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering...' : 'Sign In (Existing User)'}
+              </Button>
 
-              {/* Secondary Action - Create New */}
-              <Box sx={{
-                p: 2,
-                background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 100%)`,
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`
-              }}>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, color: theme.palette.warning.main }}>
-                  New User
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.4 }}>
-                  Create a new passkey to generate fresh XRPL accounts
-                </Typography>
-                <Button
-                  variant="outlined"
-                  size="large"
-                  fullWidth
-                  onClick={handleRegister}
-                  disabled={status !== 'idle' || isLoadingDeps}
-                  startIcon={status === 'registering' ? <CircularProgress size={20} color="inherit" /> : <SecurityIcon />}
-                  sx={{
-                    py: 1.5,
-                    fontSize: '1rem',
-                    fontWeight: 600,
-                    borderColor: theme.palette.warning.main,
-                    color: theme.palette.warning.main,
-                    borderWidth: 2,
-                    '&:hover': {
-                      borderColor: theme.palette.warning.dark,
-                      backgroundColor: alpha(theme.palette.warning.main, 0.08),
-                      borderWidth: 2
-                    }
-                  }}
-                >
-                  {status === 'registering' ? 'Creating Passkey...' : 'Create New Passkey'}
-                </Button>
-              </Box>
+              <Button
+                variant="outlined"
+                size="large"
+                fullWidth
+                onClick={handleRegister}
+                disabled={status !== 'idle' || isLoadingDeps}
+                startIcon={status === 'registering' ? <CircularProgress size={18} color="inherit" /> : <SecurityIcon />}
+                sx={{
+                  py: 1.2,
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  borderColor: theme.palette.warning.main,
+                  color: theme.palette.warning.main,
+                  '&:hover': {
+                    borderColor: theme.palette.warning.dark,
+                    backgroundColor: alpha(theme.palette.warning.main, 0.08)
+                  }
+                }}
+              >
+                {status === 'registering' ? 'Creating...' : 'Create New Passkey'}
+              </Button>
 
-              {/* Security Notice */}
-              <Box sx={{
-                p: 2,
-                background: alpha(theme.palette.background.paper, 0.6),
-                borderRadius: 2,
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                textAlign: 'center'
+              <Typography variant="caption" sx={{
+                textAlign: 'center',
+                color: 'text.secondary',
+                mt: 1,
+                fontSize: '0.75rem'
               }}>
-                <SecurityIcon sx={{ fontSize: 24, color: theme.palette.text.secondary, mb: 1, opacity: 0.7 }} />
-                <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
-                  Your private keys are generated locally and never leave your device
-                </Typography>
-              </Box>
+                Keys generated locally • Never leave your device
+              </Typography>
             </Box>
           </>
         )}
