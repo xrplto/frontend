@@ -139,7 +139,7 @@ npm run analyze
 - **Blockchain**: XRPL library v3.1.0
 - **Charts**: Highcharts, ApexCharts, ECharts, Recharts
 - **Real-time**: WebSocket (react-use-websocket, socket.io-client)
-- **Wallets**: GemWallet, Crossmark SDK
+- **Wallets**: Device Authentication (WebAuthn/Passkeys)
 
 ### Directory Structure
 - `pages/` - Next.js routes (token details, swap, collections, etc.)
@@ -155,7 +155,7 @@ npm run analyze
 2. **NFT Marketplace**: Collection browsing, NFT trading, offer management
 3. **DEX Trading**: Direct trading with order placement
 4. **Portfolio Management**: User holdings tracking for tokens and NFTs
-5. **Multi-wallet Support**: GemWallet and Crossmark integration
+5. **Device Authentication**: WebAuthn/Passkey-based wallet system with deterministic multi-wallet support
 
 ## Environment Configuration
 

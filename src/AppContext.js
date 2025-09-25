@@ -29,10 +29,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const [open, setOpen] = useState(false);
   const [openWalletModal, setOpenWalletModal] = useState(false);
-  const [openLogin, setOpenLogin] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
   const [accountBalance, setAccountBalance] = useState(null);
   const [watchList, setWatchList] = useState([]);
   const [metricsLoaded, setMetricsLoaded] = useState(false);
@@ -173,88 +169,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setProfiles(newProfiles);
   };
 
-  useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    if (openLogin) {
-      timer = setInterval(async () => {
-        if (isRunning) return;
-        isRunning = true;
-        try {
-          const res = await axios.get(`${BASE_URL}/account/login/${uuid}`);
-          const ret = res?.data;
-          if (ret?.profile) {
-            const profile = ret.profile;
-            // setOpen(true);
-            setOpenLogin(false);
-            setOpenWalletModal(false);
-            doLogIn({ ...profile, wallet_type: 'xaman' });
-            return;
-          }
-        } catch (err) {}
-        isRunning = false;
-        counter--;
-        if (counter <= 0) {
-          setOpenLogin(false);
-          setOpenWalletModal(false);
-        }
-      }, 2000);
-    }
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [openLogin, uuid, doLogIn]);
 
-  const onConnectXumm = async () => {
-    setOpenLogin(true);
-    setConnecting(true);
-    try {
-      const res = await axios.post(`${BASE_URL}/account/login`);
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
-
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-      }
-    } catch (err) {
-      alert(err);
-    }
-    setConnecting(false);
-  };
-
-  const onCancelLoginXumm = async (xuuid) => {
-    setConnecting(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/account/cancellogin/${xuuid}`);
-      if (res.status === 200) {
-      }
-    } catch (err) {}
-    setUuid(null);
-    setConnecting(false);
-  };
-
-  const onLogoutXumm = async () => {
-    setConnecting(true);
-    setOpenLogin(false);
-    try {
-      const accountToken = accountProfile?.token;
-      const accountUuid = accountProfile?.xuuid;
-      const res = await axios.delete(`${BASE_URL}/account/logout/${accountLogin}/${accountUuid}`, {
-        headers: { 'x-access-token': accountToken }
-      });
-      if (res.status === 200) {
-      }
-    } catch (err) {}
-    doLogOut();
-    setUuid(null);
-    setConnecting(false);
-  };
 
   const handleOpen = () => {
     setOpen(true);
@@ -266,19 +181,12 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const handleLogin = () => {
     setOpen(false);
-    onConnectXumm();
+    setOpenWalletModal(true);
   };
 
   const handleLogout = () => {
     setOpen(false);
-    onLogoutXumm();
-  };
-
-  const handleLoginClose = () => {
-    setOpenLogin(false);
-    setOpenWalletModal(false);
-    onCancelLoginXumm(uuid);
-    setOpenWalletModal(false);
+    doLogOut();
   };
 
   useEffect(() => {
@@ -412,26 +320,14 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       toggleFiatCurrency,
       open,
       setOpen,
-      openLogin,
-      setOpenLogin,
       openWalletModal,
       setOpenWalletModal,
-      uuid,
-      setUuid,
-      qrUrl,
-      setQrUrl,
-      nextUrl,
-      setNextUrl,
       accountBalance,
       setAccountBalance,
-      onConnectXumm,
-      onCancelLoginXumm,
-      onLogoutXumm,
       handleOpen,
       handleClose,
       handleLogin,
       handleLogout,
-      handleLoginClose,
       connecting,
       setConnecting,
       deletingNfts,
@@ -447,11 +343,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       sync,
       activeFiatCurrency,
       open,
-      openLogin,
       openWalletModal,
-      uuid,
-      qrUrl,
-      nextUrl,
       accountBalance,
       connecting,
       deletingNfts,

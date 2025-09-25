@@ -42,9 +42,7 @@ import { fNumber } from 'src/utils/formatNumber';
 import Decimal from 'decimal.js-light';
 
 import { ConnectWallet } from './WalletConnectModal';
-import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';
 import { enqueueSnackbar } from 'notistack';
-import sdk from '@crossmarkio/sdk';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import CustomDialog from './Dialog';
 

@@ -6,11 +6,9 @@
   "author": "Yannier",
   "private": true,
   "dependencies": {
-    "@crossmarkio/sdk": "^0.4.0",
     "@emotion/react": "^11.14.0",
     "@emotion/server": "^11.11.0",
     "@emotion/styled": "^11.14.1",
-    "@gemwallet/api": "^3.8.0",
     "@mui/icons-material": "^7.3.2",
     "@mui/material": "^7.3.2",
     "@mui/system": "^7.3.2",

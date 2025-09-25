@@ -151,7 +151,7 @@ export function utcToRippleEpocheTime(utcTime) {
   return utcTime / 1000 - 946684800;
 }
 
-export function normalizeCurrencyCodeXummImpl(currencyCode, maxLength = 20) {
+export function normalizeCurrencyCode(currencyCode, maxLength = 20) {
   if (!currencyCode) return '';
 
   // Native XRP
@@ -239,7 +239,7 @@ export function normalizeAmount(Amount) {
     issuer = Amount.issuer;
     currency = Amount.currency;
     amount = new Decimal(Amount.value).toNumber();
-    name = normalizeCurrencyCodeXummImpl(currency);
+    name = normalizeCurrencyCode(currency);
   } else {
     amount = new Decimal(Amount).div(1000000).toNumber();
   }
