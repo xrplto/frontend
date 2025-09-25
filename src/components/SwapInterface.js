@@ -72,10 +72,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber } from 'src/utils/formatNumber';
 
 // Components
-const ConnectWallet = dynamic(() => import('src/components/WalletConnectModal').then(mod => ({ default: mod.ConnectWallet })), {
-  loading: () => <Button fullWidth>Loading wallet...</Button>,
-  ssr: false
-});
+import Wallet from 'src/components/Wallet';
 const QRDialog = dynamic(() => import('src/components/QRDialog'), {
   loading: () => null,
   ssr: false
@@ -1771,6 +1768,65 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 dispatch(updateProcess(3));
               }
             });
+          break;
+
+        case 'device':
+          try {
+            // Import XRPL for transaction signing
+            const { Client, TrustSet, Wallet: XRPLWallet } = await import('xrpl');
+
+            dispatch(updateProcess(1));
+
+            // Get the device wallet's private key
+            const profile = accountProfile;
+            if (!profile.deviceKeyId || profile.accountIndex === undefined) {
+              throw new Error('Device wallet information missing');
+            }
+
+            // Recreate the deterministic wallet
+            const { default: CryptoJS } = await import('crypto-js');
+            const entropyString = `passkey-wallet-${profile.deviceKeyId}-${profile.accountIndex}-`;
+            const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${profile.deviceKeyId}`, {
+              keySize: 256/32,
+              iterations: 50000
+            }).toString();
+            const privateKeyHex = seedHash.substring(0, 64);
+
+            // Create XRPL wallet from private key
+            const wallet = new XRPLWallet(privateKeyHex);
+
+            // Connect to XRPL
+            const client = new Client('wss://xrplcluster.com');
+            await client.connect();
+
+            // Create TrustSet transaction
+            const trustSetTx = {
+              TransactionType: 'TrustSet',
+              Account: Account,
+              LimitAmount: LimitAmount,
+              Flags: Flags
+            };
+
+            // Submit transaction
+            const result = await client.submitAndWait(trustSetTx, { wallet });
+
+            await client.disconnect();
+
+            if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+              dispatch(updateProcess(2));
+              dispatch(updateTxHash(result.result.hash));
+              setTimeout(() => {
+                setSync(sync + 1);
+                dispatch(updateProcess(0));
+              }, 1500);
+              enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+            } else {
+              throw new Error('Transaction failed');
+            }
+          } catch (error) {
+            dispatch(updateProcess(3));
+            enqueueSnackbar(`Failed to create trustline: ${error.message}`, { variant: 'error' });
+          }
           break;
       }
     } catch (err) {
@@ -4180,22 +4236,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           {handleMsg()}
                         </ExchangeButton>
                       ) : (
-                        <Box
-                          sx={{
-                            width: '100%',
-                            '& .MuiButton-root': {
-                              width: '100% !important',
-                              minWidth: '100% !important',
-                              padding: '14px 24px !important',
-                              minHeight: '52px !important',
-                              fontSize: '16px !important',
-                              borderRadius: '12px !important',
-                              textTransform: 'none !important'
-                            }
-                          }}
-                        >
-                          <ConnectWallet pair={pair} />
-                        </Box>
+                        <Wallet
+                          style={{ width: '100%' }}
+                          buttonOnly={true}
+                        />
                       )}
                     </Box>
                   </Box>
