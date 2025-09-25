@@ -44,7 +44,6 @@ import { ConnectWallet } from 'src/components/WalletConnectModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 // import { isInstalled, submitTransaction } from '@gemwallet/api';
-// import sdk from '@crossmarkio/sdk';
 import { enqueueSnackbar } from 'notistack';
 import QRDialog from 'src/components/QRDialog';
 import Decimal from 'decimal.js-light';
@@ -389,11 +388,6 @@ export default function Advertise() {
           dispatch(updateProcess(0));
           break;
 
-        case 'crossmark':
-          // Crossmark functionality temporarily disabled - missing @crossmarkio/sdk dependency
-          openSnackbar('Crossmark payment temporarily unavailable', 'error');
-          dispatch(updateProcess(0));
-          break;
       }
     } catch (err) {
       console.error('Payment error:', err);

@@ -41,7 +41,6 @@ import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js-light';
 import axios from 'axios';
 import { throttle } from 'src/utils/lodashLite';
-// import sdk from "@crossmarkio/sdk";
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
@@ -481,64 +480,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
   }, [isProcessing, isClosed]);
 
-  useEffect(() => {
-    let isMounted = true;
-    let cleanup;
-
-    const initializeCrossmark = async () => {
-      if (isDesktop && typeof window !== 'undefined') {
-        try {
-          // Check if we're in a desktop browser environment before importing
-          const userAgent = window.navigator.userAgent.toLowerCase();
-          const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(
-            userAgent
-          );
-
-          if (isMobile) {
-            return; // Don't attempt to load Crossmark on mobile devices
-          }
-
-          // Dynamically import the SDK with preconnect hint
-          const link = document.createElement('link');
-          link.rel = 'preconnect';
-          link.href = 'https://crossmarkio.com';
-          document.head.appendChild(link);
-
-          const { default: CrossmarkSDK } = await import(
-            /* webpackPreload: true */ '@crossmarkio/sdk'
-          );
-
-          if (isMounted && CrossmarkSDK && typeof CrossmarkSDK.on === 'function') {
-            const handleClose = () => {
-              if (isMounted) {
-                setIsClosed(true);
-              }
-            };
-
-            CrossmarkSDK.on('close', handleClose);
-
-            cleanup = () => {
-              if (CrossmarkSDK && typeof CrossmarkSDK.off === 'function') {
-                CrossmarkSDK.off('close', handleClose);
-              }
-            };
-          }
-        } catch (error) {
-          // Log error but don't display to user
-          console.debug('Crossmark SDK not available:', error);
-        }
-      }
-    };
-
-    // Delay initialization to improve initial load
-    const timer = setTimeout(initializeCrossmark, 100);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-      if (cleanup) cleanup();
-    };
-  }, [isDesktop]);
 
 
   return (
