@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
 
 // Lazy load heavy dependencies
-let startRegistration, startAuthentication, CryptoJS;
+let startRegistration, startAuthentication, CryptoJS, scrypt;
 
 // Material
 import {
@@ -82,13 +82,42 @@ const base64urlEncode = (buffer) => {
     .replace(/=/g, '');
 };
 
-// Secure deterministic wallet generation using PBKDF2 with high entropy
-const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
-  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
-  const entropyHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
-    keySize: 128/32, // 16 bytes for seed entropy
-    iterations: 50000
-  }).toString();
+// Secure deterministic wallet generation using scrypt with PBKDF2 fallback
+const generateSecureDeterministicWallet = async (credentialId, accountIndex) => {
+  // Use only truly deterministic entropy sources (stable across sessions/devices)
+  // Note: Removed screen resolution and other variable device characteristics
+  // to ensure wallet recovery consistency
+
+  // Combine stable entropy sources
+  const baseEntropy = `passkey-wallet-v2-${credentialId}-${accountIndex}`;
+  const combinedEntropy = CryptoJS.SHA256(baseEntropy).toString();
+  const salt = `salt-${credentialId}-enhanced-v2`;
+
+  let entropyHash;
+
+  try {
+    // Try scrypt first (most secure for crypto wallets)
+    if (scrypt && typeof scrypt.scrypt === 'function') {
+      const scryptResult = await scrypt.scrypt(
+        Buffer.from(combinedEntropy, 'utf8'),
+        Buffer.from(salt, 'utf8'),
+        16384, // N (CPU cost)
+        8,     // r (memory cost)
+        1,     // p (parallelization)
+        16     // output length in bytes
+      );
+      entropyHash = Array.from(scryptResult).map(b => b.toString(16).padStart(2, '0')).join('');
+    } else {
+      throw new Error('Scrypt not available, using PBKDF2 fallback');
+    }
+  } catch (error) {
+    // Fallback to enhanced PBKDF2 with 600,000 iterations
+    console.log('Using PBKDF2 fallback for wallet generation');
+    entropyHash = CryptoJS.PBKDF2(combinedEntropy, salt, {
+      keySize: 128/32, // 16 bytes for seed entropy
+      iterations: 600000
+    }).toString();
+  }
 
   // Use first 32 hex chars (16 bytes) for seed entropy
   const seedEntropy = Buffer.from(entropyHash.substring(0, 32), 'hex');
@@ -96,6 +125,30 @@ const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntro
 
   // Create wallet from seed (this ensures we can backup the seed later)
   return XRPLWallet.fromSeed(seed);
+};
+
+// Test function to verify deterministic wallet generation consistency
+const testWalletConsistency = async () => {
+  if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+    try {
+      const testCredId = 'test-credential-id-12345';
+      const wallet1 = await generateSecureDeterministicWallet(testCredId, 0);
+      const wallet2 = await generateSecureDeterministicWallet(testCredId, 0);
+
+      const isConsistent = wallet1.address === wallet2.address &&
+                          wallet1.seed === wallet2.seed;
+
+      console.log('🔐 Wallet Generation Test:', {
+        consistent: isConsistent,
+        address1: wallet1.address.slice(0, 10) + '...',
+        address2: wallet2.address.slice(0, 10) + '...',
+        seedMatch: wallet1.seed === wallet2.seed,
+        algorithm: scrypt && typeof scrypt.scrypt === 'function' ? 'scrypt' : 'PBKDF2-enhanced'
+      });
+    } catch (error) {
+      console.error('Wallet consistency test failed:', error);
+    }
+  }
 };
 
 // const pair = {
@@ -529,15 +582,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const loadDependencies = async () => {
     if (!startRegistration || !startAuthentication || !CryptoJS) {
       setIsLoadingDeps(true);
-      const [webauthnModule, cryptoModule] = await Promise.all([
+      const [webauthnModule, cryptoModule, scryptModule] = await Promise.all([
         import('@simplewebauthn/browser'),
-        import('crypto-js')
+        import('crypto-js'),
+        import('scrypt-js').catch(() => null) // Optional import, fallback to PBKDF2 if fails
       ]);
 
       startRegistration = webauthnModule.startRegistration;
       startAuthentication = webauthnModule.startAuthentication;
       CryptoJS = cryptoModule.default;
+      scrypt = scryptModule || null;
       setIsLoadingDeps(false);
+
+      // Test wallet consistency in development
+      if (process.env.NODE_ENV === 'development') {
+        testWalletConsistency();
+      }
     }
   };
 
@@ -618,10 +678,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     checkVisibleAccountsActivation();
   }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity]);
 
-  const generateWalletsFromDeviceKey = (deviceKeyId) => {
+  const generateWalletsFromDeviceKey = async (deviceKeyId) => {
     const wallets = [];
     for (let i = 0; i < 5; i++) {
-      const wallet = generateSecureDeterministicWallet(deviceKeyId, i);
+      const wallet = await generateSecureDeterministicWallet(deviceKeyId, i);
       const walletData = {
         deviceKeyId,
         accountIndex: i,
@@ -744,7 +804,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (registrationResponse.id) {
         // Generate the standard 5 wallets deterministically
-        const wallets = generateWalletsFromDeviceKey(registrationResponse.id);
+        const wallets = await generateWalletsFromDeviceKey(registrationResponse.id);
 
         const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
@@ -846,7 +906,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setStatus('discovering');
 
         // Always generate the same 5 wallets deterministically
-        const wallets = generateWalletsFromDeviceKey(authResponse.id);
+        const wallets = await generateWalletsFromDeviceKey(authResponse.id);
 
         const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
@@ -933,7 +993,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (authResponse.id) {
         // Always generate the same 5 wallets deterministically
-        const wallets = generateWalletsFromDeviceKey(authResponse.id);
+        const wallets = await generateWalletsFromDeviceKey(authResponse.id);
 
         // Check if any of these wallets already exist in profiles
         const existingWallet = profiles.find(p =>
