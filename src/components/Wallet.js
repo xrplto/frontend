@@ -224,7 +224,7 @@ const WalletContent = ({
     <>
       {/* Header */}
       <Box sx={{
-        p: 2,
+        p: 1.5,
         background: theme.palette.mode === 'dark'
           ? 'rgba(0,0,0,0.3)'
           : 'rgba(255,255,255,0.7)',
@@ -279,14 +279,14 @@ const WalletContent = ({
 
       {/* Balance Display */}
       <Box sx={{
-        p: isEmbedded ? 3 : 4,
+        p: isEmbedded ? 2 : 2.5,
         textAlign: 'center',
         background: theme.palette.mode === 'dark'
           ? 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 50%)'
           : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 50%)'
       }}>
         <Typography sx={{
-          fontSize: isEmbedded ? '2.5rem' : '3.5rem',
+          fontSize: isEmbedded ? '2rem' : '2.5rem',
           fontWeight: 900,
           lineHeight: 1,
           fontFamily: 'system-ui',
@@ -294,7 +294,7 @@ const WalletContent = ({
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
-          mb: isEmbedded ? 0.5 : 1
+          mb: isEmbedded ? 0.5 : 0.5
         }}>
           {accountBalance?.curr1?.value || '0'}
         </Typography>
@@ -310,45 +310,45 @@ const WalletContent = ({
       </Box>
 
       {/* Stats Grid */}
-      <Box sx={{ px: isEmbedded ? 2 : 3, pb: isEmbedded ? 2 : 3 }}>
+      <Box sx={{ px: isEmbedded ? 1.5 : 2, pb: isEmbedded ? 1.5 : 2 }}>
         <Box sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 1,
-          mb: isEmbedded ? 2 : 3
+          gap: 0.8,
+          mb: isEmbedded ? 1.5 : 2
         }}>
           <Box sx={{
-            p: isEmbedded ? 1.5 : 2,
-            borderRadius: isEmbedded ? '8px' : '12px',
+            p: isEmbedded ? 1 : 1.5,
+            borderRadius: isEmbedded ? '6px' : '8px',
             background: alpha(theme.palette.primary.main, 0.05),
             textAlign: 'center'
           }}>
-            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700 }}>
+            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 700 }}>
               {accountBalance?.curr1?.value || '0'}
             </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.6rem' : '0.65rem', opacity: 0.7 }}>Available</Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Available</Typography>
           </Box>
           <Box sx={{
-            p: isEmbedded ? 1.5 : 2,
-            borderRadius: isEmbedded ? '8px' : '12px',
+            p: isEmbedded ? 1 : 1.5,
+            borderRadius: isEmbedded ? '6px' : '8px',
             background: alpha(theme.palette.warning.main, 0.05),
             textAlign: 'center'
           }}>
             <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700, color: theme.palette.warning.main }}>
               {Number(accountTotalXrp) - Number(accountBalance?.curr1?.value) || '0'}
             </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.6rem' : '0.65rem', opacity: 0.7 }}>Reserved</Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Reserved</Typography>
           </Box>
           <Box sx={{
-            p: isEmbedded ? 1.5 : 2,
-            borderRadius: isEmbedded ? '8px' : '12px',
+            p: isEmbedded ? 1 : 1.5,
+            borderRadius: isEmbedded ? '6px' : '8px',
             background: alpha(theme.palette.success.main, 0.05),
             textAlign: 'center'
           }}>
-            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700 }}>
+            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 700 }}>
               {accountTotalXrp || '0'}
             </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.6rem' : '0.65rem', opacity: 0.7 }}>Total</Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Total</Typography>
           </Box>
         </Box>
 
@@ -385,7 +385,7 @@ const WalletContent = ({
                   onClick={() => onAccountSwitch(account)}
                   sx={{
                     px: 2,
-                    py: isEmbedded ? 1.2 : 1.5,
+                    py: isEmbedded ? 1 : 1.2,
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
@@ -430,28 +430,31 @@ const WalletContent = ({
 
       {/* Bottom Actions */}
       <Box sx={{
-        p: 2,
+        p: 1.5,
         borderTop: isEmbedded ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none',
         display: 'flex',
-        gap: 1
+        gap: 0.5
       }}>
         <Button
           onClick={onLogout}
+          size="small"
           sx={{
-            px: isEmbedded ? 2 : 3,
-            py: isEmbedded ? 1.2 : 1.5,
-            borderRadius: isEmbedded ? '8px' : '5px',
+            px: isEmbedded ? 1 : 1.5,
+            py: isEmbedded ? 0.5 : 0.8,
+            minWidth: isEmbedded ? 'auto' : '70px',
+            borderRadius: isEmbedded ? '6px' : '6px',
             background: alpha(theme.palette.error.main, 0.1),
             color: theme.palette.error.main,
             fontWeight: 600,
-            fontSize: isEmbedded ? '0.8rem' : '0.85rem',
+            fontSize: isEmbedded ? '0.75rem' : '0.8rem',
             textTransform: 'none',
             '&:hover': {
               background: alpha(theme.palette.error.main, 0.15)
             }
           }}
         >
-          <LogoutIcon sx={{ fontSize: isEmbedded ? 16 : 18 }} />
+          <LogoutIcon sx={{ fontSize: isEmbedded ? 14 : 16, mr: isEmbedded ? 0 : 0.5 }} />
+          {!isEmbedded && 'Logout'}
         </Button>
       </Box>
     </>
@@ -1019,7 +1022,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           sx={{
             '& .MuiDialog-paper': {
               borderRadius: '16px',
-              maxWidth: '360px',
+              maxWidth: '320px',
               minHeight: accountProfile ? 'auto' : 'auto',
               background: 'transparent',
               boxShadow: 'none',
