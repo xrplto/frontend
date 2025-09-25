@@ -13,8 +13,8 @@ import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useDispatch } from 'react-redux';
-import { createOffer, isInstalled } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
+
+
 
 // Components
 import { ConnectWallet } from 'src/components/WalletConnectModal';

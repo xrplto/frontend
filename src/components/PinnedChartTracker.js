@@ -35,8 +35,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, updateProcess, updateTxHash } from '../redux/transactionSlice';
 import { enqueueSnackbar } from 'notistack';
 import Decimal from 'decimal.js-light';
-import { isInstalled, setTrustline, submitTransaction } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
 import QRDialog from './QRDialog';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 

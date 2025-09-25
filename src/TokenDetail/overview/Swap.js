@@ -32,8 +32,8 @@ import { currencySymbols, XRP_TOKEN } from 'src/utils/constants';
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatNumber';
 import useWebSocket from 'react-use-websocket';
-import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
+
+
 import { configureMemos } from 'src/utils/parse/OfferChanges';
 import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Image from 'next/image';

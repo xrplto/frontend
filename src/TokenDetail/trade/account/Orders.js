@@ -42,8 +42,8 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Wallet SDK
-import sdk from '@crossmarkio/sdk';
-import { isInstalled as isGemInstalled, submitTransaction } from '@gemwallet/api';
+
+
 
 // Components
 import QRDialog from 'src/components/QRDialog';

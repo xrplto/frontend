@@ -17,8 +17,6 @@ import { PulseLoader } from 'react-spinners';
 // Components
 import QRDialog from 'src/components/QRDialog';
 import ConfirmBurnDialog from './ConfirmBurnDialog';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch } from 'react-redux';
 import { configureMemos } from 'src/utils/parse/OfferChanges';

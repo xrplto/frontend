@@ -61,8 +61,6 @@ import ListIcon from '@mui/icons-material/List';
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { isInstalled, submitTransaction, setTrustline } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';

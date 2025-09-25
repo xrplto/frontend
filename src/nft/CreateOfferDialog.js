@@ -39,8 +39,6 @@ import { XRP_TOKEN } from 'src/utils/constants';
 // Components
 import QRDialog from 'src/components/QRDialog';
 import { configureMemos } from 'src/utils/parse/OfferChanges';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
