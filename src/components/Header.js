@@ -27,6 +27,7 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import PaletteIcon from '@mui/icons-material/Palette';
 import SettingsIcon from '@mui/icons-material/Settings';
+import CheckIcon from '@mui/icons-material/Check';
 import { useTranslation } from 'react-i18next';
 import {
   useState,
@@ -54,7 +55,7 @@ import Wallet from 'src/components/Wallet';
 import { GlobalNotificationButton } from 'src/components/PriceNotifications';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
-import { currencySymbols, getTokenImageUrl, decodeCurrency, BASE_URL } from 'src/utils/constants';
+import { currencySymbols, getTokenImageUrl, decodeCurrency, BASE_URL, currencyConfig, currencyIcons } from 'src/utils/constants';
 
 // Dynamic imports for switchers
 const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), {
@@ -361,7 +362,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const { darkMode, setDarkMode, accountProfile, activeFiatCurrency } = useContext(AppContext);
+  const { darkMode, setDarkMode, accountProfile, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme } = useContext(AppContext);
   const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
   const [tokensMenuOpen, setTokensMenuOpen] = useState(false);
   const openTokensMenu = Boolean(tokensAnchorEl);
@@ -926,7 +927,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   PaperProps={{
                     sx: {
                       mt: 1,
-                      minWidth: 200,
+                      minWidth: 240,
                       borderRadius: '8px',
                       border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       background: theme.palette.mode === 'dark'
@@ -942,48 +943,122 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     }
                   }}
                 >
-                  {/* Currency Setting */}
-                  <Box sx={{
-                    px: 2,
-                    py: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.action.hover, 0.05)
-                    },
-                    borderRadius: '6px',
-                    mb: 0.5
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <SwapHorizIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Currency
-                      </Typography>
-                    </Box>
-                    <CurrencySwitcher />
-                  </Box>
+                  {/* Currency Section Header */}
+                  <Typography
+                    variant="overline"
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      color: theme.palette.text.secondary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}
+                  >
+                    <SwapHorizIcon sx={{ fontSize: 14 }} />
+                    CURRENCY
+                  </Typography>
 
-                  {/* Theme Setting */}
-                  <Box sx={{
-                    px: 2,
-                    py: 1.5,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.action.hover, 0.05)
-                    },
-                    borderRadius: '6px'
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                      <PaletteIcon sx={{ fontSize: 18, color: theme.palette.secondary.main }} />
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                        Theme
-                      </Typography>
-                    </Box>
-                    <ThemeSwitcher />
-                  </Box>
+                  {/* Currency Options */}
+                  {currencyConfig.availableFiatCurrencies.map((currency) => (
+                    <MenuItem
+                      key={currency}
+                      onClick={() => {
+                        toggleFiatCurrency(currency);
+                        handleSettingsClose();
+                      }}
+                      selected={currency === activeFiatCurrency}
+                      sx={{
+                        mx: 1,
+                        borderRadius: '6px',
+                        mb: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.15)
+                          }
+                        }
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
+                        {currencyIcons[currency]}
+                        <Typography variant="body2" sx={{ flex: 1, fontWeight: currency === activeFiatCurrency ? 600 : 400 }}>
+                          {currency}
+                        </Typography>
+                        {currency === activeFiatCurrency && (
+                          <CheckIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
+                        )}
+                      </Stack>
+                    </MenuItem>
+                  ))}
+
+                  <Divider sx={{ my: 1 }} />
+
+                  {/* Theme Section Header */}
+                  <Typography
+                    variant="overline"
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      fontSize: '0.7rem',
+                      fontWeight: 700,
+                      color: theme.palette.text.secondary,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1
+                    }}
+                  >
+                    <PaletteIcon sx={{ fontSize: 14 }} />
+                    THEME
+                  </Typography>
+
+                  {/* Theme Options */}
+                  {[
+                    { id: 'XrplToLightTheme', name: 'Light', color: '#ffffff', border: true },
+                    { id: 'XrplToDarkTheme', name: 'Dark', color: '#000000' },
+                    { id: 'SyncWaveTheme', name: 'Sync Wave', color: '#00ffff', glow: true }
+                  ].map((themeOption) => (
+                    <MenuItem
+                      key={themeOption.id}
+                      onClick={() => {
+                        setTheme(themeOption.id);
+                        handleSettingsClose();
+                      }}
+                      selected={themeName === themeOption.id}
+                      sx={{
+                        mx: 1,
+                        borderRadius: '6px',
+                        mb: 0.5,
+                        '&.Mui-selected': {
+                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          '&:hover': {
+                            backgroundColor: alpha(theme.palette.primary.main, 0.15)
+                          }
+                        }
+                      }}
+                    >
+                      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
+                        <Box
+                          sx={{
+                            width: 18,
+                            height: 18,
+                            borderRadius: '4px',
+                            backgroundColor: themeOption.color,
+                            border: themeOption.border ? '1px solid #e0e0e0' : 'none',
+                            boxShadow: themeOption.glow ? `0 0 8px ${themeOption.color}` : 'none'
+                          }}
+                        />
+                        <Typography variant="body2" sx={{ flex: 1, fontWeight: themeName === themeOption.id ? 600 : 400 }}>
+                          {themeOption.name}
+                        </Typography>
+                        {themeName === themeOption.id && (
+                          <CheckIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
+                        )}
+                      </Stack>
+                    </MenuItem>
+                  ))}
                 </Menu>
 
                 <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
