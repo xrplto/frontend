@@ -10,23 +10,17 @@ import Typography from '@mui/material/Typography';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
-import Skeleton from '@mui/material/Skeleton';
 import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import styled from '@emotion/styled';
 import ClearIcon from '@mui/icons-material/Clear';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DownloadIcon from '@mui/icons-material/Download';
 import { AccountBalanceWallet as AccountBalanceWalletIcon, Security as SecurityIcon } from '@mui/icons-material';
-import { enqueueSnackbar } from 'notistack';
 import { useTranslation } from 'react-i18next';
 
-import { isInstalled, getPublicKey, signMessage } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
 
 import { AppContext } from 'src/AppContext';
-import axios from 'axios';
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
@@ -169,37 +163,6 @@ const RecommendedChip = styled('div')(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
 }));
 
-const QRContainer = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: theme.spacing(2),
-  padding: theme.spacing(2, 0)
-}));
-
-const StyledQRImage = styled('img')({
-  maxWidth: '200px',
-  width: '100%',
-  height: 'auto',
-  borderRadius: '8px'
-});
-
-const OpenXamanButton = styled(Link)(({ theme }) => ({
-  borderRadius: '8px',
-  border: `1px solid ${theme.palette.primary.main}`,
-  padding: theme.spacing(1.5, 3),
-  marginTop: theme.spacing(1),
-  cursor: 'pointer',
-  transition: 'all 0.2s ease',
-  textDecoration: 'none',
-  display: 'inline-block',
-  color: theme.palette.primary.main,
-  fontWeight: 500,
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-    transform: 'translateY(-1px)'
-  }
-}));
 
 const WalletConnectModal = () => {
   const theme = useTheme();
@@ -210,13 +173,6 @@ const WalletConnectModal = () => {
     darkMode,
     openWalletModal,
     setOpenWalletModal,
-    openLogin,
-    qrUrl,
-    nextUrl,
-    connecting,
-    handleLoginClose,
-    handleLogin,
-    onLogoutXumm,
     doLogIn
   } = useContext(AppContext);
 
@@ -224,87 +180,7 @@ const WalletConnectModal = () => {
     setOpenWalletModal(false);
   };
 
-  const handleConnectGem = () => {
-    isInstalled().then((response) => {
-      if (response.result.isInstalled) {
-        getPublicKey().then(async (response) => {
-          const pubkey = response.result?.publicKey;
-          //fetch nonce from /api/gem/nonce?pubkey=pubkey
-          await axios
-            .get(
-              `${BASE_URL}/account/auth/gem/nonce?pubkey=${pubkey}&address=${response.result?.address}`
-            )
-            .then((res) => {
-              const nonceToken = res.data.token;
-              const opts = {
-                headers: {
-                  'Content-Type': 'application/json',
-                  Authorization: `Bearer ${nonceToken}`
-                }
-              };
-              signMessage(nonceToken).then(async (response) => {
-                const signedMessage = response.result?.signedMessage;
-                if (signedMessage !== undefined) {
-                  await axios
-                    .post(
-                      `${BASE_URL}/account/auth/gem/check-sign?signature=${signedMessage}`,
-                      {},
-                      opts
-                    )
-                    .then((res) => {
-                      const { profile } = res.data;
-                      doLogIn({ ...profile, wallet_type: 'gem' });
-                      setOpenWalletModal(false);
-                    });
-                }
-              });
-            });
-        });
-      } else {
-        enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-      }
-    });
-  };
 
-  const handleConnectCrossmark = async () => {
-    try {
-      // if (!window.xrpl) {
-      //   enqueueSnackbar("CrossMark wallet is not installed", { variant: "error" });
-      //   return;
-      // }
-      // const { isCrossmark } = window.xrpl;
-      // if (isCrossmark) {
-      const hashR = await axios.get(`${BASE_URL}/account/auth/crossmark/hash`);
-      const hashJson = hashR.data;
-      const hash = hashJson.hash;
-      const id = await sdk.methods.signInAndWait(hash);
-      const address = id.response.data.address;
-      const pubkey = id.response.data.publicKey;
-      const signature = id.response.data.signature;
-      await axios
-        .post(
-          `${BASE_URL}/account/auth/crossmark/check-sign?signature=${signature}`,
-          {
-            pubkey: pubkey,
-            address: address
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${hash}`
-            }
-          }
-        )
-        .then((res) => {
-          const { profile } = res.data;
-          doLogIn({ ...profile, wallet_type: 'crossmark' });
-          setOpenWalletModal(false);
-        })
-        .catch((err) => {});
-      // }
-    } catch (err) {
-    }
-  };
 
   return (
     <StyledDialog
@@ -315,12 +191,7 @@ const WalletConnectModal = () => {
       sx={{ zIndex: 9999 }}
     >
       <StyledDialogTitle>
-        <Stack direction="row" justifyContent={openLogin ? 'space-between' : 'end'}>
-          {openLogin && (
-            <ActionButton onClick={onLogoutXumm}>
-              <ArrowBackIcon />
-            </ActionButton>
-          )}
+        <Stack direction="row" justifyContent="end">
           <ActionButton onClick={handleClose}>
             <ClearIcon />
           </ActionButton>
@@ -328,46 +199,8 @@ const WalletConnectModal = () => {
       </StyledDialogTitle>
 
       <StyledDialogContent>
-        {openLogin ? (
-          <>
-            <ModalTitle variant="modal">Xaman Wallet</ModalTitle>
-            <Typography
-              variant="body1"
-              align="center"
-              sx={{ mb: 2, color: theme.palette.text.secondary }}
-            >
-              Please log in with your Xaman (Xumm) app
-            </Typography>
-            <QRContainer>
-              <Box
-                sx={{
-                  width: '200px',
-                  height: '200px',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}
-              >
-                {connecting ? (
-                  <Skeleton
-                    variant="rectangular"
-                    width={200}
-                    height={200}
-                    sx={{ borderRadius: '8px' }}
-                  />
-                ) : (
-                  <StyledQRImage alt="Xaman QR" src={qrUrl} />
-                )}
-              </Box>
-              <OpenXamanButton href={nextUrl} target="_blank" rel="noreferrer noopener nofollow">
-                Open in Xaman
-              </OpenXamanButton>
-            </QRContainer>
-          </>
-        ) : (
-          <>
-            <ModalTitle variant="modal">Connect Wallet</ModalTitle>
-            <Stack spacing={1.5}>
+        <ModalTitle variant="modal">Connect Wallet</ModalTitle>
+        <Stack spacing={1.5}>
 
               <WalletItem
                 direction="row"
@@ -424,8 +257,6 @@ const WalletConnectModal = () => {
                 </Stack>
               </WalletItem>
             </Stack>
-          </>
-        )}
       </StyledDialogContent>
     </StyledDialog>
   );
