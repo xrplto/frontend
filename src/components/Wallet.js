@@ -86,7 +86,7 @@ const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntro
   const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
   const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
     keySize: 256/32,
-    iterations: 100000
+    iterations: 50000
   }).toString();
   const privateKeyHex = seedHash.substring(0, 64);
   return new XRPLWallet(privateKeyHex);
@@ -106,7 +106,7 @@ const ActiveIndicator = styled(Box)(({ theme }) => ({
   boxShadow: `0 0 12px ${alpha(theme.palette.success.main, 0.5)}`,
   animation: 'glow 2s ease-in-out infinite',
   '@keyframes glow': {
-    '0%, 100%': {
+    '0%, 50%': {
       opacity: 1,
       transform: 'scale(1)'
     },
@@ -125,15 +125,15 @@ const TokenImage = styled(Image)(({ theme }) => ({
 const StyledPopoverPaper = styled(Box)(({ theme }) => ({
   background:
     theme.palette.mode === 'dark'
-      ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.98)} 100%)`
-      : `linear-gradient(145deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.grey[50], 0.95)} 100%)`,
+      ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.98)} 50%)`
+      : `linear-gradient(145deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.grey[50], 0.95)} 50%)`,
   border: `1px solid ${theme.palette.mode === 'dark'
     ? alpha(theme.palette.common.white, 0.05)
     : alpha(theme.palette.common.black, 0.05)}`,
   borderRadius: 24,
   boxShadow: theme.palette.mode === 'dark'
-    ? `0 20px 60px ${alpha(theme.palette.common.black, 0.5)}`
-    : `0 20px 60px ${alpha(theme.palette.common.black, 0.1)}`,
+    ? `0 5px 60px ${alpha(theme.palette.common.black, 0.5)}`
+    : `0 5px 60px ${alpha(theme.palette.common.black, 0.1)}`,
   overflow: 'hidden',
   position: 'relative',
   '&::before': {
@@ -149,10 +149,10 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
 
 const BalanceCard = styled(Card)(({ theme }) => ({
   background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`
-    : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${theme.palette.common.white} 100%)`,
+    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 50%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${theme.palette.common.white} 50%)`,
   border: 'none',
-  borderRadius: 20,
+  borderRadius: 5,
   boxShadow: 'none',
   position: 'relative',
   overflow: 'visible',
@@ -161,7 +161,7 @@ const BalanceCard = styled(Card)(({ theme }) => ({
     content: '""',
     position: 'absolute',
     inset: 0,
-    borderRadius: 20,
+    borderRadius: 5,
     padding: 1,
     background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)}, transparent)`,
     WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
@@ -177,7 +177,7 @@ const BalanceCard = styled(Card)(({ theme }) => ({
 }));
 
 const ReserveCard = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 100%)`,
+  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 50%)`,
   border: 'none',
   borderRadius: 16,
   padding: theme.spacing(2),
@@ -189,7 +189,7 @@ const ReserveCard = styled(Box)(({ theme }) => ({
     top: 0,
     left: 16,
     width: 3,
-    height: '100%',
+    height: '50%',
     background: theme.palette.warning.main,
     borderRadius: 2
   }
@@ -237,14 +237,14 @@ const WalletContent = ({
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" spacing={isEmbedded ? 1.5 : 2} alignItems="center">
             <Box sx={{
-              width: isEmbedded ? 8 : 10,
-              height: isEmbedded ? 8 : 10,
+              width: isEmbedded ? 8 : 5,
+              height: isEmbedded ? 8 : 5,
               borderRadius: '2px',
               background: accountsActivation[accountLogin] === false
                 ? theme.palette.error.main
                 : `linear-gradient(45deg, #00ff88, #00ffff)`,
               boxShadow: accountsActivation[accountLogin] !== false
-                ? isEmbedded ? '0 0 15px rgba(0,255,136,0.4)' : '0 0 20px rgba(0,255,136,0.5)'
+                ? isEmbedded ? '0 0 15px rgba(0,255,136,0.4)' : '0 0 5px rgba(0,255,136,0.5)'
                 : 'none'
             }} />
             <Typography sx={{
@@ -284,15 +284,15 @@ const WalletContent = ({
         p: isEmbedded ? 3 : 4,
         textAlign: 'center',
         background: theme.palette.mode === 'dark'
-          ? 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%)'
-          : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 100%)'
+          ? 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 50%)'
+          : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 50%)'
       }}>
         <Typography sx={{
           fontSize: isEmbedded ? '2.5rem' : '3.5rem',
           fontWeight: 900,
           lineHeight: 1,
           fontFamily: 'system-ui',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%)',
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -359,8 +359,8 @@ const WalletContent = ({
       {/* Accounts List */}
       {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
         <Box sx={{
-          maxHeight: isEmbedded ? 'none' : 200,
-          overflowY: isEmbedded ? 'visible' : 'auto',
+          maxHeight: isEmbedded ? 'none' : 'none',
+          overflowY: 'visible',
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
           borderBottom: isEmbedded ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
           flex: isEmbedded ? 1 : 'none'
@@ -443,7 +443,7 @@ const WalletContent = ({
             onClick={onMoreAccounts}
             sx={{
               py: 1.5,
-              borderRadius: '10px',
+              borderRadius: '5px',
               background: alpha(theme.palette.primary.main, 0.1),
               color: theme.palette.primary.main,
               fontWeight: 600,
@@ -459,31 +459,13 @@ const WalletContent = ({
           </Button>
         )}
 
-        <Button
-          onClick={isEmbedded ? onMoreAccounts : undefined}
-          sx={{
-            px: isEmbedded ? 2 : 3,
-            py: isEmbedded ? 1.2 : 1.5,
-            borderRadius: isEmbedded ? '8px' : '10px',
-            background: alpha(theme.palette.primary.main, 0.1),
-            color: theme.palette.primary.main,
-            fontWeight: 600,
-            fontSize: isEmbedded ? '0.8rem' : '0.85rem',
-            textTransform: 'none',
-            '&:hover': {
-              background: alpha(theme.palette.primary.main, 0.15)
-            }
-          }}
-        >
-          <AddCircleOutlineIcon sx={{ fontSize: isEmbedded ? 16 : 18 }} />
-        </Button>
 
         <Button
           onClick={onLogout}
           sx={{
             px: isEmbedded ? 2 : 3,
             py: isEmbedded ? 1.2 : 1.5,
-            borderRadius: isEmbedded ? '8px' : '10px',
+            borderRadius: isEmbedded ? '8px' : '5px',
             background: alpha(theme.palette.error.main, 0.1),
             color: theme.palette.error.main,
             fontWeight: 600,
@@ -559,7 +541,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
       const data = await response.json();
       if (data.account_data && data.account_data.Balance) {
-        const balance = parseFloat(data.account_data.Balance) / 1000000;
+        const balance = parseFloat(data.account_data.Balance) / 500000;
         return balance >= 1;
       }
       return false;
@@ -782,7 +764,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           setOpenWalletModal(false);
           setStatus('idle');
           setShowDeviceLogin(false);
-        }, 2000);
+        }, 500);
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -844,7 +826,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const userWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
         const nextAccountIndex = userWallets.length; // Start from next available index
 
-        // Always create 5 new wallets
+        // Always create 50 new wallets
         const wallets = [];
         const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
@@ -879,7 +861,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           publicKey: wallets[0].publicKey,
           deviceKeyId: authResponse.id,
           isAdditional: userWallets.length > 0,
-          totalWallets: userWallets.length + 5
+          totalWallets: userWallets.length + 50
         });
 
         // Always login with the first newly created wallet
@@ -891,7 +873,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           setOpenWalletModal(false);
           setStatus('idle');
           setShowDeviceLogin(false);
-        }, 1000);
+        }, 500);
       }
     } catch (err) {
       console.error('Authentication error:', err);
@@ -911,12 +893,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
   const handleMoreAccounts = async () => {
-    // First check if we already have device wallets stored
+    // Check if we already have device wallets stored
     const storedWallets = getStoredWallets();
     const deviceWallets = storedWallets.filter(w => w.wallet_type === 'device');
     const deviceWalletsInProfiles = profiles.filter(p => p.wallet_type === 'device');
 
-    // If we have stored wallets but they're not in profiles, load them first
+    // If we have stored wallets but they're not in profiles, load them
     if (deviceWalletsInProfiles.length < deviceWallets.length) {
       const allProfiles = [...profiles];
       deviceWallets.forEach(deviceWallet => {
@@ -930,8 +912,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       return;
     }
 
-    // Always allow creating more wallets - show device login
-    setShowDeviceLogin(true);
+    // If no existing wallets, show device login to create new ones
+    if (deviceWallets.length === 0) {
+      setShowDeviceLogin(true);
+      setOpen(true);
+      return;
+    }
+
+    // If we already have device wallets, show info message
+    openSnackbar(`You already have ${deviceWallets.length} device wallets. Use authentication to create more.`, 'info');
   };
 
   const handleAddPasskeyAccount = async () => {
@@ -971,7 +960,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
           openSnackbar(`Switched to device wallet ${existingWallets[0].address.slice(0, 8)}... (${existingWallets.length} total)`, 'success');
         } else {
-          // Create 5 new random wallets for this device key
+          // Create 50 new random wallets for this device key
           const wallets = [];
           const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
           const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
@@ -1007,7 +996,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             allDeviceAccounts: wallets
           }, '*');
 
-          openSnackbar(`5 device wallets created: ${wallets.map(w => w.address.slice(0, 6)).join(', ')}...`, 'success');
+          openSnackbar(`50 device wallets created`, 'success');
         }
 
         setOpen(false);
@@ -1048,17 +1037,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
         style={{
           background: accountProfile
-            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`
+            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`
             : theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, #2d3436 0%, #1e2124 100%)'
-              : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)',
+              ? 'linear-gradient(135deg, #2d3436 0%, #1e2124 50%)'
+              : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%)',
           border: accountProfile
             ? `1px solid ${theme.palette.primary.dark}`
             : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,
           borderRadius: '6px',
           height: '32px',
-          padding: accountProfile ? '0 10px' : '0 6px',
-          minWidth: accountProfile ? '120px' : '70px',
+          padding: accountProfile ? '0 5px' : '0 6px',
+          minWidth: accountProfile ? '15px' : '70px',
           color: accountProfile ? '#ffffff' : theme.palette.mode === 'dark' ? '#ffffff' : '#2d3436',
           fontSize: '13px',
           fontWeight: '600',
@@ -1085,7 +1074,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         title={accountProfile ? 'Account Details' : t('Connect Wallet')}
       >
 {accountProfile ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', width: '50%' }}>
             <div style={{
               width: '6px',
               height: '6px',
@@ -1115,7 +1104,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               </span>
             </div>
             <svg width="6" height="6" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.6 }}>
-              <path d="M7.41,8.58L12,13.17L16.59,8.58L18,10L12,16L6,10L7.41,8.58Z" />
+              <path d="M7.41,8.58L12,13.17L16.59,8.58L18,5L12,16L6,5L7.41,8.58Z" />
             </svg>
           </div>
         ) : (
@@ -1175,10 +1164,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     transparent 1px,
                     transparent 15px
                   )`,
-                  animation: 'slide 20s linear infinite',
+                  animation: 'slide 5s linear infinite',
                   '@keyframes slide': {
                     '0%': { transform: 'translate(0, 0)' },
-                    '100%': { transform: 'translate(15px, 15px)' }
+                    '50%': { transform: 'translate(15px, 15px)' }
                   },
                   pointerEvents: 'none'
                 }} />
@@ -1208,8 +1197,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 borderRadius: theme.general?.borderRadiusLg || '16px',
                 background: theme.walletDialog?.background ||
                   (theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`
-                    : `linear-gradient(135deg, ${alpha('#FFFFFF', 0.95)} 0%, ${alpha('#FFFFFF', 0.85)} 100%)`),
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 50%)`
+                    : `linear-gradient(135deg, ${alpha('#FFFFFF', 0.95)} 0%, ${alpha('#FFFFFF', 0.85)} 50%)`),
                 border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
                 boxShadow: theme.palette.mode === 'dark'
                   ? `0 8px 32px ${alpha(theme.palette.common.black, 0.4)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
@@ -1221,8 +1210,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   padding: theme.spacing(2, 2.5),
                   background: theme.walletDialog?.backgroundSecondary ||
                     (theme.palette.mode === 'dark'
-                      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`
-                      : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 100%)`),
+                      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 50%)`
+                      : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 50%)`),
                   borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.12)}`,
                   position: 'relative',
                   '&::before': {
@@ -1232,7 +1221,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     left: 0,
                     right: 0,
                     height: '1px',
-                    background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.primary.main, 0.3)} 50%, transparent 100%)`
+                    background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.primary.main, 0.3)} 50%, transparent 50%)`
                   }
                 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -1261,8 +1250,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Box sx={{
                   padding: theme.spacing(2.5),
                   background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 100%)`
-                    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 100%)`
+                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 50%)`
+                    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 50%)`
                 }}>
                   {!showDeviceLogin ? (
                     <>
@@ -1280,15 +1269,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             cursor: 'pointer',
                             borderRadius: theme.general?.borderRadius || '12px',
                             background: theme.palette.mode === 'dark'
-                              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`
-                              : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 50%)`
+                              : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 50%)`,
                             border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                             boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
                             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                             '&:hover': {
                               background: theme.palette.mode === 'dark'
-                                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`
-                                : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+                                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 50%)`
+                                : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 50%)`,
                               border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
                               transform: 'translateY(-2px) scale(1.02)',
                               boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
@@ -1302,7 +1291,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 50%)`,
                             color: 'white',
                             boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
                           }}>
@@ -1326,7 +1315,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         alignItems: 'center',
                         mb: 2,
                         p: 1.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 50%)`,
                         borderRadius: 2,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
                       }}>
@@ -1349,13 +1338,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
                           Key Authentication
                         </Typography>
-                        <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
+                        <SecurityIcon sx={{ fontSize: 5, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
                       </Box>
 
                       <Box sx={{
                         mb: 2,
                         p: 1.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 100%)`,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 50%)`,
                         border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
                         borderRadius: 2,
                         display: 'flex',
@@ -1382,10 +1371,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {status === 'success' && walletInfo && (
                         <Alert severity="success" sx={{ mb: 2 }}>
                           <Typography variant="subtitle2" gutterBottom>
-                            🎉 {walletInfo.isAdditional ? `5 Additional Device Wallets Created!` : `5 Device Wallets Created!`}
+                            🎉 {walletInfo.isAdditional ? `50 Additional Device Wallets Created!` : `50 Device Wallets Created!`}
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Wallets Created:</strong> 5 new wallets
+                            <strong>Wallets Created:</strong> 50 new wallets
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1 }}>
                             <strong>Total Wallets:</strong> {walletInfo.totalWallets} | <strong>Security:</strong> Protected by your device key
@@ -1417,9 +1406,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             py: 1.2,
                             fontSize: '0.95rem',
                             fontWeight: 600,
-                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 50%)`,
                             '&:hover': {
-                              background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`
+                              background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 50%)`
                             }
                           }}
                         >
