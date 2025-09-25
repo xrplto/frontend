@@ -12,8 +12,6 @@ import {
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import PaletteIcon from '@mui/icons-material/Palette';
-import WavesIcon from '@mui/icons-material/Waves';
-import WaterDropIcon from '@mui/icons-material/WaterDrop';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
@@ -34,24 +32,6 @@ const themes = [
     name: 'Sync Wave',
     icon: <PaletteIcon />,
     color: '#00ffff'
-  },
-  {
-    id: 'RippleBlueTheme',
-    name: 'Ripple Blue',
-    icon: WavesIcon,
-    color: '#0080ff'
-  },
-  {
-    id: 'LiquidLedgerTheme',
-    name: 'Liquid Ledger',
-    icon: WaterDropIcon,
-    color: '#00D4E6'
-  },
-  {
-    id: 'BirdTheme',
-    name: 'birdjpg',
-    icon: <PaletteIcon />,
-    color: '#1A1A1A'
   }
 ];
 
@@ -137,13 +117,9 @@ export default function ThemeSwitcher() {
                   border:
                     theme.id === 'XrplToLightTheme'
                       ? '1px solid #e0e0e0'
-                      : theme.id === 'BirdTheme'
-                        ? '1px solid #1A1A1A'
-                        : 'none',
+                      : 'none',
                   boxShadow:
-                    theme.id === 'SyncWaveTheme' ||
-                    theme.id === 'RippleBlueTheme' ||
-                    theme.id === 'LiquidLedgerTheme'
+                    theme.id === 'SyncWaveTheme'
                       ? `0 0 10px ${theme.color}`
                       : 'none'
                 }}
@@ -151,12 +127,7 @@ export default function ThemeSwitcher() {
                 <PaletteIcon
                   sx={{
                     fontSize: 16,
-                    color:
-                      theme.id === 'XrplToLightTheme' || theme.id === 'BirdTheme'
-                        ? '#fff'
-                        : theme.id === 'XrplToDarkTheme'
-                          ? '#fff'
-                          : '#fff'
+                    color: '#fff'
                   }}
                 />
               </Box>
