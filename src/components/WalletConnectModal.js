@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState, useEffect } from 'react';
 
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -8,15 +8,29 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Alert from '@mui/material/Alert';
+import CircularProgress from '@mui/material/CircularProgress';
+import Link from '@mui/material/Link';
 import { useTheme } from '@mui/material/styles';
 import { alpha } from '@mui/material/styles';
 import styled from '@emotion/styled';
 import ClearIcon from '@mui/icons-material/Clear';
-import { AccountBalanceWallet as AccountBalanceWalletIcon, Security as SecurityIcon } from '@mui/icons-material';
+import { AccountBalanceWallet as AccountBalanceWalletIcon, Security as SecurityIcon, Warning as WarningIcon, OpenInNew as OpenInNewIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
 import { useTranslation } from 'react-i18next';
 
 
 import { AppContext } from 'src/AppContext';
+
+// Lazy load heavy dependencies
+let startRegistration, startAuthentication, Wallet, CryptoJS;
+
+// Base64url encoding helper
+const base64urlEncode = (buffer) => {
+  return btoa(String.fromCharCode(...new Uint8Array(buffer)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=/g, '');
+};
 
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
@@ -159,27 +173,286 @@ const FeeTag = styled('div')(({ theme, isFree }) => ({
 
 const WalletConnectModal = () => {
   const theme = useTheme();
+  const [showDeviceLogin, setShowDeviceLogin] = useState(false);
+  const [status, setStatus] = useState('idle');
+  const [error, setError] = useState('');
+  const [walletInfo, setWalletInfo] = useState(null);
+  const [isLoadingDeps, setIsLoadingDeps] = useState(false);
 
   const {
     openWalletModal,
-    setOpenWalletModal
+    setOpenWalletModal,
+    doLogIn
   } = useContext(AppContext);
+
+  // Lazy load heavy dependencies
+  const loadDependencies = async () => {
+    if (!startRegistration || !startAuthentication || !Wallet || !CryptoJS) {
+      setIsLoadingDeps(true);
+      const [webauthnModule, xrplModule, cryptoModule] = await Promise.all([
+        import('@simplewebauthn/browser'),
+        import('xrpl'),
+        import('crypto-js')
+      ]);
+
+      startRegistration = webauthnModule.startRegistration;
+      startAuthentication = webauthnModule.startAuthentication;
+      Wallet = xrplModule.Wallet;
+      CryptoJS = cryptoModule.default;
+      setIsLoadingDeps(false);
+    }
+  };
+
+  const generateWallet = (passkeyId, accountIndex = 0) => {
+    const baseHash = CryptoJS.SHA256(passkeyId).toString();
+    const indexedHash = CryptoJS.SHA256(baseHash + accountIndex.toString()).toString();
+    const entropy = [];
+    for (let i = 0; i < 32; i++) {
+      entropy.push(parseInt(indexedHash.substr(i * 2, 2), 16));
+    }
+    const wallet = Wallet.fromEntropy(entropy);
+    return wallet;
+  };
+
+  const discoverAllAccounts = async (passkeyId) => {
+    const accounts = [];
+    const batchSize = 10;
+    const totalAccounts = 100;
+
+    for (let batch = 0; batch < Math.ceil(totalAccounts / batchSize); batch++) {
+      const batchStart = batch * batchSize;
+      const batchEnd = Math.min(batchStart + batchSize, totalAccounts);
+
+      for (let i = batchStart; i < batchEnd; i++) {
+        const wallet = generateWallet(passkeyId, i);
+        accounts.push({
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0'
+        });
+      }
+
+      if (batch < Math.ceil(totalAccounts / batchSize) - 1) {
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    }
+
+    return accounts;
+  };
 
   const handleClose = () => {
     setOpenWalletModal(false);
+    setShowDeviceLogin(false);
+    setStatus('idle');
+    setError('');
+    setWalletInfo(null);
   };
 
   const handleWalletConnect = () => {
-    const popup = window.open('/device-login', 'device-login', 'width=500,height=600,scrollbars=yes,resizable=yes');
-    if (!popup) return;
-
-    const checkClosed = setInterval(() => {
-      if (popup.closed) {
-        clearInterval(checkClosed);
-        setOpenWalletModal(false);
-      }
-    }, 1000);
+    setShowDeviceLogin(true);
   };
+
+  const handleGoBack = () => {
+    setShowDeviceLogin(false);
+    setStatus('idle');
+    setError('');
+    setWalletInfo(null);
+  };
+
+  const handleRegister = async () => {
+    try {
+      setStatus('registering');
+      setError('');
+
+      await loadDependencies();
+
+      if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
+      }
+
+      const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+      if (!available) {
+        setError('setup_required');
+        setStatus('idle');
+        return;
+      }
+
+      const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const userId = base64urlEncode(userIdBuffer);
+      const challenge = base64urlEncode(challengeBuffer);
+
+      let registrationResponse;
+      try {
+        registrationResponse = await startRegistration({
+          rp: {
+            name: 'XRPL.to',
+            id: window.location.hostname,
+          },
+          user: {
+            id: userId,
+            name: `xrplto-${Date.now()}@xrpl.to`,
+            displayName: 'XRPL.to User',
+          },
+          challenge: challenge,
+          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
+          timeout: 60000,
+          attestation: 'none',
+          authenticatorSelection: {
+            authenticatorAttachment: 'platform',
+            userVerification: 'required',
+          },
+        });
+      } catch (innerErr) {
+        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
+          setError('Passkeys not supported on this device or browser.');
+        } else if (innerErr.message?.includes('InvalidStateError') || innerErr.message?.includes('saving')) {
+          setError('setup_required');
+        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
+          setError('Cancelled. Please try again and allow the security prompt.');
+        } else {
+          setError('setup_required');
+        }
+        setStatus('idle');
+        return;
+      }
+
+      if (registrationResponse.id) {
+        const wallet = generateWallet(registrationResponse.id);
+
+        setWalletInfo({
+          address: wallet.address,
+          seed: wallet.seed,
+          publicKey: wallet.publicKey
+        });
+
+        const profile = {
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0'
+        };
+
+        doLogIn(profile);
+        setStatus('success');
+
+        setTimeout(() => {
+          handleClose();
+        }, 5000);
+      }
+    } catch (err) {
+      console.error('Registration error:', err);
+
+      const errorName = err.name || err.cause?.name;
+      const errorMessage = err.message || err.cause?.message || '';
+
+      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
+        setError('Cancelled. Please try again and allow the security prompt.');
+      } else if (errorName === 'AbortError') {
+        setError('Timed out. Please try again.');
+      } else {
+        setError('Failed: ' + errorMessage);
+      }
+      setStatus('idle');
+    }
+  };
+
+  const handleAuthenticate = async () => {
+    try {
+      setStatus('authenticating');
+      setError('');
+
+      await loadDependencies();
+
+      if (!window.PublicKeyCredential) {
+        throw new Error('WebAuthn not supported in this browser');
+      }
+
+      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const challenge = base64urlEncode(challengeBuffer);
+
+      let authResponse;
+      try {
+        authResponse = await startAuthentication({
+          challenge: challenge,
+          timeout: 60000,
+          userVerification: 'required'
+        });
+      } catch (innerErr) {
+        if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
+          setError('Passkeys not supported on this device or browser.');
+        } else if (innerErr.message?.includes('InvalidStateError')) {
+          setError('Windows Hello not set up. Please enable Windows Hello, Touch ID, or Face ID in your device settings first.');
+        } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
+          setError('Cancelled. Please try again and allow the security prompt.');
+        } else {
+          setError('Authentication failed. Please ensure Windows Hello, Touch ID, or Face ID is enabled on your device.');
+        }
+        setStatus('idle');
+        return;
+      }
+
+      if (authResponse.id) {
+        setStatus('discovering');
+
+        let allAccounts;
+        try {
+          allAccounts = await discoverAllAccounts(authResponse.id);
+        } catch (discoveryError) {
+          const wallet = generateWallet(authResponse.id, 0);
+          allAccounts = [{
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0'
+          }];
+        }
+
+        if (allAccounts.length === 0) {
+          const wallet = generateWallet(authResponse.id, 0);
+          const firstAccount = {
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0'
+          };
+          allAccounts.push(firstAccount);
+        }
+
+        doLogIn(allAccounts[0]);
+        setStatus('success');
+        setTimeout(() => {
+          handleClose();
+        }, 2000);
+      }
+    } catch (err) {
+      console.error('Authentication error:', err);
+
+      const errorName = err.name || err.cause?.name;
+      const errorMessage = err.message || err.cause?.message || '';
+
+      if (errorName === 'NotAllowedError' || errorMessage.includes('not allowed') || errorMessage.includes('denied permission')) {
+        setError('Cancelled. Please try again and allow the security prompt.');
+      } else if (errorName === 'AbortError') {
+        setError('Timed out. Please try again.');
+      } else {
+        setError('Failed: ' + errorMessage);
+      }
+      setStatus('idle');
+    }
+  };
+
+  // Preload dependencies when device login is shown
+  useEffect(() => {
+    if (showDeviceLogin) {
+      loadDependencies();
+    }
+  }, [showDeviceLogin]);
 
 
 
@@ -209,15 +482,16 @@ const WalletConnectModal = () => {
       </StyledDialogTitle>
 
       <StyledDialogContent>
-        <Typography
-          id="wallet-connect-description"
-          variant="body2"
-          sx={{ color: theme.palette.text.secondary, mb: 2 }}
-        >
-          Choose a wallet to connect to the XRPL network
-        </Typography>
-        <Stack spacing={1.5} component="nav" role="list">
-
+        {!showDeviceLogin ? (
+          <>
+            <Typography
+              id="wallet-connect-description"
+              variant="body2"
+              sx={{ color: theme.palette.text.secondary, mb: 2 }}
+            >
+              Choose a wallet to connect to the XRPL network
+            </Typography>
+            <Stack spacing={1.5} component="nav" role="list">
               <WalletItem
                 direction="row"
                 spacing={2}
@@ -276,6 +550,221 @@ const WalletConnectModal = () => {
                 </Stack>
               </WalletItem>
             </Stack>
+          </>
+        ) : (
+          <>
+            <Box sx={{
+              display: 'flex',
+              alignItems: 'center',
+              mb: 3,
+              p: 2,
+              background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
+              borderRadius: 2,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
+            }}>
+              <ActionButton onClick={handleGoBack} aria-label="Go back" sx={{ mr: 2, flexShrink: 0 }}>
+                <ArrowBackIcon />
+              </ActionButton>
+              <Box sx={{ flex: 1 }}>
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: 600,
+                    mb: 0.5,
+                    color: theme.palette.primary.main,
+                    fontSize: '1.1rem'
+                  }}
+                >
+                  Device Authentication
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    color: theme.palette.text.secondary,
+                    lineHeight: 1.4
+                  }}
+                >
+                  Secure wallet access using your device's biometric authentication
+                </Typography>
+              </Box>
+              <SecurityIcon sx={{
+                fontSize: 28,
+                color: theme.palette.primary.main,
+                opacity: 0.7,
+                ml: 1
+              }} />
+            </Box>
+
+            <Box sx={{
+              mb: 3,
+              p: 2,
+              textAlign: 'left',
+              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.light, 0.04)} 100%)`,
+              border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+              borderRadius: 2
+            }}>
+              <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1.5 }}>
+                <SecurityIcon sx={{ fontSize: 22, mt: 0.25, color: theme.palette.info.main }} />
+                <Box>
+                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1, color: theme.palette.info.main }}>
+                    Important: One Passkey = One Set of Wallets
+                  </Typography>
+                  <Typography variant="body2" sx={{ opacity: 0.9, lineHeight: 1.5 }}>
+                    Each passkey creates different XRPL accounts. Use the same passkey across devices to access the same wallets.
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+
+            {error && (
+              <Alert severity={error === 'setup_required' ? 'info' : 'error'} sx={{ mb: 2 }}>
+                {error === 'setup_required' ? (
+                  <Box>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      <strong>Windows Hello Setup Required</strong>
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1.5 }}>
+                      Please enable Windows Hello, Touch ID, or Face ID to use device login:
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      1. Go to <strong>Settings → Accounts → Sign-in options</strong>
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1.5 }}>
+                      2. Set up PIN, Fingerprint, or Face recognition
+                    </Typography>
+                    <Link
+                      href="https://www.microsoft.com/en-us/windows/tips/windows-hello"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
+                    >
+                      Learn how to set up Windows Hello
+                      <OpenInNewIcon fontSize="small" />
+                    </Link>
+                  </Box>
+                ) : (
+                  error
+                )}
+              </Alert>
+            )}
+
+            {status === 'success' && walletInfo && (
+              <Alert severity="success" sx={{ mb: 2 }}>
+                <Typography variant="subtitle2" gutterBottom>
+                  Wallet Created Successfully!
+                </Typography>
+                <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
+                  <strong>Address:</strong> {walletInfo.address}
+                </Typography>
+                <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
+                  <strong>Seed:</strong> {walletInfo.seed}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Save this information! Modal closes in 5 seconds.
+                </Typography>
+              </Alert>
+            )}
+
+            {isLoadingDeps && (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <CircularProgress size={16} />
+                  <Typography variant="body2">Loading security modules...</Typography>
+                </Box>
+              </Alert>
+            )}
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+              {/* Primary Action - Sign In */}
+              <Box sx={{
+                p: 2,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.light, 0.04)} 100%)`,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`
+              }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, color: theme.palette.success.main }}>
+                  Returning User
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.4 }}>
+                  Use your existing passkey to access your XRPL accounts
+                </Typography>
+                <Button
+                  variant="contained"
+                  size="large"
+                  fullWidth
+                  onClick={handleAuthenticate}
+                  disabled={status !== 'idle' || isLoadingDeps}
+                  startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} color="inherit" /> : <SecurityIcon />}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+                    boxShadow: `0 4px 12px ${alpha(theme.palette.success.main, 0.3)}`,
+                    '&:hover': {
+                      background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 100%)`,
+                      boxShadow: `0 6px 16px ${alpha(theme.palette.success.main, 0.4)}`
+                    }
+                  }}
+                >
+                  {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering Accounts...' : 'Sign In with Existing Passkey'}
+                </Button>
+              </Box>
+
+              {/* Secondary Action - Create New */}
+              <Box sx={{
+                p: 2,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 100%)`,
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`
+              }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 1, color: theme.palette.warning.main }}>
+                  New User
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 2, color: 'text.secondary', lineHeight: 1.4 }}>
+                  Create a new passkey to generate fresh XRPL accounts
+                </Typography>
+                <Button
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  onClick={handleRegister}
+                  disabled={status !== 'idle' || isLoadingDeps}
+                  startIcon={status === 'registering' ? <CircularProgress size={20} color="inherit" /> : <SecurityIcon />}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    borderColor: theme.palette.warning.main,
+                    color: theme.palette.warning.main,
+                    borderWidth: 2,
+                    '&:hover': {
+                      borderColor: theme.palette.warning.dark,
+                      backgroundColor: alpha(theme.palette.warning.main, 0.08),
+                      borderWidth: 2
+                    }
+                  }}
+                >
+                  {status === 'registering' ? 'Creating Passkey...' : 'Create New Passkey'}
+                </Button>
+              </Box>
+
+              {/* Security Notice */}
+              <Box sx={{
+                p: 2,
+                background: alpha(theme.palette.background.paper, 0.6),
+                borderRadius: 2,
+                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                textAlign: 'center'
+              }}>
+                <SecurityIcon sx={{ fontSize: 24, color: theme.palette.text.secondary, mb: 1, opacity: 0.7 }} />
+                <Typography variant="body2" sx={{ color: 'text.secondary', lineHeight: 1.4 }}>
+                  Your private keys are generated locally and never leave your device
+                </Typography>
+              </Box>
+            </Box>
+          </>
+        )}
       </StyledDialogContent>
     </StyledDialog>
   );
