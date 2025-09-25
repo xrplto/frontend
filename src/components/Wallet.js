@@ -749,8 +749,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   useEffect(() => {
     const originalError = console.error;
     console.error = (...args) => {
-      if (args[0]?.includes?.('NotAllowedError') && args[0]?.includes?.('webauthn')) {
-        return; // Suppress WebAuthn errors
+      const firstArg = args[0];
+      const shouldSuppress = firstArg && (
+        (typeof firstArg === 'string' &&
+         firstArg.includes('NotAllowedError') &&
+         (firstArg.includes('webauthn') || firstArg.includes('WebAuthn'))) ||
+        (firstArg.name === 'NotAllowedError') ||
+        (firstArg.constructor?.name === 'WebAuthnError') ||
+        (args.some(arg =>
+          typeof arg === 'object' &&
+          arg &&
+          (arg.name === 'NotAllowedError' || arg.constructor?.name === 'WebAuthnError')
+        ))
+      );
+
+      if (shouldSuppress) {
+        return; // Suppress WebAuthn cancellation errors
       }
       originalError.apply(console, args);
     };
@@ -921,24 +935,42 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setStatus('registering');
     setError('');
 
-    // Add global error handler for WebAuthn errors
+    // Add global error handler for WebAuthn errors - only for unhandled cases
     const originalOnError = window.onerror;
     const originalUnhandledRejection = window.onunhandledrejection;
 
+    let errorHandled = false;
+
     window.onerror = (msg, url, lineNo, columnNo, error) => {
-      if (error && error.name === 'NotAllowedError') {
-        console.log('Caught NotAllowedError in onerror');
-        setError('Cancelled. Please try again and allow the security prompt.');
+      const isWebAuthnCancelError = error && (
+        error.name === 'NotAllowedError' ||
+        error.constructor?.name === 'WebAuthnError' ||
+        (error.message && error.message.includes('NotAllowedError'))
+      );
+
+      if (isWebAuthnCancelError && !errorHandled) {
+        console.log('Caught unhandled WebAuthn error in onerror:', error);
+        errorHandled = true;
+        setError('Registration cancelled. Please try again and allow the security prompt.');
         setStatus('idle');
         return true; // Prevent default error handling
       }
-      return false;
+      return originalOnError ? originalOnError.apply(this, arguments) : false;
     };
 
     window.onunhandledrejection = (event) => {
-      if (event.reason && event.reason.name === 'NotAllowedError') {
-        console.log('Caught NotAllowedError in unhandledrejection');
-        setError('Cancelled. Please try again and allow the security prompt.');
+      const reason = event.reason;
+      const isWebAuthnCancelError = reason && (
+        reason.name === 'NotAllowedError' ||
+        reason.constructor?.name === 'WebAuthnError' ||
+        (reason.message && reason.message.includes('NotAllowedError')) ||
+        (reason.cause && reason.cause.name === 'NotAllowedError')
+      );
+
+      if (isWebAuthnCancelError && !errorHandled) {
+        console.log('Caught unhandled WebAuthn error in unhandledrejection:', reason);
+        errorHandled = true;
+        setError('Registration cancelled. Please try again and allow the security prompt.');
         setStatus('idle');
         event.preventDefault(); // Prevent error from showing in console
         return;
@@ -1002,11 +1034,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       try {
         registrationResponse = await startRegistration({ optionsJSON: registrationOptions });
       } catch (error) {
-        // Handle WebAuthnError properly according to SimpleWebAuthn docs
-        console.error('WebAuthn registration error:', error);
+        // Immediately mark as handled to prevent global handlers from triggering
+        errorHandled = true;
+
+        // Suppress console.error for user cancellation to reduce noise
+        const isUserCancellation = error.name === 'NotAllowedError' ||
+          error.constructor?.name === 'WebAuthnError' &&
+          (error.message?.includes('NotAllowedError') || error.cause?.name === 'NotAllowedError');
+
+        if (!isUserCancellation) {
+          console.error('WebAuthn registration error:', error);
+        }
 
         // Check the error name property as documented
-        switch (error.name) {
+        const errorName = error.name || error.constructor?.name;
+        switch (errorName) {
           case 'NotAllowedError':
             setError('Registration cancelled or not allowed. Please try again.');
             break;
@@ -1018,6 +1060,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             break;
           case 'NotSupportedError':
             setError('Passkeys not supported on this device or browser.');
+            break;
+          case 'WebAuthnError':
+            // Handle SimpleWebAuthn specific errors
+            if (error.message?.includes('NotAllowedError') || error.cause?.name === 'NotAllowedError') {
+              setError('Registration cancelled or not allowed. Please try again.');
+            } else {
+              setError(`Registration failed: ${error.message || 'Unknown error'}`);
+            }
             break;
           default:
             setError(`Registration failed: ${error.message || 'Unknown error'}`);
@@ -1080,6 +1130,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
     } catch (err) {
       console.error('Registration error:', err);
+      errorHandled = true; // Mark error as handled
 
       const errorName = err.name || err.cause?.name;
       const errorMessage = err.message || err.cause?.message || '';
