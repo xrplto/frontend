@@ -613,36 +613,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     checkVisibleAccountsActivation();
   }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity]);
 
-  const getStoredWallets = () => {
-    const storedWallets = localStorage.getItem('deviceWallets');
-    if (!storedWallets) return [];
-    try {
-      return JSON.parse(storedWallets);
-    } catch (error) {
-      console.error('Error parsing stored wallets:', error);
-      return [];
+  const generateWalletsFromDeviceKey = (deviceKeyId) => {
+    const wallets = [];
+    for (let i = 0; i < 5; i++) {
+      const wallet = generateSecureDeterministicWallet(deviceKeyId, i);
+      const walletData = {
+        deviceKeyId,
+        accountIndex: i,
+        account: wallet.address,  // AppContext expects 'account' field
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now()
+      };
+      wallets.push(walletData);
     }
-  };
-
-  const storeWallet = (deviceKeyId, wallet, accountIndex = 0) => {
-    const walletData = {
-      deviceKeyId,
-      accountIndex,
-      account: wallet.address,  // AppContext expects 'account' field
-      address: wallet.address,
-      publicKey: wallet.publicKey,
-      wallet_type: 'device',
-      xrp: '0',
-      createdAt: Date.now()
-    };
-
-    const storedWallets = getStoredWallets();
-    // Check if wallet already exists
-    if (!storedWallets.find(w => w.address === wallet.address)) {
-      storedWallets.push(walletData);
-      localStorage.setItem('deviceWallets', JSON.stringify(storedWallets));
-    }
-    return walletData;
+    return wallets;
   };
 
 
@@ -720,26 +707,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (registrationResponse.id) {
-        // Generate 5 wallets for this device key
-        const wallets = [];
+        // Generate the standard 5 wallets deterministically
+        const wallets = generateWalletsFromDeviceKey(registrationResponse.id);
+
         const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
-        for (let i = 0; i < 5; i++) {
-          const wallet = generateSecureDeterministicWallet(registrationResponse.id, i);
-          const walletData = storeWallet(registrationResponse.id, wallet, i);
-          wallets.push(walletData);
-
-          // Add to profiles localStorage
+        // Add wallets to profiles localStorage
+        wallets.forEach(walletData => {
           const profile = { ...walletData, tokenCreatedAt: Date.now() };
           if (!currentProfiles.find(p => p.account === profile.address)) {
             currentProfiles.push(profile);
           }
-        }
+        });
 
         window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
 
-        // Update profiles state immediately
+        // Update profiles state first
         const allProfiles = [...profiles];
         wallets.forEach(walletData => {
           const profile = { ...walletData, tokenCreatedAt: Date.now() };
@@ -747,16 +731,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             allProfiles.push(profile);
           }
         });
+
+        // Set profiles context to the updated list so doLogIn can use it
         setProfiles(allProfiles);
 
         // Store first wallet info for display
         setWalletInfo({
           address: wallets[0].address,
           publicKey: wallets[0].publicKey,
-          deviceKeyId: registrationResponse.id
+          deviceKeyId: registrationResponse.id,
+          totalWallets: wallets.length
         });
 
-        doLogIn(wallets[0]);
+        // Login with first wallet - pass the updated profiles
+        doLogIn(wallets[0], allProfiles);
         setStatus('success');
 
         // Close modal after brief delay to show success
@@ -821,31 +809,28 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (authResponse.id) {
         setStatus('discovering');
 
-        // Look for existing wallets associated with this device key
-        const storedWallets = getStoredWallets();
-        const userWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
-        const nextAccountIndex = userWallets.length; // Start from next available index
+        // Always generate the same 5 wallets deterministically
+        const wallets = generateWalletsFromDeviceKey(authResponse.id);
 
-        // Always create 50 new wallets
-        const wallets = [];
         const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
-        for (let i = 0; i < 5; i++) {
-          const wallet = generateSecureDeterministicWallet(authResponse.id, nextAccountIndex + i);
-          const walletData = storeWallet(authResponse.id, wallet, nextAccountIndex + i);
-          wallets.push(walletData);
+        // Check if any of these wallets already exist in profiles
+        const existingWallet = currentProfiles.find(p =>
+          wallets.some(w => w.account === p.account)
+        );
 
-          // Add to profiles localStorage
+        // Add wallets to profiles localStorage if not already there
+        wallets.forEach(walletData => {
           const profile = { ...walletData, tokenCreatedAt: Date.now() };
           if (!currentProfiles.find(p => p.account === profile.address)) {
             currentProfiles.push(profile);
           }
-        }
+        });
 
         window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
 
-        // Update profiles state immediately
+        // Update profiles state first
         const allProfiles = [...profiles];
         wallets.forEach(walletData => {
           const profile = { ...walletData, tokenCreatedAt: Date.now() };
@@ -853,6 +838,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             allProfiles.push(profile);
           }
         });
+
+        // Set profiles context to the updated list so doLogIn can use it
         setProfiles(allProfiles);
 
         // Set wallet info for success message
@@ -860,12 +847,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           address: wallets[0].address,
           publicKey: wallets[0].publicKey,
           deviceKeyId: authResponse.id,
-          isAdditional: userWallets.length > 0,
-          totalWallets: userWallets.length + 50
+          isAdditional: existingWallet !== undefined,
+          totalWallets: wallets.length
         });
 
-        // Always login with the first newly created wallet
-        doLogIn(wallets[0]);
+        // Login with first wallet - pass the updated profiles
+        doLogIn(wallets[0], allProfiles);
         setStatus('success');
 
         // Close modal after brief delay to show success
@@ -893,34 +880,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
   const handleMoreAccounts = async () => {
-    // Check if we already have device wallets stored
-    const storedWallets = getStoredWallets();
-    const deviceWallets = storedWallets.filter(w => w.wallet_type === 'device');
+    // Check if we already have device wallets in profiles
     const deviceWalletsInProfiles = profiles.filter(p => p.wallet_type === 'device');
 
-    // If we have stored wallets but they're not in profiles, load them
-    if (deviceWalletsInProfiles.length < deviceWallets.length) {
-      const allProfiles = [...profiles];
-      deviceWallets.forEach(deviceWallet => {
-        if (!allProfiles.find(p => p.account === deviceWallet.account)) {
-          allProfiles.push(deviceWallet);
-        }
-      });
-      setProfiles(allProfiles);
-      window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
-      openSnackbar(`Loaded ${deviceWallets.length} device wallets`, 'success');
-      return;
-    }
-
-    // If no existing wallets, show device login to create new ones
-    if (deviceWallets.length === 0) {
+    // If no existing device wallets, show device login to create/access them
+    if (deviceWalletsInProfiles.length === 0) {
       setShowDeviceLogin(true);
       setOpen(true);
       return;
     }
 
     // If we already have device wallets, show info message
-    openSnackbar(`You already have ${deviceWallets.length} device wallets. Use authentication to create more.`, 'info');
+    openSnackbar(`You already have ${deviceWalletsInProfiles.length} device wallets. Use authentication to access them.`, 'info');
   };
 
   const handleAddPasskeyAccount = async () => {
@@ -939,64 +910,42 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       });
 
       if (authResponse.id) {
-        // Check if this device key already has a wallet
-        const storedWallets = getStoredWallets();
-        const existingWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
+        // Always generate the same 5 wallets deterministically
+        const wallets = generateWalletsFromDeviceKey(authResponse.id);
 
+        // Check if any of these wallets already exist in profiles
+        const existingWallet = profiles.find(p =>
+          wallets.some(w => w.account === p.account)
+        );
 
-        if (existingWallets.length > 0) {
-          // Use existing wallets - update profiles directly
-          doLogIn(existingWallets[0]);
+        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
-          // Directly update profiles state with all existing wallets
-          const allProfiles = [...profiles];
-          existingWallets.forEach(deviceProfile => {
-            if (!allProfiles.find(p => p.account === deviceProfile.account)) {
-              allProfiles.push(deviceProfile);
-            }
-          });
-          setProfiles(allProfiles);
-          window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
-
-          openSnackbar(`Switched to device wallet ${existingWallets[0].address.slice(0, 8)}... (${existingWallets.length} total)`, 'success');
-        } else {
-          // Create 50 new random wallets for this device key
-          const wallets = [];
-          const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
-          const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
-
-
-          for (let i = 0; i < 5; i++) {
-            const wallet = XRPLWallet.generate();
-            const walletData = storeWallet(authResponse.id, wallet, i);
-            wallets.push(walletData);
-
-            // Add to profiles localStorage for compatibility
-            const profile = { ...walletData, tokenCreatedAt: Date.now() };
-            if (!currentProfiles.find(p => p.account === profile.address)) {
-              currentProfiles.push(profile);
-            }
+        // Add wallets to profiles localStorage if not already there
+        wallets.forEach(walletData => {
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!currentProfiles.find(p => p.account === profile.address)) {
+            currentProfiles.push(profile);
           }
+        });
 
-          window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
 
-          // Directly update profiles state with all new wallets
-          const allProfiles = [...profiles];
-          wallets.forEach(deviceProfile => {
-            if (!allProfiles.find(p => p.account === deviceProfile.account)) {
-              allProfiles.push(deviceProfile);
-            }
-          });
-          setProfiles(allProfiles);
+        // Update profiles state with wallets
+        const allProfiles = [...profiles];
+        wallets.forEach(deviceProfile => {
+          if (!allProfiles.find(p => p.account === deviceProfile.account)) {
+            allProfiles.push(deviceProfile);
+          }
+        });
+        setProfiles(allProfiles);
 
-          // Also post message as backup
-          window.postMessage({
-            type: 'DEVICE_LOGIN_SUCCESS',
-            profile: wallets[0],
-            allDeviceAccounts: wallets
-          }, '*');
-
-          openSnackbar(`50 device wallets created`, 'success');
+        // Login with first wallet - pass the updated profiles
+        doLogIn(wallets[0], allProfiles);
+        if (existingWallet) {
+          openSnackbar(`Switched to device wallet ${wallets[0].address.slice(0, 8)}... (${wallets.length} total)`, 'success');
+        } else {
+          openSnackbar(`5 device wallets accessed`, 'success');
         }
 
         setOpen(false);
@@ -1349,13 +1298,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {status === 'success' && walletInfo && (
                         <Alert severity="success" sx={{ mb: 2 }}>
                           <Typography variant="subtitle2" gutterBottom>
-                            🎉 {walletInfo.isAdditional ? `50 Additional Device Wallets Created!` : `50 Device Wallets Created!`}
+                            🎉 {walletInfo.isAdditional ? `Device Wallets Accessed!` : `Device Wallets Created!`}
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Wallets Created:</strong> 50 new wallets
+                            <strong>Wallets Available:</strong> {walletInfo.totalWallets} wallets
                           </Typography>
                           <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Total Wallets:</strong> {walletInfo.totalWallets} | <strong>Security:</strong> Protected by your device key
+                            <strong>Security:</strong> Deterministically generated from your device key
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
                             Your wallet is secured by hardware authentication.

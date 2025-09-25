@@ -127,7 +127,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
   };
 
-  const doLogIn = (profile) => {
+  const doLogIn = (profile, profilesOverride = null) => {
     // Debug logging for admin login
 
     // Add token creation timestamp
@@ -142,7 +142,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     // const old = profiles.find(x => x.account === profile.account);
     let exist = false;
     const newProfiles = [];
-    for (const p of profiles) {
+    const currentProfiles = profilesOverride || profiles;
+    for (const p of currentProfiles) {
       if (p.account === profileWithTimestamp.account) {
         newProfiles.push(profileWithTimestamp);
         exist = true;
