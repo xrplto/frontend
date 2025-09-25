@@ -583,7 +583,7 @@ const WalletConnectModal = () => {
             }}>
               <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
               <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
-                One Passkey = One Set of Wallets
+                One Key = One Set of Wallets
               </Typography>
             </Box>
 
@@ -595,7 +595,7 @@ const WalletConnectModal = () => {
                       <strong>Windows Hello Setup Required</strong>
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 1.5 }}>
-                      Please enable Windows Hello, Touch ID, or Face ID to use device login:
+                      Please enable Windows Hello, Touch ID, or Face ID to use device authentication:
                     </Typography>
                     <Typography variant="body2" sx={{ mb: 1 }}>
                       1. Go to <strong>Settings → Accounts → Sign-in options</strong>
@@ -663,7 +663,7 @@ const WalletConnectModal = () => {
                   }
                 }}
               >
-                {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering...' : 'Sign In (Existing User)'}
+                {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering...' : 'Sign In (Existing Key)'}
               </Button>
 
               <Button
@@ -685,7 +685,7 @@ const WalletConnectModal = () => {
                   }
                 }}
               >
-                {status === 'registering' ? 'Creating...' : 'Create New Passkey'}
+                {status === 'registering' ? 'Creating...' : 'Create New Key'}
               </Button>
 
               <Typography variant="caption" sx={{
