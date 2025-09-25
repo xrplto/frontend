@@ -817,6 +817,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Reuse signature entropy from previous authentication
       signatureEntropy = existingSignatureEntropy;
       console.log('🔐 Reusing signature entropy from authentication');
+    } else if (existingSignatureEntropy === null) {
+      // Registration case - create a mock signature entropy for deterministic generation
+      signatureEntropy = 'registration-mock-entropy-' + deviceKeyId;
+      console.log('🔐 Using registration mock entropy for wallet generation');
     } else {
       // Generate signature entropy - required for secure wallet generation
       console.log('🔐 Requesting user authentication for wallet generation...');
@@ -972,8 +976,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (registrationResponse.id) {
-        // Extract signature entropy from the registration response to avoid double prompts
-        const signatureEntropy = extractSignatureEntropy(registrationResponse);
+        // For registration, we don't have signature entropy, so generate wallets without it
+        const signatureEntropy = null; // Registration doesn't provide signature entropy
 
         // Generate the standard 5 wallets deterministically
         const wallets = await generateWalletsFromDeviceKey(registrationResponse.id, signatureEntropy);
