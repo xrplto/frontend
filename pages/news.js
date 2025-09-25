@@ -12,7 +12,6 @@ import styles from './news.module.css';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
-const Topbar = dynamic(() => import('../src/components/Topbar'), { ssr: true });
 
 // Styled Components for Pagination (matching TokenList)
 const PaginationContainer = styled.div`
@@ -617,7 +616,6 @@ function NewsPage() {
       className={`${styles.pageWrapper} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
       style={backgroundStyle}
     >
-      <Topbar />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}

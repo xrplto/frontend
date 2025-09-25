@@ -18,7 +18,6 @@ import {
 import ArrowBackIcon from '@mui/icons-material/KeyboardBackspace';
 
 // Components
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -161,7 +160,6 @@ export default function CollectedCreatedNFTs({ type, account, limit, collection 
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
       <Container maxWidth="xl">
         {collection && (

@@ -2,7 +2,6 @@ import React, { memo } from 'react';
 import styled from '@emotion/styled';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
@@ -231,7 +230,6 @@ function TermsPage() {
   return (
     <div>
       <div id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container>

@@ -22,7 +22,6 @@ const Swap = dynamic(() => import('src/components/SwapInterface'), {
   ssr: false
 });
 
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -134,7 +133,6 @@ function Overview({ data }) {
   return (
     <div className="overflow-x-hidden flex-1 min-h-screen">
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <div className="max-w-7xl mx-auto py-2 sm:py-3 md:py-4 px-4">

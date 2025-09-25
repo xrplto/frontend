@@ -6,7 +6,6 @@ import { getTokens } from 'src/utils/extra';
 // Import all components directly
 import Header from 'src/components/Header';
 import TokenList from 'src/TokenList';
-import Topbar from 'src/components/Topbar';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
@@ -105,12 +104,10 @@ function Overview({ data }) {
     <OverviewWrapper>
       {/* Only show Toolbar on desktop - remove on mobile to eliminate spacing */}
       {!isMobile && <Toolbar id="back-to-top-anchor" />}
-      {!isMobile ? <Topbar /> : ''}
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      {isMobile ? <Topbar /> : ''}
 
       <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         <Box

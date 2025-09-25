@@ -12,7 +12,6 @@ import {
   Chip,
   Stack
 } from '@mui/material';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
@@ -20,7 +19,6 @@ function OGPTestPage({ imageUrls }) {
   return (
     <Box>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl" sx={{ py: 4 }}>

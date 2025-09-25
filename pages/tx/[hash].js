@@ -36,7 +36,6 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import Topbar from 'src/components/Topbar';
 import Link from 'next/link';
 import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/utils/parse/utils';
 import { formatDistanceToNow } from 'date-fns';
@@ -3432,7 +3431,6 @@ const TxPage = ({ txData, error }) => {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Topbar />
       <Header />
       <Container maxWidth="lg" sx={{ flex: 1, py: 4 }}>
         <Box mb={4}>

@@ -3,7 +3,6 @@ import styled from '@emotion/styled';
 import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
@@ -512,7 +511,6 @@ function AboutPage() {
 
   return (
     <PageWrapper>
-      <Topbar />
       <Header />
 
       <Container>

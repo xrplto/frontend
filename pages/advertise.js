@@ -36,7 +36,6 @@ import {
   Campaign as CampaignIcon,
   AutoAwesome as AutoAwesomeIcon
 } from '@mui/icons-material';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import useDebounce from 'src/hooks';
@@ -493,7 +492,6 @@ export default function Advertise() {
 
   return (
     <PageWrapper>
-      <Topbar />
       <Header />
       <MainContent>
         <Container maxWidth="lg">

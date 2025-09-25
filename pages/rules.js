@@ -2,7 +2,6 @@ import React from 'react';
 import { Box, Container, Grid, Toolbar, Typography, useTheme } from '@mui/material';
 import axios from 'axios';
 // import { performance } from 'perf_hooks';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { BASE_URL } from 'src/utils/constants';
@@ -11,7 +10,6 @@ function CommunityRulesPage() {
   return (
     <Box>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl">

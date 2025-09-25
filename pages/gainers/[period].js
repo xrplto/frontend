@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
@@ -43,9 +42,7 @@ function GainersPage({ data, period }) {
   return (
     <OverviewWrapper>
       {!isMobile && <Toolbar id="back-to-top-anchor" />}
-      {!isMobile ? <Topbar /> : ''}
       <Header />
-      {isMobile ? <Topbar /> : ''}
 
       <Container maxWidth="xl">
         <Box

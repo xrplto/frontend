@@ -9,7 +9,6 @@ import { Container, Grid, Link, Box, styled, Toolbar, Typography, Pagination } f
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
@@ -66,7 +65,6 @@ const Sitemap = ({ tokens, slug }) => {
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl">

@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
 import { Box, Container, Grid, styled as muiStyled, Toolbar } from '@mui/material';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -763,9 +762,7 @@ function RSIAnalysisPage({ data }) {
   return (
     <Wrapper>
       {!isMobile && <Toolbar />}
-      {!isMobile && <Topbar />}
       <Header />
-      {isMobile && <Topbar />}
 
       <Container maxWidth="xl">
         <Controls darkMode={darkMode}>

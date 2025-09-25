@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import styled from '@emotion/styled';
 import { useTheme } from '@mui/material/styles';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
@@ -266,7 +265,6 @@ function PrivacyPage() {
   return (
     <div>
       <div id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container>

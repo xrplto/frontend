@@ -1,6 +1,5 @@
 import { useState, useMemo } from 'react';
 import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
@@ -45,12 +44,10 @@ function SpotlightPage({ data }) {
     <OverviewWrapper>
       {/* Only show Toolbar on desktop - remove on mobile to eliminate spacing */}
       {!isMobile && <Toolbar id="back-to-top-anchor" />}
-      {!isMobile ? <Topbar /> : ''}
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      {isMobile ? <Topbar /> : ''}
 
       <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         <Box

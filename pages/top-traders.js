@@ -17,7 +17,6 @@ import {
 import { alpha } from '@mui/material/styles';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import Topbar from '../src/components/Topbar';
 import { currencySymbols } from 'src/utils/constants';
 
 // Table Styled Components
@@ -601,7 +600,6 @@ export default function TopTraders() {
         <meta name="description" content="Advanced trader analytics and leaderboard for XRPL ecosystem" />
       </Head>
 
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl" sx={{ py: 4 }}>

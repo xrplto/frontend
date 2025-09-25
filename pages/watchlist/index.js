@@ -10,7 +10,6 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -43,7 +42,6 @@ function Overview({ data }) {
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl">

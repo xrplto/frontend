@@ -1,5 +1,4 @@
 import { Box, styled, Grid, Toolbar, Container, CircularProgress } from '@mui/material';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -26,7 +25,6 @@ const OverView = ({ account, limit, collection, type, tab }) => {
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl">

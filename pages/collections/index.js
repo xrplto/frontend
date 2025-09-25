@@ -2,7 +2,6 @@
 import { styled, Box, Container, Toolbar } from '@mui/material';
 
 // Components
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import AllCollections from 'src/collection/AllCollections';
@@ -42,7 +41,6 @@ export default function Overview() {
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header />
 
       <Container maxWidth="xl">

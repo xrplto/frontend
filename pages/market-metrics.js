@@ -26,7 +26,6 @@ import { alpha } from '@mui/material/styles';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import Topbar from 'src/components/Topbar';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 // WebSocket handled globally in _app.js
@@ -3395,7 +3394,6 @@ const MarketMetricsContent = () => {
 const MarketMetricsPage = () => {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <Topbar />
       <Header />
       <Box sx={{ flex: 1 }}>
         <MarketMetricsContent />

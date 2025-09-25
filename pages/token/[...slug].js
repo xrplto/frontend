@@ -10,7 +10,6 @@ import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
 // Components
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -81,7 +80,6 @@ function Detail({ data }) {
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
-      <Topbar />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}

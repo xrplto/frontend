@@ -13,7 +13,6 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Collection from 'src/collection';
 import ScrollToTop from 'src/components/ScrollToTop';
-import Topbar from 'src/components/Topbar';
 import CollectionBreadcrumb from 'src/collection/CollectionBreadcrumb';
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
@@ -71,7 +70,6 @@ export default function Overview({ collection }) {
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
 
-      <Topbar />
 
       <Header />
 

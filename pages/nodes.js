@@ -24,7 +24,6 @@ import {
 import StorageIcon from '@mui/icons-material/Storage';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import RouterIcon from '@mui/icons-material/Router';
-import Topbar from 'src/components/Topbar';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -170,9 +169,7 @@ function NodesPage() {
   return (
     <OverviewWrapper>
       {!isMobile && <Toolbar id="back-to-top-anchor" />}
-      {!isMobile ? <Topbar /> : ''}
       <Header />
-      {isMobile ? <Topbar /> : ''}
 
       <Container maxWidth="xl">
         <Box sx={{ py: 4 }}>
