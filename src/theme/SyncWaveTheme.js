@@ -563,25 +563,6 @@ export const SyncWaveTheme = createTheme({
           flex: 1,
           background: '#0d0818',
           position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `
-              linear-gradient(rgba(255, 20, 147, 0.08) 1px, transparent 1px),
-              linear-gradient(90deg, rgba(255, 20, 147, 0.08) 1px, transparent 1px),
-              linear-gradient(rgba(255, 107, 53, 0.04) 2px, transparent 2px),
-              linear-gradient(90deg, rgba(255, 107, 53, 0.04) 2px, transparent 2px)
-            `,
-            backgroundSize: '50px 50px, 50px 50px, 100px 100px, 100px 100px',
-            backgroundPosition: '0 0, 0 0, 0 0, 0 0',
-            animation: 'grid-move 20s linear infinite',
-            zIndex: -1,
-            pointerEvents: 'none'
-          },
           '&::after': {
             content: '""',
             position: 'fixed',
@@ -642,14 +623,6 @@ export const SyncWaveTheme = createTheme({
             transform: 'translateY(100%)'
           }
         },
-        '@keyframes grid-move': {
-          '0%': {
-            backgroundPosition: '0 0, 0 0, 0 0, 0 0'
-          },
-          '100%': {
-            backgroundPosition: '50px 50px, -50px -50px, 100px 100px, -100px -100px'
-          }
-        }
       }
     }
   },
