@@ -1038,30 +1038,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         style={{
           background: accountProfile
             ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`
-            : theme.palette.mode === 'dark'
-              ? 'linear-gradient(135deg, #2d3436 0%, #1e2124 50%)'
-              : 'linear-gradient(135deg, #ffffff 0%, #f8f9fa 50%)',
-          border: accountProfile
-            ? `1px solid ${theme.palette.primary.dark}`
-            : `1px solid ${theme.palette.mode === 'dark' ? '#636e72' : '#ddd'}`,
-          borderRadius: '6px',
+            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
+          border: `1px solid ${theme.palette.primary.dark}`,
+          borderRadius: '8px',
           height: '32px',
-          padding: accountProfile ? '0 5px' : '0 6px',
-          minWidth: accountProfile ? '15px' : '70px',
-          color: accountProfile ? '#ffffff' : theme.palette.mode === 'dark' ? '#ffffff' : '#2d3436',
+          padding: accountProfile ? '0 5px' : '0 14px',
+          minWidth: accountProfile ? '15px' : '80px',
+          color: '#ffffff',
           fontSize: '13px',
           fontWeight: '600',
           fontFamily: 'inherit',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'space-between',
+          justifyContent: 'center',
           gap: '8px',
-          transition: 'all 0.3s ease',
+          transition: 'all 0.2s ease',
           outline: 'none',
-          boxShadow: accountProfile
-            ? `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-            : '0 2px 4px rgba(0,0,0,0.1)'
+          boxShadow: `0 3px 10px ${alpha(theme.palette.primary.main, 0.4)}`
         }}
         onMouseEnter={(e) => {
           e.target.style.opacity = '0.9';
@@ -1108,7 +1102,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             </svg>
           </div>
         ) : (
-          <span>{t('Connect')}</span>
+          <span>{t('Login')}</span>
         )}
       </button>
 
