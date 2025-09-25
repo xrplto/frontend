@@ -32,6 +32,33 @@ const base64urlEncode = (buffer) => {
     .replace(/=/g, '');
 };
 
+// Secure deterministic wallet generation using PBKDF2 with high entropy
+const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
+  // Security approach based on WebAuthn best practices:
+  // 1. Use credential ID as base entropy (unique per passkey)
+  // 2. Add account index for multiple wallets
+  // 3. Add optional user entropy for additional security
+  // 4. Apply PBKDF2 with high iterations (industry standard)
+  // 5. Use credential ID as salt (unique per passkey)
+
+  // Create entropy string with all available sources
+  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
+
+  // Use PBKDF2 with high iterations for security
+  // This makes brute force attacks computationally expensive
+  const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+    keySize: 256/32, // 256-bit key
+    iterations: 100000 // 100k iterations - industry standard for 2024
+  }).toString();
+
+  // Convert PBKDF2 output to a valid private key
+  // Take first 64 characters (32 bytes) for the private key
+  const privateKeyHex = seedHash.substring(0, 64);
+
+  // Generate wallet from the deterministic private key
+  return new Wallet(privateKeyHex);
+};
+
 const StyledDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(20px)',
   WebkitBackdropFilter: 'blur(20px)',
@@ -206,11 +233,6 @@ const WalletConnectModal = () => {
   };
 
 
-  const generateWallet = () => {
-    // Generate a standard random wallet - passkey will handle signing
-    const wallet = Wallet.generate();
-    return wallet;
-  };
 
   const getStoredWallets = () => {
     // Get wallets associated with this device key ID
@@ -330,7 +352,7 @@ const WalletConnectModal = () => {
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
         for (let i = 0; i < 5; i++) {
-          const wallet = generateWallet();
+          const wallet = generateSecureDeterministicWallet(registrationResponse.id, i);
           const walletData = storeWallet(registrationResponse.id, wallet, i);
           wallets.push(walletData);
 
@@ -436,7 +458,7 @@ const WalletConnectModal = () => {
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
         for (let i = 0; i < 5; i++) {
-          const wallet = generateWallet();
+          const wallet = generateSecureDeterministicWallet(authResponse.id, nextAccountIndex + i);
           const walletData = storeWallet(authResponse.id, wallet, nextAccountIndex + i);
           wallets.push(walletData);
 
@@ -468,10 +490,8 @@ const WalletConnectModal = () => {
           totalWallets: userWallets.length + 5
         });
 
-        // Login with the first new wallet if it's a fresh user, otherwise keep current wallet
-        if (userWallets.length === 0) {
-          doLogIn(wallets[0]);
-        }
+        // Always login with the first newly created wallet
+        doLogIn(wallets[0]);
         setStatus('success');
 
         // Close modal after brief delay to show success
