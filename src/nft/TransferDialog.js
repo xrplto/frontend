@@ -261,7 +261,11 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         )
       };
 
-      switch (wallet_type) {
+      if (wallet_type === 'device') {
+        // Device authentication required for NFT operations
+        openSnackbar('Device authentication for NFT transfers coming soon', 'info');
+      } else {
+        openSnackbar('Device authentication required', 'error');
       }
     } catch (err) {
       console.error(err);

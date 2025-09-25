@@ -103,7 +103,11 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         Memos: configureMemos('XRPNFT-nft-burn', '', `https://xrpnft.com`)
       };
 
-      switch (wallet_type) {
+      if (wallet_type === 'device') {
+        // Device authentication required for NFT operations
+        openSnackbar('Device authentication for NFT burn coming soon', 'info');
+      } else {
+        openSnackbar('Device authentication required', 'error');
       }
     } catch (err) {
       console.error(err);
