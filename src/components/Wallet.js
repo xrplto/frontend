@@ -1130,7 +1130,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               background: 'transparent',
               boxShadow: 'none',
               position: 'fixed',
-              top: '48px',
+              top: '64px',
               right: '16px',
               left: 'auto',
               transform: 'none',
