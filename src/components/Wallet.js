@@ -911,7 +911,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       if (!available) {
-        setError('setup_required');
+        setError('Windows Hello, Touch ID, or Face ID must be enabled in your device settings first.');
         setStatus('idle');
         return;
       }
@@ -921,36 +921,51 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userId = base64urlEncode(userIdBuffer);
       const challenge = base64urlEncode(challengeBuffer);
 
+      console.log('Starting WebAuthn registration with hostname:', window.location.hostname);
+      console.log('Available authenticators check result:', available);
+
+      const registrationOptions = {
+        rp: {
+          name: 'XRPL.to',
+          // Omit id for localhost to let browser handle it
+          ...(window.location.hostname !== 'localhost' && { id: window.location.hostname }),
+        },
+        user: {
+          id: userId,
+          name: `xrplto-${Date.now()}@xrpl.to`,
+          displayName: 'XRPL.to User',
+        },
+        challenge: challenge,
+        pubKeyCredParams: [
+          { alg: -7, type: 'public-key' },  // ES256
+          { alg: -257, type: 'public-key' } // RS256
+        ],
+        timeout: 60000,
+        attestation: 'none',
+        excludeCredentials: [], // Explicitly set empty to avoid duplicate prevention
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          requireResidentKey: false,
+          residentKey: 'discouraged' // Prevent storing credentials on authenticator
+        }
+      };
+
+      console.log('Registration options:', registrationOptions);
+
       let registrationResponse;
       try {
-        registrationResponse = await startRegistration({
-          rp: {
-            name: 'XRPL.to',
-            id: window.location.hostname,
-          },
-          user: {
-            id: userId,
-            name: `xrplto-${Date.now()}@xrpl.to`,
-            displayName: 'XRPL.to User',
-          },
-          challenge: challenge,
-          pubKeyCredParams: [{ alg: -7, type: 'public-key' }],
-          timeout: 60000,
-          attestation: 'none',
-          authenticatorSelection: {
-            authenticatorAttachment: 'platform',
-            userVerification: 'required',
-          }
-        });
+        registrationResponse = await startRegistration({ optionsJSON: registrationOptions });
       } catch (innerErr) {
+        console.error('Registration inner error:', innerErr);
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
           setError('Passkeys not supported on this device or browser.');
-        } else if (innerErr.message?.includes('InvalidStateError') || innerErr.message?.includes('saving')) {
-          setError('setup_required');
         } else if (innerErr.message?.includes('NotAllowedError') || innerErr.message?.includes('denied')) {
           setError('Cancelled. Please try again and allow the security prompt.');
+        } else if (innerErr.message?.includes('AbortError') || innerErr.message?.includes('timeout')) {
+          setError('Request timed out. Please try again.');
         } else {
-          setError('setup_required');
+          setError(`Passkey creation failed: ${innerErr.message}`);
         }
         setStatus('idle');
         return;
