@@ -545,7 +545,7 @@ const WalletConnectModal = () => {
                       fontSize: '0.8rem'
                     }}
                   >
-                    Passkey/Biometric
+                    Key/Biometric
                   </Typography>
                 </Stack>
               </WalletItem>
@@ -566,7 +566,7 @@ const WalletConnectModal = () => {
                 <ArrowBackIcon />
               </ActionButton>
               <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
-                Device Authentication
+                Key Authentication
               </Typography>
               <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
             </Box>
