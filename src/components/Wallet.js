@@ -266,7 +266,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity]);
 
   const getStoredWallets = () => {
-    const storedWallets = localStorage.getItem('passkeyWallets');
+    const storedWallets = localStorage.getItem('deviceWallets');
     if (!storedWallets) return [];
     try {
       return JSON.parse(storedWallets);
@@ -276,26 +276,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const storeWallet = (passkeyId, wallet) => {
+  const storeWallet = (deviceKeyId, wallet, accountIndex = 0) => {
     const walletData = {
-      passkeyId,
+      deviceKeyId,
+      accountIndex,
       account: wallet.address,  // AppContext expects 'account' field
       address: wallet.address,
       publicKey: wallet.publicKey,
-      wallet_type: 'passkey',
+      wallet_type: 'device',
       xrp: '0',
       createdAt: Date.now()
     };
 
     const storedWallets = getStoredWallets();
-    storedWallets.push(walletData);
-    localStorage.setItem('passkeyWallets', JSON.stringify(storedWallets));
+    // Check if wallet already exists
+    if (!storedWallets.find(w => w.address === wallet.address)) {
+      storedWallets.push(walletData);
+      localStorage.setItem('deviceWallets', JSON.stringify(storedWallets));
+    }
     return walletData;
   };
 
 
   const handleShowSeed = async () => {
-    openSnackbar('Seed display not available for passkey wallets - seeds are stored securely and not accessible', 'info');
+    openSnackbar('Seed display not available for device wallets - seeds are stored securely and not accessible', 'info');
   };
 
   const handleAddPasskeyAccount = async () => {
@@ -314,37 +318,42 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       });
 
       if (authResponse.id) {
-        // Check if this passkey already has a wallet
+        // Check if this device key already has a wallet
         const storedWallets = getStoredWallets();
-        const existingWallet = storedWallets.find(w => w.passkeyId === authResponse.id);
+        const existingWallet = storedWallets.find(w => w.deviceKeyId === authResponse.id);
 
         if (existingWallet) {
-          // Use existing wallet
+          // Use existing wallet (first one found)
           doLogIn(existingWallet);
-          openSnackbar(`Switched to existing passkey wallet ${existingWallet.address.slice(0, 8)}...`, 'success');
+          const deviceWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
+          openSnackbar(`Switched to device wallet ${existingWallet.address.slice(0, 8)}... (${deviceWallets.length} total)`, 'success');
         } else {
-          // Create new random wallet for this passkey
-          const wallet = XRPLWallet.generate();
-          const walletData = storeWallet(authResponse.id, wallet);
-
-          // Add to profiles localStorage for compatibility
+          // Create 5 new random wallets for this device key
+          const wallets = [];
           const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
-          const profile = { ...walletData, tokenCreatedAt: Date.now() };
           const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
-          if (!currentProfiles.find(p => p.account === profile.address)) {
-            currentProfiles.push(profile);
-            window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+          for (let i = 0; i < 5; i++) {
+            const wallet = XRPLWallet.generate();
+            const walletData = storeWallet(authResponse.id, wallet, i);
+            wallets.push(walletData);
+
+            // Add to profiles localStorage for compatibility
+            const profile = { ...walletData, tokenCreatedAt: Date.now() };
+            if (!currentProfiles.find(p => p.account === profile.address)) {
+              currentProfiles.push(profile);
+            }
           }
 
-          doLogIn(walletData);
-          openSnackbar(`New passkey wallet created: ${walletData.address.slice(0, 8)}...`, 'success');
+          window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+          doLogIn(wallets[0]);
+          openSnackbar(`5 device wallets created starting with ${wallets[0].address.slice(0, 8)}...`, 'success');
         }
 
         setOpen(false);
       }
     } catch (err) {
-      openSnackbar('Failed to create/access passkey wallet: ' + err.message, 'error');
+      openSnackbar('Failed to create/access device wallet: ' + err.message, 'error');
     }
   };
   const accountLogin = accountProfile?.account;
@@ -598,7 +607,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 </Box>
               </Stack>
 
-              {accountProfile?.wallet_type === 'passkey' && (
+              {accountProfile?.wallet_type === 'device' && (
                 <Button
                   size="small"
                   onClick={handleShowSeed}
@@ -616,7 +625,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   }}
                 >
                   <KeyIcon sx={{ fontSize: '0.8rem', mr: 0.5 }} />
-                  Passkey Secured
+                  Device Secured
                 </Button>
               )}
             </Box>
@@ -1328,7 +1337,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       More Accounts
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      Create or connect passkey wallet
+                      Create or connect device wallet
                     </Typography>
                   </Box>
                 </Stack>

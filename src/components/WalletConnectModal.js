@@ -211,8 +211,8 @@ const WalletConnectModal = () => {
   };
 
   const getStoredWallets = () => {
-    // Get wallets associated with this passkey ID
-    const storedWallets = localStorage.getItem('passkeyWallets');
+    // Get wallets associated with this device key ID
+    const storedWallets = localStorage.getItem('deviceWallets');
     if (!storedWallets) return [];
 
     try {
@@ -223,21 +223,24 @@ const WalletConnectModal = () => {
     }
   };
 
-  const storeWallet = (passkeyId, wallet) => {
+  const storeWallet = (deviceKeyId, wallet, accountIndex = 0) => {
     const walletData = {
-      passkeyId,
+      deviceKeyId,
+      accountIndex,
       account: wallet.address,  // AppContext expects 'account' field
       address: wallet.address,
       publicKey: wallet.publicKey,
-      wallet_type: 'passkey',
+      wallet_type: 'device',
       xrp: '0',
       createdAt: Date.now()
     };
 
     const storedWallets = getStoredWallets();
-    storedWallets.push(walletData);
-
-    localStorage.setItem('passkeyWallets', JSON.stringify(storedWallets));
+    // Check if wallet already exists
+    if (!storedWallets.find(w => w.address === wallet.address)) {
+      storedWallets.push(walletData);
+      localStorage.setItem('deviceWallets', JSON.stringify(storedWallets));
+    }
     return walletData;
   };
 
@@ -319,20 +322,22 @@ const WalletConnectModal = () => {
       }
 
       if (registrationResponse.id) {
-        // Generate a new random wallet
-        const wallet = generateWallet();
+        // Generate 5 wallets for this device key
+        const wallets = [];
+        for (let i = 0; i < 5; i++) {
+          const wallet = generateWallet();
+          const walletData = storeWallet(registrationResponse.id, wallet, i);
+          wallets.push(walletData);
+        }
 
-        // Store wallet associated with this passkey
-        const walletData = storeWallet(registrationResponse.id, wallet);
-
-        // Store wallet info for display
+        // Store first wallet info for display
         setWalletInfo({
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          passkeyId: registrationResponse.id
+          address: wallets[0].address,
+          publicKey: wallets[0].publicKey,
+          deviceKeyId: registrationResponse.id
         });
 
-        doLogIn(walletData);
+        doLogIn(wallets[0]);
         setStatus('success');
 
         setTimeout(() => {
@@ -394,23 +399,27 @@ const WalletConnectModal = () => {
       if (authResponse.id) {
         setStatus('discovering');
 
-        // Look for existing wallets associated with this passkey
+        // Look for existing wallets associated with this device key
         const storedWallets = getStoredWallets();
-        const userWallet = storedWallets.find(w => w.passkeyId === authResponse.id);
+        const userWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
 
-        if (userWallet) {
-          // Found existing wallet
-          doLogIn(userWallet);
+        if (userWallets.length > 0) {
+          // Found existing wallets - use first one
+          doLogIn(userWallets[0]);
           setStatus('success');
           setTimeout(() => {
             handleClose();
           }, 2000);
         } else {
-          // No wallet found for this passkey - create new one
-          const wallet = generateWallet();
-          const walletData = storeWallet(authResponse.id, wallet);
+          // No wallets found for this device key - create 5 new ones
+          const wallets = [];
+          for (let i = 0; i < 5; i++) {
+            const wallet = generateWallet();
+            const walletData = storeWallet(authResponse.id, wallet, i);
+            wallets.push(walletData);
+          }
 
-          doLogIn(walletData);
+          doLogIn(wallets[0]);
           setStatus('success');
           setTimeout(() => {
             handleClose();
@@ -532,7 +541,7 @@ const WalletConnectModal = () => {
                       fontSize: '0.8rem'
                     }}
                   >
-                    Passkey Authentication
+                    Device Authentication
                   </Typography>
                 </Stack>
               </WalletItem>
@@ -588,13 +597,13 @@ const WalletConnectModal = () => {
             {status === 'success' && walletInfo && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  🎉 Passkey Wallet Created!
+                  🎉 Device Wallet Created!
                 </Typography>
                 <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
                   <strong>Address:</strong> {walletInfo.address}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Security:</strong> Protected by your passkey
+                  <strong>Security:</strong> Protected by your device key
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   Your wallet is secured by hardware authentication. Modal closes in 3 seconds.
@@ -660,7 +669,7 @@ const WalletConnectModal = () => {
                 mt: 1,
                 fontSize: '0.75rem'
               }}>
-                Passkey-secured wallets • Universal browser support
+                Device-secured wallets • Universal browser support
               </Typography>
             </Box>
           </>
