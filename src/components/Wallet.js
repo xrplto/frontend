@@ -101,7 +101,7 @@ const generateSecureDeterministicWallet = async (credentialId, accountIndex) => 
       const scryptResult = await scrypt.scrypt(
         Buffer.from(combinedEntropy, 'utf8'),
         Buffer.from(salt, 'utf8'),
-        16384, // N (CPU cost)
+        4096,  // N (CPU cost) - reduced for performance
         8,     // r (memory cost)
         1,     // p (parallelization)
         16     // output length in bytes
@@ -111,11 +111,11 @@ const generateSecureDeterministicWallet = async (credentialId, accountIndex) => 
       throw new Error('Scrypt not available, using PBKDF2 fallback');
     }
   } catch (error) {
-    // Fallback to enhanced PBKDF2 with 600,000 iterations
+    // Fallback to PBKDF2 with reasonable iterations for performance
     console.log('Using PBKDF2 fallback for wallet generation');
     entropyHash = CryptoJS.PBKDF2(combinedEntropy, salt, {
       keySize: 128/32, // 16 bytes for seed entropy
-      iterations: 600000
+      iterations: 50000 // Optimized for fast wallet generation
     }).toString();
   }
 
