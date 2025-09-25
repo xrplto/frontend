@@ -54,6 +54,9 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import BackupIcon from '@mui/icons-material/Backup';
+import PasswordIcon from '@mui/icons-material/Password';
+import TextField from '@mui/material/TextField';
+import InputAdornment from '@mui/material/InputAdornment';
 
 // Context
 import { useContext } from 'react';
@@ -73,6 +76,7 @@ import { useTranslation } from 'react-i18next';
 
 // Utils
 import { getHashIcon } from 'src/utils/extra';
+import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 // Base64url encoding helper
 const base64urlEncode = (buffer) => {
@@ -664,6 +668,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
+
+  // PIN-based wallet states
+  const [showPinLogin, setShowPinLogin] = useState(false);
+  const [pin, setPin] = useState('');
+  const [confirmPin, setConfirmPin] = useState('');
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
+  const [pinError, setPinError] = useState('');
+  const [walletStorage] = useState(new EncryptedWalletStorage());
+  const [hasPinWallet, setHasPinWallet] = useState(false);
   const {
     setActiveProfile,
     accountProfile,
@@ -926,9 +939,212 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleGoBack = () => {
     setShowDeviceLogin(false);
+    setShowPinLogin(false);
     setStatus('idle');
     setError('');
     setWalletInfo(null);
+    setPin('');
+    setConfirmPin('');
+    setPinError('');
+    setIsCreatingWallet(false);
+  };
+
+  // Check if PIN wallet exists
+  useEffect(() => {
+    const checkPinWallet = async () => {
+      try {
+        const exists = await walletStorage.hasWallet();
+        setHasPinWallet(exists);
+      } catch (error) {
+        setHasPinWallet(false);
+      }
+    };
+    checkPinWallet();
+  }, [walletStorage]);
+
+  const handlePinLogin = async () => {
+    if (!pin) {
+      setPinError('PIN is required');
+      return;
+    }
+
+    if (pin.length !== 6) {
+      setPinError('PIN must be 6 digits');
+      return;
+    }
+
+    setStatus('authenticating');
+    setPinError('');
+
+    try {
+      const wallets = await walletStorage.getWallets(pin);
+      const firstWallet = wallets[0];
+
+      // Add all wallets to profiles
+      const allProfiles = [...profiles];
+      wallets.forEach(wallet => {
+        const profile = {
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'pin',
+          xrp: '0',
+          createdAt: wallet.createdAt
+        };
+
+        if (!allProfiles.find(p => p.account === profile.account)) {
+          allProfiles.push(profile);
+        }
+      });
+
+      setProfiles(allProfiles);
+
+      const profile = {
+        account: firstWallet.address,
+        address: firstWallet.address,
+        publicKey: firstWallet.publicKey,
+        seed: firstWallet.seed,
+        wallet_type: 'pin',
+        xrp: '0',
+        createdAt: firstWallet.createdAt
+      };
+
+      doLogIn(profile, allProfiles);
+      openSnackbar(`PIN login successful - ${wallets.length} wallets accessed`, 'success');
+      setOpenWalletModal(false);
+      setShowPinLogin(false);
+      setStatus('idle');
+      setPin('');
+    } catch (error) {
+      setPinError(error.message);
+      setStatus('idle');
+    }
+  };
+
+  const handlePinCreate = async () => {
+    const validation = walletStorage.validatePin(pin);
+
+    if (!validation.isValid) {
+      const issues = [];
+      if (!validation.requirements.correctLength) issues.push('must be 6 digits');
+      if (!validation.requirements.onlyNumbers) issues.push('only numbers allowed');
+      if (!validation.requirements.notSequential) issues.push('no sequential digits (123456)');
+      if (!validation.requirements.notRepeating) issues.push('no repeating digits (111111)');
+
+      setPinError('PIN ' + issues.join(', '));
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      setPinError('PINs do not match');
+      return;
+    }
+
+    setIsCreatingWallet(true);
+    setPinError('');
+
+    try {
+      const wallets = await walletStorage.createWalletFromPin(pin);
+      const firstWallet = wallets[0];
+
+      // Add all wallets to profiles
+      const allProfiles = [...profiles];
+      wallets.forEach(wallet => {
+        const profile = {
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'pin',
+          xrp: '0',
+          createdAt: wallet.createdAt
+        };
+
+        if (!allProfiles.find(p => p.account === profile.account)) {
+          allProfiles.push(profile);
+        }
+      });
+
+      setProfiles(allProfiles);
+
+      const profile = {
+        account: firstWallet.address,
+        address: firstWallet.address,
+        publicKey: firstWallet.publicKey,
+        seed: firstWallet.seed,
+        wallet_type: 'pin',
+        xrp: '0',
+        createdAt: firstWallet.createdAt
+      };
+
+      doLogIn(profile, allProfiles);
+      openSnackbar(`5 PIN wallets created successfully`, 'success');
+      setOpenWalletModal(false);
+      setShowPinLogin(false);
+      setStatus('idle');
+      setPin('');
+      setConfirmPin('');
+      setIsCreatingWallet(false);
+      setHasPinWallet(true);
+    } catch (error) {
+      setPinError(error.message);
+      setIsCreatingWallet(false);
+    }
+  };
+
+  const handleMigrateToPin = async () => {
+    if (!accountProfile || !accountProfile.seed) {
+      openSnackbar('No active wallet to migrate', 'error');
+      return;
+    }
+
+    if (!pin) {
+      setPinError('PIN is required for migration');
+      return;
+    }
+
+    const validation = walletStorage.validatePin(pin);
+    if (!validation.isValid) {
+      const issues = [];
+      if (!validation.requirements.correctLength) issues.push('must be 6 digits');
+      if (!validation.requirements.onlyNumbers) issues.push('only numbers allowed');
+      if (!validation.requirements.notSequential) issues.push('no sequential digits (123456)');
+      if (!validation.requirements.notRepeating) issues.push('no repeating digits (111111)');
+
+      setPinError('PIN ' + issues.join(', '));
+      return;
+    }
+
+    if (pin !== confirmPin) {
+      setPinError('PINs do not match');
+      return;
+    }
+
+    setIsCreatingWallet(true);
+    setPinError('');
+
+    try {
+      const walletData = {
+        seed: accountProfile.seed,
+        address: accountProfile.address,
+        publicKey: accountProfile.publicKey,
+        createdAt: accountProfile.createdAt || Date.now(),
+        wallet_type: 'pin'
+      };
+
+      await walletStorage.storeWallet(walletData, pin);
+
+      openSnackbar('Wallet successfully migrated to PIN storage', 'success');
+      setShowPinLogin(false);
+      setPin('');
+      setConfirmPin('');
+      setIsCreatingWallet(false);
+      setHasPinWallet(true);
+    } catch (error) {
+      setPinError('Migration failed: ' + error.message);
+      setIsCreatingWallet(false);
+    }
   };
 
   const handleRegister = async () => {
@@ -1649,7 +1865,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 50%)`
                     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 50%)`
                 }}>
-                  {!showDeviceLogin ? (
+                  {!showDeviceLogin && !showPinLogin ? (
                     <>
                       <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
                         Choose a wallet to connect to the XRPL network
@@ -1702,6 +1918,254 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </Typography>
                           </Stack>
                         </Stack>
+
+                        <Stack
+                          direction="row"
+                          spacing={2}
+                          alignItems="center"
+                          onClick={() => setShowPinLogin(true)}
+                          sx={{
+                            padding: theme.spacing(1.8, 2.2),
+                            cursor: 'pointer',
+                            borderRadius: theme.general?.borderRadius || '12px',
+                            background: theme.palette.mode === 'dark'
+                              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 50%)`
+                              : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 50%)`,
+                            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
+                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            '&:hover': {
+                              background: theme.palette.mode === 'dark'
+                                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 50%)`
+                                : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 50%)`,
+                              border: `1px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
+                              transform: 'translateY(-2px) scale(1.02)',
+                              boxShadow: `0 8px 24px ${alpha(theme.palette.secondary.main, 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+                            }
+                          }}
+                        >
+                          <Box sx={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: theme.general?.borderRadiusSm || '8px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.light} 50%)`,
+                            color: 'white',
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
+                          }}>
+                            <PasswordIcon sx={{ fontSize: '1.4rem' }} />
+                          </Box>
+                          <Stack sx={{ flexGrow: 1 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
+                              PIN Login
+                            </Typography>
+                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
+                              6-Digit PIN Access
+                            </Typography>
+                          </Stack>
+                        </Stack>
+                      </Stack>
+                    </>
+                  ) : showPinLogin ? (
+                    <>
+                      {/* PIN Login UI */}
+                      <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 2,
+                        p: 1.5,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 50%)`,
+                        borderRadius: 2,
+                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`
+                      }}>
+                        <IconButton
+                          onClick={handleGoBack}
+                          sx={{
+                            mr: 1.5,
+                            flexShrink: 0,
+                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                            borderRadius: '8px',
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                              transform: 'scale(1.05)'
+                            }
+                          }}
+                        >
+                          <ArrowBackIcon />
+                        </IconButton>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.secondary.main, fontSize: '1rem' }}>
+                          PIN Authentication
+                        </Typography>
+                        <PasswordIcon sx={{ fontSize: 20, color: theme.palette.secondary.main, opacity: 0.7, ml: 'auto' }} />
+                      </Box>
+
+                      {pinError && (
+                        <Alert severity="error" sx={{ mb: 2 }}>
+                          {pinError}
+                        </Alert>
+                      )}
+
+                      <Stack spacing={2}>
+                        <TextField
+                          type="password"
+                          label="6-Digit PIN"
+                          value={pin}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                            setPin(value);
+                          }}
+                          fullWidth
+                          variant="outlined"
+                          placeholder="Enter 6 digits"
+                          inputProps={{
+                            maxLength: 6,
+                            pattern: '[0-9]*',
+                            inputMode: 'numeric'
+                          }}
+                          InputProps={{
+                            startAdornment: (
+                              <InputAdornment position="start">
+                                <PasswordIcon sx={{ color: theme.palette.secondary.main }} />
+                              </InputAdornment>
+                            ),
+                          }}
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter' && pin.length === 6) {
+                              if (hasPinWallet) {
+                                handlePinLogin();
+                              } else {
+                                handlePinCreate();
+                              }
+                            }
+                          }}
+                        />
+
+                        {!hasPinWallet && (
+                          <TextField
+                            type="password"
+                            label="Confirm PIN"
+                            value={confirmPin}
+                            onChange={(e) => {
+                              const value = e.target.value.replace(/\D/g, '').slice(0, 6);
+                              setConfirmPin(value);
+                            }}
+                            fullWidth
+                            variant="outlined"
+                            placeholder="Confirm 6 digits"
+                            inputProps={{
+                              maxLength: 6,
+                              pattern: '[0-9]*',
+                              inputMode: 'numeric'
+                            }}
+                            InputProps={{
+                              startAdornment: (
+                                <InputAdornment position="start">
+                                  <PasswordIcon sx={{ color: theme.palette.secondary.main }} />
+                                </InputAdornment>
+                              ),
+                            }}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && confirmPin.length === 6) {
+                                handlePinCreate();
+                              }
+                            }}
+                          />
+                        )}
+
+                        {hasPinWallet ? (
+                          <Button
+                            variant="contained"
+                            size="large"
+                            fullWidth
+                            onClick={handlePinLogin}
+                            disabled={status !== 'idle' || pin.length !== 6}
+                            startIcon={status === 'authenticating' ? <CircularProgress size={18} color="inherit" /> : <PasswordIcon />}
+                            sx={{
+                              py: 1.2,
+                              fontSize: '0.95rem',
+                              fontWeight: 600,
+                              background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 50%)`,
+                              '&:hover': {
+                                background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 50%)`
+                              }
+                            }}
+                          >
+                            {status === 'authenticating' ? 'Signing In...' : 'Sign In with PIN'}
+                          </Button>
+                        ) : (
+                          <>
+                            <Button
+                              variant="contained"
+                              size="large"
+                              fullWidth
+                              onClick={handlePinCreate}
+                              disabled={isCreatingWallet || pin.length !== 6 || confirmPin.length !== 6}
+                              startIcon={isCreatingWallet ? <CircularProgress size={18} color="inherit" /> : <PasswordIcon />}
+                              sx={{
+                                py: 1.2,
+                                fontSize: '0.95rem',
+                                fontWeight: 600,
+                                background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 50%)`,
+                                '&:hover': {
+                                  background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 50%)`
+                                }
+                              }}
+                            >
+                              {isCreatingWallet ? 'Creating Wallet...' : 'Create PIN Wallet'}
+                            </Button>
+
+                            {accountProfile && accountProfile.wallet_type === 'device' && (
+                              <Button
+                                variant="outlined"
+                                size="large"
+                                fullWidth
+                                onClick={handleMigrateToPin}
+                                disabled={isCreatingWallet || pin.length !== 6 || confirmPin.length !== 6}
+                                startIcon={isCreatingWallet ? <CircularProgress size={18} color="inherit" /> : <SwapHorizIcon />}
+                                sx={{
+                                  py: 1.2,
+                                  fontSize: '0.95rem',
+                                  fontWeight: 600,
+                                  borderColor: theme.palette.secondary.main,
+                                  color: theme.palette.secondary.main,
+                                  '&:hover': {
+                                    borderColor: theme.palette.secondary.dark,
+                                    backgroundColor: alpha(theme.palette.secondary.main, 0.08)
+                                  }
+                                }}
+                              >
+                                {isCreatingWallet ? 'Migrating...' : 'Migrate to PIN Wallet'}
+                              </Button>
+                            )}
+                          </>
+                        )}
+
+                        <Alert severity="info" sx={{ fontSize: '0.8rem' }}>
+                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
+                            PIN Requirements:
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block' }}>
+                            • Exactly 6 digits (0-9)
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block' }}>
+                            • No sequential numbers (123456)
+                          </Typography>
+                          <Typography variant="caption" sx={{ display: 'block' }}>
+                            • No repeating numbers (111111)
+                          </Typography>
+                        </Alert>
+
+                        <Typography variant="caption" sx={{
+                          textAlign: 'center',
+                          color: 'text.secondary',
+                          mt: 1,
+                          fontSize: '0.75rem'
+                        }}>
+                          Client-Side Storage • Encrypted with AES-256
+                        </Typography>
                       </Stack>
                     </>
                   ) : (
@@ -1839,7 +2303,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           mt: 1,
                           fontSize: '0.75rem'
                         }}>
-                          Device-secured wallets • Universal browser support
+                          Hardware Secured • Zero-Knowledge
                         </Typography>
                       </Box>
                     </>
