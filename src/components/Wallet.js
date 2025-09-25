@@ -920,6 +920,32 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
+      // Check if user already has credentials for this site
+      try {
+        const testChallenge = crypto.getRandomValues(new Uint8Array(32));
+        const testChallengeB64 = base64urlEncode(testChallenge);
+
+        await startAuthentication({
+          optionsJSON: {
+            challenge: testChallengeB64,
+            timeout: 1000, // Short timeout to fail quickly
+            userVerification: 'discouraged'
+          }
+        });
+
+        // If we get here, user has existing credentials
+        const confirmCreate = window.confirm(
+          'You already have a passkey for this site. Creating a new one will generate different wallets. Continue?'
+        );
+        if (!confirmCreate) {
+          setStatus('idle');
+          return;
+        }
+      } catch (testError) {
+        // Expected - no existing credentials or user cancelled
+        console.log('No existing credentials detected, proceeding with registration');
+      }
+
       const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
       const userId = base64urlEncode(userIdBuffer);
