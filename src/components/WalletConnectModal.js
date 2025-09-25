@@ -25,96 +25,134 @@ const StyledDialog = styled(Dialog)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.5)'
   },
   '& .MuiDialog-paper': {
-    borderRadius: '16px',
-    background:
-      theme.walletDialog?.background ||
-      (theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.95)' : '#FFFFFF'),
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.2)}`,
-    boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.25)}`,
+    borderRadius: theme.general?.borderRadiusLg || '16px',
+    background: theme.walletDialog?.background ||
+      (theme.palette.mode === 'dark'
+        ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`
+        : `linear-gradient(135deg, ${alpha('#FFFFFF', 0.95)} 0%, ${alpha('#FFFFFF', 0.85)} 100%)`),
+    backdropFilter: 'blur(40px) saturate(200%)',
+    WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+    border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
+    boxShadow: theme.palette.mode === 'dark'
+      ? `0 8px 32px ${alpha(theme.palette.common.black, 0.4)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+      : `0 8px 32px ${alpha(theme.palette.common.black, 0.15)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.8)}`,
     overflow: 'hidden',
     width: '100%',
     maxWidth: '420px',
-    position: 'relative'
+    position: 'relative',
+    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+    willChange: 'transform'
   }
 }));
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   padding: theme.spacing(2, 2.5),
-  background:
-    theme.walletDialog?.backgroundSecondary ||
+  background: theme.walletDialog?.backgroundSecondary ||
     (theme.palette.mode === 'dark'
-      ? 'rgba(0, 0, 0, 0.6)'
-      : alpha(theme.palette.background.default, 0.6)),
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
-  position: 'relative'
+      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 100%)`),
+  backdropFilter: 'blur(20px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+  borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.12)}`,
+  position: 'relative',
+  '&::before': {
+    content: '""',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: '1px',
+    background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.primary.main, 0.3)} 50%, transparent 100%)`
+  }
 }));
 
 const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
   padding: theme.spacing(2.5),
-  background: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.3)' : 'transparent',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 100%)`,
+  backdropFilter: 'blur(20px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
   position: 'relative'
 }));
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
-  backgroundColor: 'transparent',
-  border: `1px solid ${alpha(theme.palette.text.primary, 0.08)}`,
-  borderRadius: '8px',
+  backgroundColor: alpha(theme.palette.background.paper, 0.6),
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  borderRadius: theme.general?.borderRadiusSm || '8px',
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)',
   transition: 'all 0.2s ease',
   '&:hover': {
-    backgroundColor: 'transparent',
-    border: `1px solid ${alpha(theme.palette.text.primary, 0.2)}`
+    backgroundColor: alpha(theme.palette.background.paper, 0.8),
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    transform: 'scale(1.05)',
+    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
   },
   '& .MuiSvgIcon-root': {
     color: theme.palette.text.secondary,
-    fontSize: '1.2rem'
+    fontSize: '1.2rem',
+    transition: 'color 0.2s ease'
+  },
+  '&:hover .MuiSvgIcon-root': {
+    color: theme.palette.primary.main
   }
 }));
 
 const WalletItem = styled(Stack, {
   shouldForwardProp: (prop) => !['component'].includes(prop)
 })(({ theme }) => ({
-  padding: theme.spacing(1.5, 2),
+  padding: theme.spacing(1.8, 2.2),
   cursor: 'pointer',
-  borderRadius: '12px',
-  background:
-    theme.palette.mode === 'dark'
-      ? alpha(theme.palette.background.paper, 0.4)
-      : alpha(theme.palette.background.paper, 0.6),
-  backdropFilter: 'blur(10px)',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  transition: 'all 0.2s ease',
+  borderRadius: theme.general?.borderRadius || '12px',
+  background: theme.palette.mode === 'dark'
+    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+  backdropFilter: 'blur(20px) saturate(180%)',
+  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
+  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+  willChange: 'transform',
   '&:hover, &:focus': {
-    background:
-      theme.palette.mode === 'dark'
-        ? alpha(theme.palette.background.paper, 0.6)
-        : alpha(theme.palette.background.paper, 0.8),
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.4)}`,
-    transform: 'translateY(-1px)',
+    background: theme.palette.mode === 'dark'
+      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 100%)`
+      : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
+    border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
+    transform: 'translateY(-2px) scale(1.02)',
+    boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`,
     outline: 'none',
     '& .wallet-name': {
       color: theme.palette.primary.main
+    },
+    '& .wallet-icon': {
+      transform: 'scale(1.1)',
+      filter: 'brightness(1.2)'
     }
+  },
+  '&:active': {
+    transform: 'translateY(-1px) scale(1.01)'
   }
 }));
 
 
 
 const FeeTag = styled('div')(({ theme, isFree }) => ({
-  padding: theme.spacing(0.25, 0.5),
-  borderRadius: '4px',
+  padding: theme.spacing(0.3, 0.8),
+  borderRadius: theme.general?.borderRadiusSm || '6px',
   fontSize: '0.7rem',
-  fontWeight: 500,
+  fontWeight: 600,
   textTransform: 'uppercase',
+  letterSpacing: '0.5px',
   display: 'inline-block',
-  background: 'transparent',
+  background: isFree
+    ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.15)} 0%, ${alpha(theme.palette.success.main, 0.08)} 100%)`
+    : `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.15)} 0%, ${alpha(theme.palette.warning.main, 0.08)} 100%)`,
   color: isFree ? theme.palette.success.main : theme.palette.warning.main,
-  border: `1px solid ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`
+  border: `1px solid ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.3)}`,
+  boxShadow: `0 1px 3px ${alpha(isFree ? theme.palette.success.main : theme.palette.warning.main, 0.2)}`,
+  backdropFilter: 'blur(10px)',
+  WebkitBackdropFilter: 'blur(10px)'
 }));
 
 
@@ -197,34 +235,35 @@ const WalletConnectModal = () => {
                 sx={{ border: 'none', textAlign: 'left', width: '100%' }}
               >
                 <Box
+                  className="wallet-icon"
                   sx={{
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '8px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: theme => theme.general?.borderRadiusSm || '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(45deg, #2196F3 0%, #21CBF3 100%)',
-                    color: 'white'
+                    background: theme => `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 100%)`,
+                    color: 'white',
+                    boxShadow: theme => `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    willChange: 'transform'
                   }}
                 >
-                  <SecurityIcon />
+                  <SecurityIcon sx={{ fontSize: '1.4rem' }} />
                 </Box>
                 <Stack sx={{ flexGrow: 1 }}>
-                  <Stack direction="row" alignItems="center" spacing={0.8}>
-                    <Typography
-                      variant="subtitle1"
-                      component="div"
-                      className="wallet-name"
-                      sx={{
-                        fontWeight: 500,
-                        transition: 'color 0.2s ease'
-                      }}
-                    >
-                      Device Login
-                    </Typography>
-                    <FeeTag isFree={true}>Free</FeeTag>
-                  </Stack>
+                  <Typography
+                    variant="subtitle1"
+                    component="div"
+                    className="wallet-name"
+                    sx={{
+                      fontWeight: 500,
+                      transition: 'color 0.2s ease'
+                    }}
+                  >
+                    Device Login
+                  </Typography>
                   <Typography
                     variant="body2"
                     sx={{
@@ -254,25 +293,27 @@ export const ConnectWallet = () => {
       sx={{
         mt: 1.5,
         px: 3,
-        py: 1,
+        py: 1.2,
         fontWeight: 600,
-        borderRadius: '12px',
+        borderRadius: (theme) => theme.general?.borderRadius || '12px',
         position: 'relative',
         overflow: 'hidden',
-        background: (theme) => `linear-gradient(45deg,
+        background: (theme) => `linear-gradient(135deg,
           ${theme.palette.primary.main} 0%,
-          ${alpha(theme.palette.primary.main, 0.8)} 25%,
-          ${alpha(theme.palette.primary.light, 0.9)} 50%,
-          ${alpha(theme.palette.primary.main, 0.8)} 75%,
+          ${theme.palette.primary.light} 50%,
           ${theme.palette.primary.main} 100%)`,
         backgroundSize: '200% 200%',
-        animation: 'gradient 5s ease infinite',
+        animation: 'gradient 4s ease infinite',
+        border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
         boxShadow: (theme) => `
-          0 0 10px ${alpha(theme.palette.primary.main, 0.5)},
-          0 0 20px ${alpha(theme.palette.primary.main, 0.3)},
-          0 0 30px ${alpha(theme.palette.primary.main, 0.2)}
+          0 4px 20px ${alpha(theme.palette.primary.main, 0.3)},
+          0 2px 10px ${alpha(theme.palette.primary.main, 0.2)},
+          inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}
         `,
-        transition: 'all 0.3s ease',
+        backdropFilter: 'blur(10px) saturate(150%)',
+        WebkitBackdropFilter: 'blur(10px) saturate(150%)',
+        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+        willChange: 'transform',
         '@keyframes gradient': {
           '0%': {
             backgroundPosition: '0% 50%'
@@ -309,15 +350,19 @@ export const ConnectWallet = () => {
           }
         },
         '&:hover': {
-          transform: 'translateY(-2px) scale(1.02)',
+          transform: 'translateY(-3px) scale(1.03)',
           boxShadow: (theme) => `
-            0 0 15px ${alpha(theme.palette.primary.main, 0.6)},
-            0 0 30px ${alpha(theme.palette.primary.main, 0.4)},
-            0 0 45px ${alpha(theme.palette.primary.main, 0.3)}
+            0 8px 32px ${alpha(theme.palette.primary.main, 0.4)},
+            0 4px 16px ${alpha(theme.palette.primary.main, 0.3)},
+            inset 0 1px 0 ${alpha(theme.palette.common.white, 0.3)}
           `,
+          borderColor: (theme) => alpha(theme.palette.primary.light, 0.6),
           '&::before': {
             opacity: 1
           }
+        },
+        '&:active': {
+          transform: 'translateY(-1px) scale(1.01)'
         },
         '& .MuiButton-startIcon': {
           mr: 1.5,
