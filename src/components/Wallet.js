@@ -2,7 +2,7 @@ import { useRef, useState, useEffect, useCallback } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
 import { startAuthentication } from '@simplewebauthn/browser';
-import { Wallet as XRPLWallet, Client } from 'xrpl';
+import { Wallet as XRPLWallet } from 'xrpl';
 import CryptoJS from 'crypto-js';
 
 // Material
@@ -275,56 +275,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     return XRPLWallet.fromEntropy(entropy);
   };
 
-  const checkAccountBalance = async (address) => {
-    try {
-      const client = new Client('wss://xrplcluster.com');
-      await client.connect();
-      const response = await client.request({
-        command: 'account_info',
-        account: address,
-        ledger_index: 'validated'
-      });
-      await client.disconnect();
-      return parseFloat(response.result.account_data.Balance) / 1000000;
-    } catch (err) {
-      return 0;
-    }
-  };
-
-  const checkWithXRPL = useCallback(async (address) => {
-    const servers = ['wss://s2.ripple.com', 'wss://s1.ripple.com'];
-
-    for (const server of servers) {
-      let client = null;
-      try {
-        client = new Client(server, { connectionTimeout: 2000 });
-        await client.connect();
-        const accountInfo = await client.request({
-          command: 'account_info',
-          account: address,
-          ledger_index: 'validated'
-        });
-
-        const balance = parseFloat(accountInfo.result.account_data.Balance) / 1000000;
-        // Account is activated if it has at least 1 XRP base reserve
-        return balance >= 1;
-      } catch (err) {
-        // Try next server
-        continue;
-      } finally {
-        if (client && client.isConnected()) {
-          try {
-            await client.disconnect();
-          } catch (e) {
-            // Ignore disconnect errors
-          }
-        }
-      }
-    }
-
-    // All servers failed - account not found/activated
-    return false;
-  }, []);
 
   const handleShowSeed = async () => {
     try {
