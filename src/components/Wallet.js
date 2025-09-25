@@ -306,31 +306,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const handleMoreAccounts = async () => {
     // First check if we already have device wallets stored
     const storedWallets = getStoredWallets();
+    const deviceWallets = storedWallets.filter(w => w.wallet_type === 'device');
+    const deviceWalletsInProfiles = profiles.filter(p => p.wallet_type === 'device');
 
-    if (storedWallets.length >= 5) {
-      // We have 5+ wallets already, check if they're in profiles
-      const deviceWallets = storedWallets.filter(w => w.wallet_type === 'device');
-      const deviceWalletsInProfiles = profiles.filter(p => p.wallet_type === 'device');
-
-      if (deviceWalletsInProfiles.length < deviceWallets.length) {
-        // Some device wallets are missing from profiles, add them
-        const allProfiles = [...profiles];
-        deviceWallets.forEach(deviceWallet => {
-          if (!allProfiles.find(p => p.account === deviceWallet.account)) {
-            allProfiles.push(deviceWallet);
-          }
-        });
-        setProfiles(allProfiles);
-        window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
-        openSnackbar(`Loaded ${deviceWallets.length} device wallets`, 'success');
-        return;
-      } else {
-        openSnackbar(`You already have ${deviceWalletsInProfiles.length} device wallets`, 'info');
-        return;
-      }
+    // If we have stored wallets but they're not in profiles, load them first
+    if (deviceWalletsInProfiles.length < deviceWallets.length) {
+      const allProfiles = [...profiles];
+      deviceWallets.forEach(deviceWallet => {
+        if (!allProfiles.find(p => p.account === deviceWallet.account)) {
+          allProfiles.push(deviceWallet);
+        }
+      });
+      setProfiles(allProfiles);
+      window.localStorage.setItem('account_profiles_2', JSON.stringify(allProfiles));
+      openSnackbar(`Loaded ${deviceWallets.length} device wallets`, 'success');
+      return;
     }
 
-    // No existing device wallets found, proceed with creating new ones
+    // Always allow creating more wallets - open the modal
     setOpenWalletModal(true);
   };
 

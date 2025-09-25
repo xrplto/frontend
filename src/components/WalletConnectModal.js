@@ -428,33 +428,26 @@ const WalletConnectModal = () => {
         // Look for existing wallets associated with this device key
         const storedWallets = getStoredWallets();
         const userWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
+        const nextAccountIndex = userWallets.length; // Start from next available index
 
-        if (userWallets.length > 0) {
-          // Found existing wallets - use first one
-          doLogIn(userWallets[0]);
-          setStatus('success');
-          setTimeout(() => {
-            handleClose();
-          }, 2000);
-        } else {
-          // No wallets found for this device key - create 5 new ones
-          const wallets = [];
-          const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
-          const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
+        // Always create 5 new wallets
+        const wallets = [];
+        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
-          for (let i = 0; i < 5; i++) {
-            const wallet = generateWallet();
-            const walletData = storeWallet(authResponse.id, wallet, i);
-            wallets.push(walletData);
+        for (let i = 0; i < 5; i++) {
+          const wallet = generateWallet();
+          const walletData = storeWallet(authResponse.id, wallet, nextAccountIndex + i);
+          wallets.push(walletData);
 
-            // Add to profiles localStorage
-            const profile = { ...walletData, tokenCreatedAt: Date.now() };
-            if (!currentProfiles.find(p => p.account === profile.address)) {
-              currentProfiles.push(profile);
-            }
+          // Add to profiles localStorage
+          const profile = { ...walletData, tokenCreatedAt: Date.now() };
+          if (!currentProfiles.find(p => p.account === profile.address)) {
+            currentProfiles.push(profile);
           }
+        }
 
-          window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
 
         // Update profiles state immediately
         const allProfiles = [...profiles];
@@ -466,7 +459,19 @@ const WalletConnectModal = () => {
         });
         setProfiles(allProfiles);
 
-        doLogIn(wallets[0]);
+        // Set wallet info for success message
+        setWalletInfo({
+          address: wallets[0].address,
+          publicKey: wallets[0].publicKey,
+          deviceKeyId: authResponse.id,
+          isAdditional: userWallets.length > 0,
+          totalWallets: userWallets.length + 5
+        });
+
+        // Login with the first new wallet if it's a fresh user, otherwise keep current wallet
+        if (userWallets.length === 0) {
+          doLogIn(wallets[0]);
+        }
         setStatus('success');
 
         // Close modal after brief delay to show success
@@ -474,7 +479,6 @@ const WalletConnectModal = () => {
           setOpenWalletModal(false);
           setStatus('idle');
         }, 1000);
-        }
       }
     } catch (err) {
       console.error('Authentication error:', err);
@@ -647,13 +651,13 @@ const WalletConnectModal = () => {
             {status === 'success' && walletInfo && (
               <Alert severity="success" sx={{ mb: 2 }}>
                 <Typography variant="subtitle2" gutterBottom>
-                  🎉 Device Wallet Created!
+                  🎉 {walletInfo.isAdditional ? `5 Additional Device Wallets Created!` : `5 Device Wallets Created!`}
                 </Typography>
                 <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
-                  <strong>Address:</strong> {walletInfo.address}
+                  <strong>First Wallet:</strong> {walletInfo.address}
                 </Typography>
                 <Typography variant="body2" sx={{ mb: 1 }}>
-                  <strong>Security:</strong> Protected by your device key
+                  <strong>Total Wallets:</strong> {walletInfo.totalWallets} | <strong>Security:</strong> Protected by your device key
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   Your wallet is secured by hardware authentication. Modal closes in 3 seconds.
