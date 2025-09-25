@@ -671,6 +671,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // PIN-based wallet states
   const [showPinLogin, setShowPinLogin] = useState(false);
+  const [showWalletInfo, setShowWalletInfo] = useState(false);
   const [pin, setPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
@@ -940,6 +941,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const handleGoBack = () => {
     setShowDeviceLogin(false);
     setShowPinLogin(false);
+    setShowWalletInfo(false);
     setStatus('idle');
     setError('');
     setWalletInfo(null);
@@ -1865,7 +1867,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 50%)`
                     : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 50%)`
                 }}>
-                  {!showDeviceLogin && !showPinLogin ? (
+                  {!showDeviceLogin && !showPinLogin && !showWalletInfo ? (
                     <>
                       <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
                         Choose a wallet to connect to the XRPL network
@@ -1966,6 +1968,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </Typography>
                           </Stack>
                         </Stack>
+
+                        {/* Info Button */}
+                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
+                          <Button
+                            onClick={() => setShowWalletInfo(true)}
+                            variant="outlined"
+                            size="small"
+                            startIcon={<HelpIcon />}
+                            sx={{
+                              borderColor: alpha(theme.palette.info.main, 0.3),
+                              color: theme.palette.info.main,
+                              fontSize: '0.75rem',
+                              py: 0.8,
+                              px: 2,
+                              borderRadius: 2,
+                              '&:hover': {
+                                borderColor: theme.palette.info.main,
+                                backgroundColor: alpha(theme.palette.info.main, 0.08),
+                                transform: 'translateY(-1px)'
+                              }
+                            }}
+                          >
+                            Compare Options
+                          </Button>
+                        </Box>
                       </Stack>
                     </>
                   ) : showPinLogin ? (
@@ -2168,8 +2195,317 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </Typography>
                       </Stack>
                     </>
+                  ) : showWalletInfo ? (
+                    <>
+                      {/* Wallet Info/Comparison Page */}
+                      <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 2,
+                        p: 1.5,
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.light, 0.04)} 50%)`,
+                        borderRadius: 2,
+                        border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`
+                      }}>
+                        <IconButton
+                          onClick={handleGoBack}
+                          sx={{
+                            mr: 1.5,
+                            flexShrink: 0,
+                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+                            borderRadius: '8px',
+                            '&:hover': {
+                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+                              transform: 'scale(1.05)'
+                            }
+                          }}
+                        >
+                          <ArrowBackIcon />
+                        </IconButton>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.info.main, fontSize: '1rem' }}>
+                          Wallet Comparison
+                        </Typography>
+                        <HelpIcon sx={{ fontSize: 20, color: theme.palette.info.main, opacity: 0.7, ml: 'auto' }} />
+                      </Box>
+
+                      {/* Interactive Comparison Panel */}
+                      <Box sx={{
+                        position: 'relative',
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.6)} 50%)`,
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        {/* Toggle Tabs */}
+                        <Box sx={{
+                          display: 'flex',
+                          position: 'relative',
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 50%)`,
+                          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                        }}>
+                          <Box sx={{
+                            flex: 1,
+                            p: 1.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1,
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(25,118,210,0.05) 50%)',
+                            borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, rgba(25,118,210,0.15) 0%, rgba(25,118,210,0.08) 50%)',
+                              transform: 'translateY(-1px)'
+                            }
+                          }}>
+                            <SecurityIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
+                              Device
+                            </Typography>
+                            <Chip
+                              label="Secure"
+                              size="small"
+                              sx={{
+                                height: 16,
+                                fontSize: '0.6rem',
+                                bgcolor: alpha(theme.palette.success.main, 0.1),
+                                color: theme.palette.success.main,
+                                border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`
+                              }}
+                            />
+                          </Box>
+                          <Box sx={{
+                            flex: 1,
+                            p: 1.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: 1,
+                            cursor: 'pointer',
+                            transition: 'all 0.3s ease',
+                            background: 'linear-gradient(135deg, rgba(156,39,176,0.1) 0%, rgba(156,39,176,0.05) 50%)',
+                            '&:hover': {
+                              background: 'linear-gradient(135deg, rgba(156,39,176,0.15) 0%, rgba(156,39,176,0.08) 50%)',
+                              transform: 'translateY(-1px)'
+                            }
+                          }}>
+                            <PasswordIcon sx={{ fontSize: 18, color: theme.palette.secondary.main }} />
+                            <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
+                              PIN
+                            </Typography>
+                            <Chip
+                              label="Easy"
+                              size="small"
+                              sx={{
+                                height: 16,
+                                fontSize: '0.6rem',
+                                bgcolor: alpha(theme.palette.info.main, 0.1),
+                                color: theme.palette.info.main,
+                                border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
+                              }}
+                            />
+                          </Box>
+                        </Box>
+
+                        {/* Comparison Content */}
+                        <Box sx={{ p: 2 }}>
+                          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                            {/* Device Column */}
+                            <Box>
+                              <Stack spacing={1}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.success.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    Face ID / Touch ID
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.success.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    Windows Hello
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.primary.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    5 Deterministic Wallets
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.warning.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.warning.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    Hardware Secure Enclave
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.error.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.error.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    Zero-Knowledge • Never Stored
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
+
+                            {/* PIN Column */}
+                            <Box>
+                              <Stack spacing={1}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.info.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.info.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    6-Digit PIN Access
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.secondary.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.secondary.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    AES-256 Encrypted
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.success.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    Local Storage
+                                  </Typography>
+                                </Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  <Box sx={{
+                                    width: 6, height: 6, borderRadius: '50%',
+                                    bgcolor: theme.palette.info.main,
+                                    boxShadow: `0 0 8px ${alpha(theme.palette.info.main, 0.4)}`
+                                  }} />
+                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
+                                    No Biometrics Required
+                                  </Typography>
+                                </Box>
+                              </Stack>
+                            </Box>
+                          </Box>
+
+                          {/* Bottom Comparison Bar */}
+                          <Box sx={{
+                            display: 'flex',
+                            background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
+                            borderRadius: 2,
+                            p: 1,
+                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                          }}>
+                            <Box sx={{ flex: 1, textAlign: 'center' }}>
+                              <Typography variant="caption" sx={{
+                                fontWeight: 700,
+                                color: theme.palette.primary.main,
+                                fontSize: '0.65rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                Maximum Security
+                              </Typography>
+                            </Box>
+                            <Divider orientation="vertical" flexItem sx={{ mx: 1, opacity: 0.3 }} />
+                            <Box sx={{ flex: 1, textAlign: 'center' }}>
+                              <Typography variant="caption" sx={{
+                                fontWeight: 700,
+                                color: theme.palette.secondary.main,
+                                fontSize: '0.65rem',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
+                              }}>
+                                Quick Access
+                              </Typography>
+                            </Box>
+                          </Box>
+                        </Box>
+
+                        {/* Action Buttons */}
+                        <Box sx={{
+                          p: 2,
+                          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(theme.palette.background.default, 0.4)} 50%)`
+                        }}>
+                          <Stack direction="row" spacing={1}>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              fullWidth
+                              onClick={() => {
+                                setShowWalletInfo(false);
+                                setShowDeviceLogin(true);
+                              }}
+                              startIcon={<SecurityIcon />}
+                              sx={{
+                                py: 1,
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
+                                '&:hover': {
+                                  background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%)`
+                                }
+                              }}
+                            >
+                              Use Device Login
+                            </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              fullWidth
+                              onClick={() => {
+                                setShowWalletInfo(false);
+                                setShowPinLogin(true);
+                              }}
+                              startIcon={<PasswordIcon />}
+                              sx={{
+                                py: 1,
+                                fontSize: '0.8rem',
+                                fontWeight: 600,
+                                background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 50%)`,
+                                '&:hover': {
+                                  background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 50%)`
+                                }
+                              }}
+                            >
+                              Use PIN Login
+                            </Button>
+                          </Stack>
+                        </Box>
+                      </Box>
+                    </>
                   ) : (
                     <>
+                      {/* Device Login */}
                       <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -2198,24 +2534,55 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
                           Key Authentication
                         </Typography>
-                        <SecurityIcon sx={{ fontSize: 5, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
+                        <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
                       </Box>
 
-                      <Box sx={{
-                        mb: 2,
-                        p: 1.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 50%)`,
-                        border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                        borderRadius: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1
-                      }}>
-                        <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
-                        <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
-                          One Key = One Set of Wallets
-                        </Typography>
-                      </Box>
+                      <Stack spacing={1} sx={{ mb: 2 }}>
+                        <Box sx={{
+                          p: 1.5,
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 50%)`,
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}>
+                          <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
+                            One Key = One Set of Wallets
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{
+                          p: 1.5,
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.06)} 0%, ${alpha(theme.palette.success.light, 0.03)} 50%)`,
+                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}>
+                          <KeyIcon sx={{ fontSize: 18, color: theme.palette.success.main }} />
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.success.main }}>
+                            Zero-Knowledge • Never Stored
+                          </Typography>
+                        </Box>
+
+                        <Box sx={{
+                          p: 1.5,
+                          background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.06)} 0%, ${alpha(theme.palette.warning.light, 0.03)} 50%)`,
+                          border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
+                          borderRadius: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1
+                        }}>
+                          <SecurityIcon sx={{ fontSize: 18, color: theme.palette.warning.main }} />
+                          <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.warning.main }}>
+                            Hardware Secure Enclave
+                          </Typography>
+                        </Box>
+                      </Stack>
 
                       {error && (
                         <Alert severity="error" sx={{ mb: 2 }}>
