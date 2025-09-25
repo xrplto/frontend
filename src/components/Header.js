@@ -23,6 +23,10 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
+import PaletteIcon from '@mui/icons-material/Palette';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useTranslation } from 'react-i18next';
 import {
   useState,
@@ -363,6 +367,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const openTokensMenu = Boolean(tokensAnchorEl);
   const closeTimeoutRef = useRef(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
 
 
   // Check if metrics are properly loaded
@@ -469,6 +475,16 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     },
     [handleTokensClose]
   );
+
+  const handleSettingsOpen = useCallback((event) => {
+    setSettingsAnchorEl(event.currentTarget);
+    setSettingsMenuOpen(true);
+  }, []);
+
+  const handleSettingsClose = useCallback(() => {
+    setSettingsAnchorEl(null);
+    setSettingsMenuOpen(false);
+  }, []);
 
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
@@ -704,7 +720,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             path: '/top-traders',
                             name: t('Top Traders'),
                             icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
-                          }
+                          },
+                          ...(accountProfile ? [{
+                            path: '/watchlist',
+                            name: 'Watchlist',
+                            icon: <StarOutlineIcon sx={{ fontSize: 16, color: '#ffc107' }} />
+                          }] : [])
                         ].map((item) => (
                           <Box
                             key={item.path}
@@ -772,6 +793,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           </Box>
                         ))}
                       </Box>
+
                     </Box>
                   </Box>
                 )}
@@ -859,79 +881,110 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 spacing={0.5}
                 sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
               >
-                {accountProfile && (
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    href={`/watchlist`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Chip
-                      variant={'outlined'}
-                      icon={<StarOutlineIcon fontSize="small" />}
-                      label={'Watchlist'}
-                      onClick={() => {}}
-                      size="small"
-                      sx={{
-                        borderRadius: '12px',
-                        height: '32px',
-                        background: 'transparent',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                        boxShadow: `
-                          0 2px 8px ${alpha(theme.palette.common.black, 0.08)}, 
-                          inset 0 1px 1px ${alpha(theme.palette.common.white, 0.08)}`,
-                        color: theme.palette.text.primary,
-                        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                        position: 'relative',
-                        overflow: 'hidden',
-                        '&::before': {
-                          content: '""',
-                          position: 'absolute',
-                          top: 0,
-                          left: '-100%',
-                          width: '100%',
-                          height: '100%',
-                          background: `linear-gradient(90deg, transparent, ${alpha(
-                            theme.palette.primary.main,
-                            0.1
-                          )}, transparent)`,
-                          transition: 'left 0.5s ease'
-                        },
-                        '&:hover': {
-                          background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                          boxShadow: `
-                            0 8px 24px ${alpha(theme.palette.primary.main, 0.15)},
-                            inset 0 1px 2px ${alpha(theme.palette.common.white, 0.15)}`,
-                          color: theme.palette.primary.main,
-                          '&::before': {
-                            left: '100%'
-                          }
-                        },
-                        '& .MuiChip-label': {
-                          px: 1.5,
-                          fontWeight: 500,
-                          fontSize: '0.875rem'
-                        },
-                        '& .MuiChip-icon': {
-                          color: 'inherit',
-                          fontSize: '1rem'
-                        }
-                      }}
-                    />
-                  </Link>
-                )}
+                {/* Price Alerts - Keep visible for quick access */}
                 <GlobalNotificationButton
                   sidebarOpen={notificationPanelOpen}
                   onSidebarToggle={onNotificationPanelToggle}
                 />
 
+                {/* Settings Dropdown */}
+                <IconButton
+                  onClick={handleSettingsOpen}
+                  size="small"
+                  sx={{
+                    padding: '6px',
+                    minWidth: '32px',
+                    width: '32px',
+                    height: '32px',
+                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                    borderRadius: '6px',
+                    ml: 0.5,
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                      borderColor: alpha(theme.palette.primary.main, 0.2)
+                    }
+                  }}
+                  title="Settings"
+                >
+                  <SettingsIcon sx={{ fontSize: 16 }} />
+                </IconButton>
 
-                {/* Control Buttons */}
-                <Stack direction="row" spacing={1} sx={{ mr: 1 }}>
-                  <CurrencySwitcher />
-                  <ThemeSwitcher />
-                </Stack>
+                {/* Settings Menu */}
+                <Menu
+                  anchorEl={settingsAnchorEl}
+                  open={settingsMenuOpen}
+                  onClose={handleSettingsClose}
+                  anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'right'
+                  }}
+                  transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'right'
+                  }}
+                  PaperProps={{
+                    sx: {
+                      mt: 1,
+                      minWidth: 200,
+                      borderRadius: '8px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      background: theme.palette.mode === 'dark'
+                        ? alpha('#000000', 0.95)
+                        : alpha('#ffffff', 0.98),
+                      backdropFilter: 'blur(12px)',
+                      boxShadow: theme.palette.mode === 'dark'
+                        ? '0 4px 20px rgba(0, 0, 0, 0.3)'
+                        : '0 4px 20px rgba(0, 0, 0, 0.1)',
+                      '& .MuiList-root': {
+                        padding: '8px'
+                      }
+                    }
+                  }}
+                >
+                  {/* Currency Setting */}
+                  <Box sx={{
+                    px: 2,
+                    py: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.action.hover, 0.05)
+                    },
+                    borderRadius: '6px',
+                    mb: 0.5
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <SwapHorizIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Currency
+                      </Typography>
+                    </Box>
+                    <CurrencySwitcher />
+                  </Box>
+
+                  {/* Theme Setting */}
+                  <Box sx={{
+                    px: 2,
+                    py: 1.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.action.hover, 0.05)
+                    },
+                    borderRadius: '6px'
+                  }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                      <PaletteIcon sx={{ fontSize: 18, color: theme.palette.secondary.main }} />
+                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                        Theme
+                      </Typography>
+                    </Box>
+                    <ThemeSwitcher />
+                  </Box>
+                </Menu>
 
                 <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
               </Stack>
