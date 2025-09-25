@@ -52,6 +52,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       if (isRunning) return;
       isRunning = true;
       try {
+        const ret = await axios.get(`${BASE_URL}/nft/burn/${uuid}`, {
           headers: { 'x-access-token': accountToken }
         });
         const resolved_at = ret.data?.resolved_at;

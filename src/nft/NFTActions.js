@@ -725,17 +725,6 @@ export default function NFTActions({ nft }) {
     setPageLoading(false);
   };
 
-    setPageLoading(true);
-    try {
-      // if (res.status === 200) {
-      // }
-    } catch (err) {
-      console.error(err);
-    }
-
-    setPageLoading(false);
-  };
-
   const handleScanQRClose = () => {
     setOpenScanQR(false);
   };

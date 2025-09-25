@@ -275,18 +275,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     setLoading(false);
   };
 
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
-        headers: { 'x-access-token': accountToken }
-      });
-      if (res.status === 200) {
-        setUuid(null);
-      }
-    } catch (err) {}
-    setLoading(false);
-  };
-
   const handleScanQRClose = () => {
     setOpenScanQR(false);
   };

@@ -214,18 +214,6 @@ export default function CreateOfferXRPCafe({
     setOpenScanQR(false);
   };
 
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
-        headers: { 'x-access-token': accountToken }
-      });
-      if (res.status === 200) {
-        setUuid(null);
-      }
-    } catch (err) {}
-    setLoading(false);
-  };
-
   return (
     <>
       <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
