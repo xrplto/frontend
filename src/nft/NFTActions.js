@@ -569,6 +569,7 @@ export default function NFTActions({ nft }) {
         clearInterval(timer);
       }
     };
+  }, [openScanQR, sync, openSnackbar]);
 
   useEffect(() => {
     async function getLowestSellOffer() {
@@ -1610,3 +1611,4 @@ export default function NFTActions({ nft }) {
     </>
   );
 }
+

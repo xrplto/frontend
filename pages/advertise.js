@@ -43,8 +43,8 @@ import { AppContext } from 'src/AppContext';
 import { ConnectWallet } from 'src/components/WalletConnectModal';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-import { isInstalled, submitTransaction } from '@gemwallet/api';
-import sdk from '@crossmarkio/sdk';
+// import { isInstalled, submitTransaction } from '@gemwallet/api';
+// import sdk from '@crossmarkio/sdk';
 import { enqueueSnackbar } from 'notistack';
 import QRDialog from 'src/components/QRDialog';
 import Decimal from 'decimal.js-light';
@@ -384,64 +384,15 @@ export default function Advertise() {
           break;
 
         case 'gem':
-          isInstalled().then(async (response) => {
-            if (response.result.isInstalled) {
-              dispatch(updateProcess(1));
-
-              await submitTransaction({
-                transaction: transactionData
-              }).then(({ type, result }) => {
-                if (type === 'response') {
-                  dispatch(updateProcess(2));
-                  dispatch(updateTxHash(result?.hash));
-                  setTimeout(() => {
-                    setSync(sync + 1);
-                    dispatch(updateProcess(0));
-                    openSnackbar(
-                      'Payment successful! Your advertising campaign will start shortly.',
-                      'success'
-                    );
-                    // Reset form
-                    setCustomImpressions('');
-                    setImpressionInput('');
-                    setSelectedToken(null);
-                    setInputValue('');
-                  }, 1500);
-                } else {
-                  dispatch(updateProcess(3));
-                  openSnackbar('Payment cancelled', 'error');
-                }
-              });
-            } else {
-              enqueueSnackbar('GemWallet is not installed', { variant: 'error' });
-            }
-          });
+          // GemWallet functionality temporarily disabled - missing @gemwallet/api dependency
+          openSnackbar('GemWallet payment temporarily unavailable', 'error');
+          dispatch(updateProcess(0));
           break;
 
         case 'crossmark':
-          dispatch(updateProcess(1));
-          await sdk.methods.signAndSubmitAndWait(transactionData).then(({ response }) => {
-            if (response.data.meta.isSuccess) {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(response.data.resp.result?.hash));
-              setTimeout(() => {
-                setSync(sync + 1);
-                dispatch(updateProcess(0));
-                openSnackbar(
-                  'Payment successful! Your advertising campaign will start shortly.',
-                  'success'
-                );
-                // Reset form
-                setCustomImpressions('');
-                setImpressionInput('');
-                setSelectedToken(null);
-                setInputValue('');
-              }, 1500);
-            } else {
-              dispatch(updateProcess(3));
-              openSnackbar('Payment cancelled', 'error');
-            }
-          });
+          // Crossmark functionality temporarily disabled - missing @crossmarkio/sdk dependency
+          openSnackbar('Crossmark payment temporarily unavailable', 'error');
+          dispatch(updateProcess(0));
           break;
       }
     } catch (err) {

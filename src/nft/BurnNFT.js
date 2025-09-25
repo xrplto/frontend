@@ -52,7 +52,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/nft/burn/${uuid}`, {
+        const ret = await axios.get(`${BASE_URL}/nft/burn/${nft.uuid}`, {
           headers: { 'x-access-token': accountToken }
         });
         const resolved_at = ret.data?.resolved_at;
@@ -84,6 +84,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         clearInterval(timer);
       }
     };
+  }, [openScanQR, accountToken, nft, onHandleBurn, openSnackbar]);
 
   const onBurnNFTXumm = async () => {
     if (!accountLogin || !accountToken) {
@@ -115,17 +116,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       openSnackbar('Network error!', 'error');
       dispatch(updateProcess(0));
     }
-    setLoading(false);
-  };
-
-    setLoading(true);
-    try {
-      const res = await axios.delete(`${BASE_URL}/offers/create/${uuid}`, {
-        headers: { 'x-access-token': accountToken }
-      });
-      if (res.status === 200) {
-      }
-    } catch (err) {}
     setLoading(false);
   };
 
