@@ -52,7 +52,7 @@ import Wallet from 'src/components/Wallet';
 import { GlobalNotificationButton } from 'src/components/PriceNotifications';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
-import { currencySymbols, getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
+import { currencySymbols, getTokenImageUrl, decodeCurrency, BASE_URL } from 'src/utils/constants';
 
 // Dynamic imports for switchers
 const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), {
@@ -75,58 +75,6 @@ import SetMealIcon from '@mui/icons-material/SetMeal';
 import PetsIcon from '@mui/icons-material/Pets';
 import WaterIcon from '@mui/icons-material/Water';
 import CloseIcon from '@mui/icons-material/Close';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-
-// Trade Drawer styled components (from Topbar)
-const PulsatingCircle = styled(Box)(({ theme }) => ({
-  width: 5,
-  height: 5,
-  borderRadius: '50%',
-  background: theme.palette.primary.main,
-  position: 'relative',
-  animation: 'pulse 2s infinite',
-  '@keyframes pulse': {
-    '0%': {
-      boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0.7)}`
-    },
-    '70%': {
-      boxShadow: `0 0 0 8px ${alpha(theme.palette.primary.main, 0)}`
-    },
-    '100%': {
-      boxShadow: `0 0 0 0 ${alpha(theme.palette.primary.main, 0)}`
-    }
-  }
-}));
-
-const TradeDrawer = styled(Box)(({ theme, open }) => ({
-  position: 'fixed',
-  bottom: 0,
-  right: open ? 0 : '-100%',
-  width: 400,
-  height: '100vh',
-  background: theme.palette.background.default,
-  boxShadow: '-4px 0 16px rgba(0, 0, 0, 0.25)',
-  transition: 'right 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  zIndex: 1100,
-  display: 'flex',
-  flexDirection: 'column',
-  borderTopLeftRadius: 12,
-  [theme.breakpoints.down('md')]: {
-    width: '100vw',
-    right: open ? 0 : '-100vw'
-  }
-}));
-
-const DrawerOverlay = styled(Box)(({ theme, open }) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  background: 'rgba(0, 0, 0, 0.5)',
-  display: open ? 'block' : 'none',
-  zIndex: 1099
-}));
 
 // Helper functions (from Topbar)
 const abbreviateNumber = (num) => {
@@ -135,15 +83,6 @@ const abbreviateNumber = (num) => {
   const magnitude = Math.floor(Math.log10(Math.abs(num)) / 3);
   const scaled = num / Math.pow(10, magnitude * 3);
   return scaled.toFixed(2).replace(/\.?0+$/, '') + suffixes[magnitude];
-};
-
-const formatRelativeTime = (timestamp) => {
-  const now = Date.now();
-  const diffInSeconds = Math.floor((now - timestamp) / 1000);
-  if (diffInSeconds < 60) return `${diffInSeconds}s ago`;
-  if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}min ago`;
-  if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-  return `${Math.floor(diffInSeconds / 86400)}d ago`;
 };
 
 // Add XPMarket icon component
@@ -427,13 +366,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const closeTimeoutRef = useRef(null);
   const [searchModalOpen, setSearchModalOpen] = useState(false);
 
-  // Trade drawer state (from Topbar)
-  const [tradeDrawerOpen, setTradeDrawerOpen] = useState(false);
-  const [trades, setTrades] = useState([]);
-  const [wsError, setWsError] = useState(null);
-  const [isWsLoading, setIsWsLoading] = useState(false);
-  const [tradeFilter, setTradeFilter] = useState('All');
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
 
   // Check if metrics are properly loaded
   const metricsLoaded = useMemo(() => {
@@ -445,18 +377,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     );
   }, [metrics?.global?.total, metrics?.global?.totalAddresses, metrics?.H24?.transactions24H]);
 
-  // Trade drawer handlers
-  const handleTradeDrawerOpen = useCallback(() => {
-    if (!tradeDrawerOpen) {
-      setTradeDrawerOpen(true);
-    }
-  }, [tradeDrawerOpen]);
-
-  const handleTradeDrawerClose = useCallback(() => {
-    if (tradeDrawerOpen) {
-      setTradeDrawerOpen(false);
-    }
-  }, [tradeDrawerOpen]);
 
   // Fetch metrics if not loaded
   useEffect(() => {
@@ -620,6 +540,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       if (cleanup) cleanup();
     };
   }, [isDesktop]);
+
 
   return (
     <HeaderWrapper>
@@ -1068,67 +989,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onSidebarToggle={onNotificationPanelToggle}
                 />
 
-                {/* Key Metrics - Show 2 most important ones */}
-                {metricsLoaded && (
-                  <Stack direction="row" spacing={1} sx={{ mr: 1 }}>
-                    <Chip
-                      label={`${abbreviateNumber(metrics.H24?.transactions24H || 0)} trades`}
-                      size="small"
-                      sx={{
-                        height: 28,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                        color: theme.palette.primary.main,
-                        border: 'none'
-                      }}
-                    />
-                    <Chip
-                      label={`${currencySymbols[activeFiatCurrency]}${abbreviateNumber(
-                        metrics?.H24?.tradedXRP24H && metrics[activeFiatCurrency]
-                          ? new Decimal(metrics.H24.tradedXRP24H || 0)
-                              .div(new Decimal(metrics[activeFiatCurrency] || 1))
-                              .toNumber()
-                          : 0
-                      )} vol`}
-                      size="small"
-                      sx={{
-                        height: 28,
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        bgcolor: alpha(theme.palette.success.main, 0.1),
-                        color: theme.palette.success.main,
-                        border: 'none'
-                      }}
-                    />
-                  </Stack>
-                )}
 
                 {/* Control Buttons */}
                 <Stack direction="row" spacing={1} sx={{ mr: 1 }}>
                   <CurrencySwitcher />
                   <ThemeSwitcher />
 
-                  {/* Live Trades Button */}
-                  <Chip
-                    label="Live"
-                    icon={<PulsatingCircle />}
-                    size="small"
-                    clickable
-                    onClick={handleTradeDrawerOpen}
-                    sx={{
-                      height: 32,
-                      fontSize: '0.7rem',
-                      fontWeight: 600,
-                      bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      color: theme.palette.primary.main,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.primary.main, 0.15),
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                      }
-                    }}
-                  />
 
                   {/* API Button */}
                   <Chip
@@ -1189,46 +1055,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </Suspense>
 
-      {/* Trade Drawer */}
-      {tradeDrawerOpen && (
-        <>
-          <DrawerOverlay open={tradeDrawerOpen} onClick={handleTradeDrawerClose} />
-          <TradeDrawer open={tradeDrawerOpen}>
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                p: 2,
-                borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-              }}
-            >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '0.95rem' }}>
-                  Global Trades
-                </Typography>
-                <PulsatingCircle />
-              </Stack>
-              <IconButton onClick={handleTradeDrawerClose} size="small">
-                <CloseIcon />
-              </IconButton>
-            </Box>
-            <Box
-              sx={{
-                flex: 1,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                p: 4
-              }}
-            >
-              <Typography variant="body2" color="text.secondary">
-                Live trades will be displayed here. Full implementation moved from Topbar.
-              </Typography>
-            </Box>
-          </TradeDrawer>
-        </>
-      )}
     </HeaderWrapper>
   );
 }
