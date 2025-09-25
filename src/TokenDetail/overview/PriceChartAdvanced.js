@@ -541,6 +541,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       crosshairPositionRef.current = { time: param.time, point: param.point };
 
       const dateStr = new Date(param.time * 1000).toLocaleDateString();
+      const rawTimestamp = param.time;
       toolTip.style.display = 'block';
 
       let ohlcData = '';
@@ -588,6 +589,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
             <div style="display: flex; justify-content: space-between"><span>O:</span><span>${symbol}${formatPrice(candle.open)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>H:</span><span>${symbol}${formatPrice(candle.high)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>L:</span><span>${symbol}${formatPrice(candle.low)}</span></div>
@@ -611,6 +613,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         } else if (chartType === 'line') {
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
             <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close || candle.value)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${(candle.volume || 0).toLocaleString()}</span></div>
             ${
@@ -626,6 +629,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         } else if (chartType === 'holders') {
           ohlcData = `
             <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
             <div style="display: flex; justify-content: space-between"><span>Holders:</span><span>${candle.holders ? candle.holders.toLocaleString() : candle.value.toLocaleString()}</span></div>
             ${
               candle.top10 !== undefined

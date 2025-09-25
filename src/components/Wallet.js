@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
-import { Wallet as XRPLWallet } from 'xrpl';
+import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
 
 // Lazy load heavy dependencies
 let startRegistration, startAuthentication, CryptoJS;
@@ -52,6 +52,7 @@ import SecurityIcon from '@mui/icons-material/Security';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import BackupIcon from '@mui/icons-material/Backup';
 
 // Context
 import { useContext } from 'react';
@@ -217,6 +218,7 @@ const WalletContent = ({
   onAccountSwitch,
   onLogout,
   onRemoveProfile,
+  onBackupSeed,
   openSnackbar,
   isEmbedded = false
 }) => {
@@ -271,9 +273,25 @@ const WalletContent = ({
               </IconButton>
             </CopyToClipboard>
           </Stack>
-          <IconButton size="small" onClick={onClose}>
-            <CloseIcon sx={{ fontSize: 16 }} />
-          </IconButton>
+          <Stack direction="row" spacing={0.5}>
+            <IconButton
+              size="small"
+              onClick={onBackupSeed}
+              sx={{
+                p: 0.5,
+                '&:hover': {
+                  background: alpha(theme.palette.warning.main, 0.1),
+                  color: theme.palette.warning.main
+                }
+              }}
+              title="Backup Seed"
+            >
+              <BackupIcon sx={{ fontSize: 14 }} />
+            </IconButton>
+            <IconButton size="small" onClick={onClose}>
+              <CloseIcon sx={{ fontSize: 16 }} />
+            </IconButton>
+          </Stack>
         </Stack>
       </Box>
 
@@ -478,6 +496,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [error, setError] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
   const [isLoadingDeps, setIsLoadingDeps] = useState(false);
+  const [showSeedDialog, setShowSeedDialog] = useState(false);
+  const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
+  const [displaySeed, setDisplaySeed] = useState('');
   const {
     setActiveProfile,
     accountProfile,
@@ -611,8 +632,54 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
 
-  const handleShowSeed = async () => {
-    openSnackbar('Seed display not available for device wallets - seeds are stored securely and not accessible', 'info');
+  const handleBackupSeed = async () => {
+    const profile = accountProfile;
+    if (!profile) return;
+
+    setShowSeedDialog(true);
+    setSeedAuthStatus('authenticating');
+
+    try {
+      await loadDependencies();
+
+      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+      const challenge = base64urlEncode(challengeBuffer);
+
+      const authResponse = await startAuthentication({
+        challenge: challenge,
+        timeout: 30000,
+        userVerification: 'required'
+      });
+
+      if (authResponse.id) {
+        setSeedAuthStatus('success');
+
+        let seed;
+        if (profile.wallet_type === 'device') {
+          // For device wallets, regenerate the wallet and get the seed
+          const credentialId = profile.deviceKeyId || authResponse.id;
+          const accountIndex = profile.accountIndex || 0;
+          const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-`;
+          const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
+            keySize: 256/32,
+            iterations: 50000
+          }).toString();
+          const privateKeyHex = seedHash.substring(0, 64);
+
+          // Convert private key to proper XRP seed format (use first 16 bytes for seed)
+          const privateKeyBuffer = Buffer.from(privateKeyHex.substring(0, 32), 'hex'); // 16 bytes
+          seed = encodeSeed(privateKeyBuffer, 'secp256k1');
+        } else {
+          // For regular wallets, use stored seed
+          seed = profile.seed || 'Seed not available in profile';
+        }
+
+        setDisplaySeed(seed);
+      }
+    } catch (err) {
+      setSeedAuthStatus('error');
+      openSnackbar('Authentication failed: ' + err.message, 'error');
+    }
   };
 
   const handleWalletConnect = () => {
@@ -1077,6 +1144,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   }}
                   onLogout={handleLogout}
                   onRemoveProfile={removeProfile}
+                  onBackupSeed={handleBackupSeed}
                   openSnackbar={openSnackbar}
                   isEmbedded={false}
                 />
@@ -1342,6 +1410,91 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               </Box>
             )}
             </StyledPopoverPaper>
+          </DialogContent>
+        </Dialog>
+
+        {/* Seed Backup Dialog */}
+        <Dialog
+          open={showSeedDialog}
+          onClose={() => {
+            setShowSeedDialog(false);
+            setSeedAuthStatus('idle');
+            setDisplaySeed('');
+          }}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogContent sx={{ p: 3 }}>
+            <Stack spacing={2}>
+              <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <BackupIcon sx={{ color: theme.palette.warning.main }} />
+                {accountProfile?.wallet_type === 'device' ? 'Backup Private Key' : 'Backup Seed Phrase'}
+              </Typography>
+
+              {seedAuthStatus === 'authenticating' && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
+                  <CircularProgress size={20} />
+                  <Typography>Authenticating with passkey...</Typography>
+                </Box>
+              )}
+
+              {seedAuthStatus === 'success' && (
+                <>
+                  <Alert severity="warning">
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                      ⚠️ Keep this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed phrase'} secure
+                    </Typography>
+                    <Typography variant="body2">
+                      Anyone with access to this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed'} can control your wallet. Store it safely offline.
+                    </Typography>
+                  </Alert>
+
+                  <Box sx={{
+                    p: 2,
+                    borderRadius: 2,
+                    background: alpha(theme.palette.background.paper, 0.8),
+                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    fontFamily: 'monospace',
+                    fontSize: '0.9rem',
+                    wordBreak: 'break-all',
+                    lineHeight: 1.5
+                  }}>
+                    {displaySeed}
+                  </Box>
+
+                  <CopyToClipboard
+                    text={displaySeed}
+                    onCopy={() => openSnackbar('Seed copied to clipboard', 'success')}
+                  >
+                    <Button
+                      variant="outlined"
+                      startIcon={<ContentCopyIcon />}
+                      size="small"
+                      sx={{ alignSelf: 'flex-start' }}
+                    >
+                      Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
+                    </Button>
+                  </CopyToClipboard>
+                </>
+              )}
+
+              {seedAuthStatus === 'error' && (
+                <Alert severity="error">
+                  Authentication failed. Please try again.
+                </Alert>
+              )}
+
+              <Button
+                onClick={() => {
+                  setShowSeedDialog(false);
+                  setSeedAuthStatus('idle');
+                  setDisplaySeed('');
+                }}
+                sx={{ alignSelf: 'flex-end' }}
+              >
+                Close
+              </Button>
+            </Stack>
           </DialogContent>
         </Dialog>
     </div>
