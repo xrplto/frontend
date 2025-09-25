@@ -103,14 +103,14 @@ const generateSecureDeterministicWallet = async (credentialId, accountIndex, sig
 
   let entropyHash;
   try {
-    // Use scrypt with high security parameters
+    // Use scrypt with universal mobile/desktop parameters (2024 recommended)
     const scryptResult = await scrypt.scrypt(
       Buffer.from(combinedEntropy, 'utf8'),
       Buffer.from(salt, 'utf8'),
-      16384, // N (CPU cost) - increased for maximum security
-      8,     // r (memory cost)
-      1,     // p (parallelization)
-      32     // output length in bytes - increased for more entropy
+      4096,  // N (CPU cost) - universal setting for mobile and desktop
+      8,     // r (memory cost) - standard
+      1,     // p (parallelization) - single thread for mobile compatibility
+      32     // output length in bytes - maintain high entropy
     );
     entropyHash = Array.from(scryptResult).map(b => b.toString(16).padStart(2, '0')).join('');
   } catch (error) {
