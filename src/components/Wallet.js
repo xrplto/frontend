@@ -255,6 +255,23 @@ const WalletContent = ({
             }}>
               {truncateAccount(accountLogin, 8)}
             </Typography>
+            <CopyToClipboard
+              text={accountLogin}
+              onCopy={() => openSnackbar('Address copied!', 'success')}
+            >
+              <IconButton
+                size="small"
+                sx={{
+                  p: 0.5,
+                  '&:hover': {
+                    background: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main
+                  }
+                }}
+              >
+                <ContentCopyIcon sx={{ fontSize: isEmbedded ? 12 : 14 }} />
+              </IconButton>
+            </CopyToClipboard>
           </Stack>
           <IconButton size="small" onClick={onClose}>
             <CloseIcon sx={{ fontSize: 16 }} />
@@ -337,64 +354,6 @@ const WalletContent = ({
           </Box>
         </Box>
 
-        {/* Action Buttons - Only show for popover mode */}
-        {!isEmbedded && (
-          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1.5, mb: 2 }}>
-            <Link
-              underline="none"
-              color="inherit"
-              href={`/profile/${accountLogin}`}
-              rel="noreferrer noopener nofollow"
-            >
-              <Button
-                fullWidth
-                onClick={onClose}
-                sx={{
-                  py: 2,
-                  borderRadius: '12px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    boxShadow: '0 8px 20px rgba(102, 126, 234, 0.4)'
-                  }
-                }}
-              >
-                <Stack spacing={0.5} alignItems="center">
-                  <AccountBalanceWalletIcon />
-                  <Typography sx={{ fontSize: '0.75rem' }}>Wallet</Typography>
-                </Stack>
-              </Button>
-            </Link>
-
-            <CopyToClipboard
-              text={accountLogin}
-              onCopy={() => openSnackbar('Address copied!', 'success')}
-            >
-              <Button
-                fullWidth
-                sx={{
-                  py: 2,
-                  borderRadius: '12px',
-                  background: alpha(theme.palette.text.primary, 0.05),
-                  color: theme.palette.text.primary,
-                  fontWeight: 600,
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: alpha(theme.palette.text.primary, 0.1)
-                  }
-                }}
-              >
-                <Stack spacing={0.5} alignItems="center">
-                  <ContentCopyIcon />
-                  <Typography sx={{ fontSize: '0.75rem' }}>Copy</Typography>
-                </Stack>
-              </Button>
-            </CopyToClipboard>
-          </Box>
-        )}
       </Box>
 
       {/* Accounts List */}
@@ -478,63 +437,7 @@ const WalletContent = ({
         display: 'flex',
         gap: 1
       }}>
-        {isEmbedded ? (
-          <>
-            <Link
-              underline="none"
-              color="inherit"
-              href={`/profile/${accountLogin}`}
-              rel="noreferrer noopener nofollow"
-              sx={{ flex: 1 }}
-            >
-              <Button
-                fullWidth
-                onClick={onClose}
-                sx={{
-                  py: 1.2,
-                  borderRadius: '8px',
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  color: 'white',
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  textTransform: 'none',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)'
-                  }
-                }}
-              >
-                <Stack spacing={0.3} alignItems="center">
-                  <AccountBalanceWalletIcon sx={{ fontSize: 16 }} />
-                  <Typography sx={{ fontSize: '0.65rem' }}>Wallet</Typography>
-                </Stack>
-              </Button>
-            </Link>
-
-            <CopyToClipboard
-              text={accountLogin}
-              onCopy={() => openSnackbar('Address copied!', 'success')}
-            >
-              <Button
-                sx={{
-                  px: 2,
-                  py: 1.2,
-                  borderRadius: '8px',
-                  background: alpha(theme.palette.text.primary, 0.05),
-                  color: theme.palette.text.primary,
-                  fontWeight: 600,
-                  fontSize: '0.8rem',
-                  textTransform: 'none',
-                  '&:hover': {
-                    background: alpha(theme.palette.text.primary, 0.1)
-                  }
-                }}
-              >
-                <ContentCopyIcon sx={{ fontSize: 16 }} />
-              </Button>
-            </CopyToClipboard>
-          </>
-        ) : (
+        {!isEmbedded && (
           <Button
             fullWidth
             onClick={onMoreAccounts}
