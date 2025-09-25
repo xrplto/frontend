@@ -1041,9 +1041,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
           border: `1px solid ${theme.palette.primary.dark}`,
           borderRadius: '8px',
-          height: accountProfile ? '36px' : '32px',
-          padding: accountProfile ? '4px 8px' : '0 14px',
-          minWidth: accountProfile ? '140px' : '80px',
+          height: '32px',
+          padding: accountProfile ? '0 12px' : '0 14px',
+          minWidth: accountProfile ? '100px' : '80px',
           color: '#ffffff',
           fontSize: '13px',
           fontWeight: '600',
@@ -1068,47 +1068,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         title={accountProfile ? 'Account Details' : t('Connect Wallet')}
       >
 {accountProfile ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <div style={{
               width: '6px',
               height: '6px',
               borderRadius: '50%',
               background: accountsActivation[accountLogin] === false
                 ? '#ef5350'
-                : 'linear-gradient(45deg, #4caf50, #8bc34a)',
-              boxShadow: accountsActivation[accountLogin] !== false
-                ? '0 0 8px rgba(76, 175, 80, 0.5)'
-                : '0 0 8px rgba(239, 83, 80, 0.5)',
-              flexShrink: 0
+                : '#4caf50'
             }} />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flex: 1, minWidth: 0 }}>
-              <span style={{
-                fontFamily: 'monospace',
-                fontSize: '10px',
-                opacity: 0.85,
-                lineHeight: '1.1',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%'
-              }}>
-                {truncateAccount(accountLogin, 7)}
-              </span>
-              <span style={{
-                fontSize: '12px',
-                fontWeight: '700',
-                lineHeight: '1.1',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                maxWidth: '100%'
-              }}>
-                {accountBalance?.curr1?.value || '0'} XRP
-              </span>
-            </div>
-            <svg width="5" height="5" viewBox="0 0 24 24" fill="currentColor" style={{ opacity: 0.6, flexShrink: 0 }}>
-              <path d="M7.41,8.58L12,13.17L16.59,8.58L18,5L12,16L6,5L7.41,8.58Z" />
-            </svg>
+            <span style={{
+              fontFamily: 'monospace',
+              fontSize: '13px',
+              fontWeight: '500'
+            }}>
+              {truncateAccount(accountLogin, 6)}
+            </span>
           </div>
         ) : (
           <span>{t('Login')}</span>
