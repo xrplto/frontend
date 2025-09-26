@@ -1,10 +1,11 @@
 import { Wallet } from 'xrpl';
 
-export class EncryptedWalletStorage {
+export class UnifiedWalletStorage {
   constructor() {
     this.dbName = 'XRPLWalletDB';
-    this.storeName = 'wallets';
-    this.version = 1;
+    this.walletsStore = 'encrypted_wallets';
+    this.profilesStore = 'profiles';
+    this.version = 2; // Increment for schema changes
   }
 
   async initDB() {
@@ -16,8 +17,17 @@ export class EncryptedWalletStorage {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
-        if (!db.objectStoreNames.contains(this.storeName)) {
-          db.createObjectStore(this.storeName, { keyPath: 'id' });
+
+        // Encrypted wallets store
+        if (!db.objectStoreNames.contains(this.walletsStore)) {
+          db.createObjectStore(this.walletsStore, { keyPath: 'id' });
+        }
+
+        // Profiles store
+        if (!db.objectStoreNames.contains(this.profilesStore)) {
+          const store = db.createObjectStore(this.profilesStore, { keyPath: 'account' });
+          store.createIndex('wallet_type', 'wallet_type', { unique: false });
+          store.createIndex('createdAt', 'createdAt', { unique: false });
         }
       };
     });
@@ -93,8 +103,8 @@ export class EncryptedWalletStorage {
     const encryptedData = await this.encryptWallet(walletData, pin);
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
 
       const request = store.put({ id: 'main_wallet', ...encryptedData });
 
@@ -107,8 +117,8 @@ export class EncryptedWalletStorage {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
+      const transaction = db.transaction([this.walletsStore], 'readonly');
+      const store = transaction.objectStore(this.walletsStore);
 
       const request = store.get('main_wallet');
 
@@ -150,8 +160,8 @@ export class EncryptedWalletStorage {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
 
       const request = store.delete('main_wallet');
 
@@ -226,8 +236,8 @@ export class EncryptedWalletStorage {
     const encryptedData = await this.encryptWallet({ wallets }, pin);
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readwrite');
-      const store = transaction.objectStore(this.storeName);
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
 
       const request = store.put({ id: 'main_wallet', ...encryptedData });
 
@@ -240,8 +250,8 @@ export class EncryptedWalletStorage {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.storeName], 'readonly');
-      const store = transaction.objectStore(this.storeName);
+      const transaction = db.transaction([this.walletsStore], 'readonly');
+      const store = transaction.objectStore(this.walletsStore);
 
       const request = store.get('main_wallet');
 
@@ -260,4 +270,83 @@ export class EncryptedWalletStorage {
       };
     });
   }
+
+  // Profile Management Methods
+  async storeProfiles(profiles) {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.profilesStore], 'readwrite');
+      const store = transaction.objectStore(this.profilesStore);
+
+      // Clear existing profiles first
+      const clearRequest = store.clear();
+
+      clearRequest.onsuccess = () => {
+        // Add all profiles
+        let completed = 0;
+        const total = profiles.length;
+
+        if (total === 0) {
+          resolve();
+          return;
+        }
+
+        profiles.forEach(profile => {
+          const addRequest = store.put(profile);
+          addRequest.onsuccess = () => {
+            completed++;
+            if (completed === total) {
+              resolve();
+            }
+          };
+          addRequest.onerror = () => reject(addRequest.error);
+        });
+      };
+
+      clearRequest.onerror = () => reject(clearRequest.error);
+    });
+  }
+
+  async getProfiles() {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.profilesStore], 'readonly');
+      const store = transaction.objectStore(this.profilesStore);
+      const request = store.getAll();
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result || []);
+    });
+  }
+
+  async addProfile(profile) {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.profilesStore], 'readwrite');
+      const store = transaction.objectStore(this.profilesStore);
+      const request = store.put(profile);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  async removeProfile(account) {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.profilesStore], 'readwrite');
+      const store = transaction.objectStore(this.profilesStore);
+      const request = store.delete(account);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
 }
+
+// Backward compatibility
+export const EncryptedWalletStorage = UnifiedWalletStorage;

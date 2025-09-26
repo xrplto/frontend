@@ -652,6 +652,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const theme = useTheme();
   const { t } = useTranslation();
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  // Helper to sync profiles to IndexedDB
+  const syncProfilesToIndexedDB = async (profilesArray) => {
+    try {
+      await walletStorage.storeProfiles(profilesArray);
+    } catch (error) {
+      console.warn('Failed to sync profiles to IndexedDB:', error);
+    }
+  };
   const anchorRef = useRef(null);
   const [showingSeed, setShowingSeed] = useState(false);
   const [currentSeed, setCurrentSeed] = useState('');
@@ -906,27 +915,51 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setSeedAuthStatus('authenticating');
 
     try {
-      await loadDependencies();
-
-      const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
-      const challenge = base64urlEncode(challengeBuffer);
-
-      const authResponse = await startAuthentication({
-        optionsJSON: {
-          challenge: challenge,
-          timeout: 30000,
-          userVerification: 'required'
+      if (profile.wallet_type === 'pin') {
+        // For PIN wallets, we need the PIN to decrypt from IndexedDB
+        const pin = prompt('Enter your 6-digit PIN to view seed:');
+        if (!pin) {
+          setSeedAuthStatus('idle');
+          setShowSeedDialog(false);
+          return;
         }
-      });
 
-      if (authResponse.id) {
-        setSeedAuthStatus('success');
+        try {
+          const wallets = await walletStorage.getWallets(pin);
+          const currentWallet = wallets.find(w => w.address === profile.address);
+          if (currentWallet && currentWallet.seed) {
+            setSeedAuthStatus('success');
+            setDisplaySeed(currentWallet.seed);
+            setSeedBlurred(true);
+          } else {
+            throw new Error('Wallet not found in encrypted storage');
+          }
+        } catch (error) {
+          setSeedAuthStatus('error');
+          openSnackbar('Failed to decrypt wallet: ' + error.message, 'error');
+          return;
+        }
+      } else {
+        // Device wallets - use WebAuthn
+        await loadDependencies();
 
-        // Use the stored seed for all wallet types (now properly generated during wallet creation)
-        const seed = profile.seed || 'Seed not available in profile';
+        const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
+        const challenge = base64urlEncode(challengeBuffer);
 
-        setDisplaySeed(seed);
-        setSeedBlurred(true);
+        const authResponse = await startAuthentication({
+          optionsJSON: {
+            challenge: challenge,
+            timeout: 30000,
+            userVerification: 'required'
+          }
+        });
+
+        if (authResponse.id) {
+          setSeedAuthStatus('success');
+          const seed = profile.seed || 'Seed not available for device wallet';
+          setDisplaySeed(seed);
+          setSeedBlurred(true);
+        }
       }
     } catch (err) {
       setSeedAuthStatus('error');
@@ -951,18 +984,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setIsCreatingWallet(false);
   };
 
-  // Check if PIN wallet exists
+  // Check if PIN wallet exists and load profiles from IndexedDB
   useEffect(() => {
-    const checkPinWallet = async () => {
+    const initializeStorage = async () => {
       try {
+        // Check for PIN wallet
         const exists = await walletStorage.hasWallet();
         setHasPinWallet(exists);
+
+        // Load profiles from IndexedDB
+        const storedProfiles = await walletStorage.getProfiles();
+        if (storedProfiles.length > 0) {
+          setProfiles(storedProfiles);
+        }
       } catch (error) {
+        console.warn('Failed to load from IndexedDB:', error);
         setHasPinWallet(false);
       }
     };
-    checkPinWallet();
-  }, [walletStorage]);
+    initializeStorage();
+  }, [walletStorage, setProfiles]);
 
   const handlePinLogin = async () => {
     if (!pin) {
@@ -982,14 +1023,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const wallets = await walletStorage.getWallets(pin);
       const firstWallet = wallets[0];
 
-      // Add all wallets to profiles
+      // Add all wallets to profiles (without seeds in localStorage)
       const allProfiles = [...profiles];
       wallets.forEach(wallet => {
         const profile = {
           account: wallet.address,
           address: wallet.address,
           publicKey: wallet.publicKey,
-          seed: wallet.seed,
           wallet_type: 'pin',
           xrp: '0',
           createdAt: wallet.createdAt
@@ -1001,12 +1041,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       });
 
       setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
 
       const profile = {
         account: firstWallet.address,
         address: firstWallet.address,
         publicKey: firstWallet.publicKey,
-        seed: firstWallet.seed,
         wallet_type: 'pin',
         xrp: '0',
         createdAt: firstWallet.createdAt
@@ -1050,14 +1090,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const wallets = await walletStorage.createWalletFromPin(pin);
       const firstWallet = wallets[0];
 
-      // Add all wallets to profiles
+      // Add all wallets to profiles (without seeds in localStorage)
       const allProfiles = [...profiles];
       wallets.forEach(wallet => {
         const profile = {
           account: wallet.address,
           address: wallet.address,
           publicKey: wallet.publicKey,
-          seed: wallet.seed,
           wallet_type: 'pin',
           xrp: '0',
           createdAt: wallet.createdAt
@@ -1069,12 +1108,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       });
 
       setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
 
       const profile = {
         account: firstWallet.address,
         address: firstWallet.address,
         publicKey: firstWallet.publicKey,
-        seed: firstWallet.seed,
         wallet_type: 'pin',
         xrp: '0',
         createdAt: firstWallet.createdAt
@@ -1127,6 +1166,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setPinError('');
 
     try {
+      // For device wallets, we need the seed from the profile
+      // For PIN wallets, this shouldn't happen as they're already in encrypted storage
+      if (!accountProfile.seed) {
+        setPinError('Cannot migrate: seed not available in profile');
+        setIsCreatingWallet(false);
+        return;
+      }
+
       const walletData = {
         seed: accountProfile.seed,
         address: accountProfile.address,
@@ -1302,18 +1349,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Generate the standard 5 wallets deterministically
         const wallets = await generateWalletsFromDeviceKey(registrationResponse.id, signatureEntropy);
 
-        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
-        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
-
-        // Add wallets to profiles localStorage
-        wallets.forEach(walletData => {
-          const profile = { ...walletData, tokenCreatedAt: Date.now() };
-          if (!currentProfiles.find(p => p.account === profile.address)) {
-            currentProfiles.push(profile);
-          }
-        });
-
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+        // Update profiles in context only (no localStorage duplication)
 
         // Update profiles state first
         const allProfiles = [...profiles];
@@ -1326,6 +1362,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         // Set profiles context to the updated list so doLogIn can use it
         setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
 
         // Store first wallet info for display
         setWalletInfo({
@@ -1414,23 +1451,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Always generate the same 5 wallets deterministically
         const wallets = await generateWalletsFromDeviceKey(authResponse.id, signatureEntropy);
 
-        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
-        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
-
         // Check if any of these wallets already exist in profiles
-        const existingWallet = currentProfiles.find(p =>
+        const existingWallet = profiles.find(p =>
           wallets.some(w => w.account === p.account)
         );
-
-        // Add wallets to profiles localStorage if not already there
-        wallets.forEach(walletData => {
-          const profile = { ...walletData, tokenCreatedAt: Date.now() };
-          if (!currentProfiles.find(p => p.account === profile.address)) {
-            currentProfiles.push(profile);
-          }
-        });
-
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
 
         // Update profiles state first
         const allProfiles = [...profiles];
@@ -1443,6 +1467,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         // Set profiles context to the updated list so doLogIn can use it
         setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
 
         // Set wallet info for success message
         setWalletInfo({
@@ -1511,18 +1536,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           wallets.some(w => w.account === p.account)
         );
 
-        const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
-        const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
-
-        // Add wallets to profiles localStorage if not already there
-        wallets.forEach(walletData => {
-          const profile = { ...walletData, tokenCreatedAt: Date.now() };
-          if (!currentProfiles.find(p => p.account === profile.address)) {
-            currentProfiles.push(profile);
-          }
-        });
-
-        window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(currentProfiles));
+        // Profiles managed by context only
 
         // Update profiles state with wallets
         const allProfiles = [...profiles];
@@ -1532,6 +1546,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
         });
         setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
 
         // Login with first wallet - pass the updated profiles
         doLogIn(wallets[0], allProfiles);
@@ -1964,7 +1979,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               PIN Login
                             </Typography>
                             <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
-                              6-Digit PIN Access
+                              Encrypted Storage
                             </Typography>
                           </Stack>
                         </Stack>
