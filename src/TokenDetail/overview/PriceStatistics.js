@@ -70,27 +70,27 @@ const badge24hStyle = {
 
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  padding: theme.spacing(1.25, 1.5),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  padding: theme.spacing(0.6, 0.8),
   '&:first-of-type': {
-    paddingLeft: theme.spacing(1.5),
-    fontWeight: 600,
-    color: alpha(theme.palette.text.primary, 0.9),
+    paddingLeft: theme.spacing(0.8),
+    fontWeight: 500,
+    color: alpha(theme.palette.text.primary, 0.75),
     width: '40%'
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(1.5),
-    paddingLeft: theme.spacing(2)
+    paddingRight: theme.spacing(0.8),
+    paddingLeft: theme.spacing(1.2)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(1, 1.25),
+    padding: theme.spacing(0.5, 0.6),
     '&:first-of-type': {
-      paddingLeft: theme.spacing(1.25),
+      paddingLeft: theme.spacing(0.6),
       width: '45%'
     },
     '&:last-of-type': {
-      paddingRight: theme.spacing(1.25),
-      paddingLeft: theme.spacing(1.5)
+      paddingRight: theme.spacing(0.6),
+      paddingLeft: theme.spacing(0.8)
     }
   }
 }));
@@ -348,9 +348,9 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  color: alpha(theme.palette.text.primary, 0.85),
-                  fontSize: isMobile ? '0.65rem' : '0.75rem'
+                  fontWeight: 500,
+                  color: alpha(theme.palette.text.primary, 0.75),
+                  fontSize: isMobile ? '0.6rem' : '0.7rem'
                 }}
                 noWrap
               >
@@ -575,9 +575,9 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  color: alpha(theme.palette.text.primary, 0.85),
-                  fontSize: isMobile ? '0.65rem' : '0.75rem'
+                  fontWeight: 500,
+                  color: alpha(theme.palette.text.primary, 0.75),
+                  fontSize: isMobile ? '0.6rem' : '0.7rem'
                 }}
                 noWrap
               >
@@ -607,9 +607,9 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  color: theme.palette.text.primary,
-                  fontSize: isMobile ? '0.65rem' : '0.75rem'
+                  fontWeight: 500,
+                  color: alpha(theme.palette.text.primary, 0.75),
+                  fontSize: isMobile ? '0.6rem' : '0.7rem'
                 }}
                 noWrap
               >
@@ -638,9 +638,9 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  color: alpha(theme.palette.text.primary, 0.85),
-                  fontSize: isMobile ? '0.65rem' : '0.75rem'
+                  fontWeight: 500,
+                  color: alpha(theme.palette.text.primary, 0.75),
+                  fontSize: isMobile ? '0.6rem' : '0.7rem'
                 }}
                 noWrap
               >

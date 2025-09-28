@@ -24,9 +24,9 @@ const MarkdownParagraph = ({ children }) => (
     paragraph
     sx={{
       color: 'text.primary',
-      lineHeight: 1.5,
-      mb: 0.75,
-      fontSize: '0.75rem'
+      lineHeight: 1.4,
+      mb: 0.5,
+      fontSize: '0.7rem'
     }}
   >
     {children}
@@ -34,13 +34,13 @@ const MarkdownParagraph = ({ children }) => (
 );
 
 const MarkdownH1 = ({ children }) => (
-  <Typography variant="h6" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.9rem' }}>
+  <Typography variant="h6" gutterBottom sx={{ mt: 0.5, fontWeight: 500, fontSize: '0.8rem' }}>
     {children}
   </Typography>
 );
 
 const MarkdownH2 = ({ children }) => (
-  <Typography variant="subtitle1" gutterBottom sx={{ mt: 1, fontWeight: 600, fontSize: '0.8rem' }}>
+  <Typography variant="subtitle1" gutterBottom sx={{ mt: 0.5, fontWeight: 500, fontSize: '0.75rem' }}>
     {children}
   </Typography>
 );
@@ -49,20 +49,20 @@ const MarkdownH3 = ({ children }) => (
   <Typography
     variant="subtitle2"
     gutterBottom
-    sx={{ mt: 0.75, fontWeight: 600, fontSize: '0.75rem' }}
+    sx={{ mt: 0.5, fontWeight: 500, fontSize: '0.7rem' }}
   >
     {children}
   </Typography>
 );
 
 const MarkdownUL = ({ children }) => (
-  <Box component="ul" sx={{ pl: 1.5, mb: 0.75 }}>
+  <Box component="ul" sx={{ pl: 1.2, mb: 0.5 }}>
     {children}
   </Box>
 );
 
 const MarkdownOL = ({ children }) => (
-  <Box component="ol" sx={{ pl: 1.5, mb: 0.75 }}>
+  <Box component="ol" sx={{ pl: 1.2, mb: 0.5 }}>
     {children}
   </Box>
 );
@@ -73,9 +73,9 @@ const MarkdownLI = ({ children }) => (
     variant="body2"
     sx={{
       color: 'text.primary',
-      mb: 0.25,
-      lineHeight: 1.5,
-      fontSize: '0.75rem'
+      mb: 0.15,
+      lineHeight: 1.4,
+      fontSize: '0.7rem'
     }}
   >
     {children}
@@ -118,32 +118,17 @@ export default function Description({
     <Card
       elevation={0}
       sx={{
-        borderRadius: { xs: '8px', sm: '10px' },
+        borderRadius: '8px',
         background: 'transparent',
-        backdropFilter: 'none',
-        WebkitBackdropFilter: 'none',
-        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        boxShadow: `
-          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+        boxShadow: 'none',
         position: 'relative',
         overflow: 'hidden',
-        // Sidebar sizing: compact and right-aligned
-        // Slightly inset to align with TokenSummary
         width: '100%',
-        maxWidth: '100%',
-        mb: { xs: 1, sm: 1.5 },
-        transition: 'none !important',
-        '&::before': {
-          display: 'none'
-        },
+        mb: 0.75,
         '&:hover': {
-          boxShadow: `
-            0 4px 16px ${alpha(theme.palette.common.black, 0.08)},
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          transform: 'none',
-          transition: 'none !important'
+          boxShadow: 'none',
+          border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
         }
       }}
     >
@@ -151,8 +136,8 @@ export default function Description({
         title={`About ${displayName}`}
         titleTypographyProps={{
           variant: 'h6',
-          fontWeight: 600,
-          fontSize: { xs: '0.75rem', sm: '0.85rem' }
+          fontWeight: 500,
+          fontSize: '0.75rem'
         }}
         action={
           <Stack direction="row" spacing={0.5}>
@@ -161,8 +146,9 @@ export default function Description({
                 size="small"
                 onClick={() => setExpanded(!expanded)}
                 sx={{
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  borderRadius: 1
+                  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                  borderRadius: 1,
+                  padding: 0.5
                 }}
               >
                 {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
@@ -174,9 +160,10 @@ export default function Description({
                   size="small"
                   onClick={handleEditToggle}
                   sx={{
-                    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                     borderRadius: 1,
-                    color: showEditor ? 'error.main' : 'inherit'
+                    color: showEditor ? 'error.main' : 'inherit',
+                    padding: 0.5
                   }}
                 >
                   {showEditor ? <CloseIcon /> : <EditIcon />}
@@ -187,16 +174,16 @@ export default function Description({
         }
         sx={{
           borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          px: { xs: 1, sm: 1.5 },
-          py: 1
+          px: 1,
+          py: 0.75
         }}
       />
 
       {showEditor && mdEditor ? (
         <Box
           sx={{
-            px: { xs: 1, sm: 1.5 },
-            py: 1,
+            px: 1,
+            py: 0.75,
             '& .rc-md-editor': {
               border: 'none !important',
               borderRadius: '0 !important',
@@ -238,8 +225,8 @@ export default function Description({
           {mdEditor}
         </Box>
       ) : !showEditor && description ? (
-        <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1 }}>
-          <Collapse in={expanded} collapsedSize={80}>
+        <Box sx={{ px: 1, py: 0.75 }}>
+          <Collapse in={expanded} collapsedSize={60}>
             <Box
               sx={{
                 position: 'relative',
@@ -254,13 +241,13 @@ export default function Description({
         </Box>
       ) : (
         !showEditor && (
-          <Box sx={{ px: { xs: 1, sm: 1.5 }, py: 1, minHeight: 60 }}>
+          <Box sx={{ px: 1, py: 0.75, minHeight: 40 }}>
             <Typography
               variant="body2"
               sx={{
                 color: 'text.secondary',
                 fontStyle: 'italic',
-                fontSize: '0.75rem'
+                fontSize: '0.7rem'
               }}
             >
               No description available.
