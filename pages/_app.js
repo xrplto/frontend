@@ -7,7 +7,6 @@ import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
 import { CssBaseline, styled } from '@mui/material';
 import { ContextProvider, AppContext } from 'src/AppContext';
-import { NotificationProvider } from 'src/contexts/NotificationContext';
 import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
@@ -46,10 +45,6 @@ const XSnackbar = dynamic(() => import('src/components/Snackbar'), {
   loading: () => null
 });
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), {
-  ssr: false,
-  loading: () => null
-});
-const PinnedChartTracker = dynamic(() => import('src/components/PinnedChartTracker'), {
   ssr: false,
   loading: () => null
 });
@@ -300,9 +295,8 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
         </Head>
 
         <ContextProvider data={data} openSnackbar={openSnackbar}>
-          <NotificationProvider>
-            <AppProgressBar router={router} />
-            <ThemeProvider>
+          <AppProgressBar router={router} />
+          <ThemeProvider>
               <SnackbarProvider
                 maxSnack={2}
                 anchorOrigin={{
@@ -310,18 +304,15 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
                   horizontal: 'center'
                 }}
               >
-                <PinnedChartTracker>
-                  <CssBaseline />
-                  <AppPageLayout>
-                    <Component {...pageProps} />
-                  </AppPageLayout>
-                  <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
-                  <TransactionAlert />
-                  {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
-                </PinnedChartTracker>
+                <CssBaseline />
+                <AppPageLayout>
+                  <Component {...pageProps} />
+                </AppPageLayout>
+                <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+                <TransactionAlert />
+                {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
               </SnackbarProvider>
-            </ThemeProvider>
-          </NotificationProvider>
+          </ThemeProvider>
         </ContextProvider>
       </>
     </CacheProvider>

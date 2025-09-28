@@ -22,8 +22,6 @@ import {
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { currencySymbols } from 'src/utils/constants';
-import { PinChartButton, usePinnedCharts } from 'src/components/PinnedChartTracker';
-import { ChartNotificationButton } from 'src/components/PriceNotifications';
 import { throttle } from 'src/utils/lodashLite';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
@@ -32,13 +30,10 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import GroupIcon from '@mui/icons-material/Group';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import PushPinIcon from '@mui/icons-material/PushPin';
-import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 
 const PriceChartAdvanced = memo(({ token }) => {
   const theme = useTheme();
   const { activeFiatCurrency, accountProfile } = useContext(AppContext);
-  const { pinnedCharts, pinChart, unpinChartByToken } = usePinnedCharts();
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
@@ -1699,19 +1694,6 @@ const PriceChartAdvanced = memo(({ token }) => {
 
           {!isMobile && (
             <>
-              <PinChartButton
-                token={token}
-                chartType={chartType}
-                range={range}
-                indicators={indicators}
-                activeFiatCurrency={activeFiatCurrency}
-              />
-
-              <ChartNotificationButton
-                token={token}
-                currentPrice={data && data.length > 0 ? data[data.length - 1].close : null}
-              />
-
               <IconButton
                 size="small"
                 onClick={handleFullscreen}
@@ -1748,57 +1730,6 @@ const PriceChartAdvanced = memo(({ token }) => {
                     {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
                   </Box>
                 </MenuItem>
-                <MenuItem
-                  onClick={() => {
-                    if (
-                      pinnedCharts.some(
-                        (chart) => chart.token.md5 === token.md5 && chart.chartType === chartType
-                      )
-                    ) {
-                      unpinChartByToken(token.md5, chartType);
-                    } else {
-                      pinChart({
-                        token: {
-                          md5: token.md5,
-                          name: token.name,
-                          symbol: token.symbol || token.code,
-                          code: token.code,
-                          currency: token.currency,
-                          issuer: token.issuer,
-                          slug: token.slug,
-                          logo: token.logo
-                        },
-                        chartType,
-                        range,
-                        indicators,
-                        activeFiatCurrency
-                      });
-                    }
-                    setAnchorEl(null);
-                  }}
-                  sx={{ fontSize: '0.875rem' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {pinnedCharts?.some(
-                      (chart) => chart.token.md5 === token.md5 && chart.chartType === chartType
-                    ) ? (
-                      <PushPinIcon fontSize="small" sx={{ color: theme.palette.primary.main }} />
-                    ) : (
-                      <PushPinOutlinedIcon fontSize="small" />
-                    )}
-                    {pinnedCharts?.some(
-                      (chart) => chart.token.md5 === token.md5 && chart.chartType === chartType
-                    )
-                      ? 'Unpin Chart'
-                      : 'Pin Chart'}
-                  </Box>
-                </MenuItem>
-                <Box sx={{ px: 1, py: 0.5, display: 'flex', justifyContent: 'center' }}>
-                  <ChartNotificationButton
-                    token={token}
-                    currentPrice={data && data.length > 0 ? data[data.length - 1].close : null}
-                  />
-                </Box>
                 <Divider />
               </>
             )}

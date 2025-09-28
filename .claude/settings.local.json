@@ -12,7 +12,10 @@
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/collection/create.js --format=compact)",
       "Bash(find:*)",
       "Bash(mv:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(for util in \"lodashLite\" \"normalizers\" \"formatNumber\" \"formatTime\" \"extra\" \"constants\")",
+      "Bash(do echo \"=== $util.js ===\")",
+      "Bash(done)"
     ],
     "deny": []
   }

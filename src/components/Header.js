@@ -52,7 +52,6 @@ import NavSearchBar from './NavSearchBar';
 import SidebarDrawer from './SidebarDrawer';
 const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
-import { GlobalNotificationButton } from 'src/components/PriceNotifications';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
 import { currencySymbols, getTokenImageUrl, decodeCurrency, BASE_URL, currencyConfig, currencyIcons } from 'src/utils/constants';
@@ -882,11 +881,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 spacing={0.5}
                 sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
               >
-                {/* Price Alerts - Keep visible for quick access */}
-                <GlobalNotificationButton
-                  sidebarOpen={notificationPanelOpen}
-                  onSidebarToggle={onNotificationPanelToggle}
-                />
 
                 {/* Settings Dropdown */}
                 <IconButton
