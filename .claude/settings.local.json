@@ -15,7 +15,8 @@
       "Bash(node:*)",
       "Bash(for util in \"lodashLite\" \"normalizers\" \"formatNumber\" \"formatTime\" \"extra\" \"constants\")",
       "Bash(do echo \"=== $util.js ===\")",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(test:*)"
     ],
     "deny": []
   }

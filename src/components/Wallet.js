@@ -261,7 +261,7 @@ const TokenImage = styled(Image)(({ theme }) => ({
 }));
 
 const StyledPopoverPaper = styled(Box)(({ theme }) => ({
-  background: '#000000',
+  background: theme.palette.background.paper,
   border: 'none',
   borderRadius: 16,
   boxShadow: 'none',
@@ -274,7 +274,7 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     height: 1,
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.common.white, 0.2)}, transparent)`
+    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.2)}, transparent)`
   }
 }));
 
@@ -368,8 +368,8 @@ const WalletContent = ({
       <Box sx={{
         p: 1.5,
         background: theme.palette.mode === 'dark'
-          ? 'rgba(0,0,0,0.3)'
-          : 'rgba(255,255,255,0.7)',
+          ? alpha(theme.palette.background.default, 0.3)
+          : alpha(theme.palette.background.paper, 0.7),
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         position: 'relative',
         zIndex: 1
@@ -440,15 +440,17 @@ const WalletContent = ({
         p: isEmbedded ? 2 : 2.5,
         textAlign: 'center',
         background: theme.palette.mode === 'dark'
-          ? 'linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 50%)'
-          : 'linear-gradient(180deg, rgba(255,255,255,0.8) 0%, transparent 50%)'
+          ? `linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.1)} 0%, transparent 50%)`
+          : `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, transparent 50%)`
       }}>
         <Typography sx={{
           fontSize: isEmbedded ? '2rem' : '2.5rem',
           fontWeight: 900,
           lineHeight: 1,
           fontFamily: 'system-ui',
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%)',
+          background: theme.palette.mode === 'dark'
+            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 50%)'
+            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
           backgroundClip: 'text',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
@@ -2211,7 +2213,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               // WalletConnect Modal Content with full styling
               <Box sx={{
                 borderRadius: '12px',
-                background: '#000000',
+                background: theme.palette.background.paper,
                 border: 'none',
                 boxShadow: 'none',
                 overflow: 'hidden'
@@ -2283,12 +2285,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             borderRadius: '16px',
                             border: '1px solid',
                             borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: '#4285f4',
+                            color: theme.palette.primary.main,
                             backgroundColor: 'transparent',
                             '&:hover': {
-                              borderColor: '#4285f4',
-                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
-                              border: '1px solid #4285f4'
+                              borderColor: theme.palette.primary.main,
+                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                              border: `1px solid ${theme.palette.primary.main}`
                             },
                             '&.MuiButton-root': {
                               borderWidth: '1px'
@@ -2310,12 +2312,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             borderRadius: '16px',
                             border: '1px solid',
                             borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: '#4285f4',
+                            color: theme.palette.primary.main,
                             backgroundColor: 'transparent',
                             '&:hover': {
-                              borderColor: '#4285f4',
-                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
-                              border: '1px solid #4285f4'
+                              borderColor: theme.palette.primary.main,
+                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                              border: `1px solid ${theme.palette.primary.main}`
                             },
                             '&.MuiButton-root': {
                               borderWidth: '1px'
@@ -2367,12 +2369,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             borderRadius: '16px',
                             border: '1px solid',
                             borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: '#4285f4',
+                            color: theme.palette.primary.main,
                             backgroundColor: 'transparent',
                             '&:hover': {
-                              borderColor: '#4285f4',
-                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
-                              border: '1px solid #4285f4'
+                              borderColor: theme.palette.primary.main,
+                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                              border: `1px solid ${theme.palette.primary.main}`
                             },
                             '&.MuiButton-root': {
                               borderWidth: '1px'
@@ -2394,12 +2396,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             borderRadius: '16px',
                             border: '1px solid',
                             borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: '#4285f4',
+                            color: theme.palette.primary.main,
                             backgroundColor: 'transparent',
                             '&:hover': {
-                              borderColor: '#4285f4',
-                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
-                              border: '1px solid #4285f4'
+                              borderColor: theme.palette.primary.main,
+                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                              border: `1px solid ${theme.palette.primary.main}`
                             },
                             '&.MuiButton-root': {
                               borderWidth: '1px'
@@ -2441,9 +2443,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         alignItems: 'center',
                         mb: 2,
                         p: 1.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 50%)`,
+                        background: theme.palette.mode === 'dark'
+                          ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 50%)`
+                          : alpha(theme.palette.primary.main, 0.04),
                         borderRadius: 2,
-                        border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`
+                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
                       }}>
                         <Button
                           onClick={handleGoBack}
@@ -2461,7 +2465,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         >
                           ← Back
                         </Button>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.secondary.main, fontSize: '1rem' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '1rem' }}>
                           PIN Authentication
                         </Typography>
                       </Box>
