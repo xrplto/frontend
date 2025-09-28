@@ -188,3 +188,88 @@ Create `.env` file based on `.env.example`:
 - Light/Dark themes in `src/theme/`
 - Theme provider wraps entire app
 - Material-UI theme customization
+
+## UI Design Guidelines - MUST FOLLOW
+
+### Clean, Minimalist Design Principles
+1. **Flat Design Only**
+   - NO gradients on buttons or backgrounds
+   - NO box shadows or drop shadows
+   - NO 3D effects or transforms
+   - Use solid colors with transparency (alpha) for depth
+
+2. **Button Styling**
+   - Use `variant="outlined"` for all primary buttons
+   - Border radius: 12px for modern rounded corners
+   - Border width: 1.5px for subtle definition
+   - Padding: py: 1.5-1.8 for comfortable click targets
+   - Colors: Use single accent color (#4285f4) consistently
+   - Hover: Only subtle background color change, NO transforms
+
+3. **Typography**
+   - Font weights: 400-500 maximum (no bold 600-700)
+   - Font sizes: 0.95rem-1rem for consistency
+   - Text colors: Use alpha for secondary text
+   - No unnecessary uppercase transformations
+
+4. **Spacing and Layout**
+   - Tight, consistent spacing (1.2-2.5 units)
+   - Minimal padding in containers
+   - Clean alignment without excessive gaps
+   - Use Stack with controlled spacing
+
+5. **Color Palette**
+   - Primary accent: #4285f4 (blue)
+   - Borders: alpha(divider, 0.15-0.2)
+   - Backgrounds: transparent or alpha(color, 0.04)
+   - Text: primary for main, alpha(secondary, 0.6) for muted
+   - Disabled: alpha(text, 0.4)
+
+6. **Visual Effects to AVOID**
+   ```css
+   /* ❌ WRONG - Complex effects */
+   background: linear-gradient(135deg, color1, color2);
+   boxShadow: '0 4px 12px rgba(0,0,0,0.15)';
+   transform: translateY(-1px);
+   border: 2px solid;
+   fontWeight: 600;
+
+   /* ✅ CORRECT - Clean and simple */
+   background: 'transparent';
+   boxShadow: 'none';
+   border: `1.5px solid ${alpha(divider, 0.2)}`;
+   fontWeight: 400;
+   ```
+
+7. **Icons and Decorations**
+   - NO icons unless absolutely necessary
+   - Use text-only interfaces
+   - Simple × for close buttons (no containers)
+   - Minimal visual decorations
+
+8. **Hover States**
+   - Subtle color changes only
+   - Light background tint with alpha
+   - Border color emphasis
+   - NO elevation or movement
+
+### Example Implementation
+```javascript
+// Clean button style
+sx={{
+  py: 1.5,
+  fontSize: '0.95rem',
+  fontWeight: 400,
+  textTransform: 'none',
+  borderColor: alpha(theme.palette.divider, 0.2),
+  borderRadius: '12px',
+  borderWidth: '1.5px',
+  color: '#4285f4',
+  backgroundColor: 'transparent',
+  '&:hover': {
+    borderColor: '#4285f4',
+    backgroundColor: alpha('#4285f4', 0.04),
+    borderWidth: '1.5px'
+  }
+}}
+```

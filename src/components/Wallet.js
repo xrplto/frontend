@@ -11,7 +11,6 @@ import {
   alpha,
   styled,
   Avatar,
-  // Badge,
   Box,
   Button,
   Card,
@@ -27,16 +26,7 @@ import {
   useTheme,
   Chip,
   Fade
-  // useMediaQuery
 } from '@mui/material';
-// import GridOnIcon from '@mui/icons-material/GridOn';
-// import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
-// import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
-// import AccountBoxIcon from '@mui/icons-material/AccountBox';
-// import AssignmentReturnedIcon from '@mui/icons-material/AssignmentReturned';
-// import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
-// import ImportExportIcon from '@mui/icons-material/ImportExport';
-// Icons removed - using text-based UI
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -47,15 +37,6 @@ import { AppContext } from 'src/AppContext';
 
 // Internationalization
 import { useTranslation } from 'react-i18next';
-
-// Iconify
-// import { Icon } from '@iconify/react';
-// import userLock from '@iconify/icons-fa-solid/user-lock';
-// import link45deg from '@iconify/icons-bi/link-45deg';
-// import linkExternal from '@iconify/icons-charm/link-external';
-// import externalLinkLine from '@iconify/icons-ri/external-link-line';
-// import paperIcon from '@iconify/icons-akar-icons/paper';
-// import copyIcon from '@iconify/icons-fad/copy';
 
 // Utils
 import { getHashIcon } from 'src/utils/extra';
@@ -71,20 +52,15 @@ const base64urlEncode = (buffer) => {
 
 // Secure deterministic wallet generation using scrypt with PBKDF2 fallback and signature entropy
 const generateSecureDeterministicWallet = async (credentialId, accountIndex, signatureEntropy) => {
-  // Requires signature-based entropy for enhanced security
-  // Note: signatureEntropy provides user authentication proof and additional randomness
 
   if (!signatureEntropy) {
     throw new Error('Signature entropy is required for secure wallet generation');
   }
 
-  // Deterministic entropy: use only credentialId and accountIndex for consistent wallets
-  // Note: signatureEntropy is validated for security but not used in generation to ensure determinism
   const baseEntropy = `passkey-wallet-v4-deterministic-${credentialId}-${accountIndex}`;
   const combinedEntropy = CryptoJS.SHA256(baseEntropy).toString();
   const salt = `salt-${credentialId}-deterministic-v4`;
 
-  // STRICT SECURITY: Only use scrypt - NO PBKDF2 FALLBACK
   if (!scrypt || typeof scrypt.scrypt !== 'function') {
     throw new Error('Scrypt not available - refusing to use weaker PBKDF2 fallback for wallet generation');
   }
@@ -132,7 +108,6 @@ const extractSignatureEntropy = (authResponse) => {
 
   let signatureArray;
   try {
-    // STRICT: Only use proper base64url decoding
     const signatureBuffer = base64URLStringToBuffer(signature);
     signatureArray = new Uint8Array(signatureBuffer);
   } catch (decodeError) {
@@ -152,7 +127,6 @@ const extractSignatureEntropy = (authResponse) => {
     throw new Error(`Invalid entropy length: ${entropyHex.length} chars, expected 64`);
   }
 
-  console.log('✅ High-security signature entropy extracted successfully', entropyHex.length, 'chars');
   return entropyHex;
 };
 
@@ -171,7 +145,6 @@ const generateSignatureEntropy = async (credentialId) => {
     const challenge = crypto.getRandomValues(new Uint8Array(32));
     const challengeB64 = base64urlEncode(challenge);
 
-    console.log('🔐 Requesting WebAuthn authentication for entropy generation...');
 
     // Create proper WebAuthn options structure
     const optionsJSON = {
@@ -200,7 +173,6 @@ const generateSignatureEntropy = async (credentialId) => {
 
       let signatureArray;
       try {
-        // STRICT: Only use proper base64url decoding
         const signatureBuffer = base64URLStringToBuffer(signature);
         signatureArray = new Uint8Array(signatureBuffer);
       } catch (decodeError) {
@@ -220,13 +192,11 @@ const generateSignatureEntropy = async (credentialId) => {
         throw new Error(`Invalid entropy length: ${entropyHex.length} chars, expected 64`);
       }
 
-      console.log('✅ High-security signature entropy generated successfully', entropyHex.length, 'chars');
       return entropyHex;
     } else {
       throw new Error('WebAuthn authentication did not return a valid signature');
     }
   } catch (error) {
-    console.error('❌ Signature entropy generation failed:', error);
 
     // Provide more specific error messages
     if (error.name === 'NotAllowedError') {
@@ -291,17 +261,10 @@ const TokenImage = styled(Image)(({ theme }) => ({
 }));
 
 const StyledPopoverPaper = styled(Box)(({ theme }) => ({
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.default, 0.98)} 50%)`
-      : `linear-gradient(145deg, ${theme.palette.common.white} 0%, ${alpha(theme.palette.grey[50], 0.95)} 50%)`,
-  border: `1px solid ${theme.palette.mode === 'dark'
-    ? alpha(theme.palette.common.white, 0.05)
-    : alpha(theme.palette.common.black, 0.05)}`,
-  borderRadius: 24,
-  boxShadow: theme.palette.mode === 'dark'
-    ? `0 5px 60px ${alpha(theme.palette.common.black, 0.5)}`
-    : `0 5px 60px ${alpha(theme.palette.common.black, 0.1)}`,
+  background: '#000000',
+  border: 'none',
+  borderRadius: 16,
+  boxShadow: 'none',
   overflow: 'hidden',
   position: 'relative',
   '&::before': {
@@ -624,7 +587,6 @@ const WalletContent = ({
           {/* Add Wallet Button - only show for device wallets with less than 5 wallets */}
           {(() => {
             const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
-            console.log('Device wallets:', deviceWallets.length, 'Total profiles:', profiles.length);
             return deviceWallets.length > 0 && deviceWallets.length < 5;
           })() && (
             <Box
@@ -802,10 +764,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
       });
 
-      console.log('Syncing', uniqueProfiles.length, 'unique profiles to IndexedDB');
       await walletStorage.storeProfiles(uniqueProfiles);
     } catch (error) {
-      console.warn('Failed to sync profiles to IndexedDB:', error);
     }
   };
   const anchorRef = useRef(null);
@@ -966,18 +926,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Update profiles
       const allProfiles = [...profiles];
-      console.log('Registration - Existing profiles:', allProfiles.map(p => p.account));
       wallets.forEach(walletData => {
         const profile = { ...walletData, tokenCreatedAt: Date.now() };
         const exists = allProfiles.find(p => p.account === profile.account);
         if (!exists) {
-          console.log('Registration - Adding new profile:', profile.account);
           allProfiles.push(profile);
         } else {
-          console.log('Registration - Profile already exists:', profile.account);
         }
       });
-      console.log('Registration - Total profiles:', allProfiles.length);
 
       setProfiles(allProfiles);
       await syncProfilesToIndexedDB(allProfiles);
@@ -1001,9 +957,33 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setShowDeviceLogin(false);
       }, 500);
     } catch (err) {
-      console.error('Registration completion error:', err);
       setError('Failed to complete registration: ' + err.message);
       setStatus('idle');
+    }
+  };
+
+  // Social login handlers (to be implemented)
+  const handleGoogleLogin = async () => {
+    try {
+      openSnackbar('Google login integration coming soon', 'info');
+    } catch (error) {
+      openSnackbar('Google login failed: ' + error.message, 'error');
+    }
+  };
+
+  const handleXLogin = async () => {
+    try {
+      openSnackbar('X login integration coming soon', 'info');
+    } catch (error) {
+      openSnackbar('X login failed: ' + error.message, 'error');
+    }
+  };
+
+  const handleDiscordLogin = async () => {
+    try {
+      openSnackbar('Discord login integration coming soon', 'info');
+    } catch (error) {
+      openSnackbar('Discord login failed: ' + error.message, 'error');
     }
   };
 
@@ -1138,7 +1118,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       try {
         wallet = XRPLWallet.fromEntropy(entropy);
       } catch (walletErr) {
-        console.error('Failed to generate wallet from entropy:', walletErr);
         throw new Error(`Wallet generation failed: ${walletErr.message}`);
       }
 
@@ -1160,18 +1139,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Update profiles state
       const allProfiles = [...profiles];
-      console.log('Existing profiles before update:', allProfiles.map(p => p.account));
       wallets.forEach(walletData => {
         const profile = { ...walletData, tokenCreatedAt: Date.now() };
         const exists = allProfiles.find(p => p.account === profile.account);
         if (!exists) {
-          console.log('Adding new profile:', profile.account);
           allProfiles.push(profile);
         } else {
-          console.log('Profile already exists:', profile.account);
         }
       });
-      console.log('Total profiles after update:', allProfiles.length);
 
       setProfiles(allProfiles);
       await syncProfilesToIndexedDB(allProfiles);
@@ -1196,7 +1171,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setShowDeviceLogin(false);
       }, 500);
     } catch (err) {
-      console.error('Authentication completion error:', err);
       setError('Failed to complete authentication: ' + err.message);
       setStatus('idle');
     }
@@ -1266,7 +1240,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Handle non-200 responses (like 500 errors)
       if (!response.ok) {
-        console.warn(`Account info request failed for ${address}: ${response.status} ${response.statusText}`);
         return false;
       }
 
@@ -1277,38 +1250,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
       return false;
     } catch (err) {
-      console.warn(`Failed to check activity for account ${address}:`, err.message);
       return false;
     }
-  }, []);
-
-  // Suppress WebAuthn NotAllowedError in development
-  useEffect(() => {
-    const originalError = console.error;
-    console.error = (...args) => {
-      const firstArg = args[0];
-      const shouldSuppress = firstArg && (
-        (typeof firstArg === 'string' &&
-         firstArg.includes('NotAllowedError') &&
-         (firstArg.includes('webauthn') || firstArg.includes('WebAuthn'))) ||
-        (firstArg.name === 'NotAllowedError') ||
-        (firstArg.constructor?.name === 'WebAuthnError') ||
-        (args.some(arg =>
-          typeof arg === 'object' &&
-          arg &&
-          (arg.name === 'NotAllowedError' || arg.constructor?.name === 'WebAuthnError')
-        ))
-      );
-
-      if (shouldSuppress) {
-        return; // Suppress WebAuthn cancellation errors
-      }
-      originalError.apply(console, args);
-    };
-
-    return () => {
-      console.error = originalError;
-    };
   }, []);
 
   useEffect(() => {
@@ -1335,7 +1278,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
-      console.log(`🔍 Checking ${uncheckedAccounts.length} accounts...`);
 
       // Process in smaller batches to avoid rate limiting
       const batchSize = 3;
@@ -1365,7 +1307,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const duration = endTime - startTime;
       const totalActive = Object.values(newActivationStatus).filter(Boolean).length;
 
-      console.log(`✅ Checked ${uncheckedAccounts.length} accounts: ${totalActive}/${Object.keys(newActivationStatus).length} active (${duration.toFixed(0)}ms)`);
 
       setAccountsActivation(newActivationStatus);
       setIsCheckingActivation(false);
@@ -1382,25 +1323,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     if (existingSignatureEntropy) {
       // Reuse signature entropy from previous authentication
       signatureEntropy = existingSignatureEntropy;
-      console.log('🔐 Reusing signature entropy from authentication');
     } else if (existingSignatureEntropy === null) {
       // Registration case - create a mock signature entropy for deterministic generation
       signatureEntropy = 'registration-mock-entropy-' + deviceKeyId;
-      console.log('🔐 Using registration mock entropy for wallet generation');
     } else {
       // Generate signature entropy - required for secure wallet generation
-      console.log('🔐 Requesting user authentication for wallet generation...');
       signatureEntropy = await generateSignatureEntropy(deviceKeyId);
     }
 
-    console.log('🔐 Signature entropy result:', signatureEntropy ? 'SUCCESS' : 'FAILED');
-    console.log('🔐 Signature entropy length:', signatureEntropy ? signatureEntropy.length : 'N/A');
 
     if (!signatureEntropy) {
       throw new Error('WebAuthn authentication returned empty signature entropy');
     }
 
-    console.log('🔐 Enhanced security: Using signature-based entropy');
 
     // Generate only 1 wallet for performance
     const i = 0;
@@ -1509,7 +1444,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Only load profiles from IndexedDB on initial mount
         const storedProfiles = await walletStorage.getProfiles();
         if (storedProfiles.length > 0) {
-          console.log('IndexedDB has', storedProfiles.length, 'stored profiles');
 
           // Clear and set only unique profiles from IndexedDB
           const uniqueProfiles = [];
@@ -1522,11 +1456,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             }
           });
 
-          console.log('Setting', uniqueProfiles.length, 'unique profiles');
           setProfiles(uniqueProfiles);
         }
       } catch (error) {
-        console.warn('Failed to load from IndexedDB:', error);
         setHasPinWallet(false);
       }
     };
@@ -1742,7 +1674,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       );
 
       if (isWebAuthnCancelError && !errorHandled) {
-        console.log('Caught unhandled WebAuthn error in onerror:', error);
         errorHandled = true;
         setError('Registration cancelled. Please try again and allow the security prompt.');
         setStatus('idle');
@@ -1761,7 +1692,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       );
 
       if (isWebAuthnCancelError && !errorHandled) {
-        console.log('Caught unhandled WebAuthn error in unhandledrejection:', reason);
         errorHandled = true;
         setError('Registration cancelled. Please try again and allow the security prompt.');
         setStatus('idle');
@@ -1790,8 +1720,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userId = base64urlEncode(userIdBuffer);
       const challenge = base64urlEncode(challengeBuffer);
 
-      console.log('Starting WebAuthn registration with hostname:', window.location.hostname);
-      console.log('Available authenticators check result:', available);
 
       const registrationOptions = {
         rp: {
@@ -1820,7 +1748,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
       };
 
-      console.log('Registration options:', registrationOptions);
 
       let registrationResponse;
 
@@ -1830,13 +1757,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Immediately mark as handled to prevent global handlers from triggering
         errorHandled = true;
 
-        // Suppress console.error for user cancellation to reduce noise
         const isUserCancellation = error.name === 'NotAllowedError' ||
           error.constructor?.name === 'WebAuthnError' &&
           (error.message?.includes('NotAllowedError') || error.cause?.name === 'NotAllowedError');
 
         if (!isUserCancellation) {
-          console.error('WebAuthn registration error:', error);
         }
 
         // Check the error name property as documented
@@ -1879,7 +1804,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
     } catch (err) {
-      console.error('Registration error:', err);
       errorHandled = true; // Mark error as handled
 
       const errorName = err.name || err.cause?.name;
@@ -1946,7 +1870,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
     } catch (err) {
-      console.error('Authentication error:', err);
 
       const errorName = err.name || err.cause?.name;
       const errorMessage = err.message || err.cause?.message || '';
@@ -2122,7 +2045,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           hideBackdrop={true}
           sx={{
             '& .MuiDialog-paper': {
-              borderRadius: '16px',
+              borderRadius: '12px',
               maxWidth: '320px',
               minHeight: accountProfile ? 'auto' : 'auto',
               background: 'transparent',
@@ -2287,26 +2210,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             ) : (
               // WalletConnect Modal Content with full styling
               <Box sx={{
-                borderRadius: theme.general?.borderRadiusLg || '16px',
-                background: theme.walletDialog?.background ||
-                  (theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.85)} 50%)`
-                    : `linear-gradient(135deg, ${alpha('#FFFFFF', 0.95)} 0%, ${alpha('#FFFFFF', 0.85)} 50%)`),
-                border: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.15)}`,
-                boxShadow: theme.palette.mode === 'dark'
-                  ? `0 8px 32px ${alpha(theme.palette.common.black, 0.4)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
-                  : `0 8px 32px ${alpha(theme.palette.common.black, 0.15)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.8)}`,
+                borderRadius: '12px',
+                background: '#000000',
+                border: 'none',
+                boxShadow: 'none',
                 overflow: 'hidden'
               }}>
                 {/* Header */}
                 <Box sx={{
                   padding: theme.spacing(2, 2.5),
-                  background: theme.walletDialog?.backgroundSecondary ||
-                    (theme.palette.mode === 'dark'
-                      ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 50%)`
-                      : `linear-gradient(135deg, ${alpha(theme.palette.background.default, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 50%)`),
-                  borderBottom: `1px solid ${theme.walletDialog?.border || alpha(theme.palette.divider, 0.12)}`,
+                  background: 'transparent',
+                  borderBottom: 'none',
                   position: 'relative',
+                  '&::after': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: '2px',
+                    background: 'linear-gradient(90deg, transparent, #1976d2, transparent)'
+                  },
                   '&::before': {
                     content: '""',
                     position: 'absolute',
@@ -2321,130 +2245,192 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                       Connect Wallet
                     </Typography>
-                    <Button
+                    <Box
                       onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
                       sx={{
-                        backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                        borderRadius: theme.general?.borderRadiusSm || '8px',
+                        cursor: 'pointer',
+                        fontSize: '20px',
+                        lineHeight: 1,
+                        color: theme.palette.text.secondary,
                         '&:hover': {
-                          backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                          transform: 'scale(1.05)'
+                          color: theme.palette.text.primary
                         }
                       }}
                     >
                       ×
-                    </Button>
+                    </Box>
                   </Stack>
                 </Box>
 
                 {/* Content */}
                 <Box sx={{
                   padding: theme.spacing(2.5, 2.5, 1.5, 2.5),
-                  background: theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, transparent 50%)`
-                    : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, transparent 50%)`
+                  background: 'transparent'
                 }}>
                   {!showDeviceLogin && !showPinLogin && !showWalletInfo ? (
                     <>
-                      <Stack spacing={1.5} sx={{ mb: 0 }}>
-                        <Stack
-                          direction="row"
-                          spacing={2}
-                          alignItems="center"
-                          onClick={handleWalletConnect}
+                      {/* Primary Login Options */}
+                      <Stack direction="row" spacing={1.5} sx={{ mb: 2.5 }}>
+                        <Button
+                          variant="outlined"
+                          onClick={() => setShowDeviceLogin(true)}
                           sx={{
-                            padding: theme.spacing(1.8, 2.2),
-                            cursor: 'pointer',
-                            borderRadius: theme.general?.borderRadius || '12px',
-                            background: theme.palette.mode === 'dark'
-                              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 50%)`
-                              : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 50%)`,
-                            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            flex: 1,
+                            py: 2,
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            borderRadius: '16px',
+                            border: '1px solid',
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                            color: '#4285f4',
+                            backgroundColor: 'transparent',
                             '&:hover': {
-                              background: theme.palette.mode === 'dark'
-                                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 50%)`
-                                : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 50%)`,
-                              border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-                              transform: 'translateY(-2px) scale(1.02)',
-                              boxShadow: `0 8px 24px ${alpha(theme.palette.primary.main, 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+                              borderColor: '#4285f4',
+                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                              border: '1px solid #4285f4'
+                            },
+                            '&.MuiButton-root': {
+                              borderWidth: '1px'
                             }
                           }}
                         >
-                          <Box sx={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: theme.general?.borderRadiusSm || '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.light} 50%)`,
-                            color: 'white',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
-                          }}>
-                            <Typography sx={{ fontSize: '1.4rem' }}>🔐</Typography>
-                          </Box>
-                          <Stack sx={{ flexGrow: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                              Passkeys Login
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
-                              Passkeys Authentication
-                            </Typography>
-                          </Stack>
-                        </Stack>
+                          Passkeys
+                        </Button>
 
-                        <Stack
-                          direction="row"
-                          spacing={2}
-                          alignItems="center"
+                        <Button
+                          variant="outlined"
                           onClick={() => setShowPinLogin(true)}
                           sx={{
-                            padding: theme.spacing(1.8, 2.2),
-                            cursor: 'pointer',
-                            borderRadius: theme.general?.borderRadius || '12px',
-                            background: theme.palette.mode === 'dark'
-                              ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.5)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 50%)`
-                              : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 50%)`,
-                            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                            boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.1)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.05)}`,
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                            flex: 1,
+                            py: 2,
+                            fontSize: '1rem',
+                            fontWeight: 500,
+                            textTransform: 'none',
+                            borderRadius: '16px',
+                            border: '1px solid',
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                            color: '#4285f4',
+                            backgroundColor: 'transparent',
                             '&:hover': {
-                              background: theme.palette.mode === 'dark'
-                                ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.7)} 0%, ${alpha(theme.palette.background.paper, 0.5)} 50%)`
-                                : `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 50%)`,
-                              border: `1px solid ${alpha(theme.palette.secondary.main, 0.5)}`,
-                              transform: 'translateY(-2px) scale(1.02)',
-                              boxShadow: `0 8px 24px ${alpha(theme.palette.secondary.main, 0.2)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.1)}`
+                              borderColor: '#4285f4',
+                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                              border: '1px solid #4285f4'
+                            },
+                            '&.MuiButton-root': {
+                              borderWidth: '1px'
                             }
                           }}
                         >
-                          <Box sx={{
-                            width: '40px',
-                            height: '40px',
-                            borderRadius: theme.general?.borderRadiusSm || '8px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.light} 50%)`,
-                            color: 'white',
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
-                          }}>
-                            <Typography sx={{ fontSize: '1.4rem' }}>🔑</Typography>
-                          </Box>
-                          <Stack sx={{ flexGrow: 1 }}>
-                            <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                              PIN Login
-                            </Typography>
-                            <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
-                              Encrypted Storage
-                            </Typography>
-                          </Stack>
-                        </Stack>
+                          PIN
+                        </Button>
+                      </Stack>
 
+                      {/* Divider with Text */}
+                      <Box sx={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        mb: 2.5,
+                        position: 'relative'
+                      }}>
+                        <Box sx={{
+                          flex: 1,
+                          height: '1px',
+                          backgroundColor: alpha(theme.palette.divider, 0.15)
+                        }} />
+                        <Typography variant="body2" sx={{
+                          px: 2,
+                          color: alpha(theme.palette.text.secondary, 0.6),
+                          fontSize: '0.875rem',
+                          fontWeight: 400
+                        }}>
+                          Or continue with
+                        </Typography>
+                        <Box sx={{
+                          flex: 1,
+                          height: '1px',
+                          backgroundColor: alpha(theme.palette.divider, 0.15)
+                        }} />
+                      </Box>
+
+                      {/* Social Login Options */}
+                      <Stack spacing={1.2}>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={handleGoogleLogin}
+                          sx={{
+                            py: 1.8,
+                            fontSize: '0.95rem',
+                            fontWeight: 400,
+                            textTransform: 'none',
+                            borderRadius: '16px',
+                            border: '1px solid',
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                            color: '#4285f4',
+                            backgroundColor: 'transparent',
+                            '&:hover': {
+                              borderColor: '#4285f4',
+                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                              border: '1px solid #4285f4'
+                            },
+                            '&.MuiButton-root': {
+                              borderWidth: '1px'
+                            }
+                          }}
+                        >
+                          Login with Google
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={handleXLogin}
+                          sx={{
+                            py: 1.8,
+                            fontSize: '0.95rem',
+                            fontWeight: 400,
+                            textTransform: 'none',
+                            borderRadius: '16px',
+                            border: '1px solid',
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
+                            color: '#4285f4',
+                            backgroundColor: 'transparent',
+                            '&:hover': {
+                              borderColor: '#4285f4',
+                              backgroundColor: 'rgba(66, 133, 244, 0.04)',
+                              border: '1px solid #4285f4'
+                            },
+                            '&.MuiButton-root': {
+                              borderWidth: '1px'
+                            }
+                          }}
+                        >
+                          Login with X
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          disabled
+                          sx={{
+                            py: 1.8,
+                            fontSize: '0.95rem',
+                            fontWeight: 400,
+                            textTransform: 'none',
+                            borderRadius: '16px',
+                            border: '1px solid',
+                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+                            backgroundColor: 'transparent',
+                            '&.Mui-disabled': {
+                              borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
+                              color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                            }
+                          }}
+                        >
+                          Login with Discord (Coming Soon)
+                        </Button>
                       </Stack>
                     </>
                   ) : showPinLogin ? (
@@ -2681,7 +2667,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               transform: 'translateY(-1px)'
                             }
                           }}>
-                            <Typography sx={{ fontSize: 18, color: theme.palette.primary.main }}>🔐</Typography>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
                               Device
                             </Typography>
@@ -2712,7 +2697,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               transform: 'translateY(-1px)'
                             }
                           }}>
-                            <Typography sx={{ fontSize: 18, color: theme.palette.secondary.main }}>🔑</Typography>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
                               PIN
                             </Typography>
