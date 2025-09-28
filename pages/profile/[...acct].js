@@ -1,17 +1,8 @@
-import { Box, styled, Grid, Toolbar, Container, CircularProgress } from '@mui/material';
+import { Box, styled, Grid, Toolbar, Container, Typography } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import dynamic from 'next/dynamic';
 import { isValidClassicAddress } from 'ripple-address-codec';
-
-const Portfolio = dynamic(() => import('src/portfolio'), {
-  loading: () => (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-      <CircularProgress />
-    </Box>
-  )
-});
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -30,13 +21,11 @@ const OverView = ({ account, limit, collection, type, tab }) => {
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={3}>
           <Grid size={{ xs: 12 }}>
-            <Portfolio
-              account={account}
-              limit={limit}
-              collection={collection}
-              type={type}
-              tab={tab}
-            />
+            <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
+              <Typography variant="h6" color="textSecondary">
+                Portfolio feature has been removed
+              </Typography>
+            </Box>
           </Grid>
         </Grid>
       </Container>
