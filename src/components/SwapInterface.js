@@ -1590,7 +1590,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const getWalletTypeDisplay = (walletType) => {
     switch (walletType) {
       case 'device':
-        return 'Device Authentication';
+        return 'Passkeys Authentication';
       default:
         return 'Unknown';
     }

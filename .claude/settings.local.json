@@ -11,7 +11,8 @@
       "Bash(awk:*)",
       "Bash(ESLINT_USE_FLAT_CONFIG=false npx eslint src/collection/create.js --format=compact)",
       "Bash(find:*)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }

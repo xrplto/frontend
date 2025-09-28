@@ -17,7 +17,6 @@ import {
   Card,
   CardContent,
   Divider,
-  IconButton,
   Link,
   MenuItem,
   Dialog,
@@ -34,27 +33,11 @@ import {
 // import PhotoLibraryIcon from '@mui/icons-material/PhotoLibrary';
 // import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 // import AccountBoxIcon from '@mui/icons-material/AccountBox';
-import SettingsIcon from '@mui/icons-material/Settings';
 // import AssignmentReturnedIcon from '@mui/icons-material/AssignmentReturned';
 // import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 // import ImportExportIcon from '@mui/icons-material/ImportExport';
-import LogoutIcon from '@mui/icons-material/Logout';
-// import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CloseIcon from '@mui/icons-material/Close';
-import HelpIcon from '@mui/icons-material/Help';
-import { AccountBalanceWallet as AccountBalanceWalletIcon } from '@mui/icons-material';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import KeyIcon from '@mui/icons-material/Key';
-import WarningIcon from '@mui/icons-material/Warning';
-import SecurityIcon from '@mui/icons-material/Security';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import CircularProgress from '@mui/material/CircularProgress';
+// Icons removed - using text-based UI
 import Alert from '@mui/material/Alert';
-import BackupIcon from '@mui/icons-material/Backup';
-import PasswordIcon from '@mui/icons-material/Password';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 
@@ -266,6 +249,22 @@ const generateSignatureEntropy = async (credentialId) => {
 //   XRP: 'XRP'
 // };
 
+// PIN Input Field styling for 6 separate boxes
+const PinField = styled(TextField)(({ theme }) => ({
+  '& input': {
+    textAlign: 'center',
+    fontSize: '24px',
+    fontWeight: 'bold',
+    padding: '12px 0',
+    width: '48px',
+    height: '48px',
+  },
+  '& .MuiOutlinedInput-root': {
+    width: '48px',
+    height: '48px',
+  }
+}));
+
 const ActiveIndicator = styled(Box)(({ theme }) => ({
   width: 6,
   height: 6,
@@ -389,7 +388,16 @@ const WalletContent = ({
   onRemoveProfile,
   onBackupSeed,
   openSnackbar,
-  isEmbedded = false
+  isEmbedded = false,
+  accountProfile,
+  generateAdditionalWallet,
+  showAdditionalWalletPin,
+  setShowAdditionalWalletPin,
+  additionalWalletPin,
+  handleAdditionalPinChange,
+  handleAdditionalPinKeyDown,
+  handleAdditionalWalletPinSubmit,
+  additionalPinRefs
 }) => {
   return (
     <>
@@ -428,7 +436,7 @@ const WalletContent = ({
               text={accountLogin}
               onCopy={() => openSnackbar('Address copied!', 'success')}
             >
-              <IconButton
+              <Button
                 size="small"
                 sx={{
                   p: 0.5,
@@ -438,12 +446,12 @@ const WalletContent = ({
                   }
                 }}
               >
-                <ContentCopyIcon sx={{ fontSize: isEmbedded ? 12 : 14 }} />
-              </IconButton>
+                Copy
+              </Button>
             </CopyToClipboard>
           </Stack>
           <Stack direction="row" spacing={0.5}>
-            <IconButton
+            <Button
               size="small"
               onClick={onBackupSeed}
               sx={{
@@ -455,11 +463,11 @@ const WalletContent = ({
               }}
               title="Backup Seed"
             >
-              <BackupIcon sx={{ fontSize: 14 }} />
-            </IconButton>
-            <IconButton size="small" onClick={onClose}>
-              <CloseIcon sx={{ fontSize: 16 }} />
-            </IconButton>
+              Backup
+            </Button>
+            <Button size="small" onClick={onClose}>
+              ×
+            </Button>
           </Stack>
         </Stack>
       </Box>
@@ -599,7 +607,7 @@ const WalletContent = ({
                       {truncateAccount(account, 8)}
                     </Typography>
                   </Stack>
-                  <IconButton
+                  <Button
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -607,11 +615,139 @@ const WalletContent = ({
                     }}
                     sx={{ opacity: isEmbedded ? 0.3 : 0.5, '&:hover': { opacity: 1 } }}
                   >
-                    <CloseIcon sx={{ fontSize: isEmbedded ? 12 : 14 }} />
-                  </IconButton>
+                    ×
+                  </Button>
                 </Box>
               );
             })}
+
+          {/* Add Wallet Button - only show for device wallets with less than 5 wallets */}
+          {(() => {
+            const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
+            console.log('Device wallets:', deviceWallets.length, 'Total profiles:', profiles.length);
+            return deviceWallets.length > 0 && deviceWallets.length < 5;
+          })() && (
+            <Box
+              onClick={generateAdditionalWallet}
+              sx={{
+                px: 2,
+                py: isEmbedded ? 1 : 1.2,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s',
+                borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                '&:hover': {
+                  background: alpha(theme.palette.primary.main, 0.05)
+                }
+              }}
+            >
+              <Typography sx={{
+                fontSize: isEmbedded ? '0.75rem' : '0.8rem',
+                color: theme.palette.primary.main,
+                fontWeight: 600
+              }}>
+                + Generate Wallet ({profiles.filter(p => p.wallet_type === 'device').length}/5)
+              </Typography>
+            </Box>
+          )}
+        </Box>
+      )}
+
+      {/* PIN Input for Additional Wallet Generation */}
+      {showAdditionalWalletPin && (
+        <Box sx={{
+          p: 2,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          background: alpha(theme.palette.primary.main, 0.02)
+        }}>
+          <Typography variant="body2" sx={{ mb: 2, fontWeight: 500, textAlign: 'center' }}>
+            Enter your 6-digit PIN to generate wallet #{profiles.filter(p => p.wallet_type === 'device').length + 1}
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
+            {additionalWalletPin.map((value, index) => (
+              <TextField
+                key={index}
+                inputRef={el => additionalPinRefs.current[index] = el}
+                value={value}
+                onChange={(e) => handleAdditionalPinChange(index, e.target.value)}
+                onKeyDown={(e) => handleAdditionalPinKeyDown(index, e)}
+                type="text"
+                inputProps={{
+                  maxLength: 1,
+                  autoComplete: 'off',
+                  inputMode: 'numeric',
+                  pattern: '[0-9]*'
+                }}
+                sx={{
+                  width: 40,
+                  '& .MuiInputBase-input': {
+                    textAlign: 'center',
+                    fontSize: '1.2rem',
+                    fontWeight: 600,
+                    padding: '8px 4px'
+                  }
+                }}
+                variant="outlined"
+                autoFocus={index === 0}
+              />
+            ))}
+          </Box>
+          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                setShowAdditionalWalletPin(false);
+                additionalWalletPin.forEach((_, i) => additionalWalletPin[i] = '');
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={handleAdditionalWalletPinSubmit}
+              disabled={additionalWalletPin.some(p => !p)}
+            >
+              Generate
+            </Button>
+          </Box>
+        </Box>
+      )}
+
+      {/* Add Wallet Button - show for logged in device wallet users */}
+      {accountProfile && !showAdditionalWalletPin && (() => {
+        const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
+        return deviceWallets.length > 0 && deviceWallets.length < 5;
+      })() && (
+        <Box
+          onClick={generateAdditionalWallet}
+          sx={{
+            mx: 1.5,
+            mb: 1,
+            py: 1,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+            borderRadius: '6px',
+            transition: 'all 0.2s',
+            '&:hover': {
+              background: alpha(theme.palette.primary.main, 0.05),
+              borderColor: theme.palette.primary.main
+            }
+          }}
+        >
+          <Typography sx={{
+            fontSize: '0.8rem',
+            color: theme.palette.primary.main,
+            fontWeight: 600
+          }}>
+            + Generate Additional Wallet ({profiles.filter(p => p.wallet_type === 'device').length}/5)
+          </Typography>
         </Box>
       )}
 
@@ -640,8 +776,7 @@ const WalletContent = ({
             }
           }}
         >
-          <LogoutIcon sx={{ fontSize: isEmbedded ? 14 : 16, mr: isEmbedded ? 0 : 0.5 }} />
-          {!isEmbedded && 'Logout'}
+                    {!isEmbedded && 'Logout'}
         </Button>
       </Box>
     </>
@@ -656,7 +791,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Helper to sync profiles to IndexedDB
   const syncProfilesToIndexedDB = async (profilesArray) => {
     try {
-      await walletStorage.storeProfiles(profilesArray);
+      // Remove duplicates before storing
+      const uniqueProfiles = [];
+      const seen = new Set();
+
+      profilesArray.forEach(profile => {
+        if (!seen.has(profile.account)) {
+          seen.add(profile.account);
+          uniqueProfiles.push(profile);
+        }
+      });
+
+      console.log('Syncing', uniqueProfiles.length, 'unique profiles to IndexedDB');
+      await walletStorage.storeProfiles(uniqueProfiles);
     } catch (error) {
       console.warn('Failed to sync profiles to IndexedDB:', error);
     }
@@ -671,6 +818,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showDeviceLogin, setShowDeviceLogin] = useState(false);
   const [status, setStatus] = useState('idle');
+  const [showDevicePinInput, setShowDevicePinInput] = useState(false);
+  const [devicePin, setDevicePin] = useState(['', '', '', '', '', '']);
+  const [devicePinMode, setDevicePinMode] = useState('create'); // 'create' or 'verify'
+  const [pendingDeviceId, setPendingDeviceId] = useState(null);
+  const devicePinRefs = useRef([]);
   const [error, setError] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
   const [isLoadingDeps, setIsLoadingDeps] = useState(false);
@@ -678,15 +830,377 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
 
+  // Additional wallet generation states
+  const [showAdditionalWalletPin, setShowAdditionalWalletPin] = useState(false);
+  const [additionalWalletPin, setAdditionalWalletPin] = useState(['', '', '', '', '', '']);
+  const additionalPinRefs = useRef([]);
+
   // PIN-based wallet states
   const [showPinLogin, setShowPinLogin] = useState(false);
   const [showWalletInfo, setShowWalletInfo] = useState(false);
-  const [pin, setPin] = useState('');
-  const [confirmPin, setConfirmPin] = useState('');
+  const [pinBoxes, setPinBoxes] = useState(['', '', '', '', '', '']);
+  const [confirmPinBoxes, setConfirmPinBoxes] = useState(['', '', '', '', '', '']);
+  const pinRefs = useRef([]);
+  const confirmPinRefs = useRef([]);
+  // Keep these for backward compatibility with existing logic
+  const pin = pinBoxes.join('');
+  const confirmPin = confirmPinBoxes.join('');
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [pinError, setPinError] = useState('');
   const [walletStorage] = useState(new EncryptedWalletStorage());
   const [hasPinWallet, setHasPinWallet] = useState(false);
+
+  // PIN box handlers
+  const handlePinChange = (index, value, isConfirm = false) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const boxes = isConfirm ? [...confirmPinBoxes] : [...pinBoxes];
+    const refs = isConfirm ? confirmPinRefs : pinRefs;
+    const setBoxes = isConfirm ? setConfirmPinBoxes : setPinBoxes;
+
+    boxes[index] = value.slice(-1);
+    setBoxes(boxes);
+
+    if (value && index < 5) {
+      refs.current[index + 1]?.focus();
+    }
+    setPinError(''); // Clear error when typing
+  };
+
+  const handlePinKeyDown = (index, e, isConfirm = false) => {
+    const boxes = isConfirm ? confirmPinBoxes : pinBoxes;
+    const refs = isConfirm ? confirmPinRefs : pinRefs;
+
+    if (e.key === 'Backspace' && !boxes[index] && index > 0) {
+      refs.current[index - 1]?.focus();
+    } else if (e.key === 'Enter' && boxes.every(b => b)) {
+      if (hasPinWallet) {
+        handlePinLogin();
+      } else if (!isConfirm && confirmPinBoxes.every(b => b)) {
+        handlePinCreate();
+      }
+    }
+  };
+
+  // Device PIN handlers
+  const handleDevicePinChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const boxes = [...devicePin];
+    boxes[index] = value.slice(-1);
+    setDevicePin(boxes);
+
+    if (value && index < 5) {
+      devicePinRefs.current[index + 1]?.focus();
+    }
+    setError(''); // Clear error when typing
+  };
+
+  const handleDevicePinKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !devicePin[index] && index > 0) {
+      devicePinRefs.current[index - 1]?.focus();
+    } else if (e.key === 'Enter' && devicePin.every(b => b)) {
+      handleDevicePinSubmit();
+    }
+  };
+
+  const handleDevicePinSubmit = async () => {
+    const pin = devicePin.join('');
+    if (pin.length !== 6) {
+      setError('Please enter all 6 digits');
+      return;
+    }
+
+    setShowDevicePinInput(false);
+    setDevicePin(['', '', '', '', '', '']);
+
+    if (devicePinMode === 'create' && pendingDeviceId) {
+      await completeDeviceRegistration(pendingDeviceId, pin);
+    } else if (devicePinMode === 'verify' && pendingDeviceId) {
+      await completeDeviceAuthentication(pendingDeviceId, pin);
+    }
+  };
+
+  const completeDeviceRegistration = async (deviceId, userPin) => {
+    try {
+      // Store the PIN encrypted for future use
+      await walletStorage.storeWalletCredential(deviceId, userPin);
+
+      // Generate only 1 wallet initially for performance
+      const wallets = [];
+      const i = 0; // Generate only the first wallet
+
+      // Use PBKDF2 to generate wallet with PIN
+      const entropyString = `xrpl-passkey-${deviceId}-${userPin}-${i}`;
+      // Use lower iterations since passkey already provides hardware security
+      // 10,000 iterations provides reasonable additional entropy without blocking UI
+      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${deviceId}`, {
+        keySize: 256/32,
+        iterations: 10000,
+        hasher: CryptoJS.algo.SHA512
+      }).toString();
+
+      // Convert hash to entropy array (32 bytes)
+      const entropy = [];
+      for (let j = 0; j < 32; j++) {
+        entropy.push(parseInt(seedHash.substr(j * 2, 2), 16));
+      }
+      const wallet = XRPLWallet.fromEntropy(entropy);
+
+      const walletData = {
+        deviceKeyId: deviceId,
+        accountIndex: i,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
+
+      wallets.push(walletData);
+
+      // Store wallet encrypted in IndexedDB
+      await walletStorage.storeWallet(walletData, userPin);
+
+      // Update profiles
+      const allProfiles = [...profiles];
+      console.log('Registration - Existing profiles:', allProfiles.map(p => p.account));
+      wallets.forEach(walletData => {
+        const profile = { ...walletData, tokenCreatedAt: Date.now() };
+        const exists = allProfiles.find(p => p.account === profile.account);
+        if (!exists) {
+          console.log('Registration - Adding new profile:', profile.account);
+          allProfiles.push(profile);
+        } else {
+          console.log('Registration - Profile already exists:', profile.account);
+        }
+      });
+      console.log('Registration - Total profiles:', allProfiles.length);
+
+      setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
+
+      // Store first wallet info for display
+      setWalletInfo({
+        address: wallets[0].address,
+        publicKey: wallets[0].publicKey,
+        deviceKeyId: deviceId,
+        totalWallets: wallets.length
+      });
+
+      // Login with first wallet
+      doLogIn(wallets[0], allProfiles);
+      setStatus('success');
+
+      // Close modal after brief delay to show success
+      setTimeout(() => {
+        setOpenWalletModal(false);
+        setStatus('idle');
+        setShowDeviceLogin(false);
+      }, 500);
+    } catch (err) {
+      console.error('Registration completion error:', err);
+      setError('Failed to complete registration: ' + err.message);
+      setStatus('idle');
+    }
+  };
+
+  const generateAdditionalWallet = async () => {
+    try {
+      const existingProfiles = profiles.filter(p => p.wallet_type === 'device');
+      const deviceId = existingProfiles[0]?.deviceKeyId;
+
+      if (!deviceId) {
+        openSnackbar('No device wallet found', 'error');
+        return;
+      }
+
+      const nextIndex = existingProfiles.length;
+      if (nextIndex >= 5) {
+        openSnackbar('Maximum 5 wallets reached', 'info');
+        return;
+      }
+
+      // Show inline PIN input
+      setShowAdditionalWalletPin(true);
+      setAdditionalWalletPin(['', '', '', '', '', '']);
+      return;
+    } catch (err) {
+      openSnackbar('Failed to generate additional wallet: ' + err.message, 'error');
+    }
+  };
+
+  const handleAdditionalWalletPinSubmit = async () => {
+    try {
+      const userPin = additionalWalletPin.join('');
+      if (userPin.length !== 6) {
+        openSnackbar('Please enter all 6 digits', 'error');
+        return;
+      }
+
+      // Ensure CryptoJS is loaded
+      await loadDependencies();
+
+      const existingProfiles = profiles.filter(p => p.wallet_type === 'device');
+      const deviceId = existingProfiles[0]?.deviceKeyId;
+      const nextIndex = existingProfiles.length;
+
+      // Generate next wallet
+      const entropyString = `xrpl-passkey-${deviceId}-${userPin}-${nextIndex}`;
+      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${deviceId}`, {
+        keySize: 256/32,
+        iterations: 10000,
+        hasher: CryptoJS.algo.SHA512
+      }).toString();
+
+      const entropy = [];
+      for (let j = 0; j < 32; j++) {
+        entropy.push(parseInt(seedHash.substr(j * 2, 2), 16));
+      }
+      const wallet = XRPLWallet.fromEntropy(entropy);
+
+      const newWallet = {
+        deviceKeyId: deviceId,
+        accountIndex: nextIndex,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now()
+      };
+
+      // Add to profiles
+      const allProfiles = [...profiles, newWallet];
+      setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
+
+      openSnackbar(`Wallet ${nextIndex + 1} generated: ${wallet.address.slice(0, 8)}...`, 'success');
+
+      // Hide PIN input and reset
+      setShowAdditionalWalletPin(false);
+      setAdditionalWalletPin(['', '', '', '', '', '']);
+    } catch (err) {
+      openSnackbar('Failed to generate additional wallet: ' + err.message, 'error');
+    }
+  };
+
+  const handleAdditionalPinChange = (index, value) => {
+    if (!/^\d*$/.test(value)) return;
+
+    const boxes = [...additionalWalletPin];
+    boxes[index] = value.slice(-1);
+    setAdditionalWalletPin(boxes);
+
+    if (value && index < 5) {
+      additionalPinRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleAdditionalPinKeyDown = (index, e) => {
+    if (e.key === 'Backspace' && !additionalWalletPin[index] && index > 0) {
+      additionalPinRefs.current[index - 1]?.focus();
+    } else if (e.key === 'Enter' && additionalWalletPin.every(b => b)) {
+      handleAdditionalWalletPinSubmit();
+    }
+  };
+
+  const completeDeviceAuthentication = async (deviceId, userPin) => {
+    try {
+      setStatus('discovering');
+
+      // Store for future use
+      await walletStorage.storeWalletCredential(deviceId, userPin);
+
+      // Generate only 1 wallet initially for performance
+      const wallets = [];
+      const i = 0; // Generate only the first wallet
+
+      // Use PBKDF2 to generate wallet with PIN
+      const entropyString = `xrpl-passkey-${deviceId}-${userPin}-${i}`;
+      // Use lower iterations since passkey already provides hardware security
+      // 10,000 iterations provides reasonable additional entropy without blocking UI
+      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${deviceId}`, {
+        keySize: 256/32,
+        iterations: 10000,
+        hasher: CryptoJS.algo.SHA512
+      }).toString();
+
+      // Convert hash to entropy array (32 bytes)
+      const entropy = [];
+      for (let j = 0; j < 32; j++) {
+        entropy.push(parseInt(seedHash.substr(j * 2, 2), 16));
+      }
+
+      let wallet;
+      try {
+        wallet = XRPLWallet.fromEntropy(entropy);
+      } catch (walletErr) {
+        console.error('Failed to generate wallet from entropy:', walletErr);
+        throw new Error(`Wallet generation failed: ${walletErr.message}`);
+      }
+
+      wallets.push({
+        deviceKeyId: deviceId,
+        accountIndex: i,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now()
+      })
+
+      // Check if any of these wallets already exist in profiles
+      const existingWallet = profiles.find(p =>
+        wallets.some(w => w.account === p.account)
+      );
+
+      // Update profiles state
+      const allProfiles = [...profiles];
+      console.log('Existing profiles before update:', allProfiles.map(p => p.account));
+      wallets.forEach(walletData => {
+        const profile = { ...walletData, tokenCreatedAt: Date.now() };
+        const exists = allProfiles.find(p => p.account === profile.account);
+        if (!exists) {
+          console.log('Adding new profile:', profile.account);
+          allProfiles.push(profile);
+        } else {
+          console.log('Profile already exists:', profile.account);
+        }
+      });
+      console.log('Total profiles after update:', allProfiles.length);
+
+      setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
+
+      // Set wallet info for success message
+      setWalletInfo({
+        address: wallets[0].address,
+        publicKey: wallets[0].publicKey,
+        deviceKeyId: deviceId,
+        isAdditional: existingWallet !== undefined,
+        totalWallets: wallets.length
+      });
+
+      // Login with first wallet
+      doLogIn(wallets[0], allProfiles);
+      setStatus('success');
+
+      // Close modal after brief delay to show success
+      setTimeout(() => {
+        setOpenWalletModal(false);
+        setStatus('idle');
+        setShowDeviceLogin(false);
+      }, 500);
+    } catch (err) {
+      console.error('Authentication completion error:', err);
+      setError('Failed to complete authentication: ' + err.message);
+      setStatus('idle');
+    }
+  };
   const {
     setActiveProfile,
     accountProfile,
@@ -888,21 +1402,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     console.log('🔐 Enhanced security: Using signature-based entropy');
 
-    for (let i = 0; i < 5; i++) {
-      const wallet = await generateSecureDeterministicWallet(deviceKeyId, i, signatureEntropy);
-      const walletData = {
-        deviceKeyId,
-        accountIndex: i,
-        account: wallet.address,  // AppContext expects 'account' field
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        seed: wallet.seed, // Store the seed for backup purposes
-        wallet_type: 'device',
-        xrp: '0',
-        createdAt: Date.now()
-      };
-      wallets.push(walletData);
-    }
+    // Generate only 1 wallet for performance
+    const i = 0;
+    const wallet = await generateSecureDeterministicWallet(deviceKeyId, i, signatureEntropy);
+    const walletData = {
+      deviceKeyId,
+      accountIndex: i,
+      account: wallet.address,  // AppContext expects 'account' field
+      address: wallet.address,
+      publicKey: wallet.publicKey,
+      seed: wallet.seed, // Store the seed for backup purposes
+      wallet_type: 'device',
+      xrp: '0',
+      createdAt: Date.now()
+    };
+    wallets.push(walletData);
     return wallets;
   };
 
@@ -978,8 +1492,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setStatus('idle');
     setError('');
     setWalletInfo(null);
-    setPin('');
-    setConfirmPin('');
+    setPinBoxes(['', '', '', '', '', '']);
+    setConfirmPinBoxes(['', '', '', '', '', '']);
     setPinError('');
     setIsCreatingWallet(false);
   };
@@ -992,10 +1506,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const exists = await walletStorage.hasWallet();
         setHasPinWallet(exists);
 
-        // Load profiles from IndexedDB
+        // Only load profiles from IndexedDB on initial mount
         const storedProfiles = await walletStorage.getProfiles();
         if (storedProfiles.length > 0) {
-          setProfiles(storedProfiles);
+          console.log('IndexedDB has', storedProfiles.length, 'stored profiles');
+
+          // Clear and set only unique profiles from IndexedDB
+          const uniqueProfiles = [];
+          const seen = new Set();
+
+          storedProfiles.forEach(profile => {
+            if (!seen.has(profile.account)) {
+              seen.add(profile.account);
+              uniqueProfiles.push(profile);
+            }
+          });
+
+          console.log('Setting', uniqueProfiles.length, 'unique profiles');
+          setProfiles(uniqueProfiles);
         }
       } catch (error) {
         console.warn('Failed to load from IndexedDB:', error);
@@ -1003,7 +1531,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
     };
     initializeStorage();
-  }, [walletStorage, setProfiles]);
+  }, []); // Only run once on mount
 
   const handlePinLogin = async () => {
     if (!pin) {
@@ -1053,11 +1581,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       doLogIn(profile, allProfiles);
-      openSnackbar(`PIN login successful - ${wallets.length} wallets accessed`, 'success');
+      openSnackbar(`PIN login successful`, 'success');
       setOpenWalletModal(false);
       setShowPinLogin(false);
       setStatus('idle');
-      setPin('');
+      setPinBoxes(['', '', '', '', '', '']);
     } catch (error) {
       setPinError(error.message);
       setStatus('idle');
@@ -1120,11 +1648,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       doLogIn(profile, allProfiles);
-      openSnackbar(`5 PIN wallets created successfully`, 'success');
+      openSnackbar(`PIN wallet created successfully`, 'success');
       setOpenWalletModal(false);
       setShowPinLogin(false);
       setStatus('idle');
-      setPin('');
+      setPinBoxes(['', '', '', '', '', '']);
       setConfirmPin('');
       setIsCreatingWallet(false);
       setHasPinWallet(true);
@@ -1186,7 +1714,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       openSnackbar('Wallet successfully migrated to PIN storage', 'success');
       setShowPinLogin(false);
-      setPin('');
+      setPinBoxes(['', '', '', '', '', '']);
       setConfirmPin('');
       setIsCreatingWallet(false);
       setHasPinWallet(true);
@@ -1343,45 +1871,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (registrationResponse.id) {
-        // For registration, we don't have signature entropy, so generate wallets without it
-        const signatureEntropy = null; // Registration doesn't provide signature entropy
-
-        // Generate the standard 5 wallets deterministically
-        const wallets = await generateWalletsFromDeviceKey(registrationResponse.id, signatureEntropy);
-
-        // Update profiles in context only (no localStorage duplication)
-
-        // Update profiles state first
-        const allProfiles = [...profiles];
-        wallets.forEach(walletData => {
-          const profile = { ...walletData, tokenCreatedAt: Date.now() };
-          if (!allProfiles.find(p => p.account === profile.account)) {
-            allProfiles.push(profile);
-          }
-        });
-
-        // Set profiles context to the updated list so doLogIn can use it
-        setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-        // Store first wallet info for display
-        setWalletInfo({
-          address: wallets[0].address,
-          publicKey: wallets[0].publicKey,
-          deviceKeyId: registrationResponse.id,
-          totalWallets: wallets.length
-        });
-
-        // Login with first wallet - pass the updated profiles
-        doLogIn(wallets[0], allProfiles);
-        setStatus('success');
-
-        // Close modal after brief delay to show success
-        setTimeout(() => {
-          setOpenWalletModal(false);
-          setStatus('idle');
-          setShowDeviceLogin(false);
-        }, 500);
+        // Show inline PIN input instead of browser prompt
+        setPendingDeviceId(registrationResponse.id);
+        setDevicePinMode('create');
+        setShowDevicePinInput(true);
+        setStatus('idle');
+        return;
       }
     } catch (err) {
       console.error('Registration error:', err);
@@ -1443,51 +1938,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (authResponse.id) {
-        setStatus('discovering');
-
-        // Extract signature entropy from the authentication response to avoid double prompts
-        const signatureEntropy = extractSignatureEntropy(authResponse);
-
-        // Always generate the same 5 wallets deterministically
-        const wallets = await generateWalletsFromDeviceKey(authResponse.id, signatureEntropy);
-
-        // Check if any of these wallets already exist in profiles
-        const existingWallet = profiles.find(p =>
-          wallets.some(w => w.account === p.account)
-        );
-
-        // Update profiles state first
-        const allProfiles = [...profiles];
-        wallets.forEach(walletData => {
-          const profile = { ...walletData, tokenCreatedAt: Date.now() };
-          if (!allProfiles.find(p => p.account === profile.account)) {
-            allProfiles.push(profile);
-          }
-        });
-
-        // Set profiles context to the updated list so doLogIn can use it
-        setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-        // Set wallet info for success message
-        setWalletInfo({
-          address: wallets[0].address,
-          publicKey: wallets[0].publicKey,
-          deviceKeyId: authResponse.id,
-          isAdditional: existingWallet !== undefined,
-          totalWallets: wallets.length
-        });
-
-        // Login with first wallet - pass the updated profiles
-        doLogIn(wallets[0], allProfiles);
-        setStatus('success');
-
-        // Close modal after brief delay to show success
-        setTimeout(() => {
-          setOpenWalletModal(false);
-          setStatus('idle');
-          setShowDeviceLogin(false);
-        }, 500);
+        // Always ask for PIN on authentication for security
+        setPendingDeviceId(authResponse.id);
+        setDevicePinMode('verify');
+        setShowDevicePinInput(true);
+        setStatus('idle');
+        return;
       }
     } catch (err) {
       console.error('Authentication error:', err);
@@ -1528,7 +1984,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Extract signature entropy from the authentication response to avoid double prompts
         const signatureEntropy = extractSignatureEntropy(authResponse);
 
-        // Always generate the same 5 wallets deterministically
+        // Generate wallet deterministically
         const wallets = await generateWalletsFromDeviceKey(authResponse.id, signatureEntropy);
 
         // Check if any of these wallets already exist in profiles
@@ -1657,6 +2113,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             setError('');
             setWalletInfo(null);
           }}
+          disableScrollLock={true}
           maxWidth="sm"
           fullWidth
           disableEnforceFocus
@@ -1724,6 +2181,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     onRemoveProfile={removeProfile}
                     onBackupSeed={handleBackupSeed}
                     openSnackbar={openSnackbar}
+                    accountProfile={accountProfile}
+                    generateAdditionalWallet={generateAdditionalWallet}
+                    showAdditionalWalletPin={showAdditionalWalletPin}
+                    setShowAdditionalWalletPin={setShowAdditionalWalletPin}
+                    additionalWalletPin={additionalWalletPin}
+                    handleAdditionalPinChange={handleAdditionalPinChange}
+                    handleAdditionalPinKeyDown={handleAdditionalPinKeyDown}
+                    handleAdditionalWalletPinSubmit={handleAdditionalWalletPinSubmit}
+                    additionalPinRefs={additionalPinRefs}
                     isEmbedded={false}
                   />
                 ) : (
@@ -1731,17 +2197,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     <Stack spacing={2}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                         <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <BackupIcon sx={{ color: theme.palette.warning.main }} />
+                          <Typography sx={{ color: theme.palette.warning.main }}>Backup</Typography>
                           {accountProfile?.wallet_type === 'device' ? 'Backup Private Key' : 'Backup Seed Phrase'}
                         </Typography>
-                        <IconButton size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); setSeedBlurred(true); }}>
-                          <CloseIcon sx={{ fontSize: 16 }} />
-                        </IconButton>
+                        <Button size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); setSeedBlurred(true); }}>
+                          ×
+                        </Button>
                       </Box>
 
                       {seedAuthStatus === 'authenticating' && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
-                          <CircularProgress size={20} />
+                          <Typography>Loading...</Typography>
                           <Typography>Authenticating with passkey...</Typography>
                         </Box>
                       )}
@@ -1787,7 +2253,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-start' }}>
                             <Button
                               variant="outlined"
-                              startIcon={seedBlurred ? <VisibilityIcon /> : <VisibilityOffIcon />}
                               size="small"
                               onClick={() => setSeedBlurred(!seedBlurred)}
                             >
@@ -1801,7 +2266,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             >
                               <Button
                                 variant="outlined"
-                                startIcon={<ContentCopyIcon />}
                                 size="small"
                               >
                                 Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
@@ -1857,7 +2321,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                       Connect Wallet
                     </Typography>
-                    <IconButton
+                    <Button
                       onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
                       sx={{
                         backgroundColor: alpha(theme.palette.background.paper, 0.6),
@@ -1870,8 +2334,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         }
                       }}
                     >
-                      <CloseIcon sx={{ fontSize: 14 }} />
-                    </IconButton>
+                      ×
+                    </Button>
                   </Stack>
                 </Box>
 
@@ -1884,9 +2348,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 }}>
                   {!showDeviceLogin && !showPinLogin && !showWalletInfo ? (
                     <>
-                      <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 2 }}>
-                        Choose a wallet to connect to the XRPL network
-                      </Typography>
                       <Stack spacing={1.5} sx={{ mb: 0 }}>
                         <Stack
                           direction="row"
@@ -1924,14 +2385,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             color: 'white',
                             boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
                           }}>
-                            <SecurityIcon sx={{ fontSize: '1.4rem' }} />
+                            <Typography sx={{ fontSize: '1.4rem' }}>🔐</Typography>
                           </Box>
                           <Stack sx={{ flexGrow: 1 }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
-                              Device Login
+                              Passkeys Login
                             </Typography>
                             <Typography variant="body2" sx={{ color: theme.palette.text.secondary, fontSize: '0.8rem' }}>
-                              Device Authentication
+                              Passkeys Authentication
                             </Typography>
                           </Stack>
                         </Stack>
@@ -1972,7 +2433,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             color: 'white',
                             boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.3)}, inset 0 1px 0 ${alpha(theme.palette.common.white, 0.2)}`
                           }}>
-                            <PasswordIcon sx={{ fontSize: '1.4rem' }} />
+                            <Typography sx={{ fontSize: '1.4rem' }}>🔑</Typography>
                           </Box>
                           <Stack sx={{ flexGrow: 1 }}>
                             <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
@@ -1984,30 +2445,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           </Stack>
                         </Stack>
 
-                        {/* Info Button */}
-                        <Box sx={{ mt: 2, display: 'flex', justifyContent: 'center' }}>
-                          <Button
-                            onClick={() => setShowWalletInfo(true)}
-                            variant="outlined"
-                            size="small"
-                            startIcon={<HelpIcon />}
-                            sx={{
-                              borderColor: alpha(theme.palette.info.main, 0.3),
-                              color: theme.palette.info.main,
-                              fontSize: '0.75rem',
-                              py: 0.8,
-                              px: 2,
-                              borderRadius: 2,
-                              '&:hover': {
-                                borderColor: theme.palette.info.main,
-                                backgroundColor: alpha(theme.palette.info.main, 0.08),
-                                transform: 'translateY(-1px)'
-                              }
-                            }}
-                          >
-                            Compare Options
-                          </Button>
-                        </Box>
                       </Stack>
                     </>
                   ) : showPinLogin ? (
@@ -2022,7 +2459,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         borderRadius: 2,
                         border: `1px solid ${alpha(theme.palette.secondary.main, 0.12)}`
                       }}>
-                        <IconButton
+                        <Button
                           onClick={handleGoBack}
                           sx={{
                             mr: 1.5,
@@ -2036,12 +2473,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          <ArrowBackIcon />
-                        </IconButton>
+                          ← Back
+                        </Button>
                         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.secondary.main, fontSize: '1rem' }}>
                           PIN Authentication
                         </Typography>
-                        <PasswordIcon sx={{ fontSize: 20, color: theme.palette.secondary.main, opacity: 0.7, ml: 'auto' }} />
                       </Box>
 
                       {pinError && (
@@ -2051,70 +2487,57 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       )}
 
                       <Stack spacing={2}>
-                        <TextField
-                          type="password"
-                          label="6-Digit PIN"
-                          value={pin}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                            setPin(value);
-                          }}
-                          fullWidth
-                          variant="outlined"
-                          placeholder="Enter 6 digits"
-                          inputProps={{
-                            maxLength: 6,
-                            pattern: '[0-9]*',
-                            inputMode: 'numeric'
-                          }}
-                          InputProps={{
-                            startAdornment: (
-                              <InputAdornment position="start">
-                                <PasswordIcon sx={{ color: theme.palette.secondary.main }} />
-                              </InputAdornment>
-                            ),
-                          }}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter' && pin.length === 6) {
-                              if (hasPinWallet) {
-                                handlePinLogin();
-                              } else {
-                                handlePinCreate();
-                              }
-                            }
-                          }}
-                        />
+                        <Box>
+                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                            6-Digit PIN
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                            {pinBoxes.map((value, index) => (
+                              <PinField
+                                key={index}
+                                inputRef={el => pinRefs.current[index] = el}
+                                value={value}
+                                onChange={(e) => handlePinChange(index, e.target.value)}
+                                onKeyDown={(e) => handlePinKeyDown(index, e)}
+                                type="text"
+                                inputProps={{
+                                  maxLength: 1,
+                                  autoComplete: 'off',
+                                  inputMode: 'numeric',
+                                  pattern: '[0-9]*'
+                                }}
+                                variant="outlined"
+                                autoFocus={index === 0}
+                              />
+                            ))}
+                          </Box>
+                        </Box>
 
                         {!hasPinWallet && (
-                          <TextField
-                            type="password"
-                            label="Confirm PIN"
-                            value={confirmPin}
-                            onChange={(e) => {
-                              const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                              setConfirmPin(value);
-                            }}
-                            fullWidth
-                            variant="outlined"
-                            placeholder="Confirm 6 digits"
-                            inputProps={{
-                              maxLength: 6,
-                              pattern: '[0-9]*',
-                              inputMode: 'numeric'
-                            }}
-                            InputProps={{
-                              startAdornment: (
-                                <InputAdornment position="start">
-                                  <PasswordIcon sx={{ color: theme.palette.secondary.main }} />
-                                </InputAdornment>
-                              ),
-                            }}
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter' && confirmPin.length === 6) {
-                                handlePinCreate();
-                              }
-                            }}
-                          />
+                          <Box>
+                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
+                              Confirm PIN
+                            </Typography>
+                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
+                              {confirmPinBoxes.map((value, index) => (
+                                <PinField
+                                  key={index}
+                                  inputRef={el => confirmPinRefs.current[index] = el}
+                                  value={value}
+                                  onChange={(e) => handlePinChange(index, e.target.value, true)}
+                                  onKeyDown={(e) => handlePinKeyDown(index, e, true)}
+                                  type="text"
+                                  inputProps={{
+                                    maxLength: 1,
+                                    autoComplete: 'off',
+                                    inputMode: 'numeric',
+                                    pattern: '[0-9]*'
+                                  }}
+                                  variant="outlined"
+                                />
+                              ))}
+                            </Box>
+                          </Box>
                         )}
 
                         {hasPinWallet ? (
@@ -2124,7 +2547,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             fullWidth
                             onClick={handlePinLogin}
                             disabled={status !== 'idle' || pin.length !== 6}
-                            startIcon={status === 'authenticating' ? <CircularProgress size={18} color="inherit" /> : <PasswordIcon />}
                             sx={{
                               py: 1.2,
                               fontSize: '0.95rem',
@@ -2145,7 +2567,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               fullWidth
                               onClick={handlePinCreate}
                               disabled={isCreatingWallet || pin.length !== 6 || confirmPin.length !== 6}
-                              startIcon={isCreatingWallet ? <CircularProgress size={18} color="inherit" /> : <PasswordIcon />}
                               sx={{
                                 py: 1.2,
                                 fontSize: '0.95rem',
@@ -2166,7 +2587,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 fullWidth
                                 onClick={handleMigrateToPin}
                                 disabled={isCreatingWallet || pin.length !== 6 || confirmPin.length !== 6}
-                                startIcon={isCreatingWallet ? <CircularProgress size={18} color="inherit" /> : <SwapHorizIcon />}
                                 sx={{
                                   py: 1.2,
                                   fontSize: '0.95rem',
@@ -2185,20 +2605,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           </>
                         )}
 
-                        <Alert severity="info" sx={{ fontSize: '0.8rem' }}>
-                          <Typography variant="body2" sx={{ fontWeight: 500, mb: 1 }}>
-                            PIN Requirements:
-                          </Typography>
-                          <Typography variant="caption" sx={{ display: 'block' }}>
-                            • Exactly 6 digits (0-9)
-                          </Typography>
-                          <Typography variant="caption" sx={{ display: 'block' }}>
-                            • No sequential numbers (123456)
-                          </Typography>
-                          <Typography variant="caption" sx={{ display: 'block' }}>
-                            • No repeating numbers (111111)
-                          </Typography>
-                        </Alert>
 
                         <Typography variant="caption" sx={{
                           textAlign: 'center',
@@ -2222,7 +2628,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         borderRadius: 2,
                         border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`
                       }}>
-                        <IconButton
+                        <Button
                           onClick={handleGoBack}
                           sx={{
                             mr: 1.5,
@@ -2236,12 +2642,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          <ArrowBackIcon />
-                        </IconButton>
+                          ← Back
+                        </Button>
                         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.info.main, fontSize: '1rem' }}>
                           Wallet Comparison
                         </Typography>
-                        <HelpIcon sx={{ fontSize: 20, color: theme.palette.info.main, opacity: 0.7, ml: 'auto' }} />
                       </Box>
 
                       {/* Interactive Comparison Panel */}
@@ -2276,7 +2681,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               transform: 'translateY(-1px)'
                             }
                           }}>
-                            <SecurityIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+                            <Typography sx={{ fontSize: 18, color: theme.palette.primary.main }}>🔐</Typography>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
                               Device
                             </Typography>
@@ -2307,7 +2712,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               transform: 'translateY(-1px)'
                             }
                           }}>
-                            <PasswordIcon sx={{ fontSize: 18, color: theme.palette.secondary.main }} />
+                            <Typography sx={{ fontSize: 18, color: theme.palette.secondary.main }}>🔑</Typography>
                             <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
                               PIN
                             </Typography>
@@ -2480,7 +2885,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 setShowWalletInfo(false);
                                 setShowDeviceLogin(true);
                               }}
-                              startIcon={<SecurityIcon />}
                               sx={{
                                 py: 1,
                                 fontSize: '0.8rem',
@@ -2491,7 +2895,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 }
                               }}
                             >
-                              Use Device Login
+                              Use Passkeys Login
                             </Button>
                             <Button
                               variant="contained"
@@ -2501,7 +2905,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 setShowWalletInfo(false);
                                 setShowPinLogin(true);
                               }}
-                              startIcon={<PasswordIcon />}
                               sx={{
                                 py: 1,
                                 fontSize: '0.8rem',
@@ -2520,7 +2923,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     </>
                   ) : (
                     <>
-                      {/* Device Login */}
+                      {/* Passkeys Login */}
                       <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -2530,7 +2933,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         borderRadius: 2,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
                       }}>
-                        <IconButton
+                        <Button
                           onClick={handleGoBack}
                           sx={{
                             mr: 1.5,
@@ -2544,59 +2947,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          <ArrowBackIcon />
-                        </IconButton>
+                          ← Back
+                        </Button>
                         <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
                           Key Authentication
                         </Typography>
-                        <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
                       </Box>
 
                       <Stack spacing={1} sx={{ mb: 2 }}>
-                        <Box sx={{
-                          p: 1.5,
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 50%)`,
-                          border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                          borderRadius: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1
-                        }}>
-                          <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
-                          <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
-                            One Key = One Set of Wallets
-                          </Typography>
-                        </Box>
-
-                        <Box sx={{
-                          p: 1.5,
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.06)} 0%, ${alpha(theme.palette.success.light, 0.03)} 50%)`,
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                          borderRadius: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1
-                        }}>
-                          <KeyIcon sx={{ fontSize: 18, color: theme.palette.success.main }} />
-                          <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.success.main }}>
-                            Zero-Knowledge • Never Stored
-                          </Typography>
-                        </Box>
-
-                        <Box sx={{
-                          p: 1.5,
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.06)} 0%, ${alpha(theme.palette.warning.light, 0.03)} 50%)`,
-                          border: `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
-                          borderRadius: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1
-                        }}>
-                          <SecurityIcon sx={{ fontSize: 18, color: theme.palette.warning.main }} />
-                          <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.warning.main }}>
-                            Hardware Secure Enclave
-                          </Typography>
-                        </Box>
                       </Stack>
 
                       {error && (
@@ -2608,6 +2966,58 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             {error}
                           </Typography>
                         </Alert>
+                      )}
+
+                      {/* Inline PIN Input for Device Login */}
+                      {showDevicePinInput && (
+                        <Box sx={{ mb: 3 }}>
+                          <Typography variant="body2" sx={{ mb: 2, fontWeight: 500 }}>
+                            {devicePinMode === 'create'
+                              ? 'Create a 6-digit PIN to secure your wallet'
+                              : 'Enter your 6-digit PIN to access your wallet'}
+                          </Typography>
+                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
+                            {devicePin.map((value, index) => (
+                              <PinField
+                                key={index}
+                                inputRef={el => devicePinRefs.current[index] = el}
+                                value={value}
+                                onChange={(e) => handleDevicePinChange(index, e.target.value)}
+                                onKeyDown={(e) => handleDevicePinKeyDown(index, e)}
+                                type="text"
+                                inputProps={{
+                                  maxLength: 1,
+                                  autoComplete: 'off',
+                                  inputMode: 'numeric',
+                                  pattern: '[0-9]*'
+                                }}
+                                variant="outlined"
+                                autoFocus={index === 0}
+                              />
+                            ))}
+                          </Box>
+                          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => {
+                                setShowDevicePinInput(false);
+                                setDevicePin(['', '', '', '', '', '']);
+                                setStatus('idle');
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={handleDevicePinSubmit}
+                              disabled={devicePin.some(p => !p)}
+                            >
+                              {devicePinMode === 'create' ? 'Create PIN' : 'Verify PIN'}
+                            </Button>
+                          </Box>
+                        </Box>
                       )}
 
                       {status === 'success' && walletInfo && (
@@ -2630,7 +3040,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {isLoadingDeps && (
                         <Alert severity="info" sx={{ mb: 2 }}>
                           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CircularProgress size={16} />
+                            <Typography>Loading...</Typography>
                             <Typography variant="body2">Loading security modules...</Typography>
                           </Box>
                         </Alert>
@@ -2643,7 +3053,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           fullWidth
                           onClick={handleAuthenticate}
                           disabled={status !== 'idle' || isLoadingDeps}
-                          startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={18} color="inherit" /> : <SecurityIcon />}
                           sx={{
                             py: 1.2,
                             fontSize: '0.95rem',
@@ -2663,7 +3072,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           fullWidth
                           onClick={handleRegister}
                           disabled={status !== 'idle' || isLoadingDeps}
-                          startIcon={status === 'registering' ? <CircularProgress size={18} color="inherit" /> : <SecurityIcon />}
                           sx={{
                             py: 1.2,
                             fontSize: '0.95rem',

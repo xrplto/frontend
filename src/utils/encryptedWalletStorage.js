@@ -5,7 +5,8 @@ export class UnifiedWalletStorage {
     this.dbName = 'XRPLWalletDB';
     this.walletsStore = 'encrypted_wallets';
     this.profilesStore = 'profiles';
-    this.version = 2; // Increment for schema changes
+    this.credentialsStore = 'wallet_credentials'; // Store for passkey-PIN mappings
+    this.version = 3; // Increment for schema changes
   }
 
   async initDB() {
@@ -28,6 +29,11 @@ export class UnifiedWalletStorage {
           const store = db.createObjectStore(this.profilesStore, { keyPath: 'account' });
           store.createIndex('wallet_type', 'wallet_type', { unique: false });
           store.createIndex('createdAt', 'createdAt', { unique: false });
+        }
+
+        // Credentials store for passkey-PIN mappings
+        if (!db.objectStoreNames.contains(this.credentialsStore)) {
+          db.createObjectStore(this.credentialsStore, { keyPath: 'passkeyId' });
         }
       };
     });
@@ -127,7 +133,12 @@ export class UnifiedWalletStorage {
         if (request.result) {
           try {
             const walletData = await this.decryptWallet(request.result, pin);
-            resolve(walletData);
+            // Handle both single wallet and multi-wallet formats
+            if (walletData.wallets && Array.isArray(walletData.wallets)) {
+              resolve(walletData.wallets[0]); // Return only first wallet
+            } else {
+              resolve(walletData);
+            }
           } catch (error) {
             reject(new Error('Invalid PIN'));
           }
@@ -143,8 +154,8 @@ export class UnifiedWalletStorage {
       const db = await this.initDB();
 
       return new Promise((resolve, reject) => {
-        const transaction = db.transaction([this.storeName], 'readonly');
-        const store = transaction.objectStore(this.storeName);
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
 
         const request = store.get('main_wallet');
 
@@ -209,25 +220,24 @@ export class UnifiedWalletStorage {
   async createWalletFromPin(pin) {
     const wallets = [];
 
-    // Create 5 wallets deterministically from PIN
-    for (let i = 0; i < 5; i++) {
-      const enhancedPin = `xrpl-wallet-pin-v1-${pin}-account-${i}`;
-      const wallet = Wallet.generate();
+    // Create only 1 wallet for performance
+    const i = 0;
+    const enhancedPin = `xrpl-wallet-pin-v1-${pin}-account-${i}`;
+    const wallet = Wallet.generate();
 
-      const walletData = {
-        seed: wallet.seed,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        createdAt: Date.now(),
-        wallet_type: 'pin',
-        accountIndex: i
-      };
+    const walletData = {
+      seed: wallet.seed,
+      address: wallet.address,
+      publicKey: wallet.publicKey,
+      createdAt: Date.now(),
+      wallet_type: 'pin',
+      accountIndex: i
+    };
 
-      wallets.push(walletData);
-    }
+    wallets.push(walletData);
 
-    // Store all wallets
-    await this.storeWallets(wallets, pin);
+    // Store wallet
+    await this.storeWallet(walletData, pin);
     return wallets;
   }
 
@@ -260,7 +270,12 @@ export class UnifiedWalletStorage {
         if (request.result) {
           try {
             const data = await this.decryptWallet(request.result, pin);
-            resolve(data.wallets || [data]); // Handle both formats
+            // Only return the first wallet to avoid duplicates from old data
+            if (data.wallets && Array.isArray(data.wallets)) {
+              resolve([data.wallets[0]]); // Return only first wallet
+            } else {
+              resolve([data]); // Single wallet format
+            }
           } catch (error) {
             reject(new Error('Invalid PIN'));
           }
@@ -341,6 +356,89 @@ export class UnifiedWalletStorage {
       const transaction = db.transaction([this.profilesStore], 'readwrite');
       const store = transaction.objectStore(this.profilesStore);
       const request = store.delete(account);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  // Store encrypted passkey-PIN mapping
+  async storeWalletCredential(passkeyId, userSecret) {
+    const db = await this.initDB();
+
+    // Encrypt the PIN with a device-specific key
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const key = await this.deriveKey('device-local-key', salt);
+
+    const encoder = new TextEncoder();
+    const data = encoder.encode(userSecret);
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      data
+    );
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.credentialsStore], 'readwrite');
+      const store = transaction.objectStore(this.credentialsStore);
+      const request = store.put({
+        passkeyId,
+        encryptedPin: Array.from(new Uint8Array(encrypted)),
+        iv: Array.from(iv),
+        salt: Array.from(salt),
+        timestamp: Date.now()
+      });
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  // Retrieve and decrypt wallet credential
+  async getWalletCredential(passkeyId) {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.credentialsStore], 'readonly');
+      const store = transaction.objectStore(this.credentialsStore);
+      const request = store.get(passkeyId);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = async () => {
+        if (!request.result) {
+          resolve(null);
+          return;
+        }
+
+        try {
+          const { encryptedPin, iv, salt } = request.result;
+          const key = await this.deriveKey('device-local-key', new Uint8Array(salt));
+
+          const decrypted = await crypto.subtle.decrypt(
+            { name: 'AES-GCM', iv: new Uint8Array(iv) },
+            key,
+            new Uint8Array(encryptedPin)
+          );
+
+          const decoder = new TextDecoder();
+          resolve(decoder.decode(decrypted));
+        } catch (error) {
+          resolve(null); // Return null if decryption fails
+        }
+      };
+    });
+  }
+
+  // Clear stored credentials
+  async clearWalletCredentials() {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.credentialsStore], 'readwrite');
+      const store = transaction.objectStore(this.credentialsStore);
+      const request = store.clear();
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);

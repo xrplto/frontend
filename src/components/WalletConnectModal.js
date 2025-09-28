@@ -33,26 +33,23 @@ const base64urlEncode = (buffer) => {
 };
 
 // Secure deterministic wallet generation using PBKDF2 with high entropy
-const generateSecureDeterministicWallet = (credentialId, accountIndex, userEntropy = '') => {
-  // Security approach based on WebAuthn best practices:
-  // 1. Use credential ID as base entropy (unique per passkey)
-  // 2. Add account index for multiple wallets
-  // 3. Add optional user entropy for additional security
-  // 4. Apply PBKDF2 with high iterations (industry standard)
-  // 5. Use credential ID as salt (unique per passkey)
+const generateSecureDeterministicWallet = (credentialId, accountIndex, userSecret) => {
+  // CRITICAL: Require user PIN for security
+  if (!userSecret || userSecret.length < 6) {
+    throw new Error('6-digit PIN is required for wallet generation');
+  }
 
-  // Create entropy string with all available sources
-  const entropyString = `passkey-wallet-${credentialId}-${accountIndex}-${userEntropy}`;
+  // Combine passkey ID + user PIN + account index for strong entropy
+  const entropyString = `passkey-wallet-${credentialId}-${userSecret}-${accountIndex}`;
 
   // Use PBKDF2 with high iterations for security
-  // This makes brute force attacks computationally expensive
   const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${credentialId}`, {
     keySize: 256/32, // 256-bit key
-    iterations: 100000 // 100k iterations - industry standard for 2024
+    iterations: 600000, // 600k iterations - OWASP 2025 standard
+    hasher: CryptoJS.algo.SHA512
   }).toString();
 
   // Convert PBKDF2 output to a valid private key
-  // Take first 64 characters (32 bytes) for the private key
   const privateKeyHex = seedHash.substring(0, 64);
 
   // Generate wallet from the deterministic private key
@@ -332,13 +329,25 @@ const WalletConnectModal = () => {
       }
 
       if (registrationResponse.id) {
+        // Prompt for PIN
+        const userSecret = prompt('Create a 6-digit PIN to secure your wallet:');
+        if (!userSecret || userSecret.length < 6) {
+          setError('PIN must be at least 6 digits. Please try again.');
+          setStatus('idle');
+          return;
+        }
+
+        // Store PIN for future use
+        const storage = new (await import('src/utils/encryptedWalletStorage')).UnifiedWalletStorage();
+        await storage.storeWalletCredential(registrationResponse.id, userSecret);
+
         // Generate 5 wallets for this device key
         const wallets = [];
         const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
         for (let i = 0; i < 5; i++) {
-          const wallet = generateSecureDeterministicWallet(registrationResponse.id, i);
+          const wallet = generateSecureDeterministicWallet(registrationResponse.id, i, userSecret);
           const walletData = storeWallet(registrationResponse.id, wallet, i);
           wallets.push(walletData);
 
@@ -433,6 +442,22 @@ const WalletConnectModal = () => {
       if (authResponse.id) {
         setStatus('discovering');
 
+        // Try to retrieve stored PIN first
+        const storage = new (await import('src/utils/encryptedWalletStorage')).UnifiedWalletStorage();
+        let userSecret = await storage.getWalletCredential(authResponse.id);
+
+        if (!userSecret) {
+          // No stored PIN, prompt user
+          userSecret = prompt('Enter your 6-digit PIN:');
+          if (!userSecret || userSecret.length < 6) {
+            setError('Invalid PIN. Please try again.');
+            setStatus('idle');
+            return;
+          }
+          // Store for future use
+          await storage.storeWalletCredential(authResponse.id, userSecret);
+        }
+
         // Look for existing wallets associated with this device key
         const storedWallets = getStoredWallets();
         const userWallets = storedWallets.filter(w => w.deviceKeyId === authResponse.id);
@@ -444,7 +469,7 @@ const WalletConnectModal = () => {
         const currentProfiles = JSON.parse(window.localStorage.getItem(KEY_ACCOUNT_PROFILES) || '[]');
 
         for (let i = 0; i < 5; i++) {
-          const wallet = generateSecureDeterministicWallet(authResponse.id, nextAccountIndex + i);
+          const wallet = generateSecureDeterministicWallet(authResponse.id, nextAccountIndex + i, userSecret);
           const walletData = storeWallet(authResponse.id, wallet, nextAccountIndex + i);
           wallets.push(walletData);
 
@@ -592,7 +617,7 @@ const WalletConnectModal = () => {
                       transition: 'color 0.2s ease'
                     }}
                   >
-                    Device Login
+                    Passkeys Login
                   </Typography>
                   <Typography
                     variant="body2"
@@ -601,7 +626,7 @@ const WalletConnectModal = () => {
                       fontSize: '0.8rem'
                     }}
                   >
-                    Device Authentication
+                    Passkeys Authentication
                   </Typography>
                 </Stack>
               </WalletItem>
@@ -627,21 +652,6 @@ const WalletConnectModal = () => {
               <SecurityIcon sx={{ fontSize: 20, color: theme.palette.primary.main, opacity: 0.7, ml: 'auto' }} />
             </Box>
 
-            <Box sx={{
-              mb: 2,
-              p: 1.5,
-              background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.06)} 0%, ${alpha(theme.palette.info.light, 0.03)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-              borderRadius: 2,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1
-            }}>
-              <SecurityIcon sx={{ fontSize: 18, color: theme.palette.info.main }} />
-              <Typography variant="body2" sx={{ fontWeight: 500, color: theme.palette.info.main }}>
-                One Key = One Set of Wallets
-              </Typography>
-            </Box>
 
             {error && (
               <Alert severity="error" sx={{ mb: 2 }}>
