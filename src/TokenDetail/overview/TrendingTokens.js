@@ -31,10 +31,12 @@ const TokenCard = styled(Card)(({ theme }) => ({
   borderRadius: '8px',
   padding: '8px 12px',
   cursor: 'pointer',
+  transition: 'none !important',
   '&:hover': {
-    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-    borderColor: alpha(theme.palette.primary.main, 0.2),
-    background: alpha(theme.palette.action.hover, 0.04)
+    background: 'transparent',
+    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    transform: 'none',
+    transition: 'none !important'
   }
 }));
 
@@ -45,7 +47,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   WebkitBackdropFilter: 'none',
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   boxShadow: `
-    0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
+    0 4px 16px ${alpha(theme.palette.common.black, 0.08)},
     0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
   position: 'relative',
   overflow: 'hidden',
@@ -53,14 +55,17 @@ const StyledCard = styled(Card)(({ theme }) => ({
   width: '100%',
   maxWidth: '100%',
   mb: { xs: 1, sm: 1.5 },
+  transition: 'none !important',
   '&::before': {
     display: 'none'
   },
   '&:hover': {
     boxShadow: `
-      0 6px 24px ${alpha(theme.palette.common.black, 0.1)},
-      0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
-    border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
+      0 4px 16px ${alpha(theme.palette.common.black, 0.08)},
+      0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+    transform: 'none',
+    transition: 'none !important'
   }
 }));
 
@@ -94,19 +99,23 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
 const StatsBox = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
-  gap: '1px',
+  gap: '2px',
   minWidth: '70px',
   '& .label': {
     fontSize: '0.5rem',
-    color: theme.palette.text.secondary,
+    color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.4)' : 'rgba(0, 0, 0, 0.4)',
     textTransform: 'uppercase',
-    letterSpacing: '0.3px',
-    lineHeight: 1
+    letterSpacing: '0.02em',
+    fontWeight: 500,
+    lineHeight: 1,
+    fontFamily: 'Inter, -apple-system, sans-serif'
   },
   '& .value': {
-    fontSize: '0.75rem',
+    fontSize: '0.8rem',
     fontWeight: 600,
-    lineHeight: 1.1
+    lineHeight: 1.2,
+    letterSpacing: '-0.01em',
+    fontFamily: 'Inter, -apple-system, sans-serif'
   }
 }));
 
@@ -237,8 +246,7 @@ const TrendingTokens = () => {
             textTransform: 'none',
             fontSize: '0.75rem',
             fontWeight: 600,
-            color: theme.palette.primary.main,
-            '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.08) }
+            color: theme.palette.primary.main
           }}
         >
           View All
@@ -290,7 +298,16 @@ const TrendingTokens = () => {
           const isPositive = priceChange >= 0;
 
           return (
-            <Link key={token.md5 || token.slug || `trending-${index}`} href={`/token/${token.slug}`} underline="none" color="inherit">
+            <Link
+              key={token.md5 || token.slug || `trending-${index}`}
+              href={`/token/${token.slug}`}
+              underline="none"
+              color="inherit"
+              sx={{
+                '&:hover': {
+                  textDecoration: 'none'
+                }
+              }}>
               <TokenCard>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1, sm: 1.5 } }}>
                   {/* Rank */}

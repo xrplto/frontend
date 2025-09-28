@@ -133,8 +133,17 @@ export default function Description({
         width: '100%',
         maxWidth: '100%',
         mb: { xs: 1, sm: 1.5 },
+        transition: 'none !important',
         '&::before': {
           display: 'none'
+        },
+        '&:hover': {
+          boxShadow: `
+            0 4px 16px ${alpha(theme.palette.common.black, 0.08)},
+            0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+          transform: 'none',
+          transition: 'none !important'
         }
       }}
     >
@@ -200,10 +209,7 @@ export default function Description({
                   '& .button': {
                     color: theme.palette.text.primary,
                     padding: '4px 8px',
-                    borderRadius: '4px',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1)
-                    }
+                    borderRadius: '4px'
                   }
                 }
               },

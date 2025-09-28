@@ -143,7 +143,7 @@ const TradeCard = styled(Card, {
   borderRadius: '6px',
   background:
     tradetype === 'BUY'
-      ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.02)} 50%, transparent 100%)`
+      ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.12)} 0%, ${alpha(theme.palette.primary.main, 0.04)} 50%, transparent 100%)`
       : `linear-gradient(90deg, ${alpha('#F44336', 0.08)} 0%, ${alpha('#F44336', 0.02)} 50%, transparent 100%)`,
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',

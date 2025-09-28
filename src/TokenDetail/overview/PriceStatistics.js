@@ -96,16 +96,7 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
 }));
 
 const StyledTable = styled(Table)(({ theme }) => ({
-  background: 'transparent',
-  '& .MuiTableRow-root': {
-      '&:hover': {
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(
-        theme.palette.primary.main,
-        0.01
-      )} 100%)`,
-      backdropFilter: 'blur(10px)'
-    }
-  }
+  background: 'transparent'
 }));
 
 // ----------------------------------------------------------------------
@@ -242,13 +233,6 @@ export default function PriceStatistics({ token }) {
         mb: { xs: 1, sm: 1.5 },
         '&::before': {
           display: 'none'
-        },
-        '&:hover': {
-          boxShadow: `
-            0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-            0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
         }
       }}
     >
@@ -306,10 +290,7 @@ export default function PriceStatistics({ token }) {
               px: 3,
               py: 0.75,
               borderRadius: '12px',
-              fontWeight: 600,
-              '&:hover': {
-                backgroundColor: theme.palette.error.dark
-              }
+              fontWeight: 600
             }}
           >
             I Understand
@@ -578,8 +559,7 @@ export default function PriceStatistics({ token }) {
                           minWidth: isMobile ? '20px' : 'unset',
                           justifyContent: isMobile ? 'center' : 'flex-start',
                           pl: isMobile ? 0.5 : 1,
-                          pr: isMobile ? 0.5 : 1,
-                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)'
+                          pr: isMobile ? 0.5 : 1
                         }}
                       />
                     </Tooltip>

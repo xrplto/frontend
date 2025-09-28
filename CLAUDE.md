@@ -253,6 +253,17 @@ Create `.env` file based on `.env.example`:
    - Border color emphasis
    - NO elevation or movement
 
+9. **Animations - Keep to Minimum**
+   - NO hover animations (no transform, translateY, scale, etc.)
+   - NO transition effects on hover states
+   - Only use animations when absolutely necessary for UX:
+     - Loading states (spinners)
+     - Page transitions (if required)
+     - Critical user feedback (form submission success)
+   - When animations are needed, keep them subtle and fast (< 200ms)
+   - Avoid animation libraries unless specifically requested
+   - Static, clean interfaces are preferred over animated ones
+
 ### Example Implementation
 ```javascript
 // Clean button style
