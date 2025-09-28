@@ -13,8 +13,6 @@ import {
   alpha,
   Avatar
 } from '@mui/material';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import WhatshotIcon from '@mui/icons-material/Whatshot';
@@ -32,10 +30,8 @@ const TokenCard = styled(Card)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
   borderRadius: '8px',
   padding: '8px 12px',
-  transition: 'all 0.2s ease',
   cursor: 'pointer',
   '&:hover': {
-    transform: 'translateY(-1px)',
     boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
     borderColor: alpha(theme.palette.primary.main, 0.2),
     background: alpha(theme.palette.action.hover, 0.04)
@@ -57,14 +53,12 @@ const StyledCard = styled(Card)(({ theme }) => ({
   width: '100%',
   maxWidth: '100%',
   mb: { xs: 1, sm: 1.5 },
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
   '&::before': {
     display: 'none'
   },
   '&:hover': {
-    transform: 'translateY(-1px)',
     boxShadow: `
-      0 6px 24px ${alpha(theme.palette.common.black, 0.1)}, 
+      0 6px 24px ${alpha(theme.palette.common.black, 0.1)},
       0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
     border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
   }
@@ -363,11 +357,6 @@ const TrendingTokens = () => {
                           {isPositive ? '+' : ''}
                           {priceChange.toFixed(1)}%
                         </Typography>
-                        {isPositive ? (
-                          <TrendingUpIcon sx={{ fontSize: 10, color: '#4caf50' }} />
-                        ) : (
-                          <TrendingDownIcon sx={{ fontSize: 10, color: '#f44336' }} />
-                        )}
                       </Stack>
                     </StatsBox>
 

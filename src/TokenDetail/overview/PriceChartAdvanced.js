@@ -1548,12 +1548,6 @@ const PriceChartAdvanced = memo(({ token }) => {
                   height: 6,
                   borderRadius: '50%',
                   bgcolor: 'success.main',
-                  animation: 'pulse 1.5s ease-in-out infinite',
-                  '@keyframes pulse': {
-                    '0%': { opacity: 1, transform: 'scale(1)' },
-                    '50%': { opacity: 0.6, transform: 'scale(1.2)' },
-                    '100%': { opacity: 1, transform: 'scale(1)' }
-                  }
                 }}
               />
             ) : lastUpdate ? (
@@ -1563,7 +1557,6 @@ const PriceChartAdvanced = memo(({ token }) => {
                   alignItems: 'center',
                   gap: 0.75,
                   opacity: isUserZoomed ? 0.5 : 0.7,
-                  transition: 'opacity 0.2s ease'
                 }}
               >
                 <Box

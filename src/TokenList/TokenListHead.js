@@ -6,7 +6,12 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 10;
-  background: transparent;
+  background: ${(props) =>
+    props.darkMode
+      ? 'linear-gradient(180deg, rgba(18, 18, 18, 0.98) 0%, rgba(18, 18, 18, 0.95) 100%)'
+      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%)'};
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 
   &::after {
     content: '';
@@ -15,20 +20,24 @@ const StyledTableHead = styled.thead`
     right: 0;
     bottom: 0;
     height: 1px;
-    background: ${(props) =>
-      props.darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      ${(props) => props.darkMode ? 'rgba(66, 133, 244, 0.15)' : 'rgba(66, 133, 244, 0.1)'} 50%,
+      transparent 100%
+    );
   }
 `;
 
 const StyledTableCell = styled.th`
-  font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.5px;
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? '#999' : '#666')};
-  padding: ${(props) => (props.isMobile ? '16px 8px' : '16px 12px')}; // Match mobile cell padding
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)')};
+  padding: ${(props) => (props.isMobile ? '14px 8px' : '14px 12px')};
   border-bottom: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
@@ -39,9 +48,10 @@ const StyledTableCell = styled.th`
   left: ${(props) => props.left || 'unset'};
   z-index: ${(props) => (props.sticky ? 11 : 'auto')};
   background: ${(props) => (props.sticky ? (props.darkMode ? '#121212' : '#fff') : 'transparent')};
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   &:hover {
-    color: ${(props) => (props.sortable ? (props.darkMode ? '#fff' : '#000') : 'inherit')};
+    color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)') : 'inherit')};
   }
 
   ${(props) =>
@@ -64,10 +74,10 @@ const StyledTableCell = styled.th`
 const SortIndicator = styled.span`
   display: inline-block;
   margin-left: 4px;
-  font-size: 0.65rem;
-  color: ${(props) => (props.active ? '#2196f3' : props.darkMode ? '#666' : '#999')};
-  transition: transform 0.2s;
+  font-size: 0.6rem;
+  color: ${(props) => (props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)')};
   transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
+  opacity: ${(props) => (props.active ? 1 : 0.6)};
 `;
 
 const MOBILE_TABLE_HEAD = [

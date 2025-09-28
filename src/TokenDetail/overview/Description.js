@@ -133,16 +133,8 @@ export default function Description({
         width: '100%',
         maxWidth: '100%',
         mb: { xs: 1, sm: 1.5 },
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'
-        },
-        '&:hover': {
-          transform: 'translateY(-1px)',
-          boxShadow: `
-            0 6px 24px ${alpha(theme.palette.common.black, 0.1)}, 
-            0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
-          border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
         }
       }}
     >
@@ -209,7 +201,6 @@ export default function Description({
                     color: theme.palette.text.primary,
                     padding: '4px 8px',
                     borderRadius: '4px',
-                    transition: 'background-color 0.2s',
                     '&:hover': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.1)
                     }

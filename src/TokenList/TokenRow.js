@@ -124,46 +124,85 @@ OptimizedChart.displayName = 'OptimizedChart';
 const StyledRow = styled.tr`
   border-bottom: 1px solid
     ${(props) =>
-      props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+      props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   cursor: pointer;
   margin: 0;
   padding: 0;
   contain: layout style;
   will-change: auto;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      ${(props) => props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'} 50%,
+      transparent 100%
+    );
+  }
 
   &:hover {
-    background-color: ${(props) =>
-      props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+    background: ${(props) =>
+      props.theme.palette.mode === 'dark'
+        ? 'linear-gradient(90deg, rgba(66, 133, 244, 0.02) 0%, rgba(66, 133, 244, 0.01) 100%)'
+        : 'linear-gradient(90deg, rgba(66, 133, 244, 0.015) 0%, rgba(66, 133, 244, 0.005) 100%)'};
   }
 `;
 
 const StyledCell = styled.td`
-  padding: 12px 8px;
+  padding: 14px 12px;
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   font-size: 13px;
-  color: ${(props) => props.theme.palette.text.primary};
+  font-weight: ${(props) => props.fontWeight || 400};
+  color: ${(props) => props.color || props.theme.palette.text.primary};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isTokenColumn ? '250px' : 'auto')};
   contain: layout style paint;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.01em;
 `;
 
 // Mobile-specific flexbox components
 const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 6px 4px;
+  padding: 10px 8px;
   border-bottom: 1px solid
     ${(props) =>
-      props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+      props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      ${(props) => props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'} 50%,
+      transparent 100%
+    );
+  }
 
   &:hover {
-    background-color: ${(props) =>
-      props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+    background: ${(props) =>
+      props.theme.palette.mode === 'dark'
+        ? 'linear-gradient(90deg, rgba(66, 133, 244, 0.02) 0%, transparent 100%)'
+        : 'linear-gradient(90deg, rgba(66, 133, 244, 0.015) 0%, transparent 100%)'};
   }
 `;
 

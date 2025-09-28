@@ -98,8 +98,7 @@ const ModernTableCell = styled(TableCell)(({ theme }) => ({
 const StyledTable = styled(Table)(({ theme }) => ({
   background: 'transparent',
   '& .MuiTableRow-root': {
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&:hover': {
+      '&:hover': {
       background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(
         theme.palette.primary.main,
         0.01
@@ -241,12 +240,10 @@ export default function PriceStatistics({ token }) {
         width: '100%',
         maxWidth: '100%',
         mb: { xs: 1, sm: 1.5 },
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
         '&::before': {
           display: 'none'
         },
         '&:hover': {
-          transform: { xs: 'none', sm: 'translateY(-2px)' },
           boxShadow: `
             0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
             0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
@@ -417,15 +414,13 @@ export default function PriceStatistics({ token }) {
                     border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                     color: theme.palette.primary.main,
                     fontWeight: 600,
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
+                                      '&:hover': {
                       background: `linear-gradient(145deg, ${alpha(
                         theme.palette.primary.main,
                         0.15
                       )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
                       border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                     }
                   }}
                   onClick={handleOpenIssuerInfo}
@@ -441,12 +436,10 @@ export default function PriceStatistics({ token }) {
                         borderRadius: '8px',
                         background: alpha(theme.palette.background.paper, 0.8),
                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                        '&:hover': {
+                                              '&:hover': {
                           background: alpha(theme.palette.primary.main, 0.08),
                           border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                                                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
                         }
                       }}
                     >
@@ -508,8 +501,7 @@ export default function PriceStatistics({ token }) {
                           : `1px solid ${alpha('#7B1FA2', 0.25)}`,
                       color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2',
                       fontWeight: 600,
-                      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                      textShadow:
+                                          textShadow:
                         theme.palette.mode === 'dark' ? '0 0 8px rgba(156, 39, 176, 0.4)' : 'none',
                       '&:hover': {
                         background:
@@ -520,8 +512,7 @@ export default function PriceStatistics({ token }) {
                           theme.palette.mode === 'dark'
                             ? `1px solid ${alpha('#9C27B0', 0.4)}`
                             : `1px solid ${alpha('#7B1FA2', 0.3)}`,
-                        transform: 'translateY(-2px)',
-                        boxShadow:
+                                                boxShadow:
                           theme.palette.mode === 'dark'
                             ? `0 4px 12px ${alpha('#9C27B0', 0.3)}`
                             : `0 4px 12px ${alpha('#7B1FA2', 0.2)}`
@@ -539,8 +530,7 @@ export default function PriceStatistics({ token }) {
                           borderRadius: '8px',
                           background: alpha(theme.palette.background.paper, 0.8),
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                          '&:hover': {
+                                                  '&:hover': {
                             background:
                               theme.palette.mode === 'dark'
                                 ? alpha('#9C27B0', 0.08)
@@ -549,8 +539,7 @@ export default function PriceStatistics({ token }) {
                               theme.palette.mode === 'dark'
                                 ? `1px solid ${alpha('#9C27B0', 0.3)}`
                                 : `1px solid ${alpha('#7B1FA2', 0.25)}`,
-                            transform: 'translateY(-1px)',
-                            boxShadow:
+                                                        boxShadow:
                               theme.palette.mode === 'dark'
                                 ? `0 4px 12px ${alpha('#9C27B0', 0.2)}`
                                 : `0 4px 12px ${alpha('#7B1FA2', 0.15)}`
@@ -1019,16 +1008,14 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
               color: theme.palette.primary.main,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-
+            
               '&:hover': {
                 background: `linear-gradient(145deg, ${alpha(
                   theme.palette.primary.main,
                   0.15
                 )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                transform: 'translateY(-2px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
               }
             }}
           >
@@ -1062,16 +1049,14 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
               border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
               color: theme.palette.secondary.main,
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-
+            
               '&:hover': {
                 background: `linear-gradient(145deg, ${alpha(
                   theme.palette.secondary.main,
                   0.15
                 )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
                 border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                transform: 'translateY(-2px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
               }
             }}
           >
@@ -1142,8 +1127,7 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
               fontWeight: 600,
               cursor: 'pointer',
               minHeight: 'auto',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-
+            
               '&:hover': {
                 background: `linear-gradient(145deg, ${alpha(
                   theme.palette.primary.main,
@@ -1151,8 +1135,7 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
                 )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                 color: theme.palette.primary.main,
-                transform: 'translateY(-1px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
               }
             }}
           />
@@ -1177,16 +1160,14 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
             fontWeight: 600,
             cursor: 'pointer',
             minHeight: 'auto',
-            transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-
+          
             '&:hover': {
               background: `linear-gradient(145deg, ${alpha(
                 theme.palette.primary.main,
                 0.15
               )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
               border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-              transform: 'translateY(-1px)',
-              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
             }
           }}
         />
