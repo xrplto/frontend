@@ -1470,6 +1470,10 @@ const PriceChartAdvanced = memo(({ token }) => {
         border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
         borderRadius: isMobile ? '10px' : '16px',
         overflow: 'hidden',
+        transition: 'none',
+        '&:hover': {
+          transform: 'none'
+        },
         ...(isFullscreen && {
           position: 'fixed',
           top: 0,
@@ -1770,7 +1774,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           height: isFullscreen ? 'calc(100vh - 120px)' : isMobile ? 380 : 550,
           borderRadius: 1,
           overflow: 'hidden',
-          willChange: 'height',
           contain: 'layout style paint',
           mr: isMobile ? -0.5 : 0,
           ml: isMobile ? -0.5 : 0
