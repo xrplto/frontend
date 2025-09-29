@@ -9,17 +9,32 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
   return (
     <Stack
       direction="row"
-      spacing={1}
-      sx={{ mb: 2, mt: 0 }}
+      spacing={0.75}
+      sx={{
+        mb: 1,
+        mt: 0,
+        px: 0,
+        py: 0.25,
+        backgroundColor: 'transparent',
+        borderRadius: '8px'
+      }}
       alignItems="center"
       color={'text.secondary'}
     >
       <Link underline="none" color="inherit" href={`/`} rel="noreferrer noopener nofollow">
-        <Typography variant="link_cascade" color="primary">
+        <Typography
+          sx={{
+            fontSize: '0.8rem',
+            fontWeight: 500,
+            color: 'primary.main',
+            opacity: 0.8,
+            '&:hover': { opacity: 1 }
+          }}
+        >
           Tokens
         </Typography>
       </Link>
-      <ChevronRightIcon sx={{ fontSize: 12, mt: 0.4 }} />
+      <ChevronRightIcon sx={{ fontSize: 16, opacity: 0.4 }} />
 
       {tabID > 0 ? (
         <>
@@ -29,15 +44,39 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
             href={`/token/${token.slug}`}
             rel="noreferrer noopener nofollow"
           >
-            <Typography variant="link_cascade" color={'primary'}>
+            <Typography
+              sx={{
+                fontSize: '0.8rem',
+                fontWeight: 500,
+                color: 'primary.main',
+                opacity: 0.8,
+                '&:hover': { opacity: 1 }
+              }}
+            >
               {token.name}
             </Typography>
           </Link>
-          <ChevronRightIcon sx={{ fontSize: 12, mt: 0.4 }} />
-          <Typography variant="link_cascade">{tabLabels[tabID]}</Typography>
+          <ChevronRightIcon sx={{ fontSize: 16, opacity: 0.4 }} />
+          <Typography
+            sx={{
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              opacity: 0.7
+            }}
+          >
+            {tabLabels[tabID]}
+          </Typography>
         </>
       ) : (
-        <Typography variant="link_cascade">{token.name}</Typography>
+        <Typography
+          sx={{
+            fontSize: '0.8rem',
+            fontWeight: 500,
+            opacity: 0.9
+          }}
+        >
+          {token.name}
+        </Typography>
       )}
     </Stack>
   );

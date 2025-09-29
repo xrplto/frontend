@@ -77,19 +77,13 @@ const throttle = (func, delay) => {
 // Define the highlight animation with softer colors
 const highlightAnimation = (theme) => keyframes`
   0% {
-    background-color: ${theme.palette.primary.main}30;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px ${theme.palette.primary.main}40;
+    background-color: ${alpha(theme.palette.primary.main, 0.08)};
   }
   50% {
-    background-color: ${theme.palette.primary.main}15;
-    transform: translateY(0);
-    box-shadow: 0 2px 4px ${theme.palette.primary.main}20;
+    background-color: ${alpha(theme.palette.primary.main, 0.04)};
   }
   100% {
     background-color: transparent;
-    transform: translateY(0);
-    box-shadow: none;
   }
 `;
 
@@ -103,11 +97,8 @@ const LiveIndicator = styled('div')(({ theme }) => ({
   backgroundColor: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-  boxShadow: `
-    0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}, 
-    0 1px 2px ${alpha(theme.palette.primary.main, 0.05)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: 'none'
 }));
 
 const LiveCircle = styled('div')(({ theme }) => ({
@@ -116,22 +107,19 @@ const LiveCircle = styled('div')(({ theme }) => ({
   borderRadius: '50%',
   backgroundColor: theme.palette.primary.main,
   animation: 'pulse 2s infinite',
-  boxShadow: `0 0 8px ${theme.palette.primary.main}80`,
+  boxShadow: 'none',
   '@keyframes pulse': {
     '0%': {
       transform: 'scale(0.95)',
-      opacity: 0.8,
-      boxShadow: `0 0 8px ${theme.palette.primary.main}80`
+      opacity: 0.8
     },
     '50%': {
       transform: 'scale(1.1)',
-      opacity: 1,
-      boxShadow: `0 0 12px ${theme.palette.primary.main}A0`
+      opacity: 1
     },
     '100%': {
       transform: 'scale(0.95)',
-      opacity: 0.8,
-      boxShadow: `0 0 8px ${theme.palette.primary.main}80`
+      opacity: 0.8
     }
   }
 }));
@@ -140,29 +128,25 @@ const TradeCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isNew' && prop !== 'tradetype'
 })(({ theme, isNew, tradetype }) => ({
   marginBottom: theme.spacing(0.2),
-  borderRadius: '6px',
+  borderRadius: '12px',
   background:
     tradetype === 'BUY'
-      ? `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.06)} 50%, transparent 100%)`
-      : `linear-gradient(90deg, ${alpha('#F44336', 0.08)} 0%, ${alpha('#F44336', 0.02)} 50%, transparent 100%)`,
+      ? alpha(theme.palette.primary.main, 0.04)
+      : alpha('#F44336', 0.04),
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  boxShadow: `
-    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-  transition: 'all 0.3s ease-in-out',
+  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+  boxShadow: 'none',
   position: 'relative',
   overflow: 'hidden',
   animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
   '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `
-      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
+    boxShadow: 'none',
+    border: `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`,
+    background:
+      tradetype === 'BUY'
+        ? alpha(theme.palette.primary.main, 0.06)
+        : alpha('#F44336', 0.06)
   }
 }));
 
@@ -170,19 +154,17 @@ const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
   fontSize: '0.55rem',
   height: '16px',
   fontWeight: 'bold',
-  borderRadius: '6px',
+  borderRadius: '12px',
   background:
     tradetype === 'BUY'
-      ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`
-      : `linear-gradient(135deg, ${alpha('#F44336', 0.2)} 0%, ${alpha('#F44336', 0.05)} 100%)`,
+      ? alpha(theme.palette.primary.main, 0.08)
+      : alpha('#F44336', 0.08),
   color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
   border:
     tradetype === 'BUY'
-      ? `1px solid ${alpha(theme.palette.primary.main, 0.5)}`
-      : `1px solid ${alpha('#F44336', 0.4)}`,
-  boxShadow: `
-    0 2px 8px ${alpha(tradetype === 'BUY' ? theme.palette.primary.main : '#F44336', 0.15)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+      ? `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`
+      : `1.5px solid ${alpha('#F44336', 0.3)}`,
+  boxShadow: 'none'
 }));
 
 const VolumeIndicator = styled('div')(({ theme, volume }) => ({
@@ -191,11 +173,9 @@ const VolumeIndicator = styled('div')(({ theme, volume }) => ({
   top: 0,
   height: '100%',
   width: `${volume}%`,
-  background: `linear-gradient(90deg, 
-    ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.05)'} 0%, 
-    ${
-      theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.02)' : 'rgba(33, 150, 243, 0.01)'
-    } 100%)`,
+  background: theme.palette.mode === 'dark'
+    ? 'rgba(33, 150, 243, 0.04)'
+    : 'rgba(33, 150, 243, 0.02)',
   transition: 'width 0.3s ease-in-out',
   borderRadius: '12px'
 }));

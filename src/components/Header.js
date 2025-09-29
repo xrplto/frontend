@@ -246,33 +246,21 @@ const HeaderWrapper = styled(Box)(
     right: 0;
     z-index: 1100;
     background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
-    border-bottom: 1px solid ${
-      theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'
-    };
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+    border-bottom: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
+    box-shadow: none;
     overflow: hidden;
-    
+
     ${theme.breakpoints.down('sm')} {
       height: ${theme.spacing(5)};
       background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
     }
-    
+
     &::before {
       display: none;
     }
-    
+
     &::after {
-      content: "";
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: linear-gradient(to right, 
-        ${alpha(theme.palette.divider, 0)}, 
-        ${alpha(theme.palette.divider, 0.15)}, 
-        ${alpha(theme.palette.divider, 0)});
-      opacity: 0.8;
+      display: none;
     }
 `
 );
@@ -307,41 +295,22 @@ const StyledMenuItem = styled(MenuItem, {
   ({ darkMode, theme }) => `
     color: ${darkMode ? 'white' : theme.palette.text.primary};
     margin: 4px 8px;
-    border-radius: 10px;
-    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    background: 'transparent';
-    border: 1px solid ${alpha(theme.palette.divider, 0.1)};
-    box-shadow: 
-      0 1px 4px ${alpha(theme.palette.common.black, 0.05)}, 
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.05)};
+    border-radius: 12px;
+    background: transparent;
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
+    box-shadow: none;
     position: relative;
     overflow: hidden;
-    
+
     &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, ${alpha(
-        theme.palette.primary.main,
-        0.08
-      )}, transparent);
-      transition: left 0.4s ease;
+      display: none;
     }
-    
+
     &:hover {
       color: ${theme.palette.primary.main};
-      background: 'transparent';
-      border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
-      box-shadow: 
-        0 4px 16px ${alpha(theme.palette.primary.main, 0.12)},
-        inset 0 1px 2px ${alpha(theme.palette.common.white, 0.1)};
-      
-      &::before {
-        left: 100%;
-      }
+      background: ${alpha(theme.palette.primary.main, 0.04)};
+      border: 1.5px solid ${alpha(theme.palette.primary.main, 0.3)};
+      box-shadow: none;
     }
 `
 );
@@ -553,34 +522,18 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       left: tokensAnchorEl ? tokensAnchorEl.offsetLeft : 0,
                       mt: 0,
                       minWidth: 600,
-                      borderRadius: 2,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      boxShadow:
-                        theme.palette.mode === 'dark'
-                          ? `0 4px 20px ${alpha('#000000', 0.3)}`
-                          : `0 4px 20px ${alpha('#000000', 0.08)}`,
+                      borderRadius: '12px',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      boxShadow: 'none',
                       bgcolor:
                         theme.header?.background ||
                         (theme.palette.mode === 'dark'
-                          ? alpha('#000000', 0.95)
+                          ? alpha('#000000', 0.98)
                           : alpha('#ffffff', 0.98)),
-                      backdropFilter: 'blur(20px)',
-                      WebkitBackdropFilter: 'blur(20px)',
                       overflow: 'hidden',
                       zIndex: 2147483647,
                       '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background:
-                          theme.palette.mode === 'dark'
-                            ? `linear-gradient(135deg, ${alpha('#ffffff', 0.03)} 0%, ${alpha('#ffffff', 0.01)} 100%)`
-                            : `linear-gradient(135deg, ${alpha('#ffffff', 0.6)} 0%, ${alpha('#ffffff', 0.3)} 100%)`,
-                        pointerEvents: 'none',
-                        zIndex: -1
+                        display: 'none'
                       }
                     }}
                   >
@@ -891,13 +844,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     minWidth: '32px',
                     width: '32px',
                     height: '32px',
-                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    borderRadius: '6px',
+                    backgroundColor: 'transparent',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    borderRadius: '12px',
                     ml: 0.5,
                     '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                      borderColor: alpha(theme.palette.primary.main, 0.2)
+                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                      borderColor: alpha(theme.palette.primary.main, 0.3)
                     }
                   }}
                   title="Settings"
@@ -922,15 +875,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     sx: {
                       mt: 1,
                       minWidth: 240,
-                      borderRadius: '8px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderRadius: '12px',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
                       background: theme.palette.mode === 'dark'
-                        ? alpha('#000000', 0.95)
+                        ? alpha('#000000', 0.98)
                         : alpha('#ffffff', 0.98),
-                      backdropFilter: 'blur(12px)',
-                      boxShadow: theme.palette.mode === 'dark'
-                        ? '0 4px 20px rgba(0, 0, 0, 0.3)'
-                        : '0 4px 20px rgba(0, 0, 0, 0.1)',
+                      boxShadow: 'none',
                       '& .MuiList-root': {
                         padding: '8px'
                       }
