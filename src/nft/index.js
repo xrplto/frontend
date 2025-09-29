@@ -10,7 +10,7 @@ const NFToken = {
 // Components
 import NFTDetails from './NFTDetails';
 import NFTActions from './NFTActions';
-import NFTActionsBulk from './NFTActionsBulk';
+import NFTActionsBulk from '../NFTCollection/NFTActionsBulk';
 
 export default function Detail({ nft }) {
   const theme = useTheme();

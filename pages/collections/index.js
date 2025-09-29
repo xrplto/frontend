@@ -4,7 +4,7 @@ import { styled, Box, Container, Toolbar } from '@mui/material';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import AllCollections from 'src/collection/AllCollections';
+import AllCollections from 'src/NFTcollection/AllCollections';
 import ScrollToTop from 'src/components/ScrollToTop';
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
