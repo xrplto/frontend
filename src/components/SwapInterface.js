@@ -88,15 +88,16 @@ import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
-  loading: () => <div>Loading orders...</div>,
-  ssr: false
-});
-// Orderbook / Tx details side panel (used in orderbook mode)
-const TransactionDetailsPanel = dynamic(
-  () => import('src/TokenDetail/common/TransactionDetailsPanel'),
-  { ssr: false }
-);
+// Commented out missing components - these files don't exist
+// const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
+//   loading: () => <div>Loading orders...</div>,
+//   ssr: false
+// });
+// // Orderbook / Tx details side panel (used in orderbook mode)
+// const TransactionDetailsPanel = dynamic(
+//   () => import('src/TokenDetail/common/TransactionDetailsPanel'),
+//   { ssr: false }
+// );
 
 // Router
 import { useRouter } from 'next/router';
@@ -3630,7 +3631,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     )}
 
                     {/* User's Open Orders - Display when button is clicked */}
-                    {showOrders && accountProfile?.account && (
+                    {/* Commented out Orders component - file doesn't exist */}
+                    {/* {showOrders && accountProfile?.account && (
                       <Box sx={{ mb: 2 }}>
                         {
                           <Box
@@ -3665,7 +3667,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           </Box>
                         }
                       </Box>
-                    )}
+                    )} */}
 
                     {/* Transaction Summary */}
                     {amount1 && amount2 && (
@@ -4018,7 +4020,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </Stack>
 
               {/* Orderbook Drawer (embedded) using TransactionDetailsPanel) */}
-              <TransactionDetailsPanel
+              {/* Commented out TransactionDetailsPanel - file doesn't exist */}
+              {/* <TransactionDetailsPanel
                 open={showOrderbook && orderType === 'limit'}
                 onClose={() => setShowOrderbook(false)}
                 mode="orderbook"
@@ -4042,7 +4045,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     setOrderType('limit');
                   }
                 }}
-              />
+              /> */}
             </Stack>
           </Box>
         </Box>

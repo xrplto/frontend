@@ -11,9 +11,9 @@ import { AppContext } from 'src/AppContext';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import Collection from 'src/collection';
+import Collection from 'src/NFTCollection/CollectionView';
 import ScrollToTop from 'src/components/ScrollToTop';
-import CollectionBreadcrumb from 'src/collection/CollectionBreadcrumb';
+import CollectionBreadcrumb from 'src/NFTCollection/CollectionBreadcrumb';
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';

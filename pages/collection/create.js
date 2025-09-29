@@ -4,7 +4,7 @@ import { Box, Container, styled, Toolbar } from '@mui/material';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import CreateCollection from 'src/collection/create';
+import CreateCollection from 'src/NFTCollection/create';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled(Box)(

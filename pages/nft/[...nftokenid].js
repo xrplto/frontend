@@ -12,7 +12,7 @@ import { getNftCoverUrl } from 'src/utils/parseUtils';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import CollectionBreadcrumb from 'src/collection/CollectionBreadcrumb';
+import CollectionBreadcrumb from 'src/NFTCollection/CollectionBreadcrumb';
 import { useContext } from 'react';
 const TokenDetail = lazy(() => import('src/nft'));
 import useWebSocket from 'react-use-websocket';

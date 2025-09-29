@@ -12,7 +12,7 @@ import { AppContext } from 'src/AppContext';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import EditCollection from 'src/collection/edit';
+import EditCollection from 'src/NFTCollection/edit';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled(Box)(
