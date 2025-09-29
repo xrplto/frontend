@@ -42,7 +42,7 @@ const OAuthCallback = () => {
           // Exchange code for token with Twitter
           const redirectUri = sessionStorage.getItem('twitter_redirect_uri') || 'http://localhost:3002/callback';
 
-          const response = await fetch('https://api.xrpl.to/api/auth/twitter/exchange', {
+          const response = await fetch('https://api.xrpl.to/api/oauth/twitter/exchange', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json'
