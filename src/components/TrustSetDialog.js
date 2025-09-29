@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, forwardRef } from 'react';
 import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 // Material
@@ -44,7 +44,15 @@ import Decimal from 'decimal.js-light';
 import { ConnectWallet } from './WalletConnectModal';
 import { enqueueSnackbar } from 'notistack';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-import CustomDialog from './Dialog';
+// Removed import of Dialog.js - component inlined below
+import Slide from '@mui/material/Slide';
+import DialogActions from '@mui/material/DialogActions';
+import Grid from '@mui/material/Grid';
+
+// Inline Dialog Transition component
+const DialogTransition = forwardRef(function Transition(props, ref) {
+  return <Slide direction="up" ref={ref} {...props} />;
+});
 
 // Lazy load XRPL dependencies for device authentication
 let Client, Wallet, CryptoJS;
@@ -799,13 +807,39 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
         nextUrl={nextUrl}
       />
 
-      <CustomDialog
+      {/* Inline Dialog implementation (previously CustomDialog) */}
+      <Dialog
         open={openConfirm}
-        content={content}
-        title={stepTitle}
-        handleClose={handleConfirmClose}
-        handleContinue={handleConfirmContinue}
-      />
+        TransitionComponent={DialogTransition}
+        keepMounted
+        onClose={handleConfirmClose}
+        aria-describedby="alert-dialog-slide-description"
+        PaperProps={{
+          sx: {
+            maxWidth: '300px'
+          }
+        }}
+        sx={{
+          zIndex: 1304
+        }}
+      >
+        <DialogTitle sx={{ textAlign: 'center' }}>{stepTitle}</DialogTitle>
+        <DialogContent sx={{ textAlign: 'center' }}>{content}</DialogContent>
+        <DialogActions>
+          <Grid container>
+            <Grid size={{ xs: 6 }}>
+              <Button fullWidth onClick={handleConfirmClose}>
+                Cancel
+              </Button>
+            </Grid>
+            <Grid size={{ xs: 6 }}>
+              <Button fullWidth onClick={handleConfirmContinue} color="error">
+                Continue
+              </Button>
+            </Grid>
+          </Grid>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }

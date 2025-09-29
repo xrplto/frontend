@@ -6,7 +6,8 @@ import React, {
   useMemo,
   useRef,
   lazy,
-  Suspense
+  Suspense,
+  createContext
 } from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
@@ -54,7 +55,7 @@ import {
   Button
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { TabContext, TabPanel } from '../components/TabComponents';
+// Removed import of TabComponents.js - components inlined below
 import {
   Accordion,
   AccordionSummary,
@@ -105,6 +106,27 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { AppContext } from 'src/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
 import Watch from 'src/components/Watch';
+
+// Inline Tab Components (previously TabComponents.js)
+const TabContextProvider = createContext();
+
+const TabContext = ({ value, children }) => {
+  return <TabContextProvider.Provider value={value}>{children}</TabContextProvider.Provider>;
+};
+
+const TabPanel = ({ value, children, sx = {}, ...props }) => {
+  const currentValue = useContext(TabContextProvider);
+
+  if (currentValue !== value) {
+    return null;
+  }
+
+  return (
+    <Box sx={sx} {...props}>
+      {children}
+    </Box>
+  );
+};
 // Constants
 const getMinterName = (account) => {
   // Function to get minter name for an account

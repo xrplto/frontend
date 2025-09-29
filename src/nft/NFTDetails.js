@@ -48,8 +48,14 @@ import { fVolume, fNumber } from 'src/utils/formatters';
 import { convertHexToString, parseNFTokenID, getNftFilesUrls } from 'src/utils/parseUtils';
 
 // Components
-import FlagsContainer from 'src/components/Flags';
+// Removed import of Flags.js - component inlined below
 import Tabs from './Tabs';
+
+// Material UI Icons for Flags component
+import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 // Translation function
 function t(key) {
@@ -664,7 +670,29 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             <Stack direction="row" alignItems="center" spacing={0.5}>
               <Label sx={{ mb: 0 }}>Flags:</Label>
               <Box sx={{ transform: 'scale(0.85)', transformOrigin: 'left' }}>
-                <FlagsContainer Flags={flag} />
+                {/* Inline Flags component (previously FlagsContainer) */}
+                <Stack direction="row" alignItems="center" justifyContent="start" sx={{ fontSize: 20, gap: 2 }}>
+                  {(flag & 0x00000001) !== 0 && (
+                    <Tooltip title={<Typography sx={{ color: 'white' }}>Burnable</Typography>}>
+                      <LocalFireDepartmentIcon />
+                    </Tooltip>
+                  )}
+                  {(flag & 0x00000002) !== 0 && (
+                    <Tooltip title={<Typography sx={{ color: 'white' }}>OnlyXRP</Typography>}>
+                      <CurrencyExchangeIcon />
+                    </Tooltip>
+                  )}
+                  {(flag & 0x00000004) !== 0 && (
+                    <Tooltip title={<Typography sx={{ color: 'white' }}>TrustLine</Typography>}>
+                      <VerifiedUserIcon />
+                    </Tooltip>
+                  )}
+                  {(flag & 0x00000008) !== 0 && (
+                    <Tooltip title={<Typography sx={{ color: 'white' }}>Transferable</Typography>}>
+                      <SwapHorizIcon />
+                    </Tooltip>
+                  )}
+                </Stack>
               </Box>
             </Stack>
           </Grid>

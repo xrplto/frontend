@@ -51,7 +51,58 @@ import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Components
-import EditDialog from './EditDialog';
+// Removed import of EditDialog.js - component inlined below
+import { Edit as EditIcon } from '@mui/icons-material';
+
+// Inline EditDialog component (previously EditDialog.js)
+const EditDialog = ({ label, value, setValue }) => {
+  const [val, setVal] = useState(value ? value : '');
+  const [open, setOpen] = useState(false);
+
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setVal(value);
+    setOpen(false);
+  };
+
+  const handleOK = () => {
+    setValue(val);
+    setOpen(false);
+  };
+
+  const onChangeValue = (event) => {
+    setVal(event.target.value);
+  };
+
+  return (
+    <div>
+      <IconButton onClick={handleClickOpen} edge="end" aria-label="edit" size="small">
+        <EditIcon fontSize="inherit" />
+      </IconButton>
+      <Dialog open={open} onClose={handleClose}>
+        <DialogContent>
+          <TextField
+            value={val}
+            onChange={onChangeValue}
+            autoFocus
+            margin="dense"
+            id="name"
+            label={label}
+            variant="standard"
+            style={{ width: '300px' }}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleOK}>OK</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
 
 const AdminDialog = styled(Dialog)(({ theme }) => ({
   // boxShadow: theme.customShadows.z0,

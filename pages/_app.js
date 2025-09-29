@@ -10,6 +10,7 @@ import { ContextProvider, AppContext } from 'src/AppContext';
 import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
+import { Alert, Slide, Snackbar } from '@mui/material';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {
@@ -39,10 +40,7 @@ if (typeof window !== 'undefined') {
 // Error logging handled by ErrorDebugger component
 
 // Lazy load non-critical components
-const XSnackbar = dynamic(() => import('src/components/Snackbar'), {
-  ssr: false,
-  loading: () => null
-});
+// Removed dynamic import of Snackbar.js - component inlined below
 const TransactionAlert = dynamic(() => import('src/components/TransactionAlert'), {
   ssr: false,
   loading: () => null
@@ -307,7 +305,22 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
                 <AppPageLayout>
                   <Component {...pageProps} />
                 </AppPageLayout>
-                <XSnackbar isOpen={isOpen} message={msg} variant={variant} close={closeSnackbar} />
+                {/* Inline Snackbar component (previously XSnackbar) */}
+                <Snackbar
+                  open={isOpen}
+                  autoHideDuration={2000}
+                  onClose={(event, reason) => {
+                    if (reason === 'clickaway') return;
+                    closeSnackbar();
+                  }}
+                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                  TransitionComponent={(props) => <Slide {...props} direction="left" />}
+                  key="key_self_snackbar"
+                >
+                  <Alert onClose={closeSnackbar} severity={variant} sx={{ width: '100%' }}>
+                    {msg}
+                  </Alert>
+                </Snackbar>
                 <TransactionAlert />
                 {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
               </SnackbarProvider>
