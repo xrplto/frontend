@@ -38,7 +38,6 @@ import {
 } from '@mui/icons-material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import useDebounce from 'src/hooks';
 import { AppContext } from 'src/AppContext';
 import { ConnectWallet } from 'src/components/Wallet';
 import { useDispatch, useSelector } from 'react-redux';
@@ -47,6 +46,27 @@ import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactio
 import { enqueueSnackbar } from 'notistack';
 // QRDialog removed
 import Decimal from 'decimal.js-light';
+
+// Debounce hook with proper cleanup
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    // Only set timer if delay is positive
+    if (delay <= 0) {
+      setDebouncedValue(value);
+      return;
+    }
+
+    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 const PageWrapper = styled.div`
   min-height: 100vh;
