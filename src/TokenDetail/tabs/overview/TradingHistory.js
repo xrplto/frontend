@@ -47,7 +47,14 @@ import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import CloseIcon from '@mui/icons-material/Close';
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
-  return `https://xrpl.to/api/token_logo/${issuer}/${currency}`;
+  // XRP has a special MD5
+  if (currency === 'XRP') {
+    return 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
+  }
+  // Calculate MD5 for the token
+  const tokenIdentifier = issuer + '_' + currency;
+  const md5Hash = MD5(tokenIdentifier).toString();
+  return `https://s1.xrpl.to/token/${md5Hash}`;
 };
 const decodeCurrency = (currency) => {
   if (currency === 'XRP') return 'XRP';
