@@ -997,7 +997,7 @@ const getTransactionDescription = (txData) => {
             const rate = new Decimal(TakerGets.value || dropsToXrp(TakerGets)).div(
               TakerPays.value || dropsToXrp(TakerPays)
             );
-            return rate.toFormat(rate.lt(0.000001) ? 15 : 8);
+            return formatDecimal(rate, rate.lt(0.000001) ? 15 : 8);
           })()} ${getCurrency(TakerGets)}`,
           OfferSequence > 0 ? `Replaces order #${OfferSequence}` : 'New order',
           `Network fee: ${dropsToXrp(Fee)} XRP`,
@@ -1189,70 +1189,60 @@ const TransactionSummaryCard = ({ txData }) => {
     <Card
       elevation={0}
       sx={{
-        mb: 3,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        borderRadius: 3
+        mb: 2.5,
+        background: 'transparent',
+        border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+        borderRadius: '12px'
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Stack direction="row" spacing={2} alignItems="flex-start" mb={3}>
-          <Box
-            sx={{
-              p: 1.5,
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              color: theme.palette.primary.main
-            }}
-          >
-            {getTransactionIcon()}
-          </Box>
+      <CardContent sx={{ p: 2.5 }}>
+        <Stack direction="row" spacing={1.5} alignItems="flex-start" mb={2}>
           <Box flex={1}>
             <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-              <Typography variant="h5" component="h2">
+              <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
                 {description.title}
               </Typography>
               <Chip
-                icon={isSuccess ? <CheckCircleIcon /> : <ErrorIcon />}
                 label={isSuccess ? 'Success' : 'Failed'}
                 color={isSuccess ? 'success' : 'error'}
                 size="small"
                 variant="outlined"
+                sx={{ height: 22, fontSize: '0.75rem' }}
               />
             </Stack>
-            <Typography variant="body1" color="text.primary" sx={{ mb: 2, lineHeight: 1.6 }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.5, fontSize: '0.95rem' }}>
               {description.description}
             </Typography>
 
             <Stack
               direction={{ xs: 'column', sm: 'row' }}
-              spacing={3}
+              spacing={2}
               divider={<Divider orientation="vertical" flexItem />}
             >
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                   Hash
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
+                  sx={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.85rem' }}
                 >
                   {hash.slice(0, 16)}...
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                   Ledger #{ledger_index}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
                   {formatDistanceToNow(new Date(rippleTimeToISO8601(date)))} ago
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
                   Network Fee
                 </Typography>
-                <Typography variant="body2">{dropsToXrp(Fee)} XRP</Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>{dropsToXrp(Fee)} XRP</Typography>
               </Box>
             </Stack>
           </Box>
@@ -1260,17 +1250,18 @@ const TransactionSummaryCard = ({ txData }) => {
 
         {(Amount || deliveredAmount) && (
           <Box
-            p={2}
+            p={1.5}
             sx={{
-              background: 'transparent',
+              background: alpha(theme.palette.divider, 0.04),
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              borderRadius: 2
+              borderRadius: '8px',
+              mt: 1.5
             }}
           >
-            <Typography variant="caption" color="text.secondary">
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
               Amount
             </Typography>
-            <Box mt={1}>
+            <Box mt={0.5}>
               <AmountDisplay amount={deliveredAmount || Amount} variant="h6" />
             </Box>
           </Box>
@@ -1852,29 +1843,14 @@ const TransactionDetails = ({ txData }) => {
 
       <Box
         sx={{
-          p: { xs: 2, sm: 3, md: 4 },
-          borderRadius: 3,
+          p: 2.5,
+          borderRadius: '12px',
           background: 'transparent',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          boxShadow: `
-            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-          '&:hover': {
-            transform: { xs: 'none', sm: 'translateY(-2px)' },
-            boxShadow: `
-              0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-              0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-            border: `1px solid ${alpha(theme.palette.divider, 0.25)}`
-          }
+          border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <Typography variant="h5" sx={{ wordBreak: 'break-all', mr: 2 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+          <Typography variant="h6" sx={{ wordBreak: 'break-all', mr: 1.5, fontWeight: 500 }}>
             Transaction Details
           </Typography>
           <Tooltip title={copied ? 'Copied!' : 'Copy Hash'}>
@@ -1884,20 +1860,18 @@ const TransactionDetails = ({ txData }) => {
           </Tooltip>
         </Box>
 
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {/* Main Transaction Details */}
           <Grid size={{ xs: 12 }}>
             <Box
               sx={{
-                p: 3,
-                background: 'transparent',
-                backdropFilter: 'none',
-                WebkitBackdropFilter: 'none',
+                p: 2,
+                background: alpha(theme.palette.divider, 0.04),
                 border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                borderRadius: 2
+                borderRadius: '8px'
               }}
             >
-              <Typography variant="h6" gutterBottom>
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
                 Key Information
               </Typography>
               <Stack spacing={2}>
@@ -3004,8 +2978,8 @@ const TransactionDetails = ({ txData }) => {
                           if (
                             paidValue.isZero() ||
                             gotValue.isZero() ||
-                            !paidValue.isFinite() ||
-                            !gotValue.isFinite()
+                            !paidValue.isFinite ||
+                            !gotValue.isFinite
                           ) {
                             return (
                               <Typography variant="body2" color="text.secondary">
@@ -3018,16 +2992,18 @@ const TransactionDetails = ({ txData }) => {
                             <>
                               <Typography variant="body2">
                                 1 {displayExchange.got.currency} ={' '}
-                                {paidValue
-                                  .div(gotValue)
-                                  .toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)}{' '}
+                                {(() => {
+                                  const rate = paidValue.div(gotValue);
+                                  return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
+                                })()}{' '}
                                 {displayExchange.paid.currency}
                               </Typography>
                               <Typography variant="body2">
                                 1 {displayExchange.paid.currency} ={' '}
-                                {gotValue
-                                  .div(paidValue)
-                                  .toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)}{' '}
+                                {(() => {
+                                  const rate = gotValue.div(paidValue);
+                                  return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
+                                })()}{' '}
                                 {displayExchange.got.currency}
                               </Typography>
                             </>
@@ -3239,8 +3215,8 @@ const TransactionDetails = ({ txData }) => {
                         if (
                           paidValue.isZero() ||
                           gotValue.isZero() ||
-                          !paidValue.isFinite() ||
-                          !gotValue.isFinite()
+                          !paidValue.isFinite ||
+                          !gotValue.isFinite
                         ) {
                           return (
                             <Typography variant="body2" color="text.secondary">
@@ -3253,16 +3229,18 @@ const TransactionDetails = ({ txData }) => {
                           <>
                             <Typography variant="body2">
                               1 {displayExchange.got.currency} ={' '}
-                              {paidValue
-                                .div(gotValue)
-                                .toFormat(paidValue.div(gotValue).lt(0.000001) ? 15 : 10)}{' '}
+                              {(() => {
+                                const rate = paidValue.div(gotValue);
+                                return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
+                              })()}{' '}
                               {displayExchange.paid.currency}
                             </Typography>
                             <Typography variant="body2">
                               1 {displayExchange.paid.currency} ={' '}
-                              {gotValue
-                                .div(paidValue)
-                                .toFormat(gotValue.div(paidValue).lt(0.000001) ? 15 : 10)}{' '}
+                              {(() => {
+                                const rate = gotValue.div(paidValue);
+                                return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
+                              })()}{' '}
                               {displayExchange.got.currency}
                             </Typography>
                           </>
