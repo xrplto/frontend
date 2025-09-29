@@ -314,7 +314,16 @@ const WalletContent = ({
   handleAdditionalPinChange,
   handleAdditionalPinKeyDown,
   handleAdditionalWalletPinSubmit,
-  additionalPinRefs
+  additionalPinRefs,
+  showSeedDialog,
+  seedAuthStatus,
+  seedPassword,
+  setSeedPassword,
+  showSeedPassword,
+  setShowSeedPassword,
+  handleSeedPasswordSubmit,
+  setShowSeedDialog,
+  setSeedAuthStatus
 }) => {
   return (
     <>
@@ -344,43 +353,21 @@ const WalletContent = ({
             }}>
               {truncateAccount(accountLogin, 8)}
             </Typography>
-            <Button
-              size="small"
-              onClick={() => {
-                navigator.clipboard.writeText(accountLogin).then(() => {
-                  openSnackbar('Address copied!', 'success');
-                });
-              }}
-              sx={{
-                p: 0.5,
-                fontSize: '0.8rem',
-                fontWeight: 400,
-                textTransform: 'none',
-                '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.04)
-                }
-              }}
-            >
-              Copy
-            </Button>
           </Stack>
           <Stack direction="row" spacing={0.5}>
-            <Button
-              size="small"
+            <Typography
               onClick={onBackupSeed}
               sx={{
-                p: 0.5,
-                fontSize: '0.8rem',
-                fontWeight: 400,
-                textTransform: 'none',
+                fontSize: '0.7rem',
+                opacity: 0.5,
+                cursor: 'pointer',
                 '&:hover': {
-                  background: alpha(theme.palette.warning.main, 0.04)
+                  opacity: 0.8
                 }
               }}
-              title="Backup Seed"
             >
-              Backup
-            </Button>
+              backup
+            </Typography>
             <Button
               size="small"
               onClick={onClose}
@@ -685,6 +672,7 @@ const WalletContent = ({
         </Box>
       )}
 
+
       {/* Bottom Actions */}
       <Box sx={{
         p: 1.5,
@@ -801,6 +789,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
+  const [seedPassword, setSeedPassword] = useState('');
+  const [showSeedPassword, setShowSeedPassword] = useState(false);
   // OAuth wallet manager is now part of unified storage
 
   // Additional wallet generation states
@@ -1331,6 +1321,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
+  const handleSeedPasswordSubmit = async () => {
+    const profile = accountProfile;
+    if (!seedPassword) {
+      openSnackbar('Please enter password', 'error');
+      return;
+    }
+
+    try {
+      const wallet = await walletStorage.getWallet(profile.address, seedPassword);
+      if (wallet && wallet.seed) {
+        setSeedAuthStatus('success');
+        setDisplaySeed(wallet.seed);
+        setSeedBlurred(true);
+        setSeedPassword('');
+        setShowSeedPassword(false);
+      } else {
+        throw new Error('Wallet not found');
+      }
+    } catch (error) {
+      openSnackbar('Incorrect password', 'error');
+      setSeedPassword('');
+    }
+  };
+
   const handleAdditionalPinKeyDown = (index, e) => {
     if (e.key === 'Backspace' && !additionalWalletPin[index] && index > 0) {
       additionalPinRefs.current[index - 1]?.focus();
@@ -1625,28 +1639,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     try {
       if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
-        // OAuth wallets - ask for password
-        const password = prompt('Enter your password to view seed:');
-        if (!password) {
-          setSeedAuthStatus('idle');
-          setShowSeedDialog(false);
-          return;
-        }
-
-        try {
-          const wallet = await walletStorage.getWallet(profile.address, password);
-          if (wallet && wallet.seed) {
-            setSeedAuthStatus('success');
-            setDisplaySeed(wallet.seed);
-            setSeedBlurred(true);
-          } else {
-            throw new Error('Wallet not found');
-          }
-        } catch (error) {
-          setSeedAuthStatus('error');
-          openSnackbar('Failed to decrypt wallet: ' + error.message, 'error');
-          return;
-        }
+        // OAuth wallets - show password input
+        setSeedAuthStatus('password-required');
+        return;
       } else if (profile.wallet_type === 'pin') {
         // PIN wallets
         const pin = prompt('Enter your 6-digit PIN to view seed:');
@@ -2294,6 +2289,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     handleAdditionalWalletPinSubmit={handleAdditionalWalletPinSubmit}
                     additionalPinRefs={additionalPinRefs}
                     isEmbedded={false}
+                    showSeedDialog={showSeedDialog}
+                    seedAuthStatus={seedAuthStatus}
+                    seedPassword={seedPassword}
+                    setSeedPassword={setSeedPassword}
+                    showSeedPassword={showSeedPassword}
+                    setShowSeedPassword={setShowSeedPassword}
+                    handleSeedPasswordSubmit={handleSeedPasswordSubmit}
+                    setShowSeedDialog={setShowSeedDialog}
+                    setSeedAuthStatus={setSeedAuthStatus}
                   />
                 ) : (
                   <Box sx={{ p: 3 }}>
@@ -2312,6 +2316,75 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
                           <Typography>Loading...</Typography>
                           <Typography>Authenticating with passkey...</Typography>
+                        </Box>
+                      )}
+
+                      {seedAuthStatus === 'password-required' && (
+                        <Box sx={{ p: 2 }}>
+                          <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', opacity: 0.8 }}>
+                            Enter your password to view the seed phrase
+                          </Typography>
+                          <TextField
+                            fullWidth
+                            type={showSeedPassword ? 'text' : 'password'}
+                            placeholder="Password"
+                            value={seedPassword}
+                            onChange={(e) => setSeedPassword(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSeedPasswordSubmit()}
+                            autoFocus
+                            size="small"
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() => setShowSeedPassword(!showSeedPassword)}
+                                    edge="end"
+                                  >
+                                    {showSeedPassword ? <VisibilityOff /> : <Visibility />}
+                                  </IconButton>
+                                </InputAdornment>
+                              )
+                            }}
+                            sx={{
+                              '& .MuiInputBase-input': {
+                                fontSize: '0.9rem',
+                                py: 1
+                              }
+                            }}
+                          />
+                          <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => {
+                                setShowSeedDialog(false);
+                                setSeedAuthStatus('idle');
+                                setSeedPassword('');
+                                setShowSeedPassword(false);
+                              }}
+                              sx={{
+                                fontSize: '0.8rem',
+                                py: 0.6,
+                                px: 2
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="contained"
+                              size="small"
+                              onClick={handleSeedPasswordSubmit}
+                              disabled={!seedPassword}
+                              sx={{
+                                fontSize: '0.8rem',
+                                py: 0.6,
+                                px: 2
+                              }}
+                            >
+                              View Seed
+                            </Button>
+                          </Box>
                         </Box>
                       )}
 
