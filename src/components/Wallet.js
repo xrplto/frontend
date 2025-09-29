@@ -1040,9 +1040,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setShowOAuthPasswordSetup(true);
       } else {
         // Wallet already setup
-        localStorage.setItem('jwt', jwtToken);
-        localStorage.setItem('authMethod', 'google');
-        localStorage.setItem('user', JSON.stringify(payload));
+        await walletStorage.setSecureItem('jwt', jwtToken);
+        await walletStorage.setSecureItem('authMethod', 'google');
+        await walletStorage.setSecureItem('user', payload);
 
         if (result.wallet) {
           doLogIn(result.wallet, profiles);
@@ -1069,6 +1069,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       const sha256 = async (plain) => {
+        // Check if crypto.subtle is available (HTTPS or localhost)
+        if (!crypto.subtle) {
+          // Fallback: load CryptoJS for SHA256
+          if (!CryptoJS) {
+            await loadDependencies();
+          }
+          const hash = CryptoJS.SHA256(plain);
+          const base64 = CryptoJS.enc.Base64.stringify(hash);
+          return base64
+            .replace(/\+/g, '-')
+            .replace(/\//g, '_')
+            .replace(/=/g, '');
+        }
+
+        // Use native crypto.subtle
         const encoder = new TextEncoder();
         const data = encoder.encode(plain);
         const hash = await crypto.subtle.digest('SHA-256', data);
@@ -1105,8 +1120,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store redirect URI for callback
       sessionStorage.setItem('twitter_redirect_uri', redirectUri);
 
-      // Redirect to Twitter OAuth
-      window.location.href = `https://twitter.com/i/oauth2/authorize?${params}`;
+      // Redirect to X OAuth
+      window.location.href = `https://x.com/i/oauth2/authorize?${params}`;
     } catch (error) {
       openSnackbar('X connect failed: ' + error.message, 'error');
     }
@@ -1193,9 +1208,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         sessionStorage.removeItem('oauth_backend_data');
 
         // Store permanent auth data
-        localStorage.setItem('jwt', token);
-        localStorage.setItem('authMethod', provider);
-        localStorage.setItem('user', JSON.stringify(user));
+        await walletStorage.setSecureItem('jwt', token);
+        await walletStorage.setSecureItem('authMethod', provider);
+        await walletStorage.setSecureItem('user', user);
 
         // Login with the wallet
         doLogIn(result.wallet, profiles);
@@ -1605,8 +1620,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setSeedAuthStatus('authenticating');
 
     try {
-      if (profile.wallet_type === 'pin') {
-        // For PIN wallets, we need the PIN to decrypt from IndexedDB
+      if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
+        // OAuth wallets - ask for password
+        const password = prompt('Enter your password to view seed:');
+        if (!password) {
+          setSeedAuthStatus('idle');
+          setShowSeedDialog(false);
+          return;
+        }
+
+        try {
+          const wallet = await walletStorage.getWallet(profile.address, password);
+          if (wallet && wallet.seed) {
+            setSeedAuthStatus('success');
+            setDisplaySeed(wallet.seed);
+            setSeedBlurred(true);
+          } else {
+            throw new Error('Wallet not found');
+          }
+        } catch (error) {
+          setSeedAuthStatus('error');
+          openSnackbar('Failed to decrypt wallet: ' + error.message, 'error');
+          return;
+        }
+      } else if (profile.wallet_type === 'pin') {
+        // PIN wallets
         const pin = prompt('Enter your 6-digit PIN to view seed:');
         if (!pin) {
           setSeedAuthStatus('idle');
@@ -1622,7 +1660,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             setDisplaySeed(currentWallet.seed);
             setSeedBlurred(true);
           } else {
-            throw new Error('Wallet not found in encrypted storage');
+            throw new Error('Wallet not found');
           }
         } catch (error) {
           setSeedAuthStatus('error');
@@ -1646,7 +1684,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         if (authResponse.id) {
           setSeedAuthStatus('success');
-          const seed = profile.seed || 'Seed not available for device wallet';
+          const seed = profile.seed || 'Seed not available';
           setDisplaySeed(seed);
           setSeedBlurred(true);
         }
@@ -1669,6 +1707,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setIsCreatingWallet(false);
   };
 
+  // Debug function to delete IndexedDB
+  const handleDeleteIndexedDB = async () => {
+    if (!confirm('WARNING: This will delete all encrypted wallet data from IndexedDB. Are you sure?')) {
+      return;
+    }
+    try {
+      await indexedDB.deleteDatabase('XRPLWalletDB');
+      openSnackbar('IndexedDB deleted. Please refresh the page.', 'success');
+    } catch (error) {
+      openSnackbar('Failed to delete IndexedDB: ' + error.message, 'error');
+    }
+  };
+
   // Check if returning from OAuth and reopen wallet modal or show password setup
   useEffect(() => {
     // Check if we need to show OAuth password setup
@@ -1679,6 +1730,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // User came from OAuth and needs password setup
       setShowOAuthPasswordSetup(true);
       setOpenWalletModal(false);
+      // Don't clear session data here - we need it for password setup
     } else if (sessionStorage.getItem('wallet_modal_open') === 'true') {
       // Just reopening wallet modal after OAuth redirect
       sessionStorage.removeItem('wallet_modal_open');
@@ -1753,19 +1805,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
   }, []);
 
-  // Load profiles from IndexedDB
+  // Load profiles from localStorage on mount
   useEffect(() => {
     const initializeStorage = async () => {
       try {
-        // Only load profiles from IndexedDB on initial mount
-        const storedProfiles = await walletStorage.getProfiles();
-        if (storedProfiles.length > 0) {
+        // Load profiles from localStorage (backward compatibility)
+        const storedProfiles = localStorage.getItem('profiles');
+        if (storedProfiles) {
+          const parsedProfiles = JSON.parse(storedProfiles);
 
-          // Clear and set only unique profiles from IndexedDB
+          // Remove duplicates
           const uniqueProfiles = [];
           const seen = new Set();
 
-          storedProfiles.forEach(profile => {
+          parsedProfiles.forEach(profile => {
             if (!seen.has(profile.account)) {
               seen.add(profile.account);
               uniqueProfiles.push(profile);
@@ -2459,10 +2512,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           fontSize: '0.7rem',
                           color: alpha(theme.palette.text.secondary, 0.5),
                           display: 'block',
-                          textAlign: 'center'
+                          textAlign: 'center',
+                          mb: 1
                         }}>
                           Encrypted and stored locally
                         </Typography>
+                        <Button
+                          size="small"
+                          onClick={handleDeleteIndexedDB}
+                          sx={{
+                            fontSize: '0.65rem',
+                            color: alpha(theme.palette.error.main, 0.6),
+                            textTransform: 'none',
+                            display: 'block',
+                            margin: '0 auto',
+                            '&:hover': {
+                              color: theme.palette.error.main
+                            }
+                          }}
+                        >
+                          [Debug] Clear IndexedDB
+                        </Button>
                       </Box>
                     </>
                   ) : (
@@ -2652,7 +2722,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         {/* OAuth Password Setup Dialog */}
         <Dialog
           open={showOAuthPasswordSetup}
-          onClose={() => !isCreatingWallet && setShowOAuthPasswordSetup(false)}
+          onClose={() => {
+            if (!isCreatingWallet) {
+              setShowOAuthPasswordSetup(false);
+              // Clear OAuth session data when closing
+              sessionStorage.removeItem('oauth_temp_token');
+              sessionStorage.removeItem('oauth_temp_provider');
+              sessionStorage.removeItem('oauth_temp_user');
+              sessionStorage.removeItem('oauth_action');
+              sessionStorage.removeItem('oauth_backend_data');
+            }
+          }}
           maxWidth="sm"
           fullWidth
         >
@@ -2716,7 +2796,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Button
                   variant="outlined"
                   fullWidth
-                  onClick={() => setShowOAuthPasswordSetup(false)}
+                  onClick={() => {
+                    setShowOAuthPasswordSetup(false);
+                    // Clear OAuth session data when canceling
+                    sessionStorage.removeItem('oauth_temp_token');
+                    sessionStorage.removeItem('oauth_temp_provider');
+                    sessionStorage.removeItem('oauth_temp_user');
+                    sessionStorage.removeItem('oauth_action');
+                    sessionStorage.removeItem('oauth_backend_data');
+                  }}
                   disabled={isCreatingWallet}
                 >
                   Cancel

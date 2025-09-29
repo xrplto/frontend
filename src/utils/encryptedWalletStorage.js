@@ -13,7 +13,170 @@ export class UnifiedWalletStorage {
   constructor() {
     this.dbName = 'XRPLWalletDB';
     this.walletsStore = 'wallets';
-    this.version = 1;
+    this.version = 5;
+    this.localStorageKey = this.generateLocalStorageKey();
+  }
+
+  // Generate a device-specific key for localStorage encryption
+  generateLocalStorageKey() {
+    if (typeof window === 'undefined') return 'server-side-key';
+
+    // Use browser fingerprinting for key generation
+    const fingerprint = [
+      navigator.userAgent,
+      navigator.language,
+      navigator.hardwareConcurrency,
+      new Date().getTimezoneOffset(),
+      window.screen?.colorDepth,
+      'xrpl-wallet-storage-v1'
+    ].join('|');
+
+    // Simple hash for consistent key
+    let hash = 0;
+    for (let i = 0; i < fingerprint.length; i++) {
+      hash = ((hash << 5) - hash) + fingerprint.charCodeAt(i);
+      hash = hash & hash;
+    }
+    return 'wallet-key-' + Math.abs(hash).toString(36);
+  }
+
+  // Encrypt data for localStorage (using Web Crypto API)
+  async encryptForLocalStorage(data) {
+    const encoder = new TextEncoder();
+    const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(this.localStorageKey),
+      'PBKDF2',
+      false,
+      ['deriveBits', 'deriveKey']
+    );
+
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 100000, // Less iterations for localStorage (faster)
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encoder.encode(dataString)
+    );
+
+    // Combine salt + iv + encrypted data
+    const combined = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+    combined.set(salt, 0);
+    combined.set(iv, salt.length);
+    combined.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+    // Convert to base64 for storage
+    return btoa(String.fromCharCode(...combined));
+  }
+
+  // Decrypt data from localStorage
+  async decryptFromLocalStorage(encryptedData) {
+    try {
+      const encoder = new TextEncoder();
+      const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+
+      const salt = combined.slice(0, 16);
+      const iv = combined.slice(16, 28);
+      const encrypted = combined.slice(28);
+
+      const keyMaterial = await crypto.subtle.importKey(
+        'raw',
+        encoder.encode(this.localStorageKey),
+        'PBKDF2',
+        false,
+        ['deriveBits', 'deriveKey']
+      );
+
+      const key = await crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+
+      const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        encrypted
+      );
+
+      const decoded = new TextDecoder().decode(decrypted);
+      try {
+        return JSON.parse(decoded);
+      } catch {
+        return decoded; // Return as string if not JSON
+      }
+    } catch (error) {
+      console.error('Decryption failed:', error);
+      return null;
+    }
+  }
+
+  // Secure localStorage wrapper methods
+  async setSecureItem(key, value) {
+    if (typeof window === 'undefined') return;
+
+    const encrypted = await this.encryptForLocalStorage(value);
+    localStorage.setItem(key + '_enc', encrypted);
+
+    // Remove any unencrypted version
+    localStorage.removeItem(key);
+  }
+
+  async getSecureItem(key) {
+    if (typeof window === 'undefined') return null;
+
+    // Try encrypted version first
+    const encrypted = localStorage.getItem(key + '_enc');
+    if (encrypted) {
+      return await this.decryptFromLocalStorage(encrypted);
+    }
+
+    // Check for unencrypted version (for migration)
+    const unencrypted = localStorage.getItem(key);
+    if (unencrypted) {
+      try {
+        const parsed = JSON.parse(unencrypted);
+        // Migrate to encrypted storage
+        await this.setSecureItem(key, parsed);
+        return parsed;
+      } catch {
+        // Migrate plain string
+        await this.setSecureItem(key, unencrypted);
+        return unencrypted;
+      }
+    }
+
+    return null;
+  }
+
+  removeSecureItem(key) {
+    if (typeof window === 'undefined') return;
+
+    localStorage.removeItem(key);
+    localStorage.removeItem(key + '_enc');
   }
 
   async initDB() {
@@ -25,17 +188,25 @@ export class UnifiedWalletStorage {
 
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
+        const transaction = event.target.transaction;
 
-        // Create wallets store with exact structure from screenshot
+        // Create or update wallets store
+        let store;
         if (!db.objectStoreNames.contains(this.walletsStore)) {
-          const store = db.createObjectStore(this.walletsStore, {
+          store = db.createObjectStore(this.walletsStore, {
             keyPath: 'id',
             autoIncrement: true
           });
+        } else {
+          store = transaction.objectStore(this.walletsStore);
+        }
 
-          // Add indexes as shown in screenshot
+        // Ensure indexes exist (address is NOT unique to allow duplicates)
+        if (!store.indexNames.contains('active')) {
           store.createIndex('active', 'active', { unique: false });
-          store.createIndex('address', 'address', { unique: true, multiEntry: false });
+        }
+        if (!store.indexNames.contains('address')) {
+          store.createIndex('address', 'address', { unique: false });
         }
       };
     });
@@ -126,7 +297,7 @@ export class UnifiedWalletStorage {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
 
-      // Store with structure matching screenshot
+      // Don't set id - let autoIncrement handle it
       const record = {
         address: walletData.address,
         active: true,
@@ -136,7 +307,10 @@ export class UnifiedWalletStorage {
 
       const request = store.add(record);
 
-      request.onerror = () => reject(request.error);
+      request.onerror = () => {
+        // If duplicate, that's fine - wallet already exists
+        resolve(null);
+      };
       request.onsuccess = () => resolve(request.result);
     });
   }
@@ -298,7 +472,10 @@ export class UnifiedWalletStorage {
 
       const request = store.add(record);
 
-      request.onerror = () => reject(request.error);
+      request.onerror = () => {
+        // If duplicate, that's fine - wallet already exists
+        resolve(null);
+      };
       request.onsuccess = () => resolve(request.result);
     });
   }
@@ -377,9 +554,11 @@ export class UnifiedWalletStorage {
         return {
           success: true,
           wallet: {
+            account: existingWallet.address,
             address: existingWallet.address,
             publicKey: existingWallet.publicKey,
-            seed: existingWallet.seed
+            seed: existingWallet.seed,
+            wallet_type: 'oauth'
           },
           requiresPassword: false
         };
@@ -442,9 +621,11 @@ export class UnifiedWalletStorage {
     return {
       success: true,
       wallet: {
+        account: wallet.address,
         address: wallet.address,
         publicKey: wallet.publicKey,
-        seed: wallet.seed
+        seed: wallet.seed,
+        wallet_type: 'oauth'
       }
     };
   }
@@ -462,9 +643,11 @@ export class UnifiedWalletStorage {
     return {
       success: true,
       wallet: {
+        account: wallet.address,
         address: wallet.address,
         publicKey: wallet.publicKey,
-        seed: wallet.seed
+        seed: wallet.seed,
+        wallet_type: 'oauth'
       }
     };
   }
@@ -490,131 +673,66 @@ export class UnifiedWalletStorage {
   async storeWalletWithSocialId(wallet, profile, password) {
     const walletId = `${profile.provider}_${profile.id}`;
 
-    // Store with password encryption (primary security)
+    // Store only once with user's password
     await this.storeWallet({
       seed: wallet.seed,
       address: wallet.address,
       publicKey: wallet.publicKey,
       wallet_type: 'social',
       provider: profile.provider,
-      provider_id: profile.id
+      provider_id: profile.id,
+      oauth_key: walletId
     }, password);
-
-    // ALSO store with OAuth-derived key for auto-unlock
-    const oauthKey = this.deriveOAuthKey(profile);
-
-    // Use crypto-js for OAuth encryption (simpler for this use case)
-    if (typeof window !== 'undefined' && window.CryptoJS) {
-      const CryptoJS = window.CryptoJS;
-      const encryptedForOAuth = CryptoJS.AES.encrypt(
-        JSON.stringify({
-          seed: wallet.seed,
-          address: wallet.address,
-          publicKey: wallet.publicKey
-        }),
-        oauthKey
-      ).toString();
-
-      // Store OAuth-encrypted version
-      const db = await this.initDB();
-      const tx = db.transaction(['social_mappings'], 'readwrite');
-      await tx.objectStore('social_mappings').put({
-        id: walletId,
-        address: wallet.address,
-        provider: profile.provider,
-        provider_id: profile.id,
-        oauth_encrypted: encryptedForOAuth,
-        created_at: Date.now()
-      });
-    }
   }
 
   /**
-   * Find and decrypt wallet using OAuth identity
+   * Find wallet using OAuth-derived password
    */
   async findWalletBySocialId(walletId) {
-    try {
-      const db = await this.initDB();
-
-      // Check if social_mappings store exists
-      if (!db.objectStoreNames.contains('social_mappings')) {
-        // Need to upgrade DB to add social_mappings
-        db.close();
-        await this.upgradeDBForSocial();
-        const newDb = await this.initDB();
-        return this.findWalletBySocialIdInternal(newDb, walletId);
-      }
-
-      return this.findWalletBySocialIdInternal(db, walletId);
-    } catch (e) {
-      console.error('Find wallet error:', e);
-    }
-    return null;
-  }
-
-  async findWalletBySocialIdInternal(db, walletId) {
-    try {
-      const tx = db.transaction(['social_mappings'], 'readonly');
-      const mapping = await new Promise((resolve, reject) => {
-        const request = tx.objectStore('social_mappings').get(walletId);
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
+    // Ensure CryptoJS is loaded
+    if (typeof window === 'undefined' || !window.CryptoJS) {
+      // Try to wait for it to load
+      await new Promise((resolve) => {
+        let attempts = 0;
+        const checkInterval = setInterval(() => {
+          attempts++;
+          if (window.CryptoJS || attempts > 20) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 100);
       });
 
-      if (mapping && mapping.oauth_encrypted && typeof window !== 'undefined' && window.CryptoJS) {
-        const CryptoJS = window.CryptoJS;
-        const profile = {
-          provider: mapping.provider,
-          id: mapping.provider_id
+      if (!window.CryptoJS) {
+        console.warn('CryptoJS not available for OAuth wallet lookup');
+        return null;
+      }
+    }
+
+    // Generate deterministic wallet from OAuth profile
+    const [provider, id] = walletId.split('_');
+    const profile = { provider, id };
+    const wallet = this.generateDeterministicWallet(profile);
+
+    // Try to get from storage using OAuth-derived password
+    const oauthPassword = this.deriveOAuthKey(profile);
+    try {
+      const stored = await this.getWallet(wallet.address, oauthPassword);
+      if (stored) {
+        return {
+          seed: stored.seed,
+          address: stored.address,
+          publicKey: stored.publicKey,
+          provider,
+          provider_id: id
         };
-        const oauthKey = this.deriveOAuthKey(profile);
-
-        try {
-          const decrypted = CryptoJS.AES.decrypt(mapping.oauth_encrypted, oauthKey);
-          const walletData = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
-
-          // Successfully decrypted - OAuth identity verified!
-          return {
-            seed: walletData.seed,
-            address: walletData.address,
-            publicKey: walletData.publicKey,
-            provider: mapping.provider,
-            provider_id: mapping.provider_id
-          };
-        } catch (e) {
-          console.error('OAuth decrypt failed:', e);
-          return null;
-        }
       }
     } catch (e) {
-      console.error('Error in findWalletBySocialIdInternal:', e);
+      // Wallet not found or wrong password
     }
     return null;
   }
 
-  /**
-   * Upgrade DB to add social_mappings store
-   */
-  async upgradeDBForSocial() {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(this.dbName, this.version + 1);
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => {
-        request.result.close();
-        resolve();
-      };
-
-      request.onupgradeneeded = (event) => {
-        const db = event.target.result;
-
-        // Add social_mappings store if it doesn't exist
-        if (!db.objectStoreNames.contains('social_mappings')) {
-          db.createObjectStore('social_mappings', { keyPath: 'id' });
-        }
-      };
-    });
-  }
 
   /**
    * Derive deterministic key from OAuth profile
@@ -628,11 +746,11 @@ export class UnifiedWalletStorage {
    * Generate deterministic wallet from social profile
    */
   generateDeterministicWallet(profile) {
-    if (typeof window === 'undefined' || !window.CryptoJS) {
-      throw new Error('CryptoJS not available');
-    }
-
+    // CryptoJS should be available at this point
     const CryptoJS = window.CryptoJS;
+    if (!CryptoJS) {
+      throw new Error('CryptoJS not available for wallet generation');
+    }
     const serverSecret = process.env.NEXT_PUBLIC_WALLET_SECRET || 'default-secret';
 
     // Create deterministic seed from profile

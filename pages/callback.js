@@ -9,6 +9,13 @@ const OAuthCallback = () => {
 
   useEffect(() => {
     const handleCallback = async () => {
+      // Prevent double-submission
+      if (sessionStorage.getItem('callback_processing') === 'true') {
+        console.log('Callback already processing, ignoring...');
+        return;
+      }
+      sessionStorage.setItem('callback_processing', 'true');
+
       // Get params from URL
       const urlParams = new URLSearchParams(window.location.search);
       const token = urlParams.get('token');
@@ -20,6 +27,7 @@ const OAuthCallback = () => {
       if (error) {
         // Handle auth error
         console.error('OAuth authentication failed:', error);
+        sessionStorage.removeItem('callback_processing');
         setErrorState({
           title: 'Authentication Cancelled',
           message: 'You cancelled the login process',
@@ -32,15 +40,37 @@ const OAuthCallback = () => {
       // Handle Twitter OAuth 2.0 code exchange
       if (code && state) {
         try {
+          // Check if code already used
+          const usedCode = sessionStorage.getItem('code_used');
+          if (usedCode === code) {
+            throw new Error('Authorization code already used');
+          }
+
           const savedState = sessionStorage.getItem('twitter_state');
           const codeVerifier = sessionStorage.getItem('twitter_verifier');
+          const redirectUri = sessionStorage.getItem('twitter_redirect_uri');
+
+          // Debug logging
+          console.log('OAuth Exchange Debug:', {
+            code: code ? `${code.substring(0, 10)}...` : 'missing',
+            state: state ? 'exists' : 'missing',
+            savedState: savedState ? 'exists' : 'missing',
+            verifier: codeVerifier ? 'exists' : 'missing',
+            redirectUri: redirectUri || 'missing',
+            stateMatch: state === savedState
+          });
+
+          if (!codeVerifier) {
+            throw new Error('Session expired - code verifier missing');
+          }
 
           if (state !== savedState) {
             throw new Error('State mismatch - possible CSRF attack');
           }
 
-          // Exchange code for token with Twitter
-          const redirectUri = sessionStorage.getItem('twitter_redirect_uri') || 'http://localhost:3002/callback';
+          if (!redirectUri) {
+            throw new Error('Redirect URI not found in session');
+          }
 
           const response = await fetch('https://api.xrpl.to/api/oauth/twitter/exchange', {
             method: 'POST',
@@ -58,22 +88,38 @@ const OAuthCallback = () => {
           const data = await response.json();
 
           // Check for token in response
-          if (!data.token) {
-            throw new Error(data.message || 'Failed to exchange code for token');
+          if (!response.ok || !data.token) {
+            console.error('Twitter OAuth failed:', {
+              status: response.status,
+              statusText: response.statusText,
+              data: data
+            });
+            throw new Error(data.message || data.error || `Twitter authentication failed (${response.status})`);
           }
+
+          // Mark code as used
+          sessionStorage.setItem('code_used', code);
 
           // Clean up stored values
           sessionStorage.removeItem('twitter_state');
           sessionStorage.removeItem('twitter_verifier');
           sessionStorage.removeItem('twitter_redirect_uri');
+          sessionStorage.removeItem('callback_processing');
 
           // Process Twitter login with the JWT token
           await processOAuthLogin(data.token, 'twitter', data.user);
         } catch (error) {
           console.error('Twitter OAuth error:', error);
+
+          // Clean up stored values even on error
+          sessionStorage.removeItem('twitter_state');
+          sessionStorage.removeItem('twitter_verifier');
+          sessionStorage.removeItem('twitter_redirect_uri');
+          sessionStorage.removeItem('callback_processing');
+
           setErrorState({
             title: 'X Authentication Failed',
-            message: error.message || 'Failed to complete authentication',
+            message: 'X (Twitter) authentication is currently unavailable. Please try Passkeys or Google instead.',
             provider: 'twitter'
           });
           setIsProcessing(false);
@@ -86,6 +132,7 @@ const OAuthCallback = () => {
         await processOAuthLogin(token, provider);
       } else {
         // No token or code, redirect to login
+        sessionStorage.removeItem('callback_processing');
         setErrorState({
           title: 'Authentication Failed',
           message: 'Missing authentication data',

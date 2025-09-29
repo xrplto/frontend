@@ -11,11 +11,15 @@ import { update_metrics } from 'src/redux/statusSlice';
 // Loader
 import { PuffLoader } from './components/Spinners';
 
+// Encrypted storage for sensitive data
+import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';
+
 export const AppContext = createContext({});
 
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
   const BASE_URL = process.env.API_URL;
+  const walletStorage = new UnifiedWalletStorage();
 
   const [sync, setSync] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -103,27 +107,28 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   }, [profiles]);
 
   useEffect(() => {
-    const profile = window.localStorage.getItem(KEY_ACCOUNT_PROFILE);
-    //const profile = '{"account":"rDsRQWRTRrtzAgK8HH7rcCAZnWeCsJm28K","uuid":"4a3eb58c-aa97-4d48-9ab2-92d90df9a75f"}';
-    if (profile) {
-      const parsedProfile = JSON.parse(profile);
-      setAccountProfile(parsedProfile);
-    }
+    const loadStoredData = async () => {
+      const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
+      if (profile) {
+        setAccountProfile(profile);
+      }
 
-    const profiles = window.localStorage.getItem(KEY_ACCOUNT_PROFILES);
-    if (profiles) {
-      setProfiles(JSON.parse(profiles));
-    }
+      const profiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
+      if (profiles) {
+        setProfiles(profiles);
+      }
+    };
+    loadStoredData();
   }, []);
 
-  const setActiveProfile = (account) => {
+  const setActiveProfile = async (account) => {
     const profile = profiles.find((x) => x.account === account);
     if (!profile) return;
     setAccountProfile(profile);
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILE, profile);
   };
 
-  const doLogIn = (profile, profilesOverride = null) => {
+  const doLogIn = async (profile, profilesOverride = null) => {
     // Debug logging for admin login
 
     // Add token creation timestamp
@@ -133,7 +138,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     };
 
     setAccountProfile(profileWithTimestamp);
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profileWithTimestamp));
+    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILE, profileWithTimestamp);
 
     // const old = profiles.find(x => x.account === profile.account);
     let exist = false;
@@ -150,22 +155,36 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       newProfiles.push(profileWithTimestamp);
     }
 
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
+    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, newProfiles);
     setProfiles(newProfiles);
   };
 
   const doLogOut = () => {
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(null));
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify([]));
+    walletStorage.removeSecureItem(KEY_ACCOUNT_PROFILE);
+    walletStorage.removeSecureItem(KEY_ACCOUNT_PROFILES);
     setAccountProfile(null);
     setProfiles([]);
+
+    // Clear OAuth session data
+    window.sessionStorage.removeItem('oauth_temp_token');
+    window.sessionStorage.removeItem('oauth_temp_provider');
+    window.sessionStorage.removeItem('oauth_temp_user');
+    window.sessionStorage.removeItem('oauth_action');
+    window.sessionStorage.removeItem('oauth_backend_data');
+    window.sessionStorage.removeItem('wallet_modal_open');
+    window.sessionStorage.removeItem('code_used');
+
+    // Clear OAuth auth data
+    walletStorage.removeSecureItem('jwt');
+    walletStorage.removeSecureItem('authMethod');
+    walletStorage.removeSecureItem('user');
   };
 
-  const removeProfile = (account) => {
+  const removeProfile = async (account) => {
     const newProfiles = profiles.filter(function (obj) {
       return obj.account !== account;
     });
-    window.localStorage.setItem(KEY_ACCOUNT_PROFILES, JSON.stringify(newProfiles));
+    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, newProfiles);
     setProfiles(newProfiles);
   };
 
