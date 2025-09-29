@@ -38,9 +38,31 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
   borderRadius: '12px',
   boxShadow: `
-    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
+    0 8px 32px ${alpha(theme.palette.common.black, 0.12)},
     0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
     inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+}));
+
+const RankBadge = styled(Box)(({ theme, rank }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 20,
+  height: 20,
+  borderRadius: '4px',
+  fontWeight: 500,
+  fontSize: '0.65rem',
+  flexShrink: 0,
+  background:
+    rank === 1
+      ? alpha('#FFD700', 0.15)
+      : rank === 2
+        ? alpha('#C0C0C0', 0.15)
+        : rank === 3
+          ? alpha('#CD7F32', 0.15)
+          : alpha(theme.palette.action.selected, 0.3),
+  color: rank === 1 ? '#FFD700' : rank === 2 ? '#8B8B8B' : rank === 3 ? '#CD7F32' : theme.palette.text.secondary,
+  border: `1px solid ${rank === 1 ? alpha('#FFD700', 0.3) : rank === 2 ? alpha('#C0C0C0', 0.3) : rank === 3 ? alpha('#CD7F32', 0.3) : alpha(theme.palette.divider, 0.2)}`
 }));
 
 const StyledPagination = styled(Pagination)(({ theme }) => ({
@@ -235,12 +257,7 @@ const RichList = ({ token, amm }) => {
                   }}
                 >
                   <TableCell>
-                    <Chip
-                      label={`#${rank}`}
-                      size="small"
-                      color={rank <= 3 ? 'primary' : 'default'}
-                      variant={rank <= 3 ? 'filled' : 'outlined'}
-                    />
+                    <RankBadge rank={rank}>{rank}</RankBadge>
                   </TableCell>
                   <TableCell>
                     <Link
