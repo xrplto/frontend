@@ -49,12 +49,6 @@ import { AppContext } from 'src/AppContext';
 import { fNumber, fPercent } from 'src/utils/formatters';
 
 // Components
-import { StatsModal } from 'src/components/TraderStats';
-import dynamic from 'next/dynamic';
-
-const SankeyModal = dynamic(() => import('src/components/SankeyModal'), {
-  loading: () => <CircularProgress />
-});
 
 // Define highlight animation with softer colors
 const highlightAnimation = (theme) => keyframes`
@@ -353,8 +347,6 @@ export default function TopTraders({ token }) {
   const [copiedTrader, setCopiedTrader] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
-  const [sankeyModalOpen, setSankeyModalOpen] = useState(false);
-  const [selectedSankeyAccount, setSelectedSankeyAccount] = useState(null);
 
   useEffect(() => {
     const fetchTopTraders = async () => {
@@ -494,15 +486,6 @@ export default function TopTraders({ token }) {
     setPage(0);
   };
 
-  const handleOpenSankey = (traderAddress) => {
-    setSelectedSankeyAccount(traderAddress);
-    setSankeyModalOpen(true);
-  };
-
-  const handleCloseSankey = () => {
-    setSankeyModalOpen(false);
-    setSelectedSankeyAccount(null);
-  };
 
   if (loading) {
     return (
@@ -809,26 +792,6 @@ export default function TopTraders({ token }) {
                             <BarChartIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
-                        <Tooltip title="View Flow Analysis" arrow>
-                          <IconButton
-                            size="small"
-                            onClick={() => handleOpenSankey(trader.address)}
-                            sx={{
-                              color: `${theme.palette.primary.main} !important`,
-                              padding: '4px',
-                              '&:hover': {
-                                color: `${theme.palette.primary.dark} !important`,
-                                backgroundColor:
-                                  theme.palette.mode === 'dark'
-                                    ? 'rgba(255, 255, 255, 0.08)'
-                                    : 'rgba(0, 0, 0, 0.04)',
-                                transform: 'scale(1.1)'
-                              }
-                            }}
-                          >
-                            <AccountTreeIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
                         <Tooltip title="View Profile" arrow>
                           <IconButton
                             size="small"
@@ -881,19 +844,6 @@ export default function TopTraders({ token }) {
         </>
       )}
 
-      <StatsModal
-        open={Boolean(selectedTrader)}
-        onClose={handleCloseStats}
-        account={selectedTrader?.address}
-        traderStats={traderStats}
-        isAmm={selectedTrader?.AMM}
-      />
-
-      <SankeyModal
-        open={sankeyModalOpen}
-        onClose={handleCloseSankey}
-        account={selectedSankeyAccount}
-      />
     </Stack>
   );
 }
