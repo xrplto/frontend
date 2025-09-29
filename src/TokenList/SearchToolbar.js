@@ -15,7 +15,7 @@ import FiberNewIcon from '@mui/icons-material/FiberNew';
 import SearchIcon from '@mui/icons-material/Search';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { Box, Chip as MuiChip, Link, Typography, Badge, Drawer as MuiDrawer, IconButton, alpha } from '@mui/material';
+import { Box, Chip as MuiChip, Link, Typography, Badge, Drawer as MuiDrawer, IconButton, alpha, Menu, MenuItem } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 // Helper function
@@ -663,6 +663,7 @@ const SearchToolbar = memo(function SearchToolbar({
   const { darkMode } = useContext(AppContext);
 
   const [categoriesOpen, setCategoriesOpen] = useState(false);
+  const [gainersMenuAnchor, setGainersMenuAnchor] = useState(null);
   const containerRef = useRef(null);
   const [visibleTagCount, setVisibleTagCount] = useState(0);
   const [measuredTags, setMeasuredTags] = useState(false);
@@ -1063,7 +1064,7 @@ const SearchToolbar = memo(function SearchToolbar({
           </Chip>
 
           <Chip
-            onClick={() => (window.location.href = '/gainers/24h')}
+            onClick={(e) => setGainersMenuAnchor(e.currentTarget)}
             background={
               currentView === 'gainers'
                 ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
@@ -1178,6 +1179,92 @@ const SearchToolbar = memo(function SearchToolbar({
           </>
         </Stack>
       </Row>
+
+      {/* Gainers Period Menu */}
+      <Menu
+        anchorEl={gainersMenuAnchor}
+        open={Boolean(gainersMenuAnchor)}
+        onClose={() => setGainersMenuAnchor(null)}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'left'
+        }}
+        transformOrigin={{
+          vertical: 'top',
+          horizontal: 'left'
+        }}
+        PaperProps={{
+          sx: {
+            mt: 0.5,
+            minWidth: '120px',
+            borderRadius: '8px',
+            border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
+            backgroundColor: darkMode ? '#1a1a1a' : '#ffffff',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+          }
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            window.location.href = '/gainers/5m';
+            setGainersMenuAnchor(null);
+          }}
+          sx={{
+            fontSize: '0.875rem',
+            py: 1,
+            '&:hover': {
+              backgroundColor: alpha('#4caf50', 0.08)
+            }
+          }}
+        >
+          5 Minutes
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            window.location.href = '/gainers/1h';
+            setGainersMenuAnchor(null);
+          }}
+          sx={{
+            fontSize: '0.875rem',
+            py: 1,
+            '&:hover': {
+              backgroundColor: alpha('#4caf50', 0.08)
+            }
+          }}
+        >
+          1 Hour
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            window.location.href = '/gainers/24h';
+            setGainersMenuAnchor(null);
+          }}
+          sx={{
+            fontSize: '0.875rem',
+            py: 1,
+            '&:hover': {
+              backgroundColor: alpha('#4caf50', 0.08)
+            }
+          }}
+        >
+          24 Hours
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            window.location.href = '/gainers/7d';
+            setGainersMenuAnchor(null);
+          }}
+          sx={{
+            fontSize: '0.875rem',
+            py: 1,
+            '&:hover': {
+              backgroundColor: alpha('#4caf50', 0.08)
+            }
+          }}
+        >
+          7 Days
+        </MenuItem>
+      </Menu>
 
       {/* Categories Drawer - inlined component */}
       {categoriesOpen && (
