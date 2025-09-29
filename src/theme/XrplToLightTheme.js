@@ -1273,7 +1273,6 @@ export const XrplToLightTheme = createTheme({
           h1a: 'h1',
           h2: 'h2',
           h2a: 'h2',
-          h2a: 'h2',
           h3: 'h3',
           h4: 'div',
           h4a: 'h4',

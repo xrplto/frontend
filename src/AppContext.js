@@ -45,7 +45,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     window.localStorage.setItem('appThemeName', newThemeName);
     setThemeName(newThemeName);
     // Update darkMode for backward compatibility
-    setDarkMode(newThemeName === 'XrplToDarkTheme' || newThemeName === 'SyncWaveTheme');
+    setDarkMode(newThemeName === 'XrplToDarkTheme');
   };
 
   const toggleFiatCurrency = (newValue) => {
@@ -69,7 +69,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     // Load the theme
     if (savedThemeName) {
       setThemeName(savedThemeName);
-      setDarkMode(savedThemeName === 'XrplToDarkTheme' || savedThemeName === 'SyncWaveTheme');
+      setDarkMode(savedThemeName === 'XrplToDarkTheme');
     } else if (isDarkMode) {
       // Backward compatibility: convert boolean to theme name
       const theme = isDarkMode === 'true' ? 'XrplToDarkTheme' : 'XrplToLightTheme';

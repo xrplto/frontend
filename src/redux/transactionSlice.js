@@ -1,7 +1,15 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+// Transaction processing states
+export const TX_STATE = {
+  INITIAL: 0,
+  SIGNING: 1,
+  SUCCESS: 2,
+  REJECTED: 3
+};
+
 const initialState = {
-  isProcessing: 0, //0: initial, 1: open sign, 2: success, 3: reject
+  isProcessing: TX_STATE.INITIAL,
   txHash: ''
 };
 

@@ -1,16 +1,13 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
-const currencyConfig = {
-  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
-  activeFiatCurrency: 'XRP'
-};
+const DEFAULT_CURRENCY = 'XRP';
 
 const initialState = {
   metrics: {
     USD: 100,
     EUR: 100,
     JPY: 100,
-    CNY: 100,
+    CNY: null,
     XRP: 1,
     H24: {
       transactions24H: 0,
@@ -40,7 +37,7 @@ const initialState = {
     tokenCreation: []
   },
   filteredCount: 0,
-  activeFiatCurrency: currencyConfig.activeFiatCurrency
+  activeFiatCurrency: DEFAULT_CURRENCY
 };
 
 const statusSlice = createSlice({
@@ -50,10 +47,10 @@ const statusSlice = createSlice({
     update_metrics: (state, action) => {
       const data = action.payload;
       state.metrics.global.total = data.total || 0;
-      state.metrics.USD = data.exch?.USD || 100;
-      state.metrics.EUR = data.exch?.EUR || 100;
-      state.metrics.JPY = data.exch?.JPY || 100;
-      state.metrics.CNY = data.exch?.CNY || 100;
+      state.metrics.USD = data.exch?.USD || null;
+      state.metrics.EUR = data.exch?.EUR || null;
+      state.metrics.JPY = data.exch?.JPY || null;
+      state.metrics.CNY = data.exch?.CNY || null;
       state.metrics.XRP = 1;
       state.metrics.H24 = data.H24 || initialState.metrics.H24;
       state.metrics.global = { ...state.metrics.global, ...data.global };
@@ -79,10 +76,10 @@ export const selectActiveFiatCurrency = (state) => state.status.activeFiatCurren
 export const selectTokenCreation = (state) => state.status.metrics.tokenCreation;
 export const selectGlobalMetrics = (state) => state.status.metrics.global;
 
-// Memoized selector only for computed values
-export const selectExchangeRate = createSelector(
-  [selectMetrics, (state, currency) => currency],
-  (metrics, currency) => metrics[currency] || 1
-);
+// Simple function for exchange rate lookup
+export const selectExchangeRate = (state, currency) => {
+  const metrics = selectMetrics(state);
+  return metrics[currency] || 1;
+};
 
 export default statusSlice.reducer;

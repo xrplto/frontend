@@ -179,7 +179,7 @@ const CenterBox = styled.div`
   justify-content: center;
 `;
 
-const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave, isMobile }) => {
+const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile }) => {
   const theme = useTheme();
   const themeMode = useSelector((state) => state.status.theme);
   const isDark = themeMode === 'dark';
@@ -208,7 +208,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isSyncWave,
 
   return (
     <div
-      className={`${styles.sourcesMenuContainer} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+      className={`${styles.sourcesMenuContainer} ${isDark ? styles.dark : ''}`}
       style={containerStyle}
     >
       <div className={styles.sourcesHeader}>
@@ -354,7 +354,6 @@ function NewsPage() {
   const themeMode = useSelector((state) => state.status.theme);
   const themeName = useSelector((state) => state.status.themeName);
   const isDark = themeMode === 'dark';
-  const isSyncWave = themeName === 'SyncWaveTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
@@ -564,7 +563,7 @@ function NewsPage() {
   }, [currentPage, itemsPerPage, selectedSource, searchQuery]);
 
   const getSentimentColor = (sentiment) => {
-    if (isSyncWave) {
+    if (isDark) {
       // Use SyncWave theme colors (cyberpunk neon)
       switch (sentiment?.toLowerCase()) {
         case 'bullish':
@@ -613,7 +612,7 @@ function NewsPage() {
 
   return (
     <div
-      className={`${styles.pageWrapper} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+      className={`${styles.pageWrapper} ${isDark ? styles.dark : ''}`}
       style={backgroundStyle}
     >
       <Header
@@ -914,7 +913,6 @@ function NewsPage() {
               sources={sourcesStats}
               selectedSource={selectedSource}
               onSourceSelect={handleSourceSelect}
-              isSyncWave={isSyncWave}
               isMobile={isMobile}
             />
 
@@ -936,7 +934,7 @@ function NewsPage() {
                 currentItems.map((article) => (
                   <div
                     key={article._id}
-                    className={`${styles.newsCard} ${isDark ? styles.dark : ''} ${isSyncWave ? styles.syncwave : ''}`}
+                    className={`${styles.newsCard} ${isDark ? styles.dark : ''}`}
                     style={{
                       background: 'transparent',
                       border: `1px solid ${theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'}`,

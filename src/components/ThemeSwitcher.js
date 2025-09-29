@@ -26,12 +26,6 @@ const themes = [
     name: 'Dark',
     icon: <Brightness4Icon />,
     color: '#000000'
-  },
-  {
-    id: 'SyncWaveTheme',
-    name: 'Sync Wave',
-    icon: <PaletteIcon />,
-    color: '#00ffff'
   }
 ];
 
@@ -118,10 +112,7 @@ export default function ThemeSwitcher() {
                     theme.id === 'XrplToLightTheme'
                       ? '1px solid #e0e0e0'
                       : 'none',
-                  boxShadow:
-                    theme.id === 'SyncWaveTheme'
-                      ? `0 0 10px ${theme.color}`
-                      : 'none'
+                  boxShadow: 'none'
                 }}
               >
                 <PaletteIcon

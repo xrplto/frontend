@@ -971,8 +971,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   {/* Theme Options */}
                   {[
                     { id: 'XrplToLightTheme', name: 'Light', color: '#ffffff', border: true },
-                    { id: 'XrplToDarkTheme', name: 'Dark', color: '#000000' },
-                    { id: 'SyncWaveTheme', name: 'Sync Wave', color: '#00ffff', glow: true }
+                    { id: 'XrplToDarkTheme', name: 'Dark', color: '#000000' }
                   ].map((themeOption) => (
                     <MenuItem
                       key={themeOption.id}

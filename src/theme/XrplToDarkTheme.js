@@ -146,6 +146,12 @@ export const XrplToDarkTheme = createTheme({
     border: alpha('#ffffff', 0.1)
   },
 
+  currency: {
+    background1: alpha('#ffffff', 0.05),
+    background2: alpha('#ffffff', 0.08),
+    border: `1px solid ${alpha('#ffffff', 0.1)}`
+  },
+
   chart: {
     background: '#000000',
     gridColor: alpha('#ffffff', 0.1),
@@ -161,10 +167,13 @@ export const XrplToDarkTheme = createTheme({
     h4: { fontWeight: 600, fontSize: 16 },
     h5: { fontWeight: 700, fontSize: 14 },
     h6: { fontSize: 15 },
-    body1: { fontSize: 14 },
-    body2: { fontSize: 14 },
-    button: { fontWeight: 600 },
-    caption: { fontSize: 13 }
+    body1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
+    body2: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
+    button: { fontWeight: 600, textTransform: 'none' },
+    caption: { fontSize: 13 },
+    subtitle1: { fontSize: 14 },
+    subtitle2: { fontWeight: 400, fontSize: 15 },
+    overline: { fontSize: 13, fontWeight: 700 }
   },
 
   shadows: [
