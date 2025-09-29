@@ -35,8 +35,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Internationalization
-import { useTranslation } from 'react-i18next';
+// Translation removed - not using i18n
 
 // Utils
 import { getHashIcon } from 'src/utils/helpers';
@@ -749,7 +748,7 @@ const WalletContent = ({
 
 export default function Wallet({ style, embedded = false, onClose, buttonOnly = false }) {
   const theme = useTheme();
-  const { t } = useTranslation();
+  // Translation removed - using hardcoded English text
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Helper to sync profiles to IndexedDB
@@ -2003,7 +2002,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           e.target.style.opacity = '1';
           e.target.style.transform = 'translateY(0)';
         }}
-        title={accountProfile ? 'Account Details' : t('Connect Wallet')}
+        title={accountProfile ? 'Account Details' : 'Connect Wallet'}
       >
 {accountProfile ? (
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -2024,7 +2023,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             </span>
           </div>
         ) : (
-          <span>{t('Login')}</span>
+          <span>{'Login'}</span>
         )}
       </button>
 

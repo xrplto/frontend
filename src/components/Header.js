@@ -28,7 +28,7 @@ import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import PaletteIcon from '@mui/icons-material/Palette';
 import SettingsIcon from '@mui/icons-material/Settings';
 import CheckIcon from '@mui/icons-material/Check';
-import { useTranslation } from 'react-i18next';
+// Translation removed - not using i18n
 import {
   useState,
   useContext,
@@ -316,7 +316,7 @@ const StyledMenuItem = styled(MenuItem, {
 );
 
 function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) {
-  const { t } = useTranslation(); // set translation const
+  // Translation removed - using hardcoded English text
   const theme = useTheme();
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
@@ -504,7 +504,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 sx={{ position: 'relative', display: 'inline-block' }}
               >
                 <StyledLink underline="none" darkMode={darkMode} href="/">
-                  {t('Tokens')}
+                  {'Tokens'}
                 </StyledLink>
 
                 {tokensMenuOpen && tokensAnchorEl && (
@@ -557,7 +557,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             display: 'block'
                           }}
                         >
-                          {t('LAUNCHPADS')}
+                          {'LAUNCHPADS'}
                         </Typography>
                         {[
                           {
@@ -656,12 +656,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             display: 'block'
                           }}
                         >
-                          {t('ANALYTICS')}
+                          {'ANALYTICS'}
                         </Typography>
                         {[
                           {
                             path: '/market-metrics',
-                            name: t('Market Metrics'),
+                            name: 'Market Metrics',
                             icon: <EmojiEventsIcon sx={{ fontSize: 16, color: '#ff9800' }} />
                           },
                           {
@@ -671,7 +671,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           },
                           {
                             path: '/top-traders',
-                            name: t('Top Traders'),
+                            name: 'Top Traders',
                             icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
                           },
                           ...(accountProfile ? [{
@@ -718,7 +718,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             display: 'block'
                           }}
                         >
-                          {t('DISCOVER')}
+                          {'DISCOVER'}
                         </Typography>
                         {discoverMenuItems.map((item) => (
                           <Box
@@ -753,13 +753,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               </Box>
 
               <StyledLink underline="none" darkMode={darkMode} href="/collections">
-                {t('NFTs')}
+                {'NFTs'}
               </StyledLink>
               <StyledLink underline="none" darkMode={darkMode} href="/swap">
-                {t('Swap')}
+                {'Swap'}
               </StyledLink>
               <StyledLink underline="none" darkMode={darkMode} href="/news">
-                {t('News')}
+                {'News'}
               </StyledLink>
             </Box>
           )}

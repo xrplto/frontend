@@ -10,7 +10,6 @@ import { ContextProvider, AppContext } from 'src/AppContext';
 import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
-import i18n from 'src/utils/i18n';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {

@@ -6,10 +6,7 @@ import { css } from '@emotion/react';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useTheme } from '@mui/material/styles';
 
-// import i18n (needs to be bundled ;))
-import 'src/utils/i18n';
-// Translations
-import { useTranslation } from 'react-i18next';
+// Translations removed - not using i18n
 
 // Redux
 import { useSelector } from 'react-redux';
@@ -682,7 +679,7 @@ export const SummaryWatchList = () => {
 
 // Main Summary component
 export default function Summary() {
-  const { t } = useTranslation();
+  // Translation removed - using hardcoded English text
   const metrics = useSelector(selectMetrics);
   const tokenCreation = useSelector(selectTokenCreation);
   const { activeFiatCurrency, darkMode } = useContext(AppContext);

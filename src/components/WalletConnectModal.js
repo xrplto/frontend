@@ -16,7 +16,7 @@ import { alpha } from '@mui/material/styles';
 import styled from '@emotion/styled';
 import ClearIcon from '@mui/icons-material/Clear';
 import { AccountBalanceWallet as AccountBalanceWalletIcon, Security as SecurityIcon, Warning as WarningIcon, OpenInNew as OpenInNewIcon, ArrowBack as ArrowBackIcon } from '@mui/icons-material';
-import { useTranslation } from 'react-i18next';
+// Translation removed - not using i18n
 
 
 import { AppContext } from 'src/AppContext';
@@ -751,7 +751,7 @@ const WalletConnectModal = () => {
 
 export const ConnectWallet = () => {
   const { setOpenWalletModal } = useContext(AppContext);
-  const { t } = useTranslation();
+  // Translation removed - using hardcoded English text
 
   return (
     <Button
@@ -847,7 +847,7 @@ export const ConnectWallet = () => {
         }
       }}
     >
-      {t('Connect Wallet')}
+      {'Connect Wallet'}
     </Button>
   );
 };
