@@ -961,13 +961,17 @@ const NFTGrid = React.memo(({ collection }) => {
     setHasMore(true);
   }, [search, filter, subFilter, filterAttrs]);
 
-  // Fetch on page change (skip if we have initial SSR data)
+  // Fetch on page change
   useEffect(() => {
-    if (!isFirstLoad || page > 0) {
+    // Always fetch when:
+    // 1. Page is 0 and it's the first load with no initial data
+    // 2. Page > 0 (loading more)
+    // 3. Not first load (filters changed)
+    if ((isFirstLoad && initialNfts.length === 0) || page > 0 || !isFirstLoad) {
       fetchNfts();
     }
     setIsFirstLoad(false);
-  }, [fetchNfts, isFirstLoad, page]);
+  }, [fetchNfts, isFirstLoad, page, initialNfts.length]);
 
   const debouncedSearch = useMemo(() => debounce((value) => setSearch(value), 500), []);
 
@@ -2619,6 +2623,15 @@ export default function CollectionView({ collection }) {
   const [value, setValue] = useState('tab-nfts');
 
   const BASE_URL = 'https://api.xrpnft.com/api';
+
+  // Handle undefined collection
+  if (!collection) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   const {
     account,

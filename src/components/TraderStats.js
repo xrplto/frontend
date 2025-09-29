@@ -30,8 +30,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { fNumber, fPercent } from 'src/utils/formatters';
 import { format } from 'date-fns';
 
-// Import lightweight chart component
-const LightweightChart = dynamic(() => import('src/components/LightweightChart'), { ssr: false });
 
 // Using LightweightChart instead of recharts
 
@@ -205,20 +203,9 @@ export const DailyVolumeChart = ({ data }) => {
           boxShadow: `0 8px 32px ${alpha(theme.palette.common.black, 0.06)}`
         }}
       >
-        <LightweightChart
-          data={chartData}
-          height={400}
-          series={[
-            {
-              dataKey: 'cumulativeProfit',
-              name: 'Cumulative Profit',
-              color: theme.palette.success.main,
-              lineWidth: 3,
-              visible: true
-            }
-          ]}
-          showLegend={true}
-        />
+        <Box sx={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Typography color="text.secondary">Chart temporarily unavailable</Typography>
+        </Box>
       </Box>
     </Box>
   );

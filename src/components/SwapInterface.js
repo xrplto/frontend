@@ -1025,6 +1025,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setPair(pair);
   }, [revert, token1, token2]);
 
+  // Transaction result polling - disabled until ret variable is properly connected
+  // This useEffect was checking transaction status but ret is not defined
+  /*
   useEffect(() => {
     var timer = null;
     var isRunning = false;
@@ -1101,6 +1104,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       }
     };
   }, [ret]);
+  */
 
   const onSwap = async () => {
     try {

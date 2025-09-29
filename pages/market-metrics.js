@@ -9,7 +9,6 @@ import React, {
 } from 'react';
 import dynamic from 'next/dynamic';
 
-const LightweightChart = dynamic(() => import('src/components/LightweightChart'), { ssr: false });
 import axios from 'axios';
 import { format, subYears, isAfter, parse } from 'date-fns';
 import Box from '@mui/material/Box';
@@ -270,7 +269,7 @@ const CustomTooltip = ({ active, payload, label }) => {
                       mr: 1,
                       boxShadow: `0 0 8px ${alpha(entry.color || entry.stroke, 0.4)}`
                     }}
-                  />
+                  )}
                   <Typography
                     variant="body2"
                     sx={{
@@ -533,7 +532,7 @@ const ChartContainer = ({ title, children, showFilter, onFilterChange, filterAct
                   transition: 'all 0.3s ease',
                   boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.15)}`
                 }}
-              />
+              )}
             </Box>
           </Box>
         )}
@@ -1343,13 +1342,14 @@ const MarketMetricsContent = () => {
             </Box>
 
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
-              <LightweightChart
-                data={progressiveData}
-                height={isMobile ? 300 : 400}
+              <Box sx={{ height: isMobile ? 300 : 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography color="text.secondary">Chart temporarily unavailable</Typography>
+              </Box>
+              {false && (
                 series={getChartSeries('marketcap')}
                 onClick={(data) => handleDataPointClick(data)}
                 showLegend={true}
-              />
+              )}
             </Box>
 
             {/* Token breakdown section - appears when a data point is clicked */}
@@ -1455,7 +1455,7 @@ const MarketMetricsContent = () => {
                                   onError={(e) => {
                                     e.target.style.display = 'none';
                                   }}
-                                />
+                                )}
                               )}
                               <Box
                                 sx={{
@@ -1466,7 +1466,7 @@ const MarketMetricsContent = () => {
                                   mr: 1.5,
                                   display: tokenId !== 'Unknown' ? 'none' : 'block'
                                 }}
-                              />
+                              )}
                               <Typography
                                 variant="body2"
                                 sx={{
@@ -1576,7 +1576,7 @@ const MarketMetricsContent = () => {
                           padding: isMobile ? '8px 14px' : undefined
                         }
                       }}
-                    />
+                    )}
                   )}
                   renderTags={(selected, getTagProps) =>
                     selected.map((option, index) => (
@@ -1591,10 +1591,10 @@ const MarketMetricsContent = () => {
                           fontSize: isMobile ? '0.65rem' : '0.75rem',
                           height: isMobile ? '20px' : '32px'
                         }}
-                      />
+                      )}
                     ))
                   }
-                />
+                )}
               </Box>
               <Tabs
                 value={timeRange}
@@ -1688,13 +1688,14 @@ const MarketMetricsContent = () => {
             )}
 
             <Box sx={{ height: { xs: 300, sm: 350, md: 400 } }}>
-              <LightweightChart
-                data={progressiveData}
-                height={isMobile ? 300 : 400}
+              <Box sx={{ height: isMobile ? 300 : 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography color="text.secondary">Chart temporarily unavailable</Typography>
+              </Box>
+              {false && (
                 series={getChartSeries('tokens')}
                 onClick={(data) => handleDataPointClick(data)}
                 showLegend={true}
-              />
+              )}
             </Box>
 
             {/* Token breakdown section - appears when a data point is clicked */}
@@ -1842,7 +1843,7 @@ const MarketMetricsContent = () => {
                                   // If image fails to load, show color circle instead
                                   e.target.style.display = 'none';
                                 }}
-                              />
+                              )}
                             )}
                             <Box
                               sx={{
@@ -1853,7 +1854,7 @@ const MarketMetricsContent = () => {
                                 mr: 1.5,
                                 display: tokenId !== 'Unknown' ? 'none' : 'block'
                               }}
-                            />
+                            )}
                             <Typography
                               variant="body2"
                               sx={{
@@ -2016,16 +2017,16 @@ const MarketMetricsContent = () => {
                               : 5
                       }
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       domain={['auto', 'auto']}
                       tickFormatter={(value) => value.toLocaleString()}
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       content={<CustomTooltip />}
                       cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                    />
+                    )}
                     <div content={null} />
                     <div
                       type="monotone"
@@ -2043,7 +2044,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       type="monotone"
                       dataKey="firstLedgerTokens"
@@ -2060,7 +2061,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       type="monotone"
                       dataKey="magneticXTokens"
@@ -2077,7 +2078,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       type="monotone"
                       dataKey="xpMarketTokens"
@@ -2094,17 +2095,18 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                   </div>
                 </div>
               )}
-              <LightweightChart
-                data={progressiveData}
-                height={isMobile ? 300 : 400}
+              <Box sx={{ height: isMobile ? 300 : 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography color="text.secondary">Chart temporarily unavailable</Typography>
+              </Box>
+              {false && (
                 series={getChartSeries('activity')}
                 onClick={(data) => handleDataPointClick(data)}
                 showLegend={true}
-              />
+              )}
             </Box>
 
             {/* Token count breakdown section - appears when a data point is clicked */}
@@ -2550,25 +2552,25 @@ const MarketMetricsContent = () => {
                               : 5
                       }
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       yAxisId="volume"
                       orientation="left"
                       domain={['dataMin - 1000', 'dataMax + 1000']}
                       tickFormatter={(value) => value.toLocaleString() + ' XRP'}
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       yAxisId="trades"
                       orientation="right"
                       domain={['dataMin - 100', 'dataMax + 100']}
                       tickFormatter={(value) => value.toLocaleString()}
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       content={<CustomTooltip />}
                       cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                    />
+                    )}
                     <div content={null} />
                     <div
                       yAxisId="volume"
@@ -2587,7 +2589,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       yAxisId="volume"
                       type="monotone"
@@ -2605,7 +2607,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       yAxisId="trades"
                       type="monotone"
@@ -2624,7 +2626,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       yAxisId="trades"
                       type="monotone"
@@ -2643,17 +2645,18 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                   </div>
                 </div>
               )}
-              <LightweightChart
-                data={progressiveData}
-                height={isMobile ? 300 : 400}
+              <Box sx={{ height: isMobile ? 300 : 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography color="text.secondary">Chart temporarily unavailable</Typography>
+              </Box>
+              {false && (
                 series={getChartSeries('trading')}
                 onClick={(data) => handleDataPointClick(data)}
                 showLegend={true}
-              />
+              )}
             </Box>
 
             {/* Trading activity breakdown section - appears when a data point is clicked */}
@@ -3050,16 +3053,16 @@ const MarketMetricsContent = () => {
                               : 5
                       }
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       domain={['auto', 'auto']}
                       tickFormatter={(value) => value.toLocaleString()}
                       tick={{ ...chartConfig.axisStyle }}
-                    />
+                    )}
                     <div
                       content={<CustomTooltip />}
                       cursor={{ stroke: chartColors.cursorColor, strokeWidth: 1 }}
-                    />
+                    )}
                     <div content={null} />
                     <div
                       type="monotone"
@@ -3077,7 +3080,7 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                     <div
                       type="monotone"
                       dataKey="uniqueActiveAddressesNonAMM"
@@ -3094,17 +3097,18 @@ const MarketMetricsContent = () => {
                         fill: themeColors.background,
                         onClick: (data) => handleDataPointClick(data.payload)
                       }}
-                    />
+                    )}
                   </div>
                 </div>
               )}
-              <LightweightChart
-                data={progressiveData}
-                height={isMobile ? 300 : 400}
+              <Box sx={{ height: isMobile ? 300 : 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Typography color="text.secondary">Chart temporarily unavailable</Typography>
+              </Box>
+              {false && (
                 series={getChartSeries('addresses')}
                 onClick={(data) => handleDataPointClick(data)}
                 showLegend={true}
-              />
+              )}
             </Box>
 
             {/* Active addresses breakdown section - appears when a data point is clicked */}

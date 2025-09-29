@@ -46,13 +46,6 @@ const TransactionAlert = dynamic(() => import('src/components/TransactionAlert')
   loading: () => null
 });
 const Wallet = dynamic(() => import('src/components/Wallet'), { ssr: false, loading: () => null });
-const ErrorDebugger = dynamic(
-  () => import('src/components/ErrorDebugger').catch(() => ({ default: () => null })),
-  {
-    ssr: false,
-    loading: () => null
-  }
-);
 
 // Move static schema outside component to prevent recreation
 const jsonLdSchema = {
@@ -323,7 +316,6 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
                 </Snackbar>
                 <TransactionAlert />
                 {typeof window !== 'undefined' && Wallet && <Wallet />}
-                {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
               </SnackbarProvider>
           </ThemeProvider>
         </ContextProvider>
