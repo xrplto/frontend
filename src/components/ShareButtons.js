@@ -1,11 +1,11 @@
 import { IconButton, Avatar } from '@mui/material';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import RedditIcon from '@mui/icons-material/Reddit';
-import EmailIcon from '@mui/icons-material/Email';
-import WhatsAppIcon from '@mui/icons-material/WhatsApp';
-import LinkedInIcon from '@mui/icons-material/LinkedIn';
+import MuiTwitterIcon from '@mui/icons-material/Twitter';
+import MuiFacebookIcon from '@mui/icons-material/Facebook';
+import MuiTelegramIcon from '@mui/icons-material/Telegram';
+import MuiRedditIcon from '@mui/icons-material/Reddit';
+import MuiEmailIcon from '@mui/icons-material/Email';
+import MuiWhatsAppIcon from '@mui/icons-material/WhatsApp';
+import MuiLinkedInIcon from '@mui/icons-material/LinkedIn';
 
 // Share URL generators
 const getShareUrls = (url, title) => ({
@@ -32,19 +32,19 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
   const getIcon = () => {
     switch (platform) {
       case 'twitter':
-        return <TwitterIcon />;
+        return <MuiTwitterIcon />;
       case 'facebook':
-        return <FacebookIcon />;
+        return <MuiFacebookIcon />;
       case 'telegram':
-        return <TelegramIcon />;
+        return <MuiTelegramIcon />;
       case 'whatsapp':
-        return <WhatsAppIcon />;
+        return <MuiWhatsAppIcon />;
       case 'linkedin':
-        return <LinkedInIcon />;
+        return <MuiLinkedInIcon />;
       case 'reddit':
-        return <RedditIcon />;
+        return <MuiRedditIcon />;
       case 'email':
-        return <EmailIcon />;
+        return <MuiEmailIcon />;
       default:
         return null;
     }
@@ -167,7 +167,7 @@ export const EmailShareButton = ({ children, subject, body, ...props }) => {
   );
 };
 
-// Icon components for compatibility
+// Icon components for compatibility with react-share
 export const TwitterIcon = ({ size = 40, round = false }) => (
   <ShareButton platform="twitter" size={size} round={round} />
 );
