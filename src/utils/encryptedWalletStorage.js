@@ -354,22 +354,6 @@ export class UnifiedWalletStorage {
     return null;
   }
 
-  async createWalletFromPin(pin) {
-    const wallet = Wallet.generate();
-
-    const walletData = {
-      seed: wallet.seed,
-      address: wallet.address,
-      publicKey: wallet.publicKey,
-      createdAt: Date.now(),
-      wallet_type: 'pin',
-      accountIndex: 0
-    };
-
-    await this.storeWallet(walletData, pin);
-    return [walletData];
-  }
-
   async getWallets(pin) {
     return this.getAllWallets(pin);
   }

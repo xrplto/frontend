@@ -30,7 +30,7 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, LockOutlined, SecurityOutlined } from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -808,59 +808,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [additionalWalletPin, setAdditionalWalletPin] = useState(['', '', '', '', '', '']);
   const additionalPinRefs = useRef([]);
 
-  // PIN-based wallet states
-  const [showPinLogin, setShowPinLogin] = useState(false);
-  const [showWalletInfo, setShowWalletInfo] = useState(false);
-
   // OAuth password setup state
   const [showOAuthPasswordSetup, setShowOAuthPasswordSetup] = useState(false);
   const [oauthPassword, setOAuthPassword] = useState('');
   const [oauthConfirmPassword, setOAuthConfirmPassword] = useState('');
   const [showOAuthPassword, setShowOAuthPassword] = useState(false);
   const [oauthPasswordError, setOAuthPasswordError] = useState('');
-  const [pinBoxes, setPinBoxes] = useState(['', '', '', '', '', '']);
-  const [confirmPinBoxes, setConfirmPinBoxes] = useState(['', '', '', '', '', '']);
-  const pinRefs = useRef([]);
-  const confirmPinRefs = useRef([]);
-  // Keep these for backward compatibility with existing logic
-  const pin = pinBoxes.join('');
-  const confirmPin = confirmPinBoxes.join('');
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
-  const [pinError, setPinError] = useState('');
   const [walletStorage, setWalletStorage] = useState(new EncryptedWalletStorage());
-  const [hasPinWallet, setHasPinWallet] = useState(false);
 
-  // PIN box handlers
-  const handlePinChange = (index, value, isConfirm = false) => {
-    if (!/^\d*$/.test(value)) return;
-
-    const boxes = isConfirm ? [...confirmPinBoxes] : [...pinBoxes];
-    const refs = isConfirm ? confirmPinRefs : pinRefs;
-    const setBoxes = isConfirm ? setConfirmPinBoxes : setPinBoxes;
-
-    boxes[index] = value.slice(-1);
-    setBoxes(boxes);
-
-    if (value && index < 5) {
-      refs.current[index + 1]?.focus();
-    }
-    setPinError(''); // Clear error when typing
-  };
-
-  const handlePinKeyDown = (index, e, isConfirm = false) => {
-    const boxes = isConfirm ? confirmPinBoxes : pinBoxes;
-    const refs = isConfirm ? confirmPinRefs : pinRefs;
-
-    if (e.key === 'Backspace' && !boxes[index] && index > 0) {
-      refs.current[index - 1]?.focus();
-    } else if (e.key === 'Enter' && boxes.every(b => b)) {
-      if (hasPinWallet) {
-        handlePinConnect();
-      } else if (!isConfirm && confirmPinBoxes.every(b => b)) {
-        handlePinCreate();
-      }
-    }
-  };
 
   // Device PIN handlers
   const handleDevicePinChange = (index, value) => {
@@ -1707,14 +1663,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleGoBack = () => {
     setShowDeviceLogin(false);
-    setShowPinLogin(false);
-    setShowWalletInfo(false);
     setStatus('idle');
     setError('');
     setWalletInfo(null);
-    setPinBoxes(['', '', '', '', '', '']);
-    setConfirmPinBoxes(['', '', '', '', '', '']);
-    setPinError('');
     setIsCreatingWallet(false);
   };
 
@@ -1802,14 +1753,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
   }, []);
 
-  // Check if PIN wallet exists and load profiles from IndexedDB
+  // Load profiles from IndexedDB
   useEffect(() => {
     const initializeStorage = async () => {
       try {
-        // Check for PIN wallet
-        const exists = await walletStorage.hasWallet();
-        setHasPinWallet(exists);
-
         // Only load profiles from IndexedDB on initial mount
         const storedProfiles = await walletStorage.getProfiles();
         if (storedProfiles.length > 0) {
@@ -1828,202 +1775,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           setProfiles(uniqueProfiles);
         }
       } catch (error) {
-        setHasPinWallet(false);
+        console.error('Failed to load profiles:', error);
       }
     };
     initializeStorage();
   }, []); // Only run once on mount
-
-  const handlePinConnect = async () => {
-    if (!pin) {
-      setPinError('PIN is required');
-      return;
-    }
-
-    if (pin.length !== 6) {
-      setPinError('PIN must be 6 digits');
-      return;
-    }
-
-    setStatus('authenticating');
-    setPinError('');
-
-    try {
-      const wallets = await walletStorage.getWallets(pin);
-      const firstWallet = wallets[0];
-
-      // Add all wallets to profiles (without seeds in localStorage)
-      const allProfiles = [...profiles];
-      wallets.forEach(wallet => {
-        const profile = {
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'pin',
-          xrp: '0',
-          createdAt: wallet.createdAt
-        };
-
-        if (!allProfiles.find(p => p.account === profile.account)) {
-          allProfiles.push(profile);
-        }
-      });
-
-      setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-      const profile = {
-        account: firstWallet.address,
-        address: firstWallet.address,
-        publicKey: firstWallet.publicKey,
-        wallet_type: 'pin',
-        xrp: '0',
-        createdAt: firstWallet.createdAt
-      };
-
-      doLogIn(profile, allProfiles);
-      openSnackbar(`PIN connect successful`, 'success');
-      setOpenWalletModal(false);
-      setShowPinLogin(false);
-      setStatus('idle');
-      setPinBoxes(['', '', '', '', '', '']);
-    } catch (error) {
-      setPinError(error.message);
-      setStatus('idle');
-    }
-  };
-
-  const handlePinCreate = async () => {
-    const validation = walletStorage.validatePin(pin);
-
-    if (!validation.isValid) {
-      const issues = [];
-      if (!validation.requirements.correctLength) issues.push('must be 6 digits');
-      if (!validation.requirements.onlyNumbers) issues.push('only numbers allowed');
-      if (!validation.requirements.notSequential) issues.push('no sequential digits (123456)');
-      if (!validation.requirements.notRepeating) issues.push('no repeating digits (111111)');
-
-      setPinError('PIN ' + issues.join(', '));
-      return;
-    }
-
-    if (pin !== confirmPin) {
-      setPinError('PINs do not match');
-      return;
-    }
-
-    setIsCreatingWallet(true);
-    setPinError('');
-
-    try {
-      const wallets = await walletStorage.createWalletFromPin(pin);
-      const firstWallet = wallets[0];
-
-      // Add all wallets to profiles (without seeds in localStorage)
-      const allProfiles = [...profiles];
-      wallets.forEach(wallet => {
-        const profile = {
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'pin',
-          xrp: '0',
-          createdAt: wallet.createdAt
-        };
-
-        if (!allProfiles.find(p => p.account === profile.account)) {
-          allProfiles.push(profile);
-        }
-      });
-
-      setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-      const profile = {
-        account: firstWallet.address,
-        address: firstWallet.address,
-        publicKey: firstWallet.publicKey,
-        wallet_type: 'pin',
-        xrp: '0',
-        createdAt: firstWallet.createdAt
-      };
-
-      doLogIn(profile, allProfiles);
-      openSnackbar(`PIN wallet created successfully`, 'success');
-      setOpenWalletModal(false);
-      setShowPinLogin(false);
-      setStatus('idle');
-      setPinBoxes(['', '', '', '', '', '']);
-      setConfirmPin('');
-      setIsCreatingWallet(false);
-      setHasPinWallet(true);
-    } catch (error) {
-      setPinError(error.message);
-      setIsCreatingWallet(false);
-    }
-  };
-
-  const handleMigrateToPin = async () => {
-    if (!accountProfile || !accountProfile.seed) {
-      openSnackbar('No active wallet to migrate', 'error');
-      return;
-    }
-
-    if (!pin) {
-      setPinError('PIN is required for migration');
-      return;
-    }
-
-    const validation = walletStorage.validatePin(pin);
-    if (!validation.isValid) {
-      const issues = [];
-      if (!validation.requirements.correctLength) issues.push('must be 6 digits');
-      if (!validation.requirements.onlyNumbers) issues.push('only numbers allowed');
-      if (!validation.requirements.notSequential) issues.push('no sequential digits (123456)');
-      if (!validation.requirements.notRepeating) issues.push('no repeating digits (111111)');
-
-      setPinError('PIN ' + issues.join(', '));
-      return;
-    }
-
-    if (pin !== confirmPin) {
-      setPinError('PINs do not match');
-      return;
-    }
-
-    setIsCreatingWallet(true);
-    setPinError('');
-
-    try {
-      // For device wallets, we need the seed from the profile
-      // For PIN wallets, this shouldn't happen as they're already in encrypted storage
-      if (!accountProfile.seed) {
-        setPinError('Cannot migrate: seed not available in profile');
-        setIsCreatingWallet(false);
-        return;
-      }
-
-      const walletData = {
-        seed: accountProfile.seed,
-        address: accountProfile.address,
-        publicKey: accountProfile.publicKey,
-        createdAt: accountProfile.createdAt || Date.now(),
-        wallet_type: 'pin'
-      };
-
-      await walletStorage.storeWallet(walletData, pin);
-
-      openSnackbar('Wallet successfully migrated to PIN storage', 'success');
-      setShowPinLogin(false);
-      setPinBoxes(['', '', '', '', '', '']);
-      setConfirmPin('');
-      setIsCreatingWallet(false);
-      setHasPinWallet(true);
-    } catch (error) {
-      setPinError('Migration failed: ' + error.message);
-      setIsCreatingWallet(false);
-    }
-  };
 
   const handleRegister = async () => {
     setStatus('registering');
@@ -2561,44 +2317,35 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Box sx={{
                   padding: theme.spacing(2, 2.5),
                   background: 'transparent',
-                  borderBottom: 'none',
-                  position: 'relative',
-                  '&::after': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '2px',
-                    background: 'linear-gradient(90deg, transparent, #1976d2, transparent)'
-                  },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: '1px',
-                    background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.primary.main, 0.3)} 50%, transparent 50%)`
-                  }
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
                 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                    <Typography variant="h6" sx={{
+                      fontWeight: 500,
+                      fontSize: '1.15rem',
+                      color: theme.palette.text.primary
+                    }}>
                       Connect Wallet
                     </Typography>
                     <Box
                       onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
                       sx={{
                         cursor: 'pointer',
-                        fontSize: '20px',
-                        lineHeight: 1,
+                        width: 32,
+                        height: 32,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderRadius: '8px',
                         color: theme.palette.text.secondary,
+                        transition: 'all 0.2s',
                         '&:hover': {
-                          color: theme.palette.text.primary
+                          color: theme.palette.text.primary,
+                          backgroundColor: alpha(theme.palette.text.primary, 0.05)
                         }
                       }}
                     >
-                      ×
+                      <Typography sx={{ fontSize: '24px', lineHeight: 1, fontWeight: 300 }}>×</Typography>
                     </Box>
                   </Stack>
                 </Box>
@@ -2608,119 +2355,57 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   padding: theme.spacing(2.5, 2.5, 1.5, 2.5),
                   background: 'transparent'
                 }}>
-                  {!showDeviceLogin && !showPinLogin && !showWalletInfo ? (
+                  {!showDeviceLogin ? (
                     <>
-                      {/* Primary Connect Options */}
-                      <Stack direction="row" spacing={1.5} sx={{ mb: 2.5 }}>
-                        <Button
-                          variant="outlined"
-                          onClick={() => setShowDeviceLogin(true)}
-                          sx={{
-                            flex: 1,
-                            py: 2,
-                            fontSize: '1rem',
-                            fontWeight: 500,
-                            textTransform: 'none',
-                            borderRadius: '16px',
-                            border: '1px solid',
-                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: theme.palette.primary.main,
-                            backgroundColor: 'transparent',
-                            '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                              border: `1px solid ${theme.palette.primary.main}`
-                            },
-                            '&.MuiButton-root': {
-                              borderWidth: '1px'
-                            }
-                          }}
-                        >
-                          Passkeys
-                        </Button>
+                      {/* Primary Option - Passkeys */}
+                      <Button
+                        variant="contained"
+                        onClick={() => setShowDeviceLogin(true)}
+                        fullWidth
+                        startIcon={<SecurityOutlined sx={{ fontSize: '1.1rem' }} />}
+                        sx={{
+                          mb: 1.5,
+                          py: 1.8,
+                          fontSize: '0.95rem',
+                          fontWeight: 500,
+                          textTransform: 'none',
+                          borderRadius: '12px',
+                          backgroundColor: theme.palette.primary.main,
+                          color: '#fff',
+                          boxShadow: 'none',
+                          '&:hover': {
+                            backgroundColor: theme.palette.primary.dark,
+                            boxShadow: 'none'
+                          }
+                        }}
+                      >
+                        Passkeys
+                      </Button>
 
-                        <Button
-                          variant="outlined"
-                          onClick={() => setShowPinLogin(true)}
-                          sx={{
-                            flex: 1,
-                            py: 2,
-                            fontSize: '1rem',
-                            fontWeight: 500,
-                            textTransform: 'none',
-                            borderRadius: '16px',
-                            border: '1px solid',
-                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: theme.palette.primary.main,
-                            backgroundColor: 'transparent',
-                            '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                              border: `1px solid ${theme.palette.primary.main}`
-                            },
-                            '&.MuiButton-root': {
-                              borderWidth: '1px'
-                            }
-                          }}
-                        >
-                          PIN
-                        </Button>
-                      </Stack>
-
-                      {/* Divider with Text */}
-                      <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2.5,
-                        position: 'relative'
-                      }}>
-                        <Box sx={{
-                          flex: 1,
-                          height: '1px',
-                          backgroundColor: alpha(theme.palette.divider, 0.15)
-                        }} />
-                        <Typography variant="body2" sx={{
-                          px: 2,
-                          color: alpha(theme.palette.text.secondary, 0.6),
-                          fontSize: '0.875rem',
-                          fontWeight: 400
-                        }}>
-                          Or continue with
-                        </Typography>
-                        <Box sx={{
-                          flex: 1,
-                          height: '1px',
-                          backgroundColor: alpha(theme.palette.divider, 0.15)
-                        }} />
-                      </Box>
-
-                      {/* Social Connect Options */}
-                      <Stack spacing={1.2}>
+                      {/* Social Options */}
+                      <Stack spacing={1}>
                         <Button
                           variant="outlined"
                           fullWidth
                           onClick={handleGoogleConnect}
                           sx={{
-                            py: 1.8,
-                            fontSize: '0.95rem',
+                            py: 1.5,
+                            fontSize: '0.9rem',
                             fontWeight: 400,
                             textTransform: 'none',
-                            borderRadius: '16px',
-                            border: '1px solid',
-                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: theme.palette.primary.main,
+                            borderRadius: '12px',
+                            borderWidth: '1px',
+                            borderColor: alpha(theme.palette.divider, 0.2),
+                            color: theme.palette.text.primary,
                             backgroundColor: 'transparent',
                             '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                              border: `1px solid ${theme.palette.primary.main}`
-                            },
-                            '&.MuiButton-root': {
-                              borderWidth: '1px'
+                              borderWidth: '1px',
+                              borderColor: alpha(theme.palette.divider, 0.3),
+                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
                             }
                           }}
                         >
-                          Connect with Google
+                          Google
                         </Button>
 
                         <Button
@@ -2728,26 +2413,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           fullWidth
                           onClick={handleXConnect}
                           sx={{
-                            py: 1.8,
-                            fontSize: '0.95rem',
+                            py: 1.5,
+                            fontSize: '0.9rem',
                             fontWeight: 400,
                             textTransform: 'none',
-                            borderRadius: '16px',
-                            border: '1px solid',
-                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.23)' : 'rgba(0, 0, 0, 0.23)',
-                            color: theme.palette.primary.main,
+                            borderRadius: '12px',
+                            borderWidth: '1px',
+                            borderColor: alpha(theme.palette.divider, 0.2),
+                            color: theme.palette.text.primary,
                             backgroundColor: 'transparent',
                             '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                              border: `1px solid ${theme.palette.primary.main}`
-                            },
-                            '&.MuiButton-root': {
-                              borderWidth: '1px'
+                              borderWidth: '1px',
+                              borderColor: alpha(theme.palette.divider, 0.3),
+                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
                             }
                           }}
                         >
-                          Connect with X
+                          X
                         </Button>
 
                         <Button
@@ -2755,497 +2437,32 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           fullWidth
                           disabled
                           sx={{
-                            py: 1.8,
-                            fontSize: '0.95rem',
+                            py: 1.5,
+                            fontSize: '0.9rem',
                             fontWeight: 400,
                             textTransform: 'none',
-                            borderRadius: '16px',
-                            border: '1px solid',
-                            borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                            color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-                            backgroundColor: 'transparent',
+                            borderRadius: '12px',
+                            borderWidth: '1px',
                             '&.Mui-disabled': {
-                              borderColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
-                              color: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'
+                              borderColor: alpha(theme.palette.divider, 0.1),
+                              color: alpha(theme.palette.text.secondary, 0.3)
                             }
                           }}
                         >
-                          Connect with Discord (Coming Soon)
+                          Discord (Soon)
                         </Button>
                       </Stack>
-                    </>
-                  ) : showPinLogin ? (
-                    <>
-                      {/* PIN Connect UI */}
-                      <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2,
-                        p: 1.5,
-                        background: theme.palette.mode === 'dark'
-                          ? `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 50%)`
-                          : alpha(theme.palette.primary.main, 0.04),
-                        borderRadius: 2,
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
-                      }}>
-                        <Button
-                          onClick={handleGoBack}
-                          sx={{
-                            mr: 1.5,
-                            flexShrink: 0,
-                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                            borderRadius: '8px',
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                              transform: 'scale(1.05)'
-                            }
-                          }}
-                        >
-                          ← Back
-                        </Button>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.text.primary, fontSize: '1rem' }}>
-                          PIN Authentication
-                        </Typography>
-                      </Box>
 
-                      {pinError && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
-                          {pinError}
-                        </Alert>
-                      )}
-
-                      <Stack spacing={2}>
-                        <Box>
-                          <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                            6-Digit PIN
-                          </Typography>
-                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                            {pinBoxes.map((value, index) => (
-                              <PinField
-                                key={index}
-                                inputRef={el => pinRefs.current[index] = el}
-                                value={value}
-                                onChange={(e) => handlePinChange(index, e.target.value)}
-                                onKeyDown={(e) => handlePinKeyDown(index, e)}
-                                type="text"
-                                inputProps={{
-                                  maxLength: 1,
-                                  autoComplete: 'off',
-                                  inputMode: 'numeric',
-                                  pattern: '[0-9]*'
-                                }}
-                                variant="outlined"
-                                autoFocus={index === 0}
-                              />
-                            ))}
-                          </Box>
-                        </Box>
-
-                        {!hasPinWallet && (
-                          <Box>
-                            <Typography variant="body2" sx={{ mb: 1, fontWeight: 500 }}>
-                              Confirm PIN
-                            </Typography>
-                            <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                              {confirmPinBoxes.map((value, index) => (
-                                <PinField
-                                  key={index}
-                                  inputRef={el => confirmPinRefs.current[index] = el}
-                                  value={value}
-                                  onChange={(e) => handlePinChange(index, e.target.value, true)}
-                                  onKeyDown={(e) => handlePinKeyDown(index, e, true)}
-                                  type="text"
-                                  inputProps={{
-                                    maxLength: 1,
-                                    autoComplete: 'off',
-                                    inputMode: 'numeric',
-                                    pattern: '[0-9]*'
-                                  }}
-                                  variant="outlined"
-                                />
-                              ))}
-                            </Box>
-                          </Box>
-                        )}
-
-                        {hasPinWallet ? (
-                          <Button
-                            variant="contained"
-                            size="large"
-                            fullWidth
-                            onClick={handlePinConnect}
-                            disabled={status !== 'idle' || pin.length !== 6}
-                            sx={{
-                              py: 1.2,
-                              fontSize: '0.95rem',
-                              fontWeight: 600,
-                              background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 50%)`,
-                              '&:hover': {
-                                background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 50%)`
-                              }
-                            }}
-                          >
-                            {status === 'authenticating' ? 'Connecting...' : 'Connect with PIN'}
-                          </Button>
-                        ) : (
-                          <>
-                            <Button
-                              variant="contained"
-                              size="large"
-                              fullWidth
-                              onClick={handlePinCreate}
-                              disabled={isCreatingWallet || pin.length !== 6 || confirmPin.length !== 6}
-                              sx={{
-                                py: 1.2,
-                                fontSize: '0.95rem',
-                                fontWeight: 600,
-                                background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 50%)`,
-                                '&:hover': {
-                                  background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 50%)`
-                                }
-                              }}
-                            >
-                              {isCreatingWallet ? 'Creating Wallet...' : 'Create PIN Wallet'}
-                            </Button>
-
-                            {accountProfile && accountProfile.wallet_type === 'device' && (
-                              <Button
-                                variant="outlined"
-                                size="large"
-                                fullWidth
-                                onClick={handleMigrateToPin}
-                                disabled={isCreatingWallet || pin.length !== 6 || confirmPin.length !== 6}
-                                sx={{
-                                  py: 1.2,
-                                  fontSize: '0.95rem',
-                                  fontWeight: 600,
-                                  borderColor: theme.palette.secondary.main,
-                                  color: theme.palette.secondary.main,
-                                  '&:hover': {
-                                    borderColor: theme.palette.secondary.dark,
-                                    backgroundColor: alpha(theme.palette.secondary.main, 0.08)
-                                  }
-                                }}
-                              >
-                                {isCreatingWallet ? 'Migrating...' : 'Migrate to PIN Wallet'}
-                              </Button>
-                            )}
-                          </>
-                        )}
-
-
+                      {/* Footer */}
+                      <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
                         <Typography variant="caption" sx={{
-                          textAlign: 'center',
-                          color: 'text.secondary',
-                          mt: 1,
-                          fontSize: '0.75rem'
+                          fontSize: '0.7rem',
+                          color: alpha(theme.palette.text.secondary, 0.5),
+                          display: 'block',
+                          textAlign: 'center'
                         }}>
-                          Client-Side Storage • Encrypted with AES-256
+                          Encrypted and stored locally
                         </Typography>
-                      </Stack>
-                    </>
-                  ) : showWalletInfo ? (
-                    <>
-                      {/* Wallet Info/Comparison Page */}
-                      <Box sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        mb: 2,
-                        p: 1.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.info.main, 0.08)} 0%, ${alpha(theme.palette.info.light, 0.04)} 50%)`,
-                        borderRadius: 2,
-                        border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`
-                      }}>
-                        <Button
-                          onClick={handleGoBack}
-                          sx={{
-                            mr: 1.5,
-                            flexShrink: 0,
-                            backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                            borderRadius: '8px',
-                            '&:hover': {
-                              backgroundColor: alpha(theme.palette.background.paper, 0.8),
-                              transform: 'scale(1.05)'
-                            }
-                          }}
-                        >
-                          ← Back
-                        </Button>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.info.main, fontSize: '1rem' }}>
-                          Wallet Comparison
-                        </Typography>
-                      </Box>
-
-                      {/* Interactive Comparison Panel */}
-                      <Box sx={{
-                        position: 'relative',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                        borderRadius: 3,
-                        overflow: 'hidden',
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.default, 0.6)} 50%)`,
-                        backdropFilter: 'blur(10px)'
-                      }}>
-                        {/* Toggle Tabs */}
-                        <Box sx={{
-                          display: 'flex',
-                          position: 'relative',
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(theme.palette.background.default, 0.7)} 50%)`,
-                          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                        }}>
-                          <Box sx={{
-                            flex: 1,
-                            p: 1.5,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 1,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            background: 'linear-gradient(135deg, rgba(25,118,210,0.1) 0%, rgba(25,118,210,0.05) 50%)',
-                            borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            '&:hover': {
-                              background: 'linear-gradient(135deg, rgba(25,118,210,0.15) 0%, rgba(25,118,210,0.08) 50%)',
-                              transform: 'translateY(-1px)'
-                            }
-                          }}>
-                            <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.primary.main }}>
-                              Device
-                            </Typography>
-                            <Chip
-                              label="Secure"
-                              size="small"
-                              sx={{
-                                height: 16,
-                                fontSize: '0.6rem',
-                                bgcolor: alpha(theme.palette.success.main, 0.1),
-                                color: theme.palette.success.main,
-                                border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`
-                              }}
-                            />
-                          </Box>
-                          <Box sx={{
-                            flex: 1,
-                            p: 1.5,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: 1,
-                            cursor: 'pointer',
-                            transition: 'all 0.3s ease',
-                            background: 'linear-gradient(135deg, rgba(156,39,176,0.1) 0%, rgba(156,39,176,0.05) 50%)',
-                            '&:hover': {
-                              background: 'linear-gradient(135deg, rgba(156,39,176,0.15) 0%, rgba(156,39,176,0.08) 50%)',
-                              transform: 'translateY(-1px)'
-                            }
-                          }}>
-                            <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.secondary.main }}>
-                              PIN
-                            </Typography>
-                            <Chip
-                              label="Easy"
-                              size="small"
-                              sx={{
-                                height: 16,
-                                fontSize: '0.6rem',
-                                bgcolor: alpha(theme.palette.info.main, 0.1),
-                                color: theme.palette.info.main,
-                                border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`
-                              }}
-                            />
-                          </Box>
-                        </Box>
-
-                        {/* Comparison Content */}
-                        <Box sx={{ p: 2 }}>
-                          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
-                            {/* Device Column */}
-                            <Box>
-                              <Stack spacing={1}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.success.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    Face ID / Touch ID
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.success.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    Windows Hello
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.primary.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.primary.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    5 Deterministic Wallets
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.warning.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.warning.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    Hardware Secure Enclave
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.error.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.error.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    Zero-Knowledge • Never Stored
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </Box>
-
-                            {/* PIN Column */}
-                            <Box>
-                              <Stack spacing={1}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.info.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.info.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    6-Digit PIN Access
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.secondary.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.secondary.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    AES-256 Encrypted
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.success.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    Local Storage
-                                  </Typography>
-                                </Box>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  <Box sx={{
-                                    width: 6, height: 6, borderRadius: '50%',
-                                    bgcolor: theme.palette.info.main,
-                                    boxShadow: `0 0 8px ${alpha(theme.palette.info.main, 0.4)}`
-                                  }} />
-                                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: theme.palette.text.primary }}>
-                                    No Biometrics Required
-                                  </Typography>
-                                </Box>
-                              </Stack>
-                            </Box>
-                          </Box>
-
-                          {/* Bottom Comparison Bar */}
-                          <Box sx={{
-                            display: 'flex',
-                            background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.secondary.main, 0.1)} 100%)`,
-                            borderRadius: 2,
-                            p: 1,
-                            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-                          }}>
-                            <Box sx={{ flex: 1, textAlign: 'center' }}>
-                              <Typography variant="caption" sx={{
-                                fontWeight: 700,
-                                color: theme.palette.primary.main,
-                                fontSize: '0.65rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                              }}>
-                                Maximum Security
-                              </Typography>
-                            </Box>
-                            <Divider orientation="vertical" flexItem sx={{ mx: 1, opacity: 0.3 }} />
-                            <Box sx={{ flex: 1, textAlign: 'center' }}>
-                              <Typography variant="caption" sx={{
-                                fontWeight: 700,
-                                color: theme.palette.secondary.main,
-                                fontSize: '0.65rem',
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.5px'
-                              }}>
-                                Quick Access
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </Box>
-
-                        {/* Action Buttons */}
-                        <Box sx={{
-                          p: 2,
-                          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(theme.palette.background.default, 0.4)} 50%)`
-                        }}>
-                          <Stack direction="row" spacing={1}>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              fullWidth
-                              onClick={() => {
-                                setShowWalletInfo(false);
-                                setShowDeviceLogin(true);
-                              }}
-                              sx={{
-                                py: 1,
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
-                                '&:hover': {
-                                  background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 50%)`
-                                }
-                              }}
-                            >
-                              Use Passkeys Connect
-                            </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              fullWidth
-                              onClick={() => {
-                                setShowWalletInfo(false);
-                                setShowPinLogin(true);
-                              }}
-                              sx={{
-                                py: 1,
-                                fontSize: '0.8rem',
-                                fontWeight: 600,
-                                background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 50%)`,
-                                '&:hover': {
-                                  background: `linear-gradient(135deg, ${theme.palette.secondary.dark} 0%, ${theme.palette.secondary.main} 50%)`
-                                }
-                              }}
-                            >
-                              Use PIN Connect
-                            </Button>
-                          </Stack>
-                        </Box>
                       </Box>
                     </>
                   ) : (
