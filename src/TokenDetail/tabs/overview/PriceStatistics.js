@@ -39,7 +39,7 @@ import LinkIcon from '@mui/icons-material/Link';
 
 // Components
 import { CopyToClipboard } from 'react-copy-to-clipboard';
-import IssuerInfoDialog from '../common/IssuerInfoDialog';
+import IssuerInfoDialog from '../../dialogs/IssuerInfoDialog';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 // Redux

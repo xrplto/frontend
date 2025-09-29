@@ -9,30 +9,30 @@ import { AppContext } from 'src/AppContext';
 
 
 // Lazy load all heavy components
-const Overview = dynamic(() => import('./overview'), {
+const Overview = dynamic(() => import('./tabs/overview'), {
   loading: () => <div style={{ height: '400px' }} />,
   ssr: false
 });
 
-const Market = dynamic(() => import('./market/PairsList'), {
+const Market = dynamic(() => import('./tabs/market/PairsList'), {
   ssr: false
 });
 
 
-const LinkCascade = dynamic(() => import('./LinkCascade'), {
+const LinkCascade = dynamic(() => import('./components/LinkCascade'), {
   ssr: false
 });
 
-const TokenSummary = dynamic(() => import('./common/TokenSummary'), {
+const TokenSummary = dynamic(() => import('./components/TokenSummary'), {
   loading: () => <div style={{ height: '200px' }} />,
   ssr: false
 });
 
-const CreatorTransactionsDialog = dynamic(() => import('./common/CreatorTransactionsDialog'), {
+const CreatorTransactionsDialog = dynamic(() => import('./dialogs/CreatorTransactionsDialog'), {
   ssr: false
 });
 
-const TransactionDetailsPanel = dynamic(() => import('./common/TransactionDetailsPanel'), {
+const TransactionDetailsPanel = dynamic(() => import('./dialogs/TransactionDetailsPanel'), {
   ssr: false
 });
 

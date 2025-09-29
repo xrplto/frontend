@@ -47,7 +47,7 @@ import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';
-import TransactionDetailsPanel from 'src/TokenDetail/common/TransactionDetailsPanel';
+import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Lazy load XRPL dependencies for device authentication
 let Client, Wallet, CryptoJS;

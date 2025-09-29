@@ -57,10 +57,10 @@ const decodeCurrency = (currency) => {
     return currency;
   }
 };
-import PairsList from 'src/TokenDetail/market/PairsList';
-import TopTraders from 'src/TokenDetail/toptraders';
+import PairsList from 'src/TokenDetail/tabs/market/PairsList';
+import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import { lazy, Suspense } from 'react';
-import RichList from 'src/TokenDetail/RichList';
+import RichList from 'src/TokenDetail/tabs/holders/RichList';
 
 // Performance utilities
 const throttle = (func, delay) => {
