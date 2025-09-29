@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { CircularProgress, Box, Typography } from '@mui/material';
+import { CircularProgress, Box, Typography, Button, alpha } from '@mui/material';
 
 const OAuthCallback = () => {
   const router = useRouter();
+  const [errorState, setErrorState] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -18,7 +20,12 @@ const OAuthCallback = () => {
       if (error) {
         // Handle auth error
         console.error('OAuth authentication failed:', error);
-        router.push('/login?error=auth_failed');
+        setErrorState({
+          title: 'Authentication Cancelled',
+          message: 'You cancelled the login process',
+          provider: urlParams.get('provider') || 'unknown'
+        });
+        setIsProcessing(false);
         return;
       }
 
@@ -64,7 +71,12 @@ const OAuthCallback = () => {
           await processOAuthLogin(data.token, 'twitter', data.user);
         } catch (error) {
           console.error('Twitter OAuth error:', error);
-          router.push('/login?error=twitter_auth_failed');
+          setErrorState({
+            title: 'X Authentication Failed',
+            message: error.message || 'Failed to complete authentication',
+            provider: 'twitter'
+          });
+          setIsProcessing(false);
         }
         return;
       }
@@ -74,7 +86,12 @@ const OAuthCallback = () => {
         await processOAuthLogin(token, provider);
       } else {
         // No token or code, redirect to login
-        router.push('/login?error=no_auth_data');
+        setErrorState({
+          title: 'Authentication Failed',
+          message: 'Missing authentication data',
+          provider: 'unknown'
+        });
+        setIsProcessing(false);
       }
     };
 
@@ -157,12 +174,89 @@ const OAuthCallback = () => {
         }
       } catch (error) {
         console.error('Error processing OAuth callback:', error);
-        router.push('/login?error=processing_failed');
+        setErrorState({
+          title: 'Processing Failed',
+          message: error.message || 'Failed to process authentication',
+          provider: provider
+        });
+        setIsProcessing(false);
       }
     };
 
     handleCallback();
   }, [router]);
+
+  const handleRetry = () => {
+    sessionStorage.setItem('wallet_modal_open', 'true');
+    router.push('/');
+  };
+
+  const handleGoHome = () => {
+    router.push('/');
+  };
+
+  if (errorState) {
+    return (
+      <Box
+        display="flex"
+        flexDirection="column"
+        alignItems="center"
+        justifyContent="center"
+        minHeight="100vh"
+        sx={{ px: 2 }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 500, mb: 1 }}>
+          {errorState.title}
+        </Typography>
+        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, textAlign: 'center' }}>
+          {errorState.message}
+        </Typography>
+        <Box sx={{ display: 'flex', gap: 1.5 }}>
+          <Button
+            variant="outlined"
+            onClick={handleRetry}
+            sx={{
+              py: 1.5,
+              px: 3,
+              fontSize: '0.95rem',
+              fontWeight: 400,
+              textTransform: 'none',
+              borderRadius: '12px',
+              borderWidth: '1.5px',
+              borderColor: (theme) => alpha(theme.palette.divider, 0.2),
+              '&:hover': {
+                borderWidth: '1.5px',
+                borderColor: '#4285f4',
+                backgroundColor: (theme) => alpha('#4285f4', 0.04)
+              }
+            }}
+          >
+            Try Again
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={handleGoHome}
+            sx={{
+              py: 1.5,
+              px: 3,
+              fontSize: '0.95rem',
+              fontWeight: 400,
+              textTransform: 'none',
+              borderRadius: '12px',
+              borderWidth: '1.5px',
+              borderColor: (theme) => alpha(theme.palette.divider, 0.2),
+              '&:hover': {
+                borderWidth: '1.5px',
+                backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.04)
+              }
+            }}
+          >
+            Go Home
+          </Button>
+        </Box>
+      </Box>
+    );
+  }
 
   return (
     <Box
@@ -173,7 +267,7 @@ const OAuthCallback = () => {
       minHeight="100vh"
     >
       <CircularProgress size={60} />
-      <Typography variant="h6" sx={{ mt: 3 }}>
+      <Typography variant="h6" sx={{ mt: 3, fontWeight: 500 }}>
         Authenticating...
       </Typography>
       <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>

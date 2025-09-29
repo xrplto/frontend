@@ -240,19 +240,7 @@ const ActiveIndicator = styled(Box)(({ theme }) => ({
   height: 6,
   borderRadius: '50%',
   flexShrink: 0,
-  background: `linear-gradient(45deg, ${theme.palette.success.light}, ${theme.palette.success.main})`,
-  boxShadow: `0 0 12px ${alpha(theme.palette.success.main, 0.5)}`,
-  animation: 'glow 2s ease-in-out infinite',
-  '@keyframes glow': {
-    '0%, 50%': {
-      opacity: 1,
-      transform: 'scale(1)'
-    },
-    '50%': {
-      opacity: 0.7,
-      transform: 'scale(1.2)'
-    }
-  }
+  background: theme.palette.success.main
 }));
 
 const TokenImage = styled(Image)(({ theme }) => ({
@@ -279,51 +267,17 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
 }));
 
 const BalanceCard = styled(Card)(({ theme }) => ({
-  background: theme.palette.mode === 'dark'
-    ? `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 0.15)} 0%, ${alpha(theme.palette.background.paper, 0.8)} 50%)`
-    : `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.08)} 0%, ${theme.palette.common.white} 50%)`,
+  background: 'transparent',
   border: 'none',
-  borderRadius: 5,
-  boxShadow: 'none',
-  position: 'relative',
-  overflow: 'visible',
-  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    inset: 0,
-    borderRadius: 5,
-    padding: 1,
-    background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)}, transparent)`,
-    WebkitMask: 'linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)',
-    WebkitMaskComposite: 'xor',
-    maskComposite: 'exclude'
-  },
-  '&:hover': {
-    transform: 'translateY(-2px) scale(1.02)',
-    '&::after': {
-      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.4)}, transparent)`
-    }
-  }
+  borderRadius: 8,
+  boxShadow: 'none'
 }));
 
 const ReserveCard = styled(Box)(({ theme }) => ({
-  background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 50%)`,
+  background: 'transparent',
   border: 'none',
-  borderRadius: 16,
-  padding: theme.spacing(2),
-  position: 'relative',
-  transition: 'all 0.3s ease',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 16,
-    width: 3,
-    height: '50%',
-    background: theme.palette.warning.main,
-    borderRadius: 2
-  }
+  borderRadius: 8,
+  padding: theme.spacing(2)
 }));
 
 // function truncate(str, n) {
@@ -367,10 +321,8 @@ const WalletContent = ({
       {/* Header */}
       <Box sx={{
         p: 1.5,
-        background: theme.palette.mode === 'dark'
-          ? alpha(theme.palette.background.default, 0.3)
-          : alpha(theme.palette.background.paper, 0.7),
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        background: 'transparent',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
         position: 'relative',
         zIndex: 1
       }}>
@@ -379,13 +331,10 @@ const WalletContent = ({
             <Box sx={{
               width: isEmbedded ? 8 : 5,
               height: isEmbedded ? 8 : 5,
-              borderRadius: '2px',
+              borderRadius: '50%',
               background: accountsActivation[accountLogin] === false
                 ? theme.palette.error.main
-                : `linear-gradient(45deg, #00ff88, #00ffff)`,
-              boxShadow: accountsActivation[accountLogin] !== false
-                ? isEmbedded ? '0 0 15px rgba(0,255,136,0.4)' : '0 0 5px rgba(0,255,136,0.5)'
-                : 'none'
+                : theme.palette.success.main
             }} />
             <Typography sx={{
               fontFamily: 'monospace',
@@ -404,9 +353,11 @@ const WalletContent = ({
               }}
               sx={{
                 p: 0.5,
+                fontSize: '0.8rem',
+                fontWeight: 400,
+                textTransform: 'none',
                 '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.1),
-                  color: theme.palette.primary.main
+                  background: alpha(theme.palette.primary.main, 0.04)
                 }
               }}
             >
@@ -419,16 +370,30 @@ const WalletContent = ({
               onClick={onBackupSeed}
               sx={{
                 p: 0.5,
+                fontSize: '0.8rem',
+                fontWeight: 400,
+                textTransform: 'none',
                 '&:hover': {
-                  background: alpha(theme.palette.warning.main, 0.1),
-                  color: theme.palette.warning.main
+                  background: alpha(theme.palette.warning.main, 0.04)
                 }
               }}
               title="Backup Seed"
             >
               Backup
             </Button>
-            <Button size="small" onClick={onClose}>
+            <Button
+              size="small"
+              onClick={onClose}
+              sx={{
+                p: 0.5,
+                fontSize: '1.2rem',
+                fontWeight: 400,
+                minWidth: 'auto',
+                '&:hover': {
+                  background: alpha(theme.palette.text.primary, 0.04)
+                }
+              }}
+            >
               ×
             </Button>
           </Stack>
@@ -439,21 +404,14 @@ const WalletContent = ({
       <Box sx={{
         p: isEmbedded ? 2 : 2.5,
         textAlign: 'center',
-        background: theme.palette.mode === 'dark'
-          ? `linear-gradient(180deg, ${alpha(theme.palette.background.default, 0.1)} 0%, transparent 50%)`
-          : `linear-gradient(180deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, transparent 50%)`
+        background: 'transparent'
       }}>
         <Typography sx={{
           fontSize: isEmbedded ? '2rem' : '2.5rem',
-          fontWeight: 900,
+          fontWeight: 500,
           lineHeight: 1,
           fontFamily: 'system-ui',
-          background: theme.palette.mode === 'dark'
-            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 50%)'
-            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
-          backgroundClip: 'text',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
+          color: theme.palette.text.primary,
           mb: isEmbedded ? 0.5 : 0.5
         }}>
           {accountBalance?.curr1?.value || '0'}
@@ -462,8 +420,8 @@ const WalletContent = ({
           fontSize: isEmbedded ? '0.7rem' : '0.75rem',
           textTransform: 'uppercase',
           letterSpacing: isEmbedded ? '1.5px' : '2px',
-          opacity: 0.5,
-          fontWeight: 600
+          opacity: 0.6,
+          fontWeight: 400
         }}>
           XRP Balance
         </Typography>
@@ -479,36 +437,39 @@ const WalletContent = ({
         }}>
           <Box sx={{
             p: isEmbedded ? 1 : 1.5,
-            borderRadius: isEmbedded ? '6px' : '8px',
-            background: alpha(theme.palette.primary.main, 0.05),
+            borderRadius: '8px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+            background: 'transparent',
             textAlign: 'center'
           }}>
-            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 700 }}>
+            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 500 }}>
               {accountBalance?.curr1?.value || '0'}
             </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Available</Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Available</Typography>
           </Box>
           <Box sx={{
             p: isEmbedded ? 1 : 1.5,
-            borderRadius: isEmbedded ? '6px' : '8px',
-            background: alpha(theme.palette.warning.main, 0.05),
+            borderRadius: '8px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+            background: 'transparent',
             textAlign: 'center'
           }}>
-            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 700, color: theme.palette.warning.main }}>
+            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 500, color: theme.palette.warning.main }}>
               {Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'}
             </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Reserved</Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Reserved</Typography>
           </Box>
           <Box sx={{
             p: isEmbedded ? 1 : 1.5,
-            borderRadius: isEmbedded ? '6px' : '8px',
-            background: alpha(theme.palette.success.main, 0.05),
+            borderRadius: '8px',
+            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+            background: 'transparent',
             textAlign: 'center'
           }}>
-            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 700 }}>
+            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 500 }}>
               {accountTotalXrp || '0'}
             </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.7 }}>Total</Typography>
+            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Total</Typography>
           </Box>
         </Box>
 
@@ -578,7 +539,16 @@ const WalletContent = ({
                       e.stopPropagation();
                       onRemoveProfile(account);
                     }}
-                    sx={{ opacity: isEmbedded ? 0.3 : 0.5, '&:hover': { opacity: 1 } }}
+                    sx={{
+                      opacity: 0.5,
+                      fontSize: '1.2rem',
+                      fontWeight: 400,
+                      minWidth: 'auto',
+                      '&:hover': {
+                        opacity: 1,
+                        background: alpha(theme.palette.error.main, 0.04)
+                      }
+                    }}
                   >
                     ×
                   </Button>
@@ -724,23 +694,28 @@ const WalletContent = ({
       }}>
         <Button
           onClick={onLogout}
+          variant="outlined"
           size="small"
           sx={{
             px: isEmbedded ? 1 : 1.5,
             py: isEmbedded ? 0.5 : 0.8,
             minWidth: isEmbedded ? 'auto' : '70px',
-            borderRadius: isEmbedded ? '6px' : '6px',
-            background: alpha(theme.palette.error.main, 0.1),
+            borderRadius: '8px',
+            borderWidth: '1.5px',
+            borderColor: alpha(theme.palette.error.main, 0.3),
+            background: 'transparent',
             color: theme.palette.error.main,
-            fontWeight: 600,
+            fontWeight: 400,
             fontSize: isEmbedded ? '0.75rem' : '0.8rem',
             textTransform: 'none',
             '&:hover': {
-              background: alpha(theme.palette.error.main, 0.15)
+              borderWidth: '1.5px',
+              borderColor: theme.palette.error.main,
+              background: alpha(theme.palette.error.main, 0.04)
             }
           }}
         >
-                    {!isEmbedded && 'Logout'}
+          {!isEmbedded && 'Logout'}
         </Button>
       </Box>
     </>
@@ -761,20 +736,19 @@ export const ConnectWallet = () => {
         mt: 1,
         mb: 0.5,
         px: 2,
-        py: 0.75,
+        py: 1.5,
         fontWeight: 400,
-        borderRadius: '8px',
-        borderWidth: '1px',
-        borderColor: alpha(theme.palette.divider, 0.15),
+        borderRadius: '12px',
+        borderWidth: '1.5px',
+        borderColor: alpha(theme.palette.divider, 0.2),
         color: '#4285f4',
         backgroundColor: 'transparent',
         textTransform: 'none',
-        fontSize: '0.85rem',
-        height: '36px',
+        fontSize: '0.95rem',
         '&:hover': {
           borderColor: '#4285f4',
-          backgroundColor: alpha('#4285f4', 0.02),
-          borderWidth: '1px'
+          backgroundColor: alpha('#4285f4', 0.04),
+          borderWidth: '1.5px'
         }
       }}
     >
@@ -2367,34 +2341,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             : 'Connect wallet'
         }
         style={{
-          background: accountProfile
-            ? `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`
-            : `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 50%)`,
-          border: `1px solid ${theme.palette.primary.dark}`,
-          borderRadius: '8px',
-          height: '32px',
-          padding: accountProfile ? '0 12px' : '0 14px',
-          minWidth: accountProfile ? '100px' : '80px',
-          color: '#ffffff',
-          fontSize: '13px',
-          fontWeight: '600',
+          background: 'transparent',
+          border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+          borderRadius: '12px',
+          height: '38px',
+          padding: accountProfile ? '0 14px' : '0 16px',
+          minWidth: accountProfile ? '110px' : '90px',
+          color: '#4285f4',
+          fontSize: '0.9rem',
+          fontWeight: '400',
           fontFamily: 'inherit',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '6px',
-          transition: 'all 0.2s ease',
-          outline: 'none',
-          boxShadow: `0 3px 10px ${alpha(theme.palette.primary.main, 0.4)}`
+          outline: 'none'
         }}
         onMouseEnter={(e) => {
-          e.target.style.opacity = '0.9';
-          e.target.style.transform = 'translateY(-1px)';
+          e.target.style.borderColor = '#4285f4';
+          e.target.style.background = alpha('#4285f4', 0.04);
         }}
         onMouseLeave={(e) => {
-          e.target.style.opacity = '1';
-          e.target.style.transform = 'translateY(0)';
+          e.target.style.borderColor = alpha(theme.palette.divider, 0.2);
+          e.target.style.background = 'transparent';
         }}
         title={accountProfile ? 'Account Details' : 'Connect Wallet'}
       >
@@ -2459,28 +2429,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             <StyledPopoverPaper>
             {accountProfile ? (
               <>
-                {/* Animated Background Pattern */}
-                <Box sx={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  opacity: 0.03,
-                  backgroundImage: `repeating-linear-gradient(
-                    45deg,
-                    ${theme.palette.primary.main} 0px,
-                    ${theme.palette.primary.main} 1px,
-                    transparent 1px,
-                    transparent 15px
-                  )`,
-                  animation: 'slide 5s linear infinite',
-                  '@keyframes slide': {
-                    '0%': { transform: 'translate(0, 0)' },
-                    '50%': { transform: 'translate(15px, 15px)' }
-                  },
-                  pointerEvents: 'none'
-                }} />
 
                 {!showSeedDialog ? (
                   <WalletContent
