@@ -11,7 +11,7 @@ import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { currencySymbols } from 'src/utils/constants';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';

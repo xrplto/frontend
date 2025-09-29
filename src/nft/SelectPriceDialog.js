@@ -33,8 +33,8 @@ import { AppContext } from 'src/AppContext';
 
 // Utils
 import { normalizeAmount } from 'src/utils/normalizers';
-import { formatDateTime } from 'src/utils/formatTime';
-import { checkExpiration } from 'src/utils/extra';
+import { formatDateTime } from 'src/utils/formatters';
+import { checkExpiration } from 'src/utils/helpers';
 
 // ----------------------------------------------------------------------
 const PriceDialog = styled(Dialog)(({ theme }) => ({

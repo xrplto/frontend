@@ -37,7 +37,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
-import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/utils/parse/utils';
+import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 
@@ -47,7 +47,7 @@ function formatDecimal(decimal, decimalPlaces = null) {
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 import CryptoJS from 'crypto-js';
-import { getHashIcon } from 'src/utils/extra';
+import { getHashIcon } from 'src/utils/helpers';
 
 // Create transaction cache with 1 hour TTL and max 100 entries
 const txCache = new LRUCache({

@@ -47,8 +47,8 @@ import { useSelector /*, useDispatch*/ } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
-import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
-import { fDate } from 'src/utils/formatTime';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatters';
+import { fDate } from 'src/utils/formatters';
 
 import NumberTooltip from 'src/components/NumberTooltip';
 

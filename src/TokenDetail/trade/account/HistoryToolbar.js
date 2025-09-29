@@ -15,7 +15,7 @@ import {
 import { ViewList } from '@mui/icons-material';
 
 // Utils
-import { fIntNumber } from 'src/utils/formatNumber';
+import { fIntNumber } from 'src/utils/formatters';
 
 // ----------------------------------------------------------------------
 

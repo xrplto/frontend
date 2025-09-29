@@ -45,7 +45,7 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import SellIcon from '@mui/icons-material/Sell';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { formatDateTime } from 'src/utils/formatTime';
+import { formatDateTime } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 
 // Styled components for ListToolbar

@@ -73,7 +73,7 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect as useEffectReact } from 'react';
-import { isEqual } from 'src/utils/lodashLite';
+import { isEqual } from 'src/utils/helpers';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -106,9 +106,9 @@ import { AppContext } from 'src/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
 import Watch from 'src/components/Watch';
 import { getMinterName } from 'src/utils/constants';
-import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
-import { formatMonthYear } from 'src/utils/formatTime';
-import { getNftCoverUrl } from 'src/utils/parse/utils';
+import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
+import { formatMonthYear } from 'src/utils/formatters';
+import { getNftCoverUrl } from 'src/utils/parseUtils';
 import { normalizeCurrencyCode } from 'src/utils/normalizers';
 
 // Styled Components with optimized styles

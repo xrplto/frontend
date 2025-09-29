@@ -23,10 +23,10 @@ import ErrorIcon from '@mui/icons-material/Error';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
-import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parse/utils';
+import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parseUtils';
 import { Client } from 'xrpl';
 import { calculateSpread } from 'src/utils/orderbookService';
 

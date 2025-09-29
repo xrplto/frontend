@@ -34,7 +34,7 @@ import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import { currencySymbols } from 'src/utils/constants';
 
 const ShareButton = styled(IconButton)(({ theme }) => {

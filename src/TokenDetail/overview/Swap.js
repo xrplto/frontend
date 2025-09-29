@@ -30,11 +30,11 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { currencySymbols, XRP_TOKEN } from 'src/utils/constants';
 import Decimal from 'decimal.js-light';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import useWebSocket from 'react-use-websocket';
 
 
-import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { configureMemos } from 'src/utils/OfferChanges';
 import { processOrderbookOffers } from 'src/utils/orderbookService';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';

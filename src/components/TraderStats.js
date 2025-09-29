@@ -27,7 +27,7 @@ import HistoryIcon from '@mui/icons-material/History';
 import CloseIcon from '@mui/icons-material/Close';
 
 // Utils
-import { fNumber, fPercent } from 'src/utils/formatNumber';
+import { fNumber, fPercent } from 'src/utils/formatters';
 import { format } from 'date-fns';
 
 // Import lightweight chart component

@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
-import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatters';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { currencySymbols } from 'src/utils/constants';
 import dynamic from 'next/dynamic';

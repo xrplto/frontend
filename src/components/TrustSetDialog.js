@@ -38,7 +38,7 @@ import QRDialog from './QRDialog';
 import { PulseLoader } from 'react-spinners';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
 
 import { ConnectWallet } from './WalletConnectModal';

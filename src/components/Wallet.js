@@ -39,7 +39,7 @@ import { AppContext } from 'src/AppContext';
 import { useTranslation } from 'react-i18next';
 
 // Utils
-import { getHashIcon } from 'src/utils/extra';
+import { getHashIcon } from 'src/utils/helpers';
 import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 // Base64url encoding helper

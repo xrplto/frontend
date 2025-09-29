@@ -17,7 +17,7 @@ import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/s
 import { TokenListHead } from './TokenListControls';
 import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow';
 import React, { memo, lazy, Suspense } from 'react';
-import { debounce, throttle } from 'src/utils/lodashLite';
+import { debounce, throttle } from 'src/utils/helpers';
 import { useRouter } from 'next/router';
 import { TokenListProfiler, memoryMonitor, performanceTracker, tokenListPerformance } from 'src/performance/setup';
 import { TokenListToolbar } from './TokenListControls';

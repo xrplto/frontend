@@ -16,7 +16,10 @@
       "Bash(for util in \"lodashLite\" \"normalizers\" \"formatNumber\" \"formatTime\" \"extra\" \"constants\")",
       "Bash(do echo \"=== $util.js ===\")",
       "Bash(done)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(sed:*)",
+      "Bash(for file in src/collection/CollectionList.js src/collection/CollectionView.js src/TokenDetail/overview/PriceStatistics.js src/TokenDetail/trade/account/History.js src/components/CollectionActivity.js)",
+      "Bash(do sed -i \"s|from ''src/utils/formatTime''|from ''src/utils/formatters''|g\" \"$file\")"
     ],
     "deny": []
   }

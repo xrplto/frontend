@@ -45,7 +45,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js-light';
 import axios from 'axios';
-import { throttle } from 'src/utils/lodashLite';
+import { throttle } from 'src/utils/helpers';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';

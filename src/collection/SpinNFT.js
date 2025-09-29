@@ -50,7 +50,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { getNftCoverUrl } from 'src/utils/parse/utils';
+import { getNftCoverUrl } from 'src/utils/parseUtils';
 
 // Components
 import BuyMintDialog from './BuyMintDialog';

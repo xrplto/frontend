@@ -20,11 +20,11 @@ import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import { Client } from 'xrpl';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
-import { parseAmount } from 'src/utils/parse/utils';
+import { parseAmount } from 'src/utils/parseUtils';
 import Decimal from 'decimal.js-light';
-import { normalizeCurrencyCode } from 'src/utils/parse/utils';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
 const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';
 

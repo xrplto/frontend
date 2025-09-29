@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import { selectMetrics, selectTokenCreation } from 'src/redux/statusSlice';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 
 // Components
 import { currencySymbols } from 'src/utils/constants';

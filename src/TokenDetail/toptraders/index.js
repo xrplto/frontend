@@ -46,7 +46,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { fNumber, fPercent } from 'src/utils/formatNumber';
+import { fNumber, fPercent } from 'src/utils/formatters';
 
 // Components
 import { StatsModal } from 'src/components/TraderStats';

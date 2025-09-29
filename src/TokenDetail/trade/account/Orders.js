@@ -34,8 +34,8 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import { PuffLoader } from 'react-spinners';
 
 // Utils
-import { checkExpiration } from 'src/utils/extra';
-import { normalizeCurrencyCode } from 'src/utils/parse/utils';
+import { checkExpiration } from 'src/utils/helpers';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
 // Context
 import { useContext } from 'react';

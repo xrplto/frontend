@@ -25,8 +25,8 @@ import { visuallyHidden } from '@mui/utils';
 import EditIcon from '@mui/icons-material/Edit';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import { AppContext } from 'src/AppContext';
-import { formatMonthYearDate } from 'src/utils/formatTime';
-import { fNumber, fIntNumber, fVolume } from 'src/utils/formatNumber';
+import { formatMonthYearDate } from 'src/utils/formatters';
+import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
 import dynamic from 'next/dynamic';
 
 // Lazy load chart component

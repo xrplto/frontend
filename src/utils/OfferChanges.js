@@ -3,8 +3,8 @@ const CryptoJS = require('crypto-js');
 function removeUndefined(obj) {
   return require('lodash').omitBy(obj, (value) => value == null);
 }
-const { rippleToUnixTimestamp } = require('./utils');
-const { parseAmount } = require('./utils');
+const { rippleToUnixTimestamp } = require('./parseUtils');
+const { parseAmount } = require('./parseUtils');
 
 let tx;
 let hash;

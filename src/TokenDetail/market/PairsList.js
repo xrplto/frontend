@@ -31,7 +31,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 import { useEffect, useRef, useState } from 'react';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';

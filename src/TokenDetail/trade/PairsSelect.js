@@ -12,7 +12,7 @@ import {
   useMediaQuery
 } from '@mui/material';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 
 const PairsSelect = memo(({ token, pair, setPair }) => {
   const { darkMode } = useContext(AppContext);

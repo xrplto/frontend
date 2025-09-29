@@ -17,7 +17,6 @@ import AttachMoneyRoundedIcon from '@mui/icons-material/AttachMoneyRounded';
 import EuroRoundedIcon from '@mui/icons-material/EuroRounded';
 import CurrencyYenRoundedIcon from '@mui/icons-material/CurrencyYenRounded';
 import CurrencyYuanRoundedIcon from '@mui/icons-material/CurrencyYuanRounded';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 
 // Custom XRP Icon component
 const XRPIcon = ({ sx, ...props }) => (
@@ -333,22 +332,16 @@ export function getMinterName(minter) {
   switch (minter) {
     case 'rzVH4G8GjTbvXhxJHvnri3MJ1aqf9WFGE':
       return 'XRPNFT 1';
-      break;
     case 'rw94PYuzGQknjTsi8GWn8Cgk16TZuVn6Wn':
       return 'XRPNFT 2';
-      break;
     case 'rESvnQrpWVho8kEiHEVKXMBoiUzdkYVtDL':
       return 'XRPNFT 3';
-      break;
     case 'r3AGSrv9SHzzhe5BxqG8sFiRSxNs26tEVs':
       return 'XRPNFT 4';
-      break;
     case 'rwDcDemfFpnw4kD7mVz35jVXxBfY4EePbn':
       return 'XRPNFT 5';
-      break;
     default:
       return '';
-      break;
   }
 }
 

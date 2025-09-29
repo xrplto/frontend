@@ -16,8 +16,8 @@ import {
 } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { rippleTimeToISO8601 } from 'src/utils/parse/utils';
-import { getHashIcon } from 'src/utils/extra';
+import { rippleTimeToISO8601 } from 'src/utils/parseUtils';
+import { getHashIcon } from 'src/utils/helpers';
 
 const AccountAvatar = ({ account }) => {
   const [imgSrc, setImgSrc] = useState(`https://s1.xrpl.to/account/${account}`);

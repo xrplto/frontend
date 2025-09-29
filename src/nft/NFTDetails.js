@@ -44,8 +44,8 @@ import InfoIcon from '@mui/icons-material/Info';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { fVolume, fNumber } from 'src/utils/formatNumber';
-import { convertHexToString, parseNFTokenID, getNftFilesUrls } from 'src/utils/parse/utils';
+import { fVolume, fNumber } from 'src/utils/formatters';
+import { convertHexToString, parseNFTokenID, getNftFilesUrls } from 'src/utils/parseUtils';
 
 // Components
 import FlagsContainer from 'src/components/Flags';

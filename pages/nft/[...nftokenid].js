@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Box, Container, styled, Toolbar, CircularProgress } from '@mui/material';
 
 // Utils
-import { getNftCoverUrl } from 'src/utils/parse/utils';
+import { getNftCoverUrl } from 'src/utils/parseUtils';
 
 // Components
 import Header from 'src/components/Header';

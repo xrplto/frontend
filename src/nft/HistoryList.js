@@ -36,7 +36,7 @@ import { AppContext } from 'src/AppContext';
 
 // Utils
 import { normalizeCurrencyCode } from 'src/utils/normalizers';
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({

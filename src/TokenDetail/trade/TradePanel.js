@@ -36,7 +36,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 // Convert scientific notation to full decimal string using Decimal.js
 const scientificToDecimal = (value) => new Decimal(value).toString();
-import { fNumberWithSuffix } from 'src/utils/formatNumber';
+import { fNumberWithSuffix } from 'src/utils/formatters';
 
 // Utils
 

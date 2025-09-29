@@ -59,8 +59,8 @@ import { AppContext } from 'src/AppContext';
 // Utils
 import { NFToken, getMinterName } from 'src/utils/constants';
 import { normalizeAmount } from 'src/utils/normalizers';
-import { fNumber, fIntNumber } from 'src/utils/formatNumber';
-import { getHashIcon } from 'src/utils/extra';
+import { fNumber, fIntNumber } from 'src/utils/formatters';
+import { getHashIcon } from 'src/utils/helpers';
 
 // Components
 import CreateOfferDialog from './CreateOfferDialog';

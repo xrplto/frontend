@@ -67,7 +67,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 
 // Components
 import Wallet from 'src/components/Wallet';
@@ -78,7 +78,7 @@ const QRDialog = dynamic(() => import('src/components/QRDialog'), {
 import { currencySymbols, BASE_URL } from 'src/utils/constants';
 import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
-import { configureMemos } from 'src/utils/parse/OfferChanges';
+import { configureMemos } from 'src/utils/OfferChanges';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
   loading: () => <div>Loading orders...</div>,

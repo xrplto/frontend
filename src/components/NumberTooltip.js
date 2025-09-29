@@ -1,6 +1,6 @@
 import { Tooltip } from '@mui/material';
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 
 export default function NumberTooltip({ number, prepend = '', append = '', pos = 'top' }) {
   let numberTrim = number;

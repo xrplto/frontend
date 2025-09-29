@@ -26,10 +26,10 @@ import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { SvgIcon } from '@mui/material';
 import NumberTooltip from 'src/components/NumberTooltip';
-import { fNumber, fNumberWithCurreny } from 'src/utils/formatNumber';
+import { fNumber, fNumberWithCurreny } from 'src/utils/formatters';
 import { Box as MuiBox } from '@mui/material';
 import { currencySymbols, CURRENCY_ISSUERS } from 'src/utils/constants';
-import { checkExpiration, getHashIcon } from 'src/utils/extra';
+import { checkExpiration, getHashIcon } from 'src/utils/helpers';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
@@ -908,8 +908,8 @@ const TokenSummary = memo(
                                 return `${isIncoming ? '💰' : '📤'} ${fNumber(xrpAmount)} XRP`;
                               } else if (amountToShow && typeof amountToShow === 'object') {
                                 // Token payment
-                                const { parseAmount } = require('src/utils/parse/utils');
-                                const { normalizeCurrencyCode } = require('src/utils/parse/utils');
+                                const { parseAmount } = require('src/utils/parseUtils');
+                                const { normalizeCurrencyCode } = require('src/utils/parseUtils');
                                 const amount = parseAmount(amountToShow);
                                 if (amount && typeof amount === 'object') {
                                   const currency =
@@ -1611,10 +1611,10 @@ const TokenSummary = memo(
                                         return `${isIncoming ? 'Received' : 'Sent'} ${fNumber(xrpAmount)} XRP`;
                                       } else if (amountToShow && typeof amountToShow === 'object') {
                                         // Token payment
-                                        const { parseAmount } = require('src/utils/parse/utils');
+                                        const { parseAmount } = require('src/utils/parseUtils');
                                         const {
                                           normalizeCurrencyCode
-                                        } = require('src/utils/parse/utils');
+                                        } = require('src/utils/parseUtils');
                                         const Decimal = require('decimal.js-light');
                                         const amount = parseAmount(amountToShow);
                                         if (amount && typeof amount === 'object' && amount.value) {

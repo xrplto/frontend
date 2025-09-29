@@ -40,7 +40,7 @@ import QRDialog from 'src/components/QRDialog';
 import { PulseLoader } from 'react-spinners';
 
 // Utils
-import { fNumber } from 'src/utils/formatNumber';
+import { fNumber } from 'src/utils/formatters';
 
 // ----------------------------------------------------------------------
 const BuyDialog = styled(Dialog)(({ theme }) => ({
