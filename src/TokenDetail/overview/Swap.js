@@ -206,33 +206,38 @@ const ExchangeButton = styled(Button)(
     max-width: 100%;
     position: relative;
     overflow: hidden;
-    border-radius: 16px;
-    transition: all 0.3s ease;
-    background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%);
-    backdrop-filter: blur(24px);
-    color: ${theme.palette.primary.main};
-    font-weight: 600;
-    box-shadow: 0 4px 16px ${alpha(theme.palette.primary.main, 0.1)};
+    border-radius: 12px;
+    background: transparent;
+    color: #4285f4;
+    font-weight: 400;
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
+    box-shadow: none;
+    padding: 8px 16px;
+    font-size: 0.95rem;
+    text-transform: none;
 
     &:hover {
-      transform: translateY(-2px);
-      background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)} 0%, ${alpha(theme.palette.primary.main, 0.1)} 100%);
-      box-shadow: 0 8px 24px ${alpha(theme.palette.primary.main, 0.15)};
+      background: ${alpha('#4285f4', 0.04)};
+      border-color: #4285f4;
+      box-shadow: none;
     }
 
     &:active {
-      transform: translateY(0);
+      background: ${alpha('#4285f4', 0.08)};
     }
 
     &.Mui-disabled {
-      background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%);
+      background: transparent;
       color: ${alpha(theme.palette.text.primary, 0.4)};
       box-shadow: none;
+      border-color: ${alpha(theme.palette.divider, 0.15)};
     }
 
     @media (max-width: 600px) {
       margin-left: 10px;
       margin-right: 10px;
+      padding: 6px 12px;
+      font-size: 0.9rem;
     }
 `
 );
@@ -2407,12 +2412,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       <Stack sx={{ width: '100%' }}>
         {accountProfile && accountProfile.account ? (
           <ExchangeButton
-            variant="contained"
+            variant="outlined"
             onClick={handlePlaceOrder}
             sx={{
               mt: 0,
-              height: { xs: '44px', sm: '40px' },
-              fontSize: { xs: '0.95rem', sm: '0.9rem' }
+              height: { xs: '36px', sm: '32px' },
+              fontSize: { xs: '0.9rem', sm: '0.85rem' }
             }}
             disabled={
               isProcessing === 1 ||
@@ -2541,36 +2546,31 @@ const App = ({ token }) => {
   return (
     <Stack alignItems="center" width="100%" sx={{ mb: 2 }}>
       <Button
-        variant="contained"
+        variant="outlined"
         onClick={toggleSwap}
         fullWidth
-        startIcon={showSwap ? <VisibilityOffIcon /> : <SyncIcon />}
         sx={{
           position: 'relative',
           overflow: 'hidden',
-          borderRadius: { xs: '16px', sm: '12px' },
-          transition: 'all 0.3s ease',
-          background: (theme) =>
-            showSwap
-              ? `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.9)} 0%, ${alpha(theme.palette.error.dark, 0.9)} 100%)`
-              : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
-          backdropFilter: 'blur(24px)',
-          backgroundSize: '200% 200%',
-          color: '#fff',
-          boxShadow: (theme) =>
-            `0 6px 20px ${alpha(showSwap ? theme.palette.error.main : theme.palette.primary.main, 0.25)}`,
-          fontSize: { xs: '1.1rem', sm: '1rem' },
-          padding: { xs: '14px 24px', sm: '10px 22px' },
-          fontWeight: { xs: 600, sm: 500 },
-          height: { xs: '52px', sm: '44px' },
+          borderRadius: '12px',
+          background: 'transparent',
+          borderColor: (theme) => alpha(theme.palette.divider, 0.2),
+          borderWidth: '1.5px',
+          color: showSwap ? '#f44336' : '#4285f4',
+          boxShadow: 'none',
+          fontSize: { xs: '0.95rem', sm: '0.95rem' },
+          padding: { xs: '10px 20px', sm: '8px 16px' },
+          fontWeight: 400,
+          height: { xs: '40px', sm: '36px' },
+          textTransform: 'none',
           '&:hover': {
-            background: (theme) =>
-              showSwap
-                ? `linear-gradient(135deg, ${alpha(theme.palette.error.dark, 1)} 0%, ${alpha(theme.palette.error.main, 1)} 100%)`
-                : `linear-gradient(135deg, ${alpha(theme.palette.primary.dark, 1)} 0%, ${alpha(theme.palette.primary.main, 1)} 100%)`
+            background: (theme) => alpha(showSwap ? '#f44336' : '#4285f4', 0.04),
+            borderColor: showSwap ? '#f44336' : '#4285f4',
+            borderWidth: '1.5px',
+            boxShadow: 'none'
           },
           '&:active': {
-            transform: 'scale(0.95)'
+            background: (theme) => alpha(showSwap ? '#f44336' : '#4285f4', 0.08)
           }
         }}
       >
