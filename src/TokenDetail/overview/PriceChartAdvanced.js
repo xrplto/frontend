@@ -416,14 +416,14 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderColor:
           theme.chart?.borderColor || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
         scaleMargins: {
-          top: 0.05,
-          bottom: 0.15
+          top: 0.1,  // More margin for better visibility
+          bottom: 0.1
         },
         mode: 0,
         autoScale: true,
         borderVisible: false,
         visible: true,
-        entireTextOnly: isMobile ? true : false,
+        entireTextOnly: false, // Show full precision even on mobile
         drawTicks: true,
         ticksVisible: true,
         alignLabels: true,
@@ -445,27 +445,30 @@ const PriceChartAdvanced = memo(({ token }) => {
           const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
 
+          // Special handling for XRP pairs - expect smaller values
+          const isXRP = activeFiatCurrencyRef.current === 'XRP';
+
           // Check if price has many leading zeros and use compact notation
           if (actualPrice && actualPrice < 0.001) {
-            const str = actualPrice.toFixed(15);
+            const str = actualPrice.toFixed(20);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-            if (zeros >= 4) {
-              // Use compact notation for 4+ zeros
+            if (zeros >= 3) {
+              // Use compact notation for 3+ zeros for XRP, 4+ for others
               const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              // Create HTML-like string that chart can display
-              return symbol + '0.0(' + zeros + ')' + significant.slice(0, 4);
+              const sigDigits = isXRP ? 6 : 4; // More precision for XRP pairs
+              return symbol + '0.0(' + zeros + ')' + significant.slice(0, sigDigits);
             } else if (actualPrice < 0.00001) {
-              return symbol + actualPrice.toFixed(8);
+              return symbol + actualPrice.toFixed(isXRP ? 10 : 8);
             } else if (actualPrice < 0.001) {
-              return symbol + actualPrice.toFixed(6);
+              return symbol + actualPrice.toFixed(isXRP ? 8 : 6);
             }
           }
 
           // Regular formatting for normal prices
           if (actualPrice < 0.01) {
-            return symbol + actualPrice.toFixed(6);
+            return symbol + actualPrice.toFixed(isXRP ? 8 : 6);
           } else if (actualPrice < 1) {
-            return symbol + actualPrice.toFixed(4);
+            return symbol + actualPrice.toFixed(isXRP ? 6 : 4);
           } else if (actualPrice < 100) {
             return symbol + actualPrice.toFixed(3);
           } else if (actualPrice < 1000) {
@@ -516,7 +519,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     // Create tooltip
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'linear-gradient(145deg, rgba(20, 20, 20, 0.95) 0%, rgba(30, 30, 30, 0.95) 100%)' : 'linear-gradient(145deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 250, 0.98) 100%)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)'}; box-shadow: 0 4px 12px ${isDark ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.12)'}`;
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: none`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove((param) => {
@@ -549,23 +552,25 @@ const PriceChartAdvanced = memo(({ token }) => {
         const formatPrice = (p) => {
           // The candle data is original unscaled data, so don't scale back
           const actualPrice = p;
+          const isXRP = activeFiatCurrencyRef.current === 'XRP';
 
           // Check if price has many leading zeros and use compact notation
           if (actualPrice && actualPrice < 0.001) {
-            const str = actualPrice.toFixed(15);
+            const str = actualPrice.toFixed(20);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-            if (zeros >= 4) {
-              // Use compact notation for 4+ zeros
+            if (zeros >= 3) {
+              // Use compact notation for 3+ zeros for XRP, 4+ for others
               const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              return '0.0(' + zeros + ')' + significant.slice(0, 4);
+              const sigDigits = isXRP ? 6 : 4; // More precision for XRP pairs
+              return '0.0(' + zeros + ')' + significant.slice(0, sigDigits);
             }
           }
 
-          // Regular formatting
-          if (actualPrice < 0.00001) return actualPrice.toFixed(8);
-          if (actualPrice < 0.001) return actualPrice.toFixed(6);
-          if (actualPrice < 0.01) return actualPrice.toFixed(6);
-          if (actualPrice < 1) return actualPrice.toFixed(4);
+          // Regular formatting with enhanced precision for XRP
+          if (actualPrice < 0.00001) return actualPrice.toFixed(isXRP ? 10 : 8);
+          if (actualPrice < 0.001) return actualPrice.toFixed(isXRP ? 8 : 6);
+          if (actualPrice < 0.01) return actualPrice.toFixed(isXRP ? 8 : 6);
+          if (actualPrice < 1) return actualPrice.toFixed(isXRP ? 6 : 4);
           if (actualPrice < 100) return actualPrice.toFixed(3);
           if (actualPrice < 1000) return actualPrice.toFixed(2);
           return actualPrice.toLocaleString();
@@ -1238,16 +1243,27 @@ const PriceChartAdvanced = memo(({ token }) => {
       const maxPrice = Math.max(
         ...data.map((d) => Math.max(d.high || d.close || d.value || d.open || 0))
       );
-      if (maxPrice < 0.000000001) return 1000000000000;
-      if (maxPrice < 0.00000001) return 100000000000;
-      if (maxPrice < 0.0000001) return 10000000000;
-      if (maxPrice < 0.000001) return 1000000000;
-      if (maxPrice < 0.00001) return 100000000;
-      if (maxPrice < 0.0001) return 10000000;
-      if (maxPrice < 0.001) return 1000000;
-      if (maxPrice < 0.01) return 100000;
-      if (maxPrice < 0.1) return 10000;
-      if (maxPrice < 1) return 1000;
+      const minPrice = Math.min(
+        ...data.map((d) => Math.min(d.low || d.close || d.value || d.open || Infinity))
+      );
+
+      // Use the average of min and max for better scaling decision
+      const avgPrice = (maxPrice + minPrice) / 2;
+
+      // More aggressive scaling for extremely small values (common with XRP pairs)
+      if (avgPrice < 0.000000000001) return 1000000000000000; // 1e15
+      if (avgPrice < 0.00000000001) return 100000000000000;   // 1e14
+      if (avgPrice < 0.0000000001) return 10000000000000;     // 1e13
+      if (avgPrice < 0.000000001) return 1000000000000;       // 1e12
+      if (avgPrice < 0.00000001) return 100000000000;         // 1e11
+      if (avgPrice < 0.0000001) return 10000000000;           // 1e10
+      if (avgPrice < 0.000001) return 1000000000;             // 1e9
+      if (avgPrice < 0.00001) return 100000000;               // 1e8
+      if (avgPrice < 0.0001) return 10000000;                 // 1e7
+      if (avgPrice < 0.001) return 1000000;                   // 1e6
+      if (avgPrice < 0.01) return 100000;                     // 1e5
+      if (avgPrice < 0.1) return 10000;                       // 1e4
+      if (avgPrice < 1) return 1000;                          // 1e3
       return 1;
     };
 
@@ -1460,20 +1476,17 @@ const PriceChartAdvanced = memo(({ token }) => {
         // Keep within grid column to preserve two-column layout
         mx: 0,
         width: '100%',
-        p: isMobile ? 1 : 2,
-        pr: isMobile ? 0.5 : 2,
+        p: isMobile ? 1 : 1.5,
+        pr: isMobile ? 0.5 : 1.5,
         background: 'transparent',
         backdropFilter: 'none',
         boxShadow: 'none',
-        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-        borderRadius: '12px',
+        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+        borderRadius: '8px',
         overflow: 'hidden',
-        transition: 'none',
         '&:hover': {
-          transform: 'none',
-          boxShadow: 'none',
-          borderColor: alpha(theme.palette.divider, 0.3),
-          background: alpha(theme.palette.background.paper, 0.04)
+          borderColor: alpha(theme.palette.divider, 0.2),
+          background: alpha(theme.palette.background.paper, 0.02)
         },
         ...(isFullscreen && {
           position: 'fixed',
@@ -1494,7 +1507,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h6" sx={{ fontSize: '1rem' }}>
+          <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
             {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} •{' '}
             {range}
           </Typography>
@@ -1627,14 +1640,22 @@ const PriceChartAdvanced = memo(({ token }) => {
                 onClick={() => setChartType(type)}
                 variant={chartType === type ? 'contained' : 'outlined'}
                 sx={{
-                  px: isMobile ? 0.75 : 1.5,
-                  fontSize: isMobile ? '0.75rem' : '0.875rem',
+                  px: isMobile ? 0.75 : 1.25,
+                  fontSize: isMobile ? '0.7rem' : '0.8rem',
                   minWidth: isMobile ? 'auto' : 'unset',
-                  height: isMobile ? 28 : 32,
+                  height: isMobile ? 26 : 30,
+                  borderRadius: '6px',
+                  textTransform: 'none',
+                  fontWeight: chartType === type ? 600 : 500,
+                  border: `1px solid ${chartType === type ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2)}`,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                    borderColor: alpha(theme.palette.primary.main, 0.3)
+                  },
                   '& .MuiButton-startIcon': {
-                    marginRight: isMobile ? '2px' : '8px',
+                    marginRight: isMobile ? '2px' : '6px',
                     '& > svg': {
-                      fontSize: isMobile ? '0.75rem' : '1.25rem'
+                      fontSize: isMobile ? '0.75rem' : '1rem'
                     }
                   }
                 }}
@@ -1664,11 +1685,18 @@ const PriceChartAdvanced = memo(({ token }) => {
                 }}
                 variant={range === r ? 'contained' : 'outlined'}
                 sx={{
-                  px: isMobile ? 0.25 : 1,
+                  px: isMobile ? 0.5 : 0.75,
                   fontSize: isMobile ? '0.65rem' : '0.75rem',
-                  minWidth: isMobile ? 24 : 36,
-                  height: isMobile ? 24 : 32,
-                  letterSpacing: isMobile ? '-0.5px' : 'normal'
+                  minWidth: isMobile ? 26 : 32,
+                  height: isMobile ? 26 : 30,
+                  letterSpacing: '-0.02em',
+                  borderRadius: '6px',
+                  fontWeight: range === r ? 600 : 500,
+                  border: `1px solid ${range === r ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2)}`,
+                  '&:hover': {
+                    backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                    borderColor: alpha(theme.palette.primary.main, 0.3)
+                  }
                 }}
               >
                 {r}

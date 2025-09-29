@@ -127,44 +127,36 @@ const LiveCircle = styled('div')(({ theme }) => ({
 const TradeCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isNew' && prop !== 'tradetype'
 })(({ theme, isNew, tradetype }) => ({
-  marginBottom: theme.spacing(0.2),
-  borderRadius: '12px',
-  background:
-    tradetype === 'BUY'
-      ? alpha(theme.palette.primary.main, 0.04)
-      : alpha('#F44336', 0.04),
+  marginBottom: '1px',
+  borderRadius: '0',
+  background: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
-  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+  border: 'none',
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   boxShadow: 'none',
   position: 'relative',
   overflow: 'hidden',
   animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
   '&:hover': {
     boxShadow: 'none',
-    border: `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-    background:
-      tradetype === 'BUY'
-        ? alpha(theme.palette.primary.main, 0.06)
-        : alpha('#F44336', 0.06)
+    backgroundColor: alpha(theme.palette.action.hover, 0.02)
   }
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  fontSize: '0.55rem',
-  height: '16px',
-  fontWeight: 'bold',
-  borderRadius: '12px',
-  background:
-    tradetype === 'BUY'
-      ? alpha(theme.palette.primary.main, 0.08)
-      : alpha('#F44336', 0.08),
-  color: tradetype === 'BUY' ? theme.palette.primary.main : '#F44336',
-  border:
-    tradetype === 'BUY'
-      ? `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`
-      : `1.5px solid ${alpha('#F44336', 0.3)}`,
-  boxShadow: 'none'
+  fontSize: '0.65rem',
+  height: '20px',
+  fontWeight: 600,
+  borderRadius: '4px',
+  background: 'transparent',
+  color: tradetype === 'BUY' ? '#4caf50' : '#f44336',
+  border: 'none',
+  padding: '0 6px',
+  boxShadow: 'none',
+  '& .MuiChip-label': {
+    padding: '0 2px'
+  }
 }));
 
 const VolumeIndicator = styled('div')(({ theme, volume }) => ({
@@ -702,14 +694,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           tradetype={isBuy ? 'BUY' : 'SELL'}
         >
           <VolumeIndicator volume={volumePercentage} />
-          <CardContent sx={{ p: 0.75, '&:last-child': { pb: 0.75 } }}>
+          <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
             <Box
               sx={{
                 display: 'grid',
                 gridTemplateColumns: {
                   xs: '1fr 1fr',
-                  sm: '1.2fr 1.2fr 1.8fr',
-                  md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
+                  sm: '1fr 0.8fr 1.5fr',
+                  md: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr'
                 },
                 gap: 1,
                 alignItems: 'center'
@@ -721,7 +713,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   variant="body2"
                   color="text.secondary"
                   fontWeight="500"
-                  sx={{ minWidth: 'fit-content', fontSize: '0.65rem' }}
+                  sx={{ minWidth: 'fit-content', fontSize: '0.75rem', opacity: 0.7 }}
                 >
                   {formatRelativeTime(trade.time)}
                 </Typography>
@@ -745,7 +737,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   variant="body2"
                   fontWeight="600"
                   color="text.primary"
-                  sx={{ fontSize: '0.7rem' }}
+                  sx={{ fontSize: '0.85rem' }}
                 >
                   {formatPrice(price)}
                 </Typography>
@@ -756,7 +748,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <img
                   src={getTokenImageUrl(amountData.issuer, amountData.currency)}
                   alt={decodeCurrency(amountData.currency)}
-                  style={{ width: 14, height: 14, borderRadius: '50%' }}
+                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
                 <Box>
                   <Typography
@@ -770,7 +762,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     variant="body2"
                     fontWeight="600"
                     color="text.primary"
-                    sx={{ fontSize: '0.7rem' }}
+                    sx={{ fontSize: '0.85rem' }}
                   >
                     {formatTradeValue(amountData.value)}{' '}
                     {decodeCurrency(amountData.currency)}
@@ -783,7 +775,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <img
                   src={getTokenImageUrl(totalData.issuer, totalData.currency)}
                   alt={decodeCurrency(totalData.currency)}
-                  style={{ width: 14, height: 14, borderRadius: '50%' }}
+                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
                 <Box>
                   <Typography
@@ -797,7 +789,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     variant="body2"
                     fontWeight="600"
                     color="text.primary"
-                    sx={{ fontSize: '0.7rem' }}
+                    sx={{ fontSize: '0.85rem' }}
                   >
                     {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                   </Typography>
@@ -822,7 +814,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     <Typography
                       variant="body2"
                       fontWeight="500"
-                      sx={{ fontSize: '0.65rem', color: 'primary.main' }}
+                      sx={{ fontSize: '0.75rem', color: 'primary.main', opacity: 0.9 }}
                     >
                       {addressToShow
                         ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
@@ -839,21 +831,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     size="small"
                     onClick={() => handleTxClick(trade.hash)}
                     sx={{
-                      color: `${theme.palette.primary.main} !important`,
-                      padding: '2px',
+                      color: theme.palette.primary.main,
+                      padding: '4px',
+                      border: `1.5px solid transparent`,
+                      borderRadius: '6px',
                       '&:hover': {
-                        color: `${theme.palette.primary.dark} !important`,
-                        backgroundColor:
-                          theme.palette.mode === 'dark'
-                            ? 'rgba(255, 255, 255, 0.08)'
-                            : 'rgba(0, 0, 0, 0.04)',
-                        transform: 'scale(1.1)'
-                      },
-                      '& .MuiSvgIcon-root': {
-                        color: `${theme.palette.primary.main} !important`
-                      },
-                      '&:hover .MuiSvgIcon-root': {
-                        color: `${theme.palette.primary.dark} !important`
+                        backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                        borderColor: alpha(theme.palette.primary.main, 0.2)
                       }
                     }}
                   >
@@ -889,12 +873,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             backgroundColor: 'transparent',
             backdropFilter: 'none',
             WebkitBackdropFilter: 'none',
-            borderRadius: '6px',
-            border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
-            boxShadow: `
-              0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-              0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-              inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
+            borderRadius: '12px',
+            border: `1.5px dashed ${alpha(theme.palette.divider, 0.2)}`,
+            boxShadow: 'none'
           }}
         >
           <Typography variant="h6" color="text.secondary" gutterBottom>
@@ -919,7 +900,24 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           justifyContent: 'space-between'
         }}
       >
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="trading tabs">
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          aria-label="trading tabs"
+          sx={{
+            '& .MuiTab-root': {
+              fontSize: '0.8rem',
+              fontWeight: 500,
+              textTransform: 'none',
+              minHeight: 36,
+              py: 1
+            },
+            '& .MuiTabs-indicator': {
+              height: 2,
+              borderRadius: '2px 2px 0 0'
+            }
+          }}
+        >
           <Tab label="Trading History" />
           <Tab label="Trading Pairs" />
           <Tab label="Top Traders" />
@@ -929,7 +927,20 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           variant="outlined"
           size="small"
           onClick={() => setOrderBookOpen(true)}
-          sx={{ mr: 1 }}
+          sx={{
+            mr: 1,
+            borderRadius: '8px',
+            border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+            fontSize: '0.75rem',
+            fontWeight: 500,
+            textTransform: 'none',
+            px: 2,
+            py: 0.5,
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.primary.main, 0.04),
+              borderColor: alpha(theme.palette.primary.main, 0.3)
+            }
+          }}
         >
           Quick Trade
         </Button>
@@ -939,8 +950,21 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
         <>
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <FormControlLabel
-              control={<Switch checked={xrpOnly} onChange={handleXrpOnlyChange} />}
+              control={
+                <Switch
+                  checked={xrpOnly}
+                  onChange={handleXrpOnlyChange}
+                  size="small"
+                />
+              }
               label="XRP Trades Only"
+              sx={{
+                '& .MuiFormControlLabel-label': {
+                  fontSize: '0.8rem',
+                  fontWeight: 500,
+                  opacity: 0.8
+                }
+              }}
             />
           </Box>
           {/* Table Headers with integrated title */}
@@ -950,31 +974,27 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               gridTemplateColumns: {
                 xs: '1fr',
                 sm: '1fr 1fr',
-                md: '1.2fr 1.2fr 1.8fr 1.8fr 1.2fr 0.4fr'
+                md: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr'
               },
               gap: 1,
-              p: 0.75,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              backgroundColor: 'transparent',
-              backdropFilter: 'none',
-              WebkitBackdropFilter: 'none',
-              borderRadius: '6px 6px 0 0',
-              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-              boxShadow: `
-            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
+              p: 1,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              backgroundColor: alpha(theme.palette.background.default, 0.3),
+              borderRadius: '12px 12px 0 0',
+              border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+              boxShadow: 'none',
               '& > *': {
-                fontWeight: 'bold',
+                fontWeight: 500,
                 color: theme.palette.text.secondary,
-                fontSize: '0.6rem',
+                fontSize: '0.65rem',
                 textTransform: 'uppercase',
-                letterSpacing: '0.5px'
+                letterSpacing: '0.02em',
+                opacity: 0.7
               }
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Time / Type</Typography>
+              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>TIME / TYPE</Typography>
               <LiveIndicator sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}>
                 <LiveCircle />
                 <Typography
@@ -986,14 +1006,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 </Typography>
               </LiveIndicator>
             </Box>
-            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Price (XRP)</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Amount</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Total</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Maker/Taker</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>PRICE (XRP)</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>AMOUNT</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>TOTAL</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>MAKER/TAKER</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}></Typography>
           </Box>
 
-          <Stack spacing={0.3}>
+          <Stack spacing={0.25} sx={{ mt: 0.5 }}>
             {renderedTrades}
           </Stack>
 
