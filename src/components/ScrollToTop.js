@@ -66,11 +66,11 @@ export default function ScrollToTop(props) {
           alignItems: 'center',
           justifyContent: 'center',
           backgroundColor: theme.palette.mode === 'dark'
-            ? alpha('#ffffff', 0.08)
+            ? alpha('#ffffff', 0.03)
             : alpha('#000000', 0.04),
           border: `1.5px solid ${
             theme.palette.mode === 'dark'
-              ? alpha('#ffffff', 0.1)
+              ? alpha('#ffffff', 0.06)
               : alpha('#000000', 0.06)
           }`,
           borderRadius: '12px',
@@ -78,15 +78,21 @@ export default function ScrollToTop(props) {
           fontSize: '1rem',
           fontWeight: 400,
           color: theme.palette.mode === 'dark'
-            ? alpha('#ffffff', 0.6)
+            ? alpha('#ffffff', 0.4)
             : alpha('#000000', 0.5),
           backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)',
           overflow: 'hidden',
           '&:hover': {
-            backgroundColor: alpha('#4285f4', 0.08),
-            borderColor: alpha('#4285f4', 0.2),
-            color: '#4285f4'
+            backgroundColor: theme.palette.mode === 'dark'
+              ? alpha('#ffffff', 0.05)
+              : alpha('#000000', 0.06),
+            borderColor: theme.palette.mode === 'dark'
+              ? alpha('#ffffff', 0.1)
+              : alpha('#000000', 0.1),
+            color: theme.palette.mode === 'dark'
+              ? alpha('#ffffff', 0.6)
+              : alpha('#000000', 0.7)
           },
           '&::before': {
             content: '""',
@@ -95,7 +101,9 @@ export default function ScrollToTop(props) {
             left: 0,
             right: 0,
             height: `${scrollProgress}%`,
-            backgroundColor: alpha('#4285f4', 0.1),
+            backgroundColor: theme.palette.mode === 'dark'
+              ? alpha('#10b981', 0.08)
+              : alpha('#4285f4', 0.08),
             pointerEvents: 'none'
           }
         }}

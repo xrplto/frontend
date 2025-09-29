@@ -1084,15 +1084,23 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       isRunning = false;
       counter--;
       if (counter <= 0) {
+        clearInterval(timer);
       }
     }
+
+    if (ret && ret.data && ret.data.data) {
       timer = setInterval(getPayload, 2000);
     }
+
     return () => {
       if (timer) {
         clearInterval(timer);
       }
+      if (dispatchTimer) {
+        clearInterval(dispatchTimer);
+      }
     };
+  }, [ret]);
 
   const onSwap = async () => {
     try {
