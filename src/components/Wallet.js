@@ -745,6 +745,39 @@ const WalletContent = ({
   );
 };
 
+// ConnectWallet button component for wallet connection
+export const ConnectWallet = () => {
+  const { setOpenWalletModal } = useContext(AppContext);
+  const theme = useTheme();
+
+  return (
+    <Button
+      variant="outlined"
+      onClick={() => setOpenWalletModal(true)}
+      sx={{
+        mt: 1.5,
+        px: 3,
+        py: 1.5,
+        fontWeight: 400,
+        borderRadius: '12px',
+        borderWidth: '1.5px',
+        borderColor: alpha(theme.palette.divider, 0.2),
+        color: '#4285f4',
+        backgroundColor: 'transparent',
+        textTransform: 'none',
+        fontSize: '0.95rem',
+        '&:hover': {
+          borderColor: '#4285f4',
+          backgroundColor: alpha('#4285f4', 0.04),
+          borderWidth: '1.5px'
+        }
+      }}
+    >
+      Connect Wallet
+    </Button>
+  );
+};
+
 export default function Wallet({ style, embedded = false, onClose, buttonOnly = false }) {
   const theme = useTheme();
   // Translation removed - using hardcoded English text

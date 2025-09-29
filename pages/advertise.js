@@ -40,12 +40,12 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import useDebounce from 'src/hooks';
 import { AppContext } from 'src/AppContext';
-import { ConnectWallet } from 'src/components/WalletConnectModal';
+import { ConnectWallet } from 'src/components/Wallet';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-// import { isInstalled, submitTransaction } from '@gemwallet/api';
+// GemWallet import removed
 import { enqueueSnackbar } from 'notistack';
-import QRDialog from 'src/components/QRDialog';
+// QRDialog removed
 import Decimal from 'decimal.js-light';
 
 const PageWrapper = styled.div`
@@ -358,33 +358,14 @@ export default function Advertise() {
     try {
       switch (wallet_type) {
         case 'xaman':
-          setLocalLoading(true);
-          const body = {
-            ...transactionData,
-            user_token
-          };
-
-          console.log('Sending Xaman payment request:', body);
-          const res = await axios.post(`${API_URL}/offer/payment`, body);
-
-          if (res.status === 200 && res.data?.data) {
-            const uuid = res.data.data.uuid;
-            const qrlink = res.data.data.qrUrl;
-            const nextlink = res.data.data.next;
-
-            setUuid(uuid);
-            setQrUrl(qrlink);
-            setNextUrl(nextlink);
-            setOpenScanQR(true);
-            setLocalLoading(false);
-          } else {
-            throw new Error('Invalid response from payment API');
-          }
+          // Xaman payment functionality removed
+          openSnackbar('Xaman payment no longer supported', 'info');
+          dispatch(updateProcess(0));
           break;
 
         case 'gem':
-          // GemWallet functionality temporarily disabled - missing @gemwallet/api dependency
-          openSnackbar('GemWallet payment temporarily unavailable', 'error');
+          // GemWallet removed
+          openSnackbar('GemWallet no longer supported', 'info');
           dispatch(updateProcess(0));
           break;
 
@@ -399,8 +380,10 @@ export default function Advertise() {
     }
   };
 
-  // Handle QR scan completion for Xaman
+  // Xaman QR scan functionality removed
   useEffect(() => {
+    return; // Disabled
+    /*
     if (!openScanQR || !uuid) return;
 
     const checkPayment = setInterval(async () => {
@@ -429,6 +412,7 @@ export default function Advertise() {
     }, 2000);
 
     return () => clearInterval(checkPayment);
+    */
   }, [openScanQR, uuid]);
 
   const handleScanQRClose = () => {

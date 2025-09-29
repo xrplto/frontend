@@ -457,7 +457,7 @@ function AboutPage() {
     },
     {
       question: 'How do I trade on xrpl.to?',
-      answer: 'To trade on xrpl.to, you need to connect your XRP Ledger-compatible wallet to the DEX. You can use wallets such as Xaman and Gem Wallet to trade at xrpl.to. Once connected, you can browse the available tokens, place buy or sell orders, and execute trades directly on the XRPL with full control of your assets.'
+      answer: 'To trade on xrpl.to, you need to connect your XRP Ledger-compatible wallet to the DEX. You can use various Web3 wallets to trade at xrpl.to. Once connected, you can browse the available tokens, place buy or sell orders, and execute trades directly on the XRPL with full control of your assets.'
     },
     {
       question: 'What is the difference between a decentralized exchange (DEX) and a centralized exchange?',
@@ -469,7 +469,7 @@ function AboutPage() {
     },
     {
       question: 'What are the fees for trading on xrpl.to?',
-      answer: 'There are no fees to trade on xrpl.to itself. The platform is completely free to use. However, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Additionally, some wallets like Xaman may charge their own fees, so we recommend checking your wallet\'s fee structure. These minimal network costs ensure fast transaction processing and network security.'
+      answer: 'There are no fees to trade on xrpl.to itself. The platform is completely free to use. However, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction, which go directly to the blockchain network. Additionally, some wallets may charge their own fees, so we recommend checking your wallet\'s fee structure. These minimal network costs ensure fast transaction processing and network security.'
     },
     {
       question: 'How do I list my token on xrpl.to?',

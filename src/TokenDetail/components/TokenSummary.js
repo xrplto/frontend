@@ -46,7 +46,8 @@ import axios from 'axios';
 import { formatDistanceToNow } from 'date-fns';
 import Share from './Share';
 import Watch from './Watch';
-import TrustSetDialog from 'src/components/TrustSetDialog';
+// TrustSetDialog removed - Xaman no longer used
+const TrustSetDialog = () => null;
 import TimelineIcon from '@mui/icons-material/Timeline';
 import EditIcon from '@mui/icons-material/Edit';
 import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';

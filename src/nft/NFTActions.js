@@ -74,7 +74,7 @@ import { getHashIcon } from 'src/utils/formatters';
 
 // Components
 import CreateOfferDialog from './CreateOfferDialog';
-import QRDialog from 'src/components/QRDialog';
+
 import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 // import TimePeriods from './TimePeriodsDropdown';
 import OffersList from './OffersList';
@@ -404,7 +404,6 @@ export default function NFTActions({ nft }) {
   // const largescreen = useMediaQuery(theme => theme.breakpoints.up('md'));
 
   const {
-    uuid,
     name,
     collection,
     cslug,
@@ -461,9 +460,6 @@ export default function NFTActions({ nft }) {
   const [openConfirm, setOpenConfirm] = useState(false);
   const [openSelectPrice, setOpenSelectPrice] = useState(false);
 
-  const [openScanQR, setOpenScanQR] = useState(false);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
   const [qrType, setQrType] = useState('NFTokenAcceptOffer');
 
   const [cost, setCost] = useState(null);
@@ -571,7 +567,6 @@ export default function NFTActions({ nft }) {
         handleScanQRClose();
       }
     }
-    if (openScanQR) {
       timer = setInterval(getPayload, 2000);
     }
     return () => {
@@ -579,7 +574,6 @@ export default function NFTActions({ nft }) {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, sync, openSnackbar]);
 
   useEffect(() => {
     async function getLowestSellOffer() {
@@ -697,13 +691,11 @@ export default function NFTActions({ nft }) {
 
     setPageLoading(true);
     try {
-      const { uuid, NFTokenID } = nft;
 
       const user_token = accountProfile.user_token;
 
       const body = {
         account: accountLogin,
-        uuid,
         NFTokenID,
         index,
         destination,
@@ -717,8 +709,6 @@ export default function NFTActions({ nft }) {
       });
 
       if (res.status === 200) {
-        const newUuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
         const nextlink = res.data.data.next;
 
         let newQrType = isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer';
@@ -726,9 +716,6 @@ export default function NFTActions({ nft }) {
         else newQrType += ' [Buy Offer]';
 
         setQrType(newQrType);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
       }
     } catch (err) {
       console.error(err);
@@ -737,7 +724,6 @@ export default function NFTActions({ nft }) {
   };
 
   const handleScanQRClose = () => {
-    setOpenScanQR(false);
   };
 
   const getValidOffers = (offers, isSell) => {

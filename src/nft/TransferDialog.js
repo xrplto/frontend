@@ -37,7 +37,7 @@ import { PulseLoader } from '../components/Spinners';
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 
 // Components
-import QRDialog from 'src/components/QRDialog';
+
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
@@ -148,10 +148,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
 
   const [destination, setDestination] = useState('');
 
-  const [openScanQR, setOpenScanQR] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -162,7 +158,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
 
     async function getDispatchResult() {
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, {
           headers: { 'x-access-token': accountToken }
         });
         const res = ret.data.data.response;
@@ -205,7 +200,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, {
           headers: { 'x-access-token': accountToken }
         });
         const resolved_at = ret.data?.resolved_at;
@@ -222,7 +216,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         handleScanQRClose();
       }
     }
-    if (openScanQR) {
       timer = setInterval(getPayload, 2000);
     }
     return () => {
@@ -230,9 +223,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, uuid, sync]);
 
-  const onCreateOfferXumm = async () => {
     if (!account || !accountToken) {
       openSnackbar('Please login', 'error');
       return;
@@ -243,7 +234,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       const user_token = accountProfile?.user_token;
       const wallet_type = accountProfile?.wallet_type;
 
-      const uuid = nft.uuid;
 
       const NFTokenID = nft.NFTokenID;
       const owner = nft.account;
@@ -277,7 +267,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   };
 
   const handleScanQRClose = () => {
-    setOpenScanQR(false);
   };
 
   const handleClose = () => {
@@ -292,7 +281,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const handleTransferNFT = () => {
     const isValid = isValidClassicAddress(destination) && account !== destination;
     if (isValid) {
-      onCreateOfferXumm();
     } else {
       openSnackbar('Invalid value!', 'error');
     }
@@ -421,11 +409,8 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       </StyledDialog>
 
       <QRDialog
-        open={openScanQR}
         type="NFTokenCreateOffer"
         onClose={!isLoading ? handleScanQRClose : undefined}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
       />
     </>
   );

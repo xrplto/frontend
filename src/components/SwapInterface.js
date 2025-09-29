@@ -66,10 +66,8 @@ import { fNumber } from 'src/utils/formatters';
 
 // Components
 import Wallet from 'src/components/Wallet';
-const QRDialog = dynamic(() => import('src/components/QRDialog'), {
-  loading: () => null,
-  ssr: false
-});
+
+const QRDialog = () => null;
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -467,10 +465,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
     useContext(AppContext);
 
-  const [openScanQR, setOpenScanQR] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
 
   const [token1, setToken1] = useState(curr1);
   const [token2, setToken2] = useState(curr2);
@@ -1039,7 +1033,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
     async function getDispatchResult() {
       try {
-        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
         const dispatched_result = res.dispatched_result;
 
@@ -1073,7 +1066,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     // Stop the interval
     const stopInterval = () => {
       clearInterval(dispatchTimer);
-      setOpenScanQR(false);
       setAmount1('');
       setAmount2('');
     };
@@ -1082,7 +1074,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
@@ -1093,10 +1084,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       isRunning = false;
       counter--;
       if (counter <= 0) {
-        setOpenScanQR(false);
       }
     }
-    if (openScanQR) {
       timer = setInterval(getPayload, 2000);
     }
     return () => {
@@ -1104,7 +1093,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         clearInterval(timer);
       }
     };
-  }, [openScanQR, uuid]);
 
   const onSwap = async () => {
     try {
@@ -1392,7 +1380,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   };
 
   const handleScanQRClose = () => {
-    setOpenScanQR(false);
   };
 
   const handlePlaceOrder = (e) => {
@@ -4006,11 +3993,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 </Box>
 
                 <QRDialog
-                  open={openScanQR}
                   type={transactionType}
                   onClose={handleScanQRClose}
-                  qrUrl={qrUrl}
-                  nextUrl={nextUrl}
                 />
               </Stack>
 

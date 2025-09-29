@@ -37,7 +37,7 @@ import { AppContext } from 'src/AppContext';
 
 // Components
 import CountdownTimer from './CountDownTimer';
-import QRDialog from 'src/components/QRDialog';
+
 import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 
 export default function OffersList({ nft, offers, handleAcceptOffer, handleCancelOffer, isSell }) {

@@ -458,7 +458,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [bidId, setBidId] = useState(-1);
   const [askId, setAskId] = useState(-1);
   const [selectedPair, setSelectedPair] = useState(() => (token ? getInitPair(token) : null));
-  const [orderBookOpen, setOrderBookOpen] = useState(false);
 
   const WSS_URL = 'wss://xrplcluster.com';
 
@@ -955,27 +954,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           <Tab label="Top Traders" />
           <Tab label="Rich List" />
         </Tabs>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => setOrderBookOpen(true)}
-          sx={{
-            mr: 1,
-            borderRadius: '8px',
-            border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-            fontSize: '0.75rem',
-            fontWeight: 500,
-            textTransform: 'none',
-            px: 2,
-            py: 0.5,
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.04),
-              borderColor: alpha(theme.palette.primary.main, 0.3)
-            }
-          }}
-        >
-          Quick Trade
-        </Button>
       </Box>
 
       {tabValue === 0 && (
@@ -1064,41 +1042,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
         </>
       )}
 
-      {/* Quick Trade Modal */}
-      <Dialog open={orderBookOpen} onClose={() => setOrderBookOpen(false)} fullWidth maxWidth="sm">
-        <DialogTitle
-          sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
-        >
-          Quick Trade
-          <IconButton size="small" onClick={() => setOrderBookOpen(false)}>
-            <CloseIcon fontSize="small" />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent dividers>
-          {token && (
-            <Stack spacing={2}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 2,
-                  p: 0.75,
-                  backgroundColor: 'transparent',
-                  backdropFilter: 'none',
-                  WebkitBackdropFilter: 'none',
-                  borderRadius: 1,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  boxShadow: `
-                  0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-                  0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-                  inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-                }}
-              >
-              </Box>
-            </Stack>
-          )}
-        </DialogContent>
-      </Dialog>
 
       {tabValue === 1 && token && pairs && <PairsList token={token} pairs={pairs} />}
 

@@ -13,7 +13,7 @@ import { update_metrics } from 'src/redux/statusSlice';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import TrustSetDialog from 'src/components/TrustSetDialog';
+// TrustSetDialog removed - Xaman no longer used
 
 import TokenDetail from 'src/TokenDetail';
 

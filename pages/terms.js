@@ -132,7 +132,7 @@ function TermsPage() {
         },
         {
           subtitle: 'Account Registration',
-          text: 'Certain features of xrpl.to may require you to create an account. However, xrpl.to primarily relies on Web3 login, such as XUMM Wallet, where users do not have to register accounts. When using Web3 login, you will be prompted to connect your XUMM Wallet or other compatible Web3 wallet to access the features of xrpl.to. It is important to note that xrpl.to does not collect or store any account credentials. The authentication and authorization process is handled securely through the Web3 login interface. You are responsible for ensuring the security and confidentiality of your Web3 wallet and for all activities that occur under your account. You agree to take appropriate measures to protect your wallet.'
+          text: 'Certain features of xrpl.to may require you to create an account. xrpl.to uses Web3 login where users connect their Web3 wallet to access the features of xrpl.to. It is important to note that xrpl.to does not collect or store any account credentials. The authentication and authorization process is handled securely through the Web3 login interface. You are responsible for ensuring the security and confidentiality of your Web3 wallet and for all activities that occur under your account. You agree to take appropriate measures to protect your wallet.'
         }
       ]
     },

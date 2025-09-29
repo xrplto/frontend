@@ -322,6 +322,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
                   </Alert>
                 </Snackbar>
                 <TransactionAlert />
+                {typeof window !== 'undefined' && Wallet && <Wallet />}
                 {typeof window !== 'undefined' && ErrorDebugger && <ErrorDebugger />}
               </SnackbarProvider>
           </ThemeProvider>

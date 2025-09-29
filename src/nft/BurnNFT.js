@@ -31,9 +31,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
-  const [openScanQR, setOpenScanQR] = useState(false);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -52,17 +49,14 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/nft/burn/${nft.uuid}`, {
           headers: { 'x-access-token': accountToken }
         });
         const resolved_at = ret.data?.resolved_at;
         const dispatched_result = ret.data?.dispatched_result;
         if (resolved_at) {
-          setOpenScanQR(false);
           if (dispatched_result === 'tesSUCCESS') {
             onHandleBurn();
             openSnackbar('Burning NFT successful!', 'success');
-            window.location.href = `/congrats/burnnft/${nft.uuid}`;
           } else openSnackbar('Burning NFT rejected!', 'error');
 
           return;
@@ -76,7 +70,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         handleScanQRClose();
       }
     }
-    if (openScanQR) {
       timer = setInterval(getPayload, 2000);
     }
     return () => {
@@ -84,7 +77,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, accountToken, nft, onHandleBurn, openSnackbar]);
 
   const onBurnNFTXumm = async () => {
     if (!accountLogin || !accountToken) {
@@ -120,7 +112,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   };
 
   const handleScanQRClose = () => {
-    setOpenScanQR(false);
   };
 
   const handleBurnNFT = () => {
@@ -149,11 +140,8 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       </Button>
 
       <QRDialog
-        open={openScanQR}
         type="NFTokenBurn"
         onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
       />
     </>
   );

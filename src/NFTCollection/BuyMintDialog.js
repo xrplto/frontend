@@ -34,7 +34,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Components
-import QRDialog from 'src/components/QRDialog';
+// QRDialog removed - Xaman no longer used
 
 // Loader
 import { PulseLoader } from '../components/Spinners';
@@ -195,6 +195,8 @@ export default function BuyMintDialog({
   }, [openScanQR, uuid]);
 
   const onPaymentXumm = async () => {
+    openSnackbar('Xaman no longer supported', 'info');
+    return; // Function disabled
     if (!account || !accountToken) {
       openSnackbar('Please login', 'error');
       return;
@@ -266,7 +268,8 @@ export default function BuyMintDialog({
 
   const handleApprove = (e) => {
     if (quantity > 0) {
-      onPaymentXumm();
+      // onPaymentXumm(); // Xumm removed
+      openSnackbar('Device authentication required', 'info');
       // openSnackbar('Comming soon!', 'success');
     } else {
       openSnackbar('Invalid value!', 'error');

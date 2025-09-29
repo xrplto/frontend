@@ -19,7 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { AppContext } from 'src/AppContext';
 import { PulseLoader } from '../components/Spinners';
-import QRDialog from 'src/components/QRDialog';
+
 
 const BASE_URL = 'https://api.xrpnft.com/api';
 
@@ -60,10 +60,6 @@ export default function CreateOfferXRPCafe({
 
   const [amount, setAmount] = useState('');
   const [loading, setLoading] = useState(false);
-  const [openScanQR, setOpenScanQR] = useState(false);
-  const [uuid, setUuid] = useState(null);
-  const [qrUrl, setQrUrl] = useState(null);
-  const [nextUrl, setNextUrl] = useState(null);
 
   const isAmountFixed = Boolean(initialAmount);
 
@@ -81,7 +77,6 @@ export default function CreateOfferXRPCafe({
 
     async function getDispatchResult() {
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, {
           headers: { 'x-access-token': accountToken }
         });
         const res = ret.data.data.response;
@@ -114,7 +109,6 @@ export default function CreateOfferXRPCafe({
 
     const stopInterval = () => {
       clearInterval(dispatchTimer);
-      setOpenScanQR(false);
       handleClose();
     };
 
@@ -122,7 +116,6 @@ export default function CreateOfferXRPCafe({
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/offers/create/${uuid}?account=${account}`, {
           headers: { 'x-access-token': accountToken }
         });
         const resolved_at = ret.data?.resolved_at;
@@ -140,7 +133,6 @@ export default function CreateOfferXRPCafe({
       }
     }
 
-    if (openScanQR) {
       timer = setInterval(getPayload, 2000);
     }
 
@@ -149,7 +141,6 @@ export default function CreateOfferXRPCafe({
         clearInterval(timer);
       }
     };
-  }, [openScanQR, uuid, sync]);
 
   const handleClose = () => {
     setOpen(false);
@@ -194,14 +185,8 @@ export default function CreateOfferXRPCafe({
 
 
       if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
         const nextlink = res.data.data.next;
 
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
       }
     } catch (err) {
       console.error(err);
@@ -211,7 +196,6 @@ export default function CreateOfferXRPCafe({
   };
 
   const handleScanQRClose = () => {
-    setOpenScanQR(false);
   };
 
   return (
@@ -294,11 +278,8 @@ export default function CreateOfferXRPCafe({
       </OfferDialog>
 
       <QRDialog
-        open={openScanQR}
         type="NFTokenCreateOffer"
         onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
       />
     </>
   );

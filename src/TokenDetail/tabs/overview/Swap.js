@@ -24,8 +24,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
-import { ConnectWallet } from 'src/components/WalletConnectModal';
-import QRDialog from 'src/components/QRDialog';
+import { ConnectWallet } from 'src/components/Wallet';
+// QRDialog removed - Xaman no longer used
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 // Constants
@@ -295,7 +295,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
     useContext(AppContext);
 
-  const [openScanQR, setOpenScanQR] = useState(false);
+  // const [openScanQR, setOpenScanQR] = useState(false); // Removed - Xaman no longer used
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
@@ -942,7 +942,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     async function getDispatchResult() {
       try {
-        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        return; // Xumm removed
+        // const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
         // const account = res.account;
         const dispatched_result = res.dispatched_result;
@@ -977,7 +978,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     // Stop the interval
     const stopInterval = (clearAmounts = false) => {
       clearInterval(dispatchTimer);
-      setOpenScanQR(false);
+      // setOpenScanQR(false); // Removed - Xaman no longer used
       if (clearAmounts) {
         setAmount1('');
         setAmount2('');
@@ -988,7 +989,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       if (isRunning) return;
       isRunning = true;
       try {
-        const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        return; // Xumm removed
+        // const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
         const res = ret.data.data.response;
         // const account = res.account;
         const resolved_at = res.resolved_at;
@@ -1000,10 +1002,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       isRunning = false;
       counter--;
       if (counter <= 0) {
-        setOpenScanQR(false);
+        // setOpenScanQR(false); // Removed - Xaman no longer used
       }
     }
-    if (openScanQR) {
+    if (false) { // Disabled - Xaman no longer used
       timer = setInterval(getPayload, 2000);
     }
     return () => {
@@ -1011,9 +1013,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         clearInterval(timer);
       }
     };
-  }, [openScanQR, uuid]);
+  }, [uuid]);
 
   const onOfferCreateXumm = async () => {
+    openSnackbar('Xaman no longer supported', 'info');
+    return; // Function disabled
     try {
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
@@ -1220,6 +1224,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const onDisconnectXumm = async (uuid) => {
+    return; // Function disabled
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
@@ -1339,7 +1344,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    onDisconnectXumm(uuid);
+    // onDisconnectXumm(uuid); // Xumm removed
   };
 
   const handlePlaceOrder = (e) => {
@@ -1360,7 +1365,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         openSnackbar('Please enter a limit price!', 'error');
         return;
       }
-      onOfferCreateXumm();
+      // onOfferCreateXumm(); // Xumm removed
+      openSnackbar('Device authentication required', 'info');
     } else {
       openSnackbar('Invalid values!', 'error');
     }
@@ -2430,13 +2436,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         )}
       </Stack>
 
-      <QRDialog
-        open={openScanQR}
-        type={transactionType}
-        onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-      />
+      {/* QRDialog removed - Xaman no longer used */}
 
       {/* Orderbook Drawer (embedded) using TransactionDetailsPanel when no global handler */}
       {!onOrderBookToggle && (

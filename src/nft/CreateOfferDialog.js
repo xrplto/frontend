@@ -37,7 +37,7 @@ import { PulseLoader } from '../components/Spinners';
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 
 // Components
-import QRDialog from 'src/components/QRDialog';
+// QRDialog removed - Xaman no longer used
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -286,6 +286,8 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
   }, [openScanQR, uuid, sync]);
 
   const onCreateOfferXumm = async () => {
+    openSnackbar('Xaman no longer supported', 'info');
+    return; // Function disabled
     if (!account || !accountToken) {
       openSnackbar('Please login', 'error');
       return;
@@ -362,7 +364,8 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
 
   const handleCreateOffer = () => {
     if (amount > 0) {
-      onCreateOfferXumm();
+      // onCreateOfferXumm(); // Xumm removed
+      openSnackbar('Device authentication required', 'info');
     } else {
       openSnackbar('Invalid value!', 'error');
     }
