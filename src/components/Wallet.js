@@ -1297,6 +1297,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   useEffect(() => {
     const checkVisibleAccountsActivation = async () => {
+      // Don't check if no user is logged in
+      if (!accountProfile) return;
+
       if (profiles.length === 0) return;
 
       setIsCheckingActivation(true);
@@ -1354,7 +1357,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
 
     checkVisibleAccountsActivation();
-  }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity]);
+  }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity, accountProfile]);
 
   const generateWalletsFromDeviceKey = async (deviceKeyId, existingSignatureEntropy = null) => {
     const wallets = [];
