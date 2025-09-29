@@ -729,7 +729,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   variant="body2"
                   color="text.secondary"
                   fontWeight="500"
-                  sx={{ minWidth: 'fit-content', fontSize: '0.75rem', opacity: 0.7 }}
+                  sx={{
+                    width: '65px',
+                    fontSize: '0.75rem',
+                    opacity: 0.7,
+                    flexShrink: 0
+                  }}
                 >
                   {formatRelativeTime(trade.time)}
                 </Typography>
@@ -1025,7 +1030,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>PRICE (XRP)</Typography>
             <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>AMOUNT</Typography>
             <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>TOTAL</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>MAKER/TAKER</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>BY</Typography>
             <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}></Typography>
           </Box>
 
