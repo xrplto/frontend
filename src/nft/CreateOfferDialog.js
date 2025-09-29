@@ -641,13 +641,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
         </DialogContent>
       </OfferDialog>
 
-      <QRDialog
-        open={openScanQR}
-        type="NFTokenCreateOffer"
-        onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-      />
+      {/* QRDialog removed - Xaman no longer used */}
     </>
   );
 }

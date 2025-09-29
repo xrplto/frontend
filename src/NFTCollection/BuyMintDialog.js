@@ -409,13 +409,7 @@ export default function BuyMintDialog({
         </DialogContent>
       </BuyDialog>
 
-      <QRDialog
-        open={openScanQR}
-        type="Payment"
-        onClose={handleScanQRClose}
-        qrUrl={qrUrl}
-        nextUrl={nextUrl}
-      />
+      {/* QRDialog removed - Xaman no longer used */}
     </>
   );
 }

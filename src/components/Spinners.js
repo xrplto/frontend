@@ -171,10 +171,12 @@ export const BarLoader = ({ color, ...props }) => (
 );
 
 // Default export for backward compatibility
-export default {
+const Spinners = {
   PulseLoader,
   PuffLoader,
   ClipLoader,
   FadeLoader,
   BarLoader
 };
+
+export default Spinners;

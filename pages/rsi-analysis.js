@@ -241,7 +241,7 @@ const Canvas = styled.canvas`
   cursor: crosshair;
 `;
 
-const Tooltip = styled.div`
+const CustomTooltip = styled.div`
   position: fixed;
   background: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
   border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
@@ -904,7 +904,7 @@ function RSIAnalysisPage({ data }) {
                 RSI Heatmap - {params.timeframe.toUpperCase()}
               </div>
               {tooltip.visible && tooltip.data && (
-                <Tooltip
+                <CustomTooltip
                   darkMode={darkMode}
                   style={{ left: tooltip.x, top: tooltip.y }}
                 >
@@ -914,7 +914,7 @@ function RSIAnalysisPage({ data }) {
                   <div>RSI: {getRSIValue(tooltip.data)?.toFixed(1) || 'N/A'}</div>
                   <div>MC: ${(tooltip.data.marketcap / 1000000).toFixed(2)}M</div>
                   <div>24h: {tooltip.data.pro24h >= 0 ? '+' : ''}{tooltip.data.pro24h?.toFixed(2) || '0.00'}%</div>
-                </Tooltip>
+                </CustomTooltip>
               )}
             </HeatMap>
 

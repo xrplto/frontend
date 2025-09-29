@@ -843,7 +843,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const confirmPin = confirmPinBoxes.join('');
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [pinError, setPinError] = useState('');
-  const [walletStorage] = useState(new EncryptedWalletStorage());
+  const [walletStorage, setWalletStorage] = useState(new EncryptedWalletStorage());
   const [hasPinWallet, setHasPinWallet] = useState(false);
 
   // PIN box handlers

@@ -28,8 +28,6 @@ const OverviewWrapper = styled(Box)(
 function Detail({ data }) {
   const dispatch = useDispatch();
   const [token, setToken] = useState(data.token);
-  const [trustsetToken, setTrustsetToken] = useState(null);
-  const [hasClosedTrustset, setHasClosedTrustset] = useState(false);
   const [creatorPanelOpen, setCreatorPanelOpen] = useState(false);
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
   const [orderBookOpen, setOrderBookOpen] = useState(false);
@@ -45,18 +43,7 @@ function Detail({ data }) {
     // reconnectInterval: 3000,
   });
 
-  // Handle trustset modal - only open on initial load, not after manual close
-  useEffect(() => {
-    if (data.tab === 'trustset' && !hasClosedTrustset) {
-      setTrustsetToken(token);
-    }
-  }, [data.tab, token, hasClosedTrustset]);
 
-  // Handle trustset modal close
-  const handleTrustsetClose = () => {
-    setTrustsetToken(null);
-    setHasClosedTrustset(true);
-  };
 
   const processMessages = (event) => {
     try {
@@ -110,9 +97,6 @@ function Detail({ data }) {
 
       <Footer />
 
-      {trustsetToken && (
-        <TrustSetDialog token={trustsetToken} setToken={handleTrustsetClose} balance={0} />
-      )}
     </OverviewWrapper>
   );
 }

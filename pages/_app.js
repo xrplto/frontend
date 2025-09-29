@@ -179,6 +179,11 @@ function AppPageLayout({ children }) {
   );
 }
 
+// Slide transition component for Snackbar
+const SlideTransition = React.forwardRef(function SlideTransition(props, ref) {
+  return <Slide {...props} direction="left" ref={ref} />;
+});
+
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
@@ -306,7 +311,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
                     closeSnackbar();
                   }}
                   anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  TransitionComponent={(props) => <Slide {...props} direction="left" />}
+                  TransitionComponent={SlideTransition}
                   key="key_self_snackbar"
                 >
                   <Alert onClose={closeSnackbar} severity={variant} sx={{ width: '100%' }}>

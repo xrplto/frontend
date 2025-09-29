@@ -1253,4 +1253,6 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
   );
 });
 
-export default { TokenListHead, TokenListToolbar };
+const TokenListControls = { TokenListHead, TokenListToolbar };
+
+export default TokenListControls;

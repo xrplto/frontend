@@ -11,9 +11,12 @@ import {
   Divider,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   IconButton,
+  InputAdornment,
   Link,
   MenuItem,
+  OutlinedInput,
   Radio,
   RadioGroup,
   Select,
@@ -199,7 +202,7 @@ const CATEGORIES = [
 ];
 
 // Components
-import { FormControl, FormHelperText, InputAdornment, OutlinedInput } from '@mui/material';
+// FormControl, FormHelperText, InputAdornment, OutlinedInput moved to main imports
 import ErrorIcon from '@mui/icons-material/Error';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import AddCostDialog from './AddCostDialog';

@@ -15,7 +15,7 @@ import { AppContext } from 'src/AppContext';
 import { PulseLoader } from '../components/Spinners';
 
 // Components
-import QRDialog from 'src/components/QRDialog';
+// QRDialog removed - Xaman no longer used
 import ConfirmBurnDialog from './ConfirmBurnDialog';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch } from 'react-redux';
@@ -41,42 +41,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   // const isBurnable = (flag & 0x00000001) > 0;
   const isBurnable = accountLogin === account && account !== '';
 
-  useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    async function getPayload() {
-      if (isRunning) return;
-      isRunning = true;
-      try {
-          headers: { 'x-access-token': accountToken }
-        });
-        const resolved_at = ret.data?.resolved_at;
-        const dispatched_result = ret.data?.dispatched_result;
-        if (resolved_at) {
-          if (dispatched_result === 'tesSUCCESS') {
-            onHandleBurn();
-            openSnackbar('Burning NFT successful!', 'success');
-          } else openSnackbar('Burning NFT rejected!', 'error');
-
-          return;
-        }
-      } catch (err) {
-      }
-      isRunning = false;
-      counter--;
-      if (counter <= 0) {
-        openSnackbar('Burning NFT timeout!', 'error');
-        handleScanQRClose();
-      }
-    }
-      timer = setInterval(getPayload, 2000);
-    }
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
+  // Legacy Xaman functionality removed
 
   const onBurnNFTXumm = async () => {
     if (!accountLogin || !accountToken) {
@@ -111,8 +76,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
     setLoading(false);
   };
 
-  const handleScanQRClose = () => {
-  };
 
   const handleBurnNFT = () => {
     setOpenConfirm(true);
@@ -139,10 +102,7 @@ export default function BurnNFT({ nft, onHandleBurn }) {
         Burn
       </Button>
 
-      <QRDialog
-        type="NFTokenBurn"
-        onClose={handleScanQRClose}
-      />
+      {/* QRDialog removed - Xaman no longer used */}
     </>
   );
 }

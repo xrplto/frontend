@@ -156,16 +156,17 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     var counter = 150;
     var dispatchTimer = null;
 
-    async function getDispatchResult() {
-      try {
-          headers: { 'x-access-token': accountToken }
-        });
-        const res = ret.data.data.response;
-        const dispatched_result = res.dispatched_result;
+    // async function getDispatchResult() {
+    //   try {
+    //     // const ret = await axios.get(MISSING_ENDPOINT, {
+    //     //   headers: { 'x-access-token': accountToken }
+    //     // });
+    //     // const res = ret.data.data.response;
+    //     // const dispatched_result = res.dispatched_result;
 
-        return dispatched_result;
-      } catch (err) {}
-    }
+    //     return dispatched_result;
+    //   } catch (err) {}
+    // }
 
     const startInterval = () => {
       let times = 0;
@@ -196,75 +197,79 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       handleScanQRClose();
     };
 
-    async function getPayload() {
-      if (isRunning) return;
-      isRunning = true;
-      try {
-          headers: { 'x-access-token': accountToken }
-        });
-        const resolved_at = ret.data?.resolved_at;
-        if (resolved_at) {
-          startInterval();
-          return;
-        }
-      } catch (err) {
-      }
-      isRunning = false;
-      counter--;
-      if (counter <= 0) {
-        openSnackbar('Create Offer timeout!', 'error');
-        handleScanQRClose();
-      }
-    }
-      timer = setInterval(getPayload, 2000);
-    }
+    // async function getPayload() {
+    //   if (isRunning) return;
+    //   isRunning = true;
+    //   try {
+    //     // const ret = await axios.get(MISSING_ENDPOINT, {
+    //     //   headers: { 'x-access-token': accountToken }
+    //     // });
+    //     // const resolved_at = ret.data?.resolved_at;
+    //     if (resolved_at) {
+    //       startInterval();
+    //       return;
+    //     }
+    //   } catch (err) {
+    //   }
+    //   isRunning = false;
+    //   counter--;
+    //   if (counter <= 0) {
+    //     openSnackbar('Create Offer timeout!', 'error');
+    //     handleScanQRClose();
+    //   }
+    // }
+    // if (condition) {  // TODO: Add proper condition
+    //   timer = setInterval(getPayload, 2000);
+    // }
     return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
+      // if (timer) {
+      //   clearInterval(timer);
+      // }
     };
+  }, []); // Added missing useEffect closing
 
-    if (!account || !accountToken) {
-      openSnackbar('Please login', 'error');
-      return;
-    }
+  // Legacy Xaman transfer function - commented out due to broken implementation
+  // const onTransferNFTXumm = async () => {
+  //   if (!account || !accountToken) {
+  //     openSnackbar('Please login', 'error');
+  //     return;
+  //   }
 
-    setLoading(true);
-    try {
-      const user_token = accountProfile?.user_token;
-      const wallet_type = accountProfile?.wallet_type;
+  //   setLoading(true);
+  //   try {
+  //     const user_token = accountProfile?.user_token;
+  //     const wallet_type = accountProfile?.wallet_type;
+  //
+  //     const NFTokenID = nft.NFTokenID;
+  //     const owner = nft.account;
 
+  //     const transferTxData = {
+  //       TransactionType: 'NFTokenCreateOffer',
+  //       Account: account,
+  //       NFTokenID,
+  //       Amount: '0',
+  //       Flags: 1,
+  //       Destination: destination,
+  //       Memos: configureMemos(
+  //         'XRPNFT-nft-create-sell-offer',
+  //         '',
+  //         `https://xrpnft.com/nft/${NFTokenID}`
+  //       )
+  //     };
 
-      const NFTokenID = nft.NFTokenID;
-      const owner = nft.account;
-
-      const transferTxData = {
-        TransactionType: 'NFTokenCreateOffer',
-        Account: account,
-        NFTokenID,
-        Amount: '0',
-        Flags: 1,
-        Destination: destination,
-        Memos: configureMemos(
-          'XRPNFT-nft-create-sell-offer',
-          '',
-          `https://xrpnft.com/nft/${NFTokenID}`
-        )
-      };
-
-      if (wallet_type === 'device') {
-        // Device authentication required for NFT operations
-        openSnackbar('Device authentication for NFT transfers coming soon', 'info');
-      } else {
-        openSnackbar('Device authentication required', 'error');
-      }
-    } catch (err) {
-      console.error(err);
-      openSnackbar('Network error!', 'error');
-      dispatch(updateProcess(0));
-    }
-    setLoading(false);
-  };
+  //     if (wallet_type === 'device') {
+  //       // Device authentication required for NFT operations
+  //       openSnackbar('Device authentication for NFT transfers coming soon', 'info');
+  //     } else {
+  //       openSnackbar('Device authentication required', 'error');
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //     openSnackbar('Network error!', 'error');
+  //     dispatch(updateProcess(0));
+  //   }
+  //   setLoading(false);
+  // };
 
   const handleScanQRClose = () => {
   };
@@ -408,10 +413,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
         </DialogContent>
       </StyledDialog>
 
-      <QRDialog
-        type="NFTokenCreateOffer"
-        onClose={!isLoading ? handleScanQRClose : undefined}
-      />
+      {/* QRDialog removed - Xaman no longer used */}
     </>
   );
 }

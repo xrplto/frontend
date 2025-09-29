@@ -70,20 +70,22 @@ export default function CreateOfferXRPCafe({
   }, [open, initialAmount]);
 
   useEffect(() => {
-    let timer = null;
-    let isRunning = false;
-    let counter = 150;
-    let dispatchTimer = null;
+    // TODO: Fix XRPCafe integration - broken axios calls need proper implementation
+    // let timer = null;
+    // let isRunning = false;
+    // let counter = 150;
+    // let dispatchTimer = null;
 
-    async function getDispatchResult() {
-      try {
-          headers: { 'x-access-token': accountToken }
-        });
-        const res = ret.data.data.response;
-        const dispatched_result = res.dispatched_result;
-        return dispatched_result;
-      } catch (err) {}
-    }
+    // async function getDispatchResult() {
+    //   try {
+    //     // const ret = await axios.get(MISSING_ENDPOINT, {
+    //     //   headers: { 'x-access-token': accountToken }
+    //     // });
+    //     // const res = ret.data.data.response;
+    //     // const dispatched_result = res.dispatched_result;
+    //     // return dispatched_result;
+    //   } catch (err) {}
+    // }
 
     const startInterval = () => {
       let times = 0;
@@ -112,35 +114,38 @@ export default function CreateOfferXRPCafe({
       handleClose();
     };
 
-    async function getPayload() {
-      if (isRunning) return;
-      isRunning = true;
-      try {
-          headers: { 'x-access-token': accountToken }
-        });
-        const resolved_at = ret.data?.resolved_at;
-        if (resolved_at) {
-          startInterval();
-          return;
-        }
-      } catch (err) {
-      }
-      isRunning = false;
-      counter--;
-      if (counter <= 0) {
-        openSnackbar('Create Offer timeout!', 'error');
-        handleScanQRClose();
-      }
-    }
+    // async function getPayload() {
+    //   if (isRunning) return;
+    //   isRunning = true;
+    //   try {
+    //     // const ret = await axios.get(MISSING_ENDPOINT, {
+    //     //   headers: { 'x-access-token': accountToken }
+    //     // });
+    //     // const resolved_at = ret.data?.resolved_at;
+    //     // if (resolved_at) {
+    //     //   startInterval();
+    //     //   return;
+    //     // }
+    //   } catch (err) {
+    //   }
+    //   // isRunning = false;
+    //   // counter--;
+    //   // if (counter <= 0) {
+    //   //   openSnackbar('Create Offer timeout!', 'error');
+    //   //   handleScanQRClose();
+    //   // }
+    // }
 
-      timer = setInterval(getPayload, 2000);
-    }
+    // if (condition) {  // TODO: Add proper condition
+    //   timer = setInterval(getPayload, 2000);
+    // }
 
     return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
+      // if (timer) {
+      //   clearInterval(timer);
+      // }
     };
+  }, []); // Added missing useEffect closing
 
   const handleClose = () => {
     setOpen(false);
@@ -277,10 +282,7 @@ export default function CreateOfferXRPCafe({
         </DialogContent>
       </OfferDialog>
 
-      <QRDialog
-        type="NFTokenCreateOffer"
-        onClose={handleScanQRClose}
-      />
+      {/* QRDialog removed - Xaman no longer used */}
     </>
   );
 }

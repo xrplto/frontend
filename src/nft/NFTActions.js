@@ -567,13 +567,14 @@ export default function NFTActions({ nft }) {
         handleScanQRClose();
       }
     }
-      timer = setInterval(getPayload, 2000);
-    }
+      // timer = setInterval(getPayload, 2000); // TODO: Fix missing condition
+    // }
     return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
+      // if (timer) {
+      //   clearInterval(timer);
+      // }
     };
+  }, []); // Added missing useEffect closing
 
   useEffect(() => {
     async function getLowestSellOffer() {
