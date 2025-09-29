@@ -8,9 +8,9 @@ import { AppContext } from 'src/AppContext';
 
 const Root = styled('footer')(({ theme }) => ({
   width: '100%',
-  borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-  background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.04)} 0%, transparent 60%)`,
-  marginTop: theme.spacing(3)
+  borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+  backgroundColor: 'transparent',
+  marginTop: theme.spacing(4)
 }));
 
 const FooterLink = ({ href, children }) => {
@@ -24,13 +24,13 @@ const FooterLink = ({ href, children }) => {
       rel={external ? 'noreferrer noopener' : undefined}
       sx={{
         color: 'text.secondary',
-        fontSize: { xs: '0.6rem', md: '0.7rem' },
-        px: { xs: 0.2, md: 0.3 },
-        borderRadius: 1,
-        transition: 'all .15s ease',
+        fontSize: { xs: '0.85rem', md: '0.9rem' },
+        px: { xs: 0.5, md: 0.8 },
+        py: 0.3,
+        borderRadius: '8px',
         '&:hover': {
-          color: 'primary.main',
-          backgroundColor: (t) => alpha(t.palette.primary.main, 0.06)
+          color: '#4285f4',
+          backgroundColor: alpha('#4285f4', 0.04)
         }
       }}
     >
@@ -41,10 +41,10 @@ const FooterLink = ({ href, children }) => {
 
 // Predefine immutable link groups to avoid re-creation on each render
 const PRODUCTS = [
-  { href: '/swap', label: 'Token Swap' },
-  { href: '/market-metrics', label: 'Market Metrics' },
-  { href: '/top-traders', label: 'Top Traders' },
-  { href: '/api-docs', label: 'Token API' },
+  { href: '/swap', label: 'Swap' },
+  { href: '/market-metrics', label: 'Metrics' },
+  { href: '/top-traders', label: 'Traders' },
+  { href: '/api-docs', label: 'API' },
   { href: '/about', label: 'About' }
 ];
 const SOCIALS = [
@@ -56,16 +56,9 @@ const SOCIALS = [
 
 // Extract nested component to top level and memoize
 const Group = React.memo(({ items }) => (
-  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 0.2, md: 0.4 } }}>
-    {items.map((it, idx) => (
-      <Box key={it.label} sx={{ display: 'inline-flex', alignItems: 'center', gap: { xs: 0.2, md: 0.4 } }}>
-        <FooterLink href={it.href}>{it.label}</FooterLink>
-        {idx < items.length - 1 && (
-          <Typography variant="caption" sx={{ color: (t) => alpha(t.palette.primary.main, 0.3), fontSize: { xs: '0.6rem', md: '0.7rem' } }}>
-            /
-          </Typography>
-        )}
-      </Box>
+  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 0.8, md: 1.2 } }}>
+    {items.map((it) => (
+      <FooterLink key={it.label} href={it.href}>{it.label}</FooterLink>
     ))}
   </Box>
 ));
@@ -84,11 +77,10 @@ const SocialIcons = React.memo(() => (
             size="small"
             sx={{
               color: 'text.secondary',
-              padding: { xs: 0.3, md: 0.5 },
-              transition: 'all .15s ease',
+              padding: { xs: 0.6, md: 0.8 },
               '&:hover': {
-                color: 'primary.main',
-                backgroundColor: (t) => alpha(t.palette.primary.main, 0.06)
+                color: '#4285f4',
+                backgroundColor: alpha('#4285f4', 0.04)
               }
             }}
           >
@@ -111,7 +103,7 @@ function Footer() {
     <Root>
       <Container
         maxWidth={false}
-        sx={{ px: { xs: 2, md: 4, xl: 8 }, py: 1.25, pb: { xs: 7, md: 7 } }}
+        sx={{ px: { xs: 2, md: 4, xl: 8 }, py: 2, pb: { xs: 8, md: 3 } }}
       >
         <Box
           sx={{
@@ -127,9 +119,13 @@ function Footer() {
               <Image src={logo} alt="XRPL.to" width={110} height={38} priority />
             </Link>
             <Typography
-              variant="caption"
+              variant="body2"
               color="text.secondary"
-              sx={{ display: { xs: 'none', md: 'inline' } }}
+              sx={{
+                display: { xs: 'none', md: 'inline' },
+                fontSize: '0.9rem',
+                opacity: 0.6
+              }}
             >
               © {year}
             </Typography>
@@ -139,7 +135,7 @@ function Footer() {
             sx={{
               display: 'flex',
               alignItems: 'center',
-              gap: { xs: 1.5, md: 2.5 },
+              gap: { xs: 2, md: 3 },
               flex: 1,
               justifyContent: 'flex-end',
               flexWrap: 'wrap'
