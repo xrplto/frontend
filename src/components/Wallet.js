@@ -1385,7 +1385,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Create wallet from seed with correct algorithm
       let wallet;
       try {
-        wallet = XRPLWallet.fromSeed(seed, { algorithm });
+        // The second parameter should be the algorithm string directly, not an object
+        wallet = XRPLWallet.fromSeed(seed, algorithm);
         console.log(`Successfully created wallet with address: ${wallet.address}`);
       } catch (seedError) {
         throw new Error(`Invalid ${algorithm} seed: ${seedError.message}`);
