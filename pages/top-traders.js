@@ -17,7 +17,14 @@ import {
 import { alpha } from '@mui/material/styles';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { currencySymbols } from 'src/utils/constants';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
 
 // Table Styled Components
 const StyledTable = styled.table`

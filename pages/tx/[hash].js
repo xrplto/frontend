@@ -47,7 +47,7 @@ function formatDecimal(decimal, decimalPlaces = null) {
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 import CryptoJS from 'crypto-js';
-import { getHashIcon } from 'src/utils/helpers';
+import { getHashIcon } from 'src/utils/formatters';
 
 // Create transaction cache with 1 hour TTL and max 100 entries
 const txCache = new LRUCache({

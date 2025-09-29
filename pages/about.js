@@ -5,7 +5,8 @@ import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { BASE_URL } from 'src/utils/constants';
+// Constants
+const BASE_URL = 'https://api.xrpl.to/api';
 import {
   ShowChart,
   SwapHoriz,

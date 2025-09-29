@@ -20,9 +20,12 @@ import {
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+// Constants
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
+const RLUSD_TOKEN = { currency: 'RLUSD', issuer: 'rMxCAmhYd3xnE55fCrZKaPZS7rZwqX7LJD' };
+
 // Utils
-import { XRP_TOKEN, USD_TOKEN, RLUSD_TOKEN } from 'src/utils/constants';
-import { processOrderbookOffers } from 'src/utils/orderbookService';
+import { processOrderbookOffers } from 'src/utils/parseUtils';
 
 // Components
 import Logo from 'src/components/Logo';

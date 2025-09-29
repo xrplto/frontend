@@ -28,7 +28,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
-import { normalizeCurrencyCode } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 import NumberTooltip from 'src/components/NumberTooltip';
 
 // Styled Components

@@ -1,8 +1,11 @@
 // Material
 import { useMediaQuery, Grid, useTheme } from '@mui/material';
 
-// Utils
-import { NFToken } from 'src/utils/constants';
+// Constants
+const NFToken = {
+  SELL_WITH_MINT_BULK: 'SELL_WITH_MINT_BULK',
+  BURNT: 'BURNT'
+};
 
 // Components
 import NFTDetails from './NFTDetails';

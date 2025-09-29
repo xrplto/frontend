@@ -9,7 +9,18 @@ import {
   styled,
   Fade
 } from '@mui/material';
-import { currencyConfig, currencyIcons } from 'src/utils/constants';
+// Constants
+const currencyConfig = {
+  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
+  activeFiatCurrency: 'XRP'
+};
+const currencyIcons = {
+  USD: '💵',
+  EUR: '💶',
+  JPY: '💴',
+  CNH: '🈷️',
+  XRP: '✕'
+};
 import { AppContext } from 'src/AppContext';
 import CheckIcon from '@mui/icons-material/Check';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';

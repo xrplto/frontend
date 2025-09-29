@@ -10,8 +10,9 @@ import { Toolbar } from '@mui/material';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Utils
-import { XRP_TOKEN, USD_TOKEN } from 'src/utils/constants';
+// Constants
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
+const USD_TOKEN = { currency: 'USD', issuer: 'rhub8VRN55s94qWKDv6jmDy1pUykJzF3wq' };
 
 // Components
 import Logo from 'src/components/Logo';

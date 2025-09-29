@@ -17,7 +17,7 @@ import {
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { rippleTimeToISO8601 } from 'src/utils/parseUtils';
-import { getHashIcon } from 'src/utils/helpers';
+import { getHashIcon } from 'src/utils/formatters';
 
 const AccountAvatar = ({ account }) => {
   const [imgSrc, setImgSrc] = useState(`https://s1.xrpl.to/account/${account}`);

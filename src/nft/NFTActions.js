@@ -56,11 +56,22 @@ import { PuffLoader, PulseLoader } from 'react-spinners';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Utils
-import { NFToken, getMinterName } from 'src/utils/constants';
-import { normalizeAmount } from 'src/utils/normalizers';
+// Constants
+const NFToken = {
+  SELL_WITH_MINT_BULK: 'SELL_WITH_MINT_BULK',
+  BURNT: 'BURNT'
+};
+const getMinterName = (account) => {
+  const minterMap = {
+    'rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH': 'XLS-20d',
+    'rNH4g2bh86BQBKrW8bEiN8xLwKvF9YB4U1': 'OnXRP',
+    'rUL2FGRkkPqR5yjPH8C7X8zE6djZcX9X6t': 'XRPunks'
+  };
+  return minterMap[account] || null;
+};
+import { normalizeAmount } from 'src/utils/parseUtils';
 import { fNumber, fIntNumber } from 'src/utils/formatters';
-import { getHashIcon } from 'src/utils/helpers';
+import { getHashIcon } from 'src/utils/formatters';
 
 // Components
 import CreateOfferDialog from './CreateOfferDialog';

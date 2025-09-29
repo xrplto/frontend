@@ -34,7 +34,7 @@ import ShowChartIcon from '@mui/icons-material/ShowChart';
 import { PuffLoader } from 'react-spinners';
 
 // Utils
-import { checkExpiration } from 'src/utils/helpers';
+import { checkExpiration } from 'src/utils/formatters';
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
 // Context

@@ -21,8 +21,15 @@ import {
 } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
-import { currencySymbols } from 'src/utils/constants';
-import { throttle } from 'src/utils/helpers';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
+import { throttle } from 'src/utils/formatters';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import ShowChartIcon from '@mui/icons-material/ShowChart';
 import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';

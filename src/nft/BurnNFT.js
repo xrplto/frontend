@@ -19,7 +19,7 @@ import QRDialog from 'src/components/QRDialog';
 import ConfirmBurnDialog from './ConfirmBurnDialog';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch } from 'react-redux';
-import { configureMemos } from 'src/utils/OfferChanges';
+import { configureMemos } from 'src/utils/parseUtils';
 
 // ----------------------------------------------------------------------
 export default function BurnNFT({ nft, onHandleBurn }) {

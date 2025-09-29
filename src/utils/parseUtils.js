@@ -1,5 +1,6 @@
 import Decimal from 'decimal.js-light';
 import { encodeAccountID } from 'ripple-address-codec';
+const CryptoJS = require('crypto-js');
 
 const { omitBy } = require('lodash');
 // Removed ripple-keypairs for security (compromised in 2025)
@@ -523,6 +524,433 @@ export function parseAmount(amount) {
     name: normalizeCurrencyCode(amount.currency),
     value: amount.value
   };
+}
+
+// ==== CURRENCY CODE NORMALIZERS (from normalizers.js) ====
+
+// IEEE 754 floating-point implementation
+function fromBytesIEEE754(bytes) {
+  var b = '';
+  for (var i = 0, n = bytes.length; i < n; i++) {
+    var bits = (bytes[i] & 0xff).toString(2);
+    while (bits.length < 8) bits = '0' + bits;
+    b += bits;
+  }
+
+  var exponentBits = bytes.length === 4 ? 4 : 11;
+  var mantissaBits = bytes.length * 8 - exponentBits - 1;
+  var bias = Math.pow(2, exponentBits - 1) - 1;
+  var minExponent = 1 - bias - mantissaBits;
+
+  var s = b[0];
+  var e = b.substring(1, exponentBits + 1);
+  var m = b.substring(exponentBits + 1);
+
+  var allZeros = /^0+$/;
+  var allOnes = /^1+$/;
+
+  var value = 0;
+  var multiplier = s === '0' ? 1 : -1;
+
+  if (allZeros.test(e)) {
+    if (allZeros.test(m)) {
+      // Value is zero
+    } else {
+      value = parseInt(m, 2) * Math.pow(2, minExponent);
+    }
+  } else if (allOnes.test(e)) {
+    if (allZeros.test(m)) {
+      value = Infinity;
+    } else {
+      value = NaN;
+    }
+  } else {
+    var exponent = parseInt(e, 2) - bias;
+    var mantissa = parseInt(m, 2);
+    value = (1 + mantissa * Math.pow(2, -mantissaBits)) * Math.pow(2, exponent);
+  }
+
+  return value * multiplier;
+}
+
+function isHex(string) {
+  return /^[0-9A-Fa-f]*$/.test(string);
+}
+
+export function currencyCodeUTF8ToHexIfUTF8(currencyCode) {
+  if (currencyCode) {
+    if (currencyCode.length === 3) return currencyCode;
+    else if (currencyCode.length === 40 && isHex(currencyCode)) return currencyCode;
+    else return Buffer.from(currencyCode, 'utf-8').toString('hex');
+  } else {
+    return '';
+  }
+}
+
+export function currencyCodeHexToUTF8Trimmed(currencyCode) {
+  if (currencyCode && currencyCode.length === 40 && isHex(currencyCode)) {
+    while (currencyCode.endsWith('00')) {
+      currencyCode = currencyCode.substring(0, currencyCode.length - 2);
+    }
+  }
+
+  if (currencyCode) {
+    if (currencyCode.length > 3 && isHex(currencyCode)) {
+      if (currencyCode.startsWith('01')) return convertDemurrageToUTF8(currencyCode);
+      else return Buffer.from(currencyCode, 'hex').toString('utf-8').trim();
+    } else {
+      return currencyCode;
+    }
+  } else {
+    return '';
+  }
+}
+
+export function currencyCodeUTF8ToHex(currencyCode) {
+  if (currencyCode && currencyCode.length === 40) {
+    while (currencyCode.endsWith('00')) {
+      currencyCode = currencyCode.substring(0, currencyCode.length - 2);
+    }
+  }
+
+  let output;
+  if (currencyCode.length > 3) output = Buffer.from(currencyCode.trim(), 'utf-8').toString('hex');
+  else output = currencyCode;
+
+  return output;
+}
+
+export function getCurrencyCodeForXRPL(currencyCode) {
+  let returnString = '';
+  if (currencyCode) {
+    let currency = currencyCode.trim();
+
+    if (currency && currency.length > 3) {
+      if (!isHex(currency)) currency = Buffer.from(currency, 'utf-8').toString('hex');
+
+      while (currency.length < 40) currency += '0';
+
+      returnString = currency.toUpperCase();
+    } else {
+      returnString = currency;
+    }
+  }
+
+  return returnString;
+}
+
+export function rippleEpocheTimeToUTC(rippleEpocheTime) {
+  return (rippleEpocheTime + 946684800) * 1000;
+}
+
+export function utcToRippleEpocheTime(utcTime) {
+  return utcTime / 1000 - 946684800;
+}
+
+export function normalizeAmount(Amount) {
+  if (!Amount) return { issuer: '', currency: '', amount: '' };
+
+  let issuer = 'XRPL';
+  let currency = 'XRP';
+  let amount = '';
+  let name = 'XRP';
+  if (typeof Amount === 'object') {
+    issuer = Amount.issuer;
+    currency = Amount.currency;
+    amount = new Decimal(Amount.value).toNumber();
+    name = normalizeCurrencyCode(currency);
+  } else {
+    amount = new Decimal(Amount).div(1000000).toNumber();
+  }
+  return { name, issuer, currency, amount };
+}
+
+// ==== ORDERBOOK SERVICE (from orderbookService.js) ====
+
+export const formatOrderbookData = (bookData, orderType = 'bids') => {
+  if (!bookData || !bookData.asks || !bookData.bids) {
+    return [];
+  }
+
+  const orders = orderType === 'bids' ? bookData.bids : bookData.asks;
+
+  return orders.map((order, index) => ({
+    price: parseFloat(order.rate),
+    amount: parseFloat(order.amount),
+    total: parseFloat(order.total || order.amount * order.rate),
+    sumAmount: order.sumAmount || 0,
+    sumValue: order.sumValue || 0,
+    avgPrice: order.avgPrice || order.rate,
+    isNew: false
+  }));
+};
+
+export const calculateSpread = (bids, asks) => {
+  if (!bids || !asks || bids.length === 0 || asks.length === 0) {
+    return {
+      spreadAmount: 0,
+      spreadPercentage: 0,
+      highestBid: 0,
+      lowestAsk: 0
+    };
+  }
+
+  const highestBid = Math.max(
+    ...bids.map((bid) => bid.price).filter((p) => !isNaN(p) && isFinite(p))
+  );
+  const lowestAsk = Math.min(
+    ...asks.map((ask) => ask.price).filter((p) => !isNaN(p) && isFinite(p))
+  );
+
+  if (!isFinite(highestBid) || !isFinite(lowestAsk) || highestBid <= 0 || lowestAsk <= 0) {
+    return {
+      spreadAmount: 0,
+      spreadPercentage: 0,
+      highestBid: 0,
+      lowestAsk: 0
+    };
+  }
+
+  const spreadAmount = lowestAsk - highestBid;
+  const spreadPercentage = (spreadAmount / highestBid) * 100;
+
+  return {
+    spreadAmount,
+    spreadPercentage: isNaN(spreadPercentage) ? 0 : spreadPercentage,
+    highestBid,
+    lowestAsk
+  };
+};
+
+export const processOrderbookOffers = (offers, orderType = 'bids') => {
+  if (!offers || offers.length === 0) return [];
+
+  const processed = [];
+  let sumAmount = 0;
+  let sumValue = 0;
+
+  const firstOffer = offers[0];
+  const isXRPGets =
+    firstOffer &&
+    (typeof firstOffer.TakerGets === 'string' || firstOffer.TakerGets?.currency === 'XRP');
+  const isXRPPays =
+    firstOffer &&
+    (typeof firstOffer.TakerPays === 'string' || firstOffer.TakerPays?.currency === 'XRP');
+
+  const XRP_MULTIPLIER = 1000000;
+
+  offers.forEach((offer) => {
+    let price = parseFloat(offer.quality) || 1;
+    let quantity = 0;
+    let total = 0;
+
+    if (orderType === 'asks') {
+      if (typeof offer.TakerGets === 'string') {
+        quantity = parseFloat(offer.TakerGets) / XRP_MULTIPLIER;
+      } else if (typeof offer.TakerGets === 'object') {
+        quantity = parseFloat(offer.TakerGets.value) || 0;
+      }
+
+      if (typeof offer.TakerPays === 'string') {
+        total = parseFloat(offer.TakerPays) / XRP_MULTIPLIER;
+      } else if (typeof offer.TakerPays === 'object') {
+        total = parseFloat(offer.TakerPays.value) || 0;
+      }
+
+      price = quantity > 0 ? total / quantity : 0;
+    } else {
+      if (typeof offer.TakerGets === 'string') {
+        total = parseFloat(offer.TakerGets) / XRP_MULTIPLIER;
+      } else if (typeof offer.TakerGets === 'object') {
+        total = parseFloat(offer.TakerGets.value) || 0;
+      }
+
+      if (typeof offer.TakerPays === 'string') {
+        quantity = parseFloat(offer.TakerPays) / XRP_MULTIPLIER;
+      } else if (typeof offer.TakerPays === 'object') {
+        quantity = parseFloat(offer.TakerPays.value) || 0;
+      }
+
+      price = quantity > 0 ? total / quantity : 0;
+    }
+
+    if (price > 0 && quantity > 0 && total > 0 && !isNaN(price) && isFinite(price)) {
+      sumAmount += quantity;
+      sumValue += total;
+
+      processed.push({
+        price: price,
+        amount: quantity,
+        total: total,
+        value: total,
+        sumAmount: sumAmount,
+        sumValue: sumValue,
+        avgPrice: sumAmount > 0 ? sumValue / sumAmount : 0,
+        isNew: false
+      });
+    }
+  });
+
+  processed.sort((a, b) => {
+    return orderType === 'bids' ? b.price - a.price : a.price - b.price;
+  });
+
+  let cumSum = 0;
+  let cumValue = 0;
+  processed.forEach((order) => {
+    cumSum += order.amount;
+    cumValue += order.total;
+    order.sumAmount = cumSum;
+    order.sumValue = cumValue;
+    order.avgPrice = cumSum > 0 ? cumValue / cumSum : 0;
+  });
+
+  return processed;
+};
+
+// ==== OFFER CHANGES PARSING (from OfferChanges.js) ====
+
+function convertStringToHex(string) {
+  let ret = '';
+  try {
+    ret = Buffer.from(string, 'utf8').toString('hex').toUpperCase();
+  } catch (err) {}
+  return ret;
+}
+
+export function configureMemos(type, format, data) {
+  const Memo = {};
+
+  if (type) Memo.MemoType = convertStringToHex(type);
+  if (format) Memo.MemoFormat = convertStringToHex(format);
+  if (data) Memo.MemoData = convertStringToHex(data);
+
+  const Memos = [
+    {
+      Memo
+    }
+  ];
+
+  return Memos;
+}
+
+function getPair(gets, pays) {
+  const t1 = gets.issuer + '_' + gets.currency;
+  const t2 = pays.issuer + '_' + pays.currency;
+  let pair = t1 + t2;
+  if (t1.localeCompare(t2) > 0) pair = t2 + t1;
+  return CryptoJS.MD5(pair).toString();
+}
+
+function hasAffectedNodes(tx) {
+  if (!tx) return false;
+  const meta = tx.meta || tx.metaData;
+  if (!meta) return false;
+  if (meta.AffectedNodes === undefined) return false;
+  if (meta.AffectedNodes?.length === 0) return false;
+  return true;
+}
+
+function isCreateOfferNode(affectedNode) {
+  return (
+    affectedNode.CreatedNode?.LedgerEntryType === 'Offer' && affectedNode.CreatedNode?.NewFields
+  );
+}
+
+function isModifyOfferNode(affectedNode) {
+  return (
+    affectedNode.ModifiedNode?.LedgerEntryType === 'Offer' && affectedNode.ModifiedNode?.FinalFields
+  );
+}
+
+function isDeleteOfferNode(affectedNode) {
+  return (
+    affectedNode.DeletedNode?.LedgerEntryType === 'Offer' && affectedNode.DeletedNode?.FinalFields
+  );
+}
+
+function parseCreateOfferNode(affectedNode, hash, time) {
+  const field = affectedNode.CreatedNode.NewFields;
+  const data = {
+    status: 'created',
+    account: field.Account,
+    seq: field.Sequence,
+    flags: field.Flags || 0,
+    gets: parseAmount(field.TakerGets),
+    pays: parseAmount(field.TakerPays)
+  };
+
+  data.pair = getPair(data.gets, data.pays);
+
+  if (typeof field.Expiration === 'number') {
+    data.expire = rippleToUnixTimestamp(field.Expiration);
+  }
+
+  data.chash = hash;
+  data.ctime = time;
+
+  return data;
+}
+
+function parseModifyOfferNode(affectedNode, hash, time) {
+  const field = affectedNode.ModifiedNode.FinalFields;
+  const data = {
+    status: 'modified',
+    account: field.Account,
+    seq: field.Sequence,
+    flags: field.Flags || 0,
+    gets: parseAmount(field.TakerGets),
+    pays: parseAmount(field.TakerPays)
+  };
+
+  data.pair = getPair(data.gets, data.pays);
+
+  if (typeof field.Expiration === 'number') {
+    data.expire = rippleToUnixTimestamp(field.Expiration);
+  }
+
+  data.mhash = hash;
+  data.mtime = time;
+
+  return data;
+}
+
+function parseDeleteOfferNode(affectedNode, hash, time) {
+  const field = affectedNode.DeletedNode.FinalFields;
+  const data = {
+    status: 'deleted',
+    account: field.Account,
+    seq: field.Sequence
+  };
+
+  data.dhash = hash;
+  data.dtime = time;
+
+  return data;
+}
+
+export function parseOfferChanges(paramTx, close_time) {
+  const changes = [];
+
+  if (!hasAffectedNodes(paramTx)) {
+    return [];
+  }
+
+  const hash = paramTx.hash || paramTx.transaction?.hash || paramTx.tx?.hash;
+  const time = rippleToUnixTimestamp(close_time);
+  const meta = paramTx.meta || paramTx.metaData;
+
+  for (const affectedNode of meta.AffectedNodes) {
+    if (isCreateOfferNode(affectedNode)) {
+      changes.push(parseCreateOfferNode(affectedNode, hash, time));
+    } else if (isModifyOfferNode(affectedNode)) {
+      changes.push(parseModifyOfferNode(affectedNode, hash, time));
+    } else if (isDeleteOfferNode(affectedNode)) {
+      changes.push(parseDeleteOfferNode(affectedNode, hash, time));
+    }
+  }
+
+  return changes;
 }
 
 export {

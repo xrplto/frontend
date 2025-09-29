@@ -18,7 +18,18 @@ import {
   useTheme,
   alpha
 } from '@mui/material';
-import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
+// Constants
+const getTokenImageUrl = (issuer, currency) => {
+  return `https://xrpl.to/api/token_logo/${issuer}/${currency}`;
+};
+const decodeCurrency = (currency) => {
+  if (currency === 'XRP') return 'XRP';
+  try {
+    return Buffer.from(currency, 'hex').toString('utf8').replace(/\x00/g, '');
+  } catch {
+    return currency;
+  }
+};
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   backgroundColor: 'transparent',

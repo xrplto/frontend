@@ -28,7 +28,7 @@ import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode, rippleTimeToISO8601, dropsToXrp } from 'src/utils/parseUtils';
 import { Client } from 'xrpl';
-import { calculateSpread } from 'src/utils/orderbookService';
+import { calculateSpread } from 'src/utils/parseUtils';
 
 const TransactionDetailsPanel = memo(
   ({

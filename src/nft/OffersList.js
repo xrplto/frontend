@@ -27,9 +27,9 @@ import { PuffLoader, PulseLoader } from 'react-spinners';
 
 // Utils
 // import { checkExpiration, getUnixTimeEpochFromRippleEpoch } from 'src/utils/parse';
-import { checkExpiration } from 'src/utils/helpers';
+import { checkExpiration } from 'src/utils/formatters';
 import { formatDateTime } from 'src/utils/formatters';
-import { normalizeAmount } from 'src/utils/normalizers';
+import { normalizeAmount } from 'src/utils/parseUtils';
 
 // Context
 import { useContext } from 'react';

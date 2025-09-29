@@ -1,7 +1,12 @@
 import React from 'react';
 import { Stack, Typography, Box, Container } from '@mui/material';
 import CollectionList from './CollectionList';
-import { CollectionListType } from 'src/utils/constants';
+// Constants
+const CollectionListType = {
+  ALL: 'ALL',
+  FEATURED: 'FEATURED',
+  TRENDING: 'TRENDING'
+};
 import { useTheme } from '@mui/material/styles';
 
 // Removed unused ApexCharts-dependent components

@@ -32,9 +32,9 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { normalizeAmount } from 'src/utils/normalizers';
+import { normalizeAmount } from 'src/utils/parseUtils';
 import { formatDateTime } from 'src/utils/formatters';
-import { checkExpiration } from 'src/utils/helpers';
+import { checkExpiration } from 'src/utils/formatters';
 
 // ----------------------------------------------------------------------
 const PriceDialog = styled(Dialog)(({ theme }) => ({

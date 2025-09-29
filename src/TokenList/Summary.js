@@ -15,8 +15,16 @@ import { selectMetrics, selectTokenCreation } from 'src/redux/statusSlice';
 // Utils
 import { fNumber } from 'src/utils/formatters';
 
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
+
 // Components
-import { currencySymbols } from 'src/utils/constants';
 import { AppContext } from 'src/AppContext';
 // Removed ECharts dependency
 import { format } from 'date-fns';

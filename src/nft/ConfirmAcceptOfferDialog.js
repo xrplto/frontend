@@ -1,4 +1,4 @@
-import { normalizeAmount } from 'src/utils/normalizers';
+import { normalizeAmount } from 'src/utils/parseUtils';
 
 // Material
 import {

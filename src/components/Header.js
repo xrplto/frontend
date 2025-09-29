@@ -45,7 +45,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js-light';
 import axios from 'axios';
-import { throttle } from 'src/utils/helpers';
+import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
@@ -54,7 +54,18 @@ const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
-import { currencySymbols, getTokenImageUrl, decodeCurrency, BASE_URL, currencyConfig, currencyIcons } from 'src/utils/constants';
+const BASE_URL = 'https://api.xrpl.to/api';
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
+const currencyConfig = {
+  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
+  activeFiatCurrency: 'XRP'
+};
 
 // Dynamic imports for switchers
 const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), {
@@ -927,9 +938,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       }}
                     >
                       <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                        {currencyIcons[currency]}
                         <Typography variant="body2" sx={{ flex: 1, fontWeight: currency === activeFiatCurrency ? 600 : 400 }}>
-                          {currency}
+                          {currencySymbols[currency] || ''}{currency}
                         </Typography>
                         {currency === activeFiatCurrency && (
                           <CheckIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />

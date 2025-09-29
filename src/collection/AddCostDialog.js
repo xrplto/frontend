@@ -20,8 +20,8 @@ import {
 
 import { Close as CloseIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
 
-// Utils
-import { XRP_TOKEN } from 'src/utils/constants';
+// Constants
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 
 // Components
 

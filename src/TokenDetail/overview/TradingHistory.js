@@ -45,7 +45,18 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import CloseIcon from '@mui/icons-material/Close';
-import { getTokenImageUrl, decodeCurrency } from 'src/utils/constants';
+// Constants
+const getTokenImageUrl = (issuer, currency) => {
+  return `https://xrpl.to/api/token_logo/${issuer}/${currency}`;
+};
+const decodeCurrency = (currency) => {
+  if (currency === 'XRP') return 'XRP';
+  try {
+    return Buffer.from(currency, 'hex').toString('utf8').replace(/\x00/g, '');
+  } catch {
+    return currency;
+  }
+};
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
 import TradePanel from 'src/TokenDetail/trade/TradePanel';

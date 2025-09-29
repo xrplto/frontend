@@ -41,7 +41,17 @@ import EditIcon from '@mui/icons-material/Edit';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
-import { CATEGORIES } from 'src/utils/constants';
+// Constants
+const CATEGORIES = [
+  { title: 'Art', icon: '🎨' },
+  { title: 'Gaming', icon: '🎮' },
+  { title: 'Music', icon: '🎵' },
+  { title: 'Photography', icon: '📷' },
+  { title: 'Sports', icon: '⚽' },
+  { title: 'Collectibles', icon: '🎯' },
+  { title: 'Utility', icon: '🔧' },
+  { title: 'Metaverse', icon: '🌐' }
+];
 
 // Components
 import LoadingTextField from 'src/components/LoadingTextField';

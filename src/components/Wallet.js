@@ -38,7 +38,7 @@ import { AppContext } from 'src/AppContext';
 // Translation removed - not using i18n
 
 // Utils
-import { getHashIcon } from 'src/utils/helpers';
+import { getHashIcon } from 'src/utils/formatters';
 import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 // Base64url encoding helper

@@ -4,7 +4,8 @@ import axios from 'axios';
 import { useTheme } from '@mui/material/styles';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { BASE_URL } from 'src/utils/constants';
+// Constants
+const BASE_URL = 'https://api.xrpl.to/api';
 
 const Container = styled.div`
   max-width: 1200px;

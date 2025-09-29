@@ -28,8 +28,18 @@ import { SvgIcon } from '@mui/material';
 import NumberTooltip from 'src/components/NumberTooltip';
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatters';
 import { Box as MuiBox } from '@mui/material';
-import { currencySymbols, CURRENCY_ISSUERS } from 'src/utils/constants';
-import { checkExpiration, getHashIcon } from 'src/utils/helpers';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
+const CURRENCY_ISSUERS = {
+  XRP_MD5: 'XRP'
+};
+import { checkExpiration, getHashIcon } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';

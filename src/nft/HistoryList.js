@@ -35,7 +35,7 @@ import { PulseLoader } from 'react-spinners';
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { normalizeCurrencyCode } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { fNumber } from 'src/utils/formatters';
 
 // Styled components

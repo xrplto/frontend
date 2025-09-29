@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
 import { useRouter } from 'next/router';
-import { getTokens } from 'src/utils/helpers';
+import { getTokens } from 'src/utils/formatters';
 
 // Import all components directly
 import Header from 'src/components/Header';

@@ -21,7 +21,14 @@ import { useContext, useState, useEffect } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { currencySymbols } from 'src/utils/constants';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
 import axios from 'axios';
 
 const TokenCard = styled(Card)(({ theme }) => ({

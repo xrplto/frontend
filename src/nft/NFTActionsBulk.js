@@ -9,8 +9,11 @@ import StorefrontIcon from '@mui/icons-material/Storefront';
 // Loader
 import { PuffLoader, BarLoader } from 'react-spinners';
 
-// Utils
-import { NFToken } from 'src/utils/constants';
+// Constants
+const NFToken = {
+  SELL_WITH_MINT_BULK: 'SELL_WITH_MINT_BULK',
+  BURNT: 'BURNT'
+};
 
 // Context
 import { useContext } from 'react';

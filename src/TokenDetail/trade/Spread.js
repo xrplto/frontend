@@ -10,7 +10,7 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 
 // Utils
-import { calculateSpread } from 'src/utils/orderbookService';
+import { calculateSpread } from 'src/utils/parseUtils';
 
 // Styled Components
 const SpreadContainer = styled(Box)(({ theme }) => ({

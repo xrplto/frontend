@@ -33,12 +33,13 @@ import { AppContext } from 'src/AppContext';
 import { PulseLoader } from 'react-spinners';
 
 // Utils
-import { XRP_TOKEN } from 'src/utils/constants';
+// Constants
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 
 // Components
 import QRDialog from 'src/components/QRDialog';
 import { isValidClassicAddress } from 'ripple-address-codec';
-import { configureMemos } from 'src/utils/OfferChanges';
+import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 

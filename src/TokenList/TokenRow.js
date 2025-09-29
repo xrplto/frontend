@@ -8,7 +8,14 @@ import Image from 'next/image';
 import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatters';
 import NumberTooltip from 'src/components/NumberTooltip';
-import { currencySymbols } from 'src/utils/constants';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
 import dynamic from 'next/dynamic';
 
 // Lazy load chart component

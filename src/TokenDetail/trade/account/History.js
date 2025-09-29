@@ -38,7 +38,7 @@ import { AppContext } from 'src/AppContext';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
-import { normalizeCurrencyCode } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { formatDateTime } from 'src/utils/formatters';
 
 // Components

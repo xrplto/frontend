@@ -39,9 +39,20 @@ import AddIcon from '@mui/icons-material/Add';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+// Constants
+const CATEGORIES = [
+  { title: 'Art', icon: '🎨' },
+  { title: 'Gaming', icon: '🎮' },
+  { title: 'Music', icon: '🎵' },
+  { title: 'Photography', icon: '📷' },
+  { title: 'Sports', icon: '⚽' },
+  { title: 'Collectibles', icon: '🎯' },
+  { title: 'Utility', icon: '🔧' },
+  { title: 'Metaverse', icon: '🌐' }
+];
+
 // Utils
 import { fNumber } from 'src/utils/formatters';
-import { CATEGORIES } from 'src/utils/constants';
 
 // Components
 import LoadingTextField from 'src/components/LoadingTextField';

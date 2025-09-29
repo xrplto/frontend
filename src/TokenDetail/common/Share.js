@@ -35,7 +35,14 @@ import { useSelector } from 'react-redux';
 import { selectActiveFiatCurrency, selectMetrics } from 'src/redux/statusSlice';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { fNumber } from 'src/utils/formatters';
-import { currencySymbols } from 'src/utils/constants';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
 
 const ShareButton = styled(IconButton)(({ theme }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));

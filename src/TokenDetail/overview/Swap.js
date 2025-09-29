@@ -28,14 +28,22 @@ import { ConnectWallet } from 'src/components/WalletConnectModal';
 import QRDialog from 'src/components/QRDialog';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-import { currencySymbols, XRP_TOKEN } from 'src/utils/constants';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 import useWebSocket from 'react-use-websocket';
 
 
-import { configureMemos } from 'src/utils/OfferChanges';
-import { processOrderbookOffers } from 'src/utils/orderbookService';
+import { configureMemos } from 'src/utils/parseUtils';
+import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from 'react-spinners';
 import { enqueueSnackbar } from 'notistack';

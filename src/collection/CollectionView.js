@@ -73,7 +73,7 @@ import {
 } from '@mui/material';
 import PropTypes from 'prop-types';
 import { useEffect as useEffectReact } from 'react';
-import { isEqual } from 'src/utils/helpers';
+import { isEqual } from 'src/utils/formatters';
 
 // Icons
 import SearchIcon from '@mui/icons-material/Search';
@@ -105,11 +105,20 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { AppContext } from 'src/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
 import Watch from 'src/components/Watch';
-import { getMinterName } from 'src/utils/constants';
+// Constants
+const getMinterName = (account) => {
+  // Function to get minter name for an account
+  const minterMap = {
+    'rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH': 'XLS-20d',
+    'rNH4g2bh86BQBKrW8bEiN8xLwKvF9YB4U1': 'OnXRP',
+    'rUL2FGRkkPqR5yjPH8C7X8zE6djZcX9X6t': 'XRPunks'
+  };
+  return minterMap[account] || null;
+};
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
 import { formatMonthYear } from 'src/utils/formatters';
 import { getNftCoverUrl } from 'src/utils/parseUtils';
-import { normalizeCurrencyCode } from 'src/utils/normalizers';
+import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
 // Styled Components with optimized styles
 const MainContainer = styled(Box)({

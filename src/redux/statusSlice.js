@@ -1,5 +1,9 @@
 import { createSlice, createSelector } from '@reduxjs/toolkit';
-import { currencyConfig } from 'src/utils/constants';
+
+const currencyConfig = {
+  availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
+  activeFiatCurrency: 'XRP'
+};
 
 const initialState = {
   metrics: {

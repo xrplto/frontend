@@ -75,10 +75,18 @@ const QRDialog = dynamic(() => import('src/components/QRDialog'), {
   loading: () => null,
   ssr: false
 });
-import { currencySymbols, BASE_URL } from 'src/utils/constants';
+// Constants
+const currencySymbols = {
+  USD: '$ ',
+  EUR: '€ ',
+  JPY: '¥ ',
+  CNH: '¥ ',
+  XRP: '✕ '
+};
+const BASE_URL = 'https://api.xrpl.to/api';
 import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
-import { configureMemos } from 'src/utils/OfferChanges';
+import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
   loading: () => <div>Loading orders...</div>,
