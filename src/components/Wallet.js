@@ -1274,7 +1274,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     try {
       const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
 
-      // Handle non-200 responses (like 500 errors)
+      // Handle 404 silently - account not activated yet
+      if (response.status === 404) {
+        return false;
+      }
+
+      // Handle other non-200 responses
       if (!response.ok) {
         return false;
       }

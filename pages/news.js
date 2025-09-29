@@ -217,8 +217,8 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
         p: { xs: 1, sm: 1.5 },
         mb: 2,
         background: 'transparent',
-        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-        borderRadius: 2
+        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+        borderRadius: 1
       }}
     >
       <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
@@ -713,7 +713,8 @@ function NewsPage() {
                       sx={{
                         height: 20,
                         fontSize: '0.65rem',
-                        bgcolor: alpha(theme.palette.primary.main, 0.1)
+                        bgcolor: alpha(theme.palette.primary.main, 0.05),
+                        borderRadius: '4px'
                       }}
                     />
                   )}
