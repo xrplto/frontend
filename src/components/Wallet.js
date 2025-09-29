@@ -2426,11 +2426,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             {displaySeed}
                           </Box>
 
-                          <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-start' }}>
+                          <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-start', flexWrap: 'wrap' }}>
                             <Button
                               variant="outlined"
                               size="small"
                               onClick={() => setSeedBlurred(!seedBlurred)}
+                              sx={{ fontSize: '0.75rem' }}
                             >
                               {seedBlurred ? 'Reveal' : 'Hide'} {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
                             </Button>
@@ -2442,9 +2443,53 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   openSnackbar('Seed copied to clipboard', 'success');
                                 });
                               }}
+                              sx={{ fontSize: '0.75rem' }}
                             >
                               Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
                             </Button>
+                            {(accountProfile?.wallet_type === 'oauth' || accountProfile?.wallet_type === 'social') && (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={async () => {
+                                  try {
+                                    // Get encrypted wallet data from storage
+                                    const encryptedData = await walletStorage.getEncryptedWalletBlob(accountProfile.address);
+                                    if (!encryptedData) {
+                                      openSnackbar('No encrypted backup available', 'error');
+                                      return;
+                                    }
+
+                                    // Create downloadable blob
+                                    const blob = new Blob([JSON.stringify({
+                                      version: '1.0',
+                                      type: 'xrpl-encrypted-wallet',
+                                      address: accountProfile.address,
+                                      provider: accountProfile.wallet_type,
+                                      timestamp: new Date().toISOString(),
+                                      data: encryptedData
+                                    }, null, 2)], { type: 'application/json' });
+
+                                    // Create download link
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement('a');
+                                    a.href = url;
+                                    a.download = `xrpl-wallet-${accountProfile.address.slice(0, 8)}-encrypted.json`;
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                    URL.revokeObjectURL(url);
+
+                                    openSnackbar('Encrypted backup downloaded', 'success');
+                                  } catch (error) {
+                                    openSnackbar('Failed to download backup: ' + error.message, 'error');
+                                  }
+                                }}
+                                sx={{ fontSize: '0.75rem' }}
+                              >
+                                Download Encrypted
+                              </Button>
+                            )}
                           </Stack>
                         </>
                       )}

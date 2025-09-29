@@ -822,6 +822,46 @@ export class UnifiedWalletStorage {
     const decrypted = CryptoJS.AES.decrypt(encryptedSeed, key);
     return decrypted.toString(CryptoJS.enc.Utf8);
   }
+
+  /**
+   * Get encrypted wallet blob for backup download
+   */
+  async getEncryptedWalletBlob(address) {
+    try {
+      const db = await this.initDB();
+
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
+        const index = store.index('address');
+        const request = index.get(address);
+
+        request.onsuccess = () => {
+          const walletRecord = request.result;
+          if (walletRecord && walletRecord.encrypted) {
+            // Return the encrypted data that's already stored
+            resolve({
+              encrypted: walletRecord.encrypted,
+              salt: walletRecord.salt,
+              iterations: walletRecord.iterations || 600000,
+              algorithm: 'AES-GCM',
+              keyDerivation: 'PBKDF2'
+            });
+          } else {
+            resolve(null);
+          }
+        };
+
+        request.onerror = () => {
+          console.error('Error getting encrypted wallet:', request.error);
+          resolve(null);
+        };
+      });
+    } catch (error) {
+      console.error('Error getting encrypted wallet blob:', error);
+      return null;
+    }
+  }
 }
 
 // Backward compatibility
