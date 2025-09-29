@@ -15,28 +15,8 @@ const StyledTableHead = styled.thead`
   position: sticky;
   top: ${(props) => props.scrollTopLength || 0}px;
   z-index: 100;
-  overflow: visible !important;
-  background: ${(props) =>
-    props.darkMode
-      ? 'linear-gradient(180deg, rgba(18, 18, 18, 0.98) 0%, rgba(18, 18, 18, 0.95) 100%)'
-      : 'linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.95) 100%)'};
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-
-  &::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 1px;
-    background: linear-gradient(
-      90deg,
-      transparent 0%,
-      ${(props) => props.darkMode ? 'rgba(66, 133, 244, 0.15)' : 'rgba(66, 133, 244, 0.1)'} 50%,
-      transparent 100%
-    );
-  }
+  background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
+  backdrop-filter: blur(10px);
 `;
 
 const StyledTableCell = styled.th`
@@ -146,11 +126,9 @@ const PaginationContainer = styled.div`
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  border-radius: 16px;
+  border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
-  backdrop-filter: blur(10px);
 
   @media (max-width: 900px) {
     width: 100%;
@@ -164,11 +142,9 @@ const RowsSelector = styled.div`
   align-items: center;
   gap: 4px;
   padding: 4px 8px;
-  border-radius: 16px;
+  border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
-  backdrop-filter: blur(10px);
 
   @media (max-width: 900px) {
     flex: 1;
@@ -185,11 +161,9 @@ const InfoBox = styled.div`
   gap: 4px;
   flex-wrap: wrap;
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
-  border-radius: 16px;
+  border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 2px 4px rgba(0, 0, 0, 0.04)'};
   padding: 4px 8px;
-  backdrop-filter: blur(10px);
 
   @media (max-width: 900px) {
     flex: 1;

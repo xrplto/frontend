@@ -81,23 +81,19 @@ const StyledTableBody = styled.tbody`
   padding: 0;
 
   tr {
-    will-change: auto;
-    contain: layout style paint;
     margin: 0;
     padding: 0;
 
     &:hover {
       background: ${(props) => props.darkMode
-        ? 'linear-gradient(90deg, rgba(66, 133, 244, 0.02) 0%, transparent 100%)'
-        : 'linear-gradient(90deg, rgba(66, 133, 244, 0.015) 0%, transparent 100%)'};
+        ? 'rgba(66, 133, 244, 0.02)'
+        : 'rgba(66, 133, 244, 0.015)'};
     }
   }
 
   td {
     padding: ${(props) => (props.isMobile ? '16px 8px' : '2px 6px')};
     height: ${(props) => (props.isMobile ? 'auto' : '32px')};
-    contain: layout style paint;
-    will-change: auto;
   }
 `;
 
@@ -115,19 +111,11 @@ const SearchContainer = styled.div`
 
 const CustomColumnsPanel = styled.div`
   width: 100%;
-  background: ${(props) => (props.darkMode
-    ? 'linear-gradient(135deg, rgba(18, 18, 18, 0.95) 0%, rgba(25, 25, 25, 0.95) 100%)'
-    : 'linear-gradient(135deg, rgba(255, 255, 255, 0.98) 0%, rgba(250, 250, 250, 0.98) 100%)')};
-  border: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
-  border-radius: 16px;
-  box-shadow: ${(props) => (props.darkMode
-    ? '0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.03)'
-    : '0 4px 20px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 1)')};
+  background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.98)')};
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border-radius: 12px;
   padding: 24px;
   margin: 20px 0;
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
 `;
 
 const ColumnsGrid = styled.div`
@@ -142,20 +130,14 @@ const ColumnItem = styled.label`
   align-items: center;
   gap: 10px;
   padding: 12px;
-  background: ${(props) => (props.darkMode
-    ? 'linear-gradient(135deg, rgba(66, 133, 244, 0.03) 0%, rgba(66, 133, 244, 0.01) 100%)'
-    : 'linear-gradient(135deg, rgba(66, 133, 244, 0.02) 0%, rgba(66, 133, 244, 0.005) 100%)')};
-  border-radius: 12px;
+  background: transparent;
+  border-radius: 8px;
   cursor: pointer;
-  border: 1px solid ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)')};
+  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
 
   &:hover {
-    background: ${(props) =>
-      props.darkMode
-        ? 'linear-gradient(135deg, rgba(66, 133, 244, 0.06) 0%, rgba(66, 133, 244, 0.02) 100%)'
-        : 'linear-gradient(135deg, rgba(66, 133, 244, 0.04) 0%, rgba(66, 133, 244, 0.01) 100%)'};
-    border-color: ${(props) =>
-      props.darkMode ? 'rgba(66, 133, 244, 0.2)' : 'rgba(66, 133, 244, 0.15)'};
+    background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.02)')};
+    border-color: #4285f4;
   }
 `;
 

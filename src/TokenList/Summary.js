@@ -88,23 +88,12 @@ const MetricBox = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  border-radius: 12px;
+  border-radius: 8px;
   background: ${(props) =>
     props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   border: 1px solid
     ${(props) =>
       props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
-  position: relative;
-  overflow: visible;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${(props) =>
-      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  }
 
   @media (max-width: 600px) {
     padding: 8px;
