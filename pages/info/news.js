@@ -10,8 +10,8 @@ import SearchIcon from '@mui/icons-material/Search';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import styles from './news.module.css';
 
-const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
-const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
+const Header = dynamic(() => import('../../src/components/Header'), { ssr: true });
+const Footer = dynamic(() => import('../../src/components/Footer'), { ssr: true });
 
 // Styled Components for Pagination (matching TokenList)
 const PaginationContainer = styled.div`
