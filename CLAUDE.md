@@ -284,3 +284,40 @@ sx={{
   }
 }}
 ```
+
+## Wallet Encryption Standards
+
+### Encryption Requirements (OWASP 2025)
+1. **PBKDF2 Key Derivation**
+   - Minimum 600,000 iterations for PBKDF2-HMAC-SHA256
+   - Minimum 210,000 iterations for PBKDF2-HMAC-SHA512
+   - Use unique salt per wallet (16+ bytes)
+
+2. **AES-GCM Encryption**
+   - 256-bit key length
+   - 12-byte IV (unique per encryption)
+   - Authenticated encryption mode
+
+3. **Storage Format**
+   - Combine salt + IV + encrypted data
+   - Store as base64 string for portability
+   - Include version number for future migrations
+
+4. **PIN Security**
+   - Minimum 6 digits
+   - No sequential patterns (123456)
+   - No repeating patterns (111111)
+   - Enhanced with static entropy before key derivation
+
+### Implementation Pattern
+```javascript
+// Key derivation (600k iterations for OWASP compliance)
+const key = await crypto.subtle.deriveKey({
+  name: 'PBKDF2',
+  salt: salt,
+  iterations: 600000,  // OWASP 2025 standard
+  hash: 'SHA-256'
+}, keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+
+// Encryption format: base64(salt || iv || ciphertext)
+```

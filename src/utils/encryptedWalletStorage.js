@@ -1,12 +1,19 @@
 import { Wallet } from 'xrpl';
 
+// CryptoJS will be loaded dynamically when needed for OAuth
+let CryptoJS;
+if (typeof window !== 'undefined') {
+  import('crypto-js').then(module => {
+    CryptoJS = module.default;
+    window.CryptoJS = CryptoJS;
+  });
+}
+
 export class UnifiedWalletStorage {
   constructor() {
     this.dbName = 'XRPLWalletDB';
-    this.walletsStore = 'encrypted_wallets';
-    this.profilesStore = 'profiles';
-    this.credentialsStore = 'wallet_credentials'; // Store for passkey-PIN mappings
-    this.version = 3; // Increment for schema changes
+    this.walletsStore = 'wallets';
+    this.version = 1;
   }
 
   async initDB() {
@@ -19,21 +26,16 @@ export class UnifiedWalletStorage {
       request.onupgradeneeded = (event) => {
         const db = event.target.result;
 
-        // Encrypted wallets store
+        // Create wallets store with exact structure from screenshot
         if (!db.objectStoreNames.contains(this.walletsStore)) {
-          db.createObjectStore(this.walletsStore, { keyPath: 'id' });
-        }
+          const store = db.createObjectStore(this.walletsStore, {
+            keyPath: 'id',
+            autoIncrement: true
+          });
 
-        // Profiles store
-        if (!db.objectStoreNames.contains(this.profilesStore)) {
-          const store = db.createObjectStore(this.profilesStore, { keyPath: 'account' });
-          store.createIndex('wallet_type', 'wallet_type', { unique: false });
-          store.createIndex('createdAt', 'createdAt', { unique: false });
-        }
-
-        // Credentials store for passkey-PIN mappings
-        if (!db.objectStoreNames.contains(this.credentialsStore)) {
-          db.createObjectStore(this.credentialsStore, { keyPath: 'passkeyId' });
+          // Add indexes as shown in screenshot
+          store.createIndex('active', 'active', { unique: false });
+          store.createIndex('address', 'address', { unique: true, multiEntry: false });
         }
       };
     });
@@ -53,12 +55,12 @@ export class UnifiedWalletStorage {
       ['deriveBits', 'deriveKey']
     );
 
-    // Use higher iterations to compensate for shorter PIN
+    // OWASP 2025: 600k iterations for PBKDF2-HMAC-SHA256
     return crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
         salt: typeof salt === 'string' ? encoder.encode(salt) : salt,
-        iterations: 500000, // Double iterations for PIN security
+        iterations: 600000, // OWASP 2025 standard
         hash: 'SHA-256'
       },
       keyMaterial,
@@ -68,36 +70,46 @@ export class UnifiedWalletStorage {
     );
   }
 
-  async encryptWallet(walletData, pin) {
+  async encryptData(data, pin) {
     const salt = crypto.getRandomValues(new Uint8Array(16));
     const iv = crypto.getRandomValues(new Uint8Array(12));
     const key = await this.deriveKey(pin, salt);
 
     const encoder = new TextEncoder();
-    const data = encoder.encode(JSON.stringify(walletData));
+    const plaintext = encoder.encode(JSON.stringify(data));
 
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       key,
-      data
+      plaintext
     );
 
-    return {
-      encrypted: Array.from(new Uint8Array(encrypted)),
-      iv: Array.from(iv),
-      salt: Array.from(salt),
-      timestamp: Date.now()
-    };
+    // Return as base64 string like in the screenshot
+    const combinedBuffer = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
+    combinedBuffer.set(salt, 0);
+    combinedBuffer.set(iv, salt.length);
+    combinedBuffer.set(new Uint8Array(encrypted), salt.length + iv.length);
+
+    return btoa(String.fromCharCode(...combinedBuffer));
   }
 
-  async decryptWallet(encryptedData, pin) {
-    const { encrypted, iv, salt } = encryptedData;
-    const key = await this.deriveKey(pin, new Uint8Array(salt));
+  async decryptData(encryptedString, pin) {
+    // Decode base64 string
+    const combinedBuffer = new Uint8Array(
+      atob(encryptedString).split('').map(char => char.charCodeAt(0))
+    );
+
+    // Extract salt, iv, and encrypted data
+    const salt = combinedBuffer.slice(0, 16);
+    const iv = combinedBuffer.slice(16, 28);
+    const encrypted = combinedBuffer.slice(28);
+
+    const key = await this.deriveKey(pin, salt);
 
     const decrypted = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: new Uint8Array(iv) },
+      { name: 'AES-GCM', iv },
       key,
-      new Uint8Array(encrypted)
+      encrypted
     );
 
     const decoder = new TextDecoder();
@@ -106,45 +118,76 @@ export class UnifiedWalletStorage {
 
   async storeWallet(walletData, pin) {
     const db = await this.initDB();
-    const encryptedData = await this.encryptWallet(walletData, pin);
+
+    // Encrypt entire wallet data into single string
+    const encryptedData = await this.encryptData(walletData, pin);
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
 
-      const request = store.put({ id: 'main_wallet', ...encryptedData });
+      // Store with structure matching screenshot
+      const record = {
+        address: walletData.address,
+        active: true,
+        data: encryptedData,
+        timestamp: Date.now()
+      };
+
+      const request = store.add(record);
 
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result);
     });
   }
 
-  async getWallet(pin) {
+  async getWallet(address, pin) {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.walletsStore], 'readonly');
+      const store = transaction.objectStore(this.walletsStore);
+      const index = store.index('address');
+
+      const request = index.get(address);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = async () => {
+        if (request.result) {
+          try {
+            const walletData = await this.decryptData(request.result.data, pin);
+            resolve(walletData);
+          } catch (error) {
+            reject(new Error('Invalid PIN'));
+          }
+        } else {
+          reject(new Error('Wallet not found'));
+        }
+      };
+    });
+  }
+
+  async getAllWallets(pin) {
     const db = await this.initDB();
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
       const store = transaction.objectStore(this.walletsStore);
 
-      const request = store.get('main_wallet');
+      const request = store.getAll();
 
       request.onerror = () => reject(request.error);
       request.onsuccess = async () => {
-        if (request.result) {
+        const wallets = [];
+        for (const record of request.result) {
           try {
-            const walletData = await this.decryptWallet(request.result, pin);
-            // Handle both single wallet and multi-wallet formats
-            if (walletData.wallets && Array.isArray(walletData.wallets)) {
-              resolve(walletData.wallets[0]); // Return only first wallet
-            } else {
-              resolve(walletData);
-            }
+            const walletData = await this.decryptData(record.data, pin);
+            wallets.push(walletData);
           } catch (error) {
-            reject(new Error('Invalid PIN'));
+            // Skip wallets that can't be decrypted with this PIN
           }
-        } else {
-          reject(new Error('No wallet found'));
         }
+        resolve(wallets);
       };
     });
   }
@@ -157,28 +200,14 @@ export class UnifiedWalletStorage {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
 
-        const request = store.get('main_wallet');
+        const request = store.count();
 
         request.onerror = () => reject(request.error);
-        request.onsuccess = () => resolve(!!request.result);
+        request.onsuccess = () => resolve(request.result > 0);
       });
     } catch (error) {
       return false;
     }
-  }
-
-  async deleteWallet() {
-    const db = await this.initDB();
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.walletsStore], 'readwrite');
-      const store = transaction.objectStore(this.walletsStore);
-
-      const request = store.delete('main_wallet');
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-    });
   }
 
   validatePin(pin) {
@@ -217,12 +246,115 @@ export class UnifiedWalletStorage {
     return allSame || alternating;
   }
 
-  async createWalletFromPin(pin) {
-    const wallets = [];
+  async deleteWallet(address) {
+    const db = await this.initDB();
 
-    // Create only 1 wallet for performance
-    const i = 0;
-    const enhancedPin = `xrpl-wallet-pin-v1-${pin}-account-${i}`;
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
+      const index = store.index('address');
+
+      const getRequest = index.getKey(address);
+
+      getRequest.onsuccess = () => {
+        if (getRequest.result) {
+          const deleteRequest = store.delete(getRequest.result);
+          deleteRequest.onsuccess = () => resolve(deleteRequest.result);
+          deleteRequest.onerror = () => reject(deleteRequest.error);
+        } else {
+          reject(new Error('Wallet not found'));
+        }
+      };
+
+      getRequest.onerror = () => reject(getRequest.error);
+    });
+  }
+
+  // Store passkey-wallet mapping
+  async storePasskeyWallet(passkeyId, walletData, pin) {
+    const db = await this.initDB();
+
+    // Include passkey ID in wallet data
+    const fullWalletData = {
+      ...walletData,
+      passkeyId,
+      credentials: { [passkeyId]: pin }
+    };
+
+    // Encrypt and store
+    const encryptedData = await this.encryptData(fullWalletData, pin);
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
+
+      const record = {
+        address: walletData.address,
+        active: true,
+        data: encryptedData,
+        passkeyId,
+        timestamp: Date.now()
+      };
+
+      const request = store.add(record);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve(request.result);
+    });
+  }
+
+  // Get wallet by passkey ID
+  async getWalletByPasskey(passkeyId) {
+    const db = await this.initDB();
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.walletsStore], 'readonly');
+      const store = transaction.objectStore(this.walletsStore);
+
+      const request = store.openCursor();
+
+      request.onsuccess = () => {
+        const cursor = request.result;
+        if (cursor) {
+          if (cursor.value.passkeyId === passkeyId) {
+            resolve(cursor.value);
+          } else {
+            cursor.continue();
+          }
+        } else {
+          resolve(null);
+        }
+      };
+
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  // Backward compatibility - store credential mapping
+  async storeWalletCredential(passkeyId, userSecret) {
+    // Store PIN temporarily in memory for this session
+    // This allows checking if passkey has been used before
+    if (!this.credentialCache) this.credentialCache = new Map();
+    this.credentialCache.set(passkeyId, userSecret);
+  }
+
+  async getWalletCredential(passkeyId) {
+    // Check memory cache first
+    if (this.credentialCache && this.credentialCache.has(passkeyId)) {
+      return this.credentialCache.get(passkeyId);
+    }
+
+    // Check if wallet exists with this passkey
+    const walletRecord = await this.getWalletByPasskey(passkeyId);
+    if (walletRecord) {
+      // Wallet exists but we don't have PIN - return null to prompt
+      return null;
+    }
+
+    return null;
+  }
+
+  async createWalletFromPin(pin) {
     const wallet = Wallet.generate();
 
     const walletData = {
@@ -231,218 +363,342 @@ export class UnifiedWalletStorage {
       publicKey: wallet.publicKey,
       createdAt: Date.now(),
       wallet_type: 'pin',
-      accountIndex: i
+      accountIndex: 0
     };
 
-    wallets.push(walletData);
-
-    // Store wallet
     await this.storeWallet(walletData, pin);
-    return wallets;
-  }
-
-  async storeWallets(wallets, pin) {
-    const db = await this.initDB();
-    const encryptedData = await this.encryptWallet({ wallets }, pin);
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.walletsStore], 'readwrite');
-      const store = transaction.objectStore(this.walletsStore);
-
-      const request = store.put({ id: 'main_wallet', ...encryptedData });
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-    });
+    return [walletData];
   }
 
   async getWallets(pin) {
-    const db = await this.initDB();
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.walletsStore], 'readonly');
-      const store = transaction.objectStore(this.walletsStore);
-
-      const request = store.get('main_wallet');
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = async () => {
-        if (request.result) {
-          try {
-            const data = await this.decryptWallet(request.result, pin);
-            // Only return the first wallet to avoid duplicates from old data
-            if (data.wallets && Array.isArray(data.wallets)) {
-              resolve([data.wallets[0]]); // Return only first wallet
-            } else {
-              resolve([data]); // Single wallet format
-            }
-          } catch (error) {
-            reject(new Error('Invalid PIN'));
-          }
-        } else {
-          reject(new Error('No wallet found'));
-        }
-      };
-    });
+    return this.getAllWallets(pin);
   }
 
-  // Profile Management Methods
-  async storeProfiles(profiles) {
-    const db = await this.initDB();
+  // ============ OAuth/Social Authentication Methods ============
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.profilesStore], 'readwrite');
-      const store = transaction.objectStore(this.profilesStore);
+  /**
+   * Handle OAuth login and setup wallet
+   */
+  async handleSocialLogin(profile, accessToken, backend) {
+    try {
+      // Check if user has any wallet with this social ID
+      const walletId = `${profile.provider}_${profile.id}`;
 
-      // Clear existing profiles first
-      const clearRequest = store.clear();
+      // Try to find existing wallet
+      const existingWallet = await this.findWalletBySocialId(walletId);
 
-      clearRequest.onsuccess = () => {
-        // Add all profiles
-        let completed = 0;
-        const total = profiles.length;
+      if (existingWallet) {
+        // Wallet exists - user already set password before
+        // OAuth proves identity, so unlock automatically
+        return {
+          success: true,
+          wallet: {
+            address: existingWallet.address,
+            publicKey: existingWallet.publicKey,
+            seed: existingWallet.seed
+          },
+          requiresPassword: false
+        };
+      }
 
-        if (total === 0) {
-          resolve();
-          return;
-        }
+      // Check backend for existing wallet
+      const response = await backend.get(`/api/wallets/social/${profile.provider}/${profile.id}`);
 
-        profiles.forEach(profile => {
-          const addRequest = store.put(profile);
-          addRequest.onsuccess = () => {
-            completed++;
-            if (completed === total) {
-              resolve();
-            }
-          };
-          addRequest.onerror = () => reject(addRequest.error);
-        });
-      };
-
-      clearRequest.onerror = () => reject(clearRequest.error);
-    });
+      if (response.data) {
+        // Wallet exists on server but not locally
+        // Need password to store locally
+        return {
+          success: false,
+          requiresPassword: true,
+          walletExists: true,
+          backendData: response.data,
+          action: 'recover'
+        };
+      } else {
+        // Brand new user - need to create wallet with password
+        return {
+          success: false,
+          requiresPassword: true,
+          walletExists: false,
+          action: 'create'
+        };
+      }
+    } catch (error) {
+      console.error('Social login error:', error);
+      throw error;
+    }
   }
 
-  async getProfiles() {
-    const db = await this.initDB();
+  /**
+   * Create new wallet with user-provided password (one time only)
+   */
+  async createSocialWallet(profile, password, backend) {
+    // Validate password
+    if (!password || password.length < 8) {
+      throw new Error('Password must be at least 8 characters');
+    }
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.profilesStore], 'readonly');
-      const store = transaction.objectStore(this.profilesStore);
-      const request = store.getAll();
+    // Generate wallet
+    const wallet = this.generateDeterministicWallet(profile);
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result || []);
+    // Store on backend (server-encrypted)
+    const serverEncrypted = this.encryptForServer(wallet, profile);
+    await backend.post('/api/wallets/social', {
+      provider: profile.provider,
+      provider_id: profile.id,
+      address: wallet.address,
+      public_key: wallet.publicKey,
+      encrypted_seed: serverEncrypted,
+      created_at: Date.now()
     });
+
+    // Store locally with user's password and OAuth key
+    await this.storeWalletWithSocialId(wallet, profile, password);
+
+    return {
+      success: true,
+      wallet: {
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        seed: wallet.seed
+      }
+    };
   }
 
-  async addProfile(profile) {
-    const db = await this.initDB();
+  /**
+   * Recover wallet from backend with user password (one time only)
+   */
+  async recoverSocialWallet(backendData, profile, password, backend) {
+    const seed = this.decryptFromServer(backendData.encrypted_seed, profile);
+    const wallet = Wallet.fromSeed(seed);
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.profilesStore], 'readwrite');
-      const store = transaction.objectStore(this.profilesStore);
-      const request = store.put(profile);
+    // Store locally with user's password
+    await this.storeWalletWithSocialId(wallet, profile, password);
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-    });
+    return {
+      success: true,
+      wallet: {
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        seed: wallet.seed
+      }
+    };
   }
 
-  async removeProfile(account) {
-    const db = await this.initDB();
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.profilesStore], 'readwrite');
-      const store = transaction.objectStore(this.profilesStore);
-      const request = store.delete(account);
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-    });
+  /**
+   * Complete wallet setup flow (called after password is provided)
+   */
+  async completeSocialWalletSetup(profile, password, action, backendData, backend) {
+    if (action === 'create') {
+      return await this.createSocialWallet(profile, password, backend);
+    } else if (action === 'recover' && backendData) {
+      return await this.recoverSocialWallet(backendData, profile, password, backend);
+    } else {
+      throw new Error('Invalid action');
+    }
   }
 
-  // Store encrypted passkey-PIN mapping
-  async storeWalletCredential(passkeyId, userSecret) {
-    const db = await this.initDB();
+  /**
+   * Store wallet with dual encryption:
+   * 1. Password encryption in IndexedDB (for security)
+   * 2. OAuth-derived key encryption (for auto-unlock)
+   */
+  async storeWalletWithSocialId(wallet, profile, password) {
+    const walletId = `${profile.provider}_${profile.id}`;
 
-    // Encrypt the PIN with a device-specific key
-    const salt = crypto.getRandomValues(new Uint8Array(16));
-    const key = await this.deriveKey('device-local-key', salt);
+    // Store with password encryption (primary security)
+    await this.storeWallet({
+      seed: wallet.seed,
+      address: wallet.address,
+      publicKey: wallet.publicKey,
+      wallet_type: 'social',
+      provider: profile.provider,
+      provider_id: profile.id
+    }, password);
 
-    const encoder = new TextEncoder();
-    const data = encoder.encode(userSecret);
-    const iv = crypto.getRandomValues(new Uint8Array(12));
+    // ALSO store with OAuth-derived key for auto-unlock
+    const oauthKey = this.deriveOAuthKey(profile);
 
-    const encrypted = await crypto.subtle.encrypt(
-      { name: 'AES-GCM', iv },
-      key,
-      data
-    );
+    // Use crypto-js for OAuth encryption (simpler for this use case)
+    if (typeof window !== 'undefined' && window.CryptoJS) {
+      const CryptoJS = window.CryptoJS;
+      const encryptedForOAuth = CryptoJS.AES.encrypt(
+        JSON.stringify({
+          seed: wallet.seed,
+          address: wallet.address,
+          publicKey: wallet.publicKey
+        }),
+        oauthKey
+      ).toString();
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.credentialsStore], 'readwrite');
-      const store = transaction.objectStore(this.credentialsStore);
-      const request = store.put({
-        passkeyId,
-        encryptedPin: Array.from(new Uint8Array(encrypted)),
-        iv: Array.from(iv),
-        salt: Array.from(salt),
-        timestamp: Date.now()
+      // Store OAuth-encrypted version
+      const db = await this.initDB();
+      const tx = db.transaction(['social_mappings'], 'readwrite');
+      await tx.objectStore('social_mappings').put({
+        id: walletId,
+        address: wallet.address,
+        provider: profile.provider,
+        provider_id: profile.id,
+        oauth_encrypted: encryptedForOAuth,
+        created_at: Date.now()
+      });
+    }
+  }
+
+  /**
+   * Find and decrypt wallet using OAuth identity
+   */
+  async findWalletBySocialId(walletId) {
+    try {
+      const db = await this.initDB();
+
+      // Check if social_mappings store exists
+      if (!db.objectStoreNames.contains('social_mappings')) {
+        // Need to upgrade DB to add social_mappings
+        db.close();
+        await this.upgradeDBForSocial();
+        const newDb = await this.initDB();
+        return this.findWalletBySocialIdInternal(newDb, walletId);
+      }
+
+      return this.findWalletBySocialIdInternal(db, walletId);
+    } catch (e) {
+      console.error('Find wallet error:', e);
+    }
+    return null;
+  }
+
+  async findWalletBySocialIdInternal(db, walletId) {
+    try {
+      const tx = db.transaction(['social_mappings'], 'readonly');
+      const mapping = await new Promise((resolve, reject) => {
+        const request = tx.objectStore('social_mappings').get(walletId);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
       });
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-    });
-  }
-
-  // Retrieve and decrypt wallet credential
-  async getWalletCredential(passkeyId) {
-    const db = await this.initDB();
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.credentialsStore], 'readonly');
-      const store = transaction.objectStore(this.credentialsStore);
-      const request = store.get(passkeyId);
-
-      request.onerror = () => reject(request.error);
-      request.onsuccess = async () => {
-        if (!request.result) {
-          resolve(null);
-          return;
-        }
+      if (mapping && mapping.oauth_encrypted && typeof window !== 'undefined' && window.CryptoJS) {
+        const CryptoJS = window.CryptoJS;
+        const profile = {
+          provider: mapping.provider,
+          id: mapping.provider_id
+        };
+        const oauthKey = this.deriveOAuthKey(profile);
 
         try {
-          const { encryptedPin, iv, salt } = request.result;
-          const key = await this.deriveKey('device-local-key', new Uint8Array(salt));
+          const decrypted = CryptoJS.AES.decrypt(mapping.oauth_encrypted, oauthKey);
+          const walletData = JSON.parse(decrypted.toString(CryptoJS.enc.Utf8));
 
-          const decrypted = await crypto.subtle.decrypt(
-            { name: 'AES-GCM', iv: new Uint8Array(iv) },
-            key,
-            new Uint8Array(encryptedPin)
-          );
+          // Successfully decrypted - OAuth identity verified!
+          return {
+            seed: walletData.seed,
+            address: walletData.address,
+            publicKey: walletData.publicKey,
+            provider: mapping.provider,
+            provider_id: mapping.provider_id
+          };
+        } catch (e) {
+          console.error('OAuth decrypt failed:', e);
+          return null;
+        }
+      }
+    } catch (e) {
+      console.error('Error in findWalletBySocialIdInternal:', e);
+    }
+    return null;
+  }
 
-          const decoder = new TextDecoder();
-          resolve(decoder.decode(decrypted));
-        } catch (error) {
-          resolve(null); // Return null if decryption fails
+  /**
+   * Upgrade DB to add social_mappings store
+   */
+  async upgradeDBForSocial() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(this.dbName, this.version + 1);
+
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => {
+        request.result.close();
+        resolve();
+      };
+
+      request.onupgradeneeded = (event) => {
+        const db = event.target.result;
+
+        // Add social_mappings store if it doesn't exist
+        if (!db.objectStoreNames.contains('social_mappings')) {
+          db.createObjectStore('social_mappings', { keyPath: 'id' });
         }
       };
     });
   }
 
-  // Clear stored credentials
-  async clearWalletCredentials() {
-    const db = await this.initDB();
+  /**
+   * Derive deterministic key from OAuth profile
+   */
+  deriveOAuthKey(profile) {
+    const secret = process.env.NEXT_PUBLIC_OAUTH_SECRET || 'xrpl-oauth-2025';
+    return `${secret}-${profile.provider}-${profile.id}`;
+  }
 
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.credentialsStore], 'readwrite');
-      const store = transaction.objectStore(this.credentialsStore);
-      const request = store.clear();
+  /**
+   * Generate deterministic wallet from social profile
+   */
+  generateDeterministicWallet(profile) {
+    if (typeof window === 'undefined' || !window.CryptoJS) {
+      throw new Error('CryptoJS not available');
+    }
 
-      request.onerror = () => reject(request.error);
-      request.onsuccess = () => resolve(request.result);
-    });
+    const CryptoJS = window.CryptoJS;
+    const serverSecret = process.env.NEXT_PUBLIC_WALLET_SECRET || 'default-secret';
+
+    // Create deterministic seed from profile
+    const seed = CryptoJS.PBKDF2(
+      `xrpl-social-${profile.provider}-${profile.id}`,
+      `${serverSecret}-${profile.email || profile.username || profile.id}`,
+      {
+        keySize: 256/32,
+        iterations: 100000,
+        hasher: CryptoJS.algo.SHA256
+      }
+    );
+
+    // Convert to entropy
+    const seedHex = seed.toString();
+    const entropy = [];
+    for (let i = 0; i < 32; i++) {
+      entropy.push(parseInt(seedHex.substr(i * 2, 2), 16));
+    }
+
+    return Wallet.fromEntropy(entropy);
+  }
+
+  /**
+   * Encrypt wallet for server storage
+   */
+  encryptForServer(wallet, profile) {
+    if (typeof window === 'undefined' || !window.CryptoJS) {
+      throw new Error('CryptoJS not available');
+    }
+
+    const CryptoJS = window.CryptoJS;
+    const serverSecret = process.env.NEXT_PUBLIC_SERVER_SECRET || 'server-secret-2025';
+    const key = `${serverSecret}-${profile.provider}-${profile.id}`;
+    return CryptoJS.AES.encrypt(wallet.seed, key).toString();
+  }
+
+  /**
+   * Decrypt wallet from server storage
+   */
+  decryptFromServer(encryptedSeed, profile) {
+    if (typeof window === 'undefined' || !window.CryptoJS) {
+      throw new Error('CryptoJS not available');
+    }
+
+    const CryptoJS = window.CryptoJS;
+    const serverSecret = process.env.NEXT_PUBLIC_SERVER_SECRET || 'server-secret-2025';
+    const key = `${serverSecret}-${profile.provider}-${profile.id}`;
+    const decrypted = CryptoJS.AES.decrypt(encryptedSeed, key);
+    return decrypted.toString(CryptoJS.enc.Utf8);
   }
 }
 

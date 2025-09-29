@@ -103,8 +103,18 @@ const DeviceLoginPage = () => {
     try {
       const wallet = generateWallet(passkeyId, userSecret);
 
-      // Store encrypted passkey-PIN mapping in IndexedDB for future logins
+      // Store wallet with passkey mapping
       const storage = new (await import('src/utils/encryptedWalletStorage')).UnifiedWalletStorage();
+
+      await storage.storePasskeyWallet(passkeyId, {
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        seed: wallet.seed,
+        wallet_type: 'device',
+        createdAt: Date.now()
+      }, userSecret);
+
+      // Cache credential for this session
       await storage.storeWalletCredential(passkeyId, userSecret);
 
       setWalletInfo({
@@ -141,7 +151,7 @@ const DeviceLoginPage = () => {
     try {
       setStatus('discovering');
 
-      // Store for future use
+      // Cache credential for this session
       const storage = new (await import('src/utils/encryptedWalletStorage')).UnifiedWalletStorage();
       await storage.storeWalletCredential(passkeyId, userSecret);
 
@@ -219,6 +229,7 @@ const DeviceLoginPage = () => {
     }
 
     const wallet = Wallet.fromEntropy(entropy);
+    wallet.seed = seedHex; // Store seed for vault
     return wallet;
   };
 
@@ -226,31 +237,16 @@ const DeviceLoginPage = () => {
   const discoverAllAccounts = async (passkeyId, userSecret) => {
     const accounts = [];
 
-    // Optimized approach: Generate accounts in batches with yielding
-    const batchSize = 10;
-    const totalAccounts = 100;
-
-    for (let batch = 0; batch < Math.ceil(totalAccounts / batchSize); batch++) {
-      const batchStart = batch * batchSize;
-      const batchEnd = Math.min(batchStart + batchSize, totalAccounts);
-
-      // Generate batch of accounts
-      for (let i = batchStart; i < batchEnd; i++) {
-        const wallet = generateWallet(passkeyId, userSecret, i);
-        accounts.push({
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0'
-        });
-      }
-
-      // Yield to main thread after each batch
-      if (batch < Math.ceil(totalAccounts / batchSize) - 1) {
-        await new Promise(resolve => setTimeout(resolve, 0));
-      }
-    }
+    // For now, just generate the first account for simplicity
+    // Can be extended to discover multiple accounts if needed
+    const wallet = generateWallet(passkeyId, userSecret, 0);
+    accounts.push({
+      account: wallet.address,
+      address: wallet.address,
+      publicKey: wallet.publicKey,
+      wallet_type: 'device',
+      xrp: '0'
+    });
 
     return accounts;
   };
@@ -385,7 +381,7 @@ const DeviceLoginPage = () => {
       }
 
       if (authResponse.id) {
-        // Try to retrieve stored PIN first
+        // Try to retrieve stored PIN from cache
         const storage = new (await import('src/utils/encryptedWalletStorage')).UnifiedWalletStorage();
         let userSecret = await storage.getWalletCredential(authResponse.id);
 

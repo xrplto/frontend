@@ -29,6 +29,8 @@ import {
 import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
+import IconButton from '@mui/material/IconButton';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -825,6 +827,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
+  // OAuth wallet manager is now part of unified storage
 
   // Additional wallet generation states
   const [showAdditionalWalletPin, setShowAdditionalWalletPin] = useState(false);
@@ -834,6 +837,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // PIN-based wallet states
   const [showPinLogin, setShowPinLogin] = useState(false);
   const [showWalletInfo, setShowWalletInfo] = useState(false);
+
+  // OAuth password setup state
+  const [showOAuthPasswordSetup, setShowOAuthPasswordSetup] = useState(false);
+  const [oauthPassword, setOAuthPassword] = useState('');
+  const [oauthConfirmPassword, setOAuthConfirmPassword] = useState('');
+  const [showOAuthPassword, setShowOAuthPassword] = useState(false);
+  const [oauthPasswordError, setOAuthPasswordError] = useState('');
   const [pinBoxes, setPinBoxes] = useState(['', '', '', '', '', '']);
   const [confirmPinBoxes, setConfirmPinBoxes] = useState(['', '', '', '', '', '']);
   const pinRefs = useRef([]);
@@ -998,18 +1008,175 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  // Social login handlers (to be implemented)
-  const handleGoogleLogin = async () => {
+  // Social login handlers
+  const handleGoogleLogin = () => {
     try {
-      openSnackbar('Google login integration coming soon', 'info');
+      // Check if Google Sign-In is loaded
+      if (!window.google?.accounts?.id) {
+        openSnackbar('Google Sign-In is still loading, please try again', 'info');
+        return;
+      }
+
+      // Create a temporary div to render the Google button
+      const buttonDiv = document.createElement('div');
+      buttonDiv.id = 'temp-google-button';
+      buttonDiv.style.position = 'fixed';
+      buttonDiv.style.top = '-9999px';
+      document.body.appendChild(buttonDiv);
+
+      // Render the button (hidden)
+      window.google.accounts.id.renderButton(
+        buttonDiv,
+        {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard'
+        }
+      );
+
+      // Click it programmatically after a short delay
+      setTimeout(() => {
+        const button = buttonDiv.querySelector('div[role="button"]');
+        if (button) {
+          button.click();
+        }
+        // Clean up after click
+        setTimeout(() => {
+          buttonDiv.remove();
+        }, 500);
+      }, 100);
+
     } catch (error) {
+      console.error('Google login error:', error);
       openSnackbar('Google login failed: ' + error.message, 'error');
+    }
+  };
+
+  const processGoogleLogin = async (jwtToken, userData) => {
+    try {
+      // Use provided user data or decode JWT
+      let payload = userData;
+      if (!userData && jwtToken && jwtToken.includes('.')) {
+        try {
+          payload = JSON.parse(atob(jwtToken.split('.')[1]));
+        } catch {
+          // Failed to decode JWT
+          payload = { id: 'google_user', provider: 'google' };
+        }
+      }
+
+      // Use unified wallet storage
+      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
+
+      // Create backend object with proper API URL
+      const backend = {
+        get: (url) => fetch(`https://api.xrpl.to${url}`, {
+          headers: { 'Authorization': `Bearer ${jwtToken}` }
+        }).then(r => r.json()),
+        post: (url, body) => fetch(`https://api.xrpl.to${url}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${jwtToken}`
+          },
+          body: JSON.stringify(body)
+        }).then(r => r.json())
+      };
+
+      // Handle social login
+      const result = await walletStorageInstance.handleSocialLogin(
+        {
+          id: payload.sub || payload.id,
+          provider: 'google',
+          email: payload.email,
+          name: payload.name,
+          ...payload
+        },
+        jwtToken,
+        backend
+      );
+
+      if (result.requiresPassword) {
+        // Store token temporarily for password setup
+        sessionStorage.setItem('oauth_temp_token', jwtToken);
+        sessionStorage.setItem('oauth_temp_provider', 'google');
+        sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload));
+        sessionStorage.setItem('oauth_action', result.action);
+        if (result.backendData) {
+          sessionStorage.setItem('oauth_backend_data', JSON.stringify(result.backendData));
+        }
+
+        // Show password setup dialog
+        setShowOAuthPasswordSetup(true);
+      } else {
+        // Wallet already setup
+        localStorage.setItem('jwt', jwtToken);
+        localStorage.setItem('authMethod', 'google');
+        localStorage.setItem('user', JSON.stringify(payload));
+
+        if (result.wallet) {
+          doLogIn(result.wallet, profiles);
+          openSnackbar('Google login successful!', 'success');
+        }
+        setOpenWalletModal(false);
+      }
+    } catch (error) {
+      console.error('Error processing Google login:', error);
+      openSnackbar('Failed to process Google login', 'error');
     }
   };
 
   const handleXLogin = async () => {
     try {
-      openSnackbar('X login integration coming soon', 'info');
+      // Generate PKCE values for Twitter OAuth 2.0
+      const generateRandomString = (length) => {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
+        let result = '';
+        for (let i = 0; i < length; i++) {
+          result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+      };
+
+      const sha256 = async (plain) => {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(plain);
+        const hash = await crypto.subtle.digest('SHA-256', data);
+        return btoa(String.fromCharCode(...new Uint8Array(hash)))
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=/g, '');
+      };
+
+      const state = generateRandomString(32);
+      const codeVerifier = generateRandomString(128);
+      const codeChallenge = await sha256(codeVerifier);
+
+      // Store for later use
+      sessionStorage.setItem('twitter_state', state);
+      sessionStorage.setItem('twitter_verifier', codeVerifier);
+      sessionStorage.setItem('auth_return_url', window.location.href);
+      sessionStorage.setItem('wallet_modal_open', 'true');
+
+      // Build Twitter OAuth 2.0 URL with PKCE
+      // IMPORTANT: This must EXACTLY match what's configured in Twitter app settings
+      const redirectUri = 'http://localhost:3002/callback';
+
+      const params = new URLSearchParams({
+        response_type: 'code',
+        client_id: 'X1Z4angwMWNNUjdEc29aRGhGQm06MTpjaQ',
+        redirect_uri: redirectUri,
+        scope: 'users.read tweet.read',
+        state: state,
+        code_challenge: codeChallenge,
+        code_challenge_method: 'S256'
+      });
+
+      // Store redirect URI for callback
+      sessionStorage.setItem('twitter_redirect_uri', redirectUri);
+
+      // Redirect to Twitter OAuth
+      window.location.href = `https://twitter.com/i/oauth2/authorize?${params}`;
     } catch (error) {
       openSnackbar('X login failed: ' + error.message, 'error');
     }
@@ -1018,8 +1185,108 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const handleDiscordLogin = async () => {
     try {
       openSnackbar('Discord login integration coming soon', 'info');
+      // When ready: window.location.href = '/api/oauth/discord';
     } catch (error) {
       openSnackbar('Discord login failed: ' + error.message, 'error');
+    }
+  };
+
+  // Handle OAuth password setup
+  const handleOAuthPasswordSetup = async () => {
+    // Validate password
+    if (oauthPassword.length < 8) {
+      setOAuthPasswordError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (oauthPassword !== oauthConfirmPassword) {
+      setOAuthPasswordError('Passwords do not match');
+      return;
+    }
+
+    setOAuthPasswordError('');
+    setIsCreatingWallet(true);
+
+    try {
+      // Get OAuth data from session
+      const token = sessionStorage.getItem('oauth_temp_token');
+      const provider = sessionStorage.getItem('oauth_temp_provider');
+      const userStr = sessionStorage.getItem('oauth_temp_user');
+      const action = sessionStorage.getItem('oauth_action');
+      const backendDataStr = sessionStorage.getItem('oauth_backend_data');
+
+      if (!token || !provider || !userStr) {
+        throw new Error('Missing OAuth data');
+      }
+
+      const user = JSON.parse(userStr);
+      const backendData = backendDataStr ? JSON.parse(backendDataStr) : null;
+
+      // Use unified wallet storage
+      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
+
+      // Create backend object with proper API URL
+      const backend = {
+        get: (url) => fetch(`https://api.xrpl.to${url}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        }).then(r => r.json()),
+        post: (url, body) => fetch(`https://api.xrpl.to${url}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(body)
+        }).then(r => r.json())
+      };
+
+      // Complete wallet setup with password
+      const result = await walletStorageInstance.completeSocialWalletSetup(
+        {
+          id: user.id,
+          provider: provider,
+          email: user.account || user.email,
+          ...user
+        },
+        oauthPassword,
+        action,
+        backendData,
+        backend
+      );
+
+      if (result.success && result.wallet) {
+        // Clear temporary session data
+        sessionStorage.removeItem('oauth_temp_token');
+        sessionStorage.removeItem('oauth_temp_provider');
+        sessionStorage.removeItem('oauth_temp_user');
+        sessionStorage.removeItem('oauth_action');
+        sessionStorage.removeItem('oauth_backend_data');
+
+        // Store permanent auth data
+        localStorage.setItem('jwt', token);
+        localStorage.setItem('authMethod', provider);
+        localStorage.setItem('user', JSON.stringify(user));
+
+        // Login with the wallet
+        doLogIn(result.wallet, profiles);
+
+        // Close dialogs
+        setShowOAuthPasswordSetup(false);
+        setOpenWalletModal(false);
+
+        // Clear password fields
+        setOAuthPassword('');
+        setOAuthConfirmPassword('');
+
+        openSnackbar('Wallet created successfully!', 'success');
+      } else {
+        throw new Error('Failed to setup wallet');
+      }
+    } catch (error) {
+      console.error('Wallet setup error:', error);
+      setOAuthPasswordError(error.message || 'Failed to setup wallet');
+    } finally {
+      setIsCreatingWallet(false);
     }
   };
 
@@ -1476,6 +1743,90 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setPinError('');
     setIsCreatingWallet(false);
   };
+
+  // Check if returning from OAuth and reopen wallet modal or show password setup
+  useEffect(() => {
+    // Check if we need to show OAuth password setup
+    const oauthToken = sessionStorage.getItem('oauth_temp_token');
+    const oauthProvider = sessionStorage.getItem('oauth_temp_provider');
+
+    if (oauthToken && oauthProvider) {
+      // User came from OAuth and needs password setup
+      setShowOAuthPasswordSetup(true);
+      setOpenWalletModal(false);
+    } else if (sessionStorage.getItem('wallet_modal_open') === 'true') {
+      // Just reopening wallet modal after OAuth redirect
+      sessionStorage.removeItem('wallet_modal_open');
+      setOpenWalletModal(true);
+    }
+
+    // Initialize Google Sign-In on mount
+    const initGoogleSignIn = () => {
+      if (window.google?.accounts?.id) {
+        window.google.accounts.id.initialize({
+          client_id: '511415507514-bglt6vsg7458sfqed1daetsfvqahnkh4.apps.googleusercontent.com',
+          callback: window.handleGoogleResponse,
+          auto_select: false
+        });
+      }
+    };
+
+    // Set up Google response handler globally
+    window.handleGoogleResponse = async (response) => {
+      try {
+        console.log('Google OAuth response received');
+        const res = await fetch('https://api.xrpl.to/api/auth/google', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: response.credential })
+        });
+
+        const data = await res.json();
+        if (data.token) {
+          // Store for processing
+          sessionStorage.setItem('google_jwt_token', data.token);
+          sessionStorage.setItem('google_user_data', JSON.stringify(data.user));
+          // Trigger re-render to process
+          window.dispatchEvent(new Event('google-login-success'));
+        }
+      } catch (error) {
+        console.error('Google auth error:', error);
+      }
+    };
+
+    // Try to init immediately if loaded, or wait for script
+    if (window.google?.accounts?.id) {
+      initGoogleSignIn();
+    } else {
+      const checkGoogle = setInterval(() => {
+        if (window.google?.accounts?.id) {
+          initGoogleSignIn();
+          clearInterval(checkGoogle);
+        }
+      }, 100);
+
+      // Stop checking after 5 seconds
+      setTimeout(() => clearInterval(checkGoogle), 5000);
+    }
+
+    // Listen for Google login success
+    const handleGoogleSuccess = async () => {
+      const token = sessionStorage.getItem('google_jwt_token');
+      const userStr = sessionStorage.getItem('google_user_data');
+      if (token) {
+        sessionStorage.removeItem('google_jwt_token');
+        sessionStorage.removeItem('google_user_data');
+        const userData = userStr ? JSON.parse(userStr) : null;
+        await processGoogleLogin(token, userData);
+      }
+    };
+
+    window.addEventListener('google-login-success', handleGoogleSuccess);
+
+    return () => {
+      window.removeEventListener('google-login-success', handleGoogleSuccess);
+    };
+  }, []);
 
   // Check if PIN wallet exists and load profiles from IndexedDB
   useEffect(() => {
@@ -3130,6 +3481,91 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               </Box>
             )}
             </StyledPopoverPaper>
+          </DialogContent>
+        </Dialog>
+
+        {/* OAuth Password Setup Dialog */}
+        <Dialog
+          open={showOAuthPasswordSetup}
+          onClose={() => !isCreatingWallet && setShowOAuthPasswordSetup(false)}
+          maxWidth="sm"
+          fullWidth
+        >
+          <DialogContent>
+            <Stack spacing={3}>
+              <Box>
+                <Typography variant="h5" gutterBottom>
+                  Secure Your Wallet
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Create a password to encrypt your wallet. This password will be required only once,
+                  then you can login with your social account.
+                </Typography>
+              </Box>
+
+              {oauthPasswordError && (
+                <Alert severity="error" onClose={() => setOAuthPasswordError('')}>
+                  {oauthPasswordError}
+                </Alert>
+              )}
+
+              <TextField
+                label="Password"
+                type={showOAuthPassword ? 'text' : 'password'}
+                value={oauthPassword}
+                onChange={(e) => setOAuthPassword(e.target.value)}
+                fullWidth
+                helperText="Minimum 8 characters"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowOAuthPassword(!showOAuthPassword)}
+                        edge="end"
+                        size="small"
+                      >
+                        {showOAuthPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              <TextField
+                label="Confirm Password"
+                type={showOAuthPassword ? 'text' : 'password'}
+                value={oauthConfirmPassword}
+                onChange={(e) => setOAuthConfirmPassword(e.target.value)}
+                fullWidth
+              />
+
+              <Alert severity="info">
+                <Typography variant="body2">
+                  <strong>Important:</strong> Store this password safely. While you won't need it for
+                  regular logins, you'll need it if you want to export your wallet or recover it on a
+                  new device.
+                </Typography>
+              </Alert>
+
+              <Box sx={{ display: 'flex', gap: 2 }}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => setShowOAuthPasswordSetup(false)}
+                  disabled={isCreatingWallet}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={handleOAuthPasswordSetup}
+                  disabled={isCreatingWallet || !oauthPassword || !oauthConfirmPassword}
+                >
+                  {isCreatingWallet ? 'Setting up...' : 'Setup Wallet'}
+                </Button>
+              </Box>
+            </Stack>
           </DialogContent>
         </Dialog>
 

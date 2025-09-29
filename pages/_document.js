@@ -7,7 +7,10 @@ export default class MyDocument extends Document {
   render() {
     return (
       <Html lang="en">
-        <Head />
+        <Head>
+          {/* Google Sign-In Client Library */}
+          <script src="https://accounts.google.com/gsi/client" async defer></script>
+        </Head>
         <body>
           <Main />
           <NextScript />
