@@ -19,7 +19,6 @@ import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow'
 import React, { memo, lazy, Suspense } from 'react';
 import { debounce, throttle } from 'src/utils/formatters';
 import { useRouter } from 'next/router';
-import { TokenListProfiler, memoryMonitor, performanceTracker, tokenListPerformance } from 'src/performance/setup';
 import { TokenListToolbar } from './TokenListControls';
 
 // Simple memoization
@@ -484,7 +483,6 @@ function TokenListComponent({
             const json = JSON.parse(event.data);
 
             // Track WebSocket message
-            tokenListPerformance.onWSMessage();
 
             // Queue the message
             wsMessageQueue.current.push(json);
@@ -1190,8 +1188,6 @@ function TokenListComponent({
 // Export with performance profiler
 export default function TokenList(props) {
   return (
-    <TokenListProfiler>
       <TokenListComponent {...props} />
-    </TokenListProfiler>
   );
 }
