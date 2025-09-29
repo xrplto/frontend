@@ -87,7 +87,38 @@ const TransactionDetailsPanel = memo(
         await client.disconnect();
 
         if (txResponse.result) {
-          setTransaction(txResponse.result);
+          // Flatten tx_json into result for easier access
+          const flattenedResult = {
+            ...txResponse.result,
+            ...txResponse.result.tx_json
+          };
+
+          console.log('=== TRANSACTION RESPONSE ===');
+          console.log('Full response:', JSON.stringify(txResponse.result, null, 2));
+          console.log('Transaction type:', flattenedResult.TransactionType);
+          console.log('Account (From):', flattenedResult.Account);
+          console.log('Destination (To):', flattenedResult.Destination);
+          console.log('Amount:', flattenedResult.Amount);
+          console.log('Date:', flattenedResult.date);
+          console.log('Date type:', typeof flattenedResult.date);
+          console.log('Fee:', flattenedResult.Fee);
+          console.log('Ledger Index:', flattenedResult.ledger_index);
+          console.log('Meta:', flattenedResult.meta);
+          console.log('Transaction Result:', flattenedResult.meta?.TransactionResult);
+          console.log('Delivered Amount:', flattenedResult.meta?.delivered_amount);
+          console.log('DeliveredAmount:', flattenedResult.meta?.DeliveredAmount);
+          console.log('Source Tag:', flattenedResult.SourceTag);
+          console.log('Memos:', flattenedResult.Memos);
+          console.log('NFTokenID:', flattenedResult.NFTokenID);
+          console.log('TakerGets:', flattenedResult.TakerGets);
+          console.log('TakerPays:', flattenedResult.TakerPays);
+          console.log('LimitAmount:', flattenedResult.LimitAmount);
+          console.log('SendMax:', flattenedResult.SendMax);
+          console.log('Affected Nodes:', flattenedResult.meta?.AffectedNodes);
+          console.log('Close Time ISO:', flattenedResult.close_time_iso);
+          console.log('========================');
+
+          setTransaction(flattenedResult);
         } else {
           setError('Transaction not found');
         }
@@ -138,6 +169,23 @@ const TransactionDetailsPanel = memo(
         navigator.clipboard.writeText(transactionHash);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
+      }
+    };
+
+    const decodeMemo = (hexString) => {
+      try {
+        if (!hexString) return null;
+        // Convert hex to string
+        let str = '';
+        for (let i = 0; i < hexString.length; i += 2) {
+          const byte = parseInt(hexString.substr(i, 2), 16);
+          if (byte === 0) break; // Stop at null terminator
+          str += String.fromCharCode(byte);
+        }
+        return str || hexString; // Return decoded or original if empty
+      } catch (err) {
+        console.error('Error decoding memo:', err);
+        return hexString; // Return original hex if decode fails
       }
     };
 
@@ -791,12 +839,99 @@ const TransactionDetailsPanel = memo(
                       >
                         Memos
                       </Typography>
-                      <Chip
-                        label="Has Memos"
-                        size="small"
-                        variant="outlined"
-                        sx={{ fontSize: '0.65rem', height: '18px' }}
-                      />
+                      <Stack spacing={1}>
+                        {transaction.Memos.map((memoObj, idx) => {
+                          const memo = memoObj.Memo || {};
+                          const decodedData = memo.MemoData ? decodeMemo(memo.MemoData) : null;
+                          const decodedType = memo.MemoType ? decodeMemo(memo.MemoType) : null;
+                          const decodedFormat = memo.MemoFormat ? decodeMemo(memo.MemoFormat) : null;
+
+                          return (
+                            <Box
+                              key={idx}
+                              sx={{
+                                p: 1,
+                                borderRadius: '8px',
+                                background: alpha(theme.palette.info.main, 0.05),
+                                border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
+                              }}
+                            >
+                              {decodedType && (
+                                <Box sx={{ mb: 0.5 }}>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      color: alpha(theme.palette.text.secondary, 0.6),
+                                      fontSize: '0.65rem'
+                                    }}
+                                  >
+                                    Type:
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      ml: 0.5,
+                                      fontSize: '0.7rem',
+                                      fontWeight: 500
+                                    }}
+                                  >
+                                    {decodedType}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {decodedFormat && (
+                                <Box sx={{ mb: 0.5 }}>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      color: alpha(theme.palette.text.secondary, 0.6),
+                                      fontSize: '0.65rem'
+                                    }}
+                                  >
+                                    Format:
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      ml: 0.5,
+                                      fontSize: '0.7rem',
+                                      fontWeight: 500
+                                    }}
+                                  >
+                                    {decodedFormat}
+                                  </Typography>
+                                </Box>
+                              )}
+                              {decodedData && (
+                                <Box>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      color: alpha(theme.palette.text.secondary, 0.6),
+                                      fontSize: '0.65rem',
+                                      display: 'block',
+                                      mb: 0.25
+                                    }}
+                                  >
+                                    Data:
+                                  </Typography>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{
+                                      fontSize: '0.7rem',
+                                      wordBreak: 'break-word',
+                                      fontFamily: 'monospace',
+                                      display: 'block'
+                                    }}
+                                  >
+                                    {decodedData}
+                                  </Typography>
+                                </Box>
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Stack>
                     </Box>
                   </>
                 )}
