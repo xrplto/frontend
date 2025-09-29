@@ -15,7 +15,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 import TokenList from 'src/TokenList';
-import SummaryWatchList from 'src/TokenList/SummaryWatchList';
+import { SummaryWatchList } from 'src/TokenList/Summary';
 
 // overflow: scroll;
 // overflow: auto;

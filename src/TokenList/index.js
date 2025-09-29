@@ -14,13 +14,13 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import { update_metrics, update_filteredCount, selectMetrics } from 'src/redux/statusSlice';
-import TokenListHead from './TokenListHead';
+import { TokenListHead } from './TokenListControls';
 import { TokenRow, MobileContainer, MobileHeader, HeaderCell } from './TokenRow';
-import VirtualizedTokenList from './VirtualizedTokenList';
 import React, { memo, lazy, Suspense } from 'react';
 import { debounce, throttle } from 'src/utils/lodashLite';
 import { useRouter } from 'next/router';
 import { TokenListProfiler, memoryMonitor, performanceTracker, tokenListPerformance } from 'src/performance/setup';
+import { TokenListToolbar } from './TokenListControls';
 
 // Simple memoization
 const MemoizedTokenRow = memo(TokenRow);
@@ -33,9 +33,6 @@ const LazyTrustSetDialog = lazy(
 const LazySearchToolbar = lazy(
   () => import(/* webpackChunkName: "search-toolbar" */ './SearchToolbar')
 );
-const LazyTokenListToolbar = lazy(
-  () => import(/* webpackChunkName: "token-list-toolbar" */ './TokenListToolbar')
-);
 
 const Container = styled.div`
   display: flex;
@@ -44,6 +41,7 @@ const Container = styled.div`
   padding: 0; /* Ensure no padding */
   margin: 0; /* Ensure no margin */
   contain: layout style;
+  overflow: visible;
 `;
 
 const TableContainer = styled.div`
@@ -114,6 +112,7 @@ const ToolbarContainer = styled.div`
 
 const SearchContainer = styled.div`
   margin-bottom: 0.5rem;
+  overflow: visible;
 `;
 
 const CustomColumnsPanel = styled.div`
@@ -691,13 +690,6 @@ function TokenListComponent({
     setSync((prev) => prev + 1);
   }, []);
 
-  // Performance optimization: use virtualization for large lists
-  const [enableVirtualization, setEnableVirtualization] = useState(false);
-
-  useEffect(() => {
-    // Disable virtualization to prevent UI issues
-    setEnableVirtualization(false);
-  }, [rows, tokens.length, isMobile]);
 
   const visibleTokens = useMemo(() => {
     // Display tokens based on rows setting
@@ -1141,27 +1133,6 @@ function TokenListComponent({
             />
           ))}
         </MobileContainer>
-      ) : enableVirtualization ? (
-        <div style={{ width: '100%', height: 'calc(100vh - 300px)' }}>
-          <VirtualizedTokenList
-            tokens={deferredTokens}
-            height={Math.min(window.innerHeight - 300, 800)}
-            itemHeight={viewMode === 'compact' ? 36 : 48}
-            setEditToken={setEditToken}
-            setTrustToken={setTrustToken}
-            watchList={watchList}
-            onChangeWatchList={onChangeWatchList}
-            scrollLeft={scrollLeft}
-            activeFiatCurrency={activeFiatCurrency}
-            exchRate={exchRate}
-            darkMode={darkMode}
-            page={page}
-            rows={rows}
-            isLoggedIn={!!accountProfile?.account}
-            viewMode={viewMode}
-            customColumns={customColumns}
-          />
-        </div>
       ) : (
         <TableContainer ref={tableContainerRef} isMobile={isMobile}>
           <StyledTable ref={tableRef} isMobile={isMobile}>
@@ -1205,15 +1176,13 @@ function TokenListComponent({
         </TableContainer>
       )}
       <ToolbarContainer isMobile={isMobile}>
-        <Suspense fallback={<div style={{ height: '52px' }} />}>
-          <LazyTokenListToolbar
-            rows={rows}
-            setRows={updateRows}
-            page={page}
-            setPage={updatePage}
-            tokens={tokens}
-          />
-        </Suspense>
+        <TokenListToolbar
+          rows={rows}
+          setRows={updateRows}
+          page={page}
+          setPage={updatePage}
+          tokens={tokens}
+        />
       </ToolbarContainer>
     </>
   );
