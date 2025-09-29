@@ -49,7 +49,6 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatters';
 import { fDate } from 'src/utils/formatters';
 
-import NumberTooltip from 'src/components/NumberTooltip';
 
 // ----------------------------------------------------------------------
 // Constants
@@ -544,7 +543,7 @@ export default function PriceStatistics({ token }) {
                   fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
-                <NumberTooltip number={fNumber(voldivmarket)} />
+                {fNumber(voldivmarket)}
               </Typography>
             </ModernTableCell>
           </TableRow>
@@ -573,7 +572,7 @@ export default function PriceStatistics({ token }) {
                   fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
-                <NumberTooltip number={fNumber(dom || 0)} /> %
+                {fNumber(dom || 0)} %
               </Typography>
             </ModernTableCell>
           </TableRow>
@@ -633,7 +632,7 @@ export default function PriceStatistics({ token }) {
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
-                  <NumberTooltip number={fNumber(amount)} />
+                  {fNumber(amount)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
@@ -664,7 +663,7 @@ export default function PriceStatistics({ token }) {
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
-                  <NumberTooltip number={fNumber(holders)} />
+                  {fNumber(holders)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
@@ -695,7 +694,7 @@ export default function PriceStatistics({ token }) {
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
-                  <NumberTooltip number={fNumber(trustlines)} />
+                  {fNumber(trustlines)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
@@ -726,7 +725,7 @@ export default function PriceStatistics({ token }) {
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
-                  <NumberTooltip number={fNumber(uniqueTraders24h)} />
+                  {fNumber(uniqueTraders24h)}
                 </Typography>
               </ModernTableCell>
             </TableRow>
@@ -757,7 +756,7 @@ export default function PriceStatistics({ token }) {
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
-                  <NumberTooltip number={fNumber(vol24htx)} />
+                  {fNumber(vol24htx)}
                 </Typography>
               </ModernTableCell>
             </TableRow>

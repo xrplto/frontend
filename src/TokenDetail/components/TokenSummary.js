@@ -25,7 +25,6 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { SvgIcon } from '@mui/material';
-import NumberTooltip from 'src/components/NumberTooltip';
 import { fNumber, fNumberWithCurreny } from 'src/utils/formatters';
 import { Box as MuiBox } from '@mui/material';
 // Constants
@@ -1210,10 +1209,9 @@ const TokenSummary = memo(
                           }
                         }
                         return (
-                          <NumberTooltip
-                            prepend={symbol}
-                            number={fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
-                          />
+                          <span>
+                            {symbol}{fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
+                          </span>
                         );
                       })()}
                     </Typography>
@@ -1759,10 +1757,9 @@ const TokenSummary = memo(
                             }
                           }
                           return (
-                            <NumberTooltip
-                              prepend={symbol}
-                              number={fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
-                            />
+                            <span>
+                              {symbol}{fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
+                            </span>
                           );
                         })()}
                       </Typography>

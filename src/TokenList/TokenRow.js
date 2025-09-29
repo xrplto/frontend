@@ -7,7 +7,6 @@ import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
 import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatters';
-import NumberTooltip from 'src/components/NumberTooltip';
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -505,12 +504,7 @@ const MobileTokenRow = ({
     // Handle other data types
     switch (columnId) {
       case 'price':
-        return (
-          <NumberTooltip
-            prepend={currencySymbols[activeFiatCurrency]}
-            number={fNumberWithCurreny(exch, exchRate)}
-          />
-        );
+        return currencySymbols[activeFiatCurrency] + fNumberWithCurreny(exch, exchRate);
       case 'volume24h':
         const vol =
           vol24hxrp && exchRate ? new Decimal(vol24hxrp || 0).div(exchRate).toNumber() : 0;
@@ -688,10 +682,7 @@ const DesktopTokenRow = ({
       return (
         <StyledCell align="right" darkMode={darkMode}>
           <PriceText priceColor={priceColor}>
-            <NumberTooltip
-              prepend={currencySymbols[activeFiatCurrency]}
-              number={fNumberWithCurreny(exch, exchRate)}
-            />
+            {currencySymbols[activeFiatCurrency]}{fNumberWithCurreny(exch, exchRate)}
           </PriceText>
         </StyledCell>
       );
@@ -926,10 +917,7 @@ const DesktopTokenRow = ({
               columnElements.push(
                 <StyledCell key="price" align="right" darkMode={darkMode} style={extraStyle}>
                   <PriceText priceColor={priceColor}>
-                    <NumberTooltip
-                      prepend={currencySymbols[activeFiatCurrency]}
-                      number={fNumberWithCurreny(exch, exchRate)}
-                    />
+                    {currencySymbols[activeFiatCurrency]}{fNumberWithCurreny(exch, exchRate)}
                   </PriceText>
                 </StyledCell>
               );

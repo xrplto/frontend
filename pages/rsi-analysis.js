@@ -3,7 +3,7 @@ import { Box, Container, Grid, styled as muiStyled, Toolbar } from '@mui/materia
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import NumberTooltip from 'src/components/NumberTooltip';
+import { Tooltip } from '@mui/material';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styled from '@emotion/styled';
@@ -971,9 +971,7 @@ function RSIAnalysisPage({ data }) {
                           </TokenInfo>
                         </Td>
                         <Td darkMode={darkMode} align="right">
-                          <NumberTooltip number={priceFiat}>
-                            {currencySymbols[activeFiatCurrency]}{fNumber(priceFiat)}
-                          </NumberTooltip>
+                          <span>{currencySymbols[activeFiatCurrency]}{fNumber(priceFiat)}</span>
                         </Td>
                         <Td darkMode={darkMode} align="right">
                           <PriceChange positive={token.pro24h >= 0}>
@@ -981,20 +979,20 @@ function RSIAnalysisPage({ data }) {
                           </PriceChange>
                         </Td>
                         <Td darkMode={darkMode} align="right">
-                          <NumberTooltip number={volumeFiat}>
+                          <span>
                             {currencySymbols[activeFiatCurrency]}
                             {volumeFiat >= 1e6 ? `${(volumeFiat / 1e6).toFixed(1)}M` :
                              volumeFiat >= 1e3 ? `${(volumeFiat / 1e3).toFixed(1)}K` :
                              fNumber(volumeFiat)}
-                          </NumberTooltip>
+                          </span>
                         </Td>
                         <Td darkMode={darkMode} align="right">
-                          <NumberTooltip number={marketCapFiat}>
+                          <span>
                             {currencySymbols[activeFiatCurrency]}
                             {marketCapFiat >= 1e6 ? `${(marketCapFiat / 1e6).toFixed(1)}M` :
                              marketCapFiat >= 1e3 ? `${(marketCapFiat / 1e3).toFixed(1)}K` :
                              fNumber(marketCapFiat)}
-                          </NumberTooltip>
+                          </span>
                         </Td>
                         <Td darkMode={darkMode} align="center">
                           <RSIBadge {...rsiColors}>
