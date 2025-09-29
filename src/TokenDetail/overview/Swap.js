@@ -134,13 +134,14 @@ const OverviewWrapper = styled('div')(
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    border-radius: 20px;
+    border-radius: 6px;
     display: flex;
-    padding: 16px;
+    padding: 8px;
     width: 100%;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.04)} 100%);
-    backdrop-filter: blur(32px);
-    box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.06)};
+    background: ${alpha(theme.palette.background.paper, 0.3)};
+    backdrop-filter: none;
+    box-shadow: none;
+    border: 1px solid ${alpha(theme.palette.divider, 0.1)};
     @media (max-width: 600px) {
         border-radius: 16px;
         padding: 12px;
@@ -2555,7 +2556,6 @@ const App = ({ token }) => {
               : `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.9)} 0%, ${alpha(theme.palette.primary.dark, 0.9)} 100%)`,
           backdropFilter: 'blur(24px)',
           backgroundSize: '200% 200%',
-          animation: { xs: 'none', sm: 'gradient 5s ease infinite' },
           color: '#fff',
           boxShadow: (theme) =>
             `0 6px 20px ${alpha(showSwap ? theme.palette.error.main : theme.palette.primary.main, 0.25)}`,
@@ -2563,43 +2563,7 @@ const App = ({ token }) => {
           padding: { xs: '14px 24px', sm: '10px 22px' },
           fontWeight: { xs: 600, sm: 500 },
           height: { xs: '52px', sm: '44px' },
-          '@keyframes gradient': {
-            '0%': {
-              backgroundPosition: '0% 50%'
-            },
-            '50%': {
-              backgroundPosition: '100% 50%'
-            },
-            '100%': {
-              backgroundPosition: '0% 50%'
-            }
-          },
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: '-50%',
-            left: '-50%',
-            width: '200%',
-            height: '200%',
-            background: (theme) =>
-              `radial-gradient(circle, ${alpha(
-                theme.palette.primary.light,
-                0.1
-              )} 0%, transparent 70%)`,
-            animation: 'rotate 4s linear infinite',
-            opacity: 0,
-            transition: 'opacity 0.3s ease'
-          },
-          '@keyframes rotate': {
-            '0%': {
-              transform: 'rotate(0deg)'
-            },
-            '100%': {
-              transform: 'rotate(360deg)'
-            }
-          },
           '&:hover': {
-            transform: { xs: 'scale(0.98)', sm: 'translateY(-2px) scale(1.02)' },
             background: (theme) =>
               showSwap
                 ? `linear-gradient(135deg, ${alpha(theme.palette.error.dark, 1)} 0%, ${alpha(theme.palette.error.main, 1)} 100%)`

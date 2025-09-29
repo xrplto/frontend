@@ -169,13 +169,13 @@ const Overview = memo(
             display: 'flex',
             flexDirection: { xs: 'column', md: 'row' },
             alignItems: 'flex-start',
-            gap: { xs: 0, md: 3 }
+            gap: { xs: 0.3, md: 1 }
           }}
         >
-          <Box sx={{ flex: { md: '0 0 70%' }, maxWidth: { md: '70%' }, width: '100%' }}>
+          <Box sx={{ flex: { md: '0 0 72%' }, maxWidth: { md: '72%' }, width: '100%' }}>
             <PriceChart token={token} />
             {!isMobile && !isTablet && (
-              <Box sx={{ mt: 3 }}>
+              <Box sx={{ mt: 0.5 }}>
                 <TradingHistory
                   tokenId={token.md5}
                   amm={token.AMM}
@@ -188,10 +188,10 @@ const Overview = memo(
           </Box>
           <Box
             sx={{
-              flex: { md: '0 0 30%' },
-              maxWidth: { md: '30%' },
+              flex: { md: '0 0 28%' },
+              maxWidth: { md: '28%' },
               width: '100%',
-              pr: orderBookOpen ? { md: 0.75, lg: 1 } : { md: 1.5, lg: 2 }
+              pr: orderBookOpen ? { md: 0.5 } : { md: 0.75 }
             }}
           >
             <Swap
@@ -200,7 +200,7 @@ const Overview = memo(
               orderBookOpen={orderBookOpen}
               onOrderBookData={onOrderBookData}
             />
-            <PriceStatistics token={token} sx={{ mt: 3 }} />
+            <PriceStatistics token={token} />
             <Description
               token={token}
               showEditor={showEditor}
@@ -214,20 +214,19 @@ const Overview = memo(
                     onChange={(e) => setDescription(e.target.value)}
                     style={{
                       width: '100%',
-                      height: '400px',
-                      padding: '12px',
+                      height: '300px',
+                      padding: '8px',
                       borderRadius: '4px',
                       border: '1px solid #ccc',
-                      fontFamily: 'monospace'
+                      fontFamily: 'monospace',
+                      fontSize: '0.75rem'
                     }}
                     placeholder="Enter description..."
                   />
                 ) : null
               }
             />
-            <Box sx={{ mt: 1.5 }}>
-              <TrendingTokens />
-            </Box>
+            <TrendingTokens />
           </Box>
         </Box>
       </>

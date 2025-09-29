@@ -180,10 +180,7 @@ const TokenDetail = memo(
 
           <Box
             sx={{
-              pr: {
-                md: txDetailsOpen && panelMode === 'orderbook' ? 0.75 : 1.5,
-                lg: txDetailsOpen && panelMode === 'orderbook' ? 1 : 2
-              }
+              pr: 0
             }}
           >
             <TokenSummary
@@ -196,7 +193,7 @@ const TokenDetail = memo(
           </Box>
 
           {!isMobile && (
-            <Divider orientation="horizontal" sx={{ mt: 2, mb: 2 }} variant="middle" flexItem />
+            <Divider orientation="horizontal" sx={{ mt: 0.5, mb: 0.5 }} variant="middle" flexItem />
           )}
 
           <div id="back-to-top-tab-anchor" />

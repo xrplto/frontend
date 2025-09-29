@@ -217,23 +217,13 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: { xs: '8px', sm: '10px' },
-        background: 'transparent',
-        backdropFilter: 'none',
-        WebkitBackdropFilter: 'none',
-        border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-        boxShadow: `
-          0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 
-          0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`,
+        borderRadius: '6px',
+        background: alpha(theme.palette.background.paper, 0.3),
+        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         position: 'relative',
         overflow: 'hidden',
-        // Sidebar sizing: make width consistent with Swap card
         width: '100%',
-        maxWidth: '100%',
-        mb: { xs: 1, sm: 1.5 },
-        '&::before': {
-          display: 'none'
-        }
+        mb: 0.5,
       }}
     >
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
@@ -298,45 +288,25 @@ export default function PriceStatistics({ token }) {
         </DialogContent>
       </Dialog>
 
-      {/* Enhanced Header */}
+      {/* Header */}
       <Box
         sx={{
-          p: { xs: 1.25, sm: 1.5 },
-          background: `linear-gradient(135deg, 
-            ${alpha(theme.palette.primary.main, 0.1)} 0%, 
-            ${alpha(theme.palette.primary.main, 0.05)} 50%,
-            ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-          backdropFilter: 'blur(20px)',
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-          position: 'relative',
-          '&::after': {
-            content: '""',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '1px',
-            background: `linear-gradient(90deg, 
-              transparent, 
-              ${alpha(theme.palette.primary.main, 0.3)}, 
-              transparent)`,
-            opacity: 0.5
-          }
+          p: 0.5,
+          px: 0.75,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
         }}
       >
         <Typography
           variant="h6"
           sx={{
-            fontSize: { xs: '0.75rem', sm: '0.9rem' },
-            fontWeight: 800,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
-            backgroundClip: 'text',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            letterSpacing: '-0.02em'
+            fontSize: '0.6rem',
+            fontWeight: 500,
+            color: alpha(theme.palette.text.primary, 0.5),
+            letterSpacing: '0.5px',
+            textTransform: 'uppercase'
           }}
         >
-          {name} Additional Details
+          Additional Details
         </Typography>
       </Box>
 

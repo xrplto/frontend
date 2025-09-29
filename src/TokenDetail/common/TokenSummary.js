@@ -362,7 +362,8 @@ const TokenSummary = memo(
     const formatPercentage = useCallback((value) => {
       if (value === null || value === undefined) return 'N/A';
       const absValue = Math.abs(value);
-      return `${value >= 0 ? '+' : '-'}${fNumber(absValue)}%`;
+      const formattedValue = absValue.toFixed(2);
+      return `${value >= 0 ? '+' : '-'}${formattedValue}%`;
     }, []);
 
     // Metrics data
@@ -521,9 +522,6 @@ const TokenSummary = memo(
       <Box
         sx={{
           p: { xs: 0.3, sm: 0.4 },
-          // Slightly widen more on desktop for alignment
-          width: { md: 'calc(100% + 24px)' },
-          mr: { md: '-24px' },
           borderRadius: { xs: '6px', sm: '8px' },
           background: 'transparent',
           backdropFilter: 'none',
@@ -531,7 +529,6 @@ const TokenSummary = memo(
           border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
           boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.06)}`,
           mb: { xs: 0.25, sm: 0.5 },
-          // Reduce space above on desktop while keeping mobile unchanged
           mt: { xs: 0, md: -1 },
           position: 'relative',
           overflow: 'hidden',
@@ -953,16 +950,6 @@ const TokenSummary = memo(
                             return theme.palette.grey[500];
                           })(),
                           border: `1.5px solid ${theme.palette.background.paper}`,
-                          animation: (() => {
-                            if (!latestCreatorTx.tx.date) return 'pulse 2s ease-in-out infinite';
-                            const date = new Date((latestCreatorTx.tx.date + 946684800) * 1000);
-                            const minutesAgo = (Date.now() - date) / 1000 / 60;
-                            return minutesAgo < 5 ? 'pulse 2s ease-in-out infinite' : 'none';
-                          })(),
-                          '@keyframes pulse': {
-                            '0%, 100%': { opacity: 0.4 },
-                            '50%': { opacity: 1 }
-                          }
                         }}
                       />
                     )}
@@ -1692,21 +1679,6 @@ const TokenSummary = memo(
                                     return theme.palette.grey[500];
                                   })(),
                                   border: `1.5px solid ${theme.palette.background.paper}`,
-                                  animation: (() => {
-                                    if (!latestCreatorTx.tx.date)
-                                      return 'pulse 2s ease-in-out infinite';
-                                    const date = new Date(
-                                      (latestCreatorTx.tx.date + 946684800) * 1000
-                                    );
-                                    const minutesAgo = (Date.now() - date) / 1000 / 60;
-                                    return minutesAgo < 5
-                                      ? 'pulse 2s ease-in-out infinite'
-                                      : 'none';
-                                  })(),
-                                  '@keyframes pulse': {
-                                    '0%, 100%': { opacity: 0.4 },
-                                    '50%': { opacity: 1 }
-                                  }
                                 }}
                               />
                             )}
