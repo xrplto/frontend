@@ -1,10 +1,9 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Image from 'next/image';
 import NextLink from 'next/link';
 import { Box, Container, Link, Typography, IconButton, Tooltip } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Twitter, Send, Reddit, Forum } from '@mui/icons-material';
-import { AppContext } from 'src/AppContext';
 
 const Root = styled('footer')(({ theme }) => ({
   width: '100%',
@@ -93,9 +92,8 @@ const SocialIcons = React.memo(() => (
 ));
 
 function Footer() {
-  const { darkMode } = useContext(AppContext);
   const year = new Date().getFullYear();
-  const logo = darkMode ? '/logo/xrpl-to-logo-white.svg' : '/logo/xrpl-to-logo-black.svg';
+  const logo = '/logo/xrpl-to-logo-black.svg';
 
   // Link groups are hoisted as constants above to keep references stable
 

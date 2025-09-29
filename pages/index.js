@@ -99,7 +99,7 @@ function Overview({ data }) {
   const isMobile = useMediaQuery('(max-width:600px)');
   const router = useRouter();
 
-  const MAINTENANCE_MODE = true; // Set to false to show normal view
+  const MAINTENANCE_MODE = false; // Set to false to show normal view
 
   // Add this function to handle safe navigation
   const handleNavigation = (path) => {
