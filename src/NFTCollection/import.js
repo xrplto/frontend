@@ -39,7 +39,7 @@ import PermIdentityIcon from '@mui/icons-material/PermIdentity';
 import ImportExportIcon from '@mui/icons-material/ImportExport';
 
 // Loader
-import { ClipLoader } from 'react-spinners';
+import { ClipLoader } from '../components/Spinners';
 
 // Context
 import { useContext } from 'react';

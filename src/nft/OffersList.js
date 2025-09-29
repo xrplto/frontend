@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-import { FadeLoader } from 'react-spinners';
+import { FadeLoader } from '../components/Spinners';
 import Decimal from 'decimal.js-light';
 
 // Material
@@ -23,7 +23,7 @@ import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStati
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Loader
-import { PuffLoader, PulseLoader } from 'react-spinners';
+import { PuffLoader, PulseLoader } from '../components/Spinners';
 
 // Utils
 // import { checkExpiration, getUnixTimeEpochFromRippleEpoch } from 'src/utils/parse';

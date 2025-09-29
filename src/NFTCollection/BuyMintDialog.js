@@ -37,7 +37,7 @@ import { AppContext } from 'src/AppContext';
 import QRDialog from 'src/components/QRDialog';
 
 // Loader
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from '../components/Spinners';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';

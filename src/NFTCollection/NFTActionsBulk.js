@@ -7,7 +7,7 @@ import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 import StorefrontIcon from '@mui/icons-material/Storefront';
 
 // Loader
-import { PuffLoader, BarLoader } from 'react-spinners';
+import { PuffLoader, BarLoader } from '../components/Spinners';
 
 // Constants
 const NFToken = {

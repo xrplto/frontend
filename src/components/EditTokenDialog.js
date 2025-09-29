@@ -40,7 +40,7 @@ import InfoIcon from '@mui/icons-material/Info';
 import GetAppIcon from '@mui/icons-material/GetApp';
 
 // Loader
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from './Spinners';
 
 // Context
 import { useContext } from 'react';

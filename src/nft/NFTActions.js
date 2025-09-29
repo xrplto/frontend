@@ -1,7 +1,6 @@
 import axios from 'axios';
 import { useRef, useState, useEffect } from 'react';
-import { FacebookShareButton, TwitterShareButton } from 'react-share';
-import { FacebookIcon } from 'react-share';
+import { FacebookShareButton, TwitterShareButton, FacebookIcon } from '../components/ShareButtons';
 
 // Material
 import {
@@ -49,7 +48,7 @@ import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import LaunchIcon from '@mui/icons-material/Launch';
 
 // Loader
-import { PuffLoader, PulseLoader } from 'react-spinners';
+import { PuffLoader, PulseLoader } from '../components/Spinners';
 // Removed unused react-loader-spinner import
 
 // Context

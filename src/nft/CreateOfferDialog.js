@@ -31,7 +31,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Loader
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from '../components/Spinners';
 
 // Constants
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };

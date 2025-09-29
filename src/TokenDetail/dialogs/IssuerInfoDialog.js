@@ -1,5 +1,4 @@
 import Decimal from 'decimal.js-light';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 // Material
 import {
@@ -159,16 +158,18 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                     {issuer}
                   </Typography>
                 </Link>
-                <CopyToClipboard
-                  text={issuer}
-                  onCopy={() => openSnackbar('Address copied!', 'success')}
-                >
-                  <Tooltip title="Copy address">
-                    <IconButton size="small">
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </CopyToClipboard>
+                <Tooltip title="Copy address">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(issuer).then(() => {
+                        openSnackbar('Address copied!', 'success');
+                      });
+                    }}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Stack>
             </Stack>
 
@@ -190,16 +191,18 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                 >
                   {currency}
                 </Typography>
-                <CopyToClipboard
-                  text={currency}
-                  onCopy={() => openSnackbar('Currency code copied!', 'success')}
-                >
-                  <Tooltip title="Copy currency code">
-                    <IconButton size="small">
-                      <ContentCopyIcon fontSize="small" />
-                    </IconButton>
-                  </Tooltip>
-                </CopyToClipboard>
+                <Tooltip title="Copy currency code">
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(currency).then(() => {
+                        openSnackbar('Currency code copied!', 'success');
+                      });
+                    }}
+                  >
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
               </Stack>
             </Stack>
 

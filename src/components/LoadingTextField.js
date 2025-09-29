@@ -7,7 +7,7 @@ import ErrorIcon from '@mui/icons-material/Error';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 // Loader
-import { ClipLoader } from 'react-spinners';
+import { ClipLoader } from './Spinners';
 
 // Context
 import { useContext } from 'react';

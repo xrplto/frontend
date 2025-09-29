@@ -1,7 +1,21 @@
 import PropTypes from 'prop-types';
-import { useState, useEffect } from 'react';
-// react-share is dynamically imported when the dialog opens to keep it out of the main bundle
-import { CopyToClipboard } from 'react-copy-to-clipboard';
+import { useState } from 'react';
+import {
+  TwitterShareButton,
+  FacebookShareButton,
+  TelegramShareButton,
+  WhatsappShareButton,
+  LinkedinShareButton,
+  RedditShareButton,
+  EmailShareButton,
+  TwitterIcon,
+  FacebookIcon,
+  TelegramIcon,
+  WhatsappIcon,
+  LinkedinIcon,
+  RedditIcon,
+  EmailIcon
+} from '../../components/ShareButtons';
 import {
   styled,
   useTheme,
@@ -310,7 +324,6 @@ export default function Share({ token }) {
 
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [shareLib, setShareLib] = useState(null);
 
   const { name, ext, md5, exch } = token;
 
@@ -349,19 +362,7 @@ export default function Share({ token }) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Dynamically load react-share when dialog opens
-  useEffect(() => {
-    let active = true;
-    if (open && !shareLib) {
-      import('react-share').then((mod) => {
-        if (!active) return;
-        setShareLib(mod);
-      });
-    }
-    return () => {
-      active = false;
-    };
-  }, [open, shareLib]);
+  // Share functionality is now handled by custom ShareButtons component
 
   const canWebShare = typeof navigator !== 'undefined' && !!navigator.share;
   const handleWebShare = async () => {
@@ -373,41 +374,39 @@ export default function Share({ token }) {
     }
   };
 
-  const socialPlatforms = shareLib
-    ? [
-        {
-          Component: shareLib.TwitterShareButton,
-          Icon: shareLib.TwitterIcon,
-          props: { title, url, hashtags: ['crypto', 'XRPL'] }
-        },
-        {
-          Component: shareLib.FacebookShareButton,
-          Icon: shareLib.FacebookIcon,
-          props: { url, quote: title, hashtag: '#crypto' }
-        },
-        {
-          Component: shareLib.LinkedinShareButton,
-          Icon: shareLib.LinkedinIcon,
-          props: { url, title, summary: desc }
-        },
-        {
-          Component: shareLib.WhatsappShareButton,
-          Icon: shareLib.WhatsappIcon,
-          props: { url, title, separator: ' - ' }
-        },
-        {
-          Component: shareLib.TelegramShareButton,
-          Icon: shareLib.TelegramIcon,
-          props: { url, title }
-        },
-        { Component: shareLib.RedditShareButton, Icon: shareLib.RedditIcon, props: { url, title } },
-        {
-          Component: shareLib.EmailShareButton,
-          Icon: shareLib.EmailIcon,
-          props: { subject: title, body: `Check out this link: ${url}` }
-        }
-      ]
-    : [];
+  const socialPlatforms = [
+    {
+      Component: TwitterShareButton,
+      Icon: TwitterIcon,
+      props: { title, url }
+    },
+    {
+      Component: FacebookShareButton,
+      Icon: FacebookIcon,
+      props: { url }
+    },
+    {
+      Component: LinkedinShareButton,
+      Icon: LinkedinIcon,
+      props: { url, title }
+    },
+    {
+      Component: WhatsappShareButton,
+      Icon: WhatsappIcon,
+      props: { url, title }
+    },
+    {
+      Component: TelegramShareButton,
+      Icon: TelegramIcon,
+      props: { url, title }
+    },
+    { Component: RedditShareButton, Icon: RedditIcon, props: { url, title } },
+    {
+      Component: EmailShareButton,
+      Icon: EmailIcon,
+      props: { subject: title, body: `Check out this link: ${url}` }
+    }
+  ];
 
   return (
     <>
@@ -571,13 +570,17 @@ export default function Share({ token }) {
                   >
                     {url}
                   </Typography>
-                  <CopyToClipboard text={url} onCopy={handleCopy}>
-                    <Tooltip title={copied ? 'Copied!' : 'Copy link'}>
-                      <CopyButton>
-                        <ContentCopyIcon />
-                      </CopyButton>
-                    </Tooltip>
-                  </CopyToClipboard>
+                  <Tooltip title={copied ? 'Copied!' : 'Copy link'}>
+                    <CopyButton
+                      onClick={() => {
+                        navigator.clipboard.writeText(url).then(() => {
+                          handleCopy();
+                        });
+                      }}
+                    >
+                      <ContentCopyIcon />
+                    </CopyButton>
+                  </Tooltip>
                 </UrlCopyBox>
               </Box>
             </Stack>

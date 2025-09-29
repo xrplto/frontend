@@ -1,5 +1,4 @@
 import { useRef, useState, useEffect, useCallback } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Image from 'next/image';
 import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
 
@@ -394,23 +393,23 @@ const WalletContent = ({
             }}>
               {truncateAccount(accountLogin, 8)}
             </Typography>
-            <CopyToClipboard
-              text={accountLogin}
-              onCopy={() => openSnackbar('Address copied!', 'success')}
+            <Button
+              size="small"
+              onClick={() => {
+                navigator.clipboard.writeText(accountLogin).then(() => {
+                  openSnackbar('Address copied!', 'success');
+                });
+              }}
+              sx={{
+                p: 0.5,
+                '&:hover': {
+                  background: alpha(theme.palette.primary.main, 0.1),
+                  color: theme.palette.primary.main
+                }
+              }}
             >
-              <Button
-                size="small"
-                sx={{
-                  p: 0.5,
-                  '&:hover': {
-                    background: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main
-                  }
-                }}
-              >
-                Copy
-              </Button>
-            </CopyToClipboard>
+              Copy
+            </Button>
           </Stack>
           <Stack direction="row" spacing={0.5}>
             <Button
@@ -2182,19 +2181,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             >
                               {seedBlurred ? 'Reveal' : 'Hide'} {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
                             </Button>
-                            <CopyToClipboard
-                              text={displaySeed}
-                              onCopy={() => {
-                                openSnackbar('Seed copied to clipboard', 'success');
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => {
+                                navigator.clipboard.writeText(displaySeed).then(() => {
+                                  openSnackbar('Seed copied to clipboard', 'success');
+                                });
                               }}
                             >
-                              <Button
-                                variant="outlined"
-                                size="small"
-                              >
-                                Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
-                              </Button>
-                            </CopyToClipboard>
+                              Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
+                            </Button>
                           </Stack>
                         </>
                       )}

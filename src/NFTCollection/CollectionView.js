@@ -30,7 +30,12 @@ const InfiniteScroll = dynamic(() => import('react-infinite-scroll-component'), 
     </Box>
   )
 });
-// react-share is heavy; load it on demand when share popover opens
+import {
+  FacebookShareButton,
+  TwitterShareButton,
+  FacebookIcon,
+  TwitterIcon
+} from '../components/ShareButtons';
 
 import {
   Box,
@@ -2611,21 +2616,6 @@ export default function CollectionView({ collection }) {
   const isAdmin = accountProfile?.admin;
 
   const [openShare, setOpenShare] = useState(false);
-  const [shareLib, setShareLib] = useState(null);
-
-  // Dynamically load react-share when share popover opens
-  useEffectReact(() => {
-    let active = true;
-    if (openShare && !shareLib) {
-      import('react-share').then((mod) => {
-        if (!active) return;
-        setShareLib(mod);
-      });
-    }
-    return () => {
-      active = false;
-    };
-  }, [openShare, shareLib]);
   const [value, setValue] = useState('tab-nfts');
 
   const BASE_URL = 'https://api.xrpnft.com/api';
@@ -2744,24 +2734,17 @@ export default function CollectionView({ collection }) {
             Share Collection
           </Typography>
           <Stack direction="row" spacing={2} justifyContent="center">
-            {shareLib ? (
-              <>
-                <shareLib.FacebookShareButton url={shareUrl} quote={shareTitle}>
-                  <shareLib.FacebookIcon size={40} round />
-                </shareLib.FacebookShareButton>
-                <shareLib.TwitterShareButton
-                  title={`Check out ${shareTitle} on XRPNFT`}
-                  url={shareUrl}
-                  hashtags={['XRPNFT', 'NFT']}
-                >
-                  <shareLib.TwitterIcon size={40} round />
-                </shareLib.TwitterShareButton>
-              </>
-            ) : (
-              <Typography variant="body2" color="text.secondary">
-                Loading…
-              </Typography>
-            )}
+            <>
+              <FacebookShareButton url={shareUrl} quote={shareTitle}>
+                <FacebookIcon size={40} round />
+              </FacebookShareButton>
+              <TwitterShareButton
+                title={`Check out ${shareTitle} on XRPNFT`}
+                url={shareUrl}
+              >
+                <TwitterIcon size={40} round />
+              </TwitterShareButton>
+            </>
             <IconButton
               onClick={() => {
                 navigator.clipboard.writeText(shareUrl);

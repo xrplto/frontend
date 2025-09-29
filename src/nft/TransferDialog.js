@@ -30,7 +30,7 @@ import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Loader
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from '../components/Spinners';
 
 // Utils
 // Constants

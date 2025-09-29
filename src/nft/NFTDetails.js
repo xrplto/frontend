@@ -1,5 +1,4 @@
 import React, { memo, useMemo, useState, useContext } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Head from 'next/head';
 import dynamic from 'next/dynamic';
 const Swiper = dynamic(() => import('swiper/react').then((mod) => mod.Swiper), { ssr: false });
@@ -706,13 +705,18 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                     sx={{ fontSize: '0.65rem' }}
                   >{`${account.slice(0, 8)}...${account.slice(-6)}`}</Value>
                 </Link>
-                <CopyToClipboard text={account} onCopy={() => openSnackbar('Copied!', 'success')}>
-                  <Tooltip title="Copy">
-                    <CopyButton size="small">
-                      <ContentCopyIcon />
-                    </CopyButton>
-                  </Tooltip>
-                </CopyToClipboard>
+                <Tooltip title="Copy">
+                  <CopyButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(account).then(() => {
+                        openSnackbar('Copied!', 'success');
+                      });
+                    }}
+                  >
+                    <ContentCopyIcon />
+                  </CopyButton>
+                </Tooltip>
               </Stack>
 
               <Stack direction="row" alignItems="center">
@@ -722,13 +726,18 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                     sx={{ fontSize: '0.65rem' }}
                   >{`${issuer.slice(0, 8)}...${issuer.slice(-6)}`}</Value>
                 </Link>
-                <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
-                  <Tooltip title="Copy">
-                    <CopyButton size="small">
-                      <ContentCopyIcon />
-                    </CopyButton>
-                  </Tooltip>
-                </CopyToClipboard>
+                <Tooltip title="Copy">
+                  <CopyButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(issuer).then(() => {
+                        openSnackbar('Copied!', 'success');
+                      });
+                    }}
+                  >
+                    <ContentCopyIcon />
+                  </CopyButton>
+                </Tooltip>
               </Stack>
             </Stack>
           </Grid>

@@ -12,12 +12,7 @@ const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   ssr: false
 });
 
-const ClipLoader = dynamic(
-  () => import('react-spinners').then((mod) => ({ default: mod.ClipLoader })),
-  {
-    ssr: false
-  }
-);
+import { ClipLoader } from './Spinners';
 
 // Material UI components (to be gradually replaced with Tailwind)
 import {

@@ -18,7 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import AddCircleIcon from '@mui/icons-material/AddCircle';
 import { AppContext } from 'src/AppContext';
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from '../components/Spinners';
 import QRDialog from 'src/components/QRDialog';
 
 const BASE_URL = 'https://api.xrpnft.com/api';

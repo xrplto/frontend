@@ -9,7 +9,7 @@ import { configureRedux } from 'src/redux/store';
 import { update_metrics } from 'src/redux/statusSlice';
 
 // Loader
-import { PuffLoader } from 'react-spinners';
+import { PuffLoader } from './components/Spinners';
 
 export const AppContext = createContext({});
 

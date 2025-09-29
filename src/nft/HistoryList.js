@@ -29,7 +29,7 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 
 // Loader
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from '../components/Spinners';
 
 // Context
 import { AppContext } from 'src/AppContext';

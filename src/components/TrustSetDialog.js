@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { useState, useEffect, forwardRef } from 'react';
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 
 // Material
 import {
@@ -35,7 +34,7 @@ import { useDispatch } from 'react-redux';
 import QRDialog from './QRDialog';
 
 // Loader
-import { PulseLoader } from 'react-spinners';
+import { PulseLoader } from './Spinners';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
@@ -750,11 +749,17 @@ export default function TrustSetDialog({ limit, token, setToken, balance }) {
                 >
                   {issuer.slice(0, 8)}...{issuer.slice(-6)}
                 </StyledLink>
-                <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
-                  <CopyButton size="small" sx={{ padding: '4px' }}>
-                    <ContentCopyIcon sx={{ fontSize: '14px' }} />
-                  </CopyButton>
-                </CopyToClipboard>
+                <CopyButton
+                  size="small"
+                  sx={{ padding: '4px' }}
+                  onClick={() => {
+                    navigator.clipboard.writeText(issuer).then(() => {
+                      openSnackbar('Copied!', 'success');
+                    });
+                  }}
+                >
+                  <ContentCopyIcon sx={{ fontSize: '14px' }} />
+                </CopyButton>
               </Stack>
 
               <Stack direction="row" alignItems="center" spacing={0.5}>

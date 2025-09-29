@@ -45,7 +45,7 @@ import useWebSocket from 'react-use-websocket';
 import { configureMemos } from 'src/utils/parseUtils';
 import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Image from 'next/image';
-import { PuffLoader } from 'react-spinners';
+import { PuffLoader } from '../../../components/Spinners';
 import { enqueueSnackbar } from 'notistack';
 import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 

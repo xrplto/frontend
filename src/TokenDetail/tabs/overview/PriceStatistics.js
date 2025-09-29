@@ -38,7 +38,6 @@ import Language from '@mui/icons-material/Language';
 import LinkIcon from '@mui/icons-material/Link';
 
 // Components
-import { CopyToClipboard } from 'react-copy-to-clipboard';
 import IssuerInfoDialog from '../../dialogs/IssuerInfoDialog';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
@@ -383,9 +382,13 @@ export default function PriceStatistics({ token }) {
                   }}
                   onClick={handleOpenIssuerInfo}
                 />
-                <CopyToClipboard text={issuer} onCopy={() => openSnackbar('Copied!', 'success')}>
-                  <Tooltip title="Copy issuer address">
-                    <IconButton
+                <Tooltip title="Copy issuer address">
+                  <IconButton
+                    onClick={() => {
+                      navigator.clipboard.writeText(issuer).then(() => {
+                        openSnackbar('Copied!', 'success');
+                      });
+                    }}
                       size="small"
                       sx={{
                         p: 0.5,
@@ -408,9 +411,8 @@ export default function PriceStatistics({ token }) {
                           color: theme.palette.primary.main
                         }}
                       />
-                    </IconButton>
-                  </Tooltip>
-                </CopyToClipboard>
+                  </IconButton>
+                </Tooltip>
               </Stack>
             </ModernTableCell>
           </TableRow>
@@ -477,9 +479,13 @@ export default function PriceStatistics({ token }) {
                       }
                     }}
                   />
-                  <CopyToClipboard text={creator} onCopy={() => openSnackbar('Copied!', 'success')}>
-                    <Tooltip title="Copy creator address">
-                      <IconButton
+                  <Tooltip title="Copy creator address">
+                    <IconButton
+                      onClick={() => {
+                        navigator.clipboard.writeText(creator).then(() => {
+                          openSnackbar('Copied!', 'success');
+                        });
+                      }}
                         size="small"
                         sx={{
                           p: 0.25,
@@ -511,9 +517,8 @@ export default function PriceStatistics({ token }) {
                             color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2'
                           }}
                         />
-                      </IconButton>
-                    </Tooltip>
-                  </CopyToClipboard>
+                    </IconButton>
+                  </Tooltip>
                   {creations > 0 ? (
                     <Tooltip title="Number of tokens created by this creator.">
                       <Chip
