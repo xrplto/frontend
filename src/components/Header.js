@@ -49,7 +49,6 @@ import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
 import NavSearchBar from './NavSearchBar';
-import SidebarDrawer from './SidebarDrawer';
 const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
@@ -1033,7 +1032,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               </IconButton>
             )}
 
-            <SidebarDrawer toggleDrawer={toggleDrawer} isOpen={openDrawer} />
           </Box>
         </Box>
       </Container>

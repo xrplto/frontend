@@ -15,8 +15,8 @@ import FiberNewIcon from '@mui/icons-material/FiberNew';
 import SearchIcon from '@mui/icons-material/Search';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { Box, Chip as MuiChip, Link, Typography, Badge } from '@mui/material';
-import Drawer from 'src/components/Drawer';
+import { Box, Chip as MuiChip, Link, Typography, Badge, Drawer as MuiDrawer, IconButton, alpha } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -235,7 +235,7 @@ const Button = styled.button`
   }
 `;
 
-const IconButton = styled.button`
+const StyledIconButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1148,14 +1148,14 @@ const SearchToolbar = memo(function SearchToolbar({
 
           {/* Custom columns settings button */}
           {viewMode === 'custom' && (
-            <IconButton
+            <StyledIconButton
               onClick={() => setCustomSettingsOpen(true)}
               darkMode={darkMode}
               title="Configure columns"
               aria-label="Configure custom columns"
             >
               <SettingsIcon sx={{ width: 20, height: 20 }} />
-            </IconButton>
+            </StyledIconButton>
           )}
 
           {/* Rows selector */}
@@ -1181,10 +1181,33 @@ const SearchToolbar = memo(function SearchToolbar({
 
       {/* Categories Drawer - inlined component */}
       {categoriesOpen && (
-        <Drawer
-          isOpen={categoriesOpen}
-          toggleDrawer={() => setCategoriesOpen(false)}
-          title={
+        <MuiDrawer
+          anchor="bottom"
+          open={categoriesOpen}
+          onClose={() => setCategoriesOpen(false)}
+          PaperProps={{
+            sx: {
+              width: '100%',
+              maxHeight: { xs: '85vh', sm: '80vh', md: '75vh' },
+              borderTopLeftRadius: { xs: '16px', sm: '20px', md: '24px' },
+              borderTopRightRadius: { xs: '16px', sm: '20px', md: '24px' },
+              pt: { xs: 1.5, sm: 2, md: 3 },
+              pb: { xs: 1, sm: 1.5, md: 2 }
+            }
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingLeft: 2,
+              paddingRight: 2,
+              paddingTop: 0.75,
+              paddingBottom: 0.75,
+              borderBottom: (theme) => `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+            }}
+          >
             <Box
               sx={{
                 display: 'flex',
@@ -1236,10 +1259,25 @@ const SearchToolbar = memo(function SearchToolbar({
                 </Badge>
               )}
             </Box>
-          }
-        >
+            <StyledIconButton
+              aria-label="close"
+              onClick={() => setCategoriesOpen(false)}
+              sx={{
+                borderRadius: '12px',
+                width: '40px',
+                height: '40px',
+                border: (theme) => `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                '&:hover': {
+                  backgroundColor: (theme) => alpha(theme.palette.action.hover, 0.04),
+                  borderColor: (theme) => alpha(theme.palette.divider, 0.3),
+                }
+              }}
+            >
+              <CloseIcon sx={{ fontSize: '20px' }} />
+            </StyledIconButton>
+          </Box>
           <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
-        </Drawer>
+        </MuiDrawer>
       )}
     </Container>
   );
