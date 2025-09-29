@@ -855,7 +855,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       refs.current[index - 1]?.focus();
     } else if (e.key === 'Enter' && boxes.every(b => b)) {
       if (hasPinWallet) {
-        handlePinLogin();
+        handlePinConnect();
       } else if (!isConfirm && confirmPinBoxes.every(b => b)) {
         handlePinCreate();
       }
@@ -983,7 +983,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   };
 
   // Social login handlers
-  const handleGoogleLogin = () => {
+  const handleGoogleConnect = () => {
     try {
       // Check if Google Sign-In is loaded
       if (!window.google?.accounts?.id) {
@@ -1021,12 +1021,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }, 100);
 
     } catch (error) {
-      console.error('Google login error:', error);
-      openSnackbar('Google login failed: ' + error.message, 'error');
+      console.error('Google connect error:', error);
+      openSnackbar('Google connect failed: ' + error.message, 'error');
     }
   };
 
-  const processGoogleLogin = async (jwtToken, userData) => {
+  const processGoogleConnect = async (jwtToken, userData) => {
     try {
       // Use provided user data or decode JWT
       let payload = userData;
@@ -1090,17 +1090,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
         if (result.wallet) {
           doLogIn(result.wallet, profiles);
-          openSnackbar('Google login successful!', 'success');
+          openSnackbar('Google connect successful!', 'success');
         }
         setOpenWalletModal(false);
       }
     } catch (error) {
-      console.error('Error processing Google login:', error);
-      openSnackbar('Failed to process Google login', 'error');
+      console.error('Error processing Google connect:', error);
+      openSnackbar('Failed to process Google connect', 'error');
     }
   };
 
-  const handleXLogin = async () => {
+  const handleXConnect = async () => {
     try {
       // Generate PKCE values for Twitter OAuth 2.0
       const generateRandomString = (length) => {
@@ -1152,16 +1152,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Redirect to Twitter OAuth
       window.location.href = `https://twitter.com/i/oauth2/authorize?${params}`;
     } catch (error) {
-      openSnackbar('X login failed: ' + error.message, 'error');
+      openSnackbar('X connect failed: ' + error.message, 'error');
     }
   };
 
-  const handleDiscordLogin = async () => {
+  const handleDiscordConnect = async () => {
     try {
-      openSnackbar('Discord login integration coming soon', 'info');
+      openSnackbar('Discord connect integration coming soon', 'info');
       // When ready: window.location.href = '/api/oauth/discord';
     } catch (error) {
-      openSnackbar('Discord login failed: ' + error.message, 'error');
+      openSnackbar('Discord connect failed: ' + error.message, 'error');
     }
   };
 
@@ -1761,7 +1761,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           sessionStorage.setItem('google_jwt_token', data.token);
           sessionStorage.setItem('google_user_data', JSON.stringify(data.user));
           // Trigger re-render to process
-          window.dispatchEvent(new Event('google-login-success'));
+          window.dispatchEvent(new Event('google-connect-success'));
         }
       } catch (error) {
         console.error('Google auth error:', error);
@@ -1783,7 +1783,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setTimeout(() => clearInterval(checkGoogle), 5000);
     }
 
-    // Listen for Google login success
+    // Listen for Google connect success
     const handleGoogleSuccess = async () => {
       const token = sessionStorage.getItem('google_jwt_token');
       const userStr = sessionStorage.getItem('google_user_data');
@@ -1791,14 +1791,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         sessionStorage.removeItem('google_jwt_token');
         sessionStorage.removeItem('google_user_data');
         const userData = userStr ? JSON.parse(userStr) : null;
-        await processGoogleLogin(token, userData);
+        await processGoogleConnect(token, userData);
       }
     };
 
-    window.addEventListener('google-login-success', handleGoogleSuccess);
+    window.addEventListener('google-connect-success', handleGoogleSuccess);
 
     return () => {
-      window.removeEventListener('google-login-success', handleGoogleSuccess);
+      window.removeEventListener('google-connect-success', handleGoogleSuccess);
     };
   }, []);
 
@@ -1834,7 +1834,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     initializeStorage();
   }, []); // Only run once on mount
 
-  const handlePinLogin = async () => {
+  const handlePinConnect = async () => {
     if (!pin) {
       setPinError('PIN is required');
       return;
@@ -1882,7 +1882,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       };
 
       doLogIn(profile, allProfiles);
-      openSnackbar(`PIN login successful`, 'success');
+      openSnackbar(`PIN connect successful`, 'success');
       setOpenWalletModal(false);
       setShowPinLogin(false);
       setStatus('idle');
@@ -2387,7 +2387,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             </span>
           </div>
         ) : (
-          <span>{'Login'}</span>
+          <span>{'Connect'}</span>
         )}
       </button>
 
@@ -2610,7 +2610,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 }}>
                   {!showDeviceLogin && !showPinLogin && !showWalletInfo ? (
                     <>
-                      {/* Primary Login Options */}
+                      {/* Primary Connect Options */}
                       <Stack direction="row" spacing={1.5} sx={{ mb: 2.5 }}>
                         <Button
                           variant="outlined"
@@ -2694,12 +2694,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         }} />
                       </Box>
 
-                      {/* Social Login Options */}
+                      {/* Social Connect Options */}
                       <Stack spacing={1.2}>
                         <Button
                           variant="outlined"
                           fullWidth
-                          onClick={handleGoogleLogin}
+                          onClick={handleGoogleConnect}
                           sx={{
                             py: 1.8,
                             fontSize: '0.95rem',
@@ -2720,13 +2720,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          Login with Google
+                          Connect with Google
                         </Button>
 
                         <Button
                           variant="outlined"
                           fullWidth
-                          onClick={handleXLogin}
+                          onClick={handleXConnect}
                           sx={{
                             py: 1.8,
                             fontSize: '0.95rem',
@@ -2747,7 +2747,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          Login with X
+                          Connect with X
                         </Button>
 
                         <Button
@@ -2770,13 +2770,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          Login with Discord (Coming Soon)
+                          Connect with Discord (Coming Soon)
                         </Button>
                       </Stack>
                     </>
                   ) : showPinLogin ? (
                     <>
-                      {/* PIN Login UI */}
+                      {/* PIN Connect UI */}
                       <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -2874,7 +2874,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             variant="contained"
                             size="large"
                             fullWidth
-                            onClick={handlePinLogin}
+                            onClick={handlePinConnect}
                             disabled={status !== 'idle' || pin.length !== 6}
                             sx={{
                               py: 1.2,
@@ -2886,7 +2886,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               }
                             }}
                           >
-                            {status === 'authenticating' ? 'Signing In...' : 'Sign In with PIN'}
+                            {status === 'authenticating' ? 'Connecting...' : 'Connect with PIN'}
                           </Button>
                         ) : (
                           <>
@@ -3222,7 +3222,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 }
                               }}
                             >
-                              Use Passkeys Login
+                              Use Passkeys Connect
                             </Button>
                             <Button
                               variant="contained"
@@ -3242,7 +3242,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 }
                               }}
                             >
-                              Use PIN Login
+                              Use PIN Connect
                             </Button>
                           </Stack>
                         </Box>
@@ -3250,7 +3250,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     </>
                   ) : (
                     <>
-                      {/* Passkeys Login */}
+                      {/* Passkeys Connect */}
                       <Box sx={{
                         display: 'flex',
                         alignItems: 'center',
@@ -3295,7 +3295,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </Alert>
                       )}
 
-                      {/* Inline PIN Input for Device Login */}
+                      {/* Inline PIN Input for Device Connect */}
                       {showDevicePinInput && (
                         <Box sx={{ mb: 3 }}>
                           <Typography variant="body2" sx={{ mb: 2, fontWeight: 500 }}>
@@ -3447,7 +3447,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   Create a password to encrypt your wallet. This password will be required only once,
-                  then you can login with your social account.
+                  then you can connect with your social account.
                 </Typography>
               </Box>
 
@@ -3490,7 +3490,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               <Alert severity="info">
                 <Typography variant="body2">
                   <strong>Important:</strong> Store this password safely. While you won't need it for
-                  regular logins, you'll need it if you want to export your wallet or recover it on a
+                  regular connections, you'll need it if you want to export your wallet or recover it on a
                   new device.
                 </Typography>
               </Alert>

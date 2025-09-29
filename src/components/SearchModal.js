@@ -288,10 +288,8 @@ function SearchModal({ open, onClose }) {
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'center',
-      pt: '10vh',
-      backdropFilter: 'blur(8px)',
-      WebkitBackdropFilter: 'blur(8px)',
-      backgroundColor: alpha(theme.palette.background.default, 0.85)
+      pt: '12vh',
+      backgroundColor: alpha(theme.palette.background.default, 0.75)
     }),
     [theme]
   );
@@ -299,12 +297,12 @@ function SearchModal({ open, onClose }) {
   const paperStyles = useMemo(
     () => ({
       width: '90%',
-      maxWidth: 600,
-      maxHeight: '70vh',
+      maxWidth: 650,
+      maxHeight: '65vh',
       overflow: 'hidden',
       borderRadius: '12px',
       background: theme.palette.background.paper,
-      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
       boxShadow: 'none'
     }),
     [theme]
@@ -322,13 +320,13 @@ function SearchModal({ open, onClose }) {
         {/* Search Header */}
         <Box
           sx={{
-            p: 1.5,
+            p: 2,
             borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
             backgroundColor: 'transparent'
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <SearchIcon color="action" />
+          <Stack direction="row" alignItems="center" spacing={1.5}>
+            <SearchIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: 20 }} />
             <InputBase
               ref={inputRef}
               placeholder="Search tokens and collections..."
@@ -337,19 +335,20 @@ function SearchModal({ open, onClose }) {
               fullWidth
               autoComplete="off"
               sx={{
-                fontSize: '1rem',
+                fontSize: '0.95rem',
+                fontWeight: 400,
                 '& input': {
                   padding: 0,
                   '&::placeholder': {
-                    opacity: 0.5,
+                    opacity: 0.45,
                     fontSize: '0.95rem'
                   }
                 }
               }}
             />
-            {loading && <CircularProgress size={20} />}
-            <IconButton onClick={handleClose} size="small">
-              <CloseIcon />
+            {loading && <CircularProgress size={18} thickness={3} />}
+            <IconButton onClick={handleClose} size="small" sx={{ p: 0.5 }}>
+              <CloseIcon sx={{ fontSize: 20 }} />
             </IconButton>
           </Stack>
         </Box>
@@ -357,9 +356,9 @@ function SearchModal({ open, onClose }) {
         {/* Search Results */}
         <Box
           sx={{
-            maxHeight: 'calc(70vh - 80px)',
+            maxHeight: 'calc(65vh - 80px)',
             overflowY: 'auto',
-            backgroundColor: theme.palette.background.default
+            backgroundColor: 'transparent'
           }}
         >
           {/* Show trending when no search query */}
@@ -370,10 +369,10 @@ function SearchModal({ open, onClose }) {
                 <>
                   <Typography
                     variant="subtitle2"
-                    sx={{ px: 2, pt: 1.5, pb: 0.5, fontSize: '0.75rem', fontWeight: 600, opacity: 0.7 }}
+                    sx={{ px: 2, pt: 2, pb: 0.75, fontSize: '0.75rem', fontWeight: 500, opacity: 0.6 }}
                     color="text.secondary"
                   >
-                    RECENT SEARCHES
+                    Recent
                   </Typography>
                   <List disablePadding dense>
                     {recentSearches.slice(0, 3).map((item, index) => (
@@ -393,10 +392,11 @@ function SearchModal({ open, onClose }) {
                             });
                           }}
                           sx={{
-                          py: 0.75,
+                          py: 1,
+                          px: 2,
                           borderRadius: '8px',
                           mx: 0.5,
-                          mb: 0.25,
+                          mb: 0.5,
                           '&:hover': {
                             backgroundColor: alpha(theme.palette.primary.main, 0.04)
                           }
@@ -410,10 +410,10 @@ function SearchModal({ open, onClose }) {
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
                               sx={{
-                                width: 32,
-                                height: 32,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                                width: 36,
+                                height: 36,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
@@ -423,14 +423,22 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={item.user || item.name}
                             secondary={item.name}
-                            primaryTypographyProps={{ fontSize: '0.85rem' }}
-                            secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                            primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 400 }}
+                            secondaryTypographyProps={{
+                              fontSize: '0.8rem',
+                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
+                            }}
                           />
                           <Chip
                             label={item.type}
                             size="small"
                             variant="outlined"
-                            sx={{ height: 20, fontSize: '0.7rem' }}
+                            sx={{
+                              height: 22,
+                              fontSize: '0.7rem',
+                              fontWeight: 400,
+                              borderColor: alpha(theme.palette.divider, 0.2)
+                            }}
                           />
                         </ListItemButton>
                       </ListItem>
@@ -446,12 +454,12 @@ function SearchModal({ open, onClose }) {
                   <Stack
                     direction="row"
                     alignItems="center"
-                    sx={{ px: 2, pt: 1, pb: 0.5 }}
+                    sx={{ px: 2, pt: 1.5, pb: 0.75 }}
                     spacing={1}
                   >
-                    <TrendingUpIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.7 }}>
-                      TRENDING TOKENS
+                    <TrendingUpIcon sx={{ fontSize: 16, color: alpha(theme.palette.primary.main, 0.7) }} />
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.6 }}>
+                      Trending
                     </Typography>
                   </Stack>
                   <List disablePadding dense>
@@ -460,24 +468,24 @@ function SearchModal({ open, onClose }) {
                         <ListItemButton
                           onClick={() => handleResultClick(token, 'token')}
                           sx={{
-                            py: 0.75,
+                            py: 1,
                             px: 2,
                             borderRadius: '8px',
                             mx: 0.5,
-                            mb: 0.25,
+                            mb: 0.5,
                             '&:hover': {
                               backgroundColor: alpha(theme.palette.primary.main, 0.04)
                             }
                           }}
                         >
-                          <ListItemAvatar sx={{ minWidth: 40 }}>
+                          <ListItemAvatar sx={{ minWidth: 44 }}>
                             <Avatar
                               src={`https://s1.xrpl.to/token/${token.md5}`}
                               sx={{
-                                width: 32,
-                                height: 32,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                                width: 36,
+                                height: 36,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
@@ -487,13 +495,17 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={token.user}
                             secondary={token.name}
-                            primaryTypographyProps={{ fontSize: '0.85rem', noWrap: true }}
-                            secondaryTypographyProps={{ fontSize: '0.75rem', noWrap: true }}
+                            primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 400, noWrap: true }}
+                            secondaryTypographyProps={{
+                              fontSize: '0.8rem',
+                              noWrap: true,
+                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
+                            }}
                             sx={{ pr: 1 }}
                           />
-                          <Stack alignItems="flex-end" spacing={0}>
+                          <Stack alignItems="flex-end" spacing={0.25}>
                             {token.exch !== undefined && token.exch !== null && (
-                              <Typography variant="body2" fontSize="0.85rem" fontWeight={600}>
+                              <Typography variant="body2" fontSize="0.9rem" fontWeight={400}>
                                 ${formatPrice(token.exch)}
                               </Typography>
                             )}
@@ -501,10 +513,8 @@ function SearchModal({ open, onClose }) {
                               <Typography
                                 variant="caption"
                                 fontSize="0.75rem"
-                                color={
-                                  parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'
-                                }
-                                fontWeight={500}
+                                color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
+                                fontWeight={400}
                               >
                                 {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                                 {parseFloat(token.pro24h).toFixed(2)}%
@@ -525,12 +535,12 @@ function SearchModal({ open, onClose }) {
                   <Stack
                     direction="row"
                     alignItems="center"
-                    sx={{ px: 2, pt: 0.5, pb: 0.5 }}
+                    sx={{ px: 2, pt: 1.5, pb: 0.75 }}
                     spacing={1}
                   >
-                    <CollectionsIcon sx={{ fontSize: 16, color: '#4caf50' }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '0.75rem', fontWeight: 600, opacity: 0.7 }}>
-                      TRENDING NFT COLLECTIONS
+                    <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.7) }} />
+                    <Typography variant="subtitle2" sx={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.6 }}>
+                      Trending Collections
                     </Typography>
                   </Stack>
                   <List disablePadding dense>
@@ -539,24 +549,24 @@ function SearchModal({ open, onClose }) {
                         <ListItemButton
                           onClick={() => handleResultClick(collection, 'collection')}
                           sx={{
-                            py: 0.75,
+                            py: 1,
                             px: 2,
                             borderRadius: '8px',
                             mx: 0.5,
-                            mb: 0.25,
+                            mb: 0.5,
                             '&:hover': {
                               backgroundColor: alpha(theme.palette.primary.main, 0.04)
                             }
                           }}
                         >
-                          <ListItemAvatar sx={{ minWidth: 40 }}>
+                          <ListItemAvatar sx={{ minWidth: 44 }}>
                             <Avatar
                               src={`https://s1.xrpnft.com/collection/${collection.logoImage}`}
                               sx={{
-                                width: 32,
-                                height: 32,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                                width: 36,
+                                height: 36,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
@@ -568,13 +578,17 @@ function SearchModal({ open, onClose }) {
                             secondary={
                               collection.type ? `${collection.type} collection` : 'Collection'
                             }
-                            primaryTypographyProps={{ fontSize: '0.85rem', noWrap: true }}
-                            secondaryTypographyProps={{ fontSize: '0.75rem', noWrap: true }}
+                            primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 400, noWrap: true }}
+                            secondaryTypographyProps={{
+                              fontSize: '0.8rem',
+                              noWrap: true,
+                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
+                            }}
                             sx={{ pr: 1 }}
                           />
-                          <Stack alignItems="flex-end" spacing={0}>
+                          <Stack alignItems="flex-end" spacing={0.25}>
                             {collection.floor && collection.floor.amount && (
-                              <Typography variant="body2" fontSize="0.8rem" fontWeight={500}>
+                              <Typography variant="body2" fontSize="0.85rem" fontWeight={400}>
                                 Floor: {collection.floor.amount}{' '}
                                 {collection.floor.currency || 'XRP'}
                               </Typography>
@@ -582,8 +596,8 @@ function SearchModal({ open, onClose }) {
                             {collection.totalVolume !== undefined && collection.totalVolume > 0 && (
                               <Typography
                                 variant="caption"
-                                fontSize="0.7rem"
-                                color="text.secondary"
+                                fontSize="0.75rem"
+                                sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
                               >
                                 Vol: {collection.totalVolume.toLocaleString()} XRP
                               </Typography>
@@ -611,12 +625,11 @@ function SearchModal({ open, onClose }) {
               <Stack
                 direction="row"
                 alignItems="center"
-                sx={{ px: 2, pt: 1.5, pb: 0.5 }}
+                sx={{ px: 2, pt: 2, pb: 0.75 }}
                 spacing={1}
               >
-                <SearchIcon color="primary" sx={{ fontSize: 18 }} />
-                <Typography variant="subtitle2" fontSize="0.85rem" fontWeight={600}>
-                  Search Results
+                <Typography variant="subtitle2" fontSize="0.75rem" fontWeight={500} sx={{ opacity: 0.6 }} color="text.secondary">
+                  Results
                 </Typography>
               </Stack>
               <List disablePadding dense>
@@ -630,31 +643,31 @@ function SearchModal({ open, onClose }) {
                       <ListItemButton
                         onClick={() => handleResultClick(token, 'token')}
                         sx={{
-                          py: 0.75,
+                          py: 1,
                           px: 2,
                           borderRadius: '8px',
                           mx: 0.5,
-                          mb: 0.25,
+                          mb: 0.5,
                           backgroundColor: shouldHighlight
-                            ? alpha(theme.palette.primary.main, 0.06)
+                            ? alpha(theme.palette.primary.main, 0.04)
                             : 'transparent',
                           border: shouldHighlight
-                            ? `1.5px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                            ? `1.5px solid ${alpha(theme.palette.primary.main, 0.2)}`
                             : '1.5px solid transparent',
                           '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                            borderColor: alpha(theme.palette.primary.main, 0.2)
+                            backgroundColor: alpha(theme.palette.primary.main, 0.06),
+                            borderColor: alpha(theme.palette.primary.main, 0.25)
                           }
                         }}
                       >
-                        <ListItemAvatar sx={{ minWidth: 40 }}>
+                        <ListItemAvatar sx={{ minWidth: 44 }}>
                           <Avatar
                             src={`https://s1.xrpl.to/token/${token.md5}`}
                             sx={{
-                              width: 32,
-                              height: 32,
-                              border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-                              backgroundColor: alpha(theme.palette.background.paper, 0.5)
+                              width: 36,
+                              height: 36,
+                              border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                              backgroundColor: 'transparent'
                             }}
                             imgProps={{ loading: 'lazy', decoding: 'async' }}
                           >
@@ -663,25 +676,14 @@ function SearchModal({ open, onClose }) {
                         </ListItemAvatar>
                         <ListItemText
                           primary={
-                            <Stack direction="row" alignItems="center" spacing={0.5}>
+                            <Stack direction="row" alignItems="center" spacing={0.75}>
                               <Typography
-                                fontSize="0.85rem"
+                                fontSize="0.95rem"
+                                fontWeight={400}
                                 noWrap
                                 sx={{
-                                  position: 'relative',
                                   ...(shouldHighlight && {
-                                    color: theme.palette.primary.main,
-                                    fontWeight: 600,
-                                    '&:after': {
-                                      content: '"✓"',
-                                      position: 'absolute',
-                                      right: -12,
-                                      top: '50%',
-                                      transform: 'translateY(-50%)',
-                                      fontSize: '0.7rem',
-                                      color: theme.palette.warning.main,
-                                      fontWeight: 700
-                                    }
+                                    color: theme.palette.primary.main
                                   })
                                 }}
                               >
@@ -692,32 +694,23 @@ function SearchModal({ open, onClose }) {
                                   label="Verified"
                                   size="small"
                                   color="primary"
-                                  sx={{ height: 16, fontSize: '0.6rem' }}
+                                  sx={{ height: 18, fontSize: '0.65rem', fontWeight: 400 }}
                                 />
                               )}
                             </Stack>
                           }
                           secondary={token.name}
-                          secondaryTypographyProps={{ fontSize: '0.75rem', noWrap: true }}
+                          secondaryTypographyProps={{
+                            fontSize: '0.8rem',
+                            noWrap: true,
+                            sx: { color: alpha(theme.palette.text.secondary, 0.6) }
+                          }}
                           sx={{ pr: 1 }}
                         />
-                        <Stack alignItems="flex-end" spacing={0}>
+                        <Stack alignItems="flex-end" spacing={0.25}>
                           {token.exch !== undefined && token.exch !== null && (
-                            <Typography variant="body2" fontSize="0.85rem" fontWeight={600}>
-                              $
-                              {token.exch === 0
-                                ? '0.00'
-                                : token.exch < 0.00000001
-                                  ? parseFloat(token.exch).toFixed(12)
-                                  : token.exch < 0.0000001
-                                    ? parseFloat(token.exch).toFixed(10)
-                                    : token.exch < 0.000001
-                                      ? parseFloat(token.exch).toFixed(8)
-                                      : token.exch < 0.0001
-                                        ? parseFloat(token.exch).toFixed(6)
-                                        : token.exch < 1
-                                          ? parseFloat(token.exch).toFixed(4)
-                                          : parseFloat(token.exch).toFixed(2)}
+                            <Typography variant="body2" fontSize="0.9rem" fontWeight={400}>
+                              ${formatPrice(token.exch)}
                             </Typography>
                           )}
                           {token.pro24h !== undefined && token.pro24h !== null && (
@@ -725,7 +718,7 @@ function SearchModal({ open, onClose }) {
                               variant="caption"
                               fontSize="0.75rem"
                               color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
-                              fontWeight={500}
+                              fontWeight={400}
                             >
                               {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                               {parseFloat(token.pro24h).toFixed(2)}%
@@ -743,7 +736,9 @@ function SearchModal({ open, onClose }) {
           {/* No results */}
           {searchQuery && !loading && searchResults.tokens.length === 0 && (
             <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography color="text.secondary">No results found for "{searchQuery}"</Typography>
+              <Typography fontSize="0.9rem" sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}>
+                No results found for "{searchQuery}"
+              </Typography>
             </Box>
           )}
         </Box>
