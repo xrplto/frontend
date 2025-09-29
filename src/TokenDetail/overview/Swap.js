@@ -81,8 +81,6 @@ const getDeviceWallet = (accountProfile) => {
   }
   return null;
 };
-const Orders = React.lazy(() => import('src/TokenDetail/trade/account/Orders'));
-const DepthChart = React.lazy(() => import('src/TokenDetail/trade/DepthChart'));
 
 const pulse = keyframes`
   0% {
@@ -336,7 +334,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   // Add state for orderbook visibility
   const [showOrderbook, setShowOrderbook] = useState(false); // used only when not integrated
-  const [showOrders, setShowOrders] = useState(false);
   const [showDepth, setShowDepth] = useState(false);
 
   const amount = revert ? amount2 : amount1;
@@ -1584,7 +1581,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               setOrderType(newValue);
               if (newValue === 'market') {
                 setShowOrderbook(false);
-                setShowOrders(false);
                 setShowDepth(false);
               }
             }}
@@ -2209,7 +2205,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Button
                   size="small"
                   variant="text"
-                  onClick={() => setShowOrders(!showOrders)}
+                  onClick={() => {}}
                   sx={{
                     fontSize: '0.65rem',
                     textTransform: 'none',
@@ -2217,7 +2213,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     minHeight: '24px'
                   }}
                 >
-                  {showOrders ? 'Hide' : 'Show'} Orders
+                  View Orders
                 </Button>
               </Stack>
               <Typography
@@ -2230,20 +2226,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </Box>
           )}
 
-          {/* Depth Chart - Only show in limit mode */}
-          {orderType === 'limit' && showDepth && (
-            <Box sx={{ px: 1, py: 0.5 }}>
-              <React.Suspense
-                fallback={
-                  <Box sx={{ p: 2, display: 'flex', justifyContent: 'center' }}>
-                    <PuffLoader color={theme.palette.primary.main} size={20} />
-                  </Box>
-                }
-              >
-                <DepthChart asks={asks} bids={bids} height={220} />
-              </React.Suspense>
-            </Box>
-          )}
 
           {/* Transaction Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
@@ -2485,61 +2467,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         />
       )}
 
-      {/* Orders Display */}
-      {showOrders && (
-        <Box
-          sx={{
-            mt: 2,
-            width: '100%',
-            backgroundColor: theme.palette.background.paper,
-            borderRadius: '12px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-            overflow: 'hidden',
-            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              p: 1.5,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-              background: alpha(theme.palette.background.paper, 0.02)
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{ fontSize: '0.85rem', fontWeight: 600, color: theme.palette.text.primary }}
-            >
-              Your Orders
-            </Typography>
-            <IconButton
-              size="small"
-              onClick={() => setShowOrders(false)}
-              sx={{
-                color: theme.palette.text.secondary,
-                p: 0.5,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.action.active, 0.08)
-                }
-              }}
-            >
-              <CloseIcon sx={{ width: 16, height: 16 }} />
-            </IconButton>
-          </Box>
-
-          <React.Suspense
-            fallback={
-              <Box sx={{ p: 3, display: 'flex', justifyContent: 'center' }}>
-                <PuffLoader color={theme.palette.primary.main} size={30} />
-              </Box>
-            }
-          >
-            <Orders pair={{ curr1, curr2 }} />
-          </React.Suspense>
-        </Box>
-      )}
     </Stack>
   );
 };

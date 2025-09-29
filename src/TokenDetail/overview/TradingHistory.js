@@ -59,8 +59,6 @@ const decodeCurrency = (currency) => {
 };
 import PairsList from 'src/TokenDetail/market/PairsList';
 import TopTraders from 'src/TokenDetail/toptraders';
-import TradePanel from 'src/TokenDetail/trade/TradePanel';
-import PairsSelect from 'src/TokenDetail/trade/PairsSelect';
 import { lazy, Suspense } from 'react';
 import RichList from 'src/TokenDetail/RichList';
 
@@ -1073,20 +1071,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
                 }}
               >
-                <Typography variant="body1" fontWeight="600" sx={{ minWidth: 'fit-content' }}>
-                  Trading Pair:
-                </Typography>
-                <Box sx={{ minWidth: 200, maxWidth: 300 }}>
-                  <PairsSelect token={token} pair={selectedPair} setPair={setSelectedPair} />
-                </Box>
               </Box>
-              <TradePanel
-                pair={selectedPair}
-                asks={orderBookData.asks}
-                bids={orderBookData.bids}
-                bidId={bidId}
-                askId={askId}
-              />
             </Stack>
           )}
         </DialogContent>
