@@ -9,6 +9,7 @@ import TokenList from 'src/TokenList';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
+import Logo from 'src/components/Logo';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
@@ -32,45 +33,56 @@ function getInitialTokens(data) {
 const MaintenanceMessage = styled(Box)(
   ({ theme }) => `
     text-align: center;
-    padding: ${theme.spacing(8)};
-    background: ${theme.palette.background.paper};
-    border-radius: ${theme.spacing(1)};
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-    margin: ${theme.spacing(4)} 0;
+    padding: 0;
+    background: transparent;
+    margin: 0;
 
     h1 {
-      color: ${theme.palette.primary.main};
-      margin-bottom: ${theme.spacing(2)};
+      color: ${theme.palette.mode === 'dark' ? '#4285f4' : '#2563eb'};
+      font-size: 1.75rem;
+      font-weight: 500;
+      margin: ${theme.spacing(3)} 0 ${theme.spacing(1.5)} 0;
+      letter-spacing: -0.01em;
     }
 
     p {
       color: ${theme.palette.text.secondary};
-      font-size: 1.1rem;
+      font-size: 0.95rem;
+      font-weight: 400;
+      margin: ${theme.spacing(0.5)} 0;
+      opacity: 0.7;
     }
 `
 );
 
 function MaintenanceView({ isMobile }) {
   return (
-    <OverviewWrapper>
-      <Container maxWidth="xl">
-        <Grid
-          container
-          direction="row"
-          justifyContent="center"
-          alignItems="center"
-          style={{ minHeight: '60vh' }}
-        >
-          <Grid size={{ xs: 12, sm: 8, md: 6 }}>
-            <MaintenanceMessage>
-              <h1>Under Maintenance</h1>
-              <p>We're currently performing some updates to improve our service.</p>
-              <p>Please check back soon!</p>
-            </MaintenanceMessage>
-          </Grid>
-        </Grid>
-      </Container>
-    </OverviewWrapper>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'transparent',
+        padding: 3
+      }}
+    >
+      <Box
+        sx={{
+          maxWidth: '400px',
+          width: '100%',
+          textAlign: 'center'
+        }}
+      >
+        <Logo style={{ width: '120px', height: '42px', margin: '0 auto' }} />
+        <MaintenanceMessage>
+          <h1>Under Maintenance</h1>
+          <p>We're currently performing some updates to improve our service.</p>
+          <p>Please check back soon.</p>
+        </MaintenanceMessage>
+      </Box>
+    </Box>
   );
 }
 
@@ -87,7 +99,7 @@ function Overview({ data }) {
   const isMobile = useMediaQuery('(max-width:600px)');
   const router = useRouter();
 
-  const MAINTENANCE_MODE = false; // Set to false to show normal view
+  const MAINTENANCE_MODE = true; // Set to false to show normal view
 
   // Add this function to handle safe navigation
   const handleNavigation = (path) => {
