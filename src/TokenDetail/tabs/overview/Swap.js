@@ -100,23 +100,20 @@ const pulse = keyframes`
 const CurrencyContent = styled('div')(
   ({ theme }) => `
     box-sizing: border-box;
-    margin: 5px 0;
+    margin: 4px 0;
     display: flex;
     flex-direction: row;
-    padding: 16px 20px;
-    border-radius: 16px;
+    padding: 14px 16px;
+    border-radius: 8px;
     align-items: center;
-    background: linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.1)} 0%, ${alpha(theme.palette.background.paper, 0.05)} 100%);
-    backdrop-filter: blur(24px);
+    background: ${alpha(theme.palette.background.paper, 0.03)};
+    backdrop-filter: none;
     width: 100%;
     justify-content: space-between;
-    transition: all 0.3s ease;
-    &:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 8px 32px ${alpha(theme.palette.common.black, 0.08)};
-    }
+    transition: none;
+    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
     @media (max-width: 600px) {
-      padding: 12px 16px;
+      padding: 12px 14px;
       margin: 3px 0;
     }
 `
@@ -140,17 +137,17 @@ const OverviewWrapper = styled('div')(
     overflow: hidden;
     box-sizing: border-box;
     position: relative;
-    border-radius: 6px;
+    border-radius: 8px;
     display: flex;
-    padding: 8px;
+    padding: 12px;
     width: 100%;
-    background: ${alpha(theme.palette.background.paper, 0.3)};
+    background: transparent;
     backdrop-filter: none;
     box-shadow: none;
-    border: 1px solid ${alpha(theme.palette.divider, 0.1)};
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
     @media (max-width: 600px) {
-        border-radius: 16px;
-        padding: 12px;
+        border-radius: 12px;
+        padding: 10px;
     }
 `
 );
@@ -179,25 +176,18 @@ const ToggleContent = styled('div')(
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
-    background: linear-gradient(
-      135deg,
-      ${alpha(theme.palette.background.paper, 0.9)} 0%,
-      ${alpha(theme.palette.background.paper, 0.8)} 100%
-    );
-    backdrop-filter: blur(20px);
+    background: ${theme.palette.background.paper};
+    backdrop-filter: none;
     border-radius: 50%;
-    padding: 8px;
+    padding: 6px;
     z-index: 1;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 16px ${alpha(theme.palette.common.black, 0.1)};
+    transition: none;
+    box-shadow: none;
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
 
     &:hover {
-      transform: translate(-50%, -50%) scale(1.1);
-      background: linear-gradient(
-        135deg,
-        ${alpha(theme.palette.primary.main, 0.2)} 0%,
-        ${alpha(theme.palette.primary.main, 0.1)} 100%
-      );
+      background: ${alpha(theme.palette.primary.main, 0.04)};
+      border-color: ${theme.palette.primary.main};
 
       svg {
         color: ${theme.palette.primary.main} !important;
@@ -212,15 +202,17 @@ const ExchangeButton = styled(Button)(
     max-width: 100%;
     position: relative;
     overflow: hidden;
-    border-radius: 12px;
+    border-radius: 8px;
     background: transparent;
     color: #4285f4;
     font-weight: 400;
     border: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
     box-shadow: none;
-    padding: 8px 16px;
-    font-size: 0.95rem;
+    padding: 10px 16px;
+    font-size: 0.875rem;
     text-transform: none;
+    margin-top: 8px;
+    margin-bottom: 8px;
 
     &:hover {
       background: ${alpha('#4285f4', 0.04)};
@@ -240,10 +232,8 @@ const ExchangeButton = styled(Button)(
     }
 
     @media (max-width: 600px) {
-      margin-left: 10px;
-      margin-right: 10px;
-      padding: 6px 12px;
-      font-size: 0.9rem;
+      padding: 8px 14px;
+      font-size: 0.85rem;
     }
 `
 );
@@ -261,11 +251,12 @@ const TokenImage = styled(Image)(({ theme }) => ({
 
 const SummaryBox = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.background.paper, 0.05),
-  borderRadius: '8px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  marginTop: theme.spacing(1),
-  marginBottom: theme.spacing(1)
+  backgroundColor: 'transparent',
+  borderRadius: '6px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  marginTop: theme.spacing(0.5),
+  marginBottom: theme.spacing(0.5),
+  boxShadow: 'none'
 }));
 
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
@@ -1859,13 +1850,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   <Button
                     key={preset}
                     size="small"
-                    variant={slippage === preset ? 'contained' : 'text'}
+                    variant={slippage === preset ? 'outlined' : 'text'}
                     onClick={() => setSlippage(preset)}
                     sx={{
-                      minWidth: { xs: '32px', sm: '28px' },
-                      height: { xs: '26px', sm: '22px' },
-                      fontSize: { xs: '0.7rem', sm: '0.7rem' },
-                      padding: { xs: '3px 8px', sm: '2px 6px' }
+                      minWidth: '24px',
+                      height: '20px',
+                      fontSize: '0.65rem',
+                      padding: '0 6px',
+                      color: slippage === preset ? '#4285f4' : 'text.secondary',
+                      borderColor: '#4285f4',
+                      backgroundColor: slippage === preset ? alpha('#4285f4', 0.04) : 'transparent',
+                      '&:hover': {
+                        backgroundColor: alpha('#4285f4', 0.08),
+                        borderColor: '#4285f4'
+                      }
                     }}
                   >
                     {preset}%
@@ -1884,26 +1882,30 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   }}
                   disableUnderline
                   sx={{
-                    width: { xs: '40px', sm: '35px' },
+                    width: '32px',
                     input: {
-                      fontSize: { xs: '0.7rem', sm: '0.7rem' },
+                      fontSize: '0.65rem',
                       textAlign: 'center',
-                      padding: { xs: '3px 4px', sm: '2px 4px' },
-                      border: '1px solid rgba(0,0,0,0.2)',
-                      borderRadius: '3px',
-                      height: { xs: '20px', sm: '18px' }
+                      padding: '2px',
+                      border: `1px solid ${alpha('#000', 0.1)}`,
+                      borderRadius: '4px',
+                      height: '16px'
                     }
                   }}
                 />
-                <Typography variant="caption" sx={{ fontSize: { xs: '0.7rem', sm: '0.7rem' } }}>
+                <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
                   %
                 </Typography>
-                <Chip
-                  size="small"
-                  label={`Impact ${priceImpact}%`}
-                  color={Number(priceImpact) > 2 ? 'warning' : 'default'}
-                  sx={{ height: { xs: 18, sm: 18 }, fontSize: '0.65rem' }}
-                />
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: '0.65rem',
+                    color: Number(priceImpact) > 2 ? 'warning.main' : 'text.secondary',
+                    ml: 1
+                  }}
+                >
+                  Impact {priceImpact}%
+                </Typography>
               </Stack>
             </Stack>
             {Number(slippage) > 5 && (
@@ -2471,49 +2473,5 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   );
 };
 
-const App = ({ token }) => {
-  const [showSwap, setShowSwap] = useState(false);
-
-  const toggleSwap = () => {
-    setShowSwap(!showSwap);
-  };
-
-  return (
-    <Stack alignItems="center" width="100%" sx={{ mb: 2 }}>
-      <Button
-        variant="outlined"
-        onClick={toggleSwap}
-        fullWidth
-        sx={{
-          position: 'relative',
-          overflow: 'hidden',
-          borderRadius: '12px',
-          background: 'transparent',
-          borderColor: (theme) => alpha(theme.palette.divider, 0.2),
-          borderWidth: '1.5px',
-          color: showSwap ? '#f44336' : '#4285f4',
-          boxShadow: 'none',
-          fontSize: { xs: '0.95rem', sm: '0.95rem' },
-          padding: { xs: '10px 20px', sm: '8px 16px' },
-          fontWeight: 400,
-          height: { xs: '40px', sm: '36px' },
-          textTransform: 'none',
-          '&:hover': {
-            background: (theme) => alpha(showSwap ? '#f44336' : '#4285f4', 0.04),
-            borderColor: showSwap ? '#f44336' : '#4285f4',
-            borderWidth: '1.5px',
-            boxShadow: 'none'
-          },
-          '&:active': {
-            background: (theme) => alpha(showSwap ? '#f44336' : '#4285f4', 0.08)
-          }
-        }}
-      >
-        {showSwap ? 'Hide Swap' : 'Swap Now'}
-      </Button>
-      {showSwap && <Swap token={token} />}
-    </Stack>
-  );
-};
-
-export default App;
+// Export the Swap component directly without the button wrapper
+export default Swap;

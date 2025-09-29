@@ -360,24 +360,19 @@ export default function PriceStatistics({ token }) {
                   sx={{
                     pl: isMobile ? 0.75 : 1,
                     pr: isMobile ? 0.75 : 1,
-                    borderRadius: '10px',
-                    height: isMobile ? '26px' : '32px',
+                    borderRadius: '6px',
+                    height: isMobile ? '22px' : '26px',
                     cursor: 'pointer',
-                    background: `linear-gradient(145deg, ${alpha(
-                      theme.palette.primary.main,
-                      0.1
-                    )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                    background: alpha(theme.palette.primary.main, 0.08),
+                    backdropFilter: 'none',
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                     color: theme.palette.primary.main,
-                    fontWeight: 600,
-                                      '&:hover': {
-                      background: `linear-gradient(145deg, ${alpha(
-                        theme.palette.primary.main,
-                        0.15
-                      )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                    fontWeight: 500,
+                    boxShadow: 'none',
+                    '&:hover': {
+                      background: alpha(theme.palette.primary.main, 0.12),
+                      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                      boxShadow: 'none'
                     }
                   }}
                   onClick={handleOpenIssuerInfo}
@@ -391,16 +386,16 @@ export default function PriceStatistics({ token }) {
                     }}
                       size="small"
                       sx={{
-                        p: 0.5,
-                        width: 32,
-                        height: 32,
-                        borderRadius: '8px',
-                        background: alpha(theme.palette.background.paper, 0.8),
+                        p: 0.4,
+                        width: 28,
+                        height: 28,
+                        borderRadius: '6px',
+                        background: 'transparent',
                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                              '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.08),
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                                                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                        '&:hover': {
+                          background: alpha(theme.palette.primary.main, 0.04),
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          boxShadow: 'none'
                         }
                       }}
                     >
@@ -448,34 +443,19 @@ export default function PriceStatistics({ token }) {
                     sx={{
                       pl: isMobile ? 0.75 : 1,
                       pr: isMobile ? 0.75 : 1,
-                      borderRadius: '10px',
-                      height: isMobile ? '20px' : '24px',
-                      background:
-                        theme.palette.mode === 'dark'
-                          ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.15)} 0%, ${alpha('#9C27B0', 0.08)} 100%)`
-                          : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.12)} 0%, ${alpha('#7B1FA2', 0.06)} 100%)`,
-                      backdropFilter: 'blur(10px)',
-                      border:
-                        theme.palette.mode === 'dark'
-                          ? `1px solid ${alpha('#9C27B0', 0.3)}`
-                          : `1px solid ${alpha('#7B1FA2', 0.25)}`,
-                      color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2',
-                      fontWeight: 600,
-                                          textShadow:
-                        theme.palette.mode === 'dark' ? '0 0 8px rgba(156, 39, 176, 0.4)' : 'none',
+                      borderRadius: '6px',
+                      height: isMobile ? '18px' : '22px',
+                      background: alpha('#9C27B0', 0.08),
+                      backdropFilter: 'none',
+                      border: `1px solid ${alpha('#9C27B0', 0.15)}`,
+                      color: '#9C27B0',
+                      fontWeight: 500,
+                      boxShadow: 'none',
+                      textShadow: 'none',
                       '&:hover': {
-                        background:
-                          theme.palette.mode === 'dark'
-                            ? `linear-gradient(145deg, ${alpha('#9C27B0', 0.2)} 0%, ${alpha('#9C27B0', 0.12)} 100%)`
-                            : `linear-gradient(145deg, ${alpha('#7B1FA2', 0.15)} 0%, ${alpha('#7B1FA2', 0.08)} 100%)`,
-                        border:
-                          theme.palette.mode === 'dark'
-                            ? `1px solid ${alpha('#9C27B0', 0.4)}`
-                            : `1px solid ${alpha('#7B1FA2', 0.3)}`,
-                                                boxShadow:
-                          theme.palette.mode === 'dark'
-                            ? `0 4px 12px ${alpha('#9C27B0', 0.3)}`
-                            : `0 4px 12px ${alpha('#7B1FA2', 0.2)}`
+                        background: alpha('#9C27B0', 0.12),
+                        border: `1px solid ${alpha('#9C27B0', 0.25)}`,
+                        boxShadow: 'none'
                       }
                     }}
                   />
@@ -489,24 +469,15 @@ export default function PriceStatistics({ token }) {
                         size="small"
                         sx={{
                           p: 0.25,
-                          width: 24,
-                          height: 24,
-                          borderRadius: '8px',
-                          background: alpha(theme.palette.background.paper, 0.8),
+                          width: 22,
+                          height: 22,
+                          borderRadius: '6px',
+                          background: 'transparent',
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                                                  '&:hover': {
-                            background:
-                              theme.palette.mode === 'dark'
-                                ? alpha('#9C27B0', 0.08)
-                                : alpha('#7B1FA2', 0.06),
-                            border:
-                              theme.palette.mode === 'dark'
-                                ? `1px solid ${alpha('#9C27B0', 0.3)}`
-                                : `1px solid ${alpha('#7B1FA2', 0.25)}`,
-                                                        boxShadow:
-                              theme.palette.mode === 'dark'
-                                ? `0 4px 12px ${alpha('#9C27B0', 0.2)}`
-                                : `0 4px 12px ${alpha('#7B1FA2', 0.15)}`
+                          '&:hover': {
+                            background: alpha('#9C27B0', 0.04),
+                            border: `1px solid ${alpha('#9C27B0', 0.2)}`,
+                            boxShadow: 'none'
                           }
                         }}
                       >
@@ -527,21 +498,19 @@ export default function PriceStatistics({ token }) {
                         }
                         size="small"
                         sx={{
-                          borderRadius: '10px',
-                          height: isMobile ? '16px' : '20px',
-                          background: `linear-gradient(145deg, ${alpha(
-                            theme.palette.info.main,
-                            0.1
-                          )} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
-                          backdropFilter: 'blur(10px)',
-                          border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                          borderRadius: '6px',
+                          height: isMobile ? '16px' : '18px',
+                          background: alpha(theme.palette.info.main, 0.08),
+                          backdropFilter: 'none',
+                          border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
                           color: theme.palette.info.main,
-                          fontWeight: 600,
+                          fontWeight: 500,
                           fontSize: isMobile ? '0.55rem' : '0.65rem',
                           minWidth: isMobile ? '20px' : 'unset',
                           justifyContent: isMobile ? 'center' : 'flex-start',
                           pl: isMobile ? 0.5 : 1,
-                          pr: isMobile ? 0.5 : 1
+                          pr: isMobile ? 0.5 : 1,
+                          boxShadow: 'none'
                         }}
                       />
                     </Tooltip>
@@ -570,11 +539,8 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 600,
+                  color: theme.palette.warning.main,
                   fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
@@ -602,11 +568,9 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  color: theme.palette.mode === 'dark' ? '#66BB6A' : '#2E7D32',
-                  fontSize: isMobile ? '0.75rem' : '0.9rem',
-                  textShadow:
-                    theme.palette.mode === 'dark' ? '0 0 12px rgba(102, 187, 106, 0.3)' : 'none'
+                  fontWeight: 600,
+                  color: '#2E7D32',
+                  fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
                 <NumberTooltip number={fNumber(dom || 0)} /> %
@@ -633,14 +597,8 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 700,
-                  background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${alpha(
-                    theme.palette.info.main,
-                    0.8
-                  )} 100%)`,
-                  backgroundClip: 'text',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
+                  fontWeight: 600,
+                  color: theme.palette.info.main,
                   fontSize: isMobile ? '0.75rem' : '0.9rem'
                 }}
               >
@@ -670,11 +628,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 600,
+                    color: theme.palette.warning.main,
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
@@ -704,11 +659,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${alpha(theme.palette.info.main, 0.8)} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 600,
+                    color: theme.palette.info.main,
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
@@ -738,11 +690,9 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 700,
-                    color: theme.palette.mode === 'dark' ? '#64B5F6' : '#1976D2',
-                    fontSize: isMobile ? '0.75rem' : '0.9rem',
-                    textShadow:
-                      theme.palette.mode === 'dark' ? '0 0 12px rgba(100, 181, 246, 0.3)' : 'none'
+                    fontWeight: 600,
+                    color: '#1976D2',
+                    fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(trustlines)} />
@@ -771,11 +721,8 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 700,
-                    background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${alpha(theme.palette.warning.main, 0.8)} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
+                    fontWeight: 600,
+                    color: theme.palette.warning.main,
                     fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
@@ -805,11 +752,9 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 700,
-                    color: theme.palette.mode === 'dark' ? '#FFB74D' : '#F57C00',
-                    fontSize: isMobile ? '0.75rem' : '0.9rem',
-                    textShadow:
-                      theme.palette.mode === 'dark' ? '0 0 12px rgba(255, 183, 77, 0.3)' : 'none'
+                    fontWeight: 600,
+                    color: '#F57C00',
+                    fontSize: isMobile ? '0.75rem' : '0.9rem'
                   }}
                 >
                   <NumberTooltip number={fNumber(vol24htx)} />
@@ -960,24 +905,18 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             rel="noopener noreferrer"
             size="small"
             sx={{
-              width: isMobile ? 18 : 24,
-              height: isMobile ? 18 : 24,
-              p: isMobile ? 0.25 : 0.5,
-              borderRadius: '8px',
-              background: `linear-gradient(145deg, ${alpha(
-                theme.palette.primary.main,
-                0.1
-              )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+              width: isMobile ? 18 : 22,
+              height: isMobile ? 18 : 22,
+              p: isMobile ? 0.25 : 0.4,
+              borderRadius: '6px',
+              background: alpha(theme.palette.primary.main, 0.08),
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
               color: theme.palette.primary.main,
-            
+              boxShadow: 'none',
               '&:hover': {
-                background: `linear-gradient(145deg, ${alpha(
-                  theme.palette.primary.main,
-                  0.15
-                )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+                background: alpha(theme.palette.primary.main, 0.12),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+                boxShadow: 'none'
               }
             }}
           >
@@ -1001,24 +940,18 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
             onClick={() => toggleLinksDrawer(true)}
             size="small"
             sx={{
-              width: isMobile ? 18 : 24,
-              height: isMobile ? 18 : 24,
-              p: isMobile ? 0.25 : 0.5,
-              borderRadius: '8px',
-              background: `linear-gradient(145deg, ${alpha(
-                theme.palette.secondary.main,
-                0.1
-              )} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+              width: isMobile ? 18 : 22,
+              height: isMobile ? 18 : 22,
+              p: isMobile ? 0.25 : 0.4,
+              borderRadius: '6px',
+              background: alpha(theme.palette.secondary.main, 0.08),
+              border: `1px solid ${alpha(theme.palette.secondary.main, 0.15)}`,
               color: theme.palette.secondary.main,
-            
+              boxShadow: 'none',
               '&:hover': {
-                background: `linear-gradient(145deg, ${alpha(
-                  theme.palette.secondary.main,
-                  0.15
-                )} 0%, ${alpha(theme.palette.secondary.main, 0.08)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.secondary.main, 0.2)}`
+                background: alpha(theme.palette.secondary.main, 0.12),
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
+                boxShadow: 'none'
               }
             }}
           >
@@ -1076,28 +1009,22 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
               )
             }
             sx={{
-              height: isMobile ? '18px' : '22px',
+              height: isMobile ? '18px' : '20px',
               fontSize: isMobile ? '0.55rem' : '0.65rem',
-              borderRadius: '8px',
-              px: isMobile ? 0.6 : 1,
-              background: `linear-gradient(145deg, ${alpha(
-                theme.palette.background.paper,
-                0.95
-              )} 0%, ${alpha(theme.palette.background.paper, 0.85)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              borderRadius: '6px',
+              px: isMobile ? 0.6 : 0.8,
+              background: alpha(theme.palette.background.paper, 0.5),
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
               color: theme.palette.text.primary,
-              fontWeight: 600,
+              fontWeight: 500,
               cursor: 'pointer',
               minHeight: 'auto',
-            
+              boxShadow: 'none',
               '&:hover': {
-                background: `linear-gradient(145deg, ${alpha(
-                  theme.palette.primary.main,
-                  0.1
-                )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                background: alpha(theme.palette.primary.main, 0.08),
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
                 color: theme.palette.primary.main,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.15)}`
+                boxShadow: 'none'
               }
             }}
           />
@@ -1109,27 +1036,21 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           sx={{
-            height: isMobile ? '18px' : '26px',
-            fontSize: isMobile ? '0.55rem' : '0.75rem',
-            borderRadius: '8px',
-            px: isMobile ? 0.5 : 1,
-            background: `linear-gradient(145deg, ${alpha(
-              theme.palette.primary.main,
-              0.1
-            )} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            height: isMobile ? '18px' : '20px',
+            fontSize: isMobile ? '0.55rem' : '0.65rem',
+            borderRadius: '6px',
+            px: isMobile ? 0.5 : 0.8,
+            background: alpha(theme.palette.primary.main, 0.08),
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
             color: theme.palette.primary.main,
-            fontWeight: 600,
+            fontWeight: 500,
             cursor: 'pointer',
             minHeight: 'auto',
-          
+            boxShadow: 'none',
             '&:hover': {
-              background: `linear-gradient(145deg, ${alpha(
-                theme.palette.primary.main,
-                0.15
-              )} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                            boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`
+              background: alpha(theme.palette.primary.main, 0.12),
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
+              boxShadow: 'none'
             }
           }}
         />
