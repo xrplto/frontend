@@ -645,14 +645,19 @@ const CreatorTransactionsDialog = memo(
 
     // Fetch historical transactions
     const fetchTransactionHistory = useCallback(async () => {
-      if (!creatorAddress) return; // Removed open check
+      if (!creatorAddress) {
+        console.log('[CreatorTx] No creator address provided');
+        return;
+      }
 
+      console.log('[CreatorTx] Fetching transactions for:', creatorAddress);
       setLoading(true);
       setError(null);
 
       try {
         const client = new Client(XRPL_WEBSOCKET_URL);
         await client.connect();
+        console.log('[CreatorTx] Connected to XRPL');
 
         const accountTxResponse = await client.request({
           command: 'account_tx',
@@ -664,39 +669,49 @@ const CreatorTransactionsDialog = memo(
         });
 
         await client.disconnect();
+        console.log('[CreatorTx] Response received:', accountTxResponse?.result?.transactions?.length || 0, 'transactions');
 
-        if (accountTxResponse.result.transactions) {
-          // Filter out XRP payments less than 1 XRP
-          const filteredTransactions = accountTxResponse.result.transactions.filter((txData) => {
-            const tx = txData.tx;
+        if (accountTxResponse?.result?.transactions && Array.isArray(accountTxResponse.result.transactions)) {
+          console.log('[CreatorTx] Raw transactions:', accountTxResponse.result.transactions.length);
+          console.log('[CreatorTx] First transaction structure:', JSON.stringify(accountTxResponse.result.transactions[0], null, 2));
 
-            // Keep all non-payment transactions
-            if (tx.TransactionType !== 'Payment') return true;
+          // Normalize transaction structure (XRPL returns tx_json, not tx)
+          const validTransactions = accountTxResponse.result.transactions
+            .map((txData) => {
+              // Convert tx_json to tx for consistency
+              if (txData.tx_json && !txData.tx) {
+                return { ...txData, tx: txData.tx_json };
+              }
+              return txData;
+            })
+            .filter((txData) => {
+              const isValid = txData && txData.tx && txData.tx.TransactionType;
+              if (!isValid) {
+                console.log('[CreatorTx] Filtered out malformed transaction');
+              }
+              return isValid;
+            });
 
-            // For payments, check if amount is XRP and >= 1 XRP
-            if (typeof tx.Amount === 'string') {
-              // XRP amount (in drops)
-              const xrpAmount = parseInt(tx.Amount) / 1000000; // Convert drops to XRP
-              return xrpAmount >= 1;
-            }
+          console.log('[CreatorTx] Valid transactions after filter:', validTransactions.length);
+          setTransactions(validTransactions.slice(0, 15));
 
-            // Keep issued currency payments
-            return true;
-          });
-
-          setTransactions(filteredTransactions.slice(0, 15));
           // Pass latest transaction to parent
-          if (filteredTransactions.length > 0 && onLatestTransaction) {
-            onLatestTransaction(filteredTransactions[0]);
+          if (validTransactions.length > 0 && onLatestTransaction) {
+            console.log('[CreatorTx] Passing latest transaction to parent');
+            onLatestTransaction(validTransactions[0]);
+          } else {
+            console.log('[CreatorTx] No valid transactions to pass to parent');
           }
+        } else {
+          console.log('[CreatorTx] No transactions in response');
         }
       } catch (err) {
-        console.error('Error fetching transaction history:', err);
+        console.error('[CreatorTx] Error fetching transaction history:', err);
         setError(err.message || 'Failed to fetch transactions');
       } finally {
         setLoading(false);
       }
-    }, [creatorAddress]); // Removed 'open' dependency
+    }, [creatorAddress, onLatestTransaction]); // Removed 'open' dependency
 
     // Subscribe to real-time transactions
     const subscribeToTransactions = useCallback(async () => {
@@ -824,6 +839,7 @@ const CreatorTransactionsDialog = memo(
     // Initialize when component mounts (not just when dialog opens)
     useEffect(() => {
       if (creatorAddress) {
+        console.log('[CreatorTx] Component mounted, creator:', creatorAddress);
         fetchTransactionHistory();
         subscribeToTransactions();
 
@@ -833,14 +849,17 @@ const CreatorTransactionsDialog = memo(
         }, 10000);
 
         return () => {
+          console.log('[CreatorTx] Component unmounting');
           clearInterval(refreshInterval);
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
           }
           unsubscribe();
         };
+      } else {
+        console.log('[CreatorTx] No creator address on mount');
       }
-    }, [creatorAddress]); // Removed 'open' dependency
+    }, [creatorAddress, fetchTransactionHistory, subscribeToTransactions, unsubscribe]); // Removed 'open' dependency
 
     // Reset new transaction count after delay
     useEffect(() => {
@@ -857,7 +876,7 @@ const CreatorTransactionsDialog = memo(
       fetchTransactionHistory();
     };
 
-    // Always render; Drawer visibility controlled by `open`
+    // Always fetch transactions to populate latestCreatorTx in parent
     return (
       <Drawer
         anchor="left"
@@ -876,11 +895,9 @@ const CreatorTransactionsDialog = memo(
             },
             borderRight: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
             backgroundColor: theme.palette.background.paper,
-            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(
-              theme.palette.common.black,
-              0.04
-            )}`,
-            overflow: 'hidden'
+            boxShadow: 'none',
+            overflow: 'hidden',
+            zIndex: 1200
           }
         }}
         ModalProps={{ keepMounted: true }}

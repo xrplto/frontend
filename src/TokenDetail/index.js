@@ -139,7 +139,7 @@ const TokenDetail = memo(
     return (
       <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'row' }}>
         {/* Creator Transactions Panel - Always render but conditionally show */}
-        {!isMobile && (
+        {!isMobile && token?.creator && (
           <CreatorTransactionsDialog
             open={creatorTxOpen}
             onClose={handleCreatorTxToggle}

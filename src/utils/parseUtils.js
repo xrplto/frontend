@@ -67,23 +67,35 @@ function isValidSecret(secret) {
 }
 
 function dropsToXrp(drops) {
+  // Handle undefined, null, or empty values
+  if (drops === undefined || drops === null || drops === '') {
+    return '0';
+  }
+
   if (typeof drops === 'string') {
     if (!drops.match(/^-?[0-9]*\.?[0-9]*$/)) {
       console.error(
         `dropsToXrp: invalid value '${drops}',` +
           ` should be a number matching (^-?[0-9]*\\.?[0-9]*$).`
       );
+      return '0';
     } else if (drops === '.') {
       console.error(
         `dropsToXrp: invalid value '${drops}',` + ` should be a BigNumber or string-encoded number.`
       );
+      return '0';
     }
   }
 
   // Converting to BigNumber and then back to string should remove any
   // decimal point followed by zeros, e.g. '1.00'.
   // Important: specify base 10 to avoid exponential notation, e.g. '1e-7'.
-  drops = new Decimal(drops).toString();
+  try {
+    drops = new Decimal(drops).toString();
+  } catch (err) {
+    console.error(`dropsToXrp: error converting '${drops}':`, err);
+    return '0';
+  }
 
   // drops are only whole units
   if (drops.includes('.')) {

@@ -602,10 +602,12 @@ const TransactionDetailsPanel = memo(
                             '&:hover': { textDecoration: 'underline' }
                           }}
                           onClick={() =>
-                            window.open(`https://xrpl.to/profile/${transaction.Account}`, '_blank')
+                            transaction.Account && window.open(`https://xrpl.to/profile/${transaction.Account}`, '_blank')
                           }
                         >
-                          {transaction.Account.slice(0, 8)}...{transaction.Account.slice(-4)}
+                          {transaction.Account
+                            ? `${transaction.Account.slice(0, 8)}...${transaction.Account.slice(-4)}`
+                            : 'Unknown'}
                         </Typography>
                       </Box>
                     </Box>
@@ -628,14 +630,15 @@ const TransactionDetailsPanel = memo(
                               '&:hover': { textDecoration: 'underline' }
                             }}
                             onClick={() =>
-                              window.open(
+                              transaction.Destination && window.open(
                                 `https://xrpl.to/profile/${transaction.Destination}`,
                                 '_blank'
                               )
                             }
                           >
-                            {transaction.Destination.slice(0, 8)}...
-                            {transaction.Destination.slice(-4)}
+                            {transaction.Destination
+                              ? `${transaction.Destination.slice(0, 8)}...${transaction.Destination.slice(-4)}`
+                              : 'Unknown'}
                           </Typography>
                         </Box>
                       </Box>

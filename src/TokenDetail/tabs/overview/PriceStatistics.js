@@ -75,27 +75,27 @@ const badge24hStyle = {
 
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
-  borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-  padding: theme.spacing(0.6, 0.8),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  padding: theme.spacing(0.5, 0.75),
   '&:first-of-type': {
-    paddingLeft: theme.spacing(0.8),
+    paddingLeft: theme.spacing(0.75),
     fontWeight: 500,
     color: alpha(theme.palette.text.primary, 0.75),
     width: '40%'
   },
   '&:last-of-type': {
-    paddingRight: theme.spacing(0.8),
-    paddingLeft: theme.spacing(1.2)
+    paddingRight: theme.spacing(0.75),
+    paddingLeft: theme.spacing(1)
   },
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.5, 0.6),
+    padding: theme.spacing(0.4, 0.5),
     '&:first-of-type': {
-      paddingLeft: theme.spacing(0.6),
+      paddingLeft: theme.spacing(0.5),
       width: '45%'
     },
     '&:last-of-type': {
-      paddingRight: theme.spacing(0.6),
-      paddingLeft: theme.spacing(0.8)
+      paddingRight: theme.spacing(0.5),
+      paddingLeft: theme.spacing(0.7)
     }
   }
 }));
@@ -222,11 +222,9 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: '12px',
+        borderRadius: '8px',
         background: 'transparent',
-        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-        position: 'relative',
-        overflow: 'hidden',
+        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
         width: '100%',
         mb: 0.5,
       }}
@@ -241,10 +239,9 @@ export default function PriceStatistics({ token }) {
         fullWidth
         PaperProps={{
           sx: {
-            borderRadius: '16px',
+            borderRadius: '12px',
             background: theme.palette.background.paper,
-            border: `2px solid ${theme.palette.error.main}`,
-            boxShadow: `0 8px 32px ${alpha(theme.palette.error.main, 0.2)}`
+            border: `2px solid ${theme.palette.error.main}`
           }
         }}
       >
@@ -298,7 +295,7 @@ export default function PriceStatistics({ token }) {
         sx={{
           p: 0.5,
           px: 0.75,
-          borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         }}
       >
         <Typography
@@ -393,8 +390,7 @@ export default function PriceStatistics({ token }) {
                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                         '&:hover': {
                           background: alpha(theme.palette.primary.main, 0.04),
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                          boxShadow: 'none'
+                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
                         }
                       }}
                     >
@@ -445,16 +441,12 @@ export default function PriceStatistics({ token }) {
                       borderRadius: '6px',
                       height: isMobile ? '18px' : '22px',
                       background: alpha('#9C27B0', 0.08),
-                      backdropFilter: 'none',
                       border: `1px solid ${alpha('#9C27B0', 0.15)}`,
                       color: '#9C27B0',
                       fontWeight: 500,
-                      boxShadow: 'none',
-                      textShadow: 'none',
                       '&:hover': {
                         background: alpha('#9C27B0', 0.12),
-                        border: `1px solid ${alpha('#9C27B0', 0.25)}`,
-                        boxShadow: 'none'
+                        border: `1px solid ${alpha('#9C27B0', 0.25)}`
                       }
                     }}
                   />
@@ -475,8 +467,7 @@ export default function PriceStatistics({ token }) {
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                           '&:hover': {
                             background: alpha('#9C27B0', 0.04),
-                            border: `1px solid ${alpha('#9C27B0', 0.2)}`,
-                            boxShadow: 'none'
+                            border: `1px solid ${alpha('#9C27B0', 0.2)}`
                           }
                         }}
                       >
@@ -500,7 +491,6 @@ export default function PriceStatistics({ token }) {
                           borderRadius: '6px',
                           height: isMobile ? '16px' : '18px',
                           background: alpha(theme.palette.info.main, 0.08),
-                          backdropFilter: 'none',
                           border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
                           color: theme.palette.info.main,
                           fontWeight: 500,
@@ -508,8 +498,7 @@ export default function PriceStatistics({ token }) {
                           minWidth: isMobile ? '20px' : 'unset',
                           justifyContent: isMobile ? 'center' : 'flex-start',
                           pl: isMobile ? 0.5 : 1,
-                          pr: isMobile ? 0.5 : 1,
-                          boxShadow: 'none'
+                          pr: isMobile ? 0.5 : 1
                         }}
                       />
                     </Tooltip>
@@ -911,11 +900,9 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               background: alpha(theme.palette.primary.main, 0.08),
               border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
               color: theme.palette.primary.main,
-              boxShadow: 'none',
               '&:hover': {
                 background: alpha(theme.palette.primary.main, 0.12),
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                boxShadow: 'none'
+                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
               }
             }}
           >
@@ -946,11 +933,9 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               background: alpha(theme.palette.secondary.main, 0.08),
               border: `1px solid ${alpha(theme.palette.secondary.main, 0.15)}`,
               color: theme.palette.secondary.main,
-              boxShadow: 'none',
               '&:hover': {
                 background: alpha(theme.palette.secondary.main, 0.12),
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
-                boxShadow: 'none'
+                border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`
               }
             }}
           >
@@ -1018,12 +1003,10 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
               fontWeight: 500,
               cursor: 'pointer',
               minHeight: 'auto',
-              boxShadow: 'none',
               '&:hover': {
                 background: alpha(theme.palette.primary.main, 0.08),
                 border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                color: theme.palette.primary.main,
-                boxShadow: 'none'
+                color: theme.palette.primary.main
               }
             }}
           />
@@ -1045,11 +1028,9 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => 
             fontWeight: 500,
             cursor: 'pointer',
             minHeight: 'auto',
-            boxShadow: 'none',
             '&:hover': {
               background: alpha(theme.palette.primary.main, 0.12),
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-              boxShadow: 'none'
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
             }
           }}
         />
