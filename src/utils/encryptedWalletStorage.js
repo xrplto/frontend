@@ -541,17 +541,23 @@ export class UnifiedWalletStorage {
    * Handle OAuth login and setup wallet
    */
   async handleSocialLogin(profile, accessToken, backend) {
+    console.log('=== handleSocialLogin START ===');
+    console.log('Profile:', profile);
+
     try {
       // Check if user has any wallet with this social ID
       const walletId = `${profile.provider}_${profile.id}`;
+      console.log('Looking for wallet with ID:', walletId);
 
       // Try to find existing wallet
       const existingWallet = await this.findWalletBySocialId(walletId);
+      console.log('findWalletBySocialId result:', existingWallet);
 
       if (existingWallet) {
+        console.log('✅ WALLET FOUND - Should auto-login');
         // Wallet exists - user already set password before
         // OAuth proves identity, so unlock automatically
-        return {
+        const result = {
           success: true,
           wallet: {
             account: existingWallet.address,
@@ -562,12 +568,16 @@ export class UnifiedWalletStorage {
           },
           requiresPassword: false
         };
+        console.log('Returning success result:', result);
+        return result;
       }
 
+      console.log('❌ No wallet found locally, checking backend...');
       // Check backend for existing wallet
       const response = await backend.get(`/api/wallets/social/${profile.provider}/${profile.id}`);
 
       if (response.data) {
+        console.log('Found wallet on backend, needs local storage');
         // Wallet exists on server but not locally
         // Need password to store locally
         return {
@@ -578,6 +588,7 @@ export class UnifiedWalletStorage {
           action: 'recover'
         };
       } else {
+        console.log('No wallet on backend either - new user');
         // Brand new user - need to create wallet with password
         return {
           success: false,
@@ -686,51 +697,58 @@ export class UnifiedWalletStorage {
   }
 
   /**
-   * Find wallet using OAuth-derived password
+   * Find wallet in IndexedDB for OAuth user
    */
   async findWalletBySocialId(walletId) {
-    // Ensure CryptoJS is loaded
-    if (typeof window === 'undefined' || !window.CryptoJS) {
-      // Try to wait for it to load
-      await new Promise((resolve) => {
-        let attempts = 0;
-        const checkInterval = setInterval(() => {
-          attempts++;
-          if (window.CryptoJS || attempts > 20) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-      });
-
-      if (!window.CryptoJS) {
-        console.warn('CryptoJS not available for OAuth wallet lookup');
-        return null;
-      }
-    }
-
-    // Generate deterministic wallet from OAuth profile
-    const [provider, id] = walletId.split('_');
-    const profile = { provider, id };
-    const wallet = this.generateDeterministicWallet(profile);
-
-    // Try to get from storage using OAuth-derived password
-    const oauthPassword = this.deriveOAuthKey(profile);
     try {
-      const stored = await this.getWallet(wallet.address, oauthPassword);
-      if (stored) {
-        return {
-          seed: stored.seed,
-          address: stored.address,
-          publicKey: stored.publicKey,
-          provider,
-          provider_id: id
+      console.log('findWalletBySocialId called with:', walletId);
+      const db = await this.initDB();
+      const [provider, ...idParts] = walletId.split('_');
+      const id = idParts.join('_'); // Handle IDs that might contain underscores
+
+      // Generate deterministic wallet to get the expected address
+      const profile = { provider, id };
+      const deterministicWallet = this.generateDeterministicWallet(profile);
+      const expectedAddress = deterministicWallet.address;
+      console.log('Looking for wallet with address:', expectedAddress);
+
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
+        const index = store.index('address');
+
+        // Look up wallet by exact address match
+        const request = index.get(expectedAddress);
+
+        request.onsuccess = () => {
+          const walletRecord = request.result;
+          if (walletRecord) {
+            console.log('✅ Found wallet by address:', walletRecord.address);
+
+            // Return the wallet data with regenerated seed
+            resolve({
+              address: walletRecord.address,
+              publicKey: deterministicWallet.publicKey,
+              seed: deterministicWallet.seed,
+              provider,
+              provider_id: id,
+              found: true
+            });
+          } else {
+            console.log('❌ No wallet found with address:', expectedAddress);
+            resolve(null);
+          }
         };
-      }
+
+        request.onerror = () => {
+          console.error('Error searching for wallet:', request.error);
+          resolve(null);
+        };
+      });
     } catch (e) {
-      // Wallet not found or wrong password
+      console.error('Error finding wallet:', e);
+      return null;
     }
-    return null;
   }
 
 
@@ -753,10 +771,12 @@ export class UnifiedWalletStorage {
     }
     const serverSecret = process.env.NEXT_PUBLIC_WALLET_SECRET || 'default-secret';
 
-    // Create deterministic seed from profile
+    // IMPORTANT: Only use stable, immutable values for deterministic generation
+    // Do NOT use email or username as they might be missing or change
+    // Only use provider and id which are guaranteed to be consistent
     const seed = CryptoJS.PBKDF2(
       `xrpl-social-${profile.provider}-${profile.id}`,
-      `${serverSecret}-${profile.email || profile.username || profile.id}`,
+      `${serverSecret}-${profile.provider}-${profile.id}`,
       {
         keySize: 256/32,
         iterations: 100000,

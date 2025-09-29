@@ -1026,7 +1026,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         backend
       );
 
+      console.log('processGoogleConnect result:', result);
+
       if (result.requiresPassword) {
+        console.log('❌ Password required - showing setup dialog');
         // Store token temporarily for password setup
         sessionStorage.setItem('oauth_temp_token', jwtToken);
         sessionStorage.setItem('oauth_temp_provider', 'google');
@@ -1039,6 +1042,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Show password setup dialog
         setShowOAuthPasswordSetup(true);
       } else {
+        console.log('✅ No password required - auto login');
         // Wallet already setup
         await walletStorage.setSecureItem('jwt', jwtToken);
         await walletStorage.setSecureItem('authMethod', 'google');
@@ -1105,7 +1109,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Build Twitter OAuth 2.0 URL with PKCE
       // IMPORTANT: This must EXACTLY match what's configured in Twitter app settings
-      const redirectUri = 'http://localhost:3002/callback';
+      const redirectUri = window.location.origin + '/callback';
 
       const params = new URLSearchParams({
         response_type: 'code',
@@ -1722,6 +1726,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Check if returning from OAuth and reopen wallet modal or show password setup
   useEffect(() => {
+    // Check for OAuth wallet profile (auto-login)
+    const oauthWalletProfile = sessionStorage.getItem('oauth_wallet_profile');
+    if (oauthWalletProfile && sessionStorage.getItem('oauth_logged_in') === 'true') {
+      try {
+        const profile = JSON.parse(oauthWalletProfile);
+        console.log('OAuth auto-login with profile:', profile);
+
+        // Auto-login the OAuth user
+        doLogIn(profile);
+
+        // Clean up session storage
+        sessionStorage.removeItem('oauth_wallet_profile');
+        sessionStorage.removeItem('oauth_logged_in');
+        sessionStorage.removeItem('wallet_address');
+        sessionStorage.removeItem('wallet_public_key');
+
+        // Close modal if it was open
+        setOpenWalletModal(false);
+        return;
+      } catch (error) {
+        console.error('Error parsing OAuth wallet profile:', error);
+      }
+    }
+
     // Check if we need to show OAuth password setup
     const oauthToken = sessionStorage.getItem('oauth_temp_token');
     const oauthProvider = sessionStorage.getItem('oauth_temp_provider');

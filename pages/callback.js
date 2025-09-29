@@ -72,6 +72,13 @@ const OAuthCallback = () => {
             throw new Error('Redirect URI not found in session');
           }
 
+          console.log('Sending to backend:', {
+            code: code ? `${code.substring(0, 10)}...` : 'missing',
+            state: state ? `${state.substring(0, 10)}...` : 'missing',
+            codeVerifier: codeVerifier ? `${codeVerifier.substring(0, 10)}...` : 'missing',
+            redirectUri
+          });
+
           const response = await fetch('https://api.xrpl.to/api/oauth/twitter/exchange', {
             method: 'POST',
             headers: {
@@ -92,7 +99,13 @@ const OAuthCallback = () => {
             console.error('Twitter OAuth failed:', {
               status: response.status,
               statusText: response.statusText,
-              data: data
+              data: data,
+              sentData: {
+                code: code ? 'exists' : 'missing',
+                state: state ? 'exists' : 'missing',
+                codeVerifier: codeVerifier ? 'exists' : 'missing',
+                redirectUri
+              }
             });
             throw new Error(data.message || data.error || `Twitter authentication failed (${response.status})`);
           }
@@ -175,6 +188,7 @@ const OAuthCallback = () => {
         };
 
         // Handle social login
+        console.log('Calling handleSocialLogin from callback.js');
         const result = await walletStorage.handleSocialLogin(
           {
             id: payload?.id || payload?.sub || 'unknown',
@@ -187,7 +201,10 @@ const OAuthCallback = () => {
           backend
         );
 
+        console.log('handleSocialLogin result in callback:', result);
+
         if (result.requiresPassword) {
+          console.log('Password required - storing session data');
           // Store token temporarily for password setup
           sessionStorage.setItem('oauth_temp_token', jwtToken);
           sessionStorage.setItem('oauth_temp_provider', provider);
@@ -207,11 +224,25 @@ const OAuthCallback = () => {
           localStorage.setItem('authMethod', provider);
           localStorage.setItem('user', JSON.stringify(payload || {}));
 
-          // Store wallet info
+          // Store wallet info for auto-login
           if (result.wallet) {
+            // Store complete wallet profile for AppContext
+            const walletProfile = {
+              account: result.wallet.address,
+              publicKey: result.wallet.publicKey,
+              seed: result.wallet.seed,
+              wallet_type: 'oauth',
+              provider: provider,
+              provider_id: payload?.id || payload?.sub,
+              token: jwtToken,
+              tokenCreatedAt: Date.now()
+            };
+
+            // Store in sessionStorage for immediate use
+            sessionStorage.setItem('oauth_wallet_profile', JSON.stringify(walletProfile));
+            sessionStorage.setItem('oauth_logged_in', 'true');
             sessionStorage.setItem('wallet_address', result.wallet.address);
             sessionStorage.setItem('wallet_public_key', result.wallet.publicKey);
-            sessionStorage.setItem('oauth_logged_in', 'true');
           }
 
           // Redirect to return URL or main page
