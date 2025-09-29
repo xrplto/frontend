@@ -27,23 +27,23 @@ import axios from 'axios';
 const TokenCard = styled(Card)(({ theme }) => ({
   background: 'transparent',
   backdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  borderRadius: '6px',
+  border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+  borderRadius: '12px',
   padding: '6px 8px',
   cursor: 'pointer',
   transition: 'none !important',
   '&:hover': {
     background: alpha(theme.palette.primary.main, 0.02),
-    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+    borderColor: alpha(theme.palette.divider, 0.2),
     transform: 'none',
     transition: 'none !important'
   }
 }));
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  borderRadius: '8px',
+  borderRadius: '12px',
   background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
   boxShadow: 'none',
   position: 'relative',
   overflow: 'hidden',
@@ -51,7 +51,8 @@ const StyledCard = styled(Card)(({ theme }) => ({
   mb: 0.75,
   '&:hover': {
     boxShadow: 'none',
-    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+    borderColor: alpha(theme.palette.divider, 0.3),
+    background: alpha(theme.palette.background.paper, 0.04)
   }
 }));
 
@@ -195,7 +196,7 @@ const TrendingTokens = () => {
           justifyContent: 'space-between',
           px: { xs: 0.75, sm: 1 },
           pt: { xs: 0.75, sm: 1 },
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
           pb: 0.75
         }}
       >

@@ -70,7 +70,7 @@ const badge24hStyle = {
 
 // Enhanced styled components
 const ModernTableCell = styled(TableCell)(({ theme }) => ({
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
   padding: theme.spacing(0.6, 0.8),
   '&:first-of-type': {
     paddingLeft: theme.spacing(0.8),
@@ -217,9 +217,9 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: '6px',
-        background: alpha(theme.palette.background.paper, 0.3),
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        borderRadius: '12px',
+        background: 'transparent',
+        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
         position: 'relative',
         overflow: 'hidden',
         width: '100%',
@@ -293,7 +293,7 @@ export default function PriceStatistics({ token }) {
         sx={{
           p: 0.5,
           px: 0.75,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+          borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
         }}
       >
         <Typography

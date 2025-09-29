@@ -1462,17 +1462,18 @@ const PriceChartAdvanced = memo(({ token }) => {
         width: '100%',
         p: isMobile ? 1 : 2,
         pr: isMobile ? 0.5 : 2,
-        background: theme.chart?.background || (isDark ? '#0d0d0d' : '#fafafa'),
-        backdropFilter: 'blur(20px)',
-        boxShadow: isDark
-          ? '0 10px 40px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.03)'
-          : '0 4px 20px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 1)',
-        border: `1px solid ${isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-        borderRadius: isMobile ? '10px' : '16px',
+        background: 'transparent',
+        backdropFilter: 'none',
+        boxShadow: 'none',
+        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+        borderRadius: '12px',
         overflow: 'hidden',
         transition: 'none',
         '&:hover': {
-          transform: 'none'
+          transform: 'none',
+          boxShadow: 'none',
+          borderColor: alpha(theme.palette.divider, 0.3),
+          background: alpha(theme.palette.background.paper, 0.04)
         },
         ...(isFullscreen && {
           position: 'fixed',

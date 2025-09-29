@@ -118,9 +118,9 @@ export default function Description({
     <Card
       elevation={0}
       sx={{
-        borderRadius: '8px',
+        borderRadius: '12px',
         background: 'transparent',
-        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
         boxShadow: 'none',
         position: 'relative',
         overflow: 'hidden',
@@ -128,7 +128,8 @@ export default function Description({
         mb: 0.75,
         '&:hover': {
           boxShadow: 'none',
-          border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+          borderColor: alpha(theme.palette.divider, 0.3),
+          background: alpha(theme.palette.background.paper, 0.04)
         }
       }}
     >
@@ -173,7 +174,7 @@ export default function Description({
           </Stack>
         }
         sx={{
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
           px: 1,
           py: 0.75
         }}

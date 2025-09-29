@@ -46,12 +46,9 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
   '& .MuiSlider-track': {
     border: 'none',
     height: 3,
-    background:
-      theme.palette.mode === 'dark'
-        ? `linear-gradient(90deg, #66BB6A, #FFA726, #FF5252)`
-        : `linear-gradient(90deg, #388E3C, #F57C00, #D32F2F)`,
+    background: theme.palette.primary.main,
     borderRadius: '2px',
-    boxShadow: `0 2px 4px ${alpha(theme.palette.primary.main, 0.15)}`
+    boxShadow: 'none'
   },
   '& .MuiSlider-rail': {
     height: 3,
@@ -64,7 +61,7 @@ const LowhighBarSlider = styled(Slider)(({ theme }) => ({
     width: 8,
     background: theme.palette.background.paper,
     border: `2px solid ${theme.palette.primary.main}`,
-    boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.15)}`,
+    boxShadow: 'none',
     '&:before': { display: 'none' }
   },
   '& .MuiSlider-valueLabel': { display: 'none' }
@@ -522,12 +519,12 @@ const TokenSummary = memo(
       <Box
         sx={{
           p: { xs: 0.3, sm: 0.4 },
-          borderRadius: { xs: '6px', sm: '8px' },
+          borderRadius: '12px',
           background: 'transparent',
           backdropFilter: 'none',
           WebkitBackdropFilter: 'none',
-          border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-          boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.06)}`,
+          border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+          boxShadow: 'none',
           mb: { xs: 0.25, sm: 0.5 },
           mt: { xs: 0, md: -1 },
           position: 'relative',
@@ -536,8 +533,9 @@ const TokenSummary = memo(
             display: 'none'
           },
           '&:hover': {
-            boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`,
-            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+            boxShadow: 'none',
+            borderColor: alpha(theme.palette.divider, 0.3),
+            background: alpha(theme.palette.background.paper, 0.04)
           }
         }}
       >
@@ -578,7 +576,7 @@ const TokenSummary = memo(
                       background: isRemove
                         ? alpha(theme.palette.error.main, 0.15)
                         : alpha(theme.palette.success.main, 0.15),
-                      boxShadow: `0 4px 12px ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
+                      boxShadow: 'none'
                     },
                     '& .MuiSvgIcon-root': {
                       fontSize: '14px',
@@ -641,12 +639,13 @@ const TokenSummary = memo(
                       width: 24,
                       height: 24,
                       borderRadius: '6px',
-                      border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.dark, 0.15)} 100%)`,
+                      border: `1.5px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                      background: 'transparent',
                       padding: '4px',
                       '&:hover': {
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.2)} 0%, ${alpha(theme.palette.warning.dark, 0.25)} 100%)`,
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.3)}`
+                        background: alpha(theme.palette.warning.main, 0.08),
+                        boxShadow: 'none',
+                        borderColor: theme.palette.warning.main
                       },
                       '& .MuiSvgIcon-root': {
                         fontSize: '14px',
@@ -754,7 +753,7 @@ const TokenSummary = memo(
                           if (isXrpToToken) return alpha('#4169e1', 0.12);
                           return alpha(theme.palette.primary.main, 0.08);
                         })(),
-                        boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
+                        boxShadow: 'none'
                       },
                       '& .MuiSvgIcon-root': {
                         fontSize: '14px',
@@ -987,7 +986,7 @@ const TokenSummary = memo(
                     borderRadius: isMobile ? '10px' : '16px',
                     objectFit: 'cover',
                     border: `${isMobile ? '1px' : '2px'} solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                    boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.1)}`,
+                    boxShadow: 'none',
                   }}
                   onError={(e) => {
                     e.currentTarget.src = fallbackImageUrl;
@@ -1027,26 +1026,18 @@ const TokenSummary = memo(
                     position: 'absolute',
                     top: -3,
                     left: -3,
-                    background: `linear-gradient(135deg, 
-                    #4285f4 0%, 
-                    #34a853 25%, 
-                    #fbbc04 50%, 
-                    #ea4335 75%, 
-                    #9c27b0 100%
-                  )`,
+                    background: '#4285f4',
                     borderRadius: '50%',
                     width: { xs: 18, sm: 20 },
                     height: { xs: 18, sm: 20 },
                     minWidth: { xs: 18, sm: 20 },
                     minHeight: { xs: 18, sm: 20 },
                     border: `1.5px solid ${theme.palette.background.paper}`,
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.25)},
-                             0 0 0 2px ${alpha('#4285f4', 0.2)}`,
+                    boxShadow: 'none',
                     zIndex: 3,
                     '&:hover': {
-                      boxShadow: `0 8px 24px ${alpha(theme.palette.common.black, 0.4)},
-                               0 0 0 4px ${alpha('#4285f4', 0.3)},
-                               0 0 20px ${alpha('#4285f4', 0.2)}`
+                      boxShadow: 'none',
+                      borderColor: '#4285f4'
                     },
                     '&:active': {
                     }
@@ -1097,10 +1088,7 @@ const TokenSummary = memo(
                       sx={{
                         fontSize: { xs: '0.8rem', sm: '0.95rem', md: '1.15rem' },
                         fontWeight: 800,
-                        background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 50%, ${theme.palette.info.main} 100%)`,
-                        backgroundClip: 'text',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
+                        color: theme.palette.text.primary,
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
@@ -1121,8 +1109,8 @@ const TokenSummary = memo(
                             width: { xs: 18, sm: 22 },
                             height: { xs: 18, sm: 22 },
                             borderRadius: '50%',
-                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-                            boxShadow: `0 2px 8px ${alpha(theme.palette.success.main, 0.3)}`,
+                            background: theme.palette.success.main,
+                            boxShadow: 'none',
                             border: `2px solid ${theme.palette.background.paper}`,
                             ml: 0.5
                           }}
@@ -1142,7 +1130,7 @@ const TokenSummary = memo(
                             height: { xs: 18, sm: 22 },
                             px: { xs: 0.5, sm: 0.75 },
                             borderRadius: { xs: '12px', sm: '14px' },
-                            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
+                            background: alpha(theme.palette.primary.main, 0.08),
                             border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
                             ml: 0.5
                           }}
@@ -1185,7 +1173,7 @@ const TokenSummary = memo(
                         lineHeight: 1,
                         letterSpacing: '-0.01em',
                         ml: 1,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.main, 0.04)} 100%)`,
+                        background: alpha(theme.palette.primary.main, 0.04),
                         px: 0.75,
                         py: 0.25,
                         borderRadius: '8px',
@@ -1222,10 +1210,9 @@ const TokenSummary = memo(
                   <Stack direction="row" alignItems="center" spacing={0.3}>
                     <Typography
                       variant="h6"
-                      color="text.secondary"
                       sx={{
                         fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.85rem' },
-                        opacity: 0.85,
+                        color: theme.palette.mode === 'dark' ? theme.palette.grey[400] : theme.palette.grey[700],
                         fontWeight: 600,
                         letterSpacing: '-0.01em',
                         lineHeight: 1,
@@ -1249,11 +1236,11 @@ const TokenSummary = memo(
                           borderRadius: { xs: '6px', sm: '10px' },
                           background: origin
                             ? alpha(theme.palette.background.paper, 0.9)
-                            : `linear-gradient(135deg, ${alpha('#23288E', 0.15)} 0%, ${alpha('#1976d2', 0.08)} 100%)`,
+                            : alpha('#1976d2', 0.08),
                           border: `1px solid ${origin ? alpha(theme.palette.divider, 0.2) : alpha('#1976d2', 0.3)}`,
                         }}
                       >
-                        <Box sx={{ transform: { xs: 'scale(1.2)', sm: 'scale(1.4)' } }}>
+                        <Box>
                           {getOriginIcon(origin || 'XRPL')}
                         </Box>
                         <Typography
@@ -1292,7 +1279,7 @@ const TokenSummary = memo(
                                     background: isRemove
                                 ? alpha(theme.palette.error.main, 0.15)
                                 : alpha(theme.palette.success.main, 0.15),
-                              boxShadow: `0 4px 12px ${isRemove ? alpha(theme.palette.error.main, 0.2) : alpha(theme.palette.success.main, 0.2)}`
+                              boxShadow: 'none'
                             },
                             '& .MuiSvgIcon-root': {
                               fontSize: '16px',
@@ -1356,11 +1343,11 @@ const TokenSummary = memo(
                               height: 32,
                               borderRadius: '8px',
                               border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-                              background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.1)} 0%, ${alpha(theme.palette.warning.dark, 0.15)} 100%)`,
+                              background: 'transparent',
                                       padding: '6px',
                               '&:hover': {
-                                        background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.2)} 0%, ${alpha(theme.palette.warning.dark, 0.25)} 100%)`,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.3)}`
+                                        background: alpha(theme.palette.warning.main, 0.08),
+                                boxShadow: 'none'
                               },
                               '& .MuiSvgIcon-root': {
                                 fontSize: '16px',
@@ -1470,7 +1457,7 @@ const TokenSummary = memo(
                                   if (isXrpToToken) return alpha('#4169e1', 0.12);
                                   return alpha(theme.palette.primary.main, 0.08);
                                 })(),
-                                boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`
+                                boxShadow: 'none'
                               },
                               '& .MuiSvgIcon-root': {
                                 fontSize: '16px',
@@ -1706,14 +1693,14 @@ const TokenSummary = memo(
                     {/* Price only - removed duplicate XRP exchange */}
                     <Box
                       sx={{
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.main, 0.05)} 100%)`,
+                        background: alpha(theme.palette.primary.main, 0.04),
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
                         borderRadius: '10px',
                         px: 2.5,
                         py: 1,
-                        boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.08)}`,
+                        boxShadow: 'none',
                         '&:hover': {
-                            boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.15)}`
+                            boxShadow: 'none'
                         }
                       }}
                     >
@@ -1778,12 +1765,12 @@ const TokenSummary = memo(
                         spacing={1}
                         sx={{
                           display: { xs: 'none', md: 'flex' },
-                          background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.8)} 0%, ${alpha(theme.palette.background.paper, 0.6)} 100%)`,
+                          background: alpha(theme.palette.background.paper, 0.05),
                           border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                           borderRadius: '10px',
                           px: 2,
                           py: 1,
-                          boxShadow: `0 1px 4px ${alpha(theme.palette.common.black, 0.05)}`,
+                          boxShadow: 'none',
                           height: '40px'
                         }}
                       >
@@ -1828,10 +1815,7 @@ const TokenSummary = memo(
                             sx={{
                               width: '100%',
                               height: 3,
-                              background: `linear-gradient(90deg, 
-                              ${theme.palette.success.main} 0%, 
-                              ${alpha(theme.palette.warning.main, 0.7)} 50%, 
-                              ${theme.palette.error.main} 100%)`,
+                              background: alpha(theme.palette.divider, 0.2),
                               borderRadius: 1.5,
                               position: 'relative'
                             }}
@@ -1841,13 +1825,13 @@ const TokenSummary = memo(
                                 position: 'absolute',
                                 left: `${range24h.percent}%`,
                                 top: '50%',
-                                transform: 'translate(-50%, -50%)',
+                                transform: 'translateY(-50%)',
                                 width: 8,
                                 height: 8,
                                 borderRadius: '50%',
                                 backgroundColor: theme.palette.background.paper,
                                 border: `1.5px solid ${theme.palette.primary.main}`,
-                                boxShadow: `0 1px 4px ${alpha(theme.palette.primary.main, 0.2)}`
+                                boxShadow: 'none'
                               }}
                             />
                           </Box>
@@ -1899,7 +1883,7 @@ const TokenSummary = memo(
                           border: `1.5px solid ${alpha(item.color, 0.2)}`,
                               '&:hover': {
                             background: alpha(item.color, 0.15),
-                            boxShadow: `0 4px 12px ${alpha(item.color, 0.2)}`
+                            boxShadow: 'none'
                           }
                         }}
                       >
@@ -1998,9 +1982,7 @@ const TokenSummary = memo(
                     width: '100%',
                     height: 4,
                     borderRadius: 2,
-                    background: `linear-gradient(90deg, 
-                    ${alpha(theme.palette.success.main, 0.2)} 0%, 
-                    ${alpha(theme.palette.error.main, 0.2)} 100%)`,
+                    background: alpha(theme.palette.divider, 0.15),
                     position: 'relative'
                   }}
                 >
@@ -2009,13 +1991,13 @@ const TokenSummary = memo(
                       position: 'absolute',
                       left: `${range24h.percent}%`,
                       top: '50%',
-                      transform: 'translate(-50%, -50%)',
+                      transform: 'translateY(-50%)',
                       width: 8,
                       height: 8,
                       borderRadius: '50%',
                       backgroundColor: theme.palette.background.paper,
                       border: `2px solid ${theme.palette.primary.main}`,
-                      boxShadow: theme.shadows[1]
+                      boxShadow: 'none'
                     }}
                   />
                 </Box>
@@ -2105,7 +2087,7 @@ const TokenSummary = memo(
                   flex: 1,
                   p: { xs: 0.25, sm: 0.4 },
                   borderRadius: '6px',
-                  background: `linear-gradient(135deg, ${alpha(metric.color, 0.08)} 0%, ${alpha(metric.color, 0.05)} 100%)`,
+                  background: alpha(metric.color, 0.04),
                   border: `1px solid ${alpha(metric.color, 0.15)}`,
                   textAlign: 'center',
                   mr: {
@@ -2113,7 +2095,7 @@ const TokenSummary = memo(
                     sm: index === metricsData.length - 1 ? 0 : 0.75
                   },
                   '&:hover': {
-                    boxShadow: `0 4px 12px ${alpha(metric.color, 0.15)}`
+                    boxShadow: 'none'
                   }
                 }}
               >
