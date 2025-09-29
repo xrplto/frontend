@@ -815,6 +815,17 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                   </Typography>
                 </Box>
+                <Box component="span" sx={{ fontSize: '0.65rem', ml: 0.5, opacity: 0.7 }}>
+                  {(() => {
+                    const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
+                    if (val < 500) return '🦐';
+                    if (val < 1000) return '🐟';
+                    if (val < 2500) return '🐬';
+                    if (val < 5000) return '🐙';
+                    if (val < 10000) return '🦈';
+                    return '🐋';
+                  })()}
+                </Box>
               </Box>
 
               {/* Maker/Taker */}
