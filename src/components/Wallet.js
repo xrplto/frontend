@@ -1093,9 +1093,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       sessionStorage.setItem('oauth1_token_secret', data.oauth_token_secret);
       sessionStorage.setItem('oauth1_auth_start', Date.now().toString());
 
-      // Redirect to Twitter OAuth 1.0a authorization URL
-      console.log('Redirecting to Twitter OAuth 1.0a:', data.auth_url);
-      window.location.href = data.auth_url;
+      // Replace twitter.com with x.com to avoid redirect
+      const authUrl = data.auth_url.replace('api.twitter.com', 'api.x.com');
+      console.log('Redirecting to Twitter OAuth 1.0a:', authUrl);
+      window.location.href = authUrl;
     } catch (error) {
       openSnackbar('X connect failed: ' + error.message, 'error');
     }
