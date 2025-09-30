@@ -30,7 +30,7 @@ import Alert from '@mui/material/Alert';
 import TextField from '@mui/material/TextField';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconButton from '@mui/material/IconButton';
-import { Visibility, VisibilityOff, LockOutlined, SecurityOutlined } from '@mui/icons-material';
+import { Visibility, VisibilityOff, LockOutlined, SecurityOutlined, Fingerprint, Google, X, Email } from '@mui/icons-material';
 
 // Context
 import { useContext } from 'react';
@@ -2920,6 +2920,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
+                          <Google sx={{ fontSize: '1.1rem', mr: 0.5 }} />
                           Google
                         </Button>
 
@@ -2944,7 +2945,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          X
+                          <X sx={{ fontSize: '1.1rem', mr: 0.5 }} />
+                          Twitter
                         </Button>
 
                         <Button
@@ -2968,6 +2970,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
+                          <Email sx={{ fontSize: '1.1rem', mr: 0.5 }} />
                           Email
                         </Button>
 
