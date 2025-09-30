@@ -244,20 +244,10 @@ const OAuthCallback = () => {
             } else if (response.status === 400) {
               console.error('BAD REQUEST - Check request parameters');
             } else if (response.status === 401) {
-              // Check if it's actually a rate limit issue
-              if (data?.details?.includes('429') || data?.message?.includes('429')) {
-                console.error('RATE LIMIT - Twitter API rate limit exceeded');
-                throw new Error('rate_limit');
-              }
               console.error('UNAUTHORIZED - Authentication credentials invalid');
             }
 
             console.error('=== END TWITTER OAUTH FAILURE DETAILS ===');
-
-            // Special handling for rate limits
-            if (data?.details?.includes('429') || data?.message?.includes('429')) {
-              throw new Error('rate_limit');
-            }
 
             throw new Error(data?.message || data?.error || `Twitter authentication failed (${response.status})`);
           }
@@ -286,12 +276,7 @@ const OAuthCallback = () => {
           let errorTitle = 'X Authentication Failed';
 
           // Provide more specific error messages
-          if (error.message === 'rate_limit' || error.message?.includes('429')) {
-            // Set rate limit cooldown for 15 minutes (Twitter's window)
-            localStorage.setItem('twitter_rate_limit_until', (Date.now() + 900000).toString());
-            errorMessage = 'Twitter login is temporarily unavailable due to high traffic. Please use Passkeys or Google to sign in.';
-            errorTitle = 'Service Temporarily Unavailable';
-          } else if (error.name === 'AbortError') {
+          if (error.name === 'AbortError') {
             errorMessage = 'Request timed out. Please try again.';
             errorTitle = 'Connection Timeout';
           } else if (error.message?.includes('invalid_grant')) {

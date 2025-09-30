@@ -775,7 +775,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [accountsActivation, setAccountsActivation] = useState({});
   const [visibleAccountCount, setVisibleAccountCount] = useState(5);
-  const [twitterAvailable, setTwitterAvailable] = useState(true);
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showDeviceLogin, setShowDeviceLogin] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -804,6 +803,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [oauthPassword, setOAuthPassword] = useState('');
   const [oauthConfirmPassword, setOAuthConfirmPassword] = useState('');
   const [showOAuthPassword, setShowOAuthPassword] = useState(false);
+
+  // Email verification states
+  const [showEmailVerification, setShowEmailVerification] = useState(false);
+  const [emailStep, setEmailStep] = useState('email'); // 'email', 'code', or 'password'
+  const [verificationEmail, setVerificationEmail] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
+  const [emailPassword, setEmailPassword] = useState('');
   const [oauthPasswordError, setOAuthPasswordError] = useState('');
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
   const [walletStorage, setWalletStorage] = useState(new EncryptedWalletStorage());
@@ -1053,6 +1059,152 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
+  const handleEmailConnect = () => {
+    setShowEmailVerification(true);
+    setEmailStep('email');
+    setVerificationEmail('');
+    setVerificationCode('');
+    setEmailPassword('');
+  };
+
+  const handleEmailPasswordLogin = async () => {
+    if (!emailPassword) {
+      setError('Please enter your password');
+      return;
+    }
+
+    try {
+      const walletId = `email_${verificationEmail}`;
+      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
+      const wallet = await walletStorageInstance.findWalletBySocialId(walletId, emailPassword);
+
+      if (wallet) {
+        // Create full profile for email wallet
+        const profile = {
+          account: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'oauth',
+          provider: 'email',
+          provider_id: verificationEmail
+        };
+
+        // Store in localStorage for session
+        localStorage.setItem('authMethod', 'email');
+        localStorage.setItem('user', JSON.stringify({ email: verificationEmail }));
+
+        await doLogIn(profile);
+        setShowEmailVerification(false);
+        setEmailPassword('');
+        setOpen(false);
+      } else {
+        setError('Incorrect password');
+        setEmailPassword('');
+      }
+    } catch (error) {
+      console.error('Email login error:', error);
+      setError('Incorrect password');
+      setEmailPassword('');
+    }
+  };
+
+  const handleEmailContinue = async () => {
+    if (!verificationEmail || !verificationEmail.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      // Always check if wallet exists first
+      const walletId = `email_${verificationEmail}`;
+      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
+      const existingWallet = await walletStorageInstance.checkWalletExists(walletId);
+
+      if (existingWallet) {
+        // Existing user - go to password
+        console.log('Existing email wallet - show password');
+        setEmailStep('password');
+        setError('');
+        return;
+      }
+
+      // New user - send verification code
+      const sendResponse = await fetch('https://api.xrpl.to/api/oauth/email/send-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail })
+      });
+
+      if (!sendResponse.ok) {
+        const error = await sendResponse.json().catch(() => ({ error: 'Failed to send code' }));
+        setError(error.message || 'Failed to send verification code');
+        return;
+      }
+
+      setEmailStep('code');
+      setError('');
+    } catch (error) {
+      console.error('Send code error:', error);
+      setError('Failed to send verification code');
+    }
+  };
+
+  const handleVerifyEmailCode = async () => {
+    if (!verificationCode || verificationCode.length !== 6) {
+      setError('Please enter a valid 6-digit code');
+      return;
+    }
+
+    try {
+      const verifyResponse = await fetch('https://api.xrpl.to/api/oauth/email/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: verificationEmail, code: verificationCode })
+      });
+
+      if (!verifyResponse.ok) {
+        const error = await verifyResponse.json().catch(() => ({ error: 'Invalid code' }));
+        setError(error.message || 'Invalid or expired code');
+        return;
+      }
+
+      const data = await verifyResponse.json();
+
+      if (!data.token) {
+        setError('No token received from server');
+        return;
+      }
+
+      // Store token temporarily
+      sessionStorage.setItem('oauth_temp_token', data.token);
+      sessionStorage.setItem('oauth_temp_provider', 'email');
+      sessionStorage.setItem('oauth_temp_user', JSON.stringify({ id: verificationEmail, email: verificationEmail, username: verificationEmail.split('@')[0] }));
+      sessionStorage.setItem('oauth_action', 'create');
+
+      // Handle as OAuth login
+      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
+      const result = await walletStorageInstance.handleSocialLogin(
+        { id: verificationEmail, provider: 'email', email: verificationEmail, username: verificationEmail.split('@')[0] },
+        data.token,
+        null
+      );
+
+      setShowEmailVerification(false);
+
+      if (result.requiresPassword) {
+        setShowOAuthPasswordSetup(true);
+      } else if (result.wallet) {
+        localStorage.setItem('jwt', data.token);
+        localStorage.setItem('authMethod', 'email');
+        await doLogIn(result.wallet.account, result.wallet.publicKey, result.wallet.seed, 'oauth');
+        setOpen(false);
+      }
+    } catch (error) {
+      console.error('Verify code error:', error);
+      setError('Email authentication failed. Please try again.');
+    }
+  };
+
   const handleXConnect = async () => {
     try {
       // Use OAuth 1.0a instead of OAuth 2.0 for better rate limits and no token expiration
@@ -1152,11 +1304,34 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userStr = sessionStorage.getItem('oauth_temp_user');
       const action = sessionStorage.getItem('oauth_action');
 
-      if (!token || !provider || !userStr) {
+      if (!provider || !userStr) {
         throw new Error('Missing OAuth data');
       }
 
       const user = JSON.parse(userStr);
+
+      // For existing email users logging in, we don't need token/action
+      if (provider === 'email' && !token && !action) {
+        console.log('Email login - checking existing wallet');
+        const walletId = `email_${user.email}`;
+        const wallet = await walletStorageInstance.findWalletBySocialId(walletId, oauthPassword);
+
+        if (wallet) {
+          // Successfully decrypted existing wallet
+          await doLogIn(wallet.address, wallet.publicKey, wallet.seed, 'oauth');
+          setShowOAuthPasswordSetup(false);
+          setOAuthPassword('');
+          setOAuthConfirmPassword('');
+          setOpen(false);
+          return;
+        } else {
+          throw new Error('Incorrect password or wallet not found');
+        }
+      }
+
+      if (!token) {
+        throw new Error('Missing OAuth token');
+      }
 
       // Use unified wallet storage
       const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
@@ -1308,7 +1483,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
 
     try {
-      const wallet = await walletStorage.getWallet(profile.address, seedPassword);
+      let wallet;
+
+      // OAuth wallets are stored differently - use OAuth ID lookup
+      if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
+        const walletId = `${profile.provider}_${profile.provider_id}`;
+        wallet = await walletStorage.findWalletBySocialId(walletId, seedPassword);
+      } else {
+        // Regular wallets use address lookup
+        wallet = await walletStorage.getWallet(profile.address, seedPassword);
+      }
+
       if (wallet && wallet.seed) {
         setSeedAuthStatus('success');
         setDisplaySeed(wallet.seed);
@@ -1319,6 +1504,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         throw new Error('Wallet not found');
       }
     } catch (error) {
+      console.error('Error retrieving wallet:', error);
       openSnackbar('Incorrect password', 'error');
       setSeedPassword('');
     }
@@ -1988,14 +2174,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     initializeStorage();
   }, []); // Only run once on mount
 
-  // OAuth 1.0a doesn't have the same rate limit issues as OAuth 2.0
-  // So we can remove the availability checking
-  useEffect(() => {
-    if (open) {
-      // OAuth 1.0a is always available
-      setTwitterAvailable(true);
-    }
-  }, [open]);
 
   const handleRegister = async () => {
     setStatus('registering');
@@ -2772,6 +2950,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <Button
                           variant="outlined"
                           fullWidth
+                          onClick={handleEmailConnect}
+                          sx={{
+                            py: 1.5,
+                            fontSize: '0.9rem',
+                            fontWeight: 400,
+                            textTransform: 'none',
+                            borderRadius: '12px',
+                            borderWidth: '1px',
+                            borderColor: alpha(theme.palette.divider, 0.2),
+                            color: theme.palette.text.primary,
+                            backgroundColor: 'transparent',
+                            '&:hover': {
+                              borderWidth: '1px',
+                              borderColor: alpha(theme.palette.divider, 0.3),
+                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
+                            }
+                          }}
+                        >
+                          Email
+                        </Button>
+
+                        <Button
+                          variant="outlined"
+                          fullWidth
                           disabled
                           sx={{
                             py: 1.5,
@@ -2789,6 +2991,145 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           Discord (Soon)
                         </Button>
                       </Stack>
+
+                      {/* Email Verification UI */}
+                      {showEmailVerification && (
+                        <Box sx={{ mt: 2, p: 2, background: alpha(theme.palette.background.default, 0.5), borderRadius: '12px' }}>
+                          {emailStep === 'email' ? (
+                            <>
+                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem' }}>
+                                Enter your email address
+                              </Typography>
+                              <TextField
+                                fullWidth
+                                type="email"
+                                placeholder="your@email.com"
+                                value={verificationEmail}
+                                onChange={(e) => setVerificationEmail(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleEmailContinue()}
+                                autoFocus
+                                size="small"
+                                sx={{ mb: 1.5 }}
+                              />
+                              <Stack direction="row" spacing={1}>
+                                <Button
+                                  variant="outlined"
+                                  fullWidth
+                                  onClick={handleEmailContinue}
+                                  sx={{
+                                    py: 1,
+                                    fontSize: '0.85rem',
+                                    textTransform: 'none',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  Continue
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => setShowEmailVerification(false)}
+                                  sx={{
+                                    py: 1,
+                                    fontSize: '0.85rem',
+                                    textTransform: 'none',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              </Stack>
+                            </>
+                          ) : emailStep === 'code' ? (
+                            <>
+                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem' }}>
+                                Enter the 6-digit code sent to {verificationEmail}
+                              </Typography>
+                              <TextField
+                                fullWidth
+                                type="text"
+                                placeholder="000000"
+                                value={verificationCode}
+                                onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                                onKeyDown={(e) => e.key === 'Enter' && handleVerifyEmailCode()}
+                                autoFocus
+                                size="small"
+                                sx={{ mb: 1.5 }}
+                              />
+                              <Stack direction="row" spacing={1}>
+                                <Button
+                                  variant="outlined"
+                                  fullWidth
+                                  onClick={handleVerifyEmailCode}
+                                  sx={{
+                                    py: 1,
+                                    fontSize: '0.85rem',
+                                    textTransform: 'none',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  Verify
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => setEmailStep('email')}
+                                  sx={{
+                                    py: 1,
+                                    fontSize: '0.85rem',
+                                    textTransform: 'none',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  Back
+                                </Button>
+                              </Stack>
+                            </>
+                          ) : (
+                            <>
+                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem' }}>
+                                Enter your password for {verificationEmail}
+                              </Typography>
+                              <TextField
+                                fullWidth
+                                type="password"
+                                placeholder="Password"
+                                value={emailPassword}
+                                onChange={(e) => setEmailPassword(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleEmailPasswordLogin()}
+                                autoFocus
+                                size="small"
+                                sx={{ mb: 1.5 }}
+                              />
+                              <Stack direction="row" spacing={1}>
+                                <Button
+                                  variant="outlined"
+                                  fullWidth
+                                  onClick={handleEmailPasswordLogin}
+                                  sx={{
+                                    py: 1,
+                                    fontSize: '0.85rem',
+                                    textTransform: 'none',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  Login
+                                </Button>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => { setEmailStep('email'); setEmailPassword(''); }}
+                                  sx={{
+                                    py: 1,
+                                    fontSize: '0.85rem',
+                                    textTransform: 'none',
+                                    borderRadius: '8px'
+                                  }}
+                                >
+                                  Back
+                                </Button>
+                              </Stack>
+                            </>
+                          )}
+                        </Box>
+                      )}
 
                       {/* Footer */}
                       <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>

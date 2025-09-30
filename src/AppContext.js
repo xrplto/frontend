@@ -178,6 +178,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     walletStorage.removeSecureItem('jwt');
     walletStorage.removeSecureItem('authMethod');
     walletStorage.removeSecureItem('user');
+
   };
 
   const removeProfile = async (account) => {

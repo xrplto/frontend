@@ -606,23 +606,21 @@ export class UnifiedWalletStorage {
       const walletId = `${profile.provider}_${profile.id}`;
       console.log('Looking for wallet with ID:', walletId);
 
-      // Check localStorage mapping first (fast lookup)
-      const socialMapping = JSON.parse(localStorage.getItem('social_wallet_mapping') || '{}');
-      const mappedWallet = socialMapping[walletId];
+      // Check if wallet exists in IndexedDB (without decrypting)
+      const walletExists = await this.checkWalletExists(walletId);
 
-      if (mappedWallet && mappedWallet.address) {
-        console.log('✅ WALLET FOUND in mapping - auto-login without password');
+      if (walletExists) {
+        console.log('✅ WALLET FOUND - auto-login without password');
 
         // Wallet exists locally - user already logged in before
-        // Return the address so they can be logged in
-        // The actual wallet data will be decrypted when needed
+        // We can auto-login with just the social ID
         const result = {
           success: true,
           wallet: {
-            account: mappedWallet.address,
-            address: mappedWallet.address,
-            publicKey: '', // Will be filled from profile later
-            seed: '', // Not needed for login, will be decrypted when needed
+            account: walletExists.address,
+            address: walletExists.address,
+            publicKey: '', // Will be filled when needed
+            seed: '', // Will be decrypted when needed
             wallet_type: 'oauth',
             provider: profile.provider,
             provider_id: profile.id
@@ -695,26 +693,168 @@ export class UnifiedWalletStorage {
    * Store wallet with OAuth metadata for finding later
    */
   async storeWalletWithSocialId(wallet, profile, password) {
-    const walletId = `${profile.provider}_${profile.id}`;
+    console.log('=== storeWalletWithSocialId START ===');
+    console.log('Wallet address:', wallet.address);
+    console.log('Profile:', profile);
 
-    // Store wallet with password encryption but include social ID in metadata
-    await this.storeWallet({
+    const walletId = `${profile.provider}_${profile.id}`;
+    console.log('WalletId:', walletId);
+
+    const db = await this.initDB();
+    console.log('DB initialized:', db.name, 'version:', db.version);
+
+    // Create a unique ID for the wallet record
+    const recordId = crypto.randomUUID();
+    console.log('Record ID:', recordId);
+
+    // Encrypt all wallet data
+    const fullData = {
       seed: wallet.seed,
       address: wallet.address,
       publicKey: wallet.publicKey,
       wallet_type: 'social',
       provider: profile.provider,
       provider_id: profile.id,
-      oauth_key: walletId
-    }, password);
-
-    // Store social ID -> address mapping in localStorage for quick lookup
-    const socialMapping = JSON.parse(localStorage.getItem('social_wallet_mapping') || '{}');
-    socialMapping[walletId] = {
-      address: wallet.address,
-      createdAt: Date.now()
+      oauth_key: walletId,
+      id: recordId,
+      storedAt: Date.now()
     };
-    localStorage.setItem('social_wallet_mapping', JSON.stringify(socialMapping));
+    console.log('Full data to encrypt:', { ...fullData, seed: '[HIDDEN]' });
+
+    const encryptedData = await this.encryptData(fullData, password);
+    console.log('Encrypted data length:', encryptedData.length);
+
+    // Use OAuth walletId for lookup hash (not address)
+    const encoder = new TextEncoder();
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
+    const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
+    console.log('Lookup hash:', lookupHash);
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
+
+      transaction.oncomplete = () => {
+        console.log('=== Transaction completed successfully ===');
+      };
+
+      transaction.onerror = () => {
+        console.error('=== Transaction failed ===:', transaction.error);
+      };
+
+      transaction.onabort = () => {
+        console.error('=== Transaction aborted ===');
+      };
+
+      // Store with metadata for quick lookup
+      // Use lookupHash as the id since the store uses inline keys
+      const record = {
+        id: lookupHash, // Use lookupHash as the id for inline key
+        lookupHash: lookupHash, // Also store for consistency
+        data: encryptedData,
+        timestamp: Date.now(), // Add timestamp at record level for visibility
+        metadata: {
+          address: wallet.address // Store address for quick auto-login check
+        }
+      };
+      console.log('Record to store:', { ...record, data: '[ENCRYPTED]' });
+
+      // First check if a wallet with this lookupHash already exists
+      const getRequest = store.get(lookupHash);
+      console.log('Checking for existing wallet with hash:', lookupHash);
+
+      getRequest.onsuccess = () => {
+        console.log('Get request success, result:', getRequest.result ? 'Found existing' : 'Not found');
+
+        if (getRequest.result) {
+          // Wallet already exists, update it
+          console.log('Updating existing wallet...');
+          const updateRequest = store.put(record);
+          updateRequest.onsuccess = () => {
+            console.log('OAuth wallet updated successfully');
+            console.log('Checking if really stored...');
+            const checkRequest = store.get(lookupHash);
+            checkRequest.onsuccess = () => {
+              console.log('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
+              resolve();
+            };
+          };
+          updateRequest.onerror = () => {
+            console.error('Failed to update OAuth wallet:', updateRequest.error);
+            reject(updateRequest.error);
+          };
+        } else {
+          // New wallet, add it
+          console.log('Adding new wallet...');
+          const addRequest = store.add(record);
+          addRequest.onsuccess = () => {
+            console.log('OAuth wallet stored successfully, key:', addRequest.result);
+            console.log('Checking if really stored...');
+            const checkRequest = store.get(lookupHash);
+            checkRequest.onsuccess = () => {
+              console.log('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
+              if (checkRequest.result) {
+                console.log('Stored record:', { ...checkRequest.result, data: '[ENCRYPTED]' });
+              }
+              resolve();
+            };
+          };
+          addRequest.onerror = () => {
+            console.error('Failed to store OAuth wallet:', addRequest.error);
+            console.error('Error details:', addRequest.error?.name, addRequest.error?.message);
+            reject(addRequest.error);
+          };
+        }
+      };
+
+      getRequest.onerror = () => {
+        console.error('Failed to check for existing wallet:', getRequest.error);
+        reject(getRequest.error);
+      };
+    });
+  }
+
+  /**
+   * Check if wallet exists for OAuth user (without requiring password)
+   * Returns basic wallet info if found, null otherwise
+   */
+  async checkWalletExists(walletId) {
+    try {
+      const db = await this.initDB();
+
+      // Create lookup hash for the social ID
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
+      const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
+
+      return new Promise((resolve, reject) => {
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
+        const request = store.get(lookupHash);
+
+        request.onsuccess = () => {
+          if (request.result) {
+            // Wallet exists, return basic info (address is stored in metadata)
+            // We store address in metadata for quick lookup without decryption
+            const metadata = request.result.metadata || {};
+            resolve({
+              address: metadata.address || walletId, // Fallback to walletId
+              exists: true
+            });
+          } else {
+            resolve(null);
+          }
+        };
+
+        request.onerror = () => {
+          console.error('Error checking wallet existence:', request.error);
+          resolve(null);
+        };
+      });
+    } catch (error) {
+      console.error('Error in checkWalletExists:', error);
+      return null;
+    }
   }
 
   /**
@@ -725,49 +865,51 @@ export class UnifiedWalletStorage {
     try {
       console.log('findWalletBySocialId called with:', walletId);
       const db = await this.initDB();
-      const [provider, ...idParts] = walletId.split('_');
-      const id = idParts.join('_');
+
+      // Create lookup hash for direct access
+      const encoder = new TextEncoder();
+      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
+      const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
+      console.log('Looking up with hash:', lookupHash);
 
       return new Promise(async (resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
 
-        // Must decrypt all wallets to find the right one
-        // This is slower but secure - no metadata exposed
-        const request = store.getAll();
+        // Direct lookup using the hash
+        const request = store.get(lookupHash);
 
         request.onsuccess = async () => {
-          const records = request.result || [];
+          const record = request.result;
 
-          // Try to decrypt each wallet to find matching social ID
-          for (const record of records) {
-            try {
-              const decrypted = await this.decryptData(record.data, password);
-              if (decrypted.provider === provider && decrypted.provider_id === id) {
-                console.log('✅ Found wallet for social ID');
-                resolve({
-                  address: decrypted.address,
-                  publicKey: decrypted.publicKey,
-                  seed: decrypted.seed,
-                  provider,
-                  provider_id: id,
-                  found: true
-                });
-                return;
-              }
-            } catch (e) {
-              // Wrong password or different wallet, continue
-              continue;
-            }
+          if (!record) {
+            console.log('❌ No wallet found for social ID');
+            resolve(null);
+            return;
           }
 
-          console.log('❌ No wallet found for social ID:', walletId);
-          resolve(null);
+          try {
+            // Decrypt the wallet data
+            const decrypted = await this.decryptData(record.data, password);
+            console.log('✅ Found and decrypted wallet for social ID');
+            resolve({
+              address: decrypted.address,
+              publicKey: decrypted.publicKey,
+              seed: decrypted.seed,
+              provider: decrypted.provider,
+              provider_id: decrypted.provider_id,
+              found: true
+            });
+          } catch (e) {
+            // Decryption failed - wrong password
+            console.error('❌ Decryption failed:', e.message);
+            reject(new Error('Incorrect password'));
+          }
         };
 
         request.onerror = () => {
-          console.error('Error searching for wallet:', request.error);
-          resolve(null);
+          console.error('Error finding wallet:', request.error);
+          reject(request.error);
         };
       });
     } catch (e) {
