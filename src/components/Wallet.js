@@ -775,6 +775,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [accountsActivation, setAccountsActivation] = useState({});
   const [visibleAccountCount, setVisibleAccountCount] = useState(5);
+  const [twitterAvailable, setTwitterAvailable] = useState(true);
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showDeviceLogin, setShowDeviceLogin] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -1029,9 +1030,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         sessionStorage.setItem('oauth_temp_provider', 'google');
         sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload));
         sessionStorage.setItem('oauth_action', result.action);
-        if (result.backendData) {
-          sessionStorage.setItem('oauth_backend_data', JSON.stringify(result.backendData));
-        }
+        // No backend data to store - wallets are local only
 
         // Show password setup dialog
         setShowOAuthPasswordSetup(true);
@@ -1056,70 +1055,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleXConnect = async () => {
     try {
-      // Generate PKCE values for Twitter OAuth 2.0
-      const generateRandomString = (length) => {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
-        let result = '';
-        for (let i = 0; i < length; i++) {
-          result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-        return result;
-      };
+      // Use OAuth 1.0a instead of OAuth 2.0 for better rate limits and no token expiration
+      const callbackUrl = window.location.origin + '/callback';
 
-      const sha256 = async (plain) => {
-        // Check if crypto.subtle is available (HTTPS or localhost)
-        if (!crypto.subtle) {
-          // Fallback: load CryptoJS for SHA256
-          if (!CryptoJS) {
-            await loadDependencies();
-          }
-          const hash = CryptoJS.SHA256(plain);
-          const base64 = CryptoJS.enc.Base64.stringify(hash);
-          return base64
-            .replace(/\+/g, '-')
-            .replace(/\//g, '_')
-            .replace(/=/g, '');
-        }
-
-        // Use native crypto.subtle
-        const encoder = new TextEncoder();
-        const data = encoder.encode(plain);
-        const hash = await crypto.subtle.digest('SHA-256', data);
-        return btoa(String.fromCharCode(...new Uint8Array(hash)))
-          .replace(/\+/g, '-')
-          .replace(/\//g, '_')
-          .replace(/=/g, '');
-      };
-
-      const state = generateRandomString(32);
-      const codeVerifier = generateRandomString(128);
-      const codeChallenge = await sha256(codeVerifier);
-
-      // Store for later use
-      sessionStorage.setItem('twitter_state', state);
-      sessionStorage.setItem('twitter_verifier', codeVerifier);
+      // Store return URL for after auth
       sessionStorage.setItem('auth_return_url', window.location.href);
       sessionStorage.setItem('wallet_modal_open', 'true');
 
-      // Build Twitter OAuth 2.0 URL with PKCE
-      // IMPORTANT: This must EXACTLY match what's configured in Twitter app settings
-      const redirectUri = window.location.origin + '/callback';
-
-      const params = new URLSearchParams({
-        response_type: 'code',
-        client_id: 'X1Z4angwMWNNUjdEc29aRGhGQm06MTpjaQ',
-        redirect_uri: redirectUri,
-        scope: 'users.read tweet.read',
-        state: state,
-        code_challenge: codeChallenge,
-        code_challenge_method: 'S256'
+      // Step 1: Get OAuth 1.0a request token and auth URL
+      const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          callbackUrl: callbackUrl
+        })
       });
 
-      // Store redirect URI for callback
-      sessionStorage.setItem('twitter_redirect_uri', redirectUri);
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ error: 'Request failed' }));
+        console.error('Failed to get OAuth request token:', error);
+        setError('Twitter authentication is currently unavailable. Please try Passkeys or Google instead.');
+        return;
+      }
 
-      // Redirect to X OAuth
-      window.location.href = `https://x.com/i/oauth2/authorize?${params}`;
+      const data = await response.json();
+
+      if (!data.auth_url || !data.oauth_token || !data.oauth_token_secret) {
+        console.error('Invalid OAuth response:', data);
+        setError('Twitter authentication setup failed. Please try another login method.');
+        return;
+      }
+
+      // Store OAuth 1.0a tokens for callback
+      sessionStorage.setItem('oauth1_token', data.oauth_token);
+      sessionStorage.setItem('oauth1_token_secret', data.oauth_token_secret);
+      sessionStorage.setItem('oauth1_auth_start', Date.now().toString());
+
+      // Redirect to Twitter OAuth 1.0a authorization URL
+      console.log('Redirecting to Twitter OAuth 1.0a:', data.auth_url);
+      window.location.href = data.auth_url;
     } catch (error) {
       openSnackbar('X connect failed: ' + error.message, 'error');
     }
@@ -1174,34 +1150,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const provider = sessionStorage.getItem('oauth_temp_provider');
       const userStr = sessionStorage.getItem('oauth_temp_user');
       const action = sessionStorage.getItem('oauth_action');
-      const backendDataStr = sessionStorage.getItem('oauth_backend_data');
 
       if (!token || !provider || !userStr) {
         throw new Error('Missing OAuth data');
       }
 
       const user = JSON.parse(userStr);
-      const backendData = backendDataStr ? JSON.parse(backendDataStr) : null;
 
       // Use unified wallet storage
       const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
 
-      // Create backend object with proper API URL
-      const backend = {
-        get: (url) => fetch(`https://api.xrpl.to${url}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }).then(r => r.json()),
-        post: (url, body) => fetch(`https://api.xrpl.to${url}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify(body)
-        }).then(r => r.json())
-      };
-
-      // Complete wallet setup with password
+      // Complete wallet setup with password - no backend needed
       const result = await walletStorageInstance.completeSocialWalletSetup(
         {
           id: user.id,
@@ -1210,9 +1169,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           ...user
         },
         oauthPassword,
-        action,
-        backendData,
-        backend
+        action
       );
 
       if (result.success && result.wallet) {
@@ -1221,7 +1178,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         sessionStorage.removeItem('oauth_temp_provider');
         sessionStorage.removeItem('oauth_temp_user');
         sessionStorage.removeItem('oauth_action');
-        sessionStorage.removeItem('oauth_backend_data');
 
         // Store permanent auth data
         await walletStorage.setSecureItem('jwt', token);
@@ -2031,6 +1987,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     initializeStorage();
   }, []); // Only run once on mount
 
+  // OAuth 1.0a doesn't have the same rate limit issues as OAuth 2.0
+  // So we can remove the availability checking
+  useEffect(() => {
+    if (open) {
+      // OAuth 1.0a is always available
+      setTwitterAvailable(true);
+    }
+  }, [open]);
+
   const handleRegister = async () => {
     setStatus('registering');
     setError('');
@@ -2634,14 +2599,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                       return;
                                     }
 
-                                    // Create downloadable blob
+                                    // Create downloadable blob - NO METADATA EXPOSED
                                     const blob = new Blob([JSON.stringify({
-                                      version: '1.0',
-                                      type: 'xrpl-encrypted-wallet',
-                                      address: accountProfile.address,
-                                      provider: accountProfile.wallet_type,
-                                      timestamp: new Date().toISOString(),
-                                      data: encryptedData
+                                      version: encryptedData.version,
+                                      format: encryptedData.format,
+                                      data: encryptedData.data // Only encrypted blob
+                                      // NO address, provider, or other metadata
                                     }, null, 2)], { type: 'application/json' });
 
                                     // Create download link
@@ -3050,8 +3013,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               sessionStorage.removeItem('oauth_temp_provider');
               sessionStorage.removeItem('oauth_temp_user');
               sessionStorage.removeItem('oauth_action');
-              sessionStorage.removeItem('oauth_backend_data');
-            }
+                  }
           }}
           maxWidth="sm"
           fullWidth
@@ -3243,8 +3205,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     sessionStorage.removeItem('oauth_temp_provider');
                     sessionStorage.removeItem('oauth_temp_user');
                     sessionStorage.removeItem('oauth_action');
-                    sessionStorage.removeItem('oauth_backend_data');
-                  }}
+                              }}
                   disabled={isCreatingWallet}
                 >
                   Cancel

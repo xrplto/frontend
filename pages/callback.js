@@ -24,6 +24,10 @@ const OAuthCallback = () => {
       const state = urlParams.get('state');
       const error = urlParams.get('error');
 
+      // OAuth 1.0a parameters
+      const oauth_token = urlParams.get('oauth_token');
+      const oauth_verifier = urlParams.get('oauth_verifier');
+
       if (error) {
         // Handle auth error
         console.error('OAuth authentication failed:', error);
@@ -37,13 +41,91 @@ const OAuthCallback = () => {
         return;
       }
 
-      // Handle Twitter OAuth 2.0 code exchange
+      // Handle Twitter OAuth 1.0a callback
+      if (oauth_token && oauth_verifier) {
+        try {
+          // Get stored OAuth token secret from session
+          const storedToken = sessionStorage.getItem('oauth1_token');
+          const storedTokenSecret = sessionStorage.getItem('oauth1_token_secret');
+
+          if (oauth_token !== storedToken) {
+            throw new Error('OAuth token mismatch - possible security issue');
+          }
+
+          if (!storedTokenSecret) {
+            throw new Error('OAuth token secret not found in session');
+          }
+
+          console.log('Exchanging OAuth 1.0a tokens for access token');
+
+          // Step 2: Exchange for access token
+          const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/access', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              oauth_token: oauth_token,
+              oauth_verifier: oauth_verifier,
+              oauth_token_secret: storedTokenSecret
+            })
+          });
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Exchange failed' }));
+            console.error('OAuth 1.0a token exchange failed:', error);
+            throw new Error(error.message || error.error || 'Token exchange failed');
+          }
+
+          const data = await response.json();
+
+          if (!data.token) {
+            throw new Error('No JWT token received from server');
+          }
+
+          // Clean up stored OAuth 1.0a values
+          sessionStorage.removeItem('oauth1_token');
+          sessionStorage.removeItem('oauth1_token_secret');
+          sessionStorage.removeItem('oauth1_auth_start');
+          sessionStorage.removeItem('callback_processing');
+
+          // Process login with the JWT token
+          await processOAuthLogin(data.token, 'twitter', data.user);
+        } catch (error) {
+          console.error('Twitter OAuth 1.0a error:', error);
+
+          // Clean up stored values even on error
+          sessionStorage.removeItem('oauth1_token');
+          sessionStorage.removeItem('oauth1_token_secret');
+          sessionStorage.removeItem('oauth1_auth_start');
+          sessionStorage.removeItem('callback_processing');
+
+          setErrorState({
+            title: 'X Authentication Failed',
+            message: error.message || 'X (Twitter) authentication failed. Please try again.',
+            provider: 'twitter'
+          });
+          setIsProcessing(false);
+        }
+        return;
+      }
+
+      // Handle Twitter OAuth 2.0 code exchange (fallback for old flow)
       if (code && state) {
         try {
           // Check if code already used
           const usedCode = sessionStorage.getItem('code_used');
           if (usedCode === code) {
             throw new Error('Authorization code already used');
+          }
+
+          // Check if auth flow took too long (codes expire in 30 seconds)
+          const authStartTime = sessionStorage.getItem('twitter_auth_start');
+          if (authStartTime) {
+            const elapsed = Date.now() - parseInt(authStartTime);
+            if (elapsed > 25000) { // 25 seconds to be safe
+              console.warn(`Auth flow took ${elapsed}ms - code may have expired`);
+            }
           }
 
           const savedState = sessionStorage.getItem('twitter_state');
@@ -72,12 +154,27 @@ const OAuthCallback = () => {
             throw new Error('Redirect URI not found in session');
           }
 
+          // Validate redirect URI format
+          const expectedRedirectUri = window.location.origin + '/callback';
+          if (redirectUri !== expectedRedirectUri) {
+            console.warn('Redirect URI mismatch:', {
+              stored: redirectUri,
+              expected: expectedRedirectUri,
+              currentOrigin: window.location.origin
+            });
+          }
+
           console.log('Sending to backend:', {
             code: code ? `${code.substring(0, 10)}...` : 'missing',
             state: state ? `${state.substring(0, 10)}...` : 'missing',
             codeVerifier: codeVerifier ? `${codeVerifier.substring(0, 10)}...` : 'missing',
-            redirectUri
+            redirectUri,
+            expectedRedirectUri
           });
+
+          // Add timeout to the request
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
           const response = await fetch('https://api.xrpl.to/api/oauth/twitter/exchange', {
             method: 'POST',
@@ -89,25 +186,80 @@ const OAuthCallback = () => {
               state,
               codeVerifier,
               redirectUri: redirectUri
-            })
-          });
+            }),
+            signal: controller.signal
+          }).finally(() => clearTimeout(timeoutId));
 
-          const data = await response.json();
+          let data;
+          try {
+            // Clone the response to avoid reading the body twice
+            const responseClone = response.clone();
+            data = await response.json();
+          } catch (jsonError) {
+            console.error('Failed to parse response as JSON:', jsonError);
+            // Use the cloned response to read as text
+            try {
+              const text = await response.clone().text();
+              console.error('Response text:', text);
+              throw new Error(`Server response was not valid JSON: ${text.substring(0, 200)}`);
+            } catch (textError) {
+              console.error('Could not read response text:', textError);
+              throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+          }
 
           // Check for token in response
           if (!response.ok || !data.token) {
-            console.error('Twitter OAuth failed:', {
-              status: response.status,
-              statusText: response.statusText,
-              data: data,
-              sentData: {
-                code: code ? 'exists' : 'missing',
-                state: state ? 'exists' : 'missing',
-                codeVerifier: codeVerifier ? 'exists' : 'missing',
-                redirectUri
-              }
+            console.error('=== TWITTER OAUTH FAILURE DETAILS ===');
+            console.error('Response Status:', response.status, response.statusText);
+            console.error('Response Headers:', {
+              contentType: response.headers.get('content-type'),
+              date: response.headers.get('date')
             });
-            throw new Error(data.message || data.error || `Twitter authentication failed (${response.status})`);
+            console.error('Response Data:', JSON.stringify(data, null, 2));
+            console.error('Request Details:', {
+              endpoint: 'https://api.xrpl.to/api/oauth/twitter/exchange',
+              code: code ? `${code.substring(0, 20)}...` : 'missing',
+              state: state ? `${state.substring(0, 20)}...` : 'missing',
+              codeVerifier: codeVerifier ? `${codeVerifier.substring(0, 20)}...` : 'missing',
+              redirectUri: redirectUri
+            });
+
+            // Log specific error details
+            if (data?.error === 'invalid_grant') {
+              console.error('INVALID GRANT ERROR - Possible causes:');
+              console.error('1. Authorization code already used');
+              console.error('2. Code expired (must be used within 30 seconds)');
+              console.error('3. Redirect URI mismatch');
+              console.error('4. PKCE verifier mismatch');
+            } else if (data?.error === 'invalid_request') {
+              console.error('INVALID REQUEST ERROR - Missing or malformed parameters');
+            } else if (data?.error === 'unauthorized_client') {
+              console.error('UNAUTHORIZED CLIENT ERROR - App not authorized');
+            }
+
+            // Check if this is a backend API error
+            if (response.status >= 500) {
+              console.error('SERVER ERROR - Backend API issue');
+            } else if (response.status === 400) {
+              console.error('BAD REQUEST - Check request parameters');
+            } else if (response.status === 401) {
+              // Check if it's actually a rate limit issue
+              if (data?.details?.includes('429') || data?.message?.includes('429')) {
+                console.error('RATE LIMIT - Twitter API rate limit exceeded');
+                throw new Error('rate_limit');
+              }
+              console.error('UNAUTHORIZED - Authentication credentials invalid');
+            }
+
+            console.error('=== END TWITTER OAUTH FAILURE DETAILS ===');
+
+            // Special handling for rate limits
+            if (data?.details?.includes('429') || data?.message?.includes('429')) {
+              throw new Error('rate_limit');
+            }
+
+            throw new Error(data?.message || data?.error || `Twitter authentication failed (${response.status})`);
           }
 
           // Mark code as used
@@ -130,9 +282,32 @@ const OAuthCallback = () => {
           sessionStorage.removeItem('twitter_redirect_uri');
           sessionStorage.removeItem('callback_processing');
 
+          let errorMessage = 'X (Twitter) authentication is currently unavailable. Please try Passkeys or Google instead.';
+          let errorTitle = 'X Authentication Failed';
+
+          // Provide more specific error messages
+          if (error.message === 'rate_limit' || error.message?.includes('429')) {
+            // Set rate limit cooldown for 15 minutes (Twitter's window)
+            localStorage.setItem('twitter_rate_limit_until', (Date.now() + 900000).toString());
+            errorMessage = 'Twitter login is temporarily unavailable due to high traffic. Please use Passkeys or Google to sign in.';
+            errorTitle = 'Service Temporarily Unavailable';
+          } else if (error.name === 'AbortError') {
+            errorMessage = 'Request timed out. Please try again.';
+            errorTitle = 'Connection Timeout';
+          } else if (error.message?.includes('invalid_grant')) {
+            errorMessage = 'Authentication code expired or invalid. Please try again.';
+            errorTitle = 'Authentication Expired';
+          } else if (error.message?.includes('CSRF')) {
+            errorMessage = 'Security validation failed. Please try again.';
+            errorTitle = 'Security Error';
+          } else if (error.message?.includes('network')) {
+            errorMessage = 'Network error. Please check your connection and try again.';
+            errorTitle = 'Connection Error';
+          }
+
           setErrorState({
-            title: 'X Authentication Failed',
-            message: 'X (Twitter) authentication is currently unavailable. Please try Passkeys or Google instead.',
+            title: errorTitle,
+            message: errorMessage,
             provider: 'twitter'
           });
           setIsProcessing(false);
@@ -210,9 +385,7 @@ const OAuthCallback = () => {
           sessionStorage.setItem('oauth_temp_provider', provider);
           sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload || {}));
           sessionStorage.setItem('oauth_action', result.action);
-          if (result.backendData) {
-            sessionStorage.setItem('oauth_backend_data', JSON.stringify(result.backendData));
-          }
+          // No backend data - wallets are stored locally only
 
           // Redirect to main page where Wallet component will show password setup
           const returnUrl = sessionStorage.getItem('auth_return_url') || '/';

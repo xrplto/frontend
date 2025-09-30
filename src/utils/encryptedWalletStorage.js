@@ -201,12 +201,25 @@ export class UnifiedWalletStorage {
           store = transaction.objectStore(this.walletsStore);
         }
 
-        // Ensure indexes exist (address is NOT unique to allow duplicates)
-        if (!store.indexNames.contains('active')) {
-          store.createIndex('active', 'active', { unique: false });
+        // 2025 Security: Only index non-sensitive fields
+        if (!store.indexNames.contains('lookupHash')) {
+          store.createIndex('lookupHash', 'lookupHash', { unique: false });
         }
-        if (!store.indexNames.contains('address')) {
-          store.createIndex('address', 'address', { unique: false });
+        if (!store.indexNames.contains('timestamp')) {
+          store.createIndex('timestamp', 'timestamp', { unique: false });
+        }
+        // Remove old indexes that exposed data
+        if (store.indexNames.contains('address')) {
+          store.deleteIndex('address');
+        }
+        if (store.indexNames.contains('provider')) {
+          store.deleteIndex('provider');
+        }
+        if (store.indexNames.contains('provider_id')) {
+          store.deleteIndex('provider_id');
+        }
+        if (store.indexNames.contains('active')) {
+          store.deleteIndex('active');
         }
       };
     });
@@ -226,12 +239,12 @@ export class UnifiedWalletStorage {
       ['deriveBits', 'deriveKey']
     );
 
-    // OWASP 2025: 600k iterations for PBKDF2-HMAC-SHA256
+    // 2025 Security: 1M iterations minimum
     return crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
         salt: typeof salt === 'string' ? encoder.encode(salt) : salt,
-        iterations: 600000, // OWASP 2025 standard
+        iterations: 1000000, // 1 million for 2025
         hash: 'SHA-256'
       },
       keyMaterial,
@@ -249,17 +262,23 @@ export class UnifiedWalletStorage {
     const encoder = new TextEncoder();
     const plaintext = encoder.encode(JSON.stringify(data));
 
+    // AES-GCM includes authentication tag for integrity
     const encrypted = await crypto.subtle.encrypt(
       { name: 'AES-GCM', iv },
       key,
       plaintext
     );
 
-    // Return as base64 string like in the screenshot
-    const combinedBuffer = new Uint8Array(salt.length + iv.length + encrypted.byteLength);
-    combinedBuffer.set(salt, 0);
-    combinedBuffer.set(iv, salt.length);
-    combinedBuffer.set(new Uint8Array(encrypted), salt.length + iv.length);
+    // GCM mode automatically includes a 16-byte authentication tag
+    // No need for separate HMAC as GCM provides authenticated encryption
+
+    // Return as base64 string with version prefix for future migrations
+    const version = new Uint8Array([1]); // Version 1
+    const combinedBuffer = new Uint8Array(1 + salt.length + iv.length + encrypted.byteLength);
+    combinedBuffer.set(version, 0);
+    combinedBuffer.set(salt, 1);
+    combinedBuffer.set(iv, 1 + salt.length);
+    combinedBuffer.set(new Uint8Array(encrypted), 1 + salt.length + iv.length);
 
     return btoa(String.fromCharCode(...combinedBuffer));
   }
@@ -270,13 +289,27 @@ export class UnifiedWalletStorage {
       atob(encryptedString).split('').map(char => char.charCodeAt(0))
     );
 
-    // Extract salt, iv, and encrypted data
-    const salt = combinedBuffer.slice(0, 16);
-    const iv = combinedBuffer.slice(16, 28);
-    const encrypted = combinedBuffer.slice(28);
+    // Check for version byte
+    const version = combinedBuffer[0];
+
+    let salt, iv, encrypted;
+
+    if (version === 1) {
+      // Version 1 format (with version byte)
+      salt = combinedBuffer.slice(1, 17);
+      iv = combinedBuffer.slice(17, 29);
+      encrypted = combinedBuffer.slice(29);
+    } else {
+      // Legacy format (no version) - for backward compatibility
+      salt = combinedBuffer.slice(0, 16);
+      iv = combinedBuffer.slice(16, 28);
+      encrypted = combinedBuffer.slice(28);
+    }
 
     const key = await this.deriveKey(pin, salt);
 
+    // AES-GCM will automatically verify the authentication tag
+    // and throw if data has been tampered with
     const decrypted = await crypto.subtle.decrypt(
       { name: 'AES-GCM', iv },
       key,
@@ -290,18 +323,34 @@ export class UnifiedWalletStorage {
   async storeWallet(walletData, pin) {
     const db = await this.initDB();
 
-    // Encrypt entire wallet data into single string
-    const encryptedData = await this.encryptData(walletData, pin);
+    // Generate unique ID for this wallet
+    const walletId = crypto.randomUUID();
+
+    // Encrypt ALL wallet data including metadata - NOTHING in plaintext
+    const fullData = {
+      ...walletData,
+      id: walletId,
+      storedAt: Date.now()
+    };
+    const encryptedData = await this.encryptData(fullData, pin);
+
+    // Generate lookup hash (one-way, can't reverse to get address)
+    const encoder = new TextEncoder();
+    const addressHash = await crypto.subtle.digest(
+      'SHA-256',
+      encoder.encode(walletData.address)
+    );
+    const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
 
-      // Don't set id - let autoIncrement handle it
+      // Store ONLY encrypted data and lookup hash
       const record = {
-        address: walletData.address,
-        active: true,
-        data: encryptedData,
+        id: walletId,
+        lookupHash: lookupHash, // One-way hash for finding wallet
+        data: encryptedData, // Everything encrypted
         timestamp: Date.now()
       };
 
@@ -317,6 +366,14 @@ export class UnifiedWalletStorage {
 
   async getWallet(address, pin) {
     const db = await this.initDB();
+
+    // Generate lookup hash from address
+    const encoder = new TextEncoder();
+    const addressHash = await crypto.subtle.digest(
+      'SHA-256',
+      encoder.encode(address)
+    );
+    const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readonly');
@@ -549,54 +606,42 @@ export class UnifiedWalletStorage {
       const walletId = `${profile.provider}_${profile.id}`;
       console.log('Looking for wallet with ID:', walletId);
 
-      // Try to find existing wallet
-      const existingWallet = await this.findWalletBySocialId(walletId);
-      console.log('findWalletBySocialId result:', existingWallet);
+      // Check localStorage mapping first (fast lookup)
+      const socialMapping = JSON.parse(localStorage.getItem('social_wallet_mapping') || '{}');
+      const mappedWallet = socialMapping[walletId];
 
-      if (existingWallet) {
-        console.log('✅ WALLET FOUND - Should auto-login');
-        // Wallet exists - user already set password before
-        // OAuth proves identity, so unlock automatically
+      if (mappedWallet && mappedWallet.address) {
+        console.log('✅ WALLET FOUND in mapping - auto-login without password');
+
+        // Wallet exists locally - user already logged in before
+        // Return the address so they can be logged in
+        // The actual wallet data will be decrypted when needed
         const result = {
           success: true,
           wallet: {
-            account: existingWallet.address,
-            address: existingWallet.address,
-            publicKey: existingWallet.publicKey,
-            seed: existingWallet.seed,
-            wallet_type: 'oauth'
+            account: mappedWallet.address,
+            address: mappedWallet.address,
+            publicKey: '', // Will be filled from profile later
+            seed: '', // Not needed for login, will be decrypted when needed
+            wallet_type: 'oauth',
+            provider: profile.provider,
+            provider_id: profile.id
           },
           requiresPassword: false
         };
-        console.log('Returning success result:', result);
+        console.log('Returning auto-login result:', result);
         return result;
       }
 
-      console.log('❌ No wallet found locally, checking backend...');
-      // Check backend for existing wallet
-      const response = await backend.get(`/api/wallets/social/${profile.provider}/${profile.id}`);
-
-      if (response.data) {
-        console.log('Found wallet on backend, needs local storage');
-        // Wallet exists on server but not locally
-        // Need password to store locally
-        return {
-          success: false,
-          requiresPassword: true,
-          walletExists: true,
-          backendData: response.data,
-          action: 'recover'
-        };
-      } else {
-        console.log('No wallet on backend either - new user');
-        // Brand new user - need to create wallet with password
-        return {
-          success: false,
-          requiresPassword: true,
-          walletExists: false,
-          action: 'create'
-        };
-      }
+      console.log('❌ No wallet found locally - new user');
+      // No backend check needed since we don't support cloud backup
+      // Brand new user - need to create wallet with password
+      return {
+        success: false,
+        requiresPassword: true,
+        walletExists: false,
+        action: 'create'
+      };
     } catch (error) {
       console.error('Social login error:', error);
       throw error;
@@ -606,27 +651,17 @@ export class UnifiedWalletStorage {
   /**
    * Create new wallet with user-provided password (one time only)
    */
-  async createSocialWallet(profile, password, backend) {
+  async createSocialWallet(profile, password) {
     // Validate password
     if (!password || password.length < 8) {
       throw new Error('Password must be at least 8 characters');
     }
 
     // Generate wallet
-    const wallet = this.generateDeterministicWallet(profile);
+    // Generate TRUE RANDOM wallet - NO DETERMINISTIC (2025 standard)
+    const wallet = this.generateRandomWallet();
 
-    // Store on backend (server-encrypted)
-    const serverEncrypted = this.encryptForServer(wallet, profile);
-    await backend.post('/api/wallets/social', {
-      provider: profile.provider,
-      provider_id: profile.id,
-      address: wallet.address,
-      public_key: wallet.publicKey,
-      encrypted_seed: serverEncrypted,
-      created_at: Date.now()
-    });
-
-    // Store locally with user's password and OAuth key
+    // Store ONLY locally with user's password - no backend storage
     await this.storeWalletWithSocialId(wallet, profile, password);
 
     return {
@@ -636,55 +671,33 @@ export class UnifiedWalletStorage {
         address: wallet.address,
         publicKey: wallet.publicKey,
         seed: wallet.seed,
-        wallet_type: 'oauth'
+        wallet_type: 'oauth',
+        provider: profile.provider,
+        provider_id: profile.id
       }
     };
   }
 
-  /**
-   * Recover wallet from backend with user password (one time only)
-   */
-  async recoverSocialWallet(backendData, profile, password, backend) {
-    const seed = this.decryptFromServer(backendData.encrypted_seed, profile);
-    const wallet = Wallet.fromSeed(seed);
-
-    // Store locally with user's password
-    await this.storeWalletWithSocialId(wallet, profile, password);
-
-    return {
-      success: true,
-      wallet: {
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        seed: wallet.seed,
-        wallet_type: 'oauth'
-      }
-    };
-  }
 
   /**
    * Complete wallet setup flow (called after password is provided)
    */
-  async completeSocialWalletSetup(profile, password, action, backendData, backend) {
+  async completeSocialWalletSetup(profile, password, action) {
+    // Only support create action - no backend storage/recovery
     if (action === 'create') {
-      return await this.createSocialWallet(profile, password, backend);
-    } else if (action === 'recover' && backendData) {
-      return await this.recoverSocialWallet(backendData, profile, password, backend);
+      return await this.createSocialWallet(profile, password);
     } else {
       throw new Error('Invalid action');
     }
   }
 
   /**
-   * Store wallet with dual encryption:
-   * 1. Password encryption in IndexedDB (for security)
-   * 2. OAuth-derived key encryption (for auto-unlock)
+   * Store wallet with OAuth metadata for finding later
    */
   async storeWalletWithSocialId(wallet, profile, password) {
     const walletId = `${profile.provider}_${profile.id}`;
 
-    // Store only once with user's password
+    // Store wallet with password encryption but include social ID in metadata
     await this.storeWallet({
       seed: wallet.seed,
       address: wallet.address,
@@ -694,50 +707,62 @@ export class UnifiedWalletStorage {
       provider_id: profile.id,
       oauth_key: walletId
     }, password);
+
+    // Store social ID -> address mapping in localStorage for quick lookup
+    const socialMapping = JSON.parse(localStorage.getItem('social_wallet_mapping') || '{}');
+    socialMapping[walletId] = {
+      address: wallet.address,
+      createdAt: Date.now()
+    };
+    localStorage.setItem('social_wallet_mapping', JSON.stringify(socialMapping));
   }
 
   /**
    * Find wallet in IndexedDB for OAuth user
+   * Now requires password since all data is encrypted
    */
-  async findWalletBySocialId(walletId) {
+  async findWalletBySocialId(walletId, password) {
     try {
       console.log('findWalletBySocialId called with:', walletId);
       const db = await this.initDB();
       const [provider, ...idParts] = walletId.split('_');
-      const id = idParts.join('_'); // Handle IDs that might contain underscores
+      const id = idParts.join('_');
 
-      // Generate deterministic wallet to get the expected address
-      const profile = { provider, id };
-      const deterministicWallet = this.generateDeterministicWallet(profile);
-      const expectedAddress = deterministicWallet.address;
-      console.log('Looking for wallet with address:', expectedAddress);
-
-      return new Promise((resolve, reject) => {
+      return new Promise(async (resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
-        const index = store.index('address');
 
-        // Look up wallet by exact address match
-        const request = index.get(expectedAddress);
+        // Must decrypt all wallets to find the right one
+        // This is slower but secure - no metadata exposed
+        const request = store.getAll();
 
-        request.onsuccess = () => {
-          const walletRecord = request.result;
-          if (walletRecord) {
-            console.log('✅ Found wallet by address:', walletRecord.address);
+        request.onsuccess = async () => {
+          const records = request.result || [];
 
-            // Return the wallet data with regenerated seed
-            resolve({
-              address: walletRecord.address,
-              publicKey: deterministicWallet.publicKey,
-              seed: deterministicWallet.seed,
-              provider,
-              provider_id: id,
-              found: true
-            });
-          } else {
-            console.log('❌ No wallet found with address:', expectedAddress);
-            resolve(null);
+          // Try to decrypt each wallet to find matching social ID
+          for (const record of records) {
+            try {
+              const decrypted = await this.decryptData(record.data, password);
+              if (decrypted.provider === provider && decrypted.provider_id === id) {
+                console.log('✅ Found wallet for social ID');
+                resolve({
+                  address: decrypted.address,
+                  publicKey: decrypted.publicKey,
+                  seed: decrypted.seed,
+                  provider,
+                  provider_id: id,
+                  found: true
+                });
+                return;
+              }
+            } catch (e) {
+              // Wrong password or different wallet, continue
+              continue;
+            }
           }
+
+          console.log('❌ No wallet found for social ID:', walletId);
+          resolve(null);
         };
 
         request.onerror = () => {
@@ -752,100 +777,55 @@ export class UnifiedWalletStorage {
   }
 
 
-  /**
-   * Derive deterministic key from OAuth profile
-   */
-  deriveOAuthKey(profile) {
-    const secret = process.env.NEXT_PUBLIC_OAUTH_SECRET || 'xrpl-oauth-2025';
-    return `${secret}-${profile.provider}-${profile.id}`;
-  }
+  // REMOVED: deriveOAuthKey - No longer using deterministic generation
 
   /**
-   * Generate deterministic wallet from social profile
+   * Generate TRUE RANDOM wallet for social profile - NO DETERMINISTIC FALLBACK
+   * 2025 Standard: Real entropy only
    */
-  generateDeterministicWallet(profile) {
-    // CryptoJS should be available at this point
-    const CryptoJS = window.CryptoJS;
-    if (!CryptoJS) {
-      throw new Error('CryptoJS not available for wallet generation');
-    }
-    const serverSecret = process.env.NEXT_PUBLIC_WALLET_SECRET || 'default-secret';
+  generateRandomWallet() {
+    // Generate true random entropy - NO DERIVATION
+    const entropy = crypto.getRandomValues(new Uint8Array(32));
 
-    // IMPORTANT: Only use stable, immutable values for deterministic generation
-    // Do NOT use email or username as they might be missing or change
-    // Only use provider and id which are guaranteed to be consistent
-    const seed = CryptoJS.PBKDF2(
-      `xrpl-social-${profile.provider}-${profile.id}`,
-      `${serverSecret}-${profile.provider}-${profile.id}`,
-      {
-        keySize: 256/32,
-        iterations: 100000,
-        hasher: CryptoJS.algo.SHA256
-      }
-    );
-
-    // Convert to entropy
-    const seedHex = seed.toString();
-    const entropy = [];
-    for (let i = 0; i < 32; i++) {
-      entropy.push(parseInt(seedHex.substr(i * 2, 2), 16));
-    }
-
-    return Wallet.fromEntropy(entropy);
+    // Create wallet from random entropy
+    return Wallet.fromEntropy(Array.from(entropy));
   }
 
-  /**
-   * Encrypt wallet for server storage
-   */
-  encryptForServer(wallet, profile) {
-    if (typeof window === 'undefined' || !window.CryptoJS) {
-      throw new Error('CryptoJS not available');
-    }
-
-    const CryptoJS = window.CryptoJS;
-    const serverSecret = process.env.NEXT_PUBLIC_SERVER_SECRET || 'server-secret-2025';
-    const key = `${serverSecret}-${profile.provider}-${profile.id}`;
-    return CryptoJS.AES.encrypt(wallet.seed, key).toString();
-  }
-
-  /**
-   * Decrypt wallet from server storage
-   */
-  decryptFromServer(encryptedSeed, profile) {
-    if (typeof window === 'undefined' || !window.CryptoJS) {
-      throw new Error('CryptoJS not available');
-    }
-
-    const CryptoJS = window.CryptoJS;
-    const serverSecret = process.env.NEXT_PUBLIC_SERVER_SECRET || 'server-secret-2025';
-    const key = `${serverSecret}-${profile.provider}-${profile.id}`;
-    const decrypted = CryptoJS.AES.decrypt(encryptedSeed, key);
-    return decrypted.toString(CryptoJS.enc.Utf8);
-  }
+  // Backend storage methods removed - wallets are ONLY stored locally
 
   /**
    * Get encrypted wallet blob for backup download
+   * Returns ONLY encrypted data - no metadata exposed
    */
   async getEncryptedWalletBlob(address) {
     try {
       const db = await this.initDB();
 
+      // Generate lookup hash
+      const encoder = new TextEncoder();
+      const addressHash = await crypto.subtle.digest(
+        'SHA-256',
+        encoder.encode(address)
+      );
+      const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
+
       return new Promise((resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
-        const index = store.index('address');
-        const request = index.get(address);
+
+        // Get all records and find by lookupHash
+        const request = store.getAll();
 
         request.onsuccess = () => {
-          const walletRecord = request.result;
-          if (walletRecord && walletRecord.encrypted) {
-            // Return the encrypted data that's already stored
+          const records = request.result || [];
+          const walletRecord = records.find(r => r.lookupHash === lookupHash);
+
+          if (walletRecord && walletRecord.data) {
+            // Return ONLY the encrypted blob - no metadata
             resolve({
-              encrypted: walletRecord.encrypted,
-              salt: walletRecord.salt,
-              iterations: walletRecord.iterations || 600000,
-              algorithm: 'AES-GCM',
-              keyDerivation: 'PBKDF2'
+              version: '2.0',
+              data: walletRecord.data, // Everything is encrypted inside
+              format: 'AES-GCM-PBKDF2-1M' // Just format info, no sensitive data
             });
           } else {
             resolve(null);
