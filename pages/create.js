@@ -486,8 +486,29 @@ function CreatePage() {
                 <Typography variant="body2" gutterBottom>
                   <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
                 </Typography>
-                <Typography variant="body2">
+                <Typography variant="body2" gutterBottom>
+                  <strong>Provider ID:</strong> <code>{accountProfile.provider_id || accountProfile.socialId || 'N/A'}</code>
+                </Typography>
+                {accountProfile.email && (
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Email:</strong> {accountProfile.email}
+                  </Typography>
+                )}
+                {accountProfile.username && (
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Username:</strong> {accountProfile.username}
+                  </Typography>
+                )}
+                {accountProfile.deviceKeyId && (
+                  <Typography variant="body2" gutterBottom>
+                    <strong>Device Key ID:</strong> <code>{accountProfile.deviceKeyId}</code>
+                  </Typography>
+                )}
+                <Typography variant="body2" gutterBottom>
                   <strong>XRP Balance:</strong> {accountProfile.xrp || '0'} XRP
+                </Typography>
+                <Typography variant="caption" display="block" sx={{ mt: 1, opacity: 0.7 }}>
+                  Full Profile: {JSON.stringify(accountProfile, null, 2).substring(0, 200)}...
                 </Typography>
               </Box>
             ) : (
