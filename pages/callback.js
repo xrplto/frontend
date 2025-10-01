@@ -41,6 +41,50 @@ const OAuthCallback = () => {
         return;
       }
 
+      // Handle Discord OAuth callback
+      if (code && !oauth_token && !token) {
+        try {
+          console.log('Processing Discord OAuth callback');
+
+          const response = await fetch('https://api.xrpl.to/api/oauth/discord/exchange', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              code: code,
+              redirectUri: window.location.origin + '/callback'
+            })
+          });
+
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Exchange failed' }));
+            throw new Error(error.message || error.error || 'Token exchange failed');
+          }
+
+          const data = await response.json();
+
+          if (!data.token) {
+            throw new Error('No JWT token received from server');
+          }
+
+          sessionStorage.removeItem('callback_processing');
+
+          // Process login with the JWT token
+          await processOAuthLogin(data.token, 'discord', data.user);
+        } catch (error) {
+          console.error('Discord OAuth error:', error);
+          sessionStorage.removeItem('callback_processing');
+          setErrorState({
+            title: 'Discord Authentication Failed',
+            message: error.message || 'Unable to complete Discord login',
+            provider: 'discord'
+          });
+          setIsProcessing(false);
+        }
+        return;
+      }
+
       // Handle Twitter OAuth 1.0a callback
       if (oauth_token && oauth_verifier) {
         try {
