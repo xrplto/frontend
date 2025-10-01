@@ -1,8 +1,11 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useContext } from 'react';
 import styled from '@emotion/styled';
 import { useTheme, alpha } from '@mui/material/styles';
-import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip } from '@mui/material';
-import { Twitter, Telegram, Language, CloudUpload, CheckCircle, Info } from '@mui/icons-material';
+import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip, Dialog, DialogTitle, DialogContent, CircularProgress, Alert, Paper } from '@mui/material';
+import { Twitter, Telegram, Language, CloudUpload, CheckCircle, Info, ContentCopy, OpenInNew, AccountBalanceWallet } from '@mui/icons-material';
+import axios from 'axios';
+import { AppContext } from 'src/AppContext';
+import { ConnectWallet } from 'src/components/Wallet';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
@@ -218,6 +221,7 @@ const CharCounter = styled.span`
 
 function CreatePage() {
   const theme = useTheme();
+  const { accountProfile } = useContext(AppContext);
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     tokenName: '',
@@ -232,6 +236,11 @@ function CreatePage() {
   const [imagePreview, setImagePreview] = useState('');
   const [errors, setErrors] = useState({});
   const [dragging, setDragging] = useState(false);
+  const [launchDialog, setLaunchDialog] = useState(false);
+  const [launchStep, setLaunchStep] = useState('');
+  const [sessionData, setSessionData] = useState(null);
+  const [launchError, setLaunchError] = useState('');
+  const [userWallet, setUserWallet] = useState('');
 
   const validateField = (field, value) => {
     const newErrors = { ...errors };
@@ -340,9 +349,99 @@ function CreatePage() {
     return fields.filter(Boolean).length;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!isFormValid()) return;
-    console.log('Form data:', formData);
+
+    // Use connected wallet address if available, otherwise prompt in dialog
+    if (accountProfile) {
+      setUserWallet(accountProfile.account || accountProfile.address);
+    }
+
+    setLaunchDialog(true);
+    setLaunchStep('initializing');
+    setLaunchError('');
+
+    try {
+      // Step 1: Initialize token launch
+      const response = await axios.post('https://api.xrpl.to/api/launch-token', {
+        currencyCode: formData.ticker,
+        tokenSupply: '1000000000',  // 1 billion tokens
+        userCheckAmount: '100000000',  // 100M tokens for user
+        ammXrpAmount: 500,  // 500 XRP for AMM
+        ammTokenAmount: '500000000',  // 500M tokens for AMM
+        metadata: {
+          name: formData.tokenName,
+          description: formData.description,
+          twitter: formData.twitter,
+          telegram: formData.telegram,
+          website: formData.website
+        }
+      });
+
+      setSessionData(response.data);
+      setLaunchStep('funding');
+
+    } catch (error) {
+      console.error('Launch error:', error);
+      setLaunchError(error.response?.data?.error || 'Failed to initialize token launch');
+      setLaunchStep('error');
+    }
+  };
+
+  const handleContinueLaunch = async () => {
+    if (!sessionData?.sessionId || !userWallet) return;
+
+    setLaunchStep('processing');
+    setLaunchError('');
+
+    try {
+      const response = await axios.post('https://api.xrpl.to/api/launch-token/continue', {
+        sessionId: sessionData.sessionId,
+        userAddress: userWallet
+      });
+
+      if (response.data.status === 'completed') {
+        setLaunchStep('completed');
+        setSessionData(response.data);
+      } else {
+        // Poll for status
+        pollLaunchStatus(sessionData.sessionId);
+      }
+    } catch (error) {
+      console.error('Continue error:', error);
+      setLaunchError(error.response?.data?.error || 'Failed to continue launch');
+      setLaunchStep('error');
+    }
+  };
+
+  const pollLaunchStatus = async (sessionId) => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
+
+        if (response.data.status === 'completed') {
+          clearInterval(interval);
+          setLaunchStep('completed');
+          setSessionData(response.data);
+        } else if (response.data.status === 'error') {
+          clearInterval(interval);
+          setLaunchError(response.data.error || 'Launch failed');
+          setLaunchStep('error');
+        }
+      } catch (error) {
+        clearInterval(interval);
+        setLaunchError('Failed to check status');
+        setLaunchStep('error');
+      }
+    }, 3000);
+  };
+
+  const copyToClipboard = (text) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const openInExplorer = (address) => {
+    window.open(`https://testnet.xrpl.org/accounts/${address}`, '_blank');
   };
 
   return (
@@ -352,6 +451,55 @@ function CreatePage() {
       <Container>
         <PageTitle theme={theme}>Create Token</PageTitle>
         <Subtitle theme={theme}>Launch your token on the XRP Ledger</Subtitle>
+
+        {/* Debug Wallet Info */}
+        <Paper sx={{
+          mb: 3,
+          p: 2,
+          background: alpha(theme.palette.warning.main, 0.08),
+          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
+        }}>
+          <Stack spacing={1.5}>
+            <Stack direction="row" alignItems="center" spacing={1}>
+              <AccountBalanceWallet sx={{ color: theme.palette.warning.main }} />
+              <Typography variant="subtitle2" color="warning.main">
+                DEBUG INFO (Remove in Production)
+              </Typography>
+            </Stack>
+
+            {accountProfile ? (
+              <Box sx={{ pl: 1 }}>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Public Key:</strong> <code>{accountProfile.publicKey || 'N/A'}</code>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
+                    {accountProfile.seed || accountProfile.secret || 'N/A'}
+                  </code>
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Wallet Type:</strong> {accountProfile.wallet_type || 'Unknown'}
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
+                </Typography>
+                <Typography variant="body2">
+                  <strong>XRP Balance:</strong> {accountProfile.xrp || '0'} XRP
+                </Typography>
+              </Box>
+            ) : (
+              <Box sx={{ pl: 1 }}>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  No wallet connected
+                </Typography>
+                <ConnectWallet />
+              </Box>
+            )}
+          </Stack>
+        </Paper>
 
         <ProgressContainer>
           <StepIndicator>
@@ -661,6 +809,177 @@ function CreatePage() {
       </Container>
 
       <Footer />
+
+      {/* Launch Dialog */}
+      <Dialog open={launchDialog} maxWidth="sm" fullWidth>
+        <DialogTitle>
+          {launchStep === 'initializing' && 'Initializing Token Launch'}
+          {launchStep === 'funding' && 'Fund Issuer Account'}
+          {launchStep === 'processing' && 'Creating Your Token'}
+          {launchStep === 'completed' && 'Token Launch Complete!'}
+          {launchStep === 'error' && 'Launch Failed'}
+        </DialogTitle>
+        <DialogContent>
+          {launchStep === 'initializing' && (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <CircularProgress sx={{ mb: 2 }} />
+              <Typography>Setting up token parameters...</Typography>
+            </Box>
+          )}
+
+          {launchStep === 'funding' && sessionData && (
+            <Stack spacing={2}>
+              <Alert severity="info">
+                Please fund the issuer account with at least 15 XRP to continue
+                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                  • 1 XRP base reserve + 0.2 XRP per object (trustline, AMM, etc.)
+                </Typography>
+              </Alert>
+
+              <Box sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 1 }}>
+                <Typography variant="caption" color="text.secondary">Issuer Address</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                    {sessionData.issuerAddress}
+                  </Typography>
+                  <Button size="small" onClick={() => copyToClipboard(sessionData.issuerAddress)}>
+                    <ContentCopy fontSize="small" />
+                  </Button>
+                </Box>
+              </Box>
+
+              <Button
+                variant="contained"
+                href={`https://faucet.altnet.rippletest.net/?destination=${sessionData.issuerAddress}`}
+                target="_blank"
+                sx={{ mb: 2 }}
+              >
+                Open XRP Testnet Faucet
+                <OpenInNew sx={{ ml: 1, fontSize: 18 }} />
+              </Button>
+
+              <TextField
+                fullWidth
+                label="Your XRPL Wallet Address"
+                placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                value={userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '')}
+                onChange={(e) => setUserWallet(e.target.value)}
+                helperText={accountProfile ? "Using connected wallet address" : "Enter your wallet address to receive tokens"}
+                size="small"
+                disabled={!!accountProfile}
+              />
+
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={handleContinueLaunch}
+                disabled={!userWallet || userWallet.length < 25}
+              >
+                Continue Launch
+              </Button>
+            </Stack>
+          )}
+
+          {launchStep === 'processing' && (
+            <Box sx={{ textAlign: 'center', py: 3 }}>
+              <CircularProgress sx={{ mb: 2 }} />
+              <Stack spacing={1}>
+                <Typography>Processing token launch...</Typography>
+                <Typography variant="caption" color="text.secondary">
+                  • Setting up issuer account<br/>
+                  • Creating trustlines<br/>
+                  • Distributing tokens<br/>
+                  • Creating AMM pool<br/>
+                  • Blackholing accounts
+                </Typography>
+              </Stack>
+            </Box>
+          )}
+
+          {launchStep === 'completed' && sessionData && (
+            <Stack spacing={2}>
+              <Alert severity="success">
+                Your token has been successfully launched on XRPL Testnet!
+              </Alert>
+
+              <Box sx={{ p: 2, bgcolor: alpha(theme.palette.success.main, 0.05), borderRadius: 1 }}>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Token:</strong> {formData.tokenName} ({formData.ticker})
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>Total Supply:</strong> 1,000,000,000
+                </Typography>
+                <Typography variant="body2" gutterBottom>
+                  <strong>AMM Pool:</strong> 500M {formData.ticker} / 500 XRP
+                </Typography>
+                {sessionData.checkId && (
+                  <Typography variant="body2">
+                    <strong>Check ID:</strong> {sessionData.checkId.substring(0, 8)}...
+                  </Typography>
+                )}
+              </Box>
+
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => openInExplorer(sessionData.issuerAddress)}
+                  fullWidth
+                >
+                  View Issuer
+                  <OpenInNew sx={{ ml: 0.5, fontSize: 16 }} />
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => openInExplorer(sessionData.ammAddress)}
+                  fullWidth
+                >
+                  View AMM
+                  <OpenInNew sx={{ ml: 0.5, fontSize: 16 }} />
+                </Button>
+              </Stack>
+
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={() => {
+                  setLaunchDialog(false);
+                  // Reset form
+                  setFormData({
+                    tokenName: '',
+                    ticker: '',
+                    description: '',
+                    twitter: '',
+                    telegram: '',
+                    website: '',
+                    image: null
+                  });
+                  setFileName('');
+                  setImagePreview('');
+                }}
+              >
+                Done
+              </Button>
+            </Stack>
+          )}
+
+          {launchStep === 'error' && (
+            <Stack spacing={2}>
+              <Alert severity="error">
+                {launchError || 'An error occurred during token launch'}
+              </Alert>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => setLaunchDialog(false)}
+              >
+                Close
+              </Button>
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
     </PageWrapper>
   );
 }
