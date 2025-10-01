@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext } from 'react';
+import React, { useState, useRef, useContext, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip, Dialog, DialogTitle, DialogContent, CircularProgress, Alert, Paper } from '@mui/material';
@@ -221,7 +221,7 @@ const CharCounter = styled.span`
 
 function CreatePage() {
   const theme = useTheme();
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile, openSnackbar } = useContext(AppContext);
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     tokenName: '',
@@ -230,7 +230,10 @@ function CreatePage() {
     twitter: '',
     telegram: '',
     website: '',
-    image: null
+    image: null,
+    ammXrpAmount: 10,
+    tokenSupply: 1000000000,
+    userCheckPercent: 0
   });
   const [fileName, setFileName] = useState('');
   const [imagePreview, setImagePreview] = useState('');
@@ -241,6 +244,11 @@ function CreatePage() {
   const [sessionData, setSessionData] = useState(null);
   const [launchError, setLaunchError] = useState('');
   const [userWallet, setUserWallet] = useState('');
+  const [launchLogs, setLaunchLogs] = useState([]);
+  const [showDebugPanel, setShowDebugPanel] = useState(true);
+  const [fundingBalance, setFundingBalance] = useState(0);
+  const [fundingProgress, setFundingProgress] = useState(0);
+  const [fundingAmount, setFundingAmount] = useState({ received: 0, required: 0 });
 
   const validateField = (field, value) => {
     const newErrors = { ...errors };
@@ -273,7 +281,18 @@ function CreatePage() {
   };
 
   const handleInputChange = (field) => (event) => {
-    const value = field === 'ticker' ? event.target.value.toUpperCase() : event.target.value;
+    let value = event.target.value;
+
+    if (field === 'ticker') {
+      value = value.toUpperCase();
+    } else if (field === 'ammXrpAmount') {
+      value = parseInt(value) || 10;
+    } else if (field === 'tokenSupply') {
+      value = parseInt(value) || 1000000000;
+    } else if (field === 'userCheckPercent') {
+      value = Math.min(30, Math.max(0, parseInt(value) || 0));
+    }
+
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -349,6 +368,28 @@ function CreatePage() {
     return fields.filter(Boolean).length;
   };
 
+  // Polling function to check funding status
+  const checkFundingStatus = async (sessionId) => {
+    try {
+      const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to check funding status:', error);
+      return null;
+    }
+  };
+
+  // Polling function to check launch status
+  const pollLaunchStatus = async (sessionId) => {
+    try {
+      const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to poll launch status:', error);
+      return null;
+    }
+  };
+
   const handleSubmit = async () => {
     if (!isFormValid()) return;
 
@@ -360,80 +401,81 @@ function CreatePage() {
     setLaunchDialog(true);
     setLaunchStep('initializing');
     setLaunchError('');
+    setLaunchLogs([]);
+    setFundingProgress(0);
 
     try {
       // Step 1: Initialize token launch
       const response = await axios.post('https://api.xrpl.to/api/launch-token', {
+        tokenSupply: String(formData.tokenSupply),  // REQUIRED - User specified supply
+        ammTokenAmount: String(Math.floor(formData.tokenSupply * 0.5)),  // REQUIRED - 50% for AMM
         currencyCode: formData.ticker,
-        tokenSupply: '1000000000',  // 1 billion tokens
-        userCheckAmount: '100000000',  // 100M tokens for user
-        ammXrpAmount: 500,  // 500 XRP for AMM
-        ammTokenAmount: '500000000',  // 500M tokens for AMM
-        metadata: {
-          name: formData.tokenName,
-          description: formData.description,
-          twitter: formData.twitter,
-          telegram: formData.telegram,
-          website: formData.website
-        }
+        userCheckAmount: String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100))),  // User specified %
+        ammXrpAmount: formData.ammXrpAmount,  // Optional - User specified XRP for AMM
+        domain: formData.website ? formData.website.replace(/^https?:\/\//, '') : undefined
       });
 
-      setSessionData(response.data);
+      // Extract the actual data from response
+      const data = response.data.data || response.data;
+      setSessionData(data);
+
+      // Set required funding amount from API
+      if (data.requiredFunding) {
+        setFundingAmount({ received: 0, required: data.requiredFunding });
+      }
+
       setLaunchStep('funding');
 
     } catch (error) {
       console.error('Launch error:', error);
-      setLaunchError(error.response?.data?.error || 'Failed to initialize token launch');
+      const errorMsg = typeof error.response?.data?.error === 'string'
+        ? error.response.data.error
+        : error.response?.data?.error?.message || 'Failed to initialize token launch';
+      setLaunchError(errorMsg);
       setLaunchStep('error');
     }
   };
 
   const handleContinueLaunch = async () => {
-    if (!sessionData?.sessionId || !userWallet) return;
+    if (!sessionData?.sessionId) return;
 
-    setLaunchStep('processing');
+    // Use connected wallet or provided wallet address
+    const walletAddress = userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '');
+
+    if (!walletAddress) {
+      setLaunchError('Please connect a wallet or enter your wallet address');
+      return;
+    }
+
     setLaunchError('');
 
     try {
+      // Send continue request with user address
       const response = await axios.post('https://api.xrpl.to/api/launch-token/continue', {
         sessionId: sessionData.sessionId,
-        userAddress: userWallet
+        userAddress: walletAddress
       });
 
-      if (response.data.status === 'completed') {
-        setLaunchStep('completed');
-        setSessionData(response.data);
-      } else {
-        // Poll for status
-        pollLaunchStatus(sessionData.sessionId);
-      }
+      console.log('Continue request sent');
+
     } catch (error) {
       console.error('Continue error:', error);
-      setLaunchError(error.response?.data?.error || 'Failed to continue launch');
+      const errorMsg = typeof error.response?.data?.error === 'string'
+        ? error.response.data.error
+        : error.response?.data?.error?.message || 'Failed to continue launch';
+      setLaunchError(errorMsg);
       setLaunchStep('error');
     }
   };
 
-  const pollLaunchStatus = async (sessionId) => {
-    const interval = setInterval(async () => {
-      try {
-        const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
-
-        if (response.data.status === 'completed') {
-          clearInterval(interval);
-          setLaunchStep('completed');
-          setSessionData(response.data);
-        } else if (response.data.status === 'error') {
-          clearInterval(interval);
-          setLaunchError(response.data.error || 'Launch failed');
-          setLaunchStep('error');
-        }
-      } catch (error) {
-        clearInterval(interval);
-        setLaunchError('Failed to check status');
-        setLaunchStep('error');
-      }
-    }, 3000);
+  const fetchDebugInfo = async () => {
+    try {
+      const response = await axios.get('https://api.xrpl.to/api/launch-token/debug');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch debug info:', error);
+      return null;
+    }
   };
 
   const copyToClipboard = (text) => {
@@ -443,6 +485,132 @@ function CreatePage() {
   const openInExplorer = (address) => {
     window.open(`https://testnet.xrpl.org/accounts/${address}`, '_blank');
   };
+
+  // Reset all state when closing dialog
+  const resetLaunchState = () => {
+    console.log('[DEBUG] Resetting launch state');
+    setLaunchDialog(false);
+    setLaunchStep('');
+    setLaunchError('');
+    setLaunchLogs([]);
+    setFundingProgress(0);
+    setFundingAmount({ received: 0, required: 20 });
+    setShowDebugPanel(true); // Reset to open for next launch
+    setSessionData(null);
+  };
+
+  // Polling effect for funding status
+  useEffect(() => {
+    if (launchStep !== 'funding' || !sessionData?.sessionId) return;
+
+    const pollInterval = setInterval(async () => {
+      console.log('[POLL] Checking funding status for session:', sessionData.sessionId);
+      const status = await checkFundingStatus(sessionData.sessionId);
+
+      if (!status) {
+        console.log('[POLL] No status received');
+        return;
+      }
+
+      console.log('[POLL] Status received:', status);
+
+      // Update logs if available
+      if (status.logs && status.logs.length > 0) {
+        console.log('[POLL] Updating logs, count:', status.logs.length);
+        setLaunchLogs(status.logs);
+      }
+
+      // Check funding status
+      if (status.fundingStatus) {
+        const { currentBalance, requiredBalance, sufficient, partiallyFunded, message } = status.fundingStatus;
+
+        console.log('[POLL] Funding status:', {
+          currentBalance,
+          requiredBalance,
+          sufficient,
+          partiallyFunded,
+          message
+        });
+
+        // Update balance states
+        setFundingBalance(currentBalance);
+        setFundingAmount({ received: currentBalance, required: requiredBalance });
+
+        if (partiallyFunded && !sufficient) {
+          // Partial funding - show warning
+          const progress = (currentBalance / requiredBalance) * 100;
+          setFundingProgress(progress);
+          console.log('[POLL] Partial funding detected:', currentBalance, '/', requiredBalance, 'XRP (', Math.round(progress), '%)');
+        } else if (sufficient) {
+          // Fully funded - auto-continue
+          console.log('[POLL] ✅ Fully funded! Auto-continuing...');
+          setFundingProgress(100);
+          clearInterval(pollInterval);
+
+          const walletAddr = userWallet || (accountProfile?.account || accountProfile?.address);
+          if (walletAddr) {
+            setLaunchStep('processing');
+            setLaunchLogs(prev => [...prev, {
+              timestamp: new Date().toISOString(),
+              level: 'success',
+              message: 'Funding complete! Continuing with token launch...'
+            }]);
+            await axios.post('https://api.xrpl.to/api/launch-token/continue', {
+              sessionId: sessionData.sessionId,
+              userAddress: walletAddr
+            });
+          }
+        }
+      }
+
+      // Check if status changed to processing/success/failed
+      if (['success', 'failed', 'funding_timeout'].includes(status.status)) {
+        clearInterval(pollInterval);
+        if (status.status === 'success') {
+          setLaunchStep('completed');
+          setSessionData(prev => ({ ...prev, ...status }));
+        } else {
+          setLaunchError(status.error || `Launch ${status.status}`);
+          setLaunchStep('error');
+        }
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [launchStep, sessionData?.sessionId]);
+
+  // Polling effect for processing status
+  useEffect(() => {
+    if (launchStep !== 'processing' || !sessionData?.sessionId) return;
+
+    const pollInterval = setInterval(async () => {
+      const status = await pollLaunchStatus(sessionData.sessionId);
+      if (!status) return;
+
+      // Update logs
+      if (status.logs) {
+        setLaunchLogs(status.logs);
+      }
+
+      // Update current step
+      if (status.currentStep) {
+        setSessionData(prev => ({ ...prev, currentStep: status.currentStep }));
+      }
+
+      // Check completion
+      if (status.status === 'success') {
+        clearInterval(pollInterval);
+        setLaunchStep('completed');
+        setSessionData(prev => ({ ...prev, ...status }));
+      } else if (status.status === 'failed') {
+        clearInterval(pollInterval);
+        setLaunchError(status.error || 'Launch failed');
+        setLaunchStep('error');
+      }
+    }, 3000); // Poll every 3 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [launchStep, sessionData?.sessionId]);
 
   return (
     <PageWrapper>
@@ -631,6 +799,72 @@ function CreatePage() {
                   </CharCounter>
                 </Box>
               }
+            />
+
+            <StyledTextField
+              theme={theme}
+              fullWidth
+              label="Total supply"
+              variant="outlined"
+              type="number"
+              placeholder="1000000000"
+              value={formData.tokenSupply}
+              onChange={handleInputChange('tokenSupply')}
+              helperText="Required"
+              size="small"
+              required
+              inputProps={{ min: 1, step: 1 }}
+            />
+
+            <StyledTextField
+              theme={theme}
+              fullWidth
+              label="Creator allocation (%)"
+              variant="outlined"
+              type="number"
+              placeholder="0"
+              value={formData.userCheckPercent}
+              onChange={handleInputChange('userCheckPercent')}
+              helperText={`You receive: ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens`}
+              size="small"
+              inputProps={{ min: 0, max: 30, step: 1 }}
+            />
+          </Stack>
+        </Card>
+
+        <Card theme={theme} completed={formData.ammXrpAmount >= 10}>
+          <SectionHeader>
+            <SectionTitle theme={theme}>
+              Initial Liquidity
+              {formData.ammXrpAmount >= 10 && (
+                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
+              )}
+            </SectionTitle>
+            <Chip
+              label="Required"
+              size="small"
+              sx={{
+                fontSize: '0.7rem',
+                height: 20,
+                backgroundColor: alpha(theme.palette.error.main, 0.1),
+                color: theme.palette.error.main
+              }}
+            />
+          </SectionHeader>
+
+          <Stack spacing={2}>
+            <StyledTextField
+              theme={theme}
+              fullWidth
+              label="XRP for AMM pool (min 10)"
+              variant="outlined"
+              type="number"
+              value={formData.ammXrpAmount}
+              onChange={handleInputChange('ammXrpAmount')}
+              error={formData.ammXrpAmount < 10}
+              helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : 'Required'}
+              size="small"
+              inputProps={{ min: 10, step: 1 }}
             />
           </Stack>
         </Card>
@@ -850,62 +1084,169 @@ function CreatePage() {
 
           {launchStep === 'funding' && sessionData && (
             <Stack spacing={2}>
-              <Alert severity="info">
-                Please fund the issuer account with at least 15 XRP to continue
-                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                  • 1 XRP base reserve + 0.2 XRP per object (trustline, AMM, etc.)
-                </Typography>
+              <Alert severity={fundingProgress > 0 ? "info" : "warning"} icon={<Info />}>
+                <Stack spacing={1}>
+                  <Box>
+                    <strong>{fundingProgress === 100 ? '✅ Funding Complete!' : 'Waiting for issuer account funding...'}</strong>
+                    <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                      {fundingProgress === 100
+                        ? 'Proceeding with token creation...'
+                        : `The issuer account needs at least ${fundingAmount.required} XRP to continue (Testnet requirement)`}
+                    </Typography>
+                    {fundingBalance > 0 && fundingProgress < 100 && (
+                      <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'warning.main', fontWeight: 500 }}>
+                        ⚠️ Partially funded - need {fundingAmount.required - fundingBalance} more XRP
+                      </Typography>
+                    )}
+                  </Box>
+
+                  <Box>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
+                      <Typography variant="caption" fontWeight={500}>
+                        Balance: {fundingBalance} / {fundingAmount.required} XRP
+                      </Typography>
+                      {fundingProgress > 0 && (
+                        <Typography variant="caption" fontWeight={600} color={fundingProgress === 100 ? 'success.main' : 'inherit'}>
+                          {Math.round(fundingProgress)}%
+                        </Typography>
+                      )}
+                    </Stack>
+                    {fundingProgress > 0 ? (
+                      <LinearProgress
+                        variant="determinate"
+                        value={fundingProgress}
+                        sx={{
+                          height: 8,
+                          borderRadius: 1,
+                          backgroundColor: alpha(theme.palette.divider, 0.1),
+                          '& .MuiLinearProgress-bar': {
+                            backgroundColor: fundingProgress === 100 ? theme.palette.success.main : theme.palette.primary.main,
+                            borderRadius: 1
+                          }
+                        }}
+                      />
+                    ) : (
+                      <LinearProgress
+                        variant="indeterminate"
+                        sx={{
+                          height: 4,
+                          borderRadius: 1
+                        }}
+                      />
+                    )}
+                  </Box>
+                </Stack>
               </Alert>
 
-              <Box sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), borderRadius: 1 }}>
-                <Typography variant="caption" color="text.secondary">Issuer Address</Typography>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 0.5 }}>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
-                    {sessionData.issuerAddress}
-                  </Typography>
-                  <Button size="small" onClick={() => copyToClipboard(sessionData.issuerAddress)}>
-                    <ContentCopy fontSize="small" />
+              <Paper sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.02), border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+                <Stack spacing={2}>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+                      1. Fund this issuer address with {fundingAmount.required}+ XRP:
+                    </Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          fontFamily: 'monospace',
+                          bgcolor: alpha(theme.palette.common.black, 0.04),
+                          p: 1,
+                          borderRadius: 1,
+                          flex: 1
+                        }}
+                      >
+                        {sessionData?.issuerAddress || 'Loading...'}
+                      </Typography>
+                      {sessionData?.issuerAddress && (
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            copyToClipboard(sessionData.issuerAddress);
+                            openSnackbar?.('Address copied!', 'success');
+                          }}
+                        >
+                          <ContentCopy fontSize="small" />
+                        </Button>
+                      )}
+                    </Box>
+                  </Box>
+
+                  <Button
+                    variant="contained"
+                    href={`https://faucet.altnet.rippletest.net/?destination=${sessionData.issuerAddress}`}
+                    target="_blank"
+                    fullWidth
+                    size="large"
+                    sx={{ py: 1.5 }}
+                  >
+                    Open Testnet Faucet
+                    <OpenInNew sx={{ ml: 1, fontSize: 18 }} />
                   </Button>
-                </Box>
-              </Box>
 
-              <Button
-                variant="contained"
-                href={`https://faucet.altnet.rippletest.net/?destination=${sessionData.issuerAddress}`}
-                target="_blank"
-                sx={{ mb: 2 }}
-              >
-                Open XRP Testnet Faucet
-                <OpenInNew sx={{ ml: 1, fontSize: 18 }} />
-              </Button>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
+                      2. Your wallet address (for receiving tokens):
+                    </Typography>
+                    <TextField
+                      fullWidth
+                      placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                      value={userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '')}
+                      onChange={(e) => setUserWallet(e.target.value)}
+                      helperText={accountProfile ? "Using connected wallet" : "Enter your wallet address"}
+                      size="small"
+                      disabled={!!accountProfile}
+                      InputProps={{
+                        startAdornment: accountProfile && (
+                          <InputAdornment position="start">
+                            <CheckCircle sx={{ color: 'success.main', fontSize: 18 }} />
+                          </InputAdornment>
+                        )
+                      }}
+                    />
+                  </Box>
+                </Stack>
+              </Paper>
 
-              <TextField
-                fullWidth
-                label="Your XRPL Wallet Address"
-                placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-                value={userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '')}
-                onChange={(e) => setUserWallet(e.target.value)}
-                helperText={accountProfile ? "Using connected wallet address" : "Enter your wallet address to receive tokens"}
-                size="small"
-                disabled={!!accountProfile}
-              />
-
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={handleContinueLaunch}
-                disabled={!userWallet || userWallet.length < 25}
-              >
-                Continue Launch
-              </Button>
+              {/* Debug Info (collapsible) */}
+              <details open>
+                <summary style={{ cursor: 'pointer', fontSize: '0.8rem', color: theme.palette.text.secondary }}>
+                  Session Debug Info
+                </summary>
+                <Paper sx={{ mt: 1, p: 1.5, bgcolor: alpha(theme.palette.warning.main, 0.05) }}>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.7rem' }}>
+                    Session ID: {sessionData?.sessionId || 'N/A'}{'\n'}
+                    Status: {sessionData?.status || 'awaiting_funding'}{'\n'}
+                    Issuer: {sessionData?.issuerAddress || 'N/A'}{'\n'}
+                    {sessionData?.holderAddress && `Holder: ${sessionData.holderAddress}\n`}
+                    {sessionData?.ammAddress && `AMM: ${sessionData.ammAddress}\n`}
+                    {sessionData?.message && `Message: ${sessionData.message}\n`}
+                    Funding: {fundingBalance} / {fundingAmount.required} XRP ({Math.round(fundingProgress)}%)
+                  </Typography>
+                </Paper>
+              </details>
             </Stack>
           )}
 
           {launchStep === 'processing' && (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-              <CircularProgress sx={{ mb: 2 }} />
-              <Stack spacing={1}>
+            <Stack spacing={2}>
+              <Box sx={{ textAlign: 'center' }}>
+                <CircularProgress sx={{ mb: 2 }} />
                 <Typography>Processing token launch...</Typography>
+              </Box>
+
+              {/* Progress Steps */}
+              <Box sx={{ px: 2 }}>
+                {sessionData?.currentStep && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Current Step: <strong>
+                      {typeof sessionData.currentStep === 'string'
+                        ? sessionData.currentStep
+                        : sessionData.currentStep?.message || sessionData.currentStep?.step || 'Processing...'}
+                    </strong>
+                  </Alert>
+                )}
+
                 <Typography variant="caption" color="text.secondary">
                   • Setting up issuer account<br/>
                   • Creating trustlines<br/>
@@ -913,8 +1254,80 @@ function CreatePage() {
                   • Creating AMM pool<br/>
                   • Blackholing accounts
                 </Typography>
-              </Stack>
-            </Box>
+              </Box>
+
+              {/* Check for insufficient funding warning */}
+              {launchLogs.some(log => log.message?.includes('Insufficient')) && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                  <strong>Insufficient Funding!</strong>
+                  <Typography variant="caption" display="block">
+                    The issuer account needs more XRP. Please add at least 15 XRP to continue.
+                  </Typography>
+                </Alert>
+              )}
+
+              {/* Debug Panel Toggle */}
+              <Button
+                size="small"
+                onClick={() => setShowDebugPanel(!showDebugPanel)}
+                sx={{ alignSelf: 'center' }}
+              >
+                {showDebugPanel ? 'Hide' : 'Show'} Debug Logs ({launchLogs.length})
+              </Button>
+
+              {/* Debug Logs - Always visible by default */}
+              {showDebugPanel && launchLogs.length > 0 && (
+                <Paper sx={{
+                  p: 1.5,
+                  maxHeight: 300,
+                  overflow: 'auto',
+                  bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : alpha(theme.palette.background.default, 0.9),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+                }}>
+                  <Stack spacing={0.5}>
+                    {launchLogs.map((log, idx) => (
+                      <Box key={idx} sx={{
+                        p: 0.5,
+                        borderRadius: 0.5,
+                        bgcolor: log.level === 'error' ? alpha(theme.palette.error.main, 0.05) :
+                                 log.level === 'warn' ? alpha(theme.palette.warning.main, 0.05) :
+                                 log.level === 'success' ? alpha(theme.palette.success.main, 0.05) :
+                                 'transparent'
+                      }}>
+                        <Typography variant="caption" sx={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.7rem',
+                          display: 'block',
+                          color: log.level === 'error' ? theme.palette.error.main :
+                                 log.level === 'warn' ? theme.palette.warning.main :
+                                 log.level === 'success' ? theme.palette.success.main :
+                                 theme.palette.text.secondary
+                        }}>
+                          <span style={{ opacity: 0.6 }}>
+                            [{new Date(log.timestamp).toLocaleTimeString()}]
+                          </span>
+                          {' '}
+                          <span style={{ fontWeight: 500 }}>
+                            [{log.level?.toUpperCase() || 'LOG'}]
+                          </span>
+                          {' '}
+                          {log.message}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Paper>
+              )}
+
+              {/* Session ID for debugging */}
+              {sessionData?.sessionId && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <Typography variant="caption" color="text.secondary">
+                    Session ID: <code>{sessionData.sessionId}</code>
+                  </Typography>
+                </Box>
+              )}
+            </Stack>
           )}
 
           {launchStep === 'completed' && sessionData && (
@@ -965,7 +1378,7 @@ function CreatePage() {
                 variant="contained"
                 fullWidth
                 onClick={() => {
-                  setLaunchDialog(false);
+                  resetLaunchState();
                   // Reset form
                   setFormData({
                     tokenName: '',
@@ -990,10 +1403,52 @@ function CreatePage() {
               <Alert severity="error">
                 {launchError || 'An error occurred during token launch'}
               </Alert>
+
+              {/* Show debug logs on error */}
+              {launchLogs.length > 0 && (
+                <Paper sx={{
+                  p: 1.5,
+                  maxHeight: 300,
+                  overflow: 'auto',
+                  bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : alpha(theme.palette.background.default, 0.9),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+                }}>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 500 }}>
+                    Error Logs:
+                  </Typography>
+                  <Stack spacing={0.5}>
+                    {launchLogs.map((log, idx) => (
+                      <Box key={idx} sx={{
+                        p: 0.5,
+                        borderRadius: 0.5,
+                        bgcolor: log.level === 'error' ? alpha(theme.palette.error.main, 0.05) :
+                                 log.level === 'warn' ? alpha(theme.palette.warning.main, 0.05) :
+                                 'transparent'
+                      }}>
+                        <Typography variant="caption" sx={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.7rem',
+                          display: 'block',
+                          color: log.level === 'error' ? theme.palette.error.main :
+                                 log.level === 'warn' ? theme.palette.warning.main :
+                                 theme.palette.text.secondary
+                        }}>
+                          <span style={{ opacity: 0.6 }}>
+                            [{new Date(log.timestamp).toLocaleTimeString()}]
+                          </span>
+                          {' '}
+                          {log.message}
+                        </Typography>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Paper>
+              )}
+
               <Button
                 variant="outlined"
                 fullWidth
-                onClick={() => setLaunchDialog(false)}
+                onClick={() => resetLaunchState()}
               >
                 Close
               </Button>
