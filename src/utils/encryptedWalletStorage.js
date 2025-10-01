@@ -60,7 +60,7 @@ export class UnifiedWalletStorage {
       {
         name: 'PBKDF2',
         salt: salt,
-        iterations: 100000, // Less iterations for localStorage (faster)
+        iterations: 600000, // OWASP 2025 standard
         hash: 'SHA-256'
       },
       keyMaterial,
@@ -107,7 +107,7 @@ export class UnifiedWalletStorage {
         {
           name: 'PBKDF2',
           salt: salt,
-          iterations: 100000,
+          iterations: 600000, // OWASP 2025 standard
           hash: 'SHA-256'
         },
         keyMaterial,
@@ -239,12 +239,12 @@ export class UnifiedWalletStorage {
       ['deriveBits', 'deriveKey']
     );
 
-    // 2025 Security: 1M iterations minimum
+    // OWASP 2025: 600,000 iterations minimum for PBKDF2-SHA256
     return crypto.subtle.deriveKey(
       {
         name: 'PBKDF2',
         salt: typeof salt === 'string' ? encoder.encode(salt) : salt,
-        iterations: 1000000, // 1 million for 2025
+        iterations: 600000, // OWASP 2025 standard
         hash: 'SHA-256'
       },
       keyMaterial,

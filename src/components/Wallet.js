@@ -50,168 +50,15 @@ const base64urlEncode = (buffer) => {
     .replace(/=/g, '');
 };
 
-// Secure deterministic wallet generation using scrypt with PBKDF2 fallback and signature entropy
-const generateSecureDeterministicWallet = async (credentialId, accountIndex, signatureEntropy) => {
-
-  if (!signatureEntropy) {
-    throw new Error('Signature entropy is required for secure wallet generation');
-  }
-
-  const baseEntropy = `passkey-wallet-v4-deterministic-${credentialId}-${accountIndex}`;
-  const combinedEntropy = CryptoJS.SHA256(baseEntropy).toString();
-  const salt = `salt-${credentialId}-deterministic-v4`;
-
-  if (!scrypt || typeof scrypt.scrypt !== 'function') {
-    throw new Error('Scrypt not available - refusing to use weaker PBKDF2 fallback for wallet generation');
-  }
-
-  let entropyHash;
-  try {
-    // Use scrypt with optimized parameters for better UX while maintaining security
-    const scryptResult = await scrypt.scrypt(
-      Buffer.from(combinedEntropy, 'utf8'),
-      Buffer.from(salt, 'utf8'),
-      2048,  // N (CPU cost) - reduced for better UX while still secure
-      8,     // r (memory cost) - standard
-      1,     // p (parallelization) - single thread for mobile compatibility
-      32     // output length in bytes - maintain high entropy
-    );
-    entropyHash = Array.from(scryptResult).map(b => b.toString(16).padStart(2, '0')).join('');
-  } catch (error) {
-    throw new Error(`Scrypt key derivation failed: ${error.message} - cannot proceed with wallet generation`);
-  }
-
-  // Use first 32 hex chars (16 bytes) for seed entropy
-  const seedEntropy = Buffer.from(entropyHash.substring(0, 32), 'hex');
-  const seed = encodeSeed(seedEntropy, 'secp256k1');
-
-  // Create wallet from seed (this ensures we can backup the seed later)
-  return XRPLWallet.fromSeed(seed);
+// Generate random wallet for passkeys - NO DETERMINISTIC (2025 security standard)
+const generateRandomWallet = () => {
+  // Generate true random entropy - no derivation from signatures
+  const entropy = crypto.getRandomValues(new Uint8Array(32));
+  return XRPLWallet.fromEntropy(Array.from(entropy));
 };
 
-// Extract signature entropy from existing WebAuthn response
-const extractSignatureEntropy = (authResponse) => {
-  if (!authResponse || !authResponse.response || !authResponse.response.signature) {
-    throw new Error('Invalid WebAuthn response - no signature found');
-  }
-
-  const signature = authResponse.response.signature;
-
-  // Enforce strict base64url decoding - NO FALLBACKS
-  if (!base64URLStringToBuffer) {
-    throw new Error('base64URLStringToBuffer not available - security dependencies not properly loaded');
-  }
-
-  if (typeof signature !== 'string') {
-    throw new Error('Invalid signature format - expected base64url string from WebAuthn');
-  }
-
-  let signatureArray;
-  try {
-    const signatureBuffer = base64URLStringToBuffer(signature);
-    signatureArray = new Uint8Array(signatureBuffer);
-  } catch (decodeError) {
-    throw new Error(`Failed to decode WebAuthn signature: ${decodeError.message}. Refusing insecure fallback.`);
-  }
-
-  // Validate signature length for security
-  if (signatureArray.length < 32) {
-    throw new Error(`Signature too short (${signatureArray.length} bytes) - insufficient entropy for secure wallet generation`);
-  }
-
-  const entropyBytes = signatureArray.slice(0, 32);
-  const entropyHex = Array.from(entropyBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-
-  // Validate entropy quality
-  if (entropyHex.length !== 64) {
-    throw new Error(`Invalid entropy length: ${entropyHex.length} chars, expected 64`);
-  }
-
-  return entropyHex;
-};
-
-// Generate signature-based entropy by requesting WebAuthn authentication
-const generateSignatureEntropy = async (credentialId) => {
-  if (!startAuthentication) {
-    throw new Error('WebAuthn authentication not available - ensure dependencies are loaded');
-  }
-
-  if (!window.PublicKeyCredential) {
-    throw new Error('WebAuthn not supported in this browser');
-  }
-
-  try {
-    // Generate a random challenge for signature
-    const challenge = crypto.getRandomValues(new Uint8Array(32));
-    const challengeB64 = base64urlEncode(challenge);
-
-
-    // Create proper WebAuthn options structure
-    const optionsJSON = {
-      challenge: challengeB64,
-      timeout: 30000,
-      userVerification: 'required'
-      // Note: Not specifying allowCredentials to work with any available credential
-      // The credentialId is used later for entropy generation
-    };
-
-    // Request WebAuthn authentication with proper SimpleWebAuthn call structure
-    const authResponse = await startAuthentication({ optionsJSON });
-
-    if (authResponse && authResponse.response && authResponse.response.signature) {
-      // Use the signature as entropy (first 32 bytes) - STRICT SECURITY ONLY
-      const signature = authResponse.response.signature;
-
-      // Enforce strict base64url decoding - NO FALLBACKS
-      if (!base64URLStringToBuffer) {
-        throw new Error('base64URLStringToBuffer not available - security dependencies not properly loaded');
-      }
-
-      if (typeof signature !== 'string') {
-        throw new Error('Invalid signature format - expected base64url string from WebAuthn');
-      }
-
-      let signatureArray;
-      try {
-        const signatureBuffer = base64URLStringToBuffer(signature);
-        signatureArray = new Uint8Array(signatureBuffer);
-      } catch (decodeError) {
-        throw new Error(`Failed to decode WebAuthn signature: ${decodeError.message}. Refusing insecure fallback.`);
-      }
-
-      // Validate signature length for security
-      if (signatureArray.length < 32) {
-        throw new Error(`Signature too short (${signatureArray.length} bytes) - insufficient entropy for secure wallet generation`);
-      }
-
-      const entropyBytes = signatureArray.slice(0, 32);
-      const entropyHex = Array.from(entropyBytes).map(b => b.toString(16).padStart(2, '0')).join('');
-
-      // Validate entropy quality
-      if (entropyHex.length !== 64) {
-        throw new Error(`Invalid entropy length: ${entropyHex.length} chars, expected 64`);
-      }
-
-      return entropyHex;
-    } else {
-      throw new Error('WebAuthn authentication did not return a valid signature');
-    }
-  } catch (error) {
-
-    // Provide more specific error messages
-    if (error.name === 'NotAllowedError') {
-      throw new Error('User cancelled authentication or authentication not allowed');
-    } else if (error.name === 'NotSupportedError') {
-      throw new Error('WebAuthn authentication not supported on this device');
-    } else if (error.name === 'SecurityError') {
-      throw new Error('Security error during authentication - ensure HTTPS connection');
-    } else if (error.name === 'AbortError') {
-      throw new Error('Authentication timed out - please try again');
-    } else {
-      throw new Error(`Authentication failed: ${error.message}`);
-    }
-  }
-};
+// Note: Removed signature entropy functions - no longer deriving wallets from WebAuthn signatures
+// WebAuthn is now used only for authentication, not key derivation (2025 security standard)
 
 
 // const pair = {
@@ -219,21 +66,7 @@ const generateSignatureEntropy = async (credentialId) => {
 //   XRP: 'XRP'
 // };
 
-// PIN Input Field styling for 6 separate boxes
-const PinField = styled(TextField)(({ theme }) => ({
-  '& input': {
-    textAlign: 'center',
-    fontSize: '24px',
-    fontWeight: 'bold',
-    padding: '12px 0',
-    width: '48px',
-    height: '48px',
-  },
-  '& .MuiOutlinedInput-root': {
-    width: '48px',
-    height: '48px',
-  }
-}));
+// Removed PinField component - now using password for all authentication methods
 
 const ActiveIndicator = styled(Box)(({ theme }) => ({
   width: 6,
@@ -307,14 +140,6 @@ const WalletContent = ({
   openSnackbar,
   isEmbedded = false,
   accountProfile,
-  generateAdditionalWallet,
-  showAdditionalWalletPin,
-  setShowAdditionalWalletPin,
-  additionalWalletPin,
-  handleAdditionalPinChange,
-  handleAdditionalPinKeyDown,
-  handleAdditionalWalletPinSubmit,
-  additionalPinRefs,
   showSeedDialog,
   seedAuthStatus,
   seedPassword,
@@ -542,133 +367,6 @@ const WalletContent = ({
                 </Box>
               );
             })}
-
-          {/* Add Wallet Button - only show for device wallets with less than 5 wallets */}
-          {(() => {
-            const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
-            return deviceWallets.length > 0 && deviceWallets.length < 5;
-          })() && (
-            <Box
-              onClick={generateAdditionalWallet}
-              sx={{
-                px: 2,
-                py: isEmbedded ? 1 : 1.2,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                transition: 'background 0.2s',
-                borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.05)
-                }
-              }}
-            >
-              <Typography sx={{
-                fontSize: isEmbedded ? '0.75rem' : '0.8rem',
-                color: theme.palette.primary.main,
-                fontWeight: 600
-              }}>
-                + Generate Wallet ({profiles.filter(p => p.wallet_type === 'device').length}/5)
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      )}
-
-      {/* PIN Input for Additional Wallet Generation */}
-      {showAdditionalWalletPin && (
-        <Box sx={{
-          p: 2,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          background: alpha(theme.palette.primary.main, 0.02)
-        }}>
-          <Typography variant="body2" sx={{ mb: 2, fontWeight: 500, textAlign: 'center' }}>
-            Enter your 6-digit PIN to generate wallet #{profiles.filter(p => p.wallet_type === 'device').length + 1}
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
-            {additionalWalletPin.map((value, index) => (
-              <TextField
-                key={index}
-                inputRef={el => additionalPinRefs.current[index] = el}
-                value={value}
-                onChange={(e) => handleAdditionalPinChange(index, e.target.value)}
-                onKeyDown={(e) => handleAdditionalPinKeyDown(index, e)}
-                type="text"
-                inputProps={{
-                  maxLength: 1,
-                  autoComplete: 'off',
-                  inputMode: 'numeric',
-                  pattern: '[0-9]*'
-                }}
-                sx={{
-                  width: 40,
-                  '& .MuiInputBase-input': {
-                    textAlign: 'center',
-                    fontSize: '1.2rem',
-                    fontWeight: 600,
-                    padding: '8px 4px'
-                  }
-                }}
-                variant="outlined"
-                autoFocus={index === 0}
-              />
-            ))}
-          </Box>
-          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-            <Button
-              variant="outlined"
-              size="small"
-              onClick={() => {
-                setShowAdditionalWalletPin(false);
-                additionalWalletPin.forEach((_, i) => additionalWalletPin[i] = '');
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={handleAdditionalWalletPinSubmit}
-              disabled={additionalWalletPin.some(p => !p)}
-            >
-              Generate
-            </Button>
-          </Box>
-        </Box>
-      )}
-
-      {/* Add Wallet Button - show for logged in device wallet users */}
-      {accountProfile && !showAdditionalWalletPin && (() => {
-        const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
-        return deviceWallets.length > 0 && deviceWallets.length < 5;
-      })() && (
-        <Box
-          onClick={generateAdditionalWallet}
-          sx={{
-            mx: 1.5,
-            mb: 1,
-            py: 1,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-            borderRadius: '6px',
-            transition: 'all 0.2s',
-            '&:hover': {
-              background: alpha(theme.palette.primary.main, 0.05),
-              borderColor: theme.palette.primary.main
-            }
-          }}
-        >
-          <Typography sx={{
-            fontSize: '0.8rem',
-            color: theme.palette.primary.main,
-            fontWeight: 600
-          }}>
-            + Generate Additional Wallet ({profiles.filter(p => p.wallet_type === 'device').length}/5)
-          </Typography>
         </Box>
       )}
 
@@ -766,6 +464,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       await walletStorage.storeProfiles(uniqueProfiles);
     } catch (error) {
+      console.error('Failed to sync profiles to IndexedDB:', error);
     }
   };
   const anchorRef = useRef(null);
@@ -778,11 +477,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showDeviceLogin, setShowDeviceLogin] = useState(false);
   const [status, setStatus] = useState('idle');
-  const [showDevicePinInput, setShowDevicePinInput] = useState(false);
-  const [devicePin, setDevicePin] = useState(['', '', '', '', '', '']);
-  const [devicePinMode, setDevicePinMode] = useState('create'); // 'create' or 'verify'
+  const [showDevicePasswordInput, setShowDevicePasswordInput] = useState(false);
+  const [devicePassword, setDevicePassword] = useState('');
+  const [devicePasswordConfirm, setDevicePasswordConfirm] = useState('');
+  const [devicePasswordMode, setDevicePasswordMode] = useState('create'); // 'create' or 'verify'
   const [pendingDeviceId, setPendingDeviceId] = useState(null);
-  const devicePinRefs = useRef([]);
+  const [showDevicePassword, setShowDevicePassword] = useState(false);
   const [error, setError] = useState('');
   const [walletInfo, setWalletInfo] = useState(null);
   const [isLoadingDeps, setIsLoadingDeps] = useState(false);
@@ -793,10 +493,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedPassword, setShowSeedPassword] = useState(false);
   // OAuth wallet manager is now part of unified storage
 
-  // Additional wallet generation states
-  const [showAdditionalWalletPin, setShowAdditionalWalletPin] = useState(false);
-  const [additionalWalletPin, setAdditionalWalletPin] = useState(['', '', '', '', '', '']);
-  const additionalPinRefs = useRef([]);
+  // Removed additional wallet generation - each auth method has single wallet
 
   // OAuth password setup state
   const [showOAuthPasswordSetup, setShowOAuthPasswordSetup] = useState(false);
@@ -819,70 +516,45 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [importSeed, setImportSeed] = useState('');
 
 
-  // Device PIN handlers
-  const handleDevicePinChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return;
-
-    const boxes = [...devicePin];
-    boxes[index] = value.slice(-1);
-    setDevicePin(boxes);
-
-    if (value && index < 5) {
-      devicePinRefs.current[index + 1]?.focus();
-    }
-    setError(''); // Clear error when typing
-  };
-
-  const handleDevicePinKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !devicePin[index] && index > 0) {
-      devicePinRefs.current[index - 1]?.focus();
-    } else if (e.key === 'Enter' && devicePin.every(b => b)) {
-      handleDevicePinSubmit();
-    }
-  };
-
-  const handleDevicePinSubmit = async () => {
-    const pin = devicePin.join('');
-    if (pin.length !== 6) {
-      setError('Please enter all 6 digits');
+  // Device Password handlers
+  const handleDevicePasswordSubmit = async () => {
+    if (devicePasswordMode === 'create') {
+      if (devicePassword.length < 8) {
+        setError('Password must be at least 8 characters');
+        return;
+      }
+      if (devicePassword !== devicePasswordConfirm) {
+        setError('Passwords do not match');
+        return;
+      }
+    } else if (!devicePassword) {
+      setError('Please enter your password');
       return;
     }
 
-    setShowDevicePinInput(false);
-    setDevicePin(['', '', '', '', '', '']);
+    setShowDevicePasswordInput(false);
+    const password = devicePassword;
+    setDevicePassword('');
+    setDevicePasswordConfirm('');
 
-    if (devicePinMode === 'create' && pendingDeviceId) {
-      await completeDeviceRegistration(pendingDeviceId, pin);
-    } else if (devicePinMode === 'verify' && pendingDeviceId) {
-      await completeDeviceAuthentication(pendingDeviceId, pin);
+    if (devicePasswordMode === 'create' && pendingDeviceId) {
+      await completeDeviceRegistration(pendingDeviceId, password);
+    } else if (devicePasswordMode === 'verify' && pendingDeviceId) {
+      await completeDeviceAuthentication(pendingDeviceId, password);
     }
   };
 
-  const completeDeviceRegistration = async (deviceId, userPin) => {
+  const completeDeviceRegistration = async (deviceId, password) => {
     try {
-      // Store the PIN encrypted for future use
-      await walletStorage.storeWalletCredential(deviceId, userPin);
+      // Store the password for future use
+      await walletStorage.storeWalletCredential(deviceId, password);
 
       // Generate only 1 wallet initially for performance
       const wallets = [];
       const i = 0; // Generate only the first wallet
 
-      // Use PBKDF2 to generate wallet with PIN
-      const entropyString = `xrpl-passkey-${deviceId}-${userPin}-${i}`;
-      // Use lower iterations since passkey already provides hardware security
-      // 10,000 iterations provides reasonable additional entropy without blocking UI
-      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${deviceId}`, {
-        keySize: 256/32,
-        iterations: 10000,
-        hasher: CryptoJS.algo.SHA512
-      }).toString();
-
-      // Convert hash to entropy array (32 bytes)
-      const entropy = [];
-      for (let j = 0; j < 32; j++) {
-        entropy.push(parseInt(seedHash.substr(j * 2, 2), 16));
-      }
-      const wallet = XRPLWallet.fromEntropy(entropy);
+      // Generate random wallet (2025 security standard - no deterministic)
+      const wallet = generateRandomWallet();
 
       const walletData = {
         deviceKeyId: deviceId,
@@ -898,8 +570,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       wallets.push(walletData);
 
-      // Store wallet encrypted in IndexedDB
-      await walletStorage.storeWallet(walletData, userPin);
+      // Store wallet encrypted with password in IndexedDB (2025 standard)
+      await walletStorage.storeWallet(walletData, password);
 
       // Update profiles
       const allProfiles = [...profiles];
@@ -1383,97 +1055,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const generateAdditionalWallet = async () => {
-    try {
-      const existingProfiles = profiles.filter(p => p.wallet_type === 'device');
-      const deviceId = existingProfiles[0]?.deviceKeyId;
-
-      if (!deviceId) {
-        openSnackbar('No device wallet found', 'error');
-        return;
-      }
-
-      const nextIndex = existingProfiles.length;
-      if (nextIndex >= 5) {
-        openSnackbar('Maximum 5 wallets reached', 'info');
-        return;
-      }
-
-      // Show inline PIN input
-      setShowAdditionalWalletPin(true);
-      setAdditionalWalletPin(['', '', '', '', '', '']);
-      return;
-    } catch (err) {
-      openSnackbar('Failed to generate additional wallet: ' + err.message, 'error');
-    }
-  };
-
-  const handleAdditionalWalletPinSubmit = async () => {
-    try {
-      const userPin = additionalWalletPin.join('');
-      if (userPin.length !== 6) {
-        openSnackbar('Please enter all 6 digits', 'error');
-        return;
-      }
-
-      // Ensure CryptoJS is loaded
-      await loadDependencies();
-
-      const existingProfiles = profiles.filter(p => p.wallet_type === 'device');
-      const deviceId = existingProfiles[0]?.deviceKeyId;
-      const nextIndex = existingProfiles.length;
-
-      // Generate next wallet
-      const entropyString = `xrpl-passkey-${deviceId}-${userPin}-${nextIndex}`;
-      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${deviceId}`, {
-        keySize: 256/32,
-        iterations: 10000,
-        hasher: CryptoJS.algo.SHA512
-      }).toString();
-
-      const entropy = [];
-      for (let j = 0; j < 32; j++) {
-        entropy.push(parseInt(seedHash.substr(j * 2, 2), 16));
-      }
-      const wallet = XRPLWallet.fromEntropy(entropy);
-
-      const newWallet = {
-        deviceKeyId: deviceId,
-        accountIndex: nextIndex,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0',
-        createdAt: Date.now()
-      };
-
-      // Add to profiles
-      const allProfiles = [...profiles, newWallet];
-      setProfiles(allProfiles);
-      await syncProfilesToIndexedDB(allProfiles);
-
-      openSnackbar(`Wallet ${nextIndex + 1} generated: ${wallet.address.slice(0, 8)}...`, 'success');
-
-      // Hide PIN input and reset
-      setShowAdditionalWalletPin(false);
-      setAdditionalWalletPin(['', '', '', '', '', '']);
-    } catch (err) {
-      openSnackbar('Failed to generate additional wallet: ' + err.message, 'error');
-    }
-  };
-
-  const handleAdditionalPinChange = (index, value) => {
-    if (!/^\d*$/.test(value)) return;
-
-    const boxes = [...additionalWalletPin];
-    boxes[index] = value.slice(-1);
-    setAdditionalWalletPin(boxes);
-
-    if (value && index < 5) {
-      additionalPinRefs.current[index + 1]?.focus();
-    }
-  };
+  // Removed additional wallet generation functions - single wallet per auth method
 
   const handleSeedPasswordSubmit = async () => {
     const profile = accountProfile;
@@ -1489,8 +1071,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
         const walletId = `${profile.provider}_${profile.provider_id}`;
         wallet = await walletStorage.findWalletBySocialId(walletId, seedPassword);
+      } else if (profile.wallet_type === 'device') {
+        // Device wallets - use password
+        const wallets = await walletStorage.getWallets(seedPassword);
+        wallet = wallets.find(w => w.address === profile.address);
       } else {
-        // Regular wallets use address lookup
+        // Other wallets use address lookup
         wallet = await walletStorage.getWallet(profile.address, seedPassword);
       }
 
@@ -1662,49 +1248,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   };
 
-  const handleAdditionalPinKeyDown = (index, e) => {
-    if (e.key === 'Backspace' && !additionalWalletPin[index] && index > 0) {
-      additionalPinRefs.current[index - 1]?.focus();
-    } else if (e.key === 'Enter' && additionalWalletPin.every(b => b)) {
-      handleAdditionalWalletPinSubmit();
-    }
-  };
 
-  const completeDeviceAuthentication = async (deviceId, userPin) => {
+  const completeDeviceAuthentication = async (deviceId, password) => {
     try {
       setStatus('discovering');
 
       // Store for future use
-      await walletStorage.storeWalletCredential(deviceId, userPin);
+      await walletStorage.storeWalletCredential(deviceId, password);
 
       // Generate only 1 wallet initially for performance
       const wallets = [];
       const i = 0; // Generate only the first wallet
 
-      // Use PBKDF2 to generate wallet with PIN
-      const entropyString = `xrpl-passkey-${deviceId}-${userPin}-${i}`;
-      // Use lower iterations since passkey already provides hardware security
-      // 10,000 iterations provides reasonable additional entropy without blocking UI
-      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${deviceId}`, {
-        keySize: 256/32,
-        iterations: 10000,
-        hasher: CryptoJS.algo.SHA512
-      }).toString();
-
-      // Convert hash to entropy array (32 bytes)
-      const entropy = [];
-      for (let j = 0; j < 32; j++) {
-        entropy.push(parseInt(seedHash.substr(j * 2, 2), 16));
-      }
-
+      // Generate random wallet (2025 security standard)
       let wallet;
       try {
-        wallet = XRPLWallet.fromEntropy(entropy);
+        wallet = generateRandomWallet();
       } catch (walletErr) {
         throw new Error(`Wallet generation failed: ${walletErr.message}`);
       }
 
-      wallets.push({
+      const walletData = {
         deviceKeyId: deviceId,
         accountIndex: i,
         account: wallet.address,
@@ -1712,8 +1276,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         publicKey: wallet.publicKey,
         wallet_type: 'device',
         xrp: '0',
-        createdAt: Date.now()
-      })
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
+
+      wallets.push(walletData);
+
+      // Store wallet encrypted with password
+      await walletStorage.storeWallet(walletData, password);
 
       // Check if any of these wallets already exist in profiles
       const existingWallet = profiles.find(p =>
@@ -1906,31 +1476,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     checkVisibleAccountsActivation();
   }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity, accountProfile]);
 
-  const generateWalletsFromDeviceKey = async (deviceKeyId, existingSignatureEntropy = null) => {
+  const generateWalletsFromDeviceKey = async (deviceKeyId) => {
     const wallets = [];
-
-    let signatureEntropy;
-
-    if (existingSignatureEntropy) {
-      // Reuse signature entropy from previous authentication
-      signatureEntropy = existingSignatureEntropy;
-    } else if (existingSignatureEntropy === null) {
-      // Registration case - create a mock signature entropy for deterministic generation
-      signatureEntropy = 'registration-mock-entropy-' + deviceKeyId;
-    } else {
-      // Generate signature entropy - required for secure wallet generation
-      signatureEntropy = await generateSignatureEntropy(deviceKeyId);
-    }
-
-
-    if (!signatureEntropy) {
-      throw new Error('WebAuthn authentication returned empty signature entropy');
-    }
-
 
     // Generate only 1 wallet for performance
     const i = 0;
-    const wallet = await generateSecureDeterministicWallet(deviceKeyId, i, signatureEntropy);
+    // Generate random wallet (2025 security standard)
+    const wallet = generateRandomWallet();
     const walletData = {
       deviceKeyId,
       accountIndex: i,
@@ -1959,51 +1511,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // OAuth wallets - show password input
         setSeedAuthStatus('password-required');
         return;
-      } else if (profile.wallet_type === 'pin') {
-        // PIN wallets
-        const pin = prompt('Enter your 6-digit PIN to view seed:');
-        if (!pin) {
-          setSeedAuthStatus('idle');
-          setShowSeedDialog(false);
-          return;
-        }
-
-        try {
-          const wallets = await walletStorage.getWallets(pin);
-          const currentWallet = wallets.find(w => w.address === profile.address);
-          if (currentWallet && currentWallet.seed) {
-            setSeedAuthStatus('success');
-            setDisplaySeed(currentWallet.seed);
-            setSeedBlurred(true);
-          } else {
-            throw new Error('Wallet not found');
-          }
-        } catch (error) {
-          setSeedAuthStatus('error');
-          openSnackbar('Failed to decrypt wallet: ' + error.message, 'error');
-          return;
-        }
-      } else {
-        // Device wallets - use WebAuthn
-        await loadDependencies();
-
-        const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
-        const challenge = base64urlEncode(challengeBuffer);
-
-        const authResponse = await startAuthentication({
-          optionsJSON: {
-            challenge: challenge,
-            timeout: 30000,
-            userVerification: 'required'
-          }
-        });
-
-        if (authResponse.id) {
-          setSeedAuthStatus('success');
-          const seed = profile.seed || 'Seed not available';
-          setDisplaySeed(seed);
-          setSeedBlurred(true);
-        }
+      // All wallet types now use password
+      } else if (profile.wallet_type === 'device') {
+        // Device wallets - prompt for password (wallets are now stored encrypted with password)
+        setSeedAuthStatus('password-required');
+        return;
       }
     } catch (err) {
       setSeedAuthStatus('error');
@@ -2315,10 +1827,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (registrationResponse.id) {
-        // Show inline PIN input instead of browser prompt
+        // Show password input for wallet creation
         setPendingDeviceId(registrationResponse.id);
-        setDevicePinMode('create');
-        setShowDevicePinInput(true);
+        setDevicePasswordMode('create');
+        setShowDevicePasswordInput(true);
         setStatus('idle');
         return;
       }
@@ -2381,10 +1893,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (authResponse.id) {
-        // Always ask for PIN on authentication for security
+        // Always ask for password on authentication for security
         setPendingDeviceId(authResponse.id);
-        setDevicePinMode('verify');
-        setShowDevicePinInput(true);
+        setDevicePasswordMode('verify');
+        setShowDevicePasswordInput(true);
         setStatus('idle');
         return;
       }
@@ -2423,11 +1935,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       });
 
       if (authResponse.id) {
-        // Extract signature entropy from the authentication response to avoid double prompts
-        const signatureEntropy = extractSignatureEntropy(authResponse);
-
-        // Generate wallet deterministically
-        const wallets = await generateWalletsFromDeviceKey(authResponse.id, signatureEntropy);
+        // Generate wallet with random entropy (2025 security standard)
+        const wallets = await generateWalletsFromDeviceKey(authResponse.id);
 
         // Check if any of these wallets already exist in profiles
         const existingWallet = profiles.find(p =>
@@ -2598,14 +2107,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     onBackupSeed={handleBackupSeed}
                     openSnackbar={openSnackbar}
                     accountProfile={accountProfile}
-                    generateAdditionalWallet={generateAdditionalWallet}
-                    showAdditionalWalletPin={showAdditionalWalletPin}
-                    setShowAdditionalWalletPin={setShowAdditionalWalletPin}
-                    additionalWalletPin={additionalWalletPin}
-                    handleAdditionalPinChange={handleAdditionalPinChange}
-                    handleAdditionalPinKeyDown={handleAdditionalPinKeyDown}
-                    handleAdditionalWalletPinSubmit={handleAdditionalWalletPinSubmit}
-                    additionalPinRefs={additionalPinRefs}
                     isEmbedded={false}
                     showSeedDialog={showSeedDialog}
                     seedAuthStatus={seedAuthStatus}
@@ -3210,42 +2711,60 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </Alert>
                       )}
 
-                      {/* Inline PIN Input for Device Connect */}
-                      {showDevicePinInput && (
+                      {/* Password Input for Device Connect */}
+                      {showDevicePasswordInput && (
                         <Box sx={{ mb: 3 }}>
                           <Typography variant="body2" sx={{ mb: 2, fontWeight: 500 }}>
-                            {devicePinMode === 'create'
-                              ? 'Create a 6-digit PIN to secure your wallet'
-                              : 'Enter your 6-digit PIN to access your wallet'}
+                            {devicePasswordMode === 'create'
+                              ? 'Create a password to secure your wallet'
+                              : 'Enter your password to access your wallet'}
                           </Typography>
-                          <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
-                            {devicePin.map((value, index) => (
-                              <PinField
-                                key={index}
-                                inputRef={el => devicePinRefs.current[index] = el}
-                                value={value}
-                                onChange={(e) => handleDevicePinChange(index, e.target.value)}
-                                onKeyDown={(e) => handleDevicePinKeyDown(index, e)}
-                                type="text"
-                                inputProps={{
-                                  maxLength: 1,
-                                  autoComplete: 'off',
-                                  inputMode: 'numeric',
-                                  pattern: '[0-9]*'
-                                }}
-                                variant="outlined"
-                                autoFocus={index === 0}
-                              />
-                            ))}
-                          </Box>
+                          <TextField
+                            fullWidth
+                            type={showDevicePassword ? 'text' : 'password'}
+                            value={devicePassword}
+                            onChange={(e) => { setDevicePassword(e.target.value); setError(''); }}
+                            onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
+                            placeholder="Password"
+                            autoFocus
+                            sx={{ mb: 2 }}
+                            InputProps={{
+                              endAdornment: (
+                                <InputAdornment position="end">
+                                  <IconButton
+                                    onClick={() => setShowDevicePassword(!showDevicePassword)}
+                                    edge="end"
+                                  >
+                                    {showDevicePassword ? <VisibilityOff /> : <Visibility />}
+                                  </IconButton>
+                                </InputAdornment>
+                              )
+                            }}
+                          />
+                          {devicePasswordMode === 'create' && (
+                            <TextField
+                              fullWidth
+                              type={showDevicePassword ? 'text' : 'password'}
+                              value={devicePasswordConfirm}
+                              onChange={(e) => { setDevicePasswordConfirm(e.target.value); setError(''); }}
+                              onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
+                              placeholder="Confirm Password"
+                              sx={{ mb: 2 }}
+                            />
+                          )}
+                          {error && (
+                            <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
+                          )}
                           <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
                             <Button
                               variant="outlined"
                               size="small"
                               onClick={() => {
-                                setShowDevicePinInput(false);
-                                setDevicePin(['', '', '', '', '', '']);
+                                setShowDevicePasswordInput(false);
+                                setDevicePassword('');
+                                setDevicePasswordConfirm('');
                                 setStatus('idle');
+                                setError('');
                               }}
                             >
                               Cancel
@@ -3253,10 +2772,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             <Button
                               variant="contained"
                               size="small"
-                              onClick={handleDevicePinSubmit}
-                              disabled={devicePin.some(p => !p)}
+                              onClick={handleDevicePasswordSubmit}
+                              disabled={devicePasswordMode === 'create' ? !devicePassword || !devicePasswordConfirm : !devicePassword}
                             >
-                              {devicePinMode === 'create' ? 'Create PIN' : 'Verify PIN'}
+                              {devicePasswordMode === 'create' ? 'Create Wallet' : 'Authenticate'}
                             </Button>
                           </Box>
                         </Box>
