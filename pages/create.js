@@ -1,7 +1,7 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { useTheme, alpha } from '@mui/material/styles';
-import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip, Dialog, DialogTitle, DialogContent, CircularProgress, Alert, Paper } from '@mui/material';
+import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip, CircularProgress, Alert, Paper } from '@mui/material';
 import { Twitter, Telegram, Language, CloudUpload, CheckCircle, Info, ContentCopy, OpenInNew, AccountBalanceWallet } from '@mui/icons-material';
 import axios from 'axios';
 import * as xrpl from 'xrpl';
@@ -254,6 +254,41 @@ function CreatePage() {
   const [checkClaimed, setCheckClaimed] = useState(false);
   const [claiming, setClaiming] = useState(false);
 
+  // Restore session from localStorage on mount
+  useEffect(() => {
+    const savedSession = localStorage.getItem('tokenLaunchSession');
+    if (savedSession) {
+      try {
+        const parsed = JSON.parse(savedSession);
+        setSessionData(parsed);
+        setUserWallet(parsed.userWallet || '');
+
+        // Poll status to get current state
+        (async () => {
+          const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${parsed.sessionId}`);
+          const status = response.data;
+
+          // Update to current step
+          if (['success', 'completed'].includes(status.status)) {
+            setLaunchStep('completed');
+            setSessionData(prev => ({ ...prev, ...status }));
+          } else if (['failed', 'funding_timeout'].includes(status.status)) {
+            setLaunchStep('error');
+            setLaunchError(status.error || 'Launch failed');
+          } else if (['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
+            setLaunchStep('processing');
+            setSessionData(prev => ({ ...prev, ...status }));
+          } else {
+            setLaunchStep('funding');
+          }
+        })();
+      } catch (e) {
+        console.error('Failed to restore session:', e);
+        localStorage.removeItem('tokenLaunchSession');
+      }
+    }
+  }, []);
+
   const validateField = (field, value) => {
     const newErrors = { ...errors };
 
@@ -265,8 +300,9 @@ function CreatePage() {
         break;
       case 'ticker':
         if (!value) newErrors.ticker = 'Ticker is required';
-        else if (value.length > 10) newErrors.ticker = 'Maximum 10 characters';
-        else if (!/^[A-Z0-9]+$/.test(value.toUpperCase())) newErrors.ticker = 'Only letters and numbers allowed';
+        else if (value.length < 3 || value.length > 15) newErrors.ticker = '3-15 characters';
+        else if (!/^[A-Z0-9]+$/i.test(value)) newErrors.ticker = 'Only letters and numbers';
+        else if (value.toUpperCase() === 'XRP') newErrors.ticker = 'XRP is reserved';
         else delete newErrors.ticker;
         break;
       case 'description':
@@ -358,7 +394,7 @@ function CreatePage() {
   };
 
   const isFormValid = () => {
-    return formData.tokenName && formData.ticker && !Object.keys(errors).length;
+    return formData.tokenName && formData.ticker && formData.tokenSupply > 0 && formData.ammXrpAmount >= 10 && !Object.keys(errors).length;
   };
 
   const getCompletionStatus = () => {
@@ -397,32 +433,50 @@ function CreatePage() {
   const handleSubmit = async () => {
     if (!isFormValid()) return;
 
-    // Use connected wallet address if available, otherwise prompt in dialog
+    // Use connected wallet address if available
     if (accountProfile) {
       setUserWallet(accountProfile.account || accountProfile.address);
     }
 
-    setLaunchDialog(true);
     setLaunchStep('initializing');
     setLaunchError('');
     setLaunchLogs([]);
     setFundingProgress(0);
 
     try {
-      // Step 1: Initialize token launch
-      const response = await axios.post('https://api.xrpl.to/api/launch-token', {
-        tokenSupply: String(formData.tokenSupply),  // REQUIRED - User specified supply
-        ammTokenAmount: String(Math.floor(formData.tokenSupply * 0.5)),  // REQUIRED - 50% for AMM
+      // Get user wallet address
+      const walletAddress = accountProfile ? (accountProfile.account || accountProfile.address) : userWallet;
+
+      const payload = {
+        tokenSupply: String(formData.tokenSupply),
+        ammTokenAmount: String(Math.floor(formData.tokenSupply * 0.5)),
         currencyCode: formData.ticker,
-        userCheckAmount: String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100))),  // User specified %
-        ammXrpAmount: formData.ammXrpAmount,  // Optional - User specified XRP for AMM
-        domain: formData.website ? formData.website.replace(/^https?:\/\//, '') : undefined,
-        antiSnipe: formData.antiSnipe  // Optional - Anti-snipe mode
-      });
+        ammXrpAmount: formData.ammXrpAmount
+      };
+
+      // Only add optional fields if they have values
+      if (walletAddress) payload.userAddress = walletAddress;
+      if (formData.userCheckPercent > 0) {
+        payload.userCheckAmount = String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)));
+      }
+      if (formData.website) payload.domain = formData.website.replace(/^https?:\/\//, '');
+      if (formData.antiSnipe) payload.antiSnipe = true;
+
+      console.log('[DEBUG] Launch payload:', payload);
+
+      // Step 1: Initialize token launch
+      const response = await axios.post('https://api.xrpl.to/api/launch-token', payload);
 
       // Extract the actual data from response
       const data = response.data.data || response.data;
       setSessionData(data);
+
+      // Save to localStorage
+      localStorage.setItem('tokenLaunchSession', JSON.stringify({
+        ...data,
+        step: 'funding',
+        userWallet: walletAddress
+      }));
 
       // Set required funding amount from API
       if (data.requiredFunding) {
@@ -491,16 +545,16 @@ function CreatePage() {
     window.open(`https://testnet.xrpl.org/accounts/${address}`, '_blank');
   };
 
-  // Reset all state when closing dialog
+  // Reset all state when closing
   const resetLaunchState = () => {
     console.log('[DEBUG] Resetting launch state');
-    setLaunchDialog(false);
+    localStorage.removeItem('tokenLaunchSession');
     setLaunchStep('');
     setLaunchError('');
     setLaunchLogs([]);
     setFundingProgress(0);
     setFundingAmount({ received: 0, required: 20 });
-    setShowDebugPanel(true); // Reset to open for next launch
+    setShowDebugPanel(true);
     setSessionData(null);
   };
 
@@ -547,28 +601,26 @@ function CreatePage() {
           setFundingProgress(progress);
           console.log('[POLL] Partial funding detected:', currentBalance, '/', requiredBalance, 'XRP (', Math.round(progress), '%)');
         } else if (sufficient) {
-          // Fully funded - auto-continue
-          console.log('[POLL] ✅ Fully funded! Auto-continuing...');
+          // Fully funded - just show progress, backend handles continuation
+          console.log('[POLL] ✅ Fully funded! Backend will continue automatically...');
           setFundingProgress(100);
-          clearInterval(pollInterval);
-
-          const walletAddr = userWallet || (accountProfile?.account || accountProfile?.address);
-          if (walletAddr) {
-            setLaunchStep('processing');
-            setLaunchLogs(prev => [...prev, {
-              timestamp: new Date().toISOString(),
-              level: 'success',
-              message: 'Funding complete! Continuing with token launch...'
-            }]);
-            await axios.post('https://api.xrpl.to/api/launch-token/continue', {
-              sessionId: sessionData.sessionId,
-              userAddress: walletAddr
-            });
-          }
+          setLaunchLogs(prev => [...prev, {
+            timestamp: new Date().toISOString(),
+            level: 'success',
+            message: 'Funding complete! Waiting for backend to continue...'
+          }]);
         }
       }
 
       // Check if status changed to processing/success/failed/completed
+      if (['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
+        // Backend is processing - transition to processing view
+        if (launchStep === 'funding') {
+          console.log('[POLL] Status changed to processing:', status.status);
+          setLaunchStep('processing');
+        }
+      }
+
       if (['success', 'completed', 'failed', 'funding_timeout'].includes(status.status)) {
         clearInterval(pollInterval);
         if (status.status === 'success' || status.status === 'completed') {
@@ -597,10 +649,8 @@ function CreatePage() {
         setLaunchLogs(status.logs);
       }
 
-      // Update current step
-      if (status.currentStep) {
-        setSessionData(prev => ({ ...prev, currentStep: status.currentStep }));
-      }
+      // Update status and session data
+      setSessionData(prev => ({ ...prev, ...status }));
 
       // Check completion
       if (status.status === 'success' || status.status === 'completed') {
@@ -621,6 +671,7 @@ function CreatePage() {
     <PageWrapper>
       <Header />
 
+      {!launchStep && (
       <Container>
         <PageTitle theme={theme}>Create Token</PageTitle>
         <Subtitle theme={theme}>Launch your token on the XRP Ledger</Subtitle>
@@ -776,8 +827,8 @@ function CreatePage() {
                 helperText={
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <span>{errors.ticker || 'Required'}</span>
-                    <CharCounter error={formData.ticker.length > 10} theme={theme}>
-                      {formData.ticker.length}/10
+                    <CharCounter error={formData.ticker.length < 3 || formData.ticker.length > 15} theme={theme}>
+                      {formData.ticker.length}/15
                     </CharCounter>
                   </Box>
                 }
@@ -1055,48 +1106,51 @@ function CreatePage() {
           </WarningBox>
         </Card>
 
-        <Button
-          variant="outlined"
-          fullWidth
-          disabled={!isFormValid()}
-          onClick={handleSubmit}
-          sx={{
-            py: 1.6,
-            fontSize: '0.95rem',
-            fontWeight: 450,
-            textTransform: 'none',
-            borderColor: isFormValid() ? '#4285f4' : alpha(theme.palette.divider, 0.2),
-            borderRadius: '12px',
-            borderWidth: '1.5px',
-            color: isFormValid() ? '#4285f4' : alpha(theme.palette.text.secondary, 0.4),
-            backgroundColor: 'transparent',
-            '&:hover': {
-              borderColor: '#4285f4',
-              backgroundColor: alpha('#4285f4', 0.04),
-              borderWidth: '1.5px'
-            },
-            '&.Mui-disabled': {
-              borderColor: alpha(theme.palette.divider, 0.15),
-              color: alpha(theme.palette.text.secondary, 0.3)
-            }
-          }}
-        >
-          {isFormValid() ? 'Create Token' : `Complete Required Fields (${2 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0)} remaining)`}
-        </Button>
+        {!launchStep && (
+          <Button
+            variant="outlined"
+            fullWidth
+            disabled={!isFormValid()}
+            onClick={handleSubmit}
+            sx={{
+              py: 1.6,
+              fontSize: '0.95rem',
+              fontWeight: 450,
+              textTransform: 'none',
+              borderColor: isFormValid() ? '#4285f4' : alpha(theme.palette.divider, 0.2),
+              borderRadius: '12px',
+              borderWidth: '1.5px',
+              color: isFormValid() ? '#4285f4' : alpha(theme.palette.text.secondary, 0.4),
+              backgroundColor: 'transparent',
+              '&:hover': {
+                borderColor: '#4285f4',
+                backgroundColor: alpha('#4285f4', 0.04),
+                borderWidth: '1.5px'
+              },
+              '&.Mui-disabled': {
+                borderColor: alpha(theme.palette.divider, 0.15),
+                color: alpha(theme.palette.text.secondary, 0.3)
+              }
+            }}
+          >
+            {isFormValid() ? 'Create Token' : `Complete Required Fields (${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 10 ? 1 : 0)} remaining)`}
+          </Button>
+        )}
       </Container>
+      )}
 
-      <Footer />
+      {/* Launch Status - Full page view */}
+      {launchStep && (
+        <Container>
+          <PageTitle theme={theme}>
+            {launchStep === 'initializing' && 'Initializing Token Launch'}
+            {launchStep === 'funding' && 'Fund Issuer Account'}
+            {launchStep === 'processing' && 'Creating Your Token'}
+            {launchStep === 'completed' && 'Token Launch Complete!'}
+            {launchStep === 'error' && 'Launch Failed'}
+          </PageTitle>
 
-      {/* Launch Dialog */}
-      <Dialog open={launchDialog} maxWidth="sm" fullWidth>
-        <DialogTitle>
-          {launchStep === 'initializing' && 'Initializing Token Launch'}
-          {launchStep === 'funding' && 'Fund Issuer Account'}
-          {launchStep === 'processing' && 'Creating Your Token'}
-          {launchStep === 'completed' && 'Token Launch Complete!'}
-          {launchStep === 'error' && 'Launch Failed'}
-        </DialogTitle>
-        <DialogContent>
+          <Paper sx={{ p: 3, mt: 2 }}>
           {launchStep === 'initializing' && (
             <Box sx={{ textAlign: 'center', py: 3 }}>
               <CircularProgress sx={{ mb: 2 }} />
@@ -1259,12 +1313,17 @@ function CreatePage() {
 
               {/* Progress Steps */}
               <Box sx={{ px: 2 }}>
-                {sessionData?.currentStep && (
+                {sessionData?.status && (
                   <Alert severity="info" sx={{ mb: 2 }}>
                     Current Step: <strong>
-                      {typeof sessionData.currentStep === 'string'
-                        ? sessionData.currentStep
-                        : sessionData.currentStep?.message || sessionData.currentStep?.step || 'Processing...'}
+                      {sessionData.status === 'funded' && 'Funding received, starting launch...'}
+                      {sessionData.status === 'configuring_issuer' && 'Configuring issuer account...'}
+                      {sessionData.status === 'creating_trustline' && 'Creating trustline...'}
+                      {sessionData.status === 'sending_tokens' && 'Minting tokens...'}
+                      {sessionData.status === 'creating_checks' && 'Creating user check...'}
+                      {sessionData.status === 'creating_amm' && 'Creating AMM pool...'}
+                      {sessionData.status === 'scheduling_blackhole' && 'Finalizing and blackholing...'}
+                      {!['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(sessionData.status) && 'Processing...'}
                     </strong>
                   </Alert>
                 )}
@@ -1422,6 +1481,7 @@ function CreatePage() {
 
                         if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
                           setCheckClaimed(true);
+                          localStorage.removeItem('tokenLaunchSession');
                           openSnackbar?.('Tokens claimed successfully!', 'success');
                         } else {
                           openSnackbar?.('Failed to claim tokens: ' + tx.result.meta.TransactionResult, 'error');
@@ -1548,8 +1608,11 @@ function CreatePage() {
               </Button>
             </Stack>
           )}
-        </DialogContent>
-      </Dialog>
+          </Paper>
+        </Container>
+      )}
+
+      <Footer />
     </PageWrapper>
   );
 }
