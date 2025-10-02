@@ -253,6 +253,7 @@ function CreatePage() {
   const [fundingAmount, setFundingAmount] = useState({ received: 0, required: 0 });
   const [checkClaimed, setCheckClaimed] = useState(false);
   const [claiming, setClaiming] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -358,7 +359,10 @@ function CreatePage() {
 
     setFileName(file.name);
     setFormData(prev => ({ ...prev, image: file }));
-    setErrors(prev => ({ ...prev, file: null }));
+    setErrors(prev => {
+      const { file: _, ...rest } = prev;
+      return rest;
+    });
 
     if (file.type.startsWith('image/')) {
       const reader = new FileReader();
@@ -438,6 +442,12 @@ function CreatePage() {
       setUserWallet(accountProfile.account || accountProfile.address);
     }
 
+    // Show summary first
+    setShowSummary(true);
+  };
+
+  const confirmLaunch = async () => {
+    setShowSummary(false);
     setLaunchStep('initializing');
     setLaunchError('');
     setLaunchLogs([]);
@@ -671,7 +681,7 @@ function CreatePage() {
     <PageWrapper>
       <Header />
 
-      {!launchStep && (
+      {!launchStep && !showSummary && (
       <Container>
         <PageTitle theme={theme}>Create Token</PageTitle>
         <Subtitle theme={theme}>Launch your token on the XRP Ledger</Subtitle>
@@ -1137,6 +1147,71 @@ function CreatePage() {
           </Button>
         )}
       </Container>
+      )}
+
+      {/* Summary Confirmation */}
+      {showSummary && (
+        <Container>
+          <PageTitle theme={theme}>Review Token Details</PageTitle>
+          <Subtitle theme={theme}>Confirm your token settings before launch</Subtitle>
+
+          <Paper sx={{ p: 3, mt: 2 }}>
+            <Stack spacing={2.5}>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Token Name</Typography>
+                <Typography variant="h6">{formData.tokenName}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">Ticker</Typography>
+                <Typography variant="h6">{formData.ticker}</Typography>
+              </Box>
+              {formData.description && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Description</Typography>
+                  <Typography variant="body2">{formData.description}</Typography>
+                </Box>
+              )}
+              <Box>
+                <Typography variant="caption" color="text.secondary">Total Supply</Typography>
+                <Typography variant="body1">{formData.tokenSupply.toLocaleString()}</Typography>
+              </Box>
+              <Box>
+                <Typography variant="caption" color="text.secondary">AMM Liquidity</Typography>
+                <Typography variant="body1">{Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker} / {formData.ammXrpAmount} XRP</Typography>
+              </Box>
+              {formData.userCheckPercent > 0 && (
+                <Box>
+                  <Typography variant="caption" color="text.secondary">Your Allocation</Typography>
+                  <Typography variant="body1">{Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} {formData.ticker} ({formData.userCheckPercent}%)</Typography>
+                </Box>
+              )}
+              {formData.antiSnipe && (
+                <Alert severity="info" sx={{ mt: 1 }}>
+                  Anti-snipe mode enabled (RequireAuth)
+                </Alert>
+              )}
+            </Stack>
+
+            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={() => setShowSummary(false)}
+                sx={{ py: 1.5, borderRadius: '12px', borderWidth: '1.5px' }}
+              >
+                Back to Edit
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                onClick={confirmLaunch}
+                sx={{ py: 1.5, borderRadius: '12px' }}
+              >
+                Confirm & Launch
+              </Button>
+            </Stack>
+          </Paper>
+        </Container>
       )}
 
       {/* Launch Status - Full page view */}
