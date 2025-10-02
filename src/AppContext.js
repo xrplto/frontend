@@ -1,5 +1,6 @@
 import { useState, createContext, useEffect, useMemo } from 'react';
 import axios from 'axios';
+import { Client } from 'xrpl';
 
 import { Backdrop } from '@mui/material';
 
@@ -210,28 +211,55 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   useEffect(() => {
-    function getAccountInfo() {
+    async function getAccountInfo() {
       if (!accountProfile || !accountProfile.account) {
         return;
       }
 
       const account = accountProfile.account;
-      // https://api.xrpl.to/api/account/info/r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm?curr1=534F4C4F00000000000000000000000000000000&issuer1=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz&curr2=XRP&issuer2=XRPL
-      axios
-        .get(
-          `${BASE_URL}/account/info/${account}?curr1=XRP&issuer1=XRPL&curr2=534F4C4F00000000000000000000000000000000&issuer2=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz`
-        )
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setAccountBalance(ret.pair);
+      const isDevelopment = true;
+
+      if (isDevelopment) {
+        try {
+          const res = await axios.get(`${BASE_URL}/testnet-balance/${account}`);
+          if (res.status === 200 && res.data) {
+            setAccountBalance({
+              curr1: {
+                value: res.data.available?.xrp || res.data.balanceXRP
+              },
+              curr2: {
+                value: res.data.reserve?.totalReserveXRP || '0'
+              }
+            });
+            // Update profile with total balance
+            if (accountProfile) {
+              setAccountProfile({
+                ...accountProfile,
+                xrp: res.data.balanceXRP
+              });
+            }
           }
-        })
-        .catch((err) => {
-        })
-        .then(function () {
-          // always executed
-        });
+        } catch (err) {
+          console.error('Testnet balance fetch error:', err);
+        }
+      } else {
+        // Production: use existing endpoint
+        axios
+          .get(
+            `${BASE_URL}/account/info/${account}?curr1=XRP&issuer1=XRPL&curr2=534F4C4F00000000000000000000000000000000&issuer2=rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz`
+          )
+          .then((res) => {
+            let ret = res.status === 200 ? res.data : undefined;
+            if (ret) {
+              setAccountBalance(ret.pair);
+            }
+          })
+          .catch((err) => {
+          })
+          .then(function () {
+            // always executed
+          });
+      }
     }
     getAccountInfo();
   }, [accountProfile, sync]);

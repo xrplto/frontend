@@ -226,7 +226,7 @@ const WalletContent = ({
           color: theme.palette.text.primary,
           mb: isEmbedded ? 0.5 : 0.5
         }}>
-          {accountBalance?.curr1?.value || '0'}
+          {accountTotalXrp || accountBalance?.curr1?.value || '0'}
         </Typography>
         <Typography sx={{
           fontSize: isEmbedded ? '0.7rem' : '0.75rem',
@@ -267,7 +267,7 @@ const WalletContent = ({
             textAlign: 'center'
           }}>
             <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 500, color: theme.palette.warning.main }}>
-              {Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'}
+              {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'}
             </Typography>
             <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Reserved</Typography>
           </Box>
@@ -1396,24 +1396,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const checkAccountActivity = useCallback(async (address) => {
     try {
-      const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
+      const isDevelopment = true;
 
-      // Handle 404 silently - account not activated yet
-      if (response.status === 404) {
+      if (isDevelopment) {
+        // Use backend testnet endpoint
+        const response = await fetch(`https://api.xrpl.to/api/testnet-balance/${address}`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.balanceXRP) {
+            return parseFloat(data.balanceXRP) >= 1;
+          }
+        }
+        return false;
+      } else {
+        // Production
+        const response = await fetch(`https://api.xrpl.to/api/account/account_info/${address}`);
+        if (response.status === 404) return false;
+        if (!response.ok) return false;
+
+        const data = await response.json();
+        if (data.account_data?.Balance) {
+          const balance = parseFloat(data.account_data.Balance) / 1000000;
+          return balance >= 1;
+        }
         return false;
       }
-
-      // Handle other non-200 responses
-      if (!response.ok) {
-        return false;
-      }
-
-      const data = await response.json();
-      if (data.account_data && data.account_data.Balance) {
-        const balance = parseFloat(data.account_data.Balance) / 1000000; // XRP drops to XRP conversion (1 XRP = 1,000,000 drops)
-        return balance >= 1; // Consider active if has at least 1 XRP
-      }
-      return false;
     } catch (err) {
       return false;
     }

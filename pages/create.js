@@ -4,6 +4,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip, Dialog, DialogTitle, DialogContent, CircularProgress, Alert, Paper } from '@mui/material';
 import { Twitter, Telegram, Language, CloudUpload, CheckCircle, Info, ContentCopy, OpenInNew, AccountBalanceWallet } from '@mui/icons-material';
 import axios from 'axios';
+import * as xrpl from 'xrpl';
 import { AppContext } from 'src/AppContext';
 import { ConnectWallet } from 'src/components/Wallet';
 import Header from 'src/components/Header';
@@ -59,13 +60,13 @@ const Step = styled.div`
 `;
 
 const Card = styled.div`
-  padding: 24px;
+  padding: 18px;
   background: ${props => props.theme?.palette?.mode === 'dark'
     ? alpha(props.theme?.palette?.background?.paper, 0.3)
     : 'rgba(255, 255, 255, 0.6)'};
   border: 1.5px solid ${props => alpha(props.theme?.palette?.divider, 0.12)};
   border-radius: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   position: relative;
   overflow: hidden;
 
@@ -86,7 +87,7 @@ const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 `;
 
 const SectionTitle = styled.h3`
@@ -233,7 +234,8 @@ function CreatePage() {
     image: null,
     ammXrpAmount: 10,
     tokenSupply: 1000000000,
-    userCheckPercent: 0
+    userCheckPercent: 0,
+    antiSnipe: false
   });
   const [fileName, setFileName] = useState('');
   const [imagePreview, setImagePreview] = useState('');
@@ -249,6 +251,8 @@ function CreatePage() {
   const [fundingBalance, setFundingBalance] = useState(0);
   const [fundingProgress, setFundingProgress] = useState(0);
   const [fundingAmount, setFundingAmount] = useState({ received: 0, required: 0 });
+  const [checkClaimed, setCheckClaimed] = useState(false);
+  const [claiming, setClaiming] = useState(false);
 
   const validateField = (field, value) => {
     const newErrors = { ...errors };
@@ -412,7 +416,8 @@ function CreatePage() {
         currencyCode: formData.ticker,
         userCheckAmount: String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100))),  // User specified %
         ammXrpAmount: formData.ammXrpAmount,  // Optional - User specified XRP for AMM
-        domain: formData.website ? formData.website.replace(/^https?:\/\//, '') : undefined
+        domain: formData.website ? formData.website.replace(/^https?:\/\//, '') : undefined,
+        antiSnipe: formData.antiSnipe  // Optional - Anti-snipe mode
       });
 
       // Extract the actual data from response
@@ -563,10 +568,10 @@ function CreatePage() {
         }
       }
 
-      // Check if status changed to processing/success/failed
-      if (['success', 'failed', 'funding_timeout'].includes(status.status)) {
+      // Check if status changed to processing/success/failed/completed
+      if (['success', 'completed', 'failed', 'funding_timeout'].includes(status.status)) {
         clearInterval(pollInterval);
-        if (status.status === 'success') {
+        if (status.status === 'success' || status.status === 'completed') {
           setLaunchStep('completed');
           setSessionData(prev => ({ ...prev, ...status }));
         } else {
@@ -598,7 +603,7 @@ function CreatePage() {
       }
 
       // Check completion
-      if (status.status === 'success') {
+      if (status.status === 'success' || status.status === 'completed') {
         clearInterval(pollInterval);
         setLaunchStep('completed');
         setSessionData(prev => ({ ...prev, ...status }));
@@ -737,48 +742,50 @@ function CreatePage() {
             />
           </SectionHeader>
 
-          <Stack spacing={2}>
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="Name your token"
-              variant="outlined"
-              placeholder="My Awesome Token"
-              value={formData.tokenName}
-              onChange={handleInputChange('tokenName')}
-              error={!!errors.tokenName}
-              helperText={
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{errors.tokenName || 'Required'}</span>
-                  <CharCounter error={formData.tokenName.length > 50} theme={theme}>
-                    {formData.tokenName.length}/50
-                  </CharCounter>
-                </Box>
-              }
-              size="small"
-              required
-            />
+          <Stack spacing={1.5}>
+            <Stack direction="row" spacing={1.5}>
+              <StyledTextField
+                theme={theme}
+                fullWidth
+                label="Name your token"
+                variant="outlined"
+                placeholder="My Awesome Token"
+                value={formData.tokenName}
+                onChange={handleInputChange('tokenName')}
+                error={!!errors.tokenName}
+                helperText={
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{errors.tokenName || 'Required'}</span>
+                    <CharCounter error={formData.tokenName.length > 50} theme={theme}>
+                      {formData.tokenName.length}/50
+                    </CharCounter>
+                  </Box>
+                }
+                size="small"
+                required
+              />
 
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="Add a token ticker (e.g. SCRAP)"
-              variant="outlined"
-              placeholder="TICKER"
-              value={formData.ticker}
-              onChange={handleInputChange('ticker')}
-              error={!!errors.ticker}
-              helperText={
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{errors.ticker || 'Required'}</span>
-                  <CharCounter error={formData.ticker.length > 10} theme={theme}>
-                    {formData.ticker.length}/10
-                  </CharCounter>
-                </Box>
-              }
-              size="small"
-              required
-            />
+              <StyledTextField
+                theme={theme}
+                label="Token ticker"
+                variant="outlined"
+                placeholder="TICKER"
+                value={formData.ticker}
+                onChange={handleInputChange('ticker')}
+                error={!!errors.ticker}
+                helperText={
+                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                    <span>{errors.ticker || 'Required'}</span>
+                    <CharCounter error={formData.ticker.length > 10} theme={theme}>
+                      {formData.ticker.length}/10
+                    </CharCounter>
+                  </Box>
+                }
+                size="small"
+                sx={{ minWidth: '200px' }}
+                required
+              />
+            </Stack>
 
             <StyledTextField
               theme={theme}
@@ -787,7 +794,7 @@ function CreatePage() {
               variant="outlined"
               placeholder="Tell people what makes your token special..."
               multiline
-              rows={3}
+              rows={2.5}
               value={formData.description}
               onChange={handleInputChange('description')}
               error={!!errors.description}
@@ -801,34 +808,49 @@ function CreatePage() {
               }
             />
 
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="Total supply"
-              variant="outlined"
-              type="number"
-              placeholder="1000000000"
-              value={formData.tokenSupply}
-              onChange={handleInputChange('tokenSupply')}
-              helperText="Required"
-              size="small"
-              required
-              inputProps={{ min: 1, step: 1 }}
-            />
+            <Stack direction="row" spacing={1.5}>
+              <StyledTextField
+                theme={theme}
+                fullWidth
+                label="Total supply"
+                variant="outlined"
+                type="number"
+                placeholder="1000000000"
+                value={formData.tokenSupply}
+                onChange={handleInputChange('tokenSupply')}
+                helperText="Required"
+                size="small"
+                required
+                inputProps={{ min: 1, step: 1 }}
+              />
 
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="Creator allocation (%)"
-              variant="outlined"
-              type="number"
-              placeholder="0"
-              value={formData.userCheckPercent}
-              onChange={handleInputChange('userCheckPercent')}
-              helperText={`You receive: ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens`}
-              size="small"
-              inputProps={{ min: 0, max: 30, step: 1 }}
-            />
+              <StyledTextField
+                theme={theme}
+                label="Creator allocation (%)"
+                variant="outlined"
+                type="number"
+                placeholder="0-30"
+                value={formData.userCheckPercent === 0 ? '' : formData.userCheckPercent}
+                onChange={handleInputChange('userCheckPercent')}
+                helperText={`You receive: ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens`}
+                size="small"
+                sx={{ minWidth: '220px' }}
+                inputProps={{ min: 0, max: 30, step: 1 }}
+              />
+            </Stack>
+
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <input
+                type="checkbox"
+                id="antiSnipe"
+                checked={formData.antiSnipe}
+                onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
+                style={{ width: 18, height: 18, cursor: 'pointer' }}
+              />
+              <label htmlFor="antiSnipe" style={{ cursor: 'pointer', fontSize: '0.92rem' }}>
+                Enable anti-snipe mode (RequireAuth)
+              </label>
+            </Box>
           </Stack>
         </Card>
 
@@ -852,21 +874,19 @@ function CreatePage() {
             />
           </SectionHeader>
 
-          <Stack spacing={2}>
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="XRP for AMM pool (min 10)"
-              variant="outlined"
-              type="number"
-              value={formData.ammXrpAmount}
-              onChange={handleInputChange('ammXrpAmount')}
-              error={formData.ammXrpAmount < 10}
-              helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : 'Required'}
-              size="small"
-              inputProps={{ min: 10, step: 1 }}
-            />
-          </Stack>
+          <StyledTextField
+            theme={theme}
+            fullWidth
+            label="XRP for AMM pool (min 10)"
+            variant="outlined"
+            type="number"
+            value={formData.ammXrpAmount}
+            onChange={handleInputChange('ammXrpAmount')}
+            error={formData.ammXrpAmount < 10}
+            helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : 'Required'}
+            size="small"
+            inputProps={{ min: 10, step: 1 }}
+          />
         </Card>
 
         <Card theme={theme} completed={formData.twitter || formData.telegram || formData.website}>
@@ -889,7 +909,7 @@ function CreatePage() {
             />
           </SectionHeader>
 
-          <Stack spacing={2}>
+          <Stack spacing={1.5}>
             <StyledTextField
               theme={theme}
               fullWidth
@@ -910,43 +930,45 @@ function CreatePage() {
               }}
             />
 
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="Connect your Telegram community"
-              variant="outlined"
-              placeholder="t.me/yourchannel"
-              value={formData.telegram}
-              onChange={handleInputChange('telegram')}
-              helperText="Optional"
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Telegram sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+            <Stack direction="row" spacing={1.5}>
+              <StyledTextField
+                theme={theme}
+                fullWidth
+                label="Connect your Telegram community"
+                variant="outlined"
+                placeholder="t.me/yourchannel"
+                value={formData.telegram}
+                onChange={handleInputChange('telegram')}
+                helperText="Optional"
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Telegram sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
 
-            <StyledTextField
-              theme={theme}
-              fullWidth
-              label="Link your Twitter/X account"
-              variant="outlined"
-              placeholder="@yourhandle"
-              value={formData.twitter}
-              onChange={handleInputChange('twitter')}
-              helperText="Optional"
-              size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Twitter sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
+              <StyledTextField
+                theme={theme}
+                fullWidth
+                label="Link your Twitter/X account"
+                variant="outlined"
+                placeholder="@yourhandle"
+                value={formData.twitter}
+                onChange={handleInputChange('twitter')}
+                helperText="Optional"
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Twitter sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
           </Stack>
         </Card>
 
@@ -1341,17 +1363,89 @@ function CreatePage() {
                   <strong>Token:</strong> {formData.tokenName} ({formData.ticker})
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  <strong>Total Supply:</strong> 1,000,000,000
+                  <strong>Total Supply:</strong> {formData.tokenSupply.toLocaleString()}
                 </Typography>
                 <Typography variant="body2" gutterBottom>
-                  <strong>AMM Pool:</strong> 500M {formData.ticker} / 500 XRP
+                  <strong>AMM Pool:</strong> {Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker} / {formData.ammXrpAmount} XRP
                 </Typography>
-                {sessionData.checkId && (
-                  <Typography variant="body2">
-                    <strong>Check ID:</strong> {sessionData.checkId.substring(0, 8)}...
-                  </Typography>
-                )}
               </Box>
+
+              {(sessionData.data?.userCheckId || sessionData.userCheckId) && (
+                <Paper sx={{ p: 2, bgcolor: checkClaimed ? alpha(theme.palette.success.main, 0.05) : alpha(theme.palette.info.main, 0.05), border: `1px solid ${checkClaimed ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.info.main, 0.2)}` }}>
+                  <Typography variant="body2" fontWeight={500} gutterBottom>
+                    {checkClaimed ? '✅ Tokens Claimed' : '💰 Claim Your Tokens'}
+                  </Typography>
+                  <Typography variant="caption" display="block" sx={{ mb: 2, color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    {checkClaimed
+                      ? `You have successfully claimed ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} tokens`
+                      : `You have ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} tokens available to claim`
+                    }
+                  </Typography>
+                  {!checkClaimed && (
+                    <Alert severity="info" sx={{ mb: 2, fontSize: '0.85rem' }}>
+                      Connect your wallet to claim your tokens. You need to sign a CheckCash transaction.
+                    </Alert>
+                  )}
+                  {checkClaimed && (
+                    <Alert severity="success" sx={{ mb: 2, fontSize: '0.85rem' }}>
+                      Your tokens have been successfully claimed and are now in your wallet.
+                    </Alert>
+                  )}
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    disabled={!accountProfile || checkClaimed || claiming}
+                    onClick={async () => {
+                      if (!accountProfile?.seed) {
+                        openSnackbar?.('Wallet seed not available', 'error');
+                        return;
+                      }
+                      setClaiming(true);
+                      try {
+                        const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
+                        await client.connect();
+
+                        const wallet = xrpl.Wallet.fromSeed(accountProfile.seed);
+                        const checkCash = {
+                          TransactionType: 'CheckCash',
+                          Account: wallet.address,
+                          CheckID: sessionData.data?.userCheckId || sessionData.userCheckId,
+                          Amount: {
+                            currency: formData.ticker.length === 3 ? formData.ticker : xrpl.convertStringToHex(formData.ticker).padEnd(40, '0'),
+                            issuer: sessionData.issuerAddress || sessionData.data.issuer,
+                            value: String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)))
+                          }
+                        };
+
+                        const tx = await client.submitAndWait(checkCash, { autofill: true, wallet });
+                        await client.disconnect();
+
+                        if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
+                          setCheckClaimed(true);
+                          openSnackbar?.('Tokens claimed successfully!', 'success');
+                        } else {
+                          openSnackbar?.('Failed to claim tokens: ' + tx.result.meta.TransactionResult, 'error');
+                        }
+                      } catch (error) {
+                        console.error('Cash check error:', error);
+                        if (error.message.includes('tecNO_ENTRY')) {
+                          setCheckClaimed(true);
+                          openSnackbar?.('Check already claimed or expired', 'warning');
+                        } else {
+                          openSnackbar?.('Error cashing check: ' + error.message, 'error');
+                        }
+                      } finally {
+                        setClaiming(false);
+                      }
+                    }}
+                  >
+                    {claiming ? 'Claiming...' : checkClaimed ? 'Already Claimed' : accountProfile ? 'Cash Check & Claim Tokens' : 'Connect Wallet to Claim'}
+                  </Button>
+                  <Typography variant="caption" display="block" sx={{ mt: 1, color: alpha(theme.palette.text.secondary, 0.6) }}>
+                    Check ID: {(sessionData.data?.userCheckId || sessionData.userCheckId)?.substring(0, 16)}...
+                  </Typography>
+                </Paper>
+              )}
 
               <Stack direction="row" spacing={1}>
                 <Button
