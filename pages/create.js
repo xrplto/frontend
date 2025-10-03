@@ -9,6 +9,7 @@ import { AppContext } from 'src/AppContext';
 import { ConnectWallet } from 'src/components/Wallet';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -264,6 +265,14 @@ function CreatePage() {
         setSessionData(parsed);
         setUserWallet(parsed.userWallet || '');
 
+        // Restore form data if available
+        if (parsed.formData) {
+          setFormData(parsed.formData);
+          if (parsed.formData.image) {
+            setFileName(parsed.formData.image.name || 'uploaded-file');
+          }
+        }
+
         // Poll status to get current state
         (async () => {
           const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${parsed.sessionId}`);
@@ -481,11 +490,22 @@ function CreatePage() {
       const data = response.data.data || response.data;
       setSessionData(data);
 
-      // Save to localStorage
+      // Save to localStorage with form data
       localStorage.setItem('tokenLaunchSession', JSON.stringify({
         ...data,
         step: 'funding',
-        userWallet: walletAddress
+        userWallet: walletAddress,
+        formData: {
+          tokenName: formData.tokenName,
+          ticker: formData.ticker,
+          description: formData.description,
+          tokenSupply: formData.tokenSupply,
+          ammXrpAmount: formData.ammXrpAmount,
+          userCheckPercent: formData.userCheckPercent,
+          twitter: formData.twitter,
+          telegram: formData.telegram,
+          website: formData.website
+        }
       }));
 
       // Set required funding amount from API
@@ -772,12 +792,22 @@ function CreatePage() {
             variant="determinate"
             value={(getCompletionStatus() / 5) * 100}
             sx={{
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.divider, 0.1),
+              height: 3,
+              borderRadius: 0,
+              backgroundColor: 'transparent',
+              position: 'relative',
+              '&::before': {
+                content: '""',
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                height: '100%',
+                background: alpha(theme.palette.divider, 0.2)
+              },
               '& .MuiLinearProgress-bar': {
-                borderRadius: 2,
-                background: 'linear-gradient(90deg, #4285f4, #66a6ff)'
+                borderRadius: 0,
+                background: '#4285f4'
               }
             }}
           />
@@ -1108,12 +1138,6 @@ function CreatePage() {
               • Videos: 1080p+, 16:9 or 9:16 aspect ratio
             </span>
           </InfoText>
-
-          <WarningBox theme={theme}>
-            <WarningText theme={theme}>
-              ⚠️ Token data cannot be edited after creation
-            </WarningText>
-          </WarningBox>
         </Card>
 
         {!launchStep && (
@@ -1155,66 +1179,226 @@ function CreatePage() {
           <PageTitle theme={theme}>Review Token Details</PageTitle>
           <Subtitle theme={theme}>Confirm your token settings before launch</Subtitle>
 
-          <Paper sx={{ p: 3, mt: 2 }}>
-            <Stack spacing={2.5}>
-              {imagePreview && (
-                <Box sx={{ textAlign: 'center' }}>
-                  <img src={imagePreview} alt="Token" style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '12px' }} />
-                </Box>
-              )}
-              <Box>
-                <Typography variant="caption" color="text.secondary">Token Name</Typography>
-                <Typography variant="h6">{formData.tokenName}</Typography>
+          <Paper sx={{
+            p: 0,
+            mt: 2,
+            overflow: 'hidden',
+            border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
+          }}>
+            {/* Header with Image */}
+            {imagePreview && (
+              <Box sx={{
+                textAlign: 'center',
+                p: 3,
+                bgcolor: alpha(theme.palette.primary.main, 0.02),
+                borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
+              }}>
+                <img
+                  src={imagePreview}
+                  alt="Token"
+                  style={{
+                    maxWidth: '160px',
+                    maxHeight: '160px',
+                    borderRadius: '12px',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`
+                  }}
+                />
               </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">Ticker</Typography>
-                <Typography variant="h6">{formData.ticker}</Typography>
-              </Box>
-              {formData.description && (
-                <Box>
-                  <Typography variant="caption" color="text.secondary">Description</Typography>
-                  <Typography variant="body2">{formData.description}</Typography>
-                </Box>
-              )}
-              <Box>
-                <Typography variant="caption" color="text.secondary">Total Supply</Typography>
-                <Typography variant="body1">{formData.tokenSupply.toLocaleString()}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">AMM Liquidity</Typography>
-                <Typography variant="body1">{Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker} / {formData.ammXrpAmount} XRP</Typography>
-              </Box>
-              {formData.userCheckPercent > 0 && (
-                <Box>
-                  <Typography variant="caption" color="text.secondary">Your Allocation</Typography>
-                  <Typography variant="body1">{Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} {formData.ticker} ({formData.userCheckPercent}%)</Typography>
-                </Box>
-              )}
-              {formData.antiSnipe && (
-                <Alert severity="info" sx={{ mt: 1 }}>
-                  Anti-snipe mode enabled (RequireAuth)
-                </Alert>
-              )}
-            </Stack>
+            )}
 
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => setShowSummary(false)}
-                sx={{ py: 1.5, borderRadius: '12px', borderWidth: '1.5px' }}
-              >
-                Back to Edit
-              </Button>
-              <Button
-                variant="contained"
-                fullWidth
-                onClick={confirmLaunch}
-                sx={{ py: 1.5, borderRadius: '12px' }}
-              >
-                Confirm & Launch
-              </Button>
-            </Stack>
+            {/* Token Info Grid */}
+            <Box sx={{ p: 3 }}>
+              <Stack spacing={2.5}>
+                {/* Name & Ticker Row */}
+                <Stack direction="row" spacing={3}>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Token Name
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 500 }}>
+                      {formData.tokenName}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ flex: 1 }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Ticker
+                    </Typography>
+                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 500 }}>
+                      {formData.ticker}
+                    </Typography>
+                  </Box>
+                </Stack>
+
+                {/* Description */}
+                {formData.description && (
+                  <Box sx={{
+                    p: 2,
+                    bgcolor: alpha(theme.palette.background.default, 0.3),
+                    borderRadius: '8px',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
+                  }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Description
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 0.8, lineHeight: 1.6 }}>
+                      {formData.description}
+                    </Typography>
+                  </Box>
+                )}
+
+                {/* Social Links */}
+                {(formData.website || formData.twitter || formData.telegram) && (
+                  <Box sx={{
+                    p: 2,
+                    bgcolor: alpha(theme.palette.info.main, 0.03),
+                    borderRadius: '8px',
+                    border: `1.5px solid ${alpha(theme.palette.info.main, 0.15)}`
+                  }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
+                      Social Links
+                    </Typography>
+                    <Stack spacing={1}>
+                      {formData.website && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Language sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
+                          <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                            {formData.website}
+                          </Typography>
+                        </Box>
+                      )}
+                      {formData.twitter && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Twitter sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
+                          <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                            {formData.twitter}
+                          </Typography>
+                        </Box>
+                      )}
+                      {formData.telegram && (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <Telegram sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
+                          <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                            {formData.telegram}
+                          </Typography>
+                        </Box>
+                      )}
+                    </Stack>
+                  </Box>
+                )}
+
+                {/* Token Economics */}
+                <Box sx={{
+                  p: 2,
+                  bgcolor: alpha(theme.palette.success.main, 0.03),
+                  borderRadius: '8px',
+                  border: `1.5px solid ${alpha(theme.palette.success.main, 0.15)}`
+                }}>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1.5 }}>
+                    Token Economics
+                  </Typography>
+                  <Stack spacing={1.5}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                        Total Supply
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formData.tokenSupply.toLocaleString()}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                        AMM Pool
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker}
+                      </Typography>
+                    </Stack>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                        Initial XRP
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                        {formData.ammXrpAmount} XRP
+                      </Typography>
+                    </Stack>
+                    {formData.userCheckPercent > 0 && (
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                          Your Allocation
+                        </Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 500, color: theme.palette.success.main }}>
+                          {Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} {formData.ticker} ({formData.userCheckPercent}%)
+                        </Typography>
+                      </Stack>
+                    )}
+                  </Stack>
+                </Box>
+
+                {/* Anti-snipe Badge */}
+                {formData.antiSnipe && (
+                  <Alert
+                    severity="info"
+                    sx={{
+                      borderRadius: '8px',
+                      border: `1.5px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                      '& .MuiAlert-message': { fontSize: '0.9rem' }
+                    }}
+                  >
+                    Anti-snipe protection enabled (RequireAuth)
+                  </Alert>
+                )}
+              </Stack>
+            </Box>
+
+            {/* Action Buttons */}
+            <Box sx={{
+              p: 3,
+              pt: 2,
+              bgcolor: alpha(theme.palette.background.default, 0.2),
+              borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
+            }}>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  onClick={() => setShowSummary(false)}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: '12px',
+                    borderWidth: '1.5px',
+                    fontSize: '0.95rem',
+                    fontWeight: 400,
+                    textTransform: 'none',
+                    borderColor: alpha(theme.palette.divider, 0.2),
+                    '&:hover': {
+                      borderWidth: '1.5px',
+                      borderColor: alpha(theme.palette.divider, 0.3),
+                      backgroundColor: alpha(theme.palette.background.default, 0.3)
+                    }
+                  }}
+                >
+                  Back to Edit
+                </Button>
+                <Button
+                  variant="contained"
+                  fullWidth
+                  onClick={confirmLaunch}
+                  sx={{
+                    py: 1.5,
+                    borderRadius: '12px',
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
+                    textTransform: 'none',
+                    bgcolor: '#4285f4',
+                    '&:hover': {
+                      bgcolor: '#3367d6'
+                    }
+                  }}
+                >
+                  Confirm & Launch
+                </Button>
+              </Stack>
+            </Box>
           </Paper>
         </Container>
       )}
@@ -1385,108 +1569,143 @@ function CreatePage() {
           )}
 
           {launchStep === 'processing' && (
-            <Stack spacing={2}>
-              <Box sx={{ textAlign: 'center' }}>
-                <CircularProgress sx={{ mb: 2 }} />
-                <Typography>Processing token launch...</Typography>
-              </Box>
-
-              {/* Progress Steps */}
-              <Box sx={{ px: 2 }}>
-                {sessionData?.status && (
-                  <Alert severity="info" sx={{ mb: 2 }}>
-                    Current Step: <strong>
-                      {sessionData.status === 'funded' && 'Funding received, starting launch...'}
-                      {sessionData.status === 'configuring_issuer' && 'Configuring issuer account...'}
-                      {sessionData.status === 'creating_trustline' && 'Creating trustline...'}
-                      {sessionData.status === 'sending_tokens' && 'Minting tokens...'}
-                      {sessionData.status === 'creating_checks' && 'Creating user check...'}
-                      {sessionData.status === 'creating_amm' && 'Creating AMM pool...'}
-                      {sessionData.status === 'scheduling_blackhole' && 'Finalizing and blackholing...'}
-                      {!['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(sessionData.status) && 'Processing...'}
-                    </strong>
-                  </Alert>
-                )}
-
-                <Typography variant="caption" color="text.secondary">
-                  • Setting up issuer account<br/>
-                  • Creating trustlines<br/>
-                  • Distributing tokens<br/>
-                  • Creating AMM pool<br/>
-                  • Blackholing accounts
+            <Stack spacing={3}>
+              <Box sx={{ textAlign: 'center', py: 2 }}>
+                <CircularProgress size={48} sx={{ mb: 2 }} />
+                <Typography variant="h6" sx={{ fontWeight: 500, mb: 0.5 }}>
+                  Processing token launch...
+                </Typography>
+                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
+                  This may take a few moments
                 </Typography>
               </Box>
 
-              {/* Check for insufficient funding warning */}
+              {/* Current Step Alert */}
+              {sessionData?.status && (
+                <Alert
+                  severity="info"
+                  icon={<Info />}
+                  sx={{
+                    borderRadius: '8px',
+                    border: `1.5px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                    bgcolor: alpha(theme.palette.info.main, 0.05)
+                  }}
+                >
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    Current Step: {
+                      sessionData.status === 'funded' ? 'Funding received, starting launch...' :
+                      sessionData.status === 'configuring_issuer' ? 'Configuring issuer account...' :
+                      sessionData.status === 'creating_trustline' ? 'Creating trustline...' :
+                      sessionData.status === 'sending_tokens' ? 'Minting tokens...' :
+                      sessionData.status === 'creating_checks' ? 'Creating user check...' :
+                      sessionData.status === 'creating_amm' ? 'Creating AMM pool...' :
+                      sessionData.status === 'scheduling_blackhole' ? 'Finalizing and blackholing...' :
+                      'Processing...'
+                    }
+                  </Typography>
+                </Alert>
+              )}
+
+              {/* Progress Steps List */}
+              <Box sx={{
+                p: 2,
+                bgcolor: alpha(theme.palette.background.default, 0.3),
+                borderRadius: '8px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
+              }}>
+                <Stack spacing={1}>
+                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    • Setting up issuer account
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    • Creating trustlines
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    • Distributing tokens
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    • Creating AMM pool
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                    • Blackholing accounts
+                  </Typography>
+                </Stack>
+              </Box>
+
+              {/* Insufficient Funding Warning */}
               {launchLogs.some(log => log.message?.includes('Insufficient')) && (
-                <Alert severity="error" sx={{ mb: 2 }}>
-                  <strong>Insufficient Funding!</strong>
-                  <Typography variant="caption" display="block">
+                <Alert severity="error" sx={{ borderRadius: '8px' }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                    Insufficient Funding!
+                  </Typography>
+                  <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
                     The issuer account needs more XRP. Please add at least 15 XRP to continue.
                   </Typography>
                 </Alert>
               )}
 
-              {/* Debug Panel Toggle */}
-              <Button
-                size="small"
-                onClick={() => setShowDebugPanel(!showDebugPanel)}
-                sx={{ alignSelf: 'center' }}
-              >
-                {showDebugPanel ? 'Hide' : 'Show'} Debug Logs ({launchLogs.length})
-              </Button>
+              {/* Debug Logs Toggle */}
+              <Box sx={{ textAlign: 'center' }}>
+                <Button
+                  size="small"
+                  onClick={() => setShowDebugPanel(!showDebugPanel)}
+                  sx={{
+                    fontSize: '0.85rem',
+                    textTransform: 'none',
+                    color: theme.palette.primary.main
+                  }}
+                >
+                  {showDebugPanel ? 'Hide' : 'Show'} Debug Logs ({launchLogs.length})
+                </Button>
+              </Box>
 
-              {/* Debug Logs - Always visible by default */}
+              {/* Debug Logs Panel */}
               {showDebugPanel && launchLogs.length > 0 && (
                 <Paper sx={{
-                  p: 1.5,
+                  p: 2,
                   maxHeight: 300,
                   overflow: 'auto',
-                  bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : alpha(theme.palette.background.default, 0.9),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
+                  bgcolor: theme.palette.mode === 'dark' ? '#0a0a0a' : '#1a1a1a',
+                  border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
+                  borderRadius: '8px',
+                  fontFamily: 'monospace'
                 }}>
-                  <Stack spacing={0.5}>
+                  <Stack spacing={0.3}>
                     {launchLogs.map((log, idx) => (
-                      <Box key={idx} sx={{
-                        p: 0.5,
-                        borderRadius: 0.5,
-                        bgcolor: log.level === 'error' ? alpha(theme.palette.error.main, 0.05) :
-                                 log.level === 'warn' ? alpha(theme.palette.warning.main, 0.05) :
-                                 log.level === 'success' ? alpha(theme.palette.success.main, 0.05) :
-                                 'transparent'
-                      }}>
-                        <Typography variant="caption" sx={{
+                      <Typography
+                        key={idx}
+                        variant="caption"
+                        sx={{
                           fontFamily: 'monospace',
-                          fontSize: '0.7rem',
+                          fontSize: '0.75rem',
                           display: 'block',
                           color: log.level === 'error' ? theme.palette.error.main :
                                  log.level === 'warn' ? theme.palette.warning.main :
                                  log.level === 'success' ? theme.palette.success.main :
-                                 theme.palette.text.secondary
-                        }}>
-                          <span style={{ opacity: 0.6 }}>
-                            [{new Date(log.timestamp).toLocaleTimeString()}]
-                          </span>
-                          {' '}
-                          <span style={{ fontWeight: 500 }}>
-                            [{log.level?.toUpperCase() || 'LOG'}]
-                          </span>
-                          {' '}
-                          {log.message}
-                        </Typography>
-                      </Box>
+                                 alpha(theme.palette.common.white, 0.7),
+                          lineHeight: 1.8
+                        }}
+                      >
+                        <span style={{ opacity: 0.5 }}>
+                          [{new Date(log.timestamp).toLocaleTimeString()}]
+                        </span>
+                        {' '}
+                        <span style={{ fontWeight: 600 }}>
+                          [{log.level?.toUpperCase() || 'LOG'}]
+                        </span>
+                        {' '}
+                        {log.message}
+                      </Typography>
                     ))}
                   </Stack>
                 </Paper>
               )}
 
-              {/* Session ID for debugging */}
+              {/* Session ID */}
               {sessionData?.sessionId && (
-                <Box sx={{ textAlign: 'center' }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Session ID: <code>{sessionData.sessionId}</code>
-                  </Typography>
-                </Box>
+                <Typography variant="caption" sx={{ textAlign: 'center', color: alpha(theme.palette.text.secondary, 0.6) }}>
+                  Session ID: {sessionData.sessionId}
+                </Typography>
               )}
             </Stack>
           )}
@@ -1535,24 +1754,85 @@ function CreatePage() {
                     fullWidth
                     disabled={!accountProfile || checkClaimed || claiming}
                     onClick={async () => {
-                      if (!accountProfile?.seed) {
-                        openSnackbar?.('Wallet seed not available', 'error');
+                      if (!accountProfile?.account) {
+                        openSnackbar?.('Please connect your wallet', 'error');
                         return;
                       }
+
                       setClaiming(true);
                       try {
+                        // Get currency code from formData or sessionData
+                        const ticker = formData.ticker || sessionData.currencyCode || sessionData.data?.currencyCode;
+                        const supply = formData.tokenSupply || sessionData.tokenSupply || sessionData.data?.tokenSupply;
+                        const checkPercent = formData.userCheckPercent || sessionData.userCheckPercent || sessionData.data?.userCheckPercent || 0;
+
+                        if (!ticker) {
+                          openSnackbar?.('Currency code not found. Please try launching again.', 'error');
+                          setClaiming(false);
+                          return;
+                        }
+
+                        let wallet;
+                        const walletStorage = new UnifiedWalletStorage();
+
+                        // Check if seed is already in profile (session)
+                        if (accountProfile.seed) {
+                          // Seed available in session
+                          wallet = xrpl.Wallet.fromSeed(accountProfile.seed);
+                        } else if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+                          // OAuth wallet - need password to decrypt seed
+                          const password = prompt('Enter your wallet password to sign the transaction:');
+                          if (!password) {
+                            setClaiming(false);
+                            return;
+                          }
+
+                          // Find wallet by social ID
+                          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+                          const walletData = await walletStorage.findWalletBySocialId(walletId, password);
+
+                          if (!walletData || !walletData.seed) {
+                            openSnackbar?.('Incorrect password or wallet not found', 'error');
+                            setClaiming(false);
+                            return;
+                          }
+
+                          wallet = xrpl.Wallet.fromSeed(walletData.seed);
+                        } else if (accountProfile.wallet_type === 'device') {
+                          // Device wallet - need password
+                          const password = prompt('Enter your wallet password to sign the transaction:');
+                          if (!password) {
+                            setClaiming(false);
+                            return;
+                          }
+
+                          const wallets = await walletStorage.getWallets(password);
+                          const walletData = wallets.find(w => w.address === accountProfile.account);
+
+                          if (!walletData || !walletData.seed) {
+                            openSnackbar?.('Incorrect password or wallet not found', 'error');
+                            setClaiming(false);
+                            return;
+                          }
+
+                          wallet = xrpl.Wallet.fromSeed(walletData.seed);
+                        } else {
+                          openSnackbar?.('Wallet type not supported', 'error');
+                          setClaiming(false);
+                          return;
+                        }
+
                         const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
                         await client.connect();
 
-                        const wallet = xrpl.Wallet.fromSeed(accountProfile.seed);
                         const checkCash = {
                           TransactionType: 'CheckCash',
                           Account: wallet.address,
                           CheckID: sessionData.data?.userCheckId || sessionData.userCheckId,
                           Amount: {
-                            currency: formData.ticker.length === 3 ? formData.ticker : xrpl.convertStringToHex(formData.ticker).padEnd(40, '0'),
-                            issuer: sessionData.issuerAddress || sessionData.data.issuer,
-                            value: String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)))
+                            currency: ticker.length === 3 ? ticker : xrpl.convertStringToHex(ticker).padEnd(40, '0'),
+                            issuer: sessionData.issuerAddress || sessionData.data?.issuer,
+                            value: String(Math.floor(supply * (checkPercent / 100)))
                           }
                         };
 
@@ -1571,6 +1851,8 @@ function CreatePage() {
                         if (error.message.includes('tecNO_ENTRY')) {
                           setCheckClaimed(true);
                           openSnackbar?.('Check already claimed or expired', 'warning');
+                        } else if (error.message.includes('Incorrect password')) {
+                          openSnackbar?.('Incorrect password. Please try again.', 'error');
                         } else {
                           openSnackbar?.('Error cashing check: ' + error.message, 'error');
                         }

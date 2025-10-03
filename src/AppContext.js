@@ -240,7 +240,22 @@ function ContextProviderInner({ children, data, openSnackbar }) {
             }
           }
         } catch (err) {
-          console.error('Testnet balance fetch error:', err);
+          // Handle unactivated accounts (404) gracefully
+          if (err.response?.status === 404) {
+            // Account not activated yet - set balance to 0
+            setAccountBalance({
+              curr1: { value: '0' },
+              curr2: { value: '0' }
+            });
+            if (accountProfile) {
+              setAccountProfile({
+                ...accountProfile,
+                xrp: '0'
+              });
+            }
+          } else {
+            console.error('Testnet balance fetch error:', err);
+          }
         }
       } else {
         // Production: use existing endpoint

@@ -564,10 +564,12 @@ export class UnifiedWalletStorage {
     });
   }
 
-  // Backward compatibility - store credential mapping
+  // Store password for device wallets (encrypted with device-specific key)
   async storeWalletCredential(passkeyId, userSecret) {
-    // Store PIN temporarily in memory for this session
-    // This allows checking if passkey has been used before
+    // Store password encrypted in localStorage for auto-decryption
+    await this.setSecureItem(`device_pwd_${passkeyId}`, userSecret);
+
+    // Also store in memory cache for this session
     if (!this.credentialCache) this.credentialCache = new Map();
     this.credentialCache.set(passkeyId, userSecret);
   }
@@ -576,6 +578,15 @@ export class UnifiedWalletStorage {
     // Check memory cache first
     if (this.credentialCache && this.credentialCache.has(passkeyId)) {
       return this.credentialCache.get(passkeyId);
+    }
+
+    // Try to get from encrypted localStorage
+    const storedPassword = await this.getSecureItem(`device_pwd_${passkeyId}`);
+    if (storedPassword) {
+      // Cache in memory for this session
+      if (!this.credentialCache) this.credentialCache = new Map();
+      this.credentialCache.set(passkeyId, storedPassword);
+      return storedPassword;
     }
 
     // Check if wallet exists with this passkey
@@ -610,24 +621,49 @@ export class UnifiedWalletStorage {
       const walletExists = await this.checkWalletExists(walletId);
 
       if (walletExists) {
-        console.log('✅ WALLET FOUND - auto-login without password');
+        console.log('✅ WALLET FOUND - auto-decrypting with stored password');
 
-        // Wallet exists locally - user already logged in before
-        // We can auto-login with just the social ID
+        // Try to get stored password for auto-decryption
+        const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
+
+        if (storedPassword) {
+          // Auto-decrypt wallet with stored password
+          const walletData = await this.findWalletBySocialId(walletId, storedPassword);
+
+          if (walletData && walletData.seed) {
+            console.log('✅ Auto-decrypted successfully');
+            const result = {
+              success: true,
+              wallet: {
+                account: walletData.address,
+                address: walletData.address,
+                publicKey: walletData.publicKey,
+                seed: walletData.seed,
+                wallet_type: 'oauth',
+                provider: profile.provider,
+                provider_id: profile.id
+              },
+              requiresPassword: false
+            };
+            return result;
+          }
+        }
+
+        // Fallback: return without seed (will need password later)
+        console.log('⚠️ No stored password - will need password for transactions');
         const result = {
           success: true,
           wallet: {
             account: walletExists.address,
             address: walletExists.address,
-            publicKey: '', // Will be filled when needed
-            seed: '', // Will be decrypted when needed
+            publicKey: '',
+            seed: '',
             wallet_type: 'oauth',
             provider: profile.provider,
             provider_id: profile.id
           },
           requiresPassword: false
         };
-        console.log('Returning auto-login result:', result);
         return result;
       }
 
@@ -723,6 +759,10 @@ export class UnifiedWalletStorage {
 
     const encryptedData = await this.encryptData(fullData, password);
     console.log('Encrypted data length:', encryptedData.length);
+
+    // Store password encrypted with device-specific key for auto-decryption
+    await this.setSecureItem(`wallet_pwd_${walletId}`, password);
+    console.log('✅ Password stored for auto-decryption');
 
     // Use OAuth walletId for lookup hash (not address)
     const encoder = new TextEncoder();
