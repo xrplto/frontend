@@ -1741,7 +1741,10 @@ function CreatePage() {
                   </Typography>
                   {!checkClaimed && (
                     <Alert severity="info" sx={{ mb: 2, fontSize: '0.85rem' }}>
-                      Connect your wallet to claim your tokens. You need to sign a CheckCash transaction.
+                      {accountProfile
+                        ? 'Click the button below to claim your tokens. You will need to sign a CheckCash transaction.'
+                        : 'Connect your wallet to claim your tokens. You need to sign a CheckCash transaction.'
+                      }
                     </Alert>
                   )}
                   {checkClaimed && (
