@@ -19,6 +19,11 @@ const NavSearchBar = ({
 
   useEffect(() => {
     const handleKeyPress = (event) => {
+      // Don't trigger if user is typing in an input field
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') {
+        return;
+      }
+
       if (event.key === '/' && !event.ctrlKey && !event.metaKey) {
         event.preventDefault();
         onOpenSearchModal();

@@ -1157,6 +1157,11 @@ function CreatePage() {
 
           <Paper sx={{ p: 3, mt: 2 }}>
             <Stack spacing={2.5}>
+              {imagePreview && (
+                <Box sx={{ textAlign: 'center' }}>
+                  <img src={imagePreview} alt="Token" style={{ maxWidth: '200px', maxHeight: '200px', borderRadius: '12px' }} />
+                </Box>
+              )}
               <Box>
                 <Typography variant="caption" color="text.secondary">Token Name</Typography>
                 <Typography variant="h6">{formData.tokenName}</Typography>

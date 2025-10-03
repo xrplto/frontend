@@ -278,6 +278,10 @@ function SearchModal({ open, onClose }) {
       if (e.key === 'Escape') {
         handleClose();
       }
+      // Prevent modal from opening when typing in other inputs
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        e.stopPropagation();
+      }
     },
     [handleClose]
   );
