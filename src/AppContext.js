@@ -161,25 +161,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
-    walletStorage.removeSecureItem(KEY_ACCOUNT_PROFILE);
-    walletStorage.removeSecureItem(KEY_ACCOUNT_PROFILES);
-    setAccountProfile(null);
-    setProfiles([]);
-
-    // Clear OAuth session data
-    window.sessionStorage.removeItem('oauth_temp_token');
-    window.sessionStorage.removeItem('oauth_temp_provider');
-    window.sessionStorage.removeItem('oauth_temp_user');
-    window.sessionStorage.removeItem('oauth_action');
-    window.sessionStorage.removeItem('oauth_backend_data');
-    window.sessionStorage.removeItem('wallet_modal_open');
-    window.sessionStorage.removeItem('code_used');
-
-    // Clear OAuth auth data
-    walletStorage.removeSecureItem('jwt');
-    walletStorage.removeSecureItem('authMethod');
-    walletStorage.removeSecureItem('user');
-
+    // Clear ALL storage SYNCHRONOUSLY (no state updates)
+    localStorage.clear();
+    sessionStorage.clear();
   };
 
   const removeProfile = async (account) => {
@@ -206,8 +190,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const handleLogout = () => {
-    setOpen(false);
     doLogOut();
+    window.location.reload();
   };
 
   useEffect(() => {
