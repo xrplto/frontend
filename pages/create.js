@@ -255,6 +255,65 @@ function CreatePage() {
   const [checkClaimed, setCheckClaimed] = useState(false);
   const [claiming, setClaiming] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
+  const [decryptedSeed, setDecryptedSeed] = useState(null);
+
+  // Decrypt seed on mount if OAuth wallet
+  useEffect(() => {
+    const decryptSeed = async () => {
+      console.log('[DEBUG] Decrypt seed effect triggered', {
+        hasProfile: !!accountProfile,
+        walletType: accountProfile?.wallet_type,
+        provider: accountProfile?.provider,
+        providerId: accountProfile?.provider_id,
+        hasSeedInProfile: !!accountProfile?.seed
+      });
+
+      if (!accountProfile) {
+        setDecryptedSeed(null);
+        return;
+      }
+
+      if (accountProfile.seed) {
+        console.log('[DEBUG] Seed already in profile');
+        setDecryptedSeed(accountProfile.seed);
+        return;
+      }
+
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        try {
+          const walletStorage = new UnifiedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          console.log('[DEBUG] Looking for wallet with ID:', walletId);
+
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          console.log('[DEBUG] Stored password found:', !!storedPassword);
+
+          if (storedPassword) {
+            console.log('[DEBUG] Attempting to decrypt wallet...');
+            const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword);
+            console.log('[DEBUG] Wallet decrypted:', {
+              found: !!wallet,
+              hasSeed: !!wallet?.seed,
+              address: wallet?.address
+            });
+
+            if (wallet?.seed) {
+              setDecryptedSeed(wallet.seed);
+              console.log('[DEBUG] ✅ Seed decrypted successfully');
+            } else {
+              console.log('[DEBUG] ❌ Wallet found but no seed');
+            }
+          } else {
+            console.log('[DEBUG] ❌ No stored password found');
+          }
+        } catch (error) {
+          console.error('[DEBUG] ❌ Failed to decrypt seed:', error);
+        }
+      }
+    };
+
+    decryptSeed();
+  }, [accountProfile]);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -731,7 +790,7 @@ function CreatePage() {
                 </Typography>
                 <Typography variant="body2" gutterBottom>
                   <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
-                    {accountProfile.seed || accountProfile.secret || 'N/A'}
+                    {decryptedSeed || accountProfile.seed || accountProfile.secret || 'N/A'}
                   </code>
                 </Typography>
                 <Typography variant="body2" gutterBottom>

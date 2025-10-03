@@ -625,13 +625,15 @@ export class UnifiedWalletStorage {
 
         // Try to get stored password for auto-decryption
         const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
+        console.log('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
         if (storedPassword) {
           // Auto-decrypt wallet with stored password
+          console.log('[STORAGE] Attempting auto-decrypt...');
           const walletData = await this.findWalletBySocialId(walletId, storedPassword);
 
           if (walletData && walletData.seed) {
-            console.log('✅ Auto-decrypted successfully');
+            console.log('[STORAGE] ✅ Auto-decrypted successfully, seed length:', walletData.seed?.length);
             const result = {
               success: true,
               wallet: {
@@ -762,7 +764,7 @@ export class UnifiedWalletStorage {
 
     // Store password encrypted with device-specific key for auto-decryption
     await this.setSecureItem(`wallet_pwd_${walletId}`, password);
-    console.log('✅ Password stored for auto-decryption');
+    console.log('[STORAGE] ✅ Password stored for auto-decryption, key:', `wallet_pwd_${walletId}`);
 
     // Use OAuth walletId for lookup hash (not address)
     const encoder = new TextEncoder();
