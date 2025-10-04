@@ -1804,7 +1804,7 @@ const TokenSummary = memo(
                           >
                             {currencySymbols[activeFiatCurrency]}
                             {formatValue(
-                              range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1)
+                              activeFiatCurrency === 'XRP' ? range24h.min : range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1)
                             )}
                           </Typography>
                         </Stack>
@@ -1856,7 +1856,7 @@ const TokenSummary = memo(
                           >
                             {currencySymbols[activeFiatCurrency]}
                             {formatValue(
-                              range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1)
+                              activeFiatCurrency === 'XRP' ? range24h.max : range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1)
                             )}
                           </Typography>
                           <Typography
@@ -1956,7 +1956,7 @@ const TokenSummary = memo(
                     sx={{ fontSize: '0.75rem', fontWeight: 700, color: theme.palette.success.main }}
                   >
                     {currencySymbols[activeFiatCurrency]}
-                    {formatValue(range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
+                    {formatValue(activeFiatCurrency === 'XRP' ? range24h.min : range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
                   </Typography>
 
                   <Typography
@@ -1981,7 +1981,7 @@ const TokenSummary = memo(
                     sx={{ fontSize: '0.75rem', fontWeight: 700, color: theme.palette.error.main }}
                   >
                     {currencySymbols[activeFiatCurrency]}
-                    {formatValue(range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
+                    {formatValue(activeFiatCurrency === 'XRP' ? range24h.max : range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
                   </Typography>
                 </Stack>
 
