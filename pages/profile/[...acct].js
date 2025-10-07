@@ -1,6 +1,7 @@
 import { Box, styled, Grid, Toolbar, Container, Typography, Paper, Stack, alpha, Chip } from '@mui/material';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { Client } from 'xrpl';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -16,33 +17,41 @@ const OverviewWrapper = styled(Box)(
 
 const OverView = ({ account }) => {
   const [data, setData] = useState(null);
+  const [txHistory, setTxHistory] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Reset data and loading state when account changes
     setData(null);
+    setTxHistory([]);
     setLoading(true);
 
-    const fetchProfile = async () => {
+    const fetchData = async () => {
       try {
-        console.log('🔥 REQUESTING TRADER:', account);
-        const res = await axios.get(`https://api.xrpl.to/api/trader/${account}?t=${Date.now()}`);
-        console.log('🔥 RECEIVED ADDRESS:', res.data.address);
-        console.log('🔥 MATCH:', account === res.data.address);
+        // Fetch profile data
+        const profileRes = await axios.get(`https://api.xrpl.to/api/trader/${account}`);
+        setData(profileRes.data);
 
-        // Only set data if address matches what we requested
-        if (res.data.address === account) {
-          setData(res.data);
-        } else {
-          console.error('❌ ADDRESS MISMATCH! Requested:', account, 'Got:', res.data.address);
-        }
+        // Fetch XRPL transaction history via WebSocket
+        const client = new Client('wss://s1.ripple.com');
+        client.connect().then(async () => {
+          const response = await client.request({
+            command: 'account_tx',
+            account: account,
+            limit: 50
+          });
+          setTxHistory(response.result.transactions || []);
+          client.disconnect();
+        }).catch(err => {
+          console.error('XRPL fetch failed:', err);
+        });
       } catch (err) {
         console.error('Failed to fetch profile:', err);
       } finally {
         setLoading(false);
       }
     };
-    fetchProfile();
+    fetchData();
   }, [account]);
 
   if (loading) {
@@ -199,18 +208,18 @@ const OverView = ({ account }) => {
         {data.tokensTraded?.length > 0 && (
           <Box>
             <Typography variant="caption" sx={{
-              fontSize: '0.75rem',
-              color: (theme) => alpha(theme.palette.text.secondary, 0.5),
+              fontSize: '0.65rem',
+              color: (theme) => alpha(theme.palette.text.secondary, 0.4),
               textTransform: 'uppercase',
-              fontWeight: 500,
-              mb: 1.5,
+              fontWeight: 600,
+              mb: 1,
               display: 'block'
             }}>
               Tokens Traded ({data.tokensTraded.length})
             </Typography>
             <Box sx={{
-              backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.3),
-              borderRadius: '12px',
+              backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.2),
+              borderRadius: '6px',
               overflow: 'hidden'
             }}>
               {/* Table Header */}
@@ -330,6 +339,61 @@ const OverView = ({ account }) => {
                   </Typography>
                 </Box>
               ))}
+            </Box>
+          </Box>
+        )}
+
+        {/* Transaction History */}
+        {txHistory.length > 0 && (
+          <Box sx={{ mt: 2 }}>
+            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 600, mb: 1, display: 'block' }}>
+              Transaction History ({txHistory.length})
+            </Typography>
+            <Box sx={{ backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.2), borderRadius: '6px', overflow: 'hidden' }}>
+              <Box sx={{
+                display: 'grid',
+                gridTemplateColumns: '100px 140px 1fr 180px 140px',
+                gap: 1.5,
+                p: 1.2,
+                borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
+                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.1)
+              }}>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>TYPE</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>HASH</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>DESTINATION</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>AMOUNT</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>DATE</Typography>
+              </Box>
+              {txHistory.slice(0, 20).map((tx, idx) => {
+                const txData = tx.tx_json || tx.tx;
+                const date = new Date((txData.date + 946684800) * 1000);
+                return (
+                  <Box key={idx} sx={{
+                    display: 'grid',
+                    gridTemplateColumns: '100px 140px 1fr 180px 140px',
+                    gap: 1.5,
+                    p: 1.2,
+                    borderBottom: idx < 19 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
+                    '&:hover': { backgroundColor: alpha('#fff', 0.015) }
+                  }}>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                      {txData.TransactionType}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', fontFamily: 'monospace' }}>
+                      {tx.hash?.substring(0, 16)}...
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontFamily: 'monospace' }}>
+                      {txData.Destination || '—'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                      {txData.DeliverMax ? (typeof txData.DeliverMax === 'string' ? `${(parseInt(txData.DeliverMax) / 1000000).toFixed(4)} XRP` : `${parseFloat(txData.DeliverMax.value).toFixed(4)} ${txData.DeliverMax.currency}`) : '—'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4) }}>
+                      {fDateTime(date)}
+                    </Typography>
+                  </Box>
+                );
+              })}
             </Box>
           </Box>
         )}
