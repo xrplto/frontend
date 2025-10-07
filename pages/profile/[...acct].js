@@ -19,6 +19,7 @@ const OverView = ({ account }) => {
   const [data, setData] = useState(null);
   const [txHistory, setTxHistory] = useState([]);
   const [holdings, setHoldings] = useState(null);
+  const [holdingsPage, setHoldingsPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,6 +27,7 @@ const OverView = ({ account }) => {
     setData(null);
     setTxHistory([]);
     setHoldings(null);
+    setHoldingsPage(0);
     setLoading(true);
 
     const fetchData = async () => {
@@ -60,6 +62,13 @@ const OverView = ({ account }) => {
     };
     fetchData();
   }, [account]);
+
+  useEffect(() => {
+    if (!account || holdingsPage === 0) return;
+    axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&limit=20&page=${holdingsPage}&format=full`)
+      .then(res => setHoldings(res.data))
+      .catch(err => console.error('Failed to fetch holdings page:', err));
+  }, [holdingsPage]);
 
   if (loading) {
     return (
@@ -235,34 +244,68 @@ const OverView = ({ account }) => {
               )}
             </Stack>
             {holdings.lines?.length > 0 && (
-              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 1 }}>
-                {holdings.lines.slice(0, 20).map((line, idx) => (
+              <>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 1, mb: 1 }}>
+                  {holdings.lines.map((line, idx) => (
                   <Box key={idx} sx={{
                     p: 0.8,
                     backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.15),
-                    borderRadius: '6px'
+                    borderRadius: '5px'
                   }}>
-                      <Stack direction="row" alignItems="center" spacing={0.8} sx={{ mb: 0.6 }}>
-                        <Box component="img" src={`https://s1.xrpl.to/token/${line.token?.md5}`} sx={{ width: 18, height: 18, borderRadius: '4px' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                        <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 500 }}>{line.token?.name || line.currency}</Typography>
+                      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
+                        <Box component="img" src={`https://s1.xrpl.to/token/${line.token?.md5}`} sx={{ width: 16, height: 16, borderRadius: '3px' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                        <Typography variant="body2" sx={{ fontSize: '0.65rem', fontWeight: 500 }}>{line.token?.name || line.currency}</Typography>
                       </Stack>
-                      <Stack spacing={0.2}>
-                        <Stack direction="row" justifyContent="space-between">
-                          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>Balance</Typography>
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 500 }}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</Typography>
-                        </Stack>
-                        <Stack direction="row" justifyContent="space-between">
-                          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>Value</Typography>
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 500 }}>{fCurrency5(line.value)} XRP</Typography>
-                        </Stack>
-                        <Stack direction="row" justifyContent="space-between">
-                          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>Owned</Typography>
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{(line.percentOwned || 0).toFixed(2)}%</Typography>
-                        </Stack>
+                      <Stack spacing={0.1}>
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                          Bal: {fCurrency5(Math.abs(parseFloat(line.balance)))}
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.6rem', fontWeight: 500 }}>
+                          {fCurrency5(line.value)} XRP
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4) }}>
+                          {(line.percentOwned || 0).toFixed(2)}%
+                        </Typography>
                       </Stack>
                   </Box>
-                ))}
-              </Box>
+                  ))}
+                </Box>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Typography
+                    component="button"
+                    onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))}
+                    disabled={holdingsPage === 0}
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: holdingsPage === 0 ? (theme) => alpha(theme.palette.text.secondary, 0.3) : '#4285f4',
+                      cursor: holdingsPage === 0 ? 'default' : 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      p: 0
+                    }}
+                  >
+                    ← Prev
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                    Page {holdingsPage + 1} of {Math.ceil(holdings.total / 20)}
+                  </Typography>
+                  <Typography
+                    component="button"
+                    onClick={() => setHoldingsPage(holdingsPage + 1)}
+                    disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1}
+                    sx={{
+                      fontSize: '0.7rem',
+                      color: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (theme) => alpha(theme.palette.text.secondary, 0.3) : '#4285f4',
+                      cursor: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? 'default' : 'pointer',
+                      background: 'none',
+                      border: 'none',
+                      p: 0
+                    }}
+                  >
+                    Next →
+                  </Typography>
+                </Stack>
+              </>
             )}
           </Box>
         )}
