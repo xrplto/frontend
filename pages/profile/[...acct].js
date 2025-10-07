@@ -18,19 +18,26 @@ const OverviewWrapper = styled(Box)(
 const OverView = ({ account }) => {
   const [data, setData] = useState(null);
   const [txHistory, setTxHistory] = useState([]);
+  const [holdings, setHoldings] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     // Reset data and loading state when account changes
     setData(null);
     setTxHistory([]);
+    setHoldings(null);
     setLoading(true);
 
     const fetchData = async () => {
       try {
-        // Fetch profile data
-        const profileRes = await axios.get(`https://api.xrpl.to/api/trader/${account}`);
+        // Fetch profile data and holdings
+        const [profileRes, holdingsRes] = await Promise.all([
+          axios.get(`https://api.xrpl.to/api/trader/${account}`),
+          axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&limit=20&page=0&format=full`)
+        ]);
+
         setData(profileRes.data);
+        setHoldings(holdingsRes.data);
 
         // Fetch XRPL transaction history via WebSocket
         const client = new Client('wss://s1.ripple.com');
@@ -204,9 +211,65 @@ const OverView = ({ account }) => {
           <Box><Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.3), fontWeight: 600 }}>SELL VOL</Typography><Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: 500 }}>{fCurrency5(data.sellVolume)} XRP</Typography></Box>
         </Stack>
 
+        {/* Holdings */}
+        {holdings && (
+          <Box sx={{ mb: 2 }}>
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
+              <Typography variant="caption" sx={{ fontSize: '0.65rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 600 }}>
+                Holdings {holdings.total > 0 ? `(${holdings.total})` : ''}
+              </Typography>
+              {holdings.accountActive === false ? (
+                <Chip label="Account Deleted" size="small" sx={{ fontSize: '0.6rem', height: '16px', backgroundColor: alpha('#ef4444', 0.1), color: '#ef4444' }} />
+              ) : holdings.accountData && (
+                <>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
+                    XRP: <Box component="span" sx={{ fontWeight: 500 }}>{fCurrency5(holdings.accountData.balanceDrops / 1000000)}</Box>
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                    Reserve: {fCurrency5(holdings.accountData.reserveDrops / 1000000)}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                    Spendable: {fCurrency5(holdings.accountData.spendableDrops / 1000000)}
+                  </Typography>
+                </>
+              )}
+            </Stack>
+            {holdings.lines?.length > 0 && (
+              <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 1 }}>
+                {holdings.lines.slice(0, 20).map((line, idx) => (
+                  <Box key={idx} sx={{
+                    p: 0.8,
+                    backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.15),
+                    borderRadius: '6px'
+                  }}>
+                      <Stack direction="row" alignItems="center" spacing={0.8} sx={{ mb: 0.6 }}>
+                        <Box component="img" src={`https://s1.xrpl.to/token/${line.token?.md5}`} sx={{ width: 18, height: 18, borderRadius: '4px' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                        <Typography variant="body2" sx={{ fontSize: '0.7rem', fontWeight: 500 }}>{line.token?.name || line.currency}</Typography>
+                      </Stack>
+                      <Stack spacing={0.2}>
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>Balance</Typography>
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 500 }}>{fCurrency5(Math.abs(parseFloat(line.balance)))}</Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>Value</Typography>
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem', fontWeight: 500 }}>{fCurrency5(line.value)} XRP</Typography>
+                        </Stack>
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography variant="caption" sx={{ fontSize: '0.55rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>Owned</Typography>
+                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>{(line.percentOwned || 0).toFixed(2)}%</Typography>
+                        </Stack>
+                      </Stack>
+                  </Box>
+                ))}
+              </Box>
+            )}
+          </Box>
+        )}
+
         {/* Tokens Table */}
         {data.tokensTraded?.length > 0 && (
-          <Box>
+          <Box sx={{ mb: 2 }}>
             <Typography variant="caption" sx={{
               fontSize: '0.65rem',
               color: (theme) => alpha(theme.palette.text.secondary, 0.4),
