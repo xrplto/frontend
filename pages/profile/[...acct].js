@@ -352,7 +352,7 @@ const OverView = ({ account }) => {
             <Box sx={{ backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.2), borderRadius: '6px', overflow: 'hidden' }}>
               <Box sx={{
                 display: 'grid',
-                gridTemplateColumns: '100px 140px 1fr 180px 140px',
+                gridTemplateColumns: '100px 140px 1fr 180px 100px 140px',
                 gap: 1.5,
                 p: 1.2,
                 borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
@@ -362,15 +362,35 @@ const OverView = ({ account }) => {
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>HASH</Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>DESTINATION</Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>AMOUNT</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>SOURCE</Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>DATE</Typography>
               </Box>
               {txHistory.slice(0, 20).map((tx, idx) => {
                 const txData = tx.tx_json || tx.tx;
                 const date = new Date((txData.date + 946684800) * 1000);
+                const sourceTagMap = {
+                  101102979: 'xrp.cafe',
+                  10011010: 'Magnetic',
+                  74920348: 'First Ledger',
+                  20221212: 'XPMarket',
+                  69420589: 'Bidds',
+                  110100111: 'Sologenic',
+                  11782013: 'ANODEX',
+                  20102305: 'Opulence',
+                  13888813: 'Zerpmon',
+                  100010010: 'StaticBit',
+                  80085: 'Zerpaay',
+                  4152544945: 'ArtDept.fun',
+                  123321: 'BearBull Scalper',
+                  411555: 'N/A',
+                  80008000: 'Orchestra'
+                };
+                const sourceLabel = txData.SourceTag ? sourceTagMap[txData.SourceTag] || txData.SourceTag : '—';
+
                 return (
                   <Box key={idx} sx={{
                     display: 'grid',
-                    gridTemplateColumns: '100px 140px 1fr 180px 140px',
+                    gridTemplateColumns: '100px 140px 1fr 180px 100px 140px',
                     gap: 1.5,
                     p: 1.2,
                     borderBottom: idx < 19 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
@@ -379,7 +399,19 @@ const OverView = ({ account }) => {
                     <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
                       {txData.TransactionType}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', fontFamily: 'monospace' }}>
+                    <Typography
+                      component="a"
+                      href={`/tx/${tx.hash}`}
+                      target="_blank"
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.7rem',
+                        fontFamily: 'monospace',
+                        color: '#4285f4',
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' }
+                      }}
+                    >
                       {tx.hash?.substring(0, 16)}...
                     </Typography>
                     <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontFamily: 'monospace' }}>
@@ -387,6 +419,9 @@ const OverView = ({ account }) => {
                     </Typography>
                     <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
                       {txData.DeliverMax ? (typeof txData.DeliverMax === 'string' ? `${(parseInt(txData.DeliverMax) / 1000000).toFixed(4)} XRP` : `${parseFloat(txData.DeliverMax.value).toFixed(4)} ${txData.DeliverMax.currency}`) : '—'}
+                    </Typography>
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                      {sourceLabel}
                     </Typography>
                     <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4) }}>
                       {fDateTime(date)}
