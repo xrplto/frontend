@@ -64,7 +64,10 @@ const OverView = ({ account }) => {
   }, [account]);
 
   useEffect(() => {
-    if (!account || holdingsPage === 0) return;
+    if (!account) return;
+    const isInitialLoad = holdingsPage === 0 && !holdings;
+    if (isInitialLoad) return;
+
     axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&limit=20&page=${holdingsPage}&format=full`)
       .then(res => setHoldings(res.data))
       .catch(err => console.error('Failed to fetch holdings page:', err));
