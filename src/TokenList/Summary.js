@@ -386,45 +386,45 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       return { x, y };
     });
 
-    // Colors based on theme
-    const color = theme.palette.primary.main;
-    const lightColor = theme.palette.primary.light;
+    // Draw gradient-colored segments
+    for (let i = 0; i < points.length - 1; i++) {
+      const maxMarketcap = Math.max(...(chartData[i].tokensInvolved?.map(t => t.marketcap || 0) || [0]));
 
-    // Draw gradient fill
-    const gradient = ctx.createLinearGradient(0, 0, 0, height);
-    gradient.addColorStop(0, color + '66');
-    gradient.addColorStop(1, color + '00');
+      let segmentColor;
+      if (maxMarketcap > 10000) {
+        segmentColor = '#10b981'; // Green for very high
+      } else if (maxMarketcap > 5000) {
+        segmentColor = '#a855f7'; // Purple for high
+      } else if (maxMarketcap > 2000) {
+        segmentColor = '#eab308'; // Yellow for medium
+      } else {
+        segmentColor = theme.palette.primary.main; // Default theme color
+      }
 
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, height);
-    points.forEach((point) => ctx.lineTo(point.x, point.y));
-    ctx.lineTo(points[points.length - 1].x, height);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    // Draw line
-    ctx.beginPath();
-    ctx.moveTo(points[0].x, points[0].y);
-    points.forEach((point) => ctx.lineTo(point.x, point.y));
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.stroke();
-
-    // Draw dots at data points
-    points.forEach((point, index) => {
-      const hasHighValueToken = chartData[index].tokensInvolved?.some(t => (t.marketcap || 0) > 2000);
+      // Draw gradient fill for segment
+      const gradient = ctx.createLinearGradient(0, points[i].y, 0, height);
+      gradient.addColorStop(0, segmentColor + '66');
+      gradient.addColorStop(1, segmentColor + '00');
 
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
-      ctx.fillStyle = hasHighValueToken ? '#fbbf24' : color;
+      ctx.moveTo(points[i].x, height);
+      ctx.lineTo(points[i].x, points[i].y);
+      ctx.lineTo(points[i + 1].x, points[i + 1].y);
+      ctx.lineTo(points[i + 1].x, height);
+      ctx.closePath();
+      ctx.fillStyle = gradient;
       ctx.fill();
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 1.5;
+
+      // Draw line segment
+      ctx.beginPath();
+      ctx.moveTo(points[i].x, points[i].y);
+      ctx.lineTo(points[i + 1].x, points[i + 1].y);
+      ctx.strokeStyle = segmentColor;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
       ctx.stroke();
-    });
+    }
   }, [data, theme]);
 
   // Tooltip Portal Component
