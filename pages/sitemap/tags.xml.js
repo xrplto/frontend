@@ -39,7 +39,7 @@ export const getServerSideProps = async ({ res }) => {
       throw new Error(`API returned ${response.status}`);
     }
 
-    const tags = response.data || [];
+    const tags = Array.isArray(response.data) ? response.data : (response.data?.tags || []);
     const time = new Date().toISOString();
 
     res.write('<?xml version="1.0" encoding="UTF-8"?>\n');

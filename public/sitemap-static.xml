@@ -34,10 +34,40 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://xrpl.to/gainers/5m</loc>
+    <lastmod>2025-09-11</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xrpl.to/gainers/1h</loc>
+    <lastmod>2025-09-11</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xrpl.to/gainers/24h</loc>
+    <lastmod>2025-09-11</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xrpl.to/gainers/7d</loc>
+    <lastmod>2025-09-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://xrpl.to/swap</loc>
     <lastmod>2025-09-11</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://xrpl.to/create</loc>
+    <lastmod>2025-09-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   
   <!-- Market Data Pages -->
@@ -46,6 +76,12 @@
     <lastmod>2025-09-11</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://xrpl.to/rsi-analysis</loc>
+    <lastmod>2025-09-11</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://xrpl.to/top-traders</loc>
