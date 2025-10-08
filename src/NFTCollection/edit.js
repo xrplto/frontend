@@ -54,7 +54,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const TEXT_VALID = 2;
   const TEXT_INVALID = 3;
 
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
   const { accountProfile } = useContext(AppContext);
@@ -297,7 +297,7 @@ const FILE_NEW = 1;
 const FILE_REMOVED = 2;
 
 export default function EditCollection({ collection }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   /*{
         "_id": "631167f02cb4cfc85b82b74d",
         "account": "rKVd5WtB8ugrxaTDTbJv6pVH7WunmyryLq",
@@ -313,16 +313,16 @@ export default function EditCollection({ collection }) {
     }*/
 
   const logoImageUrl = collection.logoImage
-    ? `https://s1.xrpnft.com/collection/${collection.logoImage}`
+    ? `https://s1.xrpl.to/collection/${collection.logoImage}`
     : null;
   const featuredImageUrl = collection.featuredImage
-    ? `https://s1.xrpnft.com/collection/${collection.featuredImage}`
+    ? `https://s1.xrpl.to/collection/${collection.featuredImage}`
     : null;
   const bannerImageUrl = collection.bannerImage
-    ? `https://s1.xrpnft.com/collection/${collection.bannerImage}`
+    ? `https://s1.xrpl.to/collection/${collection.bannerImage}`
     : null;
   const spinnerImageUrl = collection.spinnerImage
-    ? `https://s1.xrpnft.com/collection/${collection.spinnerImage}`
+    ? `https://s1.xrpl.to/collection/${collection.spinnerImage}`
     : null;
 
   const fileRef1 = useRef();
@@ -488,7 +488,7 @@ export default function EditCollection({ collection }) {
                         "collection": "",
                         "Flags": 13,
                         "Issuer": "rEBKhngY8izMvRrgGg3Yh5zdiQgHH9cExg",
-                        "minter": "xrpnft.com",
+                        "minter": "xrpl.to",
                         "image": "QmbUaafMaftkUTt44DVdTaSwgKzf51UWMD4NNNc7Jt4fCf",
                         "URI": "516D656A506E6E6775635A5664723637583937324C313842726A366F317241503842794754796137645259763234",
                         "uuid": "d1dcfe3cac80409793629707de2aafbf",

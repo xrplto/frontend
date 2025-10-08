@@ -176,7 +176,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
   const theme = useTheme();
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);

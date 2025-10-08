@@ -41,7 +41,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumberWithCurreny } from 'src/utils/formatters';
 
 const API_URL = process.env.API_URL || '';
-const NFT_API_URL = 'https://api.xrpnft.com/api';
+const NFT_API_URL = 'https://api.xrpl.to/api';
 
 // Debounce hook with proper cleanup
 function useDebounce(value, delay) {
@@ -410,7 +410,7 @@ function SearchModal({ open, onClose }) {
                             <Avatar
                               src={
                                 item.type === 'collection'
-                                  ? `https://s1.xrpnft.com/collection/${item.logoImage}`
+                                  ? `https://s1.xrpl.to/collection/${item.logoImage}`
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
                               sx={{
@@ -565,7 +565,7 @@ function SearchModal({ open, onClose }) {
                         >
                           <ListItemAvatar sx={{ minWidth: 44 }}>
                             <Avatar
-                              src={`https://s1.xrpnft.com/collection/${collection.logoImage}`}
+                              src={`https://s1.xrpl.to/collection/${collection.logoImage}`}
                               sx={{
                                 width: 36,
                                 height: 36,

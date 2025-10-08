@@ -21,7 +21,7 @@ import { AppContext } from 'src/AppContext';
 import { PulseLoader } from '../components/Spinners';
 
 
-const BASE_URL = 'https://api.xrpnft.com/api';
+const BASE_URL = 'https://api.xrpl.to/api';
 
 const OfferDialog = styled(Dialog)(({ theme }) => ({
   backdropFilter: 'blur(1px)',

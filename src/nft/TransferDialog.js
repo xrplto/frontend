@@ -136,7 +136,7 @@ const NFTName = styled(Typography)(({ theme }) => ({
 
 export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const theme = useTheme();
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
   const dispatch = useDispatch();

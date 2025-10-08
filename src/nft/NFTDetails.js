@@ -357,7 +357,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           typeof file === 'string'
             ? file
             : file.thumbnail
-              ? 'https://s2.xrpnft.com/d1/' + (file.thumbnail?.big || file.thumbnail?.small)
+              ? 'https://s2.xrpl.to/d1/' + (file.thumbnail?.big || file.thumbnail?.small)
               : file.cachedUrl
         }
         alt={NFTName}
@@ -776,7 +776,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 if (file.isIPFS && file.IPFSPinned) {
                   cachedHref = `https://gateway.xrpnft.com/ipfs/${file.IPFSPath}`;
                 } else if (!file.isIPFS && file.dfile) {
-                  cachedHref = `https://s2.xrpnft.com/d1/${file.dfile}`;
+                  cachedHref = `https://s2.xrpl.to/d1/${file.dfile}`;
                 }
 
                 return (

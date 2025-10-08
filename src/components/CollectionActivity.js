@@ -285,12 +285,12 @@ export default function AccountTransactions({ creatorAccount }) {
     if (nftData[nftokenId]) return nftData[nftokenId]; // Return cached data
 
     try {
-      const response = await axios.get(`https://api.xrpnft.com/api/nft/${nftokenId}`);
+      const response = await axios.get(`https://api.xrpl.to/api/nft/${nftokenId}`);
 
       if (response.data && response.data.res === 'success' && response.data.nft) {
         const nft = response.data.nft;
         const thumbnailUrl = nft.files?.[0]?.dfile
-          ? `https://s2.xrpnft.com/d1/thumbnail_small-${nft.files[0].dfile.replace(
+          ? `https://s2.xrpl.to/d1/thumbnail_small-${nft.files[0].dfile.replace(
               '.png',
               '.webp'
             )}`

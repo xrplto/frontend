@@ -315,7 +315,7 @@ function FacebookCircularProgress(props) {
 }
 
 export default function SpinNFT({ collection, setView }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const { width, height } = useWindowSize();
   // Sound effects removed for build simplicity
   const play = () => {};
@@ -369,7 +369,7 @@ export default function SpinNFT({ collection, setView }) {
   const isVideo = nft?.meta?.video;
 
   const spinImgUrl = spinnerImage
-    ? `https://s1.xrpnft.com/collection/${spinnerImage}`
+    ? `https://s1.xrpl.to/collection/${spinnerImage}`
     : '/static/spin.gif';
 
   const pendingProgress =
@@ -400,7 +400,7 @@ export default function SpinNFT({ collection, setView }) {
         // return;
       }
 
-      // https://api.xrpnft.com/api/spin/count?account=rhhh
+      // https://api.xrpl.to/api/spin/count?account=rhhh
       axios
         .get(`${BASE_URL}/spin/count?account=${account}&cid=${uuid}`, {
           headers: { 'x-access-token': accountToken }
@@ -495,7 +495,7 @@ export default function SpinNFT({ collection, setView }) {
       <Stack alignItems="center" sx={{ mb: 5 }}>
         <IconCover>
           <IconWrapper>
-            <IconImage src={`https://s1.xrpnft.com/collection/${logoImage}`} />
+            <IconImage src={`https://s1.xrpl.to/collection/${logoImage}`} />
             {account === collection.account && (
               <Link href={`/collection/${slug}/edit`} underline="none">
                 <CardOverlay>

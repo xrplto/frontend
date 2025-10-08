@@ -22,7 +22,7 @@ import { AppContext } from 'src/AppContext';
 // Components
 
 export default function NFTActionsBulk({ nft }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
@@ -68,7 +68,7 @@ export default function NFTActionsBulk({ nft }) {
         return;
       }
 
-      // https://api.xrpnft.com/api/spin/count?account=rhhh
+      // https://api.xrpl.to/api/spin/count?account=rhhh
       axios
         .get(`${BASE_URL}/spin/count?account=${accountLogin}&cid=${cid}`, {
           headers: { 'x-access-token': accountToken }

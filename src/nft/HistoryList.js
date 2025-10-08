@@ -175,7 +175,7 @@ const EmptyState = () => (
 
 export default function HistoryList({ nft }) {
   const theme = useTheme();
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const { sync } = useContext(AppContext);
   const [hists, setHists] = useState([]);
   const [loading, setLoading] = useState(false);

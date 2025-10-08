@@ -24,7 +24,7 @@ import { configureMemos } from 'src/utils/parseUtils';
 // ----------------------------------------------------------------------
 export default function BurnNFT({ nft, onHandleBurn }) {
   const theme = useTheme();
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const dispatch = useDispatch();
   const { accountProfile, openSnackbar } = useContext(AppContext);

@@ -895,7 +895,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
 
 // NFT Grid Component with optimized rendering
 const NFTGrid = React.memo(({ collection }) => {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const theme = useTheme();
   const { setDeletingNfts } = useContext(AppContext);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
@@ -2508,7 +2508,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
   const [loadingImg, setLoadingImg] = useState(true);
 
   const { NFTokenID } = collection;
-  const imgUrl = `https://s1.xrpnft.com/collection/${collection.logoImage}`;
+  const imgUrl = `https://s1.xrpl.to/collection/${collection.logoImage}`;
   const name = collection.name || 'No Name';
   const collectionType = type.charAt(0).toUpperCase() + type.slice(1);
 
@@ -2624,7 +2624,7 @@ export default function CollectionView({ collection }) {
   const [openShare, setOpenShare] = useState(false);
   const [value, setValue] = useState('tab-nfts');
 
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   // Handle undefined collection
   if (!collection) {
@@ -2656,7 +2656,7 @@ export default function CollectionView({ collection }) {
   const volume1 = fVolume(volume || 0);
   const volume2 = fVolume(totalVolume || 0);
 
-  const shareUrl = `https://xrpnft.com/collection/${slug}`;
+  const shareUrl = `https://xrpl.to/collection/${slug}`;
   const shareTitle = name;
 
   const statsData = [
@@ -2792,7 +2792,7 @@ export default function CollectionView({ collection }) {
             <IconCover>
               <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
                 <Image
-                  src={`https://s1.xrpnft.com/collection/${logoImage}`}
+                  src={`https://s1.xrpl.to/collection/${logoImage}`}
                   alt={`${name} collection logo`}
                   fill
                   priority

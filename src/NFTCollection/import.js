@@ -57,7 +57,7 @@ const LoadingTextField = ({ type, value, uuid, setValid, startText, ...props }) 
   const TEXT_VALID = 2;
   const TEXT_INVALID = 3;
 
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const [status, setStatus] = useState(TEXT_EMPTY);
 
   const { accountProfile } = useContext(AppContext);
@@ -290,7 +290,7 @@ const CustomSelect = styled(Select)(({ theme }) => ({
 }));
 
 export default function ImportCollection() {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const fileRef1 = useRef();
   const fileRef2 = useRef();
@@ -344,7 +344,7 @@ export default function ImportCollection() {
 
     setLoadingTaxons(true);
 
-    // https://api.xrpnft.com/api/taxon/issuer/rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
+    // https://api.xrpl.to/api/taxon/issuer/rJeBz69krYh8sXb8uKsEE22ADzbi1Z4yF2
     axios
       .get(`${BASE_URL}/taxon/issuer/${issuer}`, {
         headers: {
@@ -418,7 +418,7 @@ export default function ImportCollection() {
       formdata.append('account', accountAdmin);
       formdata.append('data', JSON.stringify(data));
 
-      // https://api.xrpnft.com/api/collection/import
+      // https://api.xrpl.to/api/collection/import
       res = await axios.post(`${BASE_URL}/collection/import`, formdata, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -438,7 +438,7 @@ export default function ImportCollection() {
                         "collection": "",
                         "Flags": 13,
                         "Issuer": "rEBKhngY8izMvRrgGg3Yh5zdiQgHH9cExg",
-                        "minter": "xrpnft.com",
+                        "minter": "xrpl.to",
                         "image": "QmbUaafMaftkUTt44DVdTaSwgKzf51UWMD4NNNc7Jt4fCf",
                         "URI": "516D656A506E6E6775635A5664723637583937324C313842726A366F317241503842794754796137645259763234",
                         "uuid": "d1dcfe3cac80409793629707de2aafbf",

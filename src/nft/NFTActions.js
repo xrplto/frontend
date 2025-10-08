@@ -395,7 +395,7 @@ const NFTTitle = styled(Typography)(({ theme }) => ({
 export default function NFTActions({ nft }) {
   const theme = useTheme();
   const anchorRef = useRef(null);
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;

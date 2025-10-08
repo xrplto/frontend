@@ -503,7 +503,7 @@ const Row = memo(({ id, item }) => {
   const floorChangePercent = floor1dPercent || 0;
 
   const strDateTime = formatMonthYearDate(created);
-  const logoImageUrl = `https://s1.xrpnft.com/collection/${logoImage}`;
+  const logoImageUrl = `https://s1.xrpl.to/collection/${logoImage}`;
 
   // Format floor change percentage with color
   const getFloorChangeColor = (percent) => {
@@ -922,7 +922,7 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
 
 // Main CollectionList Component
 export default function CollectionList({ type, category }) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(50);
