@@ -543,6 +543,7 @@ export default function SpinNFT({ collection, setView }) {
             <CardWrapper>
               <img
                 src={spinImgUrl}
+                alt="NFT spinning animation"
                 style={{
                   width: '100%',
                   // height: fullScreen?'360px':'200px',
@@ -570,6 +571,7 @@ export default function SpinNFT({ collection, setView }) {
               ) : (
                 <img
                   src={nftImgUrl}
+                  alt="NFT image"
                   style={{
                     width: '100%',
                     // height: fullScreen?'360px':'200px',

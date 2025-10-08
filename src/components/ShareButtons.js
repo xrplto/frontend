@@ -75,6 +75,9 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
     return (
       <Avatar
         onClick={handleShare}
+        role="button"
+        aria-label={`Share on ${platform}`}
+        tabIndex={0}
         sx={{
           width: size,
           height: size,
@@ -93,7 +96,7 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
   }
 
   return (
-    <IconButton onClick={handleShare} sx={{ color: getColor() }} {...props}>
+    <IconButton onClick={handleShare} aria-label={`Share on ${platform}`} sx={{ color: getColor() }} {...props}>
       {getIcon()}
     </IconButton>
   );
@@ -103,7 +106,7 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
 export const TwitterShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Twitter" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );
@@ -112,7 +115,7 @@ export const TwitterShareButton = ({ children, url, title, ...props }) => {
 export const FacebookShareButton = ({ children, url, ...props }) => {
   const shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Facebook" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );
@@ -121,7 +124,7 @@ export const FacebookShareButton = ({ children, url, ...props }) => {
 export const TelegramShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(title)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Telegram" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );
@@ -130,7 +133,7 @@ export const TelegramShareButton = ({ children, url, title, ...props }) => {
 export const WhatsAppShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://wa.me/?text=${encodeURIComponent(`${title} ${url}`)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on WhatsApp" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );
@@ -141,7 +144,7 @@ export const WhatsappShareButton = WhatsAppShareButton; // Alias for compatibili
 export const LinkedInShareButton = ({ children, url, ...props }) => {
   const shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on LinkedIn" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );
@@ -152,7 +155,7 @@ export const LinkedinShareButton = LinkedInShareButton; // Alias for compatibili
 export const RedditShareButton = ({ children, url, title, ...props }) => {
   const shareUrl = `https://reddit.com/submit?url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}`;
   return (
-    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.open(shareUrl, '_blank', 'width=550,height=450')} role="button" tabIndex={0} aria-label="Share on Reddit" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );
@@ -161,7 +164,7 @@ export const RedditShareButton = ({ children, url, title, ...props }) => {
 export const EmailShareButton = ({ children, subject, body, ...props }) => {
   const shareUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
   return (
-    <div onClick={() => window.location.href = shareUrl} style={{ cursor: 'pointer' }} {...props}>
+    <div onClick={() => window.location.href = shareUrl} role="button" tabIndex={0} aria-label="Share via Email" style={{ cursor: 'pointer' }} {...props}>
       {children}
     </div>
   );

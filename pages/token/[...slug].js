@@ -128,9 +128,13 @@ export async function getServerSideProps(ctx) {
     const t2 = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const dt = (t2 - t1).toFixed(2);
 
-    console.log(`2. getServerSideProps slug: ${slug}${tab ? `/${tab}` : ''} took: ${dt}ms`);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`2. getServerSideProps slug: ${slug}${tab ? `/${tab}` : ''} took: ${dt}ms`);
+    }
   } catch (e) {
-    console.log(e);
+    if (process.env.NODE_ENV === 'development') {
+      console.log(e);
+    }
   }
   let ret = {};
   if (data && data.token) {
