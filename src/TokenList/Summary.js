@@ -415,9 +415,11 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
     // Draw dots at data points
     points.forEach((point, index) => {
+      const hasHighValueToken = chartData[index].tokensInvolved?.some(t => (t.marketcap || 0) > 2000);
+
       ctx.beginPath();
       ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
-      ctx.fillStyle = color;
+      ctx.fillStyle = hasHighValueToken ? '#fbbf24' : color;
       ctx.fill();
       ctx.strokeStyle = '#fff';
       ctx.lineWidth = 1.5;
