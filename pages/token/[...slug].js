@@ -103,18 +103,42 @@ function Detail({ data }) {
 
 export default Detail;
 
-export async function getServerSideProps(ctx) {
-  const BASE_URL = process.env.API_URL;
+// Convert to ISR for better performance (pre-render top tokens at build time)
+export async function getStaticPaths() {
+  // Pre-render only top 100 most popular tokens at build time
+  // All other tokens will use fallback: 'blocking' (SSR-like on first request, then cached)
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+
+  try {
+    const res = await axios.get(`${BASE_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`);
+    const topTokens = res.data.tokens || [];
+
+    const paths = topTokens.map((token) => ({
+      params: { slug: [token.slug] }
+    }));
+
+    return {
+      paths,
+      fallback: 'blocking' // Generate other pages on-demand and cache
+    };
+  } catch (error) {
+    return {
+      paths: [],
+      fallback: 'blocking'
+    };
+  }
+}
+
+export async function getStaticProps({ params }) {
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
 
   let data = null;
   let tab = null;
   let slug = null;
 
   try {
-    const params = ctx.params.slug;
-
-    slug = params[0];
-    tab = params[1];
+    slug = params.slug[0];
+    tab = params.slug[1];
 
     // Use performance API if available (Node.js 16+ has it globally)
     const t1 = typeof performance !== 'undefined' ? performance.now() : Date.now();
@@ -129,7 +153,7 @@ export async function getServerSideProps(ctx) {
     const dt = (t2 - t1).toFixed(2);
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`2. getServerSideProps slug: ${slug}${tab ? `/${tab}` : ''} took: ${dt}ms`);
+      console.log(`2. getStaticProps slug: ${slug}${tab ? `/${tab}` : ''} took: ${dt}ms`);
     }
   } catch (e) {
     if (process.env.NODE_ENV === 'development') {
@@ -260,14 +284,12 @@ export async function getServerSideProps(ctx) {
     ogp.jsonLd = jsonLd;
     ret = { data, ogp };
     return {
-      props: ret // will be passed to the page component as props
+      props: ret, // will be passed to the page component as props
+      revalidate: 60 // ISR: Regenerate page every 60 seconds if requested
     };
   } else {
     return {
-      redirect: {
-        permanent: false,
-        destination: '/404'
-      }
+      notFound: true // Return 404 page for ISR
     };
   }
 }

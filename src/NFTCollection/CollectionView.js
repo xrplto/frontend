@@ -725,6 +725,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
           {isAdmin && (
             <IconButton
               size="small"
+              aria-label="Remove NFT from collection"
               onClick={handleRemoveNft}
               sx={{
                 position: 'absolute',
@@ -1046,6 +1047,7 @@ const NFTGrid = React.memo(({ collection }) => {
                     {search && (
                       <IconButton
                         size="small"
+                        aria-label="Clear NFT search"
                         onClick={() => {
                           setSearch('');
                           debouncedSearch('');

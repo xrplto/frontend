@@ -572,6 +572,7 @@ const TokenSummary = memo(
               <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
                 <IconButton
                   size="small"
+                  aria-label={isRemove ? 'Remove trustline' : 'Set trustline'}
                   disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
                   sx={{
                     width: 24,
@@ -644,6 +645,7 @@ const TokenSummary = memo(
                 <Tooltip title="Admin Edit Token">
                   <IconButton
                     size="small"
+                    aria-label="Edit token (admin)"
                     onClick={() => setEditToken(token)}
                     sx={{
                       width: 24,
@@ -671,6 +673,7 @@ const TokenSummary = memo(
                 <Tooltip title="View Creator Activity">
                   <IconButton
                     size="small"
+                    aria-label="View creator activity"
                     onClick={onCreatorTxToggle}
                     sx={{
                       width: 'auto',
@@ -1032,6 +1035,7 @@ const TokenSummary = memo(
                 <IconButton
                   onClick={handleGoogleLensSearch}
                   size="small"
+                  aria-label="Search with Google Lens"
                   sx={{
                     position: 'absolute',
                     top: -3,
@@ -1276,6 +1280,7 @@ const TokenSummary = memo(
                       <Tooltip title={`${isRemove ? 'Remove' : 'Set'} Trustline`}>
                         <IconButton
                           size="small"
+                          aria-label={isRemove ? 'Remove trustline' : 'Set trustline'}
                           disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5}
                           sx={{
                             width: 26,
@@ -1348,6 +1353,7 @@ const TokenSummary = memo(
                         <Tooltip title="Admin Edit Token">
                           <IconButton
                             size="small"
+                            aria-label="Edit token (admin)"
                             onClick={() => setEditToken(token)}
                             sx={{
                               width: 32,
@@ -1374,6 +1380,7 @@ const TokenSummary = memo(
                         <Tooltip title="View Creator Activity">
                           <IconButton
                             size="small"
+                            aria-label="View creator activity"
                             onClick={onCreatorTxToggle}
                             sx={{
                               width: 'auto',

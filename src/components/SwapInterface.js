@@ -2357,6 +2357,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <Stack direction="row" alignItems="center" spacing={2}>
             <IconButton
               onClick={onClose}
+              aria-label="Back to swap interface"
               sx={{
                 bgcolor: alpha(theme.palette.primary.main, 0.08),
                 '&:hover': {
@@ -2426,7 +2427,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             ),
             endAdornment: searchQuery && (
               <InputAdornment position="end">
-                <IconButton size="small" onClick={() => setSearchQuery('')}>
+                <IconButton size="small" aria-label="Clear search" onClick={() => setSearchQuery('')}>
                   <CloseIcon fontSize="small" />
                 </IconButton>
               </InputAdornment>
@@ -2742,7 +2743,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           Limit
                         </Button>
                       </Stack>
-                      <IconButton size="small" onClick={handleShareUrl}>
+                      <IconButton size="small" aria-label="Share swap URL" onClick={handleShareUrl}>
                         <ShareIcon sx={{ width: 16, height: 16 }} />
                       </IconButton>
                     </Stack>

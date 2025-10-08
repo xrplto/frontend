@@ -213,10 +213,10 @@ export async function getStaticProps({ params }) {
   let metrics = null;
 
   try {
-    // Fetch both tokens and metrics data
+    // Fetch only top 50 tokens to reduce page size from 217KB to <128KB
     const [tokensResponse, metricsResponse] = await Promise.all([
-      axios.get(`${BASE_URL}/tokens?limit=100&offset=0`),
-      axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`)
+      axios.get(`${BASE_URL}/tokens?limit=50&offset=0`),
+      axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`)
     ]);
 
     if (tokensResponse.status === 200) {
@@ -233,7 +233,9 @@ export async function getStaticProps({ params }) {
       }
     }
   } catch (error) {
-    console.log('Error fetching data:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('Error fetching data:', error);
+    }
   }
 
   const duration = Math.round(performance.now() - startTime);
