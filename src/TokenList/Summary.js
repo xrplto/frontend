@@ -940,7 +940,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={6} mdCols={3} smCols={1}>
+            <Grid cols={8} mdCols={3} smCols={1}>
               <MetricBox>
                 <MetricTitle>MCap</MetricTitle>
                 <MetricValue>
@@ -1010,6 +1010,52 @@ export default function Summary() {
                 </MetricValue>
                 <VolumePercentage>
                   {((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%
+                </VolumePercentage>
+              </MetricBox>
+
+              <MetricBox>
+                <MetricTitle>Sentiment</MetricTitle>
+                <MetricValue
+                  style={{
+                    color:
+                      metrics.global?.sentimentScore >= 60
+                        ? '#10b981'
+                        : metrics.global?.sentimentScore >= 40
+                          ? '#fbbf24'
+                          : '#ef4444'
+                  }}
+                >
+                  {(metrics.global?.sentimentScore || 0).toFixed(0)}
+                </MetricValue>
+                <VolumePercentage>
+                  {metrics.global?.sentimentScore >= 60
+                    ? 'Bullish'
+                    : metrics.global?.sentimentScore >= 40
+                      ? 'Neutral'
+                      : 'Bearish'}
+                </VolumePercentage>
+              </MetricBox>
+
+              <MetricBox>
+                <MetricTitle>Avg RSI</MetricTitle>
+                <MetricValue
+                  style={{
+                    color:
+                      (metrics.global?.avgRSI || 50) <= 30
+                        ? '#ef4444'
+                        : (metrics.global?.avgRSI || 50) >= 70
+                          ? '#10b981'
+                          : theme.palette.text.primary
+                  }}
+                >
+                  {(metrics.global?.avgRSI || 50).toFixed(0)}
+                </MetricValue>
+                <VolumePercentage>
+                  {(metrics.global?.avgRSI || 50) <= 30
+                    ? 'Oversold'
+                    : (metrics.global?.avgRSI || 50) >= 70
+                      ? 'Overbought'
+                      : 'Neutral'}
                 </VolumePercentage>
               </MetricBox>
 
