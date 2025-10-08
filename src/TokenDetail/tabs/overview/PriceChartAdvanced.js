@@ -1522,40 +1522,97 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Typography>
           {athData.price && chartType !== 'holders' && (
             <Box
+              onClick={() => {
+                const hasATH = indicators.find(i => i.id === 'ath');
+                handleIndicatorToggle(indicatorOptions.find(i => i.id === 'ath'));
+              }}
               sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: isMobile ? 0.25 : 0.5,
-                bgcolor: athData.percentDown < 0 ? 'error.main' : 'success.main',
-                color: 'white',
-                px: isMobile ? 0.5 : 1,
-                py: isMobile ? 0.125 : 0.25,
-                borderRadius: 1,
-                fontSize: isMobile ? '0.625rem' : '0.75rem'
+                position: 'relative',
+                width: isMobile ? 120 : 180,
+                height: isMobile ? 24 : 28,
+                borderRadius: '6px',
+                overflow: 'hidden',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                cursor: 'pointer',
+                transition: 'border-color 0.15s ease',
+                '&:hover': {
+                  borderColor: athData.percentDown < 0
+                    ? alpha('#ef5350', 0.6)
+                    : alpha('#66bb6a', 0.6)
+                }
               }}
             >
-              <Typography variant="caption" sx={{ fontWeight: 500, fontSize: 'inherit' }}>
-                {athData.percentDown}% {isMobile ? 'ATH' : 'from ATH'}
-              </Typography>
-              {!isMobile && (
-                <Typography variant="caption" sx={{ opacity: 0.9, fontSize: 'inherit' }}>
-                  ({currencySymbols[activeFiatCurrency] || ''}
-                  {(() => {
-                    if (athData.price && athData.price < 0.001) {
-                      const str = athData.price.toFixed(15);
-                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                      if (zeros >= 4) {
-                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                        return `0.0(${zeros})${significant.slice(0, 4)}`;
-                      }
-                    }
-                    return athData.price < 0.01
-                      ? athData.price.toFixed(8)
-                      : athData.price.toFixed(4);
-                  })()}
-                  )
+              <Box
+                sx={{
+                  position: 'absolute',
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: `${Math.min(Math.abs(parseFloat(athData.percentDown)), 100)}%`,
+                  bgcolor: athData.percentDown < 0
+                    ? alpha('#ef5350', 0.12)
+                    : alpha('#66bb6a', 0.12),
+                  transition: 'width 0.3s ease'
+                }}
+              />
+              <Box
+                sx={{
+                  position: 'relative',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  px: 1.2,
+                  gap: 0.5
+                }}
+              >
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontWeight: 500,
+                    fontSize: isMobile ? '0.7rem' : '0.75rem',
+                    color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a'
+                  }}
+                >
+                  {athData.percentDown}%
                 </Typography>
-              )}
+                <Typography
+                  variant="caption"
+                  sx={{
+                    fontSize: isMobile ? '0.65rem' : '0.7rem',
+                    color: 'text.secondary',
+                    opacity: 0.7
+                  }}
+                >
+                  {isMobile ? 'ATH' : 'from ATH'}
+                </Typography>
+                {!isMobile && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.65rem',
+                      color: 'text.secondary',
+                      opacity: 0.6,
+                      fontFamily: 'monospace'
+                    }}
+                  >
+                    {currencySymbols[activeFiatCurrency] || ''}
+                    {(() => {
+                      if (athData.price && athData.price < 0.001) {
+                        const str = athData.price.toFixed(15);
+                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                        if (zeros >= 4) {
+                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                          return `0.0(${zeros})${significant.slice(0, 4)}`;
+                        }
+                      }
+                      return athData.price < 0.01
+                        ? athData.price.toFixed(8)
+                        : athData.price.toFixed(4);
+                    })()}
+                  </Typography>
+                )}
+              </Box>
             </Box>
           )}
           <Box
