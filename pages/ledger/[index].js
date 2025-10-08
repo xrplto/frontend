@@ -81,13 +81,13 @@ const LedgerDetails = ({ ledgerData, error }) => {
       </Typography>
 
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <IconButton onClick={() => (window.location.href = `/ledgers/${ledgerIndex - 1}`)}>
+        <IconButton aria-label="Previous ledger" onClick={() => (window.location.href = `/ledgers/${ledgerIndex - 1}`)}>
           <ArrowBackIcon />
         </IconButton>
         <Typography variant="h6" sx={{ mx: 2 }}>
           #{ledgerIndex}
         </Typography>
-        <IconButton onClick={() => (window.location.href = `/ledgers/${ledgerIndex + 1}`)}>
+        <IconButton aria-label="Next ledger" onClick={() => (window.location.href = `/ledgers/${ledgerIndex + 1}`)}>
           <ArrowForwardIcon />
         </IconButton>
       </Box>

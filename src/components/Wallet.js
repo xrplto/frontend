@@ -5,6 +5,11 @@ import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
 // Lazy load heavy dependencies
 let startRegistration, startAuthentication, CryptoJS, scrypt, base64URLStringToBuffer;
 
+// Development logging helper
+const isDev = process.env.NODE_ENV === 'development';
+const devLog = (...args) => isDev && devLog(...args);
+const devError = (...args) => isDev && devError(...args);
+
 // Material
 import {
   alpha,
@@ -485,7 +490,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       await walletStorage.storeProfiles(uniqueProfiles);
     } catch (error) {
-      console.error('Failed to sync profiles to IndexedDB:', error);
+      devError('Failed to sync profiles to IndexedDB:', error);
     }
   };
   const anchorRef = useRef(null);
@@ -671,7 +676,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }, 100);
 
     } catch (error) {
-      console.error('Google connect error:', error);
+      devError('Google connect error:', error);
       openSnackbar('Google connect failed: ' + error.message, 'error');
     }
   };
@@ -720,10 +725,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         backend
       );
 
-      console.log('processGoogleConnect result:', result);
+      devLog('processGoogleConnect result:', result);
 
       if (result.requiresPassword) {
-        console.log('❌ Password required - showing setup dialog');
+        devLog('❌ Password required - showing setup dialog');
         // Store token temporarily for password setup
         sessionStorage.setItem('oauth_temp_token', jwtToken);
         sessionStorage.setItem('oauth_temp_provider', 'google');
@@ -734,7 +739,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Show password setup dialog
         setShowOAuthPasswordSetup(true);
       } else {
-        console.log('✅ No password required - auto login');
+        devLog('✅ No password required - auto login');
         // Wallet already setup
         await walletStorage.setSecureItem('jwt', jwtToken);
         await walletStorage.setSecureItem('authMethod', 'google');
@@ -747,7 +752,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOpenWalletModal(false);
       }
     } catch (error) {
-      console.error('Error processing Google connect:', error);
+      devError('Error processing Google connect:', error);
       openSnackbar('Failed to process Google connect', 'error');
     }
   };
@@ -795,7 +800,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setEmailPassword('');
       }
     } catch (error) {
-      console.error('Email login error:', error);
+      devError('Email login error:', error);
       setError('Incorrect password');
       setEmailPassword('');
     }
@@ -815,7 +820,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (existingWallet) {
         // Existing user - go to password
-        console.log('Existing email wallet - show password');
+        devLog('Existing email wallet - show password');
         setEmailStep('password');
         setError('');
         return;
@@ -837,7 +842,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setEmailStep('code');
       setError('');
     } catch (error) {
-      console.error('Send code error:', error);
+      devError('Send code error:', error);
       setError('Failed to send verification code');
     }
   };
@@ -893,7 +898,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOpen(false);
       }
     } catch (error) {
-      console.error('Verify code error:', error);
+      devError('Verify code error:', error);
       setError('Email authentication failed. Please try again.');
     }
   };
@@ -920,7 +925,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (!response.ok) {
         const error = await response.json().catch(() => ({ error: 'Request failed' }));
-        console.error('Failed to get OAuth request token:', error);
+        devError('Failed to get OAuth request token:', error);
         setError('Twitter authentication is currently unavailable. Please try Passkeys or Google instead.');
         return;
       }
@@ -928,7 +933,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const data = await response.json();
 
       if (!data.auth_url || !data.oauth_token || !data.oauth_token_secret) {
-        console.error('Invalid OAuth response:', data);
+        devError('Invalid OAuth response:', data);
         setError('Twitter authentication setup failed. Please try another login method.');
         return;
       }
@@ -940,7 +945,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Replace twitter.com with x.com to avoid redirect
       const authUrl = data.auth_url.replace('api.twitter.com', 'api.x.com');
-      console.log('Redirecting to Twitter OAuth 1.0a:', authUrl);
+      devLog('Redirecting to Twitter OAuth 1.0a:', authUrl);
       window.location.href = authUrl;
     } catch (error) {
       openSnackbar('X connect failed: ' + error.message, 'error');
@@ -1012,7 +1017,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // For existing email users logging in, we don't need token/action
       if (provider === 'email' && !token && !action) {
-        console.log('Email login - checking existing wallet');
+        devLog('Email login - checking existing wallet');
         const walletId = `email_${user.email}`;
         const wallet = await walletStorageInstance.findWalletBySocialId(walletId, oauthPassword);
 
@@ -1076,7 +1081,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         throw new Error('Failed to setup wallet');
       }
     } catch (error) {
-      console.error('Wallet setup error:', error);
+      devError('Wallet setup error:', error);
       setOAuthPasswordError(error.message || 'Failed to setup wallet');
     } finally {
       setIsCreatingWallet(false);
@@ -1118,7 +1123,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         throw new Error('Wallet not found');
       }
     } catch (error) {
-      console.error('Error retrieving wallet:', error);
+      devError('Error retrieving wallet:', error);
       openSnackbar('Incorrect password', 'error');
       setSeedPassword('');
     }
@@ -1137,14 +1142,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Ed25519 seeds start with 'sEd', secp256k1 seeds start with 's' (but not 'sEd')
       const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
-      console.log(`Importing ${algorithm} wallet from seed`);
+      devLog(`Importing ${algorithm} wallet from seed`);
 
       // Create wallet from seed with correct algorithm
       let wallet;
       try {
         // The second parameter should be the algorithm string directly, not an object
         wallet = XRPLWallet.fromSeed(seed, algorithm);
-        console.log(`Successfully created wallet with address: ${wallet.address}`);
+        devLog(`Successfully created wallet with address: ${wallet.address}`);
       } catch (seedError) {
         throw new Error(`Invalid ${algorithm} seed: ${seedError.message}`);
       }
@@ -1269,7 +1274,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       openSnackbar('Wallet imported successfully!', 'success');
     } catch (error) {
-      console.error('Import error:', error);
+      devError('Import error:', error);
       setOAuthPasswordError(error.message || 'Failed to import wallet');
     } finally {
       setIsCreatingWallet(false);
@@ -1590,7 +1595,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     if (oauthWalletProfile && sessionStorage.getItem('oauth_logged_in') === 'true') {
       try {
         const profile = JSON.parse(oauthWalletProfile);
-        console.log('OAuth auto-login with profile:', profile);
+        devLog('OAuth auto-login with profile:', profile);
 
         // Auto-login the OAuth user
         doLogIn(profile);
@@ -1605,7 +1610,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOpenWalletModal(false);
         return;
       } catch (error) {
-        console.error('Error parsing OAuth wallet profile:', error);
+        devError('Error parsing OAuth wallet profile:', error);
       }
     }
 
@@ -1638,7 +1643,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     // Set up Google response handler globally
     window.handleGoogleResponse = async (response) => {
       try {
-        console.log('Google OAuth response received');
+        devLog('Google OAuth response received');
         const res = await fetch('https://api.xrpl.to/api/auth/google', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -1654,7 +1659,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           window.dispatchEvent(new Event('google-connect-success'));
         }
       } catch (error) {
-        console.error('Google auth error:', error);
+        devError('Google auth error:', error);
       }
     };
 
@@ -1715,7 +1720,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           setProfiles(uniqueProfiles);
         }
       } catch (error) {
-        console.error('Failed to load profiles:', error);
+        devError('Failed to load profiles:', error);
       }
     };
     initializeStorage();

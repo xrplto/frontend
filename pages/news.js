@@ -658,6 +658,7 @@ function NewsPage() {
                     <>
                       <IconButton
                         size="small"
+                        aria-label="Clear search"
                         onClick={() => {
                           setSearchInput('');
                           setSearchQuery('');

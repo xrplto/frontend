@@ -9,6 +9,11 @@ if (typeof window !== 'undefined') {
   });
 }
 
+// Development logging helper
+const isDev = process.env.NODE_ENV === 'development';
+const devLog = (...args) => isDev && console.log(...args);
+const devError = (...args) => isDev && console.error(...args);
+
 export class UnifiedWalletStorage {
   constructor() {
     this.dbName = 'XRPLWalletDB';
@@ -129,7 +134,7 @@ export class UnifiedWalletStorage {
         return decoded; // Return as string if not JSON
       }
     } catch (error) {
-      console.error('Decryption failed:', error);
+      devError('Decryption failed:', error);
       return null;
     }
   }
@@ -609,31 +614,31 @@ export class UnifiedWalletStorage {
    * Handle OAuth login and setup wallet
    */
   async handleSocialLogin(profile, accessToken, backend) {
-    console.log('=== handleSocialLogin START ===');
-    console.log('Profile:', profile);
+    devLog('=== handleSocialLogin START ===');
+    devLog('Profile:', profile);
 
     try {
       // Check if user has any wallet with this social ID
       const walletId = `${profile.provider}_${profile.id}`;
-      console.log('Looking for wallet with ID:', walletId);
+      devLog('Looking for wallet with ID:', walletId);
 
       // Check if wallet exists in IndexedDB (without decrypting)
       const walletExists = await this.checkWalletExists(walletId);
 
       if (walletExists) {
-        console.log('✅ WALLET FOUND - auto-decrypting with stored password');
+        devLog('✅ WALLET FOUND - auto-decrypting with stored password');
 
         // Try to get stored password for auto-decryption
         const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
-        console.log('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
+        devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
         if (storedPassword) {
           // Auto-decrypt wallet with stored password
-          console.log('[STORAGE] Attempting auto-decrypt...');
+          devLog('[STORAGE] Attempting auto-decrypt...');
           const walletData = await this.findWalletBySocialId(walletId, storedPassword);
 
           if (walletData && walletData.seed) {
-            console.log('[STORAGE] ✅ Auto-decrypted successfully, seed length:', walletData.seed?.length);
+            devLog('[STORAGE] ✅ Auto-decrypted successfully, seed length:', walletData.seed?.length);
             const result = {
               success: true,
               wallet: {
@@ -652,7 +657,7 @@ export class UnifiedWalletStorage {
         }
 
         // Fallback: return without seed (will need password later)
-        console.log('⚠️ No stored password - will need password for transactions');
+        devLog('⚠️ No stored password - will need password for transactions');
         const result = {
           success: true,
           wallet: {
@@ -669,7 +674,7 @@ export class UnifiedWalletStorage {
         return result;
       }
 
-      console.log('❌ No wallet found locally - new user');
+      devLog('❌ No wallet found locally - new user');
       // No backend check needed since we don't support cloud backup
       // Brand new user - need to create wallet with password
       return {
@@ -679,7 +684,7 @@ export class UnifiedWalletStorage {
         action: 'create'
       };
     } catch (error) {
-      console.error('Social login error:', error);
+      devError('Social login error:', error);
       throw error;
     }
   }
@@ -731,19 +736,19 @@ export class UnifiedWalletStorage {
    * Store wallet with OAuth metadata for finding later
    */
   async storeWalletWithSocialId(wallet, profile, password) {
-    console.log('=== storeWalletWithSocialId START ===');
-    console.log('Wallet address:', wallet.address);
-    console.log('Profile:', profile);
+    devLog('=== storeWalletWithSocialId START ===');
+    devLog('Wallet address:', wallet.address);
+    devLog('Profile:', profile);
 
     const walletId = `${profile.provider}_${profile.id}`;
-    console.log('WalletId:', walletId);
+    devLog('WalletId:', walletId);
 
     const db = await this.initDB();
-    console.log('DB initialized:', db.name, 'version:', db.version);
+    devLog('DB initialized:', db.name, 'version:', db.version);
 
     // Create a unique ID for the wallet record
     const recordId = crypto.randomUUID();
-    console.log('Record ID:', recordId);
+    devLog('Record ID:', recordId);
 
     // Encrypt all wallet data
     const fullData = {
@@ -757,35 +762,35 @@ export class UnifiedWalletStorage {
       id: recordId,
       storedAt: Date.now()
     };
-    console.log('Full data to encrypt:', { ...fullData, seed: '[HIDDEN]' });
+    devLog('Full data to encrypt:', { ...fullData, seed: '[HIDDEN]' });
 
     const encryptedData = await this.encryptData(fullData, password);
-    console.log('Encrypted data length:', encryptedData.length);
+    devLog('Encrypted data length:', encryptedData.length);
 
     // Store password encrypted with device-specific key for auto-decryption
     await this.setSecureItem(`wallet_pwd_${walletId}`, password);
-    console.log('[STORAGE] ✅ Password stored for auto-decryption, key:', `wallet_pwd_${walletId}`);
+    devLog('[STORAGE] ✅ Password stored for auto-decryption, key:', `wallet_pwd_${walletId}`);
 
     // Use OAuth walletId for lookup hash (not address)
     const encoder = new TextEncoder();
     const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
     const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
-    console.log('Lookup hash:', lookupHash);
+    devLog('Lookup hash:', lookupHash);
 
     return new Promise((resolve, reject) => {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
 
       transaction.oncomplete = () => {
-        console.log('=== Transaction completed successfully ===');
+        devLog('=== Transaction completed successfully ===');
       };
 
       transaction.onerror = () => {
-        console.error('=== Transaction failed ===:', transaction.error);
+        devError('=== Transaction failed ===:', transaction.error);
       };
 
       transaction.onabort = () => {
-        console.error('=== Transaction aborted ===');
+        devError('=== Transaction aborted ===');
       };
 
       // Store with metadata for quick lookup
@@ -799,58 +804,58 @@ export class UnifiedWalletStorage {
           address: wallet.address // Store address for quick auto-login check
         }
       };
-      console.log('Record to store:', { ...record, data: '[ENCRYPTED]' });
+      devLog('Record to store:', { ...record, data: '[ENCRYPTED]' });
 
       // First check if a wallet with this lookupHash already exists
       const getRequest = store.get(lookupHash);
-      console.log('Checking for existing wallet with hash:', lookupHash);
+      devLog('Checking for existing wallet with hash:', lookupHash);
 
       getRequest.onsuccess = () => {
-        console.log('Get request success, result:', getRequest.result ? 'Found existing' : 'Not found');
+        devLog('Get request success, result:', getRequest.result ? 'Found existing' : 'Not found');
 
         if (getRequest.result) {
           // Wallet already exists, update it
-          console.log('Updating existing wallet...');
+          devLog('Updating existing wallet...');
           const updateRequest = store.put(record);
           updateRequest.onsuccess = () => {
-            console.log('OAuth wallet updated successfully');
-            console.log('Checking if really stored...');
+            devLog('OAuth wallet updated successfully');
+            devLog('Checking if really stored...');
             const checkRequest = store.get(lookupHash);
             checkRequest.onsuccess = () => {
-              console.log('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
+              devLog('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
               resolve();
             };
           };
           updateRequest.onerror = () => {
-            console.error('Failed to update OAuth wallet:', updateRequest.error);
+            devError('Failed to update OAuth wallet:', updateRequest.error);
             reject(updateRequest.error);
           };
         } else {
           // New wallet, add it
-          console.log('Adding new wallet...');
+          devLog('Adding new wallet...');
           const addRequest = store.add(record);
           addRequest.onsuccess = () => {
-            console.log('OAuth wallet stored successfully, key:', addRequest.result);
-            console.log('Checking if really stored...');
+            devLog('OAuth wallet stored successfully, key:', addRequest.result);
+            devLog('Checking if really stored...');
             const checkRequest = store.get(lookupHash);
             checkRequest.onsuccess = () => {
-              console.log('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
+              devLog('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
               if (checkRequest.result) {
-                console.log('Stored record:', { ...checkRequest.result, data: '[ENCRYPTED]' });
+                devLog('Stored record:', { ...checkRequest.result, data: '[ENCRYPTED]' });
               }
               resolve();
             };
           };
           addRequest.onerror = () => {
-            console.error('Failed to store OAuth wallet:', addRequest.error);
-            console.error('Error details:', addRequest.error?.name, addRequest.error?.message);
+            devError('Failed to store OAuth wallet:', addRequest.error);
+            devError('Error details:', addRequest.error?.name, addRequest.error?.message);
             reject(addRequest.error);
           };
         }
       };
 
       getRequest.onerror = () => {
-        console.error('Failed to check for existing wallet:', getRequest.error);
+        devError('Failed to check for existing wallet:', getRequest.error);
         reject(getRequest.error);
       };
     });
@@ -889,12 +894,12 @@ export class UnifiedWalletStorage {
         };
 
         request.onerror = () => {
-          console.error('Error checking wallet existence:', request.error);
+          devError('Error checking wallet existence:', request.error);
           resolve(null);
         };
       });
     } catch (error) {
-      console.error('Error in checkWalletExists:', error);
+      devError('Error in checkWalletExists:', error);
       return null;
     }
   }
@@ -905,14 +910,14 @@ export class UnifiedWalletStorage {
    */
   async findWalletBySocialId(walletId, password) {
     try {
-      console.log('findWalletBySocialId called with:', walletId);
+      devLog('findWalletBySocialId called with:', walletId);
       const db = await this.initDB();
 
       // Create lookup hash for direct access
       const encoder = new TextEncoder();
       const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
       const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
-      console.log('Looking up with hash:', lookupHash);
+      devLog('Looking up with hash:', lookupHash);
 
       return new Promise(async (resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
@@ -925,7 +930,7 @@ export class UnifiedWalletStorage {
           const record = request.result;
 
           if (!record) {
-            console.log('❌ No wallet found for social ID');
+            devLog('❌ No wallet found for social ID');
             resolve(null);
             return;
           }
@@ -933,7 +938,7 @@ export class UnifiedWalletStorage {
           try {
             // Decrypt the wallet data
             const decrypted = await this.decryptData(record.data, password);
-            console.log('✅ Found and decrypted wallet for social ID');
+            devLog('✅ Found and decrypted wallet for social ID');
             resolve({
               address: decrypted.address,
               publicKey: decrypted.publicKey,
@@ -944,18 +949,18 @@ export class UnifiedWalletStorage {
             });
           } catch (e) {
             // Decryption failed - wrong password
-            console.error('❌ Decryption failed:', e.message);
+            devError('❌ Decryption failed:', e.message);
             reject(new Error('Incorrect password'));
           }
         };
 
         request.onerror = () => {
-          console.error('Error finding wallet:', request.error);
+          devError('Error finding wallet:', request.error);
           reject(request.error);
         };
       });
     } catch (e) {
-      console.error('Error finding wallet:', e);
+      devError('Error finding wallet:', e);
       return null;
     }
   }
@@ -1017,12 +1022,12 @@ export class UnifiedWalletStorage {
         };
 
         request.onerror = () => {
-          console.error('Error getting encrypted wallet:', request.error);
+          devError('Error getting encrypted wallet:', request.error);
           resolve(null);
         };
       });
     } catch (error) {
-      console.error('Error getting encrypted wallet blob:', error);
+      devError('Error getting encrypted wallet blob:', error);
       return null;
     }
   }

@@ -1854,7 +1854,7 @@ const TransactionDetails = ({ txData }) => {
             Transaction Details
           </Typography>
           <Tooltip title={copied ? 'Copied!' : 'Copy Hash'}>
-            <IconButton onClick={copyToClipboard} size="small">
+            <IconButton onClick={copyToClipboard} size="small" aria-label="Copy transaction hash">
               <FileCopyOutlinedIcon fontSize="small" />
             </IconButton>
           </Tooltip>
@@ -3285,7 +3285,7 @@ const TransactionDetails = ({ txData }) => {
                   </Typography>
                 </Link>
                 <Tooltip title={urlCopied ? 'Copied!' : 'Copy Link'}>
-                  <IconButton onClick={copyUrlToClipboard} size="small">
+                  <IconButton onClick={copyUrlToClipboard} size="small" aria-label="Copy URL">
                     <FileCopyOutlinedIcon fontSize="small" />
                   </IconButton>
                 </Tooltip>

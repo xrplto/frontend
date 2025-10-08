@@ -101,6 +101,7 @@ export default function Watch({ collection }) {
       {watchList.includes(md5) ? (
         <Tooltip title="Remove from Watchlist">
           <IconButton
+            aria-label="Remove from watchlist"
             sx={{
               '& .MuiChip-icon': {
                 color: '#F6B87E'
@@ -118,6 +119,7 @@ export default function Watch({ collection }) {
       ) : (
         <Tooltip title="Add to Watchlist and follow">
           <IconButton
+            aria-label="Add to watchlist"
             sx={{
               // cursor: 'pointer',
               '&:hover': {
