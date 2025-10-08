@@ -21,9 +21,8 @@ const escapeXml = (unsafe) => {
 
 const Sitemap = () => null;
 
-export const getServerSideProps = async ({ res }) => {
+export const getServerSideProps = async ({ res, query }) => {
   try {
-    // Set caching headers for better performance
     res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');
     res.setHeader('Content-Type', 'text/xml; charset=utf-8');
 
@@ -38,57 +37,69 @@ export const getServerSideProps = async ({ res }) => {
 
     const slugs = response.data?.slugs || [];
     const time = new Date().toISOString();
-    const batchSize = 1000; // Process in chunks to avoid memory issues
 
-    // Stream XML header
-    res.write('<?xml version="1.0" encoding="UTF-8"?>\n');
-    res.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n');
+    // Google limit: 50,000 URLs per sitemap
+    // We have 2 URLs per slug (token + trustset), so max 25,000 slugs per file
+    const maxSlugsPerFile = 25000;
+    const page = parseInt(query.page || '0', 10);
+    const start = page * maxSlugsPerFile;
+    const end = start + maxSlugsPerFile;
+    const pageSlugs = slugs.slice(start, end);
 
-    // Stream URLs in batches
-    for (let i = 0; i < slugs.length; i += batchSize) {
-      const batch = slugs.slice(i, i + batchSize);
+    if (page === 0 && slugs.length > maxSlugsPerFile) {
+      // Return sitemap index for page 0 when we have multiple pages
+      const totalPages = Math.ceil(slugs.length / maxSlugsPerFile);
+      res.write('<?xml version="1.0" encoding="UTF-8"?>\n');
+      res.write('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n');
 
-      // Generate token URLs
-      for (const slug of batch) {
+      for (let i = 0; i < totalPages; i++) {
+        res.write('  <sitemap>\n');
+        res.write(`    <loc>https://xrpl.to/sitemap/token.xml?page=${i}</loc>\n`);
+        res.write(`    <lastmod>${time}</lastmod>\n`);
+        res.write('  </sitemap>\n');
+      }
+
+      res.write('</sitemapindex>');
+    } else {
+      // Return actual sitemap for this page
+      res.write('<?xml version="1.0" encoding="UTF-8"?>\n');
+      res.write('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n');
+
+      for (const slug of pageSlugs) {
         const escapedSlug = escapeXml(slug);
         if (escapedSlug) {
-          res.write(`  <url>\n`);
+          res.write('  <url>\n');
           res.write(`    <loc>https://xrpl.to/token/${escapedSlug}</loc>\n`);
           res.write(`    <lastmod>${time}</lastmod>\n`);
-          res.write(`    <changefreq>daily</changefreq>\n`);
-          res.write(`    <priority>0.8</priority>\n`);
-          res.write(`  </url>\n`);
+          res.write('    <changefreq>daily</changefreq>\n');
+          res.write('    <priority>0.8</priority>\n');
+          res.write('  </url>\n');
         }
       }
 
-      // Generate trustset URLs
-      for (const slug of batch) {
+      for (const slug of pageSlugs) {
         const escapedSlug = escapeXml(slug);
         if (escapedSlug) {
-          res.write(`  <url>\n`);
+          res.write('  <url>\n');
           res.write(`    <loc>https://xrpl.to/trustset/${escapedSlug}</loc>\n`);
           res.write(`    <lastmod>${time}</lastmod>\n`);
-          res.write(`    <changefreq>daily</changefreq>\n`);
-          res.write(`    <priority>0.6</priority>\n`);
-          res.write(`  </url>\n`);
+          res.write('    <changefreq>daily</changefreq>\n');
+          res.write('    <priority>0.6</priority>\n');
+          res.write('  </url>\n');
         }
       }
+
+      res.write('</urlset>');
     }
 
-    // Close XML
-    res.write('</urlset>');
     res.end();
-
     return { props: {} };
   } catch (error) {
     console.error('Sitemap generation failed:', error.message);
-
-    // Return proper error status
     const statusCode = error.response?.status || 500;
     res.statusCode = statusCode;
     res.setHeader('Content-Type', 'text/plain');
     res.end(`Error generating sitemap: ${error.message}`);
-
     return { props: {} };
   }
 };
