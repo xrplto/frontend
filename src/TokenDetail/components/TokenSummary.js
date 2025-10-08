@@ -1116,16 +1116,17 @@ const TokenSummary = memo(
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            width: { xs: 18, sm: 22 },
-                            height: { xs: 18, sm: 22 },
+                            width: { xs: 20, sm: 22 },
+                            height: { xs: 20, sm: 22 },
                             borderRadius: '50%',
-                            background: theme.palette.success.main,
-                            boxShadow: 'none',
-                            border: `2px solid ${theme.palette.background.paper}`,
-                            ml: 0.5
+                            background: '#FFC107',
+                            ml: 0.5,
+                            flexShrink: 0
                           }}
                         >
-                          <VerifiedIcon sx={{ fontSize: { xs: 10, sm: 12 }, color: 'white' }} />
+                          <Typography sx={{ fontSize: { xs: 13, sm: 14 }, color: '#000', fontWeight: 700, lineHeight: 1, mt: '-1px' }}>
+                            ✓
+                          </Typography>
                         </Box>
                       </Tooltip>
                     )}
@@ -1136,13 +1137,14 @@ const TokenSummary = memo(
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            minWidth: { xs: 18, sm: 22 },
-                            height: { xs: 18, sm: 22 },
-                            px: { xs: 0.5, sm: 0.75 },
-                            borderRadius: { xs: '12px', sm: '14px' },
+                            minWidth: { xs: 20, sm: 22 },
+                            height: { xs: 20, sm: 22 },
+                            px: { xs: 0.5, sm: 0.65 },
+                            borderRadius: '10px',
                             background: alpha(theme.palette.primary.main, 0.08),
                             border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                            ml: 0.5
+                            ml: 0.5,
+                            flexShrink: 0
                           }}
                         >
                           <Typography
