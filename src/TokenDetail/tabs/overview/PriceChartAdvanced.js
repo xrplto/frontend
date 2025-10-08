@@ -397,7 +397,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       grid: {
         vertLines: {
           color:
-            theme.chart?.gridColor || (isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)'),
+            theme.chart?.gridColor || (isDark ? 'rgba(56, 56, 56, 0.25)' : 'rgba(240, 240, 240, 0.8)'),
           style: 1
         },
         horzLines: {
@@ -409,13 +409,15 @@ const PriceChartAdvanced = memo(({ token }) => {
       crosshair: {
         mode: 0,
         vertLine: {
-          color: theme.palette.primary.main,
+          color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
           width: 1,
+          style: 3,
           labelBackgroundColor: theme.palette.primary.main
         },
         horzLine: {
-          color: theme.palette.primary.main,
+          color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
           width: 1,
+          style: 3,
           labelBackgroundColor: theme.palette.primary.main
         }
       },
@@ -423,8 +425,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderColor:
           theme.chart?.borderColor || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
         scaleMargins: {
-          top: 0.1,  // More margin for better visibility
-          bottom: 0.1
+          top: 0.05,
+          bottom: 0.2
         },
         mode: 0,
         autoScale: true,
@@ -493,8 +495,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,
-        barSpacing: 8,
-        minBarSpacing: 0.5,
+        barSpacing: 12,
+        minBarSpacing: 2,
         fixLeftEdge: true,
         fixRightEdge: true
       }
@@ -674,8 +676,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         downColor: isDark ? '#FF5252' : '#F44336',
         borderUpColor: isDark ? '#00E676' : '#4CAF50',
         borderDownColor: isDark ? '#FF5252' : '#F44336',
-        wickUpColor: isDark ? 'rgba(0, 230, 118, 0.5)' : 'rgba(76, 175, 80, 0.5)',
-        wickDownColor: isDark ? 'rgba(255, 82, 82, 0.5)' : 'rgba(244, 67, 54, 0.5)',
+        wickUpColor: isDark ? '#00E676' : '#4CAF50',
+        wickDownColor: isDark ? '#FF5252' : '#F44336',
         borderVisible: true,
         wickVisible: true
       });
@@ -711,13 +713,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     // Add volume series for non-holder charts
     if (chartType !== 'holders') {
       const volumeSeries = chart.addSeries(HistogramSeries, {
-        color: isDark ? 'rgba(0, 230, 118, 0.3)' : 'rgba(76, 175, 80, 0.3)',
+        color: isDark ? 'rgba(0, 230, 118, 0.6)' : 'rgba(76, 175, 80, 0.6)',
         priceFormat: {
           type: 'volume'
         },
         priceScaleId: 'volume',
         scaleMargins: {
-          top: 0.85,
+          top: 0.75,
           bottom: 0
         },
         priceLineVisible: false,
@@ -728,7 +730,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       // Configure volume scale separately
       chart.priceScale('volume').applyOptions({
         scaleMargins: {
-          top: 0.9,
+          top: 0.8,
           bottom: 0
         }
       });
@@ -1293,8 +1295,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         downColor: isDark ? '#FF5252' : '#F44336',
         borderUpColor: isDark ? '#00E676' : '#4CAF50',
         borderDownColor: isDark ? '#FF5252' : '#F44336',
-        wickUpColor: isDark ? 'rgba(0, 230, 118, 0.5)' : 'rgba(76, 175, 80, 0.5)',
-        wickDownColor: isDark ? 'rgba(255, 82, 82, 0.5)' : 'rgba(244, 67, 54, 0.5)',
+        wickUpColor: isDark ? '#00E676' : '#4CAF50',
+        wickDownColor: isDark ? '#FF5252' : '#F44336',
         borderVisible: true,
         wickVisible: true
       });
@@ -1414,11 +1416,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         color:
           d.close >= d.open
             ? isDark
-              ? 'rgba(0, 230, 118, 0.2)'
-              : 'rgba(76, 175, 80, 0.3)'
+              ? 'rgba(0, 230, 118, 0.5)'
+              : 'rgba(76, 175, 80, 0.6)'
             : isDark
-              ? 'rgba(255, 82, 82, 0.2)'
-              : 'rgba(244, 67, 54, 0.3)'
+              ? 'rgba(255, 82, 82, 0.5)'
+              : 'rgba(244, 67, 54, 0.6)'
       }));
       if (isAutoUpdate && volumeData.length > 0) {
         const lastVolume = volumeData[volumeData.length - 1];
