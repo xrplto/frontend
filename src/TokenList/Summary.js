@@ -34,19 +34,20 @@ const Container = styled.div`
   position: relative;
   z-index: 2;
   margin-top: ${(props) => props.theme?.spacing?.(2) || '16px'};
-  margin-bottom: ${(props) => props.theme?.spacing?.(3) || '24px'};
+  margin-bottom: ${(props) => props.theme?.spacing?.(2) || '16px'};
   width: 100%;
   max-width: 100%;
   background: transparent;
   overflow: visible;
 
   @media (max-width: 600px) {
-    margin-top: 0;
-    margin-bottom: 4px;
+    margin: 0;
+    padding: 0 8px;
   }
 
   @media (max-width: 480px) {
-    margin-bottom: 2px;
+    margin: 0;
+    padding: 0 8px;
   }
 `;
 
@@ -62,28 +63,34 @@ const Stack = styled.div`
 const Grid = styled.div`
   display: grid;
   grid-template-columns: repeat(${(props) => props.cols || 1}, 1fr);
-  gap: ${(props) => props.spacing || '20px'};
+  gap: ${(props) => props.spacing || '12px'};
   width: 100%;
 
   @media (max-width: 900px) {
     grid-template-columns: repeat(${(props) => props.mdCols || props.cols || 1}, 1fr);
-    gap: 16px;
+    gap: 12px;
   }
 
   @media (max-width: 600px) {
-    grid-template-columns: repeat(${(props) => props.smCols || 1}, 1fr);
-    gap: 4px;
+    display: flex;
+    overflow-x: auto;
+    gap: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+      display: none;
+    }
   }
 
   @media (max-width: 480px) {
-    gap: 3px;
+    gap: 6px;
   }
 `;
 
 const MetricBox = styled.div`
-  padding: 20px;
+  padding: 16px;
   height: 100%;
-  min-height: 100px;
+  min-height: 85px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -96,15 +103,19 @@ const MetricBox = styled.div`
       props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
   @media (max-width: 600px) {
-    padding: 8px;
-    min-height: 45px;
+    padding: 6px 6px;
+    min-height: 62px;
+    flex: 1;
+    min-width: 0;
     border-radius: 6px;
   }
 
   @media (max-width: 480px) {
-    padding: 6px;
-    min-height: 40px;
-    border-radius: 4px;
+    padding: 6px 6px;
+    min-height: 62px;
+    flex: 1;
+    min-width: 0;
+    border-radius: 6px;
   }
 `;
 
@@ -113,38 +124,42 @@ const MetricTitle = styled.span`
   font-weight: 500;
   color: ${(props) =>
     props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   letter-spacing: 0.02em;
   line-height: 1.2;
 
   @media (max-width: 600px) {
     font-size: 0.55rem;
-    margin-bottom: 1px;
+    margin-bottom: 2px;
+    line-height: 1.1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.5rem;
-    margin-bottom: 0;
+    font-size: 0.55rem;
+    margin-bottom: 2px;
+    line-height: 1.1;
   }
 `;
 
 const MetricValue = styled.span`
-  font-size: 1.5rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
-  line-height: 1.2;
+  line-height: 1.1;
   margin-bottom: 4px;
   font-family: inherit;
   letter-spacing: -0.02em;
 
   @media (max-width: 600px) {
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     margin-bottom: 1px;
+    line-height: 1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.75rem;
-    margin-bottom: 0;
+    font-size: 0.7rem;
+    margin-bottom: 1px;
+    line-height: 1;
   }
 `;
 
@@ -166,10 +181,11 @@ const PercentageChange = styled.span`
 
   @media (max-width: 600px) {
     font-size: 0.6rem;
+    gap: 1px;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     gap: 1px;
   }
 `;
@@ -182,11 +198,13 @@ const VolumePercentage = styled.span`
   letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.45rem;
+    font-size: 0.5rem;
+    line-height: 1.1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.4rem;
+    font-size: 0.5rem;
+    line-height: 1.1;
   }
 `;
 
@@ -337,7 +355,8 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     const ctx = canvas.getContext('2d');
 
     // Get last 30 days of data
-    const chartValues = data.slice(-30).map((d) => d.Tokens || 0);
+    const chartData = data.slice(-30);
+    const chartValues = chartData.map((d) => d.Tokens || 0);
     if (chartValues.length === 0) return;
 
     // Set canvas size
@@ -348,6 +367,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
     const width = rect.width;
     const height = rect.height;
+    const padding = 4;
 
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
@@ -359,10 +379,10 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     const maxValue = Math.max(...chartValues);
     const range = maxValue - minValue;
 
-    // Scale points to canvas
+    // Scale points to canvas with padding
     const points = chartValues.map((value, index) => {
-      const x = (index / (chartValues.length - 1)) * width;
-      const y = range === 0 ? height / 2 : height - ((value - minValue) / range) * height;
+      const x = padding + (index / (chartValues.length - 1)) * (width - padding * 2);
+      const y = range === 0 ? height / 2 : padding + (height - padding * 2) - ((value - minValue) / range) * (height - padding * 2);
       return { x, y };
     });
 
@@ -396,11 +416,11 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
     // Draw dots at data points
     points.forEach((point, index) => {
       ctx.beginPath();
-      ctx.arc(point.x, point.y, 2, 0, 2 * Math.PI);
-      ctx.fillStyle = lightColor;
+      ctx.arc(point.x, point.y, 3, 0, 2 * Math.PI);
+      ctx.fillStyle = color;
       ctx.fill();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 1;
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
       ctx.stroke();
     });
   }, [data, theme]);
@@ -413,8 +433,8 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       <div
         style={{
           position: 'fixed',
-          left: Math.max(10, Math.min(tooltip.x - 100, window.innerWidth - 210)),
-          top: Math.max(10, tooltip.y - 120),
+          left: tooltip.x + 15,
+          top: tooltip.y - 60,
           background: darkMode ? '#1c1c1c' : 'white',
           color: darkMode ? '#fff' : '#000',
           border: `1px solid ${theme.palette.primary.main}`,
@@ -508,7 +528,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             >
               <strong>Top Tokens:</strong>
             </div>
-            {tooltip.data.tokensInvolved.slice(0, 3).map((token, i) => (
+            {[...tooltip.data.tokensInvolved]
+              .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0))
+              .slice(0, 3).map((token, i) => (
               <div
                 key={`tooltip-token-${i}-${token.md5 || token.name}`}
                 style={{
@@ -558,7 +580,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         ref={containerRef}
         style={{
           width: '100%',
-          height: '60px',
+          height: '50px',
           marginTop: '-4px',
           position: 'relative'
         }}
@@ -907,9 +929,9 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={7} mdCols={3} smCols={2}>
+            <Grid cols={6} mdCols={3} smCols={1}>
               <MetricBox>
-                <MetricTitle>Market Cap</MetricTitle>
+                <MetricTitle>MCap</MetricTitle>
                 <MetricValue>
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(
@@ -925,7 +947,7 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>24h Volume</MetricTitle>
+                <MetricTitle>24h Vol</MetricTitle>
                 <MetricValue>
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(
@@ -955,132 +977,32 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Category Volume</MetricTitle>
-                <Stack direction="column" spacing="1px">
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <ContentTypography style={{ fontSize: '0.65rem' }}>Stables</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
-                        {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(
-                          new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber()
-                        )}
-                      </MetricValue>
-                      <VolumePercentage>
-                        ({((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%)
-                      </VolumePercentage>
-                    </div>
-                  </Stack>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <ContentTypography style={{ fontSize: '0.65rem' }}>Memes</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                      <MetricValue style={{ fontSize: '0.9rem', margin: 0 }}>
-                        {currencySymbols[activeFiatCurrency]}
-                        {formatNumberWithDecimals(
-                          new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber()
-                        )}
-                      </MetricValue>
-                      <VolumePercentage>
-                        ({((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%)
-                      </VolumePercentage>
-                    </div>
-                  </Stack>
-                </Stack>
+                <MetricTitle>Stable Vol</MetricTitle>
+                <MetricValue>
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(
+                    new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber()
+                  )}
+                </MetricValue>
+                <VolumePercentage>
+                  {((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%
+                </VolumePercentage>
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>Market Indicators</MetricTitle>
-                <Stack direction="column" spacing="1px">
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <ContentTypography style={{ fontSize: '0.65rem' }}>Sentiment</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                      <MetricValue
-                        style={{
-                          fontSize: '0.9rem',
-                          margin: 0,
-                          color:
-                            metrics.global?.sentimentScore >= 80
-                              ? '#16a34a'
-                              : metrics.global?.sentimentScore >= 60
-                                ? '#4ade80'
-                                : metrics.global?.sentimentScore >= 40
-                                  ? '#fbbf24'
-                                  : metrics.global?.sentimentScore >= 20
-                                    ? '#f97316'
-                                    : '#ef4444'
-                        }}
-                      >
-                        {(metrics.global?.sentimentScore || 0).toFixed(1)}
-                      </MetricValue>
-                      <ContentTypography
-                        style={{
-                          fontSize: '0.65rem',
-                          color:
-                            metrics.global?.sentimentScore >= 80
-                              ? '#16a34a'
-                              : metrics.global?.sentimentScore >= 60
-                                ? '#4ade80'
-                                : metrics.global?.sentimentScore >= 40
-                                  ? '#fbbf24'
-                                  : metrics.global?.sentimentScore >= 20
-                                    ? '#f97316'
-                                    : '#ef4444',
-                          fontWeight: 600
-                        }}
-                      >
-                        {metrics.global?.sentimentScore >= 80
-                          ? 'V.Bull'
-                          : metrics.global?.sentimentScore >= 60
-                            ? 'Bull'
-                            : metrics.global?.sentimentScore >= 40
-                              ? 'Neutral'
-                              : metrics.global?.sentimentScore >= 20
-                                ? 'Bear'
-                                : 'V.Bear'}
-                      </ContentTypography>
-                    </div>
-                  </Stack>
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <ContentTypography style={{ fontSize: '0.65rem' }}>Avg RSI</ContentTypography>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
-                      <MetricValue
-                        style={{
-                          fontSize: '0.9rem',
-                          margin: 0,
-                          color:
-                            (metrics.global?.avgRSI || 50) <= 30
-                              ? '#ef4444'
-                              : (metrics.global?.avgRSI || 50) >= 70
-                                ? '#16a34a'
-                                : theme.palette.text.primary
-                        }}
-                      >
-                        {(metrics.global?.avgRSI || 50).toFixed(1)}
-                      </MetricValue>
-                      <ContentTypography
-                        style={{
-                          fontSize: '0.65rem',
-                          color:
-                            (metrics.global?.avgRSI || 50) <= 30
-                              ? '#ef4444'
-                              : (metrics.global?.avgRSI || 50) >= 70
-                                ? '#16a34a'
-                                : theme.palette.text.secondary,
-                          fontWeight: 600
-                        }}
-                      >
-                        {(metrics.global?.avgRSI || 50) <= 30
-                          ? 'Oversold'
-                          : (metrics.global?.avgRSI || 50) >= 70
-                            ? 'Overbought'
-                            : 'Neutral'}
-                      </ContentTypography>
-                    </div>
-                  </Stack>
-                </Stack>
+                <MetricTitle>Meme Vol</MetricTitle>
+                <MetricValue>
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(
+                    new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber()
+                  )}
+                </MetricValue>
+                <VolumePercentage>
+                  {((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%
+                </VolumePercentage>
               </MetricBox>
 
-              <ChartMetricBox>
+              <MetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
                 <TokenChart
                   data={chartData}
@@ -1088,7 +1010,7 @@ export default function Summary() {
                   activeFiatCurrency={activeFiatCurrency}
                   darkMode={darkMode}
                 />
-              </ChartMetricBox>
+              </MetricBox>
             </Grid>
           </div>
         )}
