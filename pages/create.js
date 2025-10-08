@@ -409,19 +409,29 @@ function CreatePage() {
     validateField(field, value);
   };
 
+  // Helper to convert file to base64
+  const fileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleFileUpload = (file) => {
     if (!file) return;
 
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4'];
-    const maxSize = file.type.startsWith('video/') ? 30 * 1024 * 1024 : 15 * 1024 * 1024;
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const maxSize = 15 * 1024 * 1024; // 15MB for images
 
     if (!validTypes.includes(file.type)) {
-      setErrors(prev => ({ ...prev, file: 'Invalid file type' }));
+      setErrors(prev => ({ ...prev, file: 'Invalid file type. Use PNG, JPG, GIF, or WEBP' }));
       return;
     }
 
     if (file.size > maxSize) {
-      setErrors(prev => ({ ...prev, file: `File too large (max ${file.type.startsWith('video/') ? '30MB' : '15MB'})` }));
+      setErrors(prev => ({ ...prev, file: 'File too large (max 15MB)' }));
       return;
     }
 
@@ -525,22 +535,44 @@ function CreatePage() {
       // Get user wallet address
       const walletAddress = accountProfile ? (accountProfile.account || accountProfile.address) : userWallet;
 
+      // Convert image to base64 if available
+      let imageData = null;
+      if (formData.image) {
+        try {
+          imageData = await fileToBase64(formData.image);
+        } catch (error) {
+          console.error('[ERROR] Failed to convert image to base64:', error);
+        }
+      }
+
+      // Build payload according to new API spec
       const payload = {
+        // Required fields (6 total)
+        currencyCode: formData.ticker, // e.g., "DOGE"
+        name: formData.tokenName, // e.g., "Dogecoin" (display name)
         tokenSupply: String(formData.tokenSupply),
-        ammTokenAmount: String(Math.floor(formData.tokenSupply * 0.5)),
-        currencyCode: formData.ticker,
-        ammXrpAmount: formData.ammXrpAmount
+        ammXrpAmount: formData.ammXrpAmount,
+        origin: 'xrpl.to',
+        user: formData.tokenName // e.g., "Dogecoin" (creator/team name - same as display name)
       };
 
-      // Only add optional fields if they have values
-      if (walletAddress) payload.userAddress = walletAddress;
+      // Conditionally required
+      if (walletAddress) {
+        payload.userAddress = walletAddress;
+      }
+
+      // Optional fields
       if (formData.userCheckPercent > 0) {
         payload.userCheckAmount = String(Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)));
       }
+      if (formData.description) payload.description = formData.description;
       if (formData.website) payload.domain = formData.website.replace(/^https?:\/\//, '');
+      if (formData.telegram) payload.telegram = formData.telegram;
+      if (formData.twitter) payload.twitter = formData.twitter;
+      if (imageData) payload.imageData = imageData;
       if (formData.antiSnipe) payload.antiSnipe = true;
 
-      console.log('[DEBUG] Launch payload:', payload);
+      console.log('[DEBUG] Launch payload:', { ...payload, imageData: imageData ? `${imageData.substring(0, 50)}...` : null });
 
       // Step 1: Initialize token launch
       const response = await axios.post('https://api.xrpl.to/api/launch-token', payload);
@@ -1165,10 +1197,10 @@ function CreatePage() {
                 <>
                   <CloudUpload sx={{ fontSize: 40, color: alpha(theme.palette.text.secondary, 0.25), mb: 1.5 }} />
                   <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 0.5, fontWeight: 450 }}>
-                    {fileName || 'Drop your file here, or click to browse'}
+                    {fileName || 'Drop your image here, or click to browse'}
                   </Typography>
                   <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.5) }}>
-                    JPG, PNG, GIF or MP4 • Max 15MB (images) / 30MB (video)
+                    PNG, JPG, GIF, WEBP • Max 15MB
                   </Typography>
                 </>
               )}
@@ -1183,18 +1215,19 @@ function CreatePage() {
           <HiddenInput
             ref={fileInputRef}
             type="file"
-            accept=".jpg,.jpeg,.gif,.png,.mp4"
+            accept=".jpg,.jpeg,.gif,.png,.webp,image/jpeg,image/png,image/gif,image/webp"
             onChange={handleFileInputChange}
           />
 
           <InfoText theme={theme} style={{ marginTop: 16 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
               <Info sx={{ fontSize: 14, color: alpha(theme.palette.text.secondary, 0.5) }} />
-              <strong style={{ fontSize: '0.8rem' }}>Media Requirements</strong>
+              <strong style={{ fontSize: '0.8rem' }}>Image Requirements</strong>
             </Box>
             <span style={{ fontSize: '0.78rem', lineHeight: 1.4 }}>
-              • Images: 1000x1000px minimum, 1:1 ratio recommended<br/>
-              • Videos: 1080p+, 16:9 or 9:16 aspect ratio
+              • Formats: PNG, JPG, GIF, WEBP<br/>
+              • Recommended: 1000x1000px minimum, 1:1 aspect ratio<br/>
+              • Max size: 15MB
             </span>
           </InfoText>
         </Card>
