@@ -48,6 +48,9 @@ function TrendingPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        Trending XRPL Tokens
+      </h1>
 
       <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         <Box
@@ -111,16 +114,26 @@ export async function getStaticProps() {
     ogp.desc =
       'Discover trending XRPL tokens with real-time price charts and market activity. Track the hottest tokens by trending score on the XRP Ledger ecosystem updated in real-time.';
 
-    // Additional structured metadata for better SEO
-    ogp.keywords =
-      'trending XRPL tokens, hot XRP tokens, cryptocurrency trends, token charts, crypto market data, DEX tokens, XRP ecosystem trending';
-    ogp.type = 'website';
-    ogp.siteName = 'XRPL.to';
-    ogp.locale = 'en_US';
-
-    // Twitter card metadata
-    ogp.twitterCard = 'summary_large_image';
-    ogp.twitterCreator = '@xrplto';
+    // ItemList structured data
+    const itemListSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'FinancialProduct',
+          name: token.name,
+          url: `https://xrpl.to/token/${token.slug}`,
+          offers: token.exch ? {
+            '@type': 'Offer',
+            price: token.exch,
+            priceCurrency: 'XRP'
+          } : undefined
+        }
+      }))
+    };
+    ogp.jsonLd = itemListSchema;
 
     ret = { data, ogp };
   }

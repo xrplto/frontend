@@ -121,9 +121,9 @@ export async function getServerSideProps(ctx) {
     const cname = collection || '';
 
     let ogp = {};
-    ogp.canonical = `https://xrpnft.com/nft/${NFTokenID}`;
+    ogp.canonical = `https://xrpl.to/nft/${NFTokenID}`;
     ogp.title = cname ? `${name} - ${cname}` : `${name}`;
-    ogp.url = `https://xrpnft.com/nft/${NFTokenID}`;
+    ogp.url = `https://xrpl.to/nft/${NFTokenID}`;
     ogp.imgUrl = getNftCoverUrl(nft, '', 'image') || getNftCoverUrl(nft, '', 'animation'); // (NFTokenID, meta, dfile, 48)
     ogp.videoUrl = getNftCoverUrl(nft, '', 'video');
     ogp.desc = description

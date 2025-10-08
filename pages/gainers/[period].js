@@ -43,6 +43,9 @@ function GainersPage({ data, period }) {
     <OverviewWrapper>
       {!isMobile && <Toolbar id="back-to-top-anchor" />}
       <Header />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        Top Gaining XRPL Tokens
+      </h1>
 
       <Container maxWidth="xl">
         <Box
@@ -122,7 +125,6 @@ export async function getStaticProps({ params }) {
     ogp.imgUrl = `https://s1.xrpl.to/ogp/${params.period}.webp`;
     ogp.desc = `Discover the top performing XRPL tokens over the last ${params.period}. Track the biggest gainers and price increases on the XRP Ledger ecosystem.`;
 
-    ogp.keywords = `${params.period} gainers XRPL tokens, top performers XRP, price increases, crypto gainers, DEX tokens, XRP ecosystem gainers`;
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
     ogp.locale = 'en_US';

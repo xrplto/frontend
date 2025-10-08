@@ -43,6 +43,9 @@ function Overview({ data }) {
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
       <Header />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        Watchlist XRPL Tokens
+      </h1>
 
       <Container maxWidth="xl">
         <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
@@ -99,9 +102,9 @@ export async function getStaticProps() {
   if (data) {
     let ogp = {};
 
-    ogp.canonical = 'https://xrpl.to';
+    ogp.canonical = 'https://xrpl.to/watchlist';
     ogp.title = 'Create a Watchlist: Track Your Favorite XRPL Tokens with Ease';
-    ogp.url = 'https://xrpl.to/';
+    ogp.url = 'https://xrpl.to/watchlist';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
     ogp.desc =
       'Create a custom XRPL token watchlist: Choose from all XRP Ledger tokens, track the latest prices, and stay updated on popular tokens like SOLO, CORE, CSC, and xSPECTAR.';

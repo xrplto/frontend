@@ -163,9 +163,9 @@ export async function getServerSideProps(ctx) {
 
     // Enhanced OGP metadata
     const ogp = {
-      canonical: `https://xrpnft.com/collection/${slug}`,
+      canonical: `https://xrpl.to/collection/${slug}`,
       title: `${name} | XRPL NFT Collection`,
-      url: `https://xrpnft.com/collection/${slug}`,
+      url: `https://xrpl.to/collection/${slug}`,
       imgUrl: logoImage
         ? `https://s1.xrpnft.com/collection/${logoImage}`
         : '/logo/xrpl-to-logo-black.svg',

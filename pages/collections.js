@@ -42,6 +42,9 @@ export default function Overview() {
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
       <Header />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        NFT Collections on XRPL
+      </h1>
 
       <Container maxWidth="xl">
         <AllCollections />
@@ -61,12 +64,12 @@ export async function getStaticProps() {
   let ret = {};
 
   const ogp = {};
-  ogp.canonical = 'https://xrpnft.com/collections';
-  ogp.title = 'Collections';
-  ogp.url = 'https://xrpnft.com/collections';
-  ogp.imgUrl = 'https://xrpnft.com/static/ogp.png';
+  ogp.canonical = 'https://xrpl.to/collections';
+  ogp.title = 'NFT Collections | XRPL.to';
+  ogp.url = 'https://xrpl.to/collections';
+  ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
   ogp.desc =
-    'XRPNFT a community-centered marketplace for NFTs and digital collectibles on the XRP Ledger. Trade Non-Fungible Tokens Using XRP and earn rewards.';
+    'Browse NFT collections on the XRP Ledger. Discover, trade, and collect digital art and collectibles. Community-centered marketplace for XRPL NFTs.';
 
   ret = { ogp };
 

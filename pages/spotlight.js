@@ -48,6 +48,9 @@ function SpotlightPage({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        Spotlight XRPL Tokens
+      </h1>
 
       <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         <Box
@@ -112,7 +115,6 @@ export async function getStaticProps() {
       'Discover curated spotlight XRPL tokens with the highest assessment scores. Find top-rated, verified tokens with strong fundamentals on the XRP Ledger ecosystem.';
 
     // Additional structured metadata for better SEO
-    ogp.keywords =
       'spotlight XRPL tokens, top-rated XRP tokens, curated cryptocurrency, verified tokens, assessment score, crypto fundamentals, DEX tokens, XRP ecosystem spotlight';
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';
@@ -121,6 +123,27 @@ export async function getStaticProps() {
     // Twitter card metadata
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
+
+    // ItemList structured data
+    const itemListSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'FinancialProduct',
+          name: token.name,
+          url: `https://xrpl.to/token/${token.slug}`,
+          offers: token.exch ? {
+            '@type': 'Offer',
+            price: token.exch,
+            priceCurrency: 'XRP'
+          } : undefined
+        }
+      }))
+    };
+    ogp.jsonLd = itemListSchema;
 
     ret = { data, ogp };
   }

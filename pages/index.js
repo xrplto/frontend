@@ -120,6 +120,9 @@ function Overview({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        XRPL Tokens Analytics & Trading Platform
+      </h1>
 
       <Container maxWidth={notificationPanelOpen ? false : "xl"}>
         <Box
@@ -179,7 +182,6 @@ export async function getStaticProps() {
       'Discover XRP Ledger tokens with live prices, market cap, 24h volume & trading charts. Track XRPL DeFi tokens, compare performance & find new opportunities on XRP Ledger.';
 
     // Additional structured metadata for better SEO
-    ogp.keywords =
       'XRP Ledger, XRPL tokens, XRP tokens, cryptocurrency prices, DeFi tokens, crypto charts, market cap, trading volume, XRP ecosystem, digital assets, blockchain tokens, altcoins';
     ogp.type = 'website';
     ogp.siteName = 'XRPL.to';

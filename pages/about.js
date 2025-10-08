@@ -513,6 +513,9 @@ function AboutPage() {
   return (
     <PageWrapper>
       <Header />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        About XRPL.to
+      </h1>
 
       <Container>
         {/* Hero Section */}
@@ -627,10 +630,52 @@ export async function getStaticProps() {
     let ogp = {};
 
     ogp.canonical = 'https://xrpl.to';
-    ogp.title = 'About us';
-    ogp.url = 'https://xrpl.to/';
+    ogp.title = 'About XRPL.to | Premier XRP Ledger Analytics Platform';
+    ogp.url = 'https://xrpl.to/about';
+    ogp.canonical = 'https://xrpl.to/about';
     ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-    //ogp.desc = 'Meta description here';
+    ogp.desc = 'XRPL.to tracks 19,000+ tokens with 40,000+ monthly users. Comprehensive XRP Ledger analytics, DEX trading, NFT marketplace, and real-time price data.';
+
+    // FAQPage structured data
+    const faqSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What is xrpl.to?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Xrpl.to is a comprehensive platform designed to facilitate seamless interactions within the XRP Ledger (XRPL) ecosystem. As a decentralized exchange (DEX) and analytics hub, xrpl.to enables users to trade tokens and NFTs directly on the XRPL blockchain without intermediaries.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How secure is xrpl.to?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Xrpl.to operates as a non-custodial interface to the XRP Ledger, meaning your funds never leave your wallet and remain under your complete control. The platform leverages the proven security of the XRP Ledger, which has operated without downtime since 2012.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'What are the fees for trading on xrpl.to?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'There are no fees to trade on xrpl.to itself. The platform is completely free to use. However, you will encounter standard XRP Ledger network fees (typically a few drops of XRP) for each transaction.'
+          }
+        },
+        {
+          '@type': 'Question',
+          name: 'How do I list my token on xrpl.to?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Tokens are automatically listed on xrpl.to if they meet all platform requirements. Your token needs to be compatible with the XRP Ledger and satisfy the necessary technical and compliance criteria.'
+          }
+        }
+      ]
+    };
+    ogp.jsonLd = faqSchema;
 
     ret = { data, ogp };
   }
