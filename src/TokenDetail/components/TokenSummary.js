@@ -481,7 +481,7 @@ const TokenSummary = memo(
           return (
             <Box
               component="img"
-              src="/magneticx-logo.webp"
+              src="/static/magneticx-logo.webp"
               alt="Magnetic X"
               sx={{ width: '10px', height: '10px', objectFit: 'contain' }}
             />

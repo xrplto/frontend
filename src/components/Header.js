@@ -580,7 +580,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             name: 'Magnetic X',
                             icon: (
                               <Image
-                                src="/magneticx-logo.webp?v=1"
+                                src="/static/magneticx-logo.webp"
                                 alt="Magnetic X"
                                 width={16}
                                 height={16}
