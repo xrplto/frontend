@@ -191,6 +191,27 @@ export async function getStaticProps() {
     ogp.twitterCard = 'summary_large_image';
     ogp.twitterCreator = '@xrplto';
 
+    // ItemList structured data for homepage
+    const itemListSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'ItemList',
+      itemListElement: (data.tokens || []).slice(0, 20).map((token, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'FinancialProduct',
+          name: token.name,
+          url: `https://xrpl.to/token/${token.slug}`,
+          offers: token.exch ? {
+            '@type': 'Offer',
+            price: token.exch,
+            priceCurrency: 'XRP'
+          } : undefined
+        }
+      }))
+    };
+    ogp.jsonLd = itemListSchema;
+
     ret = { data, ogp };
   }
 

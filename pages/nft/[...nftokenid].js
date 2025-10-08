@@ -64,6 +64,9 @@ export default function Overview({ nft }) {
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
       <Header />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        {nftName} NFT on XRPL
+      </h1>
 
       <Container maxWidth="xl">
         {collectionData && (
@@ -95,7 +98,7 @@ export default function Overview({ nft }) {
 }
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
 
   let data = null;
   try {
@@ -130,6 +133,29 @@ export async function getServerSideProps(ctx) {
       ? description
       : `XRPL's largest NFT marketplace: Buy, sell, mint with ease. Experience exclusive NFT creation and trade.`;
     ogp.isVideo = meta?.video ? true : false;
+
+    // Product schema for NFT
+    const nftSchema = {
+      '@context': 'https://schema.org',
+      '@type': 'Product',
+      name: name,
+      description: ogp.desc,
+      image: ogp.imgUrl,
+      url: ogp.canonical,
+      ...(nft.offers && nft.offers.length > 0 && {
+        offers: {
+          '@type': 'Offer',
+          price: nft.offers[0].amount,
+          priceCurrency: 'XRP',
+          availability: 'https://schema.org/InStock',
+          seller: {
+            '@type': 'Organization',
+            name: 'XRPL.to NFT Marketplace'
+          }
+        }
+      })
+    };
+    ogp.jsonLd = nftSchema;
 
     ret = { nft: data, ogp };
   } else {

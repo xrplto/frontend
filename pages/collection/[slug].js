@@ -62,16 +62,22 @@ export default function Overview({ collection }) {
 
   // const bannerImage = collection.bannerImage?`https://s1.xrpnft.com/collection/${collection.bannerImage}`:default_banner;
   const bannerImage = collection.collection.logoImage
-    ? `https://s1.xrpnft.com/collection/${collection.collection.logoImage}`
+    ? `https://s1.xrpl.to/collection/${collection.collection.logoImage}`
     : darkMode
       ? '/static/banner_black.png'
       : '/static/banner_white.png'; //added default banner. Disable custom banner images above for now.
+
+  const collectionName = collection.name || 'NFT Collection';
+
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
 
 
       <Header />
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        {collectionName} NFT Collection
+      </h1>
 
       <Container maxWidth="xl">
         <CollectionBreadcrumb collection={collection} />
@@ -89,7 +95,7 @@ export default function Overview({ collection }) {
 }
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = 'https://api.xrpnft.com/api';
+  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
 
   // Set cache headers for better performance
   ctx.res.setHeader('Cache-Control', 'public, s-maxage=60, stale-while-revalidate=120');
@@ -167,7 +173,7 @@ export async function getServerSideProps(ctx) {
       title: `${name} | XRPL NFT Collection`,
       url: `https://xrpl.to/collection/${slug}`,
       imgUrl: logoImage
-        ? `https://s1.xrpnft.com/collection/${logoImage}`
+        ? `https://s1.xrpl.to/collection/${logoImage}`
         : '/logo/xrpl-to-logo-black.svg',
       desc:
         description ||
