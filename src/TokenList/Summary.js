@@ -281,19 +281,28 @@ const CircularProgress = styled.div`
 `;
 
 const ChartMetricBox = styled(MetricBox)`
-  grid-column: span 2;
+  grid-column: span 1;
   overflow: visible;
 
   @media (max-width: 900px) {
-    grid-column: 1 / -1;
+    grid-column: span 1;
   }
 
   @media (max-width: 600px) {
-    grid-column: 1 / -1;
+    display: none;
   }
 
   @media (max-width: 480px) {
-    grid-column: 1 / -1;
+    display: none;
+  }
+`;
+
+const MobileChartBox = styled(MetricBox)`
+  display: none;
+
+  @media (max-width: 600px) {
+    display: flex;
+    margin-top: 6px;
   }
 `;
 
@@ -1004,7 +1013,7 @@ export default function Summary() {
                 </VolumePercentage>
               </MetricBox>
 
-              <MetricBox>
+              <ChartMetricBox>
                 <MetricTitle>New Tokens (30d)</MetricTitle>
                 <TokenChart
                   data={chartData}
@@ -1012,8 +1021,18 @@ export default function Summary() {
                   activeFiatCurrency={activeFiatCurrency}
                   darkMode={darkMode}
                 />
-              </MetricBox>
+              </ChartMetricBox>
             </Grid>
+
+            <MobileChartBox>
+              <MetricTitle>New Tokens (30d)</MetricTitle>
+              <TokenChart
+                data={chartData}
+                theme={theme}
+                activeFiatCurrency={activeFiatCurrency}
+                darkMode={darkMode}
+              />
+            </MobileChartBox>
           </div>
         )}
       </Stack>
