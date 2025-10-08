@@ -357,273 +357,160 @@ const Chip = styled.button`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 8px;
-  border: 1px solid ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.08)'};
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1.5px solid ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.15)'};
   border-radius: 12px;
-  background: ${(props) => props.background || 'rgba(0, 0, 0, 0.02)'};
+  background: transparent;
   color: ${(props) => props.color || 'inherit'};
-  font-size: 0.7rem;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.3s ease;
   white-space: nowrap;
-  height: 24px;
+  height: 28px;
   flex-shrink: 0;
   opacity: ${(props) => (props.show ? 1 : 0)};
-  animation: ${(props) => (props.show ? 'fadeIn 0.3s ease-out' : 'none')};
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateX(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
-  }
 
   &:hover {
-    background: ${(props) => props.hoverBackground || 'rgba(33, 150, 243, 0.06)'};
-    transform: translateY(-1px);
+    background: ${(props) => props.hoverBackground || 'rgba(66, 133, 244, 0.04)'};
+    border-color: #4285f4;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
-    height: 18px;
-    padding: 0px 4px;
-    gap: 1px;
+    font-size: 0.65rem;
+    height: 24px;
+    padding: 2px 6px;
+    gap: 2px;
   }
 `;
 
 const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 2px 8px;
-  border: 1px solid rgba(33, 150, 243, 0.15);
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1.5px solid #4285f4;
   border-radius: 12px;
-  background: rgba(33, 150, 243, 0.06);
-  color: inherit;
-  font-size: 0.7rem;
-  font-weight: 600;
+  background: transparent;
+  color: #4285f4;
+  font-size: 0.75rem;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.3s ease;
   white-space: nowrap;
-  height: 24px;
+  height: 28px;
   flex-shrink: 0;
 
   &:hover {
-    background: rgba(33, 150, 243, 0.1);
-    transform: translateY(-1px);
+    background: rgba(66, 133, 244, 0.04);
+    border-color: #4285f4;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
-    height: 18px;
-    padding: 0px 4px;
-    gap: 1px;
+    font-size: 0.65rem;
+    height: 24px;
+    padding: 2px 6px;
+    gap: 2px;
   }
 `;
 
-// Categories Drawer Content Component (inlined from CategoriesDrawer.js)
+// Normalize tag function (shared)
+const normalizeTag = (tag) => {
+  if (!tag) return '';
+  return tag.split(' ').join('-').replace(/&/g, 'and').toLowerCase().replace(/[^a-zA-Z0-9-]/g, '');
+};
+
+// Categories Drawer Content Component
 const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, darkMode }) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Categories to highlight - memoized to prevent recreating array
-  const highlightedCategories = useMemo(
-    () => ['Magnetic X', 'XPMarket', 'FirstLedger', 'LedgerMeme', 'Horizon', 'aigent.run'],
-    []
-  );
-
-  // Memoize normalizeTag function to prevent recreation
-  const normalizeTag = useCallback((tag) => {
-    if (tag && tag.length > 0) {
-      const tag1 = tag.split(' ').join('-');
-      const tag2 = tag1.replace(/&/g, 'and');
-      const tag3 = tag2.toLowerCase();
-      const final = tag3.replace(/[^a-zA-Z0-9-]/g, '');
-      return final;
-    }
-    return '';
-  }, []);
-
-  // Memoize isHighlighted function
-  const isHighlighted = useCallback(
-    (tag) => {
-      return highlightedCategories.includes(tag);
-    },
-    [highlightedCategories]
-  );
-
-  // Memoize filtered tags to prevent unnecessary re-calculations
   const filteredTags = useMemo(() => {
     if (!tags) return [];
     if (!searchTerm.trim()) return tags;
-    return tags.filter((tag) => tag.toLowerCase().includes(searchTerm.toLowerCase()));
+    const term = searchTerm.toLowerCase();
+    return tags.filter((tag) => tag.toLowerCase().includes(term));
   }, [tags, searchTerm]);
 
   return (
     <>
-      {/* Native HTML Input Search */}
       {tags && tags.length > 0 && (
-        <Box sx={{ padding: { xs: '12px', sm: '16px', md: '20px' } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.5, sm: 0.75, md: 1 } }}>
-            <SearchIcon
-              color="primary"
-              sx={{ fontSize: { xs: '1.2rem', sm: '1.35rem', md: '1.5rem' } }}
-            />
-            <Box sx={{ flexGrow: 1, position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="Search categories..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: window.innerWidth < 600 ? '6px 10px' : '8px 12px',
-                  border: '1px solid #ccc',
-                  borderRadius: window.innerWidth < 600 ? '6px' : '8px',
-                  fontSize: window.innerWidth < 600 ? '12px' : '14px',
-                  outline: 'none',
-                  backgroundColor: darkMode ? '#2d2d2d' : '#fff',
-                  color: darkMode ? '#fff' : '#000'
-                }}
-              />
-            </Box>
-            {searchTerm && (
-              <Typography
-                variant="caption"
-                sx={{
-                  cursor: 'pointer',
-                  color: 'text.secondary',
-                  fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' }
-                }}
-                onClick={() => setSearchTerm('')}
-              >
-                Clear
-              </Typography>
-            )}
-          </Box>
+        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <input
+            type="search"
+            placeholder="Search categories..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            autoComplete="off"
+            style={{
+              width: '100%',
+              padding: '10px 12px',
+              border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+              borderRadius: '12px',
+              fontSize: '14px',
+              outline: 'none',
+              backgroundColor: darkMode ? '#1a1a1a' : '#fff',
+              color: darkMode ? '#fff' : '#000',
+              fontFamily: 'inherit'
+            }}
+          />
         </Box>
       )}
 
-      {/* Categories List */}
       <Box
         sx={{
-          padding: { xs: '12px', sm: '16px', md: '20px' },
+          p: 2,
           display: 'flex',
           flexWrap: 'wrap',
-          gap: { xs: '8px', sm: '10px', md: '12px' },
-          minHeight: { xs: '150px', sm: '175px', md: '200px' },
-          maxHeight: { xs: '60vh', sm: '65vh', md: '70vh' },
+          gap: 1,
+          maxHeight: '60vh',
           overflowY: 'auto',
-          '&::-webkit-scrollbar': {
-            width: '6px'
-          },
-          '&::-webkit-scrollbar-track': {
-            background: 'rgba(0,0,0,0.05)'
-          },
+          '&::-webkit-scrollbar': { width: '8px' },
           '&::-webkit-scrollbar-thumb': {
             background: 'rgba(0,0,0,0.2)',
-            borderRadius: '3px'
+            borderRadius: '4px'
           }
         }}
       >
-        {tags && tags.length > 0 ? (
-          filteredTags.length > 0 ? (
-            filteredTags.map((tag, idx) => (
-              <Link
-                key={`categories-${idx}-${tag}`}
-                href={`/view/${normalizeTag(tag)}`}
-                sx={{ textDecoration: 'none' }}
-                rel="noreferrer noopener nofollow"
-              >
-                <MuiChip
-                  label={tag}
-                  size="medium"
-                  sx={{
-                    borderRadius: { xs: '12px', sm: '14px', md: '16px' },
-                    height: { xs: '28px', sm: '32px', md: '36px' },
-                    fontSize: { xs: '0.7rem', sm: '0.8rem', md: '0.875rem' },
-                    fontWeight: { xs: 500, sm: 550, md: 600 },
-                    transition: 'all 0.3s ease',
-                    backgroundColor: isHighlighted(tag) ? 'primary.main' : 'default',
-                    color: isHighlighted(tag) ? 'primary.contrastText' : 'text.primary',
-                    '& .MuiChip-label': {
-                      px: { xs: 1.5, sm: 1.75, md: 2 }
-                    },
-                    '&:hover': {
-                      transform: { xs: 'none', sm: 'translateY(-1px)', md: 'translateY(-2px)' },
-                      boxShadow: { xs: 2, sm: 3, md: 4 },
-                      backgroundColor: 'primary.main',
-                      color: 'primary.contrastText'
-                    },
-                    '&:active': {
-                      transform: 'translateY(0)'
-                    }
-                  }}
-                />
-              </Link>
-            ))
-          ) : (
-            <Box
-              sx={{
-                width: '100%',
-                textAlign: 'center',
-                padding: { xs: '24px 16px', sm: '36px 20px', md: '48px 24px' },
-                border: '1px dashed',
-                borderColor: 'divider',
-                borderRadius: { xs: '12px', sm: '16px', md: '20px' }
-              }}
+        {filteredTags.length > 0 ? (
+          filteredTags.map((tag) => (
+            <Link
+              key={tag}
+              href={`/view/${normalizeTag(tag)}`}
+              style={{ textDecoration: 'none' }}
             >
-              <Typography
-                variant="h6"
+              <Box
+                component="button"
                 sx={{
-                  mb: 1,
-                  fontWeight: 600,
-                  fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' }
+                  minWidth: '80px',
+                  maxWidth: '200px',
+                  height: '36px',
+                  px: 1.5,
+                  border: '1.5px solid',
+                  borderColor: 'rgba(145, 158, 171, 0.2)',
+                  borderRadius: '10px',
+                  background: 'transparent',
+                  color: 'text.primary',
+                  fontSize: '0.8125rem',
+                  fontWeight: 400,
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  '&:hover': {
+                    borderColor: '#4285f4',
+                    background: 'rgba(66, 133, 244, 0.04)'
+                  }
                 }}
               >
-                No matching categories found
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontSize: { xs: '0.75rem', sm: '0.8125rem', md: '0.875rem' } }}
-              >
-                Try adjusting your search terms
-              </Typography>
-            </Box>
-          )
+                {tag}
+              </Box>
+            </Link>
+          ))
         ) : (
-          <Box
-            sx={{
-              width: '100%',
-              textAlign: 'center',
-              padding: { xs: '24px 16px', sm: '36px 20px', md: '48px 24px' },
-              border: '1px dashed',
-              borderColor: 'divider',
-              borderRadius: { xs: '12px', sm: '16px', md: '20px' }
-            }}
-          >
-            <Typography
-              variant="h6"
-              sx={{
-                mb: 1,
-                fontWeight: 600,
-                fontSize: { xs: '0.95rem', sm: '1.1rem', md: '1.25rem' }
-              }}
-            >
-              No categories available
-            </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ fontSize: { xs: '0.75rem', sm: '0.8125rem', md: '0.875rem' } }}
-            >
-              Categories will appear here when available
+          <Box sx={{ width: '100%', textAlign: 'center', py: 4 }}>
+            <Typography variant="body2" color="text.secondary">
+              {searchTerm ? 'No matching categories' : 'No categories available'}
             </Typography>
           </Box>
         )}
@@ -861,34 +748,7 @@ const SearchToolbar = memo(function SearchToolbar({
               .replace(/&/g, 'and')
               .toLowerCase()
               .replace(/[^a-zA-Z0-9-]/g, '');
-            const colors = [
-              '#e91e63',
-              '#00bcd4',
-              '#4caf50',
-              '#673ab7',
-              '#ff9800',
-              '#795548',
-              '#607d8b',
-              '#3f51b5',
-              '#009688',
-              '#ff5722'
-            ];
-            const icons = [
-              'ic:round-label',
-              'ic:round-place',
-              'ic:round-star',
-              'ic:round-auto-awesome',
-              'ic:round-flag',
-              'ic:round-bookmark',
-              'ic:round-palette',
-              'ic:round-grade',
-              'ic:round-emoji-events',
-              'ic:round-lightbulb'
-            ];
             const isSelected = tagName === tag;
-            // Use modulo to cycle through colors and icons if we have more than 10 tags
-            const colorIndex = index % colors.length;
-            const iconIndex = index % icons.length;
 
             return (
               <TagChip
@@ -896,13 +756,10 @@ const SearchToolbar = memo(function SearchToolbar({
                 data-tag="true"
                 show={measuredTags}
                 onClick={() => (window.location.href = `/view/${normalizedTag}`)}
-                borderColor={`${colors[colorIndex]}4D`}
-                background={isSelected ? `${colors[colorIndex]}33` : 'transparent'}
-                color={darkMode ? '#fff' : '#333'}
-                hoverBackground={`${colors[colorIndex]}4D`}
-                style={{ animationDelay: `${index * 50}ms` }}
+                borderColor={isSelected ? '#4285f4' : 'rgba(145, 158, 171, 0.2)'}
+                color={isSelected ? '#4285f4' : darkMode ? '#fff' : '#333'}
+                hoverBackground="rgba(66, 133, 244, 0.04)"
               >
-                <FilterListIcon sx={{ width: 10, height: 10 }} />
                 <span>{tag}</span>
               </TagChip>
             );
@@ -911,7 +768,6 @@ const SearchToolbar = memo(function SearchToolbar({
           {/* All Tags Button - show only if there are more tags than visible */}
           {tags.length > visibleTagCount && (
             <AllTagsButton onClick={() => setCategoriesOpen(true)}>
-              <CategoryIcon sx={{ width: 12, height: 12 }} />
               <span>All ({tags.length})</span>
             </AllTagsButton>
           )}
@@ -1266,106 +1122,55 @@ const SearchToolbar = memo(function SearchToolbar({
         </MenuItem>
       </Menu>
 
-      {/* Categories Drawer - inlined component */}
-      {categoriesOpen && (
-        <MuiDrawer
-          anchor="bottom"
-          open={categoriesOpen}
-          onClose={() => setCategoriesOpen(false)}
-          PaperProps={{
-            sx: {
-              width: '100%',
-              maxHeight: { xs: '85vh', sm: '80vh', md: '75vh' },
-              borderTopLeftRadius: { xs: '16px', sm: '20px', md: '24px' },
-              borderTopRightRadius: { xs: '16px', sm: '20px', md: '24px' },
-              pt: { xs: 1.5, sm: 2, md: 3 },
-              pb: { xs: 1, sm: 1.5, md: 2 }
-            }
+      <MuiDrawer
+        anchor="bottom"
+        open={categoriesOpen}
+        onClose={() => setCategoriesOpen(false)}
+        PaperProps={{
+          sx: {
+            maxHeight: '80vh',
+            borderTopLeftRadius: '20px',
+            borderTopRightRadius: '20px'
+          }
+        }}
+      >
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            p: 2,
+            borderBottom: '1px solid',
+            borderColor: 'divider'
           }}
         >
+          <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1rem' }}>
+            Categories {tags?.length ? `(${tags.length})` : ''}
+          </Typography>
           <Box
+            component="button"
+            onClick={() => setCategoriesOpen(false)}
+            aria-label="Close"
             sx={{
+              width: 32,
+              height: 32,
+              border: '1.5px solid',
+              borderColor: 'divider',
+              borderRadius: '8px',
+              background: 'transparent',
+              cursor: 'pointer',
               display: 'flex',
-              justifyContent: 'space-between',
               alignItems: 'center',
-              paddingLeft: 2,
-              paddingRight: 2,
-              paddingTop: 0.75,
-              paddingBottom: 0.75,
-              borderBottom: (theme) => `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+              justifyContent: 'center',
+              color: 'text.primary',
+              '&:hover': { background: 'rgba(0,0,0,0.04)' }
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: { xs: '8px 12px', sm: '10px 16px', md: '12px 20px' },
-                backgroundColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                borderRadius: { xs: '8px', sm: '10px', md: '12px' }
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: { xs: '8px', sm: '10px', md: '12px' }
-                }}
-              >
-                <CategoryIcon
-                  sx={{
-                    color: 'primary.main',
-                    fontSize: { xs: '1.2rem', sm: '1.35rem', md: '1.5rem' }
-                  }}
-                />
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: 700, fontSize: { xs: '1rem', sm: '1.125rem', md: '1.25rem' } }}
-                >
-                  Categories
-                </Typography>
-              </Box>
-              {tags && tags.length > 0 && (
-                <Badge
-                  badgeContent={tags.length}
-                  color="primary"
-                  sx={{
-                    '& .MuiBadge-badge': {
-                      fontSize: { xs: '0.65rem', sm: '0.7rem', md: '0.75rem' },
-                      height: { xs: '16px', sm: '18px', md: '20px' },
-                      minWidth: { xs: '16px', sm: '18px', md: '20px' }
-                    }
-                  }}
-                >
-                  <Box
-                    sx={{
-                      width: { xs: '20px', sm: '22px', md: '24px' },
-                      height: { xs: '20px', sm: '22px', md: '24px' }
-                    }}
-                  />
-                </Badge>
-              )}
-            </Box>
-            <StyledIconButton
-              aria-label="close"
-              onClick={() => setCategoriesOpen(false)}
-              sx={{
-                borderRadius: '12px',
-                width: '40px',
-                height: '40px',
-                border: (theme) => `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                '&:hover': {
-                  backgroundColor: (theme) => alpha(theme.palette.action.hover, 0.04),
-                  borderColor: (theme) => alpha(theme.palette.divider, 0.3),
-                }
-              }}
-            >
-              <CloseIcon sx={{ fontSize: '20px' }} />
-            </StyledIconButton>
+            ×
           </Box>
-          <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
-        </MuiDrawer>
-      )}
+        </Box>
+        <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
+      </MuiDrawer>
     </Container>
   );
 });
