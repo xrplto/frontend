@@ -160,7 +160,7 @@ export const XrplToDarkTheme = createTheme({
 
   typography: {
     fontFamily:
-      '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+      'var(--font-jetbrains-mono, "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif)',
     h1: { fontWeight: 700, fontSize: '1.2rem' },
     h2: { fontWeight: 700, fontSize: '1rem' },
     h3: { fontWeight: 700, fontSize: '0.9rem' },

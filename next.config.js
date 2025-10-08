@@ -223,6 +223,7 @@ const config = {
     webpackMemoryOptimizations: true,
     optimizePackageImports: [
       '@mui/material',
+      '@mui/material-nextjs',
       '@mui/icons-material',
       '@mui/lab',
       '@mui/system',

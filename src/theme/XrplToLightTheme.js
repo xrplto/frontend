@@ -154,14 +154,14 @@ const colors = {
 
 export const XrplToLightTheme = createTheme({
   typography: {
-    fontFamily: "'JetBrains Mono', 'Courier New', monospace",
+    fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', 'Courier New', monospace)",
     fontSize: 14,
-    h1: { fontFamily: "'JetBrains Mono', monospace" },
-    h2: { fontFamily: "'JetBrains Mono', monospace" },
-    h3: { fontFamily: "'JetBrains Mono', monospace" },
-    h4: { fontFamily: "'JetBrains Mono', monospace" },
-    h5: { fontFamily: "'JetBrains Mono', monospace" },
-    h6: { fontFamily: "'JetBrains Mono', monospace" },
+    h1: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
+    h2: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
+    h3: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
+    h4: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
+    h5: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
+    h6: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
     body1: { fontVariantNumeric: 'tabular-nums' },
     body2: { fontVariantNumeric: 'tabular-nums' }
   },

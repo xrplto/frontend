@@ -2,11 +2,12 @@ import React from 'react';
 import Document, { Html, Head, Main, NextScript } from 'next/document';
 import createEmotionServer from '@emotion/server/create-instance';
 import createEmotionCache from 'src/theme/createEmotionCache';
+import { jetbrainsMono } from 'src/theme/fonts';
 
 export default class MyDocument extends Document {
   render() {
     return (
-      <Html lang="en">
+      <Html lang="en" className={jetbrainsMono.variable}>
         <Head>
           {/* Preconnect to external domains */}
           <link rel="preconnect" href="https://accounts.google.com" />
@@ -15,7 +16,7 @@ export default class MyDocument extends Document {
           {/* Google Sign-In Client Library */}
           <script src="https://accounts.google.com/gsi/client" async defer></script>
         </Head>
-        <body>
+        <body className={jetbrainsMono.className}>
           <Main />
           <NextScript />
         </body>
