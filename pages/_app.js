@@ -207,8 +207,13 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
   const ogp = useMemo(() => pageProps.ogp || {}, [pageProps.ogp]);
   const data = pageProps.data;
 
-  // Memoize JSON-LD script content
-  const jsonLdScript = useMemo(() => JSON.stringify(jsonLdSchema), []);
+  // Memoize JSON-LD script content - use page-specific jsonLd if available
+  const jsonLdScript = useMemo(() => {
+    if (ogp.jsonLd) {
+      return JSON.stringify(ogp.jsonLd);
+    }
+    return JSON.stringify(jsonLdSchema);
+  }, [ogp.jsonLd]);
 
   // Early return for maintenance mode
   if (isUnderMaintenance && router.pathname !== '/status/maintenance') {

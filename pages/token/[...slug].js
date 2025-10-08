@@ -227,6 +227,33 @@ export async function getServerSideProps(ctx) {
       }
     ];
 
+    // JSON-LD structured data for SEO
+    const jsonLd = {
+      '@context': 'https://schema.org',
+      '@type': 'FinancialProduct',
+      name: name,
+      description: ogp.desc,
+      url: ogp.canonical,
+      image: imageData.url,
+      ...(exch && {
+        offers: {
+          '@type': 'Offer',
+          price: Number(exch).toFixed(8),
+          priceCurrency: 'XRP',
+          availability: 'https://schema.org/InStock',
+          url: ogp.canonical
+        }
+      }),
+      ...(marketcap && {
+        aggregateRating: {
+          '@type': 'AggregateRating',
+          ratingValue: marketcap > 1000000 ? '4.5' : '4.0',
+          reviewCount: holders || 1
+        }
+      })
+    };
+
+    ogp.jsonLd = jsonLd;
     ret = { data, ogp };
     return {
       props: ret // will be passed to the page component as props

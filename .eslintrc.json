@@ -2,8 +2,8 @@
   "extends": ["next/core-web-vitals", "plugin:prettier/recommended"],
   "rules": {
     "prettier/prettier": "off",
-    "@next/next/no-img-element": "off",
-    "jsx-a11y/alt-text": "off",
+    "@next/next/no-img-element": "warn",
+    "jsx-a11y/alt-text": "warn",
     "react/display-name": "off",
     "eslint-disable-next-line": "off",
     "react-hooks/exhaustive-deps": "off",

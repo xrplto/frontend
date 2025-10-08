@@ -19,7 +19,8 @@
       "Bash(test:*)",
       "Bash(sed:*)",
       "Bash(for file in src/collection/CollectionList.js src/collection/CollectionView.js src/TokenDetail/overview/PriceStatistics.js src/TokenDetail/trade/account/History.js src/components/CollectionActivity.js)",
-      "Bash(do sed -i \"s|from ''src/utils/formatTime''|from ''src/utils/formatters''|g\" \"$file\")"
+      "Bash(do sed -i \"s|from ''src/utils/formatTime''|from ''src/utils/formatters''|g\" \"$file\")",
+      "WebSearch"
     ],
     "deny": []
   }

@@ -849,6 +849,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <IconButton
                   onClick={handleSettingsOpen}
                   size="small"
+                  aria-label="Settings"
                   sx={{
                     padding: '6px',
                     minWidth: '32px',

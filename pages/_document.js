@@ -8,6 +8,10 @@ export default class MyDocument extends Document {
     return (
       <Html lang="en">
         <Head>
+          {/* Preconnect to external domains */}
+          <link rel="preconnect" href="https://accounts.google.com" />
+          <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+
           {/* Google Sign-In Client Library */}
           <script src="https://accounts.google.com/gsi/client" async defer></script>
         </Head>
