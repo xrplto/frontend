@@ -59,6 +59,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   const [chartType, setChartType] = useState('candles');
   const [range, setRange] = useState('1D');
+  const [chartInterval, setChartInterval] = useState('5m'); // New: interval parameter (renamed to avoid conflict)
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [indicators, setIndicators] = useState([]);
@@ -189,6 +190,32 @@ const PriceChartAdvanced = memo(({ token }) => {
         return;
       }
 
+      // Simple validation - only block extremely dangerous combinations
+      const maxCandles = {
+        '1D': { '1m': 1440, '5m': 288, '15m': 96, '30m': 48, '1h': 24 },
+        '5D': { '5m': 1440, '15m': 480, '30m': 240, '1h': 120, '4h': 30 },
+        '1M': { '15m': 2880, '30m': 1440, '1h': 720, '4h': 180, '1d': 30 },
+        '3M': { '30m': 4320, '1h': 2160, '4h': 540, '1d': 90 },
+        '1Y': { '1h': 8760, '4h': 2190, '1d': 365 },
+        '5Y': { '4h': 10950, '1d': 1825 },
+        'ALL': { '1d': 10000 }
+      };
+
+      const estimatedCandles = maxCandles[range]?.[chartInterval];
+
+      // Only warn if invalid, but still allow the request (backend will validate)
+      if (!estimatedCandles) {
+        console.warn(`Potentially invalid combination: ${range} @ ${chartInterval}, allowing anyway`);
+      } else if (estimatedCandles > 10000) {
+        console.error(`Too many candles: ${estimatedCandles} for ${range} @ ${chartInterval}, blocking request`);
+        if (mounted) {
+          setLoading(false);
+          setIsUpdating(false);
+        }
+        isRequestInProgress = false;
+        return;
+      }
+
       // Cancel any ongoing request only if it exists
       if (currentRequest && !currentRequest.signal.aborted) {
         currentRequest.abort();
@@ -208,9 +235,11 @@ const PriceChartAdvanced = memo(({ token }) => {
           }
         }
         const apiRange = range;
-        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&vs_currency=${activeFiatCurrency}`;
+        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&interval=${chartInterval}&vs_currency=${activeFiatCurrency}`;
 
+        console.log('Fetching chart data:', { range: apiRange, interval: chartInterval, endpoint });
         const response = await axios.get(endpoint, { signal: requestController.signal });
+        console.log('Chart response:', { length: response.data?.ohlc?.length, data: response.data });
 
         if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc
@@ -276,7 +305,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     fetchData();
 
     // Sync with ledger updates every 4 seconds - but only if user is not zoomed
-    const interval = setInterval(() => {
+    const updateInterval = setInterval(() => {
       if (!isUserZoomedRef.current && mounted) {
         fetchData(true);
       }
@@ -287,9 +316,9 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (currentRequest) {
         currentRequest.abort();
       }
-      clearInterval(interval);
+      clearInterval(updateInterval);
     };
-  }, [token.md5, range, BASE_URL, activeFiatCurrency]);
+  }, [token.md5, range, chartInterval, BASE_URL, activeFiatCurrency]);
 
   // Fetch holder data
   useEffect(() => {
@@ -1518,7 +1547,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
           <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
             {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} •{' '}
-            {range}
+            {range} • {chartInterval}
           </Typography>
           {athData.price && chartType !== 'holders' && (
             <Box
@@ -1742,12 +1771,27 @@ const PriceChartAdvanced = memo(({ token }) => {
             size="small"
             sx={{ '& .MuiButtonGroup-grouped': { minWidth: isMobile ? 20 : 'auto' } }}
           >
-            {['1D', '7D', '1M', '3M', '1Y', 'ALL'].map((r) => (
+            {['1D', '5D', '1M', '3M', '1Y', '5Y', 'ALL'].map((r) => (
               <Button
                 key={r}
                 onClick={() => {
                   setRange(r);
                   setIsUserZoomed(false); // Reset zoom state on range change
+
+                  // Auto-adjust interval to safe default
+                  const rangeDefaults = {
+                    '1D': '5m',
+                    '5D': '15m',
+                    '1M': '1h',
+                    '3M': '4h',
+                    '1Y': '1d',
+                    '5Y': '1d',
+                    'ALL': '1d'
+                  };
+                  const defaultInterval = rangeDefaults[r];
+                  if (defaultInterval) {
+                    setChartInterval(defaultInterval);
+                  }
                 }}
                 variant={range === r ? 'contained' : 'outlined'}
                 sx={{
@@ -1825,6 +1869,64 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Divider />
               </>
             )}
+            <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
+              Interval
+            </MenuItem>
+            {['1m', '5m', '15m', '30m', '1h', '4h', '1d'].map((int) => {
+              // Disable invalid combinations
+              const validCombos = {
+                '1D': ['1m', '5m', '15m', '30m', '1h'],
+                '5D': ['5m', '15m', '30m', '1h', '4h'],
+                '1M': ['15m', '30m', '1h', '4h', '1d'],
+                '3M': ['30m', '1h', '4h', '1d'],
+                '1Y': ['1h', '4h', '1d'],
+                '5Y': ['4h', '1d'],
+                'ALL': ['1d']
+              };
+
+              const isValid = validCombos[range]?.includes(int);
+
+              return (
+                <MenuItem
+                  key={int}
+                  disabled={!isValid}
+                  onClick={() => {
+                    if (isValid) {
+                      setChartInterval(int);
+                      setAnchorEl(null);
+                    }
+                  }}
+                  sx={{
+                    fontSize: '0.875rem',
+                    backgroundColor: chartInterval === int ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                    opacity: !isValid ? 0.4 : 1
+                  }}
+                >
+                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                  <Box
+                    sx={{
+                      width: 16,
+                      height: 16,
+                      border: '2px solid',
+                      borderColor: theme.palette.divider,
+                      borderRadius: '50%',
+                      mr: 1,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: chartInterval === int ? theme.palette.primary.main : 'transparent'
+                    }}
+                  >
+                    {chartInterval === int && (
+                      <Box sx={{ width: 6, height: 6, bgcolor: 'white', borderRadius: '50%' }} />
+                    )}
+                  </Box>
+                  {int}
+                </Box>
+              </MenuItem>
+              );
+            })}
+            <Divider />
             <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
               Indicators
             </MenuItem>
