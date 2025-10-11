@@ -25,7 +25,7 @@ import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import LinkIcon from '@mui/icons-material/Link';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 import { SvgIcon } from '@mui/material';
-import { fNumber, fNumberWithCurreny } from 'src/utils/formatters';
+import { fNumber } from 'src/utils/formatters';
 import { Box as MuiBox } from '@mui/material';
 // Constants
 const currencySymbols = {
@@ -34,6 +34,25 @@ const currencySymbols = {
   JPY: '¥ ',
   CNH: '¥ ',
   XRP: '✕ '
+};
+
+// Simple price formatter
+const formatPrice = (price) => {
+  if (!price || isNaN(price)) return '0';
+  if (price < 0.0001) {
+    const str = price.toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return `0.0(${zeros})${significant.slice(0, 4)}`;
+    }
+    return price.toFixed(8);
+  }
+  if (price < 1) return price.toFixed(4);
+  if (price < 100) return price.toFixed(4).replace(/\.?0+$/, '').replace(/(\.\d)$/, '$10');
+  if (price < 1000) return price.toFixed(2);
+  if (price < 1000000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 const CURRENCY_ISSUERS = {
   XRP_MD5: 'XRP'
@@ -1215,9 +1234,11 @@ const TokenSummary = memo(
                             );
                           }
                         }
+                        const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+                        const price = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
                         return (
                           <span>
-                            {symbol}{fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
+                            {symbol}{formatPrice(price)}
                           </span>
                         );
                       })()}
@@ -1766,9 +1787,11 @@ const TokenSummary = memo(
                               );
                             }
                           }
+                          const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
+                          const price = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
                           return (
                             <span>
-                              {symbol}{fNumberWithCurreny(exch, metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1)}
+                              {symbol}{formatPrice(price)}
                             </span>
                           );
                         })()}

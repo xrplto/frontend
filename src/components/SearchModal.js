@@ -38,7 +38,6 @@ import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
-import { fNumberWithCurreny } from 'src/utils/formatters';
 
 const API_URL = process.env.API_URL || '';
 const NFT_API_URL = 'https://api.xrpl.to/api';
