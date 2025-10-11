@@ -45,8 +45,22 @@ export class UnifiedWalletStorage {
     return 'wallet-key-' + Math.abs(hash).toString(36);
   }
 
+  // Check if Web Crypto API is available (secure context required)
+  isSecureContext() {
+    return typeof window !== 'undefined' &&
+           window.isSecureContext &&
+           window.crypto?.subtle !== undefined;
+  }
+
   // Encrypt data for localStorage (using Web Crypto API)
   async encryptForLocalStorage(data) {
+    // Fallback for non-secure contexts (HTTP over IP)
+    if (!this.isSecureContext()) {
+      devLog('Warning: Using base64 encoding instead of encryption (insecure context)');
+      const dataString = typeof data === 'string' ? data : JSON.stringify(data);
+      return btoa(unescape(encodeURIComponent(dataString)));
+    }
+
     const encoder = new TextEncoder();
     const dataString = typeof data === 'string' ? data : JSON.stringify(data);
 
@@ -93,6 +107,16 @@ export class UnifiedWalletStorage {
   // Decrypt data from localStorage
   async decryptFromLocalStorage(encryptedData) {
     try {
+      // Fallback for non-secure contexts (HTTP over IP)
+      if (!this.isSecureContext()) {
+        const decoded = decodeURIComponent(escape(atob(encryptedData)));
+        try {
+          return JSON.parse(decoded);
+        } catch {
+          return decoded;
+        }
+      }
+
       const encoder = new TextEncoder();
       const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
 

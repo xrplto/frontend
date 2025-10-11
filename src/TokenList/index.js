@@ -183,8 +183,8 @@ function TokenListComponent({
   }, []);
   const router = useRouter();
 
-  // Disable WebSocket in development to avoid connection errors
-  const WSS_FEED_URL = process.env.RUN_ENV === 'development' ? null : 'wss://api.xrpl.to/ws/sync';
+  // Enable WebSocket for real-time updates
+  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = process.env.API_URL;
 
   const [filterName, setFilterName] = useState('');
