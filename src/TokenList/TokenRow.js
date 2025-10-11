@@ -6,7 +6,6 @@ import { useTheme } from '@mui/material/styles';
 import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
-import { fNumber, fIntNumber } from 'src/utils/formatters';
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -285,6 +284,19 @@ const formatPrice = (price) => {
   return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 
+// Simple number formatter with thousand separators
+const formatNumber = (num) => {
+  if (num === undefined || num === null || isNaN(num)) return '0';
+  if (num < 1) return num.toFixed(4);
+  return num.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+};
+
+// Simple integer formatter
+const formatInt = (num) => {
+  if (num === undefined || num === null || isNaN(num)) return '0';
+  return Math.round(num).toLocaleString('en-US');
+};
+
 const formatTimeAgo = (dateValue, fallbackValue) => {
   if (!dateValue) return 'N/A';
   const date = typeof dateValue === 'number' ? new Date(dateValue) : new Date(dateValue);
@@ -489,22 +501,22 @@ const MobileTokenRow = ({
       case 'volume24h':
         const vol =
           vol24hxrp && exchRate ? new Decimal(vol24hxrp || 0).div(exchRate).toNumber() : 0;
-        return `${currencySymbols[activeFiatCurrency]}${vol >= 1e6 ? `${(vol / 1e6).toFixed(1)}M` : vol >= 1e3 ? `${(vol / 1e3).toFixed(1)}K` : fNumber(vol)}`;
+        return `${currencySymbols[activeFiatCurrency]}${vol >= 1e6 ? `${(vol / 1e6).toFixed(1)}M` : vol >= 1e3 ? `${(vol / 1e3).toFixed(1)}K` : formatNumber(vol)}`;
       case 'volume7d':
         const vol7 =
           vol24hxrp && exchRate ? new Decimal((vol24hxrp || 0) * 7).div(exchRate).toNumber() : 0;
-        return `${currencySymbols[activeFiatCurrency]}${vol7 >= 1e6 ? `${(vol7 / 1e6).toFixed(1)}M` : vol7 >= 1e3 ? `${(vol7 / 1e3).toFixed(1)}K` : fNumber(vol7)}`;
+        return `${currencySymbols[activeFiatCurrency]}${vol7 >= 1e6 ? `${(vol7 / 1e6).toFixed(1)}M` : vol7 >= 1e3 ? `${(vol7 / 1e3).toFixed(1)}K` : formatNumber(vol7)}`;
       case 'marketCap':
         const mcap =
           marketcap && exchRate ? new Decimal(marketcap || 0).div(exchRate).toNumber() : 0;
-        return `${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap / 1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap / 1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap / 1e3).toFixed(1)}K` : fNumber(mcap)}`;
+        return `${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap / 1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap / 1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap / 1e3).toFixed(1)}K` : formatNumber(mcap)}`;
       case 'tvl':
         const tvlVal = tvl && exchRate ? new Decimal(tvl || 0).div(exchRate).toNumber() : 0;
-        return `${currencySymbols[activeFiatCurrency]}${tvlVal >= 1e6 ? `${(tvlVal / 1e6).toFixed(1)}M` : tvlVal >= 1e3 ? `${(tvlVal / 1e3).toFixed(1)}K` : fNumber(tvlVal)}`;
+        return `${currencySymbols[activeFiatCurrency]}${tvlVal >= 1e6 ? `${(tvlVal / 1e6).toFixed(1)}M` : tvlVal >= 1e3 ? `${(tvlVal / 1e3).toFixed(1)}K` : formatNumber(tvlVal)}`;
       case 'holders':
-        return holders >= 1e3 ? `${(holders / 1e3).toFixed(1)}K` : fIntNumber(holders);
+        return holders >= 1e3 ? `${(holders / 1e3).toFixed(1)}K` : formatInt(holders);
       case 'trades':
-        return vol24htx >= 1e3 ? `${(vol24htx / 1e3).toFixed(1)}K` : fIntNumber(vol24htx);
+        return vol24htx >= 1e3 ? `${(vol24htx / 1e3).toFixed(1)}K` : formatInt(vol24htx);
       case 'supply':
         return amount >= 1e9
           ? `${(amount / 1e9).toFixed(1)}B`
@@ -512,7 +524,7 @@ const MobileTokenRow = ({
             ? `${(amount / 1e6).toFixed(1)}M`
             : amount >= 1e3
               ? `${(amount / 1e3).toFixed(1)}K`
-              : fIntNumber(amount);
+              : formatInt(amount);
       case 'created':
         return formatTimeAgo(dateon, date);
       case 'origin':
@@ -1261,7 +1273,7 @@ const FTokenRow = memo(
       if (val >= 1e9) return `${(val / 1e9).toFixed(1)}B`;
       if (val >= 1e6) return `${(val / 1e6).toFixed(1)}M`;
       if (val >= 1e3) return `${(val / 1e3).toFixed(1)}K`;
-      return type === 'int' ? fIntNumber(val) : fNumber(val);
+      return type === 'int' ? formatInt(val) : formatNumber(val);
     };
 
     const sparklineUrl = useMemo(() => {
