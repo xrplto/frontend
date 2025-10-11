@@ -6,7 +6,7 @@ import { useTheme } from '@mui/material/styles';
 import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
-import { fNumber, fIntNumber, fNumberWithCurreny } from 'src/utils/formatters';
+import { fNumber, fIntNumber } from 'src/utils/formatters';
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -262,6 +262,29 @@ const truncate = (str, n) => {
   return str.length > n ? str.substr(0, n - 1) + '...' : str;
 };
 
+// Simple price formatter without rounding issues
+const formatPrice = (price) => {
+  if (!price || isNaN(price)) return '0';
+
+  // Handle very small prices with compact notation
+  if (price < 0.0001) {
+    const str = price.toFixed(15);
+    const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+    if (zeros >= 4) {
+      const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+      return `0.0(${zeros})${significant.slice(0, 4)}`;
+    }
+    return price.toFixed(8);
+  }
+
+  // Regular prices
+  if (price < 1) return price.toFixed(4);
+  if (price < 100) return price.toFixed(4).replace(/\.?0+$/, '').replace(/(\.\d)$/, '$10');
+  if (price < 1000) return price.toFixed(2);
+  if (price < 1000000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+};
+
 const formatTimeAgo = (dateValue, fallbackValue) => {
   if (!dateValue) return 'N/A';
   const date = typeof dateValue === 'number' ? new Date(dateValue) : new Date(dateValue);
@@ -461,7 +484,8 @@ const MobileTokenRow = ({
     // Handle other data types
     switch (columnId) {
       case 'price':
-        return currencySymbols[activeFiatCurrency] + fNumberWithCurreny(exch, exchRate);
+        const price = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
+        return currencySymbols[activeFiatCurrency] + formatPrice(price);
       case 'volume24h':
         const vol =
           vol24hxrp && exchRate ? new Decimal(vol24hxrp || 0).div(exchRate).toNumber() : 0;
@@ -636,10 +660,11 @@ const DesktopTokenRow = ({
           );
         }
       }
+      const formattedPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
       return (
         <StyledCell align="right" darkMode={darkMode}>
           <PriceText priceColor={priceColor}>
-            {currencySymbols[activeFiatCurrency]}{fNumberWithCurreny(exch, exchRate)}
+            {currencySymbols[activeFiatCurrency]}{formatPrice(formattedPrice)}
           </PriceText>
         </StyledCell>
       );
@@ -871,10 +896,11 @@ const DesktopTokenRow = ({
 
           switch (column) {
             case 'price':
+              const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
               columnElements.push(
                 <StyledCell key="price" align="right" darkMode={darkMode} style={extraStyle}>
                   <PriceText priceColor={priceColor}>
-                    {currencySymbols[activeFiatCurrency]}{fNumberWithCurreny(exch, exchRate)}
+                    {currencySymbols[activeFiatCurrency]}{formatPrice(customPrice)}
                   </PriceText>
                 </StyledCell>
               );
