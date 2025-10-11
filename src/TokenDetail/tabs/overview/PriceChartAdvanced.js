@@ -1557,7 +1557,9 @@ const PriceChartAdvanced = memo(({ token }) => {
               }}
               sx={{
                 position: 'relative',
-                width: isMobile ? 120 : 180,
+                minWidth: isMobile ? 110 : 160,
+                maxWidth: isMobile ? 160 : 240,
+                width: 'auto',
                 height: isMobile ? 24 : 28,
                 borderRadius: '6px',
                 overflow: 'hidden',
@@ -1590,9 +1592,10 @@ const PriceChartAdvanced = memo(({ token }) => {
                   height: '100%',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'space-between',
-                  px: 1.2,
-                  gap: 0.5
+                  justifyContent: 'flex-start',
+                  px: 1,
+                  gap: 0.75,
+                  whiteSpace: 'nowrap'
                 }}
               >
                 <Typography
@@ -1600,7 +1603,8 @@ const PriceChartAdvanced = memo(({ token }) => {
                   sx={{
                     fontWeight: 500,
                     fontSize: isMobile ? '0.7rem' : '0.75rem',
-                    color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a'
+                    color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
+                    flexShrink: 0
                   }}
                 >
                   {athData.percentDown}%
@@ -1610,7 +1614,8 @@ const PriceChartAdvanced = memo(({ token }) => {
                   sx={{
                     fontSize: isMobile ? '0.65rem' : '0.7rem',
                     color: 'text.secondary',
-                    opacity: 0.7
+                    opacity: 0.7,
+                    flexShrink: 0
                   }}
                 >
                   {isMobile ? 'ATH' : 'from ATH'}
@@ -1622,7 +1627,10 @@ const PriceChartAdvanced = memo(({ token }) => {
                       fontSize: '0.65rem',
                       color: 'text.secondary',
                       opacity: 0.6,
-                      fontFamily: 'monospace'
+                      fontFamily: 'monospace',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      maxWidth: '80px'
                     }}
                   >
                     {currencySymbols[activeFiatCurrency] || ''}
@@ -1632,12 +1640,12 @@ const PriceChartAdvanced = memo(({ token }) => {
                         const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
                         if (zeros >= 4) {
                           const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                          return `0.0(${zeros})${significant.slice(0, 4)}`;
+                          return `0.0(${zeros})${significant.slice(0, 3)}`;
                         }
                       }
                       return athData.price < 0.01
-                        ? athData.price.toFixed(8)
-                        : athData.price.toFixed(4);
+                        ? athData.price.toFixed(6)
+                        : athData.price.toFixed(3);
                     })()}
                   </Typography>
                 )}
