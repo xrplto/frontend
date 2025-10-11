@@ -67,7 +67,26 @@ export function fCurrency3(number) {
 export function fCurrency5(number) {
   if (number === undefined || number === null || isNaN(number)) return '0';
   if (number < 1) return trimDecimal(number);
-  else {
+  else if (number < 100) {
+    // Use 4 decimals for prices below 100, but trim trailing zeros
+    const decimal = new Decimal(number);
+    const formatted = decimal.toFixed(4);
+    // Remove trailing zeros but keep at least 2 decimals
+    let trimmed = formatted.replace(/(\.\d*?[1-9])0+$/, '$1').replace(/\.0*$/, '');
+
+    // Ensure minimum 2 decimal places
+    const parts = trimmed.split('.');
+    if (parts.length === 1) {
+      trimmed = parts[0] + '.00';
+    } else if (parts[1].length === 1) {
+      trimmed = parts[0] + '.' + parts[1] + '0';
+    }
+
+    // Add thousand separators only to the integer part
+    const [intPart, decPart] = trimmed.split('.');
+    const formattedInt = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return decPart ? `${formattedInt}.${decPart}` : formattedInt;
+  } else {
     const res = formatDecimal(new Decimal(number), Number.isInteger(number) ? 0 : 2);
     if (res === 'NaN') return 0;
     return res;

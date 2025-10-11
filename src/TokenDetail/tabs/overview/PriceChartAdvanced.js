@@ -482,31 +482,38 @@ const PriceChartAdvanced = memo(({ token }) => {
           // Scale the price back down to original value
           const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
-
-          // Special handling for XRP pairs - expect smaller values
           const isXRP = activeFiatCurrencyRef.current === 'XRP';
 
-          // Check if price has many leading zeros and use compact notation
-          if (actualPrice && actualPrice < 0.001) {
-            const str = actualPrice.toFixed(20);
-            const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-            if (zeros >= 3) {
-              // Use compact notation for 3+ zeros for XRP, 4+ for others
-              const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              const sigDigits = isXRP ? 6 : 4; // More precision for XRP pairs
-              return symbol + '0.0(' + zeros + ')' + significant.slice(0, sigDigits);
-            } else if (actualPrice < 0.00001) {
-              return symbol + actualPrice.toFixed(isXRP ? 10 : 8);
+          // XRP uses different precision rules - simpler display
+          if (isXRP) {
+            if (actualPrice < 0.000001) {
+              return symbol + actualPrice.toFixed(8);
             } else if (actualPrice < 0.001) {
-              return symbol + actualPrice.toFixed(isXRP ? 8 : 6);
+              return symbol + actualPrice.toFixed(6);
+            } else if (actualPrice < 1) {
+              return symbol + actualPrice.toFixed(4);
+            } else if (actualPrice < 100) {
+              return symbol + actualPrice.toFixed(3);
+            } else if (actualPrice < 1000) {
+              return symbol + actualPrice.toFixed(2);
+            } else {
+              return symbol + actualPrice.toFixed(1);
             }
           }
 
-          // Regular formatting for normal prices
-          if (actualPrice < 0.01) {
-            return symbol + actualPrice.toFixed(isXRP ? 8 : 6);
+          // USD/EUR/other fiat formatting with compact notation for very small values
+          if (actualPrice < 0.001) {
+            const str = actualPrice.toFixed(20);
+            const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+            if (zeros >= 4) {
+              const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+              return symbol + '0.0(' + zeros + ')' + significant.slice(0, 4);
+            }
+            return symbol + actualPrice.toFixed(8);
+          } else if (actualPrice < 0.01) {
+            return symbol + actualPrice.toFixed(6);
           } else if (actualPrice < 1) {
-            return symbol + actualPrice.toFixed(isXRP ? 6 : 4);
+            return symbol + actualPrice.toFixed(4);
           } else if (actualPrice < 100) {
             return symbol + actualPrice.toFixed(3);
           } else if (actualPrice < 1000) {
