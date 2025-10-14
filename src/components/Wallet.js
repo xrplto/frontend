@@ -517,6 +517,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [displaySeed, setDisplaySeed] = useState('');
   const [seedPassword, setSeedPassword] = useState('');
   const [showSeedPassword, setShowSeedPassword] = useState(false);
+  const [seedWarningAgreed, setSeedWarningAgreed] = useState(false);
   // OAuth wallet manager is now part of unified storage
 
   // Removed additional wallet generation - each auth method has single wallet
@@ -2166,7 +2167,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           <Typography sx={{ color: theme.palette.warning.main }}>Backup</Typography>
                           {accountProfile?.wallet_type === 'device' ? 'Backup Private Key' : 'Backup Seed Phrase'}
                         </Typography>
-                        <Button size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); setSeedBlurred(true); }}>
+                        <Button size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); setSeedBlurred(true); setSeedWarningAgreed(false); }}>
                           ×
                         </Button>
                       </Box>
@@ -2180,7 +2181,61 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {seedAuthStatus === 'password-required' && (
                         <Box sx={{ p: 2 }}>
-                          <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', opacity: 0.8 }}>
+                          <Alert severity="error" sx={{ mb: 2 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.85rem' }}>
+                              If you lose your Secret Seed, we cannot help you
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.75rem', mb: 1.5 }}>
+                              xrpl.to cannot recover or reset your seed. Write it down and store it somewhere safe.
+                            </Typography>
+                            <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'error.main' }}>
+                              NEVER share your seed with:
+                            </Typography>
+                            <Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2, fontSize: '0.75rem' }}>
+                              <li>xrpl.to administrators or support staff</li>
+                              <li>Anyone claiming to be from xrpl.to</li>
+                              <li>Any website or service requesting it</li>
+                            </Box>
+                          </Alert>
+
+                          <Box sx={{
+                            display: 'flex',
+                            alignItems: 'flex-start',
+                            gap: 1,
+                            mb: 2,
+                            p: 1.5,
+                            borderRadius: '8px',
+                            border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              borderColor: theme.palette.primary.main,
+                              background: alpha(theme.palette.primary.main, 0.02)
+                            }
+                          }}
+                          onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
+                          >
+                            <Box sx={{
+                              width: 18,
+                              height: 18,
+                              borderRadius: '4px',
+                              border: `2px solid ${seedWarningAgreed ? theme.palette.primary.main : alpha(theme.palette.divider, 0.4)}`,
+                              background: seedWarningAgreed ? theme.palette.primary.main : 'transparent',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              flexShrink: 0,
+                              mt: 0.2
+                            }}>
+                              {seedWarningAgreed && (
+                                <Box component="span" sx={{ color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>✓</Box>
+                              )}
+                            </Box>
+                            <Typography variant="body2" sx={{ fontSize: '0.8rem', lineHeight: 1.4 }}>
+                              I understand that my Secret Seed is my responsibility. xrpl.to cannot recover it, and I will never share it with anyone.
+                            </Typography>
+                          </Box>
+
+                          <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem', opacity: 0.8 }}>
                             Enter your password to view the seed phrase
                           </Typography>
                           <TextField
@@ -2189,9 +2244,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             placeholder="Password"
                             value={seedPassword}
                             onChange={(e) => setSeedPassword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSeedPasswordSubmit()}
+                            onKeyDown={(e) => e.key === 'Enter' && seedWarningAgreed && handleSeedPasswordSubmit()}
                             autoFocus
                             size="small"
+                            autoComplete="off"
                             InputProps={{
                               endAdornment: (
                                 <InputAdornment position="end">
@@ -2221,6 +2277,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 setSeedAuthStatus('idle');
                                 setSeedPassword('');
                                 setShowSeedPassword(false);
+                                setSeedWarningAgreed(false);
                               }}
                               sx={{
                                 fontSize: '0.8rem',
@@ -2234,7 +2291,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               variant="contained"
                               size="small"
                               onClick={handleSeedPasswordSubmit}
-                              disabled={!seedPassword}
+                              disabled={!seedPassword || !seedWarningAgreed}
                               sx={{
                                 fontSize: '0.8rem',
                                 py: 0.6,
@@ -2285,14 +2342,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             {displaySeed}
                           </Box>
 
-                          <Stack direction="row" spacing={1} sx={{ alignSelf: 'flex-start', flexWrap: 'wrap' }}>
+                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
                             <Button
                               variant="outlined"
                               size="small"
                               onClick={() => setSeedBlurred(!seedBlurred)}
-                              sx={{ fontSize: '0.75rem' }}
+                              sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
                             >
-                              {seedBlurred ? 'Reveal' : 'Hide'} {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
+                              {seedBlurred ? 'Reveal' : 'Hide'}
                             </Button>
                             <Button
                               variant="outlined"
@@ -2302,9 +2359,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   openSnackbar('Seed copied to clipboard', 'success');
                                 });
                               }}
-                              sx={{ fontSize: '0.75rem' }}
+                              sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
                             >
-                              Copy {accountProfile?.wallet_type === 'device' ? 'Key' : 'Seed'}
+                              Copy Seed
                             </Button>
                             {(accountProfile?.wallet_type === 'oauth' || accountProfile?.wallet_type === 'social') && (
                               <Button
@@ -2342,9 +2399,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     openSnackbar('Failed to download backup: ' + error.message, 'error');
                                   }
                                 }}
-                                sx={{ fontSize: '0.75rem' }}
+                                sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
                               >
-                                Download Encrypted
+                                Encrypted File
                               </Button>
                             )}
                           </Stack>
@@ -2954,10 +3011,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               {/* Import/New Wallet Toggle */}
               <Box sx={{
                 display: 'flex',
-                gap: 0.5,
-                p: 0.5,
-                background: alpha(theme.palette.divider, 0.05),
-                borderRadius: '8px'
+                gap: 1
               }} role="tablist" aria-label="Wallet setup method">
                 <Button
                   variant={importMethod === 'new' ? 'contained' : 'outlined'}
@@ -2966,6 +3020,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setImportMethod('new');
                     setImportFile(null);
                     setImportSeed('');
+                    setOAuthPassword('');
+                    setOAuthConfirmPassword('');
                   }}
                   role="tab"
                   aria-selected={importMethod === 'new'}
@@ -2985,6 +3041,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   onClick={() => {
                     setImportMethod('seed');
                     setImportFile(null);
+                    setOAuthPassword('');
+                    setOAuthConfirmPassword('');
                   }}
                   role="tab"
                   aria-selected={importMethod === 'seed'}
@@ -3004,6 +3062,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   onClick={() => {
                     setImportMethod('import');
                     setImportSeed('');
+                    setOAuthPassword('');
+                    setOAuthConfirmPassword('');
                   }}
                   role="tab"
                   aria-selected={importMethod === 'import'}
