@@ -956,30 +956,32 @@ const getTransactionDescription = (txData) => {
           ? formatAmount(deliveredAmount)
           : formatAmount(Amount);
         return {
-          title: 'Currency Conversion',
-          description: `${formatAccount(Account)} converted ${sentAmount} to ${receivedAmount}. This was a self-conversion where the same account sent and received different currencies, effectively exchanging one asset for another through the XRPL's built-in decentralized exchange.`,
+          title: 'Token Swap',
+          description: `${formatAccount(Account)} swapped ${sentAmount} for ${receivedAmount} using the DEX.`,
           details: [
-            `Account ${formatAccount(Account)} initiated the conversion`,
-            `Maximum willing to spend: ${sentAmount}`,
-            `Actual amount received: ${receivedAmount}`,
+            `Swapper: ${formatAccount(Account)}`,
+            `Spent: ${sentAmount}`,
+            `Received: ${receivedAmount}`,
             `Network fee: ${dropsToXrp(Fee)} XRP`,
-            isSuccess ? 'Conversion completed successfully' : 'Conversion failed'
+            isSuccess ? 'Swap successful' : 'Swap failed'
           ]
         };
       } else {
         const amount = deliveredAmount ? formatAmount(deliveredAmount) : formatAmount(Amount);
         const maxAmount = SendMax ? formatAmount(SendMax) : null;
+        const usedPaths = Boolean(Paths);
+
         return {
-          title: 'Payment Transfer',
-          description: `${formatAccount(Account)} sent ${amount} to ${formatAccount(Destination)}. ${maxAmount ? `They were willing to spend up to ${maxAmount} but only ${amount} was needed.` : ''} ${Paths ? 'This payment used currency paths through the decentralized exchange to convert between different assets.' : 'This was a direct payment.'}`,
+          title: usedPaths ? 'Cross-Currency Payment' : 'Payment',
+          description: `${formatAccount(Account)} sent ${amount} to ${formatAccount(Destination)}.${maxAmount && maxAmount !== amount ? ` (authorized up to ${maxAmount})` : ''}${usedPaths ? ' The payment auto-converted currencies.' : ''}`,
           details: [
             `From: ${formatAccount(Account)}`,
             `To: ${formatAccount(Destination)}`,
-            `Amount sent: ${amount}`,
-            maxAmount ? `Maximum authorized: ${maxAmount}` : null,
+            `Amount: ${amount}`,
+            maxAmount && maxAmount !== amount ? `Max authorized: ${maxAmount}` : null,
             `Network fee: ${dropsToXrp(Fee)} XRP`,
-            Paths ? 'Used currency conversion paths' : 'Direct payment',
-            isSuccess ? 'Payment delivered successfully' : 'Payment failed'
+            usedPaths ? 'Auto-converted via DEX' : 'Direct transfer',
+            isSuccess ? 'Delivered' : 'Failed'
           ].filter(Boolean)
         };
       }
@@ -988,24 +990,32 @@ const getTransactionDescription = (txData) => {
       const isSellOrder = Flags & 0x00080000;
       const takerGets = formatAmount(TakerGets);
       const takerPays = formatAmount(TakerPays);
+
+      // Calculate exchange rate
+      const exchangeRate = (() => {
+        try {
+          const getsVal = new Decimal(TakerGets.value || dropsToXrp(TakerGets));
+          const paysVal = new Decimal(TakerPays.value || dropsToXrp(TakerPays));
+          const rate = getsVal.div(paysVal);
+          return `${rate.toFixed(rate.lt(0.01) ? 6 : 4)} ${getCurrency(TakerGets)} per ${getCurrency(TakerPays)}`;
+        } catch {
+          return null;
+        }
+      })();
+
       return {
-        title: `${isSellOrder ? 'Sell' : 'Buy'} Order Created`,
-        description: `${formatAccount(Account)} placed a ${isSellOrder ? 'sell' : 'buy'} order on the decentralized exchange. They want to ${isSellOrder ? `sell ${takerGets} in exchange for ${takerPays}` : `buy ${takerGets} by paying ${takerPays}`}. ${OfferSequence > 0 ? `This order replaces a previous order #${OfferSequence}.` : 'This is a new order.'}`,
+        title: `${isSellOrder ? 'Sell' : 'Buy'} Order`,
+        description: `${formatAccount(Account)} wants to ${isSellOrder ? `sell ${takerGets} for ${takerPays}` : `buy ${takerGets} with ${takerPays}`}${exchangeRate ? ` at a rate of ${exchangeRate}` : ''}.${OfferSequence > 0 ? ` This replaces order #${OfferSequence}.` : ''}`,
         details: [
           `Order maker: ${formatAccount(Account)}`,
           `Order type: ${isSellOrder ? 'Sell' : 'Buy'} order`,
           `Offering: ${takerGets}`,
           `Requesting: ${takerPays}`,
-          `Exchange rate: 1 ${getCurrency(TakerPays)} = ${(() => {
-            const rate = new Decimal(TakerGets.value || dropsToXrp(TakerGets)).div(
-              TakerPays.value || dropsToXrp(TakerPays)
-            );
-            return formatDecimal(rate, rate.lt(0.000001) ? 15 : 8);
-          })()} ${getCurrency(TakerGets)}`,
+          exchangeRate ? `Rate: ${exchangeRate}` : null,
           OfferSequence > 0 ? `Replaces order #${OfferSequence}` : 'New order',
           `Network fee: ${dropsToXrp(Fee)} XRP`,
           isSuccess ? 'Order placed successfully' : 'Order placement failed'
-        ]
+        ].filter(Boolean)
       };
 
     case 'OfferCancel':
@@ -1023,34 +1033,34 @@ const getTransactionDescription = (txData) => {
     case 'TrustSet':
       const trustAmount = LimitAmount ? formatAmount(LimitAmount) : 'Unknown';
       const trustIssuer = LimitAmount ? formatAccount(LimitAmount.issuer) : 'Unknown';
+      const isRemovingTrust = LimitAmount && new Decimal(LimitAmount.value).isZero();
+
       return {
-        title: 'Trust Line Configuration',
-        description: `${formatAccount(Account)} ${LimitAmount && new Decimal(LimitAmount.value).isZero() ? 'removed' : 'established or modified'} a trust line with ${trustIssuer}. Trust lines allow accounts to hold and transact with tokens issued by other accounts. ${LimitAmount && !new Decimal(LimitAmount.value).isZero() ? `The trust limit is set to ${trustAmount}.` : 'The trust line has been removed.'}`,
+        title: isRemovingTrust ? 'Trust Line Removed' : 'Trust Line Created',
+        description: `${formatAccount(Account)} ${isRemovingTrust ? `removed their trust line with ${trustIssuer}` : `can now hold up to ${trustAmount} from ${trustIssuer}`}.`,
         details: [
           `Account: ${formatAccount(Account)}`,
           `Token issuer: ${trustIssuer}`,
-          `Trust limit: ${trustAmount}`,
-          LimitAmount && new Decimal(LimitAmount.value).isZero()
-            ? 'Action: Trust line removed'
-            : 'Action: Trust line created/modified',
-          `Network fee: ${dropsToXrp(Fee)} XRP`,
-          isSuccess ? 'Trust line updated successfully' : 'Trust line update failed'
+          `Limit: ${trustAmount}`,
+          isRemovingTrust ? 'Removed trust line' : 'Created/updated trust line',
+          `Fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Success' : 'Failed'
         ]
       };
 
     case 'NFTokenMint':
       const transferFeePercent = TransferFee ? `${TransferFee / 1000}%` : '0%';
       return {
-        title: 'NFT Minting',
-        description: `${formatAccount(Account)} minted a new NFT${meta?.nftoken_id ? ` with ID ${meta.nftoken_id.slice(0, 16)}...` : ''}. ${TransferFee ? `This NFT has a ${transferFeePercent} transfer fee that goes to the original issuer on each sale.` : 'This NFT has no transfer fees.'} ${URI ? 'The NFT includes metadata accessible via URI.' : ''}`,
+        title: 'NFT Minted',
+        description: `${formatAccount(Account)} created a new NFT${TransferFee ? ` with ${transferFeePercent} royalty` : ''}.`,
         details: [
-          `Minter: ${formatAccount(Account)}`,
+          `Creator: ${formatAccount(Account)}`,
           meta?.nftoken_id ? `NFT ID: ${meta.nftoken_id}` : null,
-          `Transfer fee: ${transferFeePercent}`,
-          NFTokenTaxon ? `NFT Taxon: ${NFTokenTaxon}` : null,
-          URI ? 'Includes metadata URI' : 'No metadata URI',
-          `Network fee: ${dropsToXrp(Fee)} XRP`,
-          isSuccess ? 'NFT minted successfully' : 'NFT minting failed'
+          TransferFee ? `Royalty: ${transferFeePercent}` : 'No royalties',
+          NFTokenTaxon ? `Taxon: ${NFTokenTaxon}` : null,
+          URI ? 'Has metadata' : null,
+          `Fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Minted' : 'Failed'
         ].filter(Boolean)
       };
 
@@ -1059,40 +1069,38 @@ const getTransactionDescription = (txData) => {
       const offerAmount = formatAmount(Amount);
       return {
         title: `NFT ${isBuyOffer ? 'Buy' : 'Sell'} Offer`,
-        description: `${formatAccount(Account)} created a ${isBuyOffer ? 'buy' : 'sell'} offer for NFT ${NFTokenID ? NFTokenID.slice(0, 16) + '...' : 'Unknown'}. ${isBuyOffer ? `They are offering to pay ${offerAmount} to purchase this NFT.` : `They are offering to sell this NFT for ${offerAmount}.`} ${Destination ? `This offer is specifically directed to ${formatAccount(Destination)}.` : 'This offer is open to anyone.'}`,
+        description: `${formatAccount(Account)} ${isBuyOffer ? `offered ${offerAmount} to buy` : `listed for ${offerAmount}`} NFT ${NFTokenID ? NFTokenID.slice(0, 12) + '...' : ''}${Destination ? ` (private offer to ${formatAccount(Destination)})` : ''}.`,
         details: [
-          `Offer creator: ${formatAccount(Account)}`,
-          `Offer type: ${isBuyOffer ? 'Buy' : 'Sell'} offer`,
-          NFTokenID ? `NFT ID: ${NFTokenID}` : null,
-          `Offer amount: ${offerAmount}`,
-          Destination ? `Directed to: ${formatAccount(Destination)}` : 'Open offer',
-          `Network fee: ${dropsToXrp(Fee)} XRP`,
-          isSuccess ? 'Offer created successfully' : 'Offer creation failed'
+          `${isBuyOffer ? 'Buyer' : 'Seller'}: ${formatAccount(Account)}`,
+          `Price: ${offerAmount}`,
+          NFTokenID ? `NFT: ${NFTokenID}` : null,
+          Destination ? `Private offer to ${formatAccount(Destination)}` : 'Public offer',
+          `Fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Created' : 'Failed'
         ].filter(Boolean)
       };
 
     case 'NFTokenAcceptOffer':
       if (acceptedOfferDetails) {
         return {
-          title: 'NFT Sale Completed',
-          description: `${formatAccount(Account)} accepted an NFT offer, completing the sale of NFT ${acceptedOfferDetails.nftokenID.slice(0, 16)}... from ${formatAccount(acceptedOfferDetails.seller)} to ${formatAccount(acceptedOfferDetails.buyer)}. The NFT has been transferred and payment has been processed automatically.`,
+          title: 'NFT Sold',
+          description: `NFT ${acceptedOfferDetails.nftokenID.slice(0, 12)}... transferred from ${formatAccount(acceptedOfferDetails.seller)} to ${formatAccount(acceptedOfferDetails.buyer)}.`,
           details: [
-            `Transaction initiator: ${formatAccount(Account)}`,
-            `NFT seller: ${formatAccount(acceptedOfferDetails.seller)}`,
-            `NFT buyer: ${formatAccount(acceptedOfferDetails.buyer)}`,
-            `NFT ID: ${acceptedOfferDetails.nftokenID}`,
-            `Network fee: ${dropsToXrp(Fee)} XRP`,
-            isSuccess ? 'NFT sale completed successfully' : 'NFT sale failed'
+            `Seller: ${formatAccount(acceptedOfferDetails.seller)}`,
+            `Buyer: ${formatAccount(acceptedOfferDetails.buyer)}`,
+            `NFT: ${acceptedOfferDetails.nftokenID}`,
+            `Fee: ${dropsToXrp(Fee)} XRP`,
+            isSuccess ? 'Sold' : 'Failed'
           ]
         };
       }
       return {
-        title: 'NFT Offer Accepted',
-        description: `${formatAccount(Account)} accepted an NFT offer, completing an NFT transaction.`,
+        title: 'NFT Trade',
+        description: `${formatAccount(Account)} completed an NFT trade.`,
         details: [
-          `Transaction initiator: ${formatAccount(Account)}`,
-          `Network fee: ${dropsToXrp(Fee)} XRP`,
-          isSuccess ? 'Offer accepted successfully' : 'Offer acceptance failed'
+          `Trader: ${formatAccount(Account)}`,
+          `Fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Completed' : 'Failed'
         ]
       };
 
@@ -1113,28 +1121,28 @@ const getTransactionDescription = (txData) => {
       const depositAmount = Amount ? formatAmount(Amount) : null;
       const depositAmount2 = Amount2 ? formatAmount(Amount2) : null;
       return {
-        title: 'AMM Liquidity Deposit',
-        description: `${formatAccount(Account)} deposited liquidity into an Automated Market Maker (AMM) pool. ${depositAmount ? `They deposited ${depositAmount}` : ''}${depositAmount2 ? ` and ${depositAmount2}` : ''} to provide liquidity and earn a share of trading fees.`,
+        title: 'Added Liquidity',
+        description: `${formatAccount(Account)} added ${depositAmount}${depositAmount2 ? ` + ${depositAmount2}` : ''} to earn trading fees.`,
         details: [
-          `Liquidity provider: ${formatAccount(Account)}`,
-          depositAmount ? `Deposited: ${depositAmount}` : null,
-          depositAmount2 ? `Also deposited: ${depositAmount2}` : null,
-          `Network fee: ${dropsToXrp(Fee)} XRP`,
-          isSuccess ? 'Liquidity deposited successfully' : 'Deposit failed'
+          `Provider: ${formatAccount(Account)}`,
+          depositAmount ? `Deposit: ${depositAmount}` : null,
+          depositAmount2 ? `Also: ${depositAmount2}` : null,
+          `Fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Added' : 'Failed'
         ].filter(Boolean)
       };
 
     case 'AMMWithdraw':
       const withdrawAmount = LPTokenIn ? formatAmount(LPTokenIn) : null;
       return {
-        title: 'AMM Liquidity Withdrawal',
-        description: `${formatAccount(Account)} withdrew liquidity from an Automated Market Maker (AMM) pool. ${withdrawAmount ? `They redeemed ${withdrawAmount} LP tokens` : 'They withdrew their liquidity position'} to receive back their share of the pool assets.`,
+        title: 'Removed Liquidity',
+        description: `${formatAccount(Account)} withdrew ${withdrawAmount || 'their liquidity'} from the pool.`,
         details: [
-          `Liquidity provider: ${formatAccount(Account)}`,
-          withdrawAmount ? `LP tokens redeemed: ${withdrawAmount}` : 'Liquidity withdrawal',
-          `Network fee: ${dropsToXrp(Fee)} XRP`,
-          isSuccess ? 'Liquidity withdrawn successfully' : 'Withdrawal failed'
-        ]
+          `Provider: ${formatAccount(Account)}`,
+          withdrawAmount ? `LP tokens: ${withdrawAmount}` : null,
+          `Fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Withdrawn' : 'Failed'
+        ].filter(Boolean)
       };
 
     case 'OracleSet':
