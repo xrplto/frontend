@@ -471,9 +471,14 @@ const WalletContent = ({
         >
           {accountProfile?.wallet_type !== 'device'
             ? `Wallet Type: ${accountProfile?.wallet_type || 'unknown'}`
-            : profiles.filter(p => p.wallet_type === 'device').length >= 5
-            ? 'Maximum 5 accounts'
-            : `+ New Account (${profiles.filter(p => p.wallet_type === 'device').length}/5)`}
+            : (() => {
+                // Total = profiles array (which should include current account)
+                // But if not, we count: current (1) + other profiles
+                const totalCount = profiles.some(p => p.account === accountLogin)
+                  ? profiles.length
+                  : profiles.length + 1;
+                return totalCount >= 5 ? 'Maximum 5 accounts' : `+ New Account (${totalCount}/5)`;
+              })()}
         </Button>
 
         <Button
@@ -2117,10 +2122,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
 
     try {
-      // Count existing device wallets for this user
-      const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
-
-      if (deviceWallets.length >= 5) {
+      // Count all existing wallets (don't filter by type - all count toward limit)
+      if (profiles.length >= 5) {
         openSnackbar('Maximum 5 accounts reached', 'warning');
         setShowNewAccountFlow(false);
         setNewAccountPassword('');
@@ -2148,7 +2151,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       const walletData = {
         deviceKeyId: accountProfile.deviceKeyId || accountProfile.account,
-        accountIndex: deviceWallets.length,
+        accountIndex: profiles.length,
         account: wallet.address,
         address: wallet.address,
         publicKey: wallet.publicKey,
@@ -2177,7 +2180,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setNewAccountPassword('');
       setOpen(false);
 
-      openSnackbar(`Account ${deviceWallets.length + 1} of 5 created`, 'success');
+      openSnackbar(`Account ${allProfiles.length} of 5 created`, 'success');
     } catch (error) {
       devError('Create account error:', error);
       openSnackbar('Incorrect password', 'error');
@@ -2347,7 +2350,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       </Box>
 
                       <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                        Account {profiles.filter(p => p.wallet_type === 'device').length + 1} of 5
+                        Account {profiles.length} of 5 (creating #{profiles.length + 1})
                       </Typography>
 
                       <Alert severity="info" sx={{ py: 1 }}>
