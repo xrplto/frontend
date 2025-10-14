@@ -214,25 +214,26 @@ const WalletContent = ({
 
       {/* Streamlined Balance */}
       <Box sx={{
-        p: 2,
+        py: 1.5,
+        px: 2,
         textAlign: 'center',
         background: 'transparent'
       }}>
         <Typography sx={{
-          fontSize: '1.8rem',
-          fontWeight: 400,
-          lineHeight: 1,
+          fontSize: '2rem',
+          fontWeight: 300,
+          lineHeight: 1.2,
           fontFamily: 'system-ui',
           color: theme.palette.text.primary
         }}>
           {accountTotalXrp || accountBalance?.curr1?.value || '0'}
         </Typography>
         <Typography sx={{
-          fontSize: '0.65rem',
-          letterSpacing: '1px',
+          fontSize: '0.7rem',
+          letterSpacing: '0.5px',
           opacity: 0.5,
           fontWeight: 400,
-          mt: 0.3
+          mt: 0.2
         }}>
           XRP BALANCE
         </Typography>
@@ -259,7 +260,7 @@ const WalletContent = ({
         )}
 
         {/* Action Buttons */}
-        <Stack direction="row" spacing={0.5} justifyContent="center" sx={{ mt: 1 }}>
+        <Stack direction="row" spacing={0.8} justifyContent="center" sx={{ mt: 1.2 }}>
           <IconButton
             size="small"
             onClick={() => {
@@ -268,12 +269,12 @@ const WalletContent = ({
             }}
             title="Copy address"
             sx={{
-              p: 0.6,
-              opacity: 0.6,
+              p: 0.7,
+              opacity: 0.7,
               '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
             }}
           >
-            <Box component="svg" sx={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
               <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
             </Box>
@@ -283,12 +284,12 @@ const WalletContent = ({
             onClick={() => setShowQR(!showQR)}
             title="Show QR code"
             sx={{
-              p: 0.6,
-              opacity: 0.6,
+              p: 0.7,
+              opacity: 0.7,
               '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
             }}
           >
-            <Box component="svg" sx={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <rect x="3" y="3" width="7" height="7"/>
               <rect x="14" y="3" width="7" height="7"/>
               <rect x="3" y="14" width="7" height="7"/>
@@ -301,12 +302,12 @@ const WalletContent = ({
             onClick={onBackupSeed}
             title="Backup seed"
             sx={{
-              p: 0.6,
-              opacity: 0.6,
+              p: 0.7,
+              opacity: 0.7,
               '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
             }}
           >
-            <Box component="svg" sx={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="currentColor">
+            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
             </Box>
           </IconButton>
@@ -332,31 +333,31 @@ const WalletContent = ({
       </Box>
 
       {/* Inline Stats */}
-      <Box sx={{ px: 1.6, pb: 1.4 }}>
-        <Stack direction="row" spacing={0.5} justifyContent="center">
+      <Box sx={{ px: 1.8, pb: 1.2 }}>
+        <Stack direction="row" spacing={0.6} justifyContent="center">
           <Chip
             label={`${accountBalance?.curr1?.value || '0'} available`}
             size="small"
             sx={{
-              height: 22,
-              fontSize: '0.65rem',
+              height: 24,
+              fontSize: '0.7rem',
               fontWeight: 400,
               backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              '& .MuiChip-label': { px: 1 }
+              border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+              '& .MuiChip-label': { px: 1.2 }
             }}
           />
           <Chip
             label={`${accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved`}
             size="small"
             sx={{
-              height: 22,
-              fontSize: '0.65rem',
+              height: 24,
+              fontSize: '0.7rem',
               fontWeight: 400,
               backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+              border: `1px solid ${alpha(theme.palette.warning.main, 0.25)}`,
               color: theme.palette.warning.main,
-              '& .MuiChip-label': { px: 1 }
+              '& .MuiChip-label': { px: 1.2 }
             }}
           />
         </Stack>
@@ -370,12 +371,12 @@ const WalletContent = ({
           px: 1.4
         }}>
           <Typography sx={{
-            fontSize: '0.6rem',
-            fontWeight: 400,
-            opacity: 0.4,
+            fontSize: '0.65rem',
+            fontWeight: 500,
+            opacity: 0.45,
             textTransform: 'uppercase',
-            letterSpacing: '0.5px',
-            mb: 0.5
+            letterSpacing: '0.8px',
+            mb: 0.6
           }}>
             Accounts
           </Typography>
@@ -413,8 +414,8 @@ const WalletContent = ({
               >
                 <Stack direction="row" spacing={0.8} alignItems="center">
                   <Box sx={{
-                    width: 4,
-                    height: 4,
+                    width: 5,
+                    height: 5,
                     borderRadius: '50%',
                     background: accountsActivation[account] === false
                       ? theme.palette.error.main
@@ -422,15 +423,15 @@ const WalletContent = ({
                   }} />
                   <Typography sx={{
                     fontFamily: 'monospace',
-                    fontSize: '0.7rem',
+                    fontSize: '0.72rem',
                     fontWeight: isCurrent ? 500 : 400,
-                    opacity: isCurrent ? 1 : 0.8
+                    opacity: isCurrent ? 1 : 0.75
                   }}>
                     {truncateAccount(account, 6)}
                   </Typography>
                   {isCurrent && (
                     <Typography sx={{
-                      fontSize: '0.55rem',
+                      fontSize: '0.6rem',
                       opacity: 0.4
                     }}>
                       current
