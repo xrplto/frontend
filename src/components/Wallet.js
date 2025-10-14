@@ -7,8 +7,8 @@ let startRegistration, startAuthentication, CryptoJS, scrypt, base64URLStringToB
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
-const devLog = (...args) => isDev && devLog(...args);
-const devError = (...args) => isDev && devError(...args);
+const devLog = (...args) => isDev && console.log(...args);
+const devError = (...args) => isDev && console.error(...args);
 
 // Material
 import {
