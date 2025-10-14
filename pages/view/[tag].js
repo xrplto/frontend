@@ -76,9 +76,9 @@ const BASE_URL = process.env.API_URL;
 export async function getServerSideProps(ctx) {
   // https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=
   let data = null;
-  try {
-    const tag = ctx.params.tag;
+  const tag = ctx.params.tag; // Move tag definition outside try block
 
+  try {
     var t1 = performance.now();
 
     const res = await axios.get(
