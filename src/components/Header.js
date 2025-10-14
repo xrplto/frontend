@@ -846,9 +846,32 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <Stack
                 direction="row"
                 alignItems="center"
-                spacing={0.5}
+                spacing={1}
                 sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
               >
+                {/* Settings Dropdown */}
+                <IconButton
+                  onClick={handleSettingsOpen}
+                  size="small"
+                  aria-label="Settings"
+                  sx={{
+                    padding: '7px',
+                    minWidth: '36px',
+                    width: '36px',
+                    height: '36px',
+                    backgroundColor: 'transparent',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    borderRadius: '8px',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.divider, 0.05),
+                      borderColor: alpha(theme.palette.divider, 0.3)
+                    }
+                  }}
+                  title="Settings"
+                >
+                  <SettingsIcon sx={{ fontSize: 18 }} />
+                </IconButton>
+
                 {/* Launch Button */}
                 <Link
                   href="/launch"
@@ -856,9 +879,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
+                    height: '36px',
                     px: 2,
-                    py: 0.75,
-                    mr: 1,
                     fontSize: '0.875rem',
                     fontWeight: 500,
                     color: '#4285f4',
@@ -874,30 +896,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 >
                   Launch
                 </Link>
-
-                {/* Settings Dropdown */}
-                <IconButton
-                  onClick={handleSettingsOpen}
-                  size="small"
-                  aria-label="Settings"
-                  sx={{
-                    padding: '6px',
-                    minWidth: '32px',
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: 'transparent',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    borderRadius: '12px',
-                    ml: 0.5,
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                      borderColor: alpha(theme.palette.primary.main, 0.3)
-                    }
-                  }}
-                  title="Settings"
-                >
-                  <SettingsIcon sx={{ fontSize: 16 }} />
-                </IconButton>
 
                 {/* Settings Menu */}
                 <Menu
