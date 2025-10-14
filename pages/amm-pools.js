@@ -1,5 +1,5 @@
-import { useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { Box, Container, Grid, styled as muiStyled, Toolbar } from '@mui/material';
+import { useState, useEffect, useContext, useCallback, useMemo, memo } from 'react';
+import { Box, Container, styled as muiStyled, Toolbar } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -197,9 +197,29 @@ const PoolInfo = styled.div`
 `;
 
 const PoolPair = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-weight: 600;
   font-size: 14px;
   color: ${p => p.darkMode ? '#fff' : '#000'};
+`;
+
+const TokenIconPair = styled.div`
+  display: flex;
+  margin-right: 8px;
+`;
+
+const TokenImage = styled.img`
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid ${p => p.darkMode ? '#1a1a1a' : '#fff'};
+
+  &:last-child {
+    margin-left: -8px;
+  }
 `;
 
 const PoolAccount = styled.div`
@@ -332,12 +352,11 @@ function AMMPoolsPage({ data }) {
     return fNumber(value);
   };
 
-  const formatPair = (pool) => {
+  const formatPair = useMemo(() => (pool) => {
     const formatCurrency = (cur) => {
       if (cur === 'XRP') return 'XRP';
       if (cur.length === 40) {
-        // Convert hex to ASCII
-        const hex = cur.replace(/00+$/, ''); // Remove trailing zeros
+        const hex = cur.replace(/00+$/, '');
         let str = '';
         for (let i = 0; i < hex.length; i += 2) {
           const code = parseInt(hex.substr(i, 2), 16);
@@ -351,7 +370,7 @@ function AMMPoolsPage({ data }) {
     const asset1 = formatCurrency(pool.asset1.currency);
     const asset2 = formatCurrency(pool.asset2.currency);
     return `${asset1} / ${asset2}`;
-  };
+  }, []);
 
   const [isMobile, setIsMobile] = useState(false);
 
@@ -411,16 +430,16 @@ function AMMPoolsPage({ data }) {
               <tr>
                 <Th darkMode={darkMode}>#</Th>
                 <Th darkMode={darkMode}>Pool</Th>
-                <Th darkMode={darkMode} align="right">Liquidity (XRP)</Th>
+                <Th darkMode={darkMode} align="right">Fee</Th>
+                <Th darkMode={darkMode} align="right">Liquidity</Th>
                 <Th darkMode={darkMode} align="right">7d Volume</Th>
                 <Th darkMode={darkMode} align="right">7d Fees</Th>
                 <Th darkMode={darkMode} align="right">7d Trades</Th>
                 <Th darkMode={darkMode} align="center">7d APY</Th>
-                <Th darkMode={darkMode} align="center">Status</Th>
               </tr>
             </thead>
             <tbody>
-              {pools.map((pool, idx) => {
+              {pools.slice(0, params.limit).map((pool, idx) => {
                 const apy7d = pool.apy7d?.apy || 0;
                 const apyColors = getAPYColor(apy7d);
                 const liquidityXRP = pool.apy7d?.liquidity || pool.currentLiquidity?.asset1Amount || 0;
@@ -435,9 +454,18 @@ function AMMPoolsPage({ data }) {
                     <Td darkMode={darkMode}>{idx + 1}</Td>
                     <Td darkMode={darkMode}>
                       <PoolInfo>
-                        <PoolPair darkMode={darkMode}>{formatPair(pool)}</PoolPair>
+                        <PoolPair darkMode={darkMode}>
+                          <TokenIconPair>
+                            <TokenImage src={`https://s1.xrpl.to/token/${pool.asset1.md5 || '84e5efeb89c4eae8f68188982dc290d8'}`} alt="" loading="lazy" darkMode={darkMode} />
+                            <TokenImage src={`https://s1.xrpl.to/token/${pool.asset2.md5}`} alt="" loading="lazy" darkMode={darkMode} />
+                          </TokenIconPair>
+                          {formatPair(pool)}
+                        </PoolPair>
                         <PoolAccount darkMode={darkMode}>{pool.ammAccount.substring(0, 20)}...</PoolAccount>
                       </PoolInfo>
+                    </Td>
+                    <Td darkMode={darkMode} align="right">
+                      <span>{pool.tradingFee ? `${(pool.tradingFee / 1000).toFixed(2)}%` : '-'}</span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
                       <span>{currencySymbols[activeFiatCurrency]}{formatCurrency(liquidityFiat)}</span>
@@ -455,11 +483,6 @@ function AMMPoolsPage({ data }) {
                       <APYBadge {...apyColors}>
                         {apy7d > 0 ? `${apy7d.toFixed(1)}%` : '-'}
                       </APYBadge>
-                    </Td>
-                    <Td darkMode={darkMode} align="center">
-                      <StatusBadge active={pool.status === 'active'}>
-                        {pool.status}
-                      </StatusBadge>
                     </Td>
                   </Tr>
                 );
