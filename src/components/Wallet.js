@@ -205,7 +205,16 @@ const WalletContent = ({
               </Box>
             </IconButton>
           </Stack>
-          <Stack direction="row" spacing={0.5}>
+          <Stack direction="row" spacing={0.5} alignItems="center">
+            {typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`) && (
+              <Box sx={{
+                width: 6,
+                height: 6,
+                borderRadius: '50%',
+                background: theme.palette.warning.main,
+                mr: 0.5
+              }} />
+            )}
             <Typography
               onClick={onBackupSeed}
               sx={{
@@ -263,6 +272,32 @@ const WalletContent = ({
         }}>
           XRP Balance
         </Typography>
+
+        {typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`) && (
+          <Box
+            onClick={onBackupSeed}
+            sx={{
+              mt: 1.5,
+              px: 1.5,
+              py: 0.8,
+              borderRadius: '6px',
+              background: alpha(theme.palette.warning.main, 0.1),
+              border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+              cursor: 'pointer',
+              '&:hover': {
+                background: alpha(theme.palette.warning.main, 0.15)
+              }
+            }}
+          >
+            <Typography sx={{
+              fontSize: '0.7rem',
+              color: theme.palette.warning.main,
+              fontWeight: 500
+            }}>
+              ⚠ Backup your wallet
+            </Typography>
+          </Box>
+        )}
       </Box>
 
       {/* Stats Grid */}
@@ -622,6 +657,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         totalWallets: wallets.length
       });
 
+      // Mark wallet as needing backup (new wallet)
+      localStorage.setItem(`wallet_needs_backup_${wallets[0].address}`, 'true');
+
       // Login with first wallet
       doLogIn(wallets[0], allProfiles);
       setStatus('success');
@@ -631,6 +669,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOpenWalletModal(false);
         setStatus('idle');
         setShowDeviceLogin(false);
+        // Show backup reminder
+        setTimeout(() => {
+          openSnackbar('Remember to backup your wallet seed phrase', 'warning');
+        }, 1000);
       }, 500);
     } catch (err) {
       setError('Failed to complete registration: ' + err.message);
@@ -1066,6 +1108,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         await walletStorage.setSecureItem('authMethod', provider);
         await walletStorage.setSecureItem('user', user);
 
+        // Mark wallet as needing backup (new wallet)
+        if (action === 'create') {
+          localStorage.setItem(`wallet_needs_backup_${result.wallet.address}`, 'true');
+        }
+
         // Login with the wallet
         doLogIn(result.wallet, profiles);
 
@@ -1078,6 +1125,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthConfirmPassword('');
 
         openSnackbar('Wallet created successfully!', 'success');
+
+        // Show backup reminder for new wallets
+        if (action === 'create') {
+          setTimeout(() => {
+            openSnackbar('Remember to backup your wallet seed phrase', 'warning');
+          }, 2000);
+        }
       } else {
         throw new Error('Failed to setup wallet');
       }
@@ -1120,6 +1174,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setSeedBlurred(true);
         setSeedPassword('');
         setShowSeedPassword(false);
+        // Mark wallet as backed up
+        localStorage.removeItem(`wallet_needs_backup_${profile.address}`);
       } else {
         throw new Error('Wallet not found');
       }
