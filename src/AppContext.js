@@ -215,8 +215,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
                 value: res.data.reserve?.totalReserveXRP || '0'
               }
             });
-            // Update profile with total balance
-            if (accountProfile) {
+            // Update profile with total balance (only if changed to prevent loops)
+            if (accountProfile && accountProfile.xrp !== res.data.balanceXRP) {
               setAccountProfile({
                 ...accountProfile,
                 xrp: res.data.balanceXRP
@@ -231,7 +231,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
               curr1: { value: '0' },
               curr2: { value: '0' }
             });
-            if (accountProfile) {
+            if (accountProfile && accountProfile.xrp !== '0') {
               setAccountProfile({
                 ...accountProfile,
                 xrp: '0'

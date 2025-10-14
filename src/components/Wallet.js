@@ -162,9 +162,7 @@ const WalletContent = ({
       <Box sx={{
         p: 1.5,
         background: 'transparent',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-        position: 'relative',
-        zIndex: 1
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`
       }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" spacing={isEmbedded ? 1.5 : 2} alignItems="center">
@@ -350,67 +348,85 @@ const WalletContent = ({
       </Box>
 
       {/* Accounts List */}
-      {profiles.filter((profile) => profile.account !== accountLogin).length > 0 && (
+      {profiles.length > 1 && (
         <Box sx={{
-          maxHeight: isEmbedded ? 'none' : 'none',
-          overflowY: 'visible',
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          borderBottom: isEmbedded ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          flex: isEmbedded ? 1 : 'none'
+          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
         }}>
           <Typography sx={{
             px: 2,
             py: 1,
-            fontSize: isEmbedded ? '0.65rem' : '0.7rem',
+            fontSize: '0.7rem',
             fontWeight: 600,
             opacity: 0.5,
             textTransform: 'uppercase',
             letterSpacing: '1px'
           }}>
-            Switch Account
+            All Accounts
           </Typography>
-          {profiles
-            .filter((profile) => profile.account !== accountLogin)
-            .slice(0, isEmbedded ? 6 : undefined)
-            .map((profile, idx) => {
-              const account = profile.account;
-              return (
-                <Box
-                  key={'account' + idx}
-                  onClick={() => onAccountSwitch(account)}
-                  sx={{
-                    px: 2,
-                    py: isEmbedded ? 1 : 1.2,
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    transition: 'background 0.2s',
-                    '&:hover': {
-                      background: alpha(theme.palette.primary.main, 0.05)
-                    }
-                  }}
-                >
-                  <Stack direction="row" spacing={isEmbedded ? 1 : 1.5} alignItems="center">
-                    <Box sx={{
-                      width: isEmbedded ? 6 : 8,
-                      height: isEmbedded ? 6 : 8,
-                      borderRadius: '50%',
-                      background: accountsActivation[account] === false
-                        ? theme.palette.error.main
-                        : theme.palette.success.main
-                    }} />
+          {[...profiles].sort((a, b) => {
+            // Current account first, then by creation time
+            if (a.account === accountLogin) return -1;
+            if (b.account === accountLogin) return 1;
+            return (a.createdAt || 0) - (b.createdAt || 0);
+          }).map((profile) => {
+            const account = profile.account;
+            const isCurrent = account === accountLogin;
+            return (
+              <Box
+                key={account}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!isCurrent) {
+                    onAccountSwitch(account);
+                  }
+                }}
+                sx={{
+                  px: 2,
+                  py: 1.2,
+                  cursor: isCurrent ? 'default' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  background: isCurrent ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                  '&:hover': !isCurrent ? {
+                    background: alpha(theme.palette.primary.main, 0.05)
+                  } : {}
+                }}
+              >
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <Box sx={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: '50%',
+                    background: accountsActivation[account] === false
+                      ? theme.palette.error.main
+                      : theme.palette.success.main
+                  }} />
+                  <Typography sx={{
+                    fontFamily: 'monospace',
+                    fontSize: '0.8rem',
+                    fontWeight: isCurrent ? 600 : 400
+                  }}>
+                    {truncateAccount(account, 8)}
+                  </Typography>
+                  {isCurrent && (
                     <Typography sx={{
-                      fontFamily: 'monospace',
-                      fontSize: isEmbedded ? '0.75rem' : '0.8rem'
+                      fontSize: '0.65rem',
+                      opacity: 0.5,
+                      fontWeight: 500
                     }}>
-                      {truncateAccount(account, 8)}
+                      (current)
                     </Typography>
-                  </Stack>
+                  )}
+                </Stack>
+                {!isCurrent && (
                   <Button
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
+                      e.preventDefault();
                       onRemoveProfile(account);
                     }}
                     sx={{
@@ -426,9 +442,10 @@ const WalletContent = ({
                   >
                     ×
                   </Button>
-                </Box>
-              );
-            })}
+                )}
+              </Box>
+            );
+          })}
         </Box>
       )}
 
@@ -441,45 +458,48 @@ const WalletContent = ({
         flexDirection: 'column',
         gap: 0.8
       }}>
-        {/* New Account Button - Show for all wallet types temporarily for debugging */}
-        <Button
-          onClick={onCreateNewAccount || (() => openSnackbar(`Wallet type: ${accountProfile?.wallet_type || 'unknown'}`, 'info'))}
-          variant="outlined"
-          size="small"
-          disabled={!onCreateNewAccount || (accountProfile?.wallet_type === 'device' && profiles.filter(p => p.wallet_type === 'device').length >= 5)}
-          sx={{
-            width: '100%',
-            py: 0.8,
-            borderRadius: '8px',
-            borderWidth: '1.5px',
-            borderColor: alpha('#4285f4', 0.3),
-            background: 'transparent',
-            color: '#4285f4',
-            fontWeight: 400,
-            fontSize: '0.8rem',
-            textTransform: 'none',
-            '&:hover': {
+        {/* New Account Button - For all wallet types */}
+        {onCreateNewAccount && (
+          <Button
+            onClick={onCreateNewAccount}
+            variant="outlined"
+            size="small"
+            disabled={(() => {
+              const totalCount = profiles.some(p => p.account === accountLogin)
+                ? profiles.length
+                : profiles.length + 1;
+              return totalCount >= 5;
+            })()}
+            sx={{
+              width: '100%',
+              py: 0.8,
+              borderRadius: '8px',
               borderWidth: '1.5px',
-              borderColor: '#4285f4',
-              background: alpha('#4285f4', 0.04)
-            },
-            '&:disabled': {
-              opacity: 0.4,
-              borderColor: alpha(theme.palette.divider, 0.3)
-            }
-          }}
-        >
-          {accountProfile?.wallet_type !== 'device'
-            ? `Wallet Type: ${accountProfile?.wallet_type || 'unknown'}`
-            : (() => {
-                // Total = profiles array (which should include current account)
-                // But if not, we count: current (1) + other profiles
-                const totalCount = profiles.some(p => p.account === accountLogin)
-                  ? profiles.length
-                  : profiles.length + 1;
-                return totalCount >= 5 ? 'Maximum 5 accounts' : `+ New Account (${totalCount}/5)`;
-              })()}
-        </Button>
+              borderColor: alpha('#4285f4', 0.3),
+              background: 'transparent',
+              color: '#4285f4',
+              fontWeight: 400,
+              fontSize: '0.8rem',
+              textTransform: 'none',
+              '&:hover': {
+                borderWidth: '1.5px',
+                borderColor: '#4285f4',
+                background: alpha('#4285f4', 0.04)
+              },
+              '&:disabled': {
+                opacity: 0.4,
+                borderColor: alpha(theme.palette.divider, 0.3)
+              }
+            }}
+          >
+            {(() => {
+              const totalCount = profiles.some(p => p.account === accountLogin)
+                ? profiles.length
+                : profiles.length + 1;
+              return totalCount >= 5 ? 'Maximum 5 accounts' : `+ New Account (${totalCount}/5)`;
+            })()}
+          </Button>
+        )}
 
         <Button
           onClick={onLogout}
@@ -2146,16 +2166,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
-      // Password verified - create new wallet
+      // Password verified - create new wallet with SAME auth type
       const wallet = generateRandomWallet();
 
       const walletData = {
-        deviceKeyId: accountProfile.deviceKeyId || accountProfile.account,
+        deviceKeyId: accountProfile.deviceKeyId,
         accountIndex: profiles.length,
         account: wallet.address,
         address: wallet.address,
         publicKey: wallet.publicKey,
-        wallet_type: 'device',
+        wallet_type: accountProfile.wallet_type, // Inherit from current (device/oauth/social)
+        provider: accountProfile.provider, // Inherit OAuth provider (google/twitter/email)
+        provider_id: accountProfile.provider_id, // Inherit OAuth ID
         xrp: '0',
         createdAt: Date.now(),
         seed: wallet.seed
@@ -2172,13 +2194,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Mark as needing backup
       localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
 
-      // Switch to new account
-      doLogIn(walletData, allProfiles);
-
-      // Close flow and clear state
+      // Close and switch
+      console.log('=== NEW ACCOUNT CREATED ===');
+      console.log('New wallet address:', walletData.address);
+      console.log('All profiles after creation:', allProfiles.map(p => p.account));
       setShowNewAccountFlow(false);
       setNewAccountPassword('');
       setOpen(false);
+      requestAnimationFrame(() => {
+        console.log('Logging in to new account...');
+        doLogIn(walletData, allProfiles);
+        console.log('Login called');
+      });
 
       openSnackbar(`Account ${allProfiles.length} of 5 created`, 'success');
     } catch (error) {
@@ -2191,6 +2218,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const accountLogo = accountProfile?.logo;
   const accountTotalXrp = accountProfile?.xrp;
   // const isAdmin = accountProfile?.admin;
+
+  // Debug: Log when accountProfile changes
+  useEffect(() => {
+    console.log('🔄 accountProfile changed:', {
+      account: accountProfile?.account,
+      wallet_type: accountProfile?.wallet_type,
+      profilesCount: profiles.length
+    });
+  }, [accountProfile, profiles.length]);
 
   let logoImageUrl = null;
   if (accountProfile) {
@@ -2285,19 +2321,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           disableAutoFocus
           disableRestoreFocus
           hideBackdrop={true}
+          TransitionProps={{ timeout: 0 }}
           sx={{
             '& .MuiDialog-paper': {
               borderRadius: '12px',
               maxWidth: '320px',
-              minHeight: accountProfile ? 'auto' : 'auto',
               background: 'transparent',
               boxShadow: 'none',
               position: 'fixed',
               top: '64px',
               right: '16px',
               left: 'auto',
-              transform: 'none',
-              margin: 0
+              transform: 'none !important',
+              margin: 0,
+              transition: 'none !important'
             },
             zIndex: 9999
           }}
@@ -2317,8 +2354,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     profiles={profiles}
                     onClose={() => setOpen(false)}
                     onAccountSwitch={(account) => {
-                      setActiveProfile(account);
-                      setOpen(false);
+                      console.log('=== ACCOUNT SWITCH START ===');
+                      console.log('Switching from:', accountProfile?.account);
+                      console.log('Switching to:', account);
+                      console.log('Current profiles:', profiles.map(p => p.account));
+                      if (account !== accountProfile?.account) {
+                        console.log('Closing modal...');
+                        setOpen(false);
+                        requestAnimationFrame(() => {
+                          console.log('Calling setActiveProfile...');
+                          setActiveProfile(account);
+                          console.log('setActiveProfile called');
+                        });
+                      } else {
+                        console.log('Same account - no switch needed');
+                      }
+                      console.log('=== ACCOUNT SWITCH END ===');
                     }}
                     onLogout={handleLogout}
                     onRemoveProfile={removeProfile}
