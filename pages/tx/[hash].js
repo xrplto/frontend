@@ -122,11 +122,14 @@ const KNOWN_SOURCE_TAGS = {
 };
 
 // Helper to render key-value pairs and make certain values clickable
-const JsonViewer = ({ data }) => (
-  <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: '#fff' }}>
-    {JSON.stringify(data, null, 2)}
-  </pre>
-);
+const JsonViewer = ({ data }) => {
+  const theme = useTheme();
+  return (
+    <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: theme.palette.text.primary }}>
+      {JSON.stringify(data, null, 2)}
+    </pre>
+  );
+};
 
 const DetailRow = ({ label, children, ...props }) => (
   <Grid container item xs={12} sx={{ mb: 2, pb: 2, ...props }}>
@@ -1146,6 +1149,461 @@ const getTransactionDescription = (txData) => {
         ]
       };
 
+    case 'OracleDelete':
+      return {
+        title: 'Oracle Deletion',
+        description: `${formatAccount(Account)} deleted an oracle from the XRPL. This removes the oracle's price feed data from the network.`,
+        details: [
+          `Oracle operator: ${formatAccount(Account)}`,
+          'Action: Oracle deleted',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Oracle deleted successfully' : 'Oracle deletion failed'
+        ]
+      };
+
+    case 'AccountSet':
+      return {
+        title: 'Account Settings Update',
+        description: `${formatAccount(Account)} modified their account settings. This can include setting up domain verification, email hash, message keys, or enabling/disabling account features like requiring destination tags.`,
+        details: [
+          `Account: ${formatAccount(Account)}`,
+          'Action: Account settings modified',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Settings updated successfully' : 'Settings update failed'
+        ]
+      };
+
+    case 'AccountDelete':
+      return {
+        title: 'Account Deletion',
+        description: `${formatAccount(Account)} deleted their account and sent the remaining XRP balance to ${Destination ? formatAccount(Destination) : 'another account'}. Account deletion is permanent and cannot be undone.`,
+        details: [
+          `Deleted account: ${formatAccount(Account)}`,
+          Destination ? `XRP sent to: ${formatAccount(Destination)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Account deleted successfully' : 'Account deletion failed'
+        ].filter(Boolean)
+      };
+
+    case 'SetRegularKey':
+      return {
+        title: 'Regular Key Configuration',
+        description: `${formatAccount(Account)} configured a regular key pair for their account. Regular keys provide an extra layer of security by allowing you to change signing keys without changing your account address.`,
+        details: [
+          `Account: ${formatAccount(Account)}`,
+          'Action: Regular key updated',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Regular key set successfully' : 'Regular key setup failed'
+        ]
+      };
+
+    case 'CheckCreate':
+      return {
+        title: 'Check Created',
+        description: `${formatAccount(Account)} created a check payable to ${formatAccount(Destination)}. Checks are like paper checks - they authorize the recipient to pull a payment when ready, up to a specified amount.`,
+        details: [
+          `Check creator: ${formatAccount(Account)}`,
+          `Payable to: ${formatAccount(Destination)}`,
+          SendMax ? `Maximum amount: ${formatAmount(SendMax)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Check created successfully' : 'Check creation failed'
+        ].filter(Boolean)
+      };
+
+    case 'CheckCash':
+      return {
+        title: 'Check Cashed',
+        description: `${formatAccount(Account)} cashed a check, receiving the authorized payment. The check has been redeemed and removed from the ledger.`,
+        details: [
+          `Check recipient: ${formatAccount(Account)}`,
+          Amount ? `Amount received: ${formatAmount(Amount)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Check cashed successfully' : 'Check cashing failed'
+        ].filter(Boolean)
+      };
+
+    case 'CheckCancel':
+      return {
+        title: 'Check Cancelled',
+        description: `${formatAccount(Account)} cancelled a check. The check is no longer valid and has been removed from the ledger.`,
+        details: [
+          `Cancelled by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Check cancelled successfully' : 'Check cancellation failed'
+        ]
+      };
+
+    case 'EscrowCreate':
+      return {
+        title: 'Escrow Created',
+        description: `${formatAccount(Account)} created an escrow of ${formatAmount(Amount)} to ${formatAccount(Destination)}. The funds are locked and will be released when conditions are met or at a specified time.`,
+        details: [
+          `Escrow creator: ${formatAccount(Account)}`,
+          `Beneficiary: ${formatAccount(Destination)}`,
+          `Escrowed amount: ${formatAmount(Amount)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Escrow created successfully' : 'Escrow creation failed'
+        ]
+      };
+
+    case 'EscrowFinish':
+      return {
+        title: 'Escrow Completed',
+        description: `${formatAccount(Account)} completed an escrow, releasing the locked funds to the intended recipient. The escrow conditions have been satisfied.`,
+        details: [
+          `Completed by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Escrow completed successfully' : 'Escrow completion failed'
+        ]
+      };
+
+    case 'EscrowCancel':
+      return {
+        title: 'Escrow Cancelled',
+        description: `${formatAccount(Account)} cancelled an expired escrow, returning the locked funds to the original sender. Escrows can only be cancelled after they expire.`,
+        details: [
+          `Cancelled by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Escrow cancelled successfully' : 'Escrow cancellation failed'
+        ]
+      };
+
+    case 'PaymentChannelCreate':
+      return {
+        title: 'Payment Channel Created',
+        description: `${formatAccount(Account)} opened a payment channel to ${formatAccount(Destination)} with ${formatAmount(Amount)} reserved. Payment channels enable fast, off-ledger microtransactions.`,
+        details: [
+          `Channel creator: ${formatAccount(Account)}`,
+          `Destination: ${formatAccount(Destination)}`,
+          `Reserved amount: ${formatAmount(Amount)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Payment channel created successfully' : 'Payment channel creation failed'
+        ]
+      };
+
+    case 'PaymentChannelFund':
+      return {
+        title: 'Payment Channel Funded',
+        description: `${formatAccount(Account)} added more funds to a payment channel. This extends the channel's capacity for microtransactions.`,
+        details: [
+          `Funded by: ${formatAccount(Account)}`,
+          Amount ? `Additional amount: ${formatAmount(Amount)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Payment channel funded successfully' : 'Payment channel funding failed'
+        ].filter(Boolean)
+      };
+
+    case 'PaymentChannelClaim':
+      return {
+        title: 'Payment Channel Claim',
+        description: `${formatAccount(Account)} claimed funds from a payment channel. This can close the channel or withdraw accumulated payments.`,
+        details: [
+          `Claimed by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Payment channel claim successful' : 'Payment channel claim failed'
+        ]
+      };
+
+    case 'DepositPreauth':
+      return {
+        title: 'Deposit Authorization',
+        description: `${formatAccount(Account)} ${Destination ? `pre-authorized ${formatAccount(Destination)} to send payments` : 'removed a deposit authorization'}. This allows bypassing deposit authorization requirements for specific accounts.`,
+        details: [
+          `Account: ${formatAccount(Account)}`,
+          Destination ? `Authorized: ${formatAccount(Destination)}` : 'Authorization removed',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Authorization updated successfully' : 'Authorization update failed'
+        ]
+      };
+
+    case 'NFTokenBurn':
+      return {
+        title: 'NFT Burned',
+        description: `${formatAccount(Account)} permanently destroyed an NFT. Burning an NFT removes it from circulation forever.`,
+        details: [
+          `Burned by: ${formatAccount(Account)}`,
+          NFTokenID ? `NFT ID: ${NFTokenID}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'NFT burned successfully' : 'NFT burning failed'
+        ].filter(Boolean)
+      };
+
+    case 'Clawback':
+      return {
+        title: 'Token Clawback',
+        description: `${formatAccount(Account)} clawed back tokens they issued from ${formatAccount(Destination)}. Clawback allows issuers to recover their issued tokens from holders.`,
+        details: [
+          `Issuer: ${formatAccount(Account)}`,
+          `Clawed back from: ${formatAccount(Destination)}`,
+          Amount ? `Amount: ${formatAmount(Amount)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Clawback successful' : 'Clawback failed'
+        ].filter(Boolean)
+      };
+
+    case 'AMMCreate':
+      return {
+        title: 'AMM Pool Created',
+        description: `${formatAccount(Account)} created a new Automated Market Maker pool. This enables decentralized token swaps between two assets.`,
+        details: [
+          `Pool creator: ${formatAccount(Account)}`,
+          Amount ? `Initial deposit: ${formatAmount(Amount)}` : null,
+          Amount2 ? `Second asset: ${formatAmount(Amount2)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'AMM pool created successfully' : 'AMM pool creation failed'
+        ].filter(Boolean)
+      };
+
+    case 'AMMBid':
+      return {
+        title: 'AMM Auction Bid',
+        description: `${formatAccount(Account)} placed a bid for an AMM's auction slot. Winning the auction grants a discounted trading fee for a period of time.`,
+        details: [
+          `Bidder: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Bid placed successfully' : 'Bid failed'
+        ]
+      };
+
+    case 'AMMVote':
+      return {
+        title: 'AMM Fee Vote',
+        description: `${formatAccount(Account)} voted on the trading fee for an AMM pool. Liquidity providers can vote to adjust the pool's fee structure.`,
+        details: [
+          `Voter: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Vote recorded successfully' : 'Vote failed'
+        ]
+      };
+
+    case 'AMMDelete':
+      return {
+        title: 'AMM Pool Deleted',
+        description: `${formatAccount(Account)} deleted an empty AMM pool. Pools can only be deleted when all liquidity has been withdrawn.`,
+        details: [
+          `Deleted by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'AMM pool deleted successfully' : 'AMM pool deletion failed'
+        ]
+      };
+
+    case 'AMMClawback':
+      return {
+        title: 'AMM Token Clawback',
+        description: `${formatAccount(Account)} clawed back tokens from an AMM pool. This allows issuers to recover their tokens that have been deposited into AMM pools.`,
+        details: [
+          `Issuer: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'AMM clawback successful' : 'AMM clawback failed'
+        ]
+      };
+
+    case 'DIDSet':
+      return {
+        title: 'Decentralized ID Updated',
+        description: `${formatAccount(Account)} created or updated their Decentralized Identifier (DID). DIDs enable verifiable digital identities on the XRPL.`,
+        details: [
+          `Account: ${formatAccount(Account)}`,
+          'Action: DID updated',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'DID updated successfully' : 'DID update failed'
+        ]
+      };
+
+    case 'DIDDelete':
+      return {
+        title: 'Decentralized ID Deleted',
+        description: `${formatAccount(Account)} deleted their Decentralized Identifier (DID) from the ledger.`,
+        details: [
+          `Account: ${formatAccount(Account)}`,
+          'Action: DID deleted',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'DID deleted successfully' : 'DID deletion failed'
+        ]
+      };
+
+    case 'CredentialCreate':
+      return {
+        title: 'Credential Issued',
+        description: `${formatAccount(Account)} provisionally issued a credential to ${formatAccount(Destination)}. Credentials are attestations that can be accepted or rejected by the recipient.`,
+        details: [
+          `Issuer: ${formatAccount(Account)}`,
+          `Subject: ${formatAccount(Destination)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Credential issued successfully' : 'Credential issuance failed'
+        ]
+      };
+
+    case 'CredentialAccept':
+      return {
+        title: 'Credential Accepted',
+        description: `${formatAccount(Account)} accepted a credential that was provisionally issued to them. The credential is now active on the ledger.`,
+        details: [
+          `Accepted by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Credential accepted successfully' : 'Credential acceptance failed'
+        ]
+      };
+
+    case 'CredentialDelete':
+      return {
+        title: 'Credential Revoked',
+        description: `${formatAccount(Account)} deleted a credential from the ledger, effectively revoking it. Revoked credentials can no longer be used for verification.`,
+        details: [
+          `Revoked by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Credential revoked successfully' : 'Credential revocation failed'
+        ]
+      };
+
+    case 'DelegateKeySet':
+      return {
+        title: 'Delegation Permission',
+        description: `${formatAccount(Account)} ${Destination ? `granted ${formatAccount(Destination)} permission to send certain transactions on their behalf` : 'revoked delegation permissions'}. This enables secure account delegation.`,
+        details: [
+          `Account: ${formatAccount(Account)}`,
+          Destination ? `Delegate: ${formatAccount(Destination)}` : 'Delegation revoked',
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Delegation updated successfully' : 'Delegation update failed'
+        ]
+      };
+
+    case 'XChainCreateBridge':
+      return {
+        title: 'Cross-Chain Bridge Created',
+        description: `${formatAccount(Account)} created a bridge between two blockchains. This enables cross-chain value transfers between the XRPL and sidechains.`,
+        details: [
+          `Bridge creator: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Bridge created successfully' : 'Bridge creation failed'
+        ]
+      };
+
+    case 'XChainCommit':
+      return {
+        title: 'Cross-Chain Transfer Started',
+        description: `${formatAccount(Account)} initiated a cross-chain transfer. Funds are locked on this chain and will be claimable on the destination chain.`,
+        details: [
+          `Initiated by: ${formatAccount(Account)}`,
+          Amount ? `Transfer amount: ${formatAmount(Amount)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Transfer committed successfully' : 'Transfer commit failed'
+        ].filter(Boolean)
+      };
+
+    case 'XChainClaim':
+      return {
+        title: 'Cross-Chain Transfer Completed',
+        description: `${formatAccount(Account)} claimed funds from a cross-chain transfer. The transfer from another chain is now complete.`,
+        details: [
+          `Claimed by: ${formatAccount(Account)}`,
+          Amount ? `Amount received: ${formatAmount(Amount)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Cross-chain claim successful' : 'Cross-chain claim failed'
+        ].filter(Boolean)
+      };
+
+    case 'XChainCreateClaimID':
+      return {
+        title: 'Cross-Chain Claim ID Created',
+        description: `${formatAccount(Account)} created a claim ID for a cross-chain transfer. This ID is used to track and complete the transfer on the destination chain.`,
+        details: [
+          `Created by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Claim ID created successfully' : 'Claim ID creation failed'
+        ]
+      };
+
+    case 'XChainAddAccountCreateAttestation':
+      return {
+        title: 'Cross-Chain Attestation',
+        description: `${formatAccount(Account)} provided an attestation for a cross-chain account creation. Attestations verify that transactions occurred on another chain.`,
+        details: [
+          `Attester: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Attestation added successfully' : 'Attestation failed'
+        ]
+      };
+
+    case 'XChainModifyBridge':
+      return {
+        title: 'Cross-Chain Bridge Modified',
+        description: `${formatAccount(Account)} modified settings for a cross-chain bridge. This can update bridge parameters or configuration.`,
+        details: [
+          `Modified by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Bridge modified successfully' : 'Bridge modification failed'
+        ]
+      };
+
+    case 'Remit':
+      return {
+        title: 'Remittance Payment',
+        description: `${formatAccount(Account)} sent a remittance payment${Destination ? ` to ${formatAccount(Destination)}` : ''}. Remit transactions can combine multiple operations in a single transaction.`,
+        details: [
+          `Sender: ${formatAccount(Account)}`,
+          Destination ? `Recipient: ${formatAccount(Destination)}` : null,
+          Amount ? `Amount: ${formatAmount(Amount)}` : null,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Remittance successful' : 'Remittance failed'
+        ].filter(Boolean)
+      };
+
+    case 'Invoke':
+      return {
+        title: 'Hook Invocation',
+        description: `${formatAccount(Account)} invoked a transaction hook. Hooks are smart contract-like functions that execute when triggered by transactions.`,
+        details: [
+          `Invoked by: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Hook invoked successfully' : 'Hook invocation failed'
+        ]
+      };
+
+    case 'Batch':
+      return {
+        title: 'Batch Transaction',
+        description: `${formatAccount(Account)} submitted a batch of up to 8 transactions that succeed or fail atomically. All transactions in the batch execute together or none execute.`,
+        details: [
+          `Batch submitter: ${formatAccount(Account)}`,
+          `Network fee: ${dropsToXrp(Fee)} XRP`,
+          isSuccess ? 'Batch executed successfully' : 'Batch execution failed'
+        ]
+      };
+
+    case 'EnableAmendment':
+      return {
+        title: 'Protocol Amendment Enabled',
+        description: `A protocol amendment was enabled on the XRPL network. Amendments upgrade the network's features and capabilities through validator consensus.`,
+        details: [
+          'System transaction',
+          'Action: Protocol amendment enabled',
+          isSuccess ? 'Amendment enabled successfully' : 'Amendment enable failed'
+        ]
+      };
+
+    case 'SetFee':
+      return {
+        title: 'Network Fee Update',
+        description: `The network's base transaction fee was updated. This system transaction is submitted by validators to adjust fees based on network load.`,
+        details: [
+          'System transaction',
+          'Action: Base fee updated',
+          isSuccess ? 'Fee updated successfully' : 'Fee update failed'
+        ]
+      };
+
+    case 'UNLModify':
+      return {
+        title: 'UNL Modification',
+        description: `The Unique Node List (UNL) was modified. The UNL defines which validators the network trusts for consensus.`,
+        details: [
+          'System transaction',
+          'Action: UNL updated',
+          isSuccess ? 'UNL modified successfully' : 'UNL modification failed'
+        ]
+      };
+
     default:
       return {
         title: `${TransactionType} Transaction`,
@@ -2032,39 +2490,6 @@ const TransactionDetails = ({ txData }) => {
                   </>
                 )}
 
-                {/* Offer Details */}
-                {TransactionType === 'OfferCreate' && (
-                  <>
-                    <DetailRow label="Offer Maker">
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AccountAvatar account={Account} />
-                        <Link href={`/profile/${Account}`} passHref>
-                          <Typography
-                            component="a"
-                            variant="body1"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {Account}
-                          </Typography>
-                        </Link>
-                      </Box>
-                    </DetailRow>
-                    <DetailRow label="Offer Sequence">
-                      <Typography variant="body1">#{Sequence}</Typography>
-                    </DetailRow>
-                    <DetailRow label="Taker Gets">
-                      <AmountDisplay amount={TakerGets} />
-                    </DetailRow>
-                    <DetailRow label="Taker Pays">
-                      <AmountDisplay amount={TakerPays} />
-                    </DetailRow>
-                  </>
-                )}
-
                 {/* Client Information */}
                 {clientInfo && clientInfo.name !== 'N/A' && (
                   <DetailRow label="Platform">
@@ -2107,38 +2532,6 @@ const TransactionDetails = ({ txData }) => {
                       </Typography>
                     </DetailRow>
                   </>
-                )}
-
-                {/* Memos */}
-                {Memos && Memos.length > 0 && (
-                  <DetailRow label="Memo">
-                    <Stack spacing={1}>
-                      {Memos.map((memo) => {
-                        const memoType =
-                          memo.Memo.MemoType &&
-                          CryptoJS.enc.Hex.parse(memo.Memo.MemoType).toString(CryptoJS.enc.Utf8);
-                        const memoData =
-                          memo.Memo.MemoData &&
-                          CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8);
-                        const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
-                        return (
-                          <Box
-                            key={memoKey}
-                            sx={{
-                              p: 1,
-                              background: 'transparent',
-                              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                              borderRadius: 1
-                            }}
-                          >
-                            <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
-                              {[memoType, memoData].filter(Boolean).join(' ')}
-                            </Typography>
-                          </Box>
-                        );
-                      })}
-                    </Stack>
-                  </DetailRow>
                 )}
 
                 {TransactionType === 'OfferCreate' && (
@@ -2929,6 +3322,259 @@ const TransactionDetails = ({ txData }) => {
                   </>
                 )}
 
+                {/* NFTokenBurn Details */}
+                {TransactionType === 'NFTokenBurn' && NFTokenID && (
+                  <DetailRow label="Burned NFT">
+                    <Link href={`/nft/${NFTokenID}`} passHref>
+                      <Typography
+                        component="a"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' },
+                          wordBreak: 'break-all'
+                        }}
+                      >
+                        {NFTokenID}
+                      </Typography>
+                    </Link>
+                  </DetailRow>
+                )}
+
+                {/* AccountSet Details */}
+                {TransactionType === 'AccountSet' && (
+                  <>
+                    {txData.Domain && (
+                      <DetailRow label="Domain">
+                        <Typography variant="body1">
+                          {CryptoJS.enc.Hex.parse(txData.Domain).toString(CryptoJS.enc.Utf8)}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.EmailHash && (
+                      <DetailRow label="Email Hash">
+                        <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                          {txData.EmailHash}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.MessageKey && (
+                      <DetailRow label="Message Key">
+                        <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
+                          {txData.MessageKey}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.SetFlag !== undefined && (
+                      <DetailRow label="Flag Enabled">
+                        <Typography variant="body1">{txData.SetFlag}</Typography>
+                      </DetailRow>
+                    )}
+                    {txData.ClearFlag !== undefined && (
+                      <DetailRow label="Flag Disabled">
+                        <Typography variant="body1">{txData.ClearFlag}</Typography>
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
+                {/* SetRegularKey Details */}
+                {TransactionType === 'SetRegularKey' && txData.RegularKey && (
+                  <DetailRow label="Regular Key">
+                    <Link href={`/profile/${txData.RegularKey}`} passHref>
+                      <Typography
+                        component="a"
+                        variant="body1"
+                        sx={{
+                          color: theme.palette.primary.main,
+                          textDecoration: 'none',
+                          '&:hover': { textDecoration: 'underline' }
+                        }}
+                      >
+                        {txData.RegularKey}
+                      </Typography>
+                    </Link>
+                  </DetailRow>
+                )}
+
+                {/* Check Transactions */}
+                {(TransactionType === 'CheckCreate' || TransactionType === 'CheckCash' || TransactionType === 'CheckCancel') && (
+                  <>
+                    {txData.CheckID && (
+                      <DetailRow label="Check ID">
+                        <Typography variant="body1" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                          {txData.CheckID}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {TransactionType === 'CheckCash' && txData.DeliverMin && (
+                      <DetailRow label="Minimum Delivery">
+                        <AmountDisplay amount={txData.DeliverMin} />
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
+                {/* Escrow Transactions */}
+                {(TransactionType === 'EscrowCreate' || TransactionType === 'EscrowFinish' || TransactionType === 'EscrowCancel') && (
+                  <>
+                    {txData.FinishAfter && (
+                      <DetailRow label="Can Finish After">
+                        <Typography variant="body1">
+                          {new Date(rippleTimeToISO8601(txData.FinishAfter)).toLocaleString()}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.CancelAfter && (
+                      <DetailRow label="Expires After">
+                        <Typography variant="body1">
+                          {new Date(rippleTimeToISO8601(txData.CancelAfter)).toLocaleString()}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.OfferSequence && TransactionType !== 'OfferCancel' && (
+                      <DetailRow label="Escrow Sequence">
+                        <Typography variant="body1">#{txData.OfferSequence}</Typography>
+                      </DetailRow>
+                    )}
+                    {txData.Condition && (
+                      <DetailRow label="Condition">
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                          {txData.Condition}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.Fulfillment && (
+                      <DetailRow label="Fulfillment">
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                          {txData.Fulfillment}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
+                {/* Payment Channel Transactions */}
+                {(TransactionType === 'PaymentChannelCreate' || TransactionType === 'PaymentChannelFund' || TransactionType === 'PaymentChannelClaim') && (
+                  <>
+                    {txData.Channel && (
+                      <DetailRow label="Channel ID">
+                        <Typography variant="body1" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                          {txData.Channel}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.SettleDelay && (
+                      <DetailRow label="Settlement Delay">
+                        <Typography variant="body1">{txData.SettleDelay} seconds</Typography>
+                      </DetailRow>
+                    )}
+                    {txData.PublicKey && (
+                      <DetailRow label="Public Key">
+                        <Typography variant="body2" sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}>
+                          {txData.PublicKey}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.Balance && (
+                      <DetailRow label="Channel Balance">
+                        <AmountDisplay amount={txData.Balance} />
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
+                {/* DID Transactions */}
+                {(TransactionType === 'DIDSet' || TransactionType === 'DIDDelete') && (
+                  <>
+                    {txData.DIDDocument && (
+                      <DetailRow label="DID Document">
+                        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                          {txData.DIDDocument}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {txData.Data && (
+                      <DetailRow label="Data">
+                        <Typography variant="body2" sx={{ wordBreak: 'break-all' }}>
+                          {txData.Data}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
+                {/* Credential Transactions */}
+                {(TransactionType === 'CredentialCreate' || TransactionType === 'CredentialAccept' || TransactionType === 'CredentialDelete') && (
+                  <>
+                    {txData.CredentialType && (
+                      <DetailRow label="Credential Type">
+                        <Typography variant="body1">{txData.CredentialType}</Typography>
+                      </DetailRow>
+                    )}
+                    {txData.Issuer && (
+                      <DetailRow label="Issuer">
+                        <Link href={`/profile/${txData.Issuer}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {txData.Issuer}
+                          </Typography>
+                        </Link>
+                      </DetailRow>
+                    )}
+                    {txData.Subject && (
+                      <DetailRow label="Subject">
+                        <Link href={`/profile/${txData.Subject}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body1"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {txData.Subject}
+                          </Typography>
+                        </Link>
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
+                {/* AMM Create Details */}
+                {TransactionType === 'AMMCreate' && (
+                  <>
+                    {txData.TradingFee !== undefined && (
+                      <DetailRow label="Trading Fee">
+                        <Typography variant="body1">{txData.TradingFee / 1000}%</Typography>
+                      </DetailRow>
+                    )}
+                    {Asset && (
+                      <DetailRow label="Asset 1">
+                        <Typography variant="body1">
+                          {Asset.currency === 'XRP' ? 'XRP' : `${normalizeCurrencyCode(Asset.currency)} (${Asset.issuer?.slice(0, 8)}...)`}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                    {Asset2 && (
+                      <DetailRow label="Asset 2">
+                        <Typography variant="body1">
+                          {Asset2.currency === 'XRP' ? 'XRP' : `${normalizeCurrencyCode(Asset2.currency)} (${Asset2.issuer?.slice(0, 8)}...)`}
+                        </Typography>
+                      </DetailRow>
+                    )}
+                  </>
+                )}
+
                 {displayExchange && isSuccess && (
                   <>
                     <DetailRow label="Exchanged">
@@ -2972,42 +3618,45 @@ const TransactionDetails = ({ txData }) => {
                     <DetailRow label="Rate">
                       <Stack spacing={0.5}>
                         {(() => {
-                          const paidValue = new Decimal(displayExchange.paid.value);
-                          const gotValue = new Decimal(displayExchange.got.value);
+                          try {
+                            const paidValue = new Decimal(displayExchange.paid.value);
+                            const gotValue = new Decimal(displayExchange.got.value);
 
-                          if (
-                            paidValue.isZero() ||
-                            gotValue.isZero() ||
-                            !paidValue.isFinite ||
-                            !gotValue.isFinite
-                          ) {
+                            if (paidValue.isZero() || gotValue.isZero()) {
+                              return (
+                                <Typography variant="body2" color="text.secondary">
+                                  Rate not available
+                                </Typography>
+                              );
+                            }
+
+                            return (
+                              <>
+                                <Typography variant="body2">
+                                  1 {displayExchange.got.currency} ={' '}
+                                  {(() => {
+                                    const rate = paidValue.div(gotValue);
+                                    return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
+                                  })()}{' '}
+                                  {displayExchange.paid.currency}
+                                </Typography>
+                                <Typography variant="body2">
+                                  1 {displayExchange.paid.currency} ={' '}
+                                  {(() => {
+                                    const rate = gotValue.div(paidValue);
+                                    return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
+                                  })()}{' '}
+                                  {displayExchange.got.currency}
+                                </Typography>
+                              </>
+                            );
+                          } catch (error) {
                             return (
                               <Typography variant="body2" color="text.secondary">
                                 Rate not available
                               </Typography>
                             );
                           }
-
-                          return (
-                            <>
-                              <Typography variant="body2">
-                                1 {displayExchange.got.currency} ={' '}
-                                {(() => {
-                                  const rate = paidValue.div(gotValue);
-                                  return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
-                                })()}{' '}
-                                {displayExchange.paid.currency}
-                              </Typography>
-                              <Typography variant="body2">
-                                1 {displayExchange.paid.currency} ={' '}
-                                {(() => {
-                                  const rate = gotValue.div(paidValue);
-                                  return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
-                                })()}{' '}
-                                {displayExchange.got.currency}
-                              </Typography>
-                            </>
-                          );
                         })()}
                       </Stack>
                     </DetailRow>
@@ -3209,42 +3858,45 @@ const TransactionDetails = ({ txData }) => {
                     </Typography>
                     <Stack spacing={0.5}>
                       {(() => {
-                        const paidValue = new Decimal(displayExchange.paid.value);
-                        const gotValue = new Decimal(displayExchange.got.value);
+                        try {
+                          const paidValue = new Decimal(displayExchange.paid.value);
+                          const gotValue = new Decimal(displayExchange.got.value);
 
-                        if (
-                          paidValue.isZero() ||
-                          gotValue.isZero() ||
-                          !paidValue.isFinite ||
-                          !gotValue.isFinite
-                        ) {
+                          if (paidValue.isZero() || gotValue.isZero()) {
+                            return (
+                              <Typography variant="body2" color="text.secondary">
+                                Rate not available
+                              </Typography>
+                            );
+                          }
+
+                          return (
+                            <>
+                              <Typography variant="body2">
+                                1 {displayExchange.got.currency} ={' '}
+                                {(() => {
+                                  const rate = paidValue.div(gotValue);
+                                  return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
+                                })()}{' '}
+                                {displayExchange.paid.currency}
+                              </Typography>
+                              <Typography variant="body2">
+                                1 {displayExchange.paid.currency} ={' '}
+                                {(() => {
+                                  const rate = gotValue.div(paidValue);
+                                  return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
+                                })()}{' '}
+                                {displayExchange.got.currency}
+                              </Typography>
+                            </>
+                          );
+                        } catch (error) {
                           return (
                             <Typography variant="body2" color="text.secondary">
                               Rate not available
                             </Typography>
                           );
                         }
-
-                        return (
-                          <>
-                            <Typography variant="body2">
-                              1 {displayExchange.got.currency} ={' '}
-                              {(() => {
-                                const rate = paidValue.div(gotValue);
-                                return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
-                              })()}{' '}
-                              {displayExchange.paid.currency}
-                            </Typography>
-                            <Typography variant="body2">
-                              1 {displayExchange.paid.currency} ={' '}
-                              {(() => {
-                                const rate = gotValue.div(paidValue);
-                                return formatDecimal(rate, rate.lt(0.000001) ? 15 : 10);
-                              })()}{' '}
-                              {displayExchange.got.currency}
-                            </Typography>
-                          </>
-                        );
                       })()}
                     </Stack>
                   </Box>
