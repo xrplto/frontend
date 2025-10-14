@@ -2237,20 +2237,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {seedAuthStatus === 'password-required' && (
                         <Box sx={{ p: 2 }}>
-                          <Alert severity="error" sx={{ mb: 2 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.85rem' }}>
+                          <Alert severity="error" icon={false} sx={{ mb: 2, py: 1.5 }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.8, fontSize: '0.8rem' }}>
                               If you lose your Secret Seed, we cannot help you
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.75rem', mb: 1.5 }}>
+                            <Typography variant="body2" sx={{ fontSize: '0.72rem', mb: 1, lineHeight: 1.3 }}>
                               xrpl.to cannot recover or reset your seed. Write it down and store it somewhere safe.
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 600, color: 'error.main' }}>
+                            <Typography variant="body2" sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'error.main', mb: 0.3 }}>
                               NEVER share your seed with:
                             </Typography>
-                            <Box component="ul" sx={{ mt: 0.5, mb: 0, pl: 2, fontSize: '0.75rem' }}>
-                              <li>xrpl.to administrators or support staff</li>
+                            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2, fontSize: '0.7rem', lineHeight: 1.4 }}>
+                              <li>xrpl.to admins or support</li>
                               <li>Anyone claiming to be from xrpl.to</li>
-                              <li>Any website or service requesting it</li>
+                              <li>Any website or service</li>
                             </Box>
                           </Alert>
 
@@ -2258,9 +2258,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             display: 'flex',
                             alignItems: 'flex-start',
                             gap: 1,
-                            mb: 2,
-                            p: 1.5,
-                            borderRadius: '8px',
+                            mb: 1.5,
+                            p: 1.2,
+                            borderRadius: '6px',
                             border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
                             cursor: 'pointer',
                             '&:hover': {
@@ -2271,27 +2271,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
                           >
                             <Box sx={{
-                              width: 18,
-                              height: 18,
-                              borderRadius: '4px',
+                              width: 16,
+                              height: 16,
+                              borderRadius: '3px',
                               border: `2px solid ${seedWarningAgreed ? theme.palette.primary.main : alpha(theme.palette.divider, 0.4)}`,
                               background: seedWarningAgreed ? theme.palette.primary.main : 'transparent',
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               flexShrink: 0,
-                              mt: 0.2
+                              mt: 0.1
                             }}>
                               {seedWarningAgreed && (
-                                <Box component="span" sx={{ color: 'white', fontSize: '0.75rem', fontWeight: 600 }}>✓</Box>
+                                <Box component="span" sx={{ color: 'white', fontSize: '0.7rem', fontWeight: 600 }}>✓</Box>
                               )}
                             </Box>
-                            <Typography variant="body2" sx={{ fontSize: '0.8rem', lineHeight: 1.4 }}>
-                              I understand that my Secret Seed is my responsibility. xrpl.to cannot recover it, and I will never share it with anyone.
+                            <Typography variant="body2" sx={{ fontSize: '0.72rem', lineHeight: 1.35 }}>
+                              I understand my Secret Seed is my responsibility. xrpl.to cannot recover it, and I will never share it.
                             </Typography>
                           </Box>
 
-                          <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem', opacity: 0.8 }}>
+                          <Typography variant="body2" sx={{ mb: 1.2, fontSize: '0.75rem', opacity: 0.8 }}>
                             Enter your password to view the seed phrase
                           </Typography>
                           <TextField
