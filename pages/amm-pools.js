@@ -46,7 +46,7 @@ const Controls = styled.div`
 
 const ControlRow = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: center;
   flex-wrap: wrap;
   width: 100%;
@@ -73,15 +73,14 @@ const MobileSection = styled.div`
 `;
 
 const MobileButtonGrid = styled.div`
+  display: flex;
+  gap: 16px;
+
   @media (max-width: 768px) {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
     gap: 8px;
     width: 100%;
-  }
-
-  @media (min-width: 769px) {
-    display: contents;
   }
 `;
 
@@ -334,8 +333,23 @@ function AMMPoolsPage({ data }) {
   };
 
   const formatPair = (pool) => {
-    const asset1 = pool.asset1.currency === 'XRP' ? 'XRP' : pool.asset1.currency.length > 10 ? pool.asset1.currency.substring(0, 10) : pool.asset1.currency;
-    const asset2 = pool.asset2.currency === 'XRP' ? 'XRP' : pool.asset2.currency.length > 10 ? pool.asset2.currency.substring(0, 10) : pool.asset2.currency;
+    const formatCurrency = (cur) => {
+      if (cur === 'XRP') return 'XRP';
+      if (cur.length === 40) {
+        // Convert hex to ASCII
+        const hex = cur.replace(/00+$/, ''); // Remove trailing zeros
+        let str = '';
+        for (let i = 0; i < hex.length; i += 2) {
+          const code = parseInt(hex.substr(i, 2), 16);
+          if (code > 0) str += String.fromCharCode(code);
+        }
+        return str || cur.substring(0, 10);
+      }
+      return cur.length > 10 ? cur.substring(0, 10) : cur;
+    };
+
+    const asset1 = formatCurrency(pool.asset1.currency);
+    const asset2 = formatCurrency(pool.asset2.currency);
     return `${asset1} / ${asset2}`;
   };
 
@@ -389,23 +403,6 @@ function AMMPoolsPage({ data }) {
             </div>
           </ControlRow>
 
-          <ControlRow>
-            <Label darkMode={darkMode}>Status:</Label>
-            <Button
-              darkMode={darkMode}
-              selected={params.status === 'active'}
-              onClick={() => updateParam('status', 'active')}
-            >
-              Active
-            </Button>
-            <Button
-              darkMode={darkMode}
-              selected={params.status === 'all'}
-              onClick={() => updateParam('status', 'all')}
-            >
-              All
-            </Button>
-          </ControlRow>
         </Controls>
 
         <TableWrapper darkMode={darkMode}>
