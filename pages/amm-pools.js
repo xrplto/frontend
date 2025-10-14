@@ -264,10 +264,13 @@ function AMMPoolsPage({ data }) {
 
   const [pools, setPools] = useState(data?.pools || []);
   const [loading, setLoading] = useState(false);
+  const [totalPages, setTotalPages] = useState(data?.totalPages || 0);
+  const [currentPage, setCurrentPage] = useState(0);
 
   const [params, setParams] = useState({
     sortBy: 'fees',
     status: 'active',
+    page: 0,
     limit: 50,
     includeAPY: true
   });
@@ -296,6 +299,8 @@ function AMMPoolsPage({ data }) {
 
       if (response.data?.pools) {
         setPools(response.data.pools);
+        setTotalPages(response.data.totalPages || 0);
+        setCurrentPage(response.data.page || 0);
       }
     } catch (error) {
       console.error('Error loading AMM pools:', error);
@@ -307,7 +312,7 @@ function AMMPoolsPage({ data }) {
 
   useEffect(() => {
     loadPools();
-  }, [params.sortBy, params.status, params.limit]);
+  }, [params.sortBy, params.status, params.limit, params.page]);
 
   const updateParam = (key, value) => {
     setParams(prev => ({ ...prev, [key]: value }));
@@ -441,7 +446,7 @@ function AMMPoolsPage({ data }) {
               </tr>
             </thead>
             <tbody>
-              {pools.slice(0, params.limit).map((pool, idx) => {
+              {pools.map((pool, idx) => {
                 const apy24h = pool.apy24h?.apy || 0;
                 const apy7d = pool.apy7d?.apy || 0;
                 const apyColors24h = getAPYColor(apy24h);
@@ -502,6 +507,28 @@ function AMMPoolsPage({ data }) {
             </tbody>
           </Table>
         </TableWrapper>
+
+        {totalPages > 1 && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 3 }}>
+            <Button
+              darkMode={darkMode}
+              disabled={currentPage === 0}
+              onClick={() => updateParam('page', currentPage - 1)}
+            >
+              Previous
+            </Button>
+            <span style={{ padding: '10px 18px', color: darkMode ? '#fff' : '#333' }}>
+              Page {currentPage + 1} of {totalPages}
+            </span>
+            <Button
+              darkMode={darkMode}
+              disabled={currentPage >= totalPages - 1}
+              onClick={() => updateParam('page', currentPage + 1)}
+            >
+              Next
+            </Button>
+          </Box>
+        )}
       </Container>
 
       <ScrollToTop />
