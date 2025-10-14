@@ -88,20 +88,13 @@ const TokenImage = styled(Image)(({ theme }) => ({
 
 const StyledPopoverPaper = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
-  border: 'none',
-  borderRadius: 16,
-  boxShadow: 'none',
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+  borderRadius: 10,
+  boxShadow: theme.palette.mode === 'dark'
+    ? '0 8px 32px rgba(0,0,0,0.4)'
+    : '0 4px 24px rgba(0,0,0,0.08)',
   overflow: 'hidden',
-  position: 'relative',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 1,
-    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.divider, 0.2)}, transparent)`
-  }
+  position: 'relative'
 }));
 
 const BalanceCard = styled(Card)(({ theme }) => ({
@@ -156,19 +149,22 @@ const WalletContent = ({
   setSeedAuthStatus,
   onCreateNewAccount
 }) => {
+  const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
+  const [showQR, setShowQR] = useState(false);
+
   return (
     <>
-      {/* Header */}
+      {/* Compact Header */}
       <Box sx={{
-        p: 1.5,
+        p: 1.4,
         background: 'transparent',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.15)}`
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
       }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={isEmbedded ? 1.5 : 2} alignItems="center">
+          <Stack direction="row" spacing={0.8} alignItems="center">
             <Box sx={{
-              width: isEmbedded ? 8 : 5,
-              height: isEmbedded ? 8 : 5,
+              width: 5,
+              height: 5,
               borderRadius: '50%',
               background: accountsActivation[accountLogin] === false
                 ? theme.palette.error.main
@@ -176,196 +172,214 @@ const WalletContent = ({
             }} />
             <Typography sx={{
               fontFamily: 'monospace',
-              fontSize: isEmbedded ? '0.8rem' : '0.85rem',
-              fontWeight: 600,
-              letterSpacing: '0.5px'
+              fontSize: '0.75rem',
+              fontWeight: 500,
+              opacity: 0.9
             }}>
-              {truncateAccount(accountLogin, 8)}
+              {truncateAccount(accountLogin, 6)}
             </Typography>
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                navigator.clipboard.writeText(accountLogin);
-                openSnackbar('Address copied', 'success');
-              }}
-              sx={{
-                opacity: 0.5,
-                p: 0.5,
-                '&:hover': {
-                  opacity: 1,
-                  background: alpha(theme.palette.text.primary, 0.04)
-                }
-              }}
-            >
-              <Box component="svg" sx={{ width: 14, height: 14 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-              </Box>
-            </IconButton>
           </Stack>
           <Stack direction="row" spacing={0.5} alignItems="center">
-            {typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`) && (
-              <Box sx={{
-                width: 6,
-                height: 6,
-                borderRadius: '50%',
-                background: theme.palette.warning.main,
-                mr: 0.5
-              }} />
-            )}
             <Typography
               onClick={onBackupSeed}
               sx={{
-                fontSize: '0.7rem',
-                opacity: 0.5,
+                fontSize: '0.65rem',
+                color: needsBackup ? theme.palette.warning.main : theme.palette.text.secondary,
                 cursor: 'pointer',
+                opacity: needsBackup ? 1 : 0.6,
                 '&:hover': {
-                  opacity: 0.8
+                  textDecoration: 'underline',
+                  opacity: 1
                 }
               }}
             >
               backup
             </Typography>
-            <Button
+            <IconButton
               size="small"
               onClick={onClose}
               sx={{
-                p: 0.5,
-                fontSize: '1.2rem',
-                fontWeight: 400,
-                minWidth: 'auto',
-                '&:hover': {
-                  background: alpha(theme.palette.text.primary, 0.04)
-                }
+                p: 0.25,
+                opacity: 0.4,
+                '&:hover': { opacity: 1 }
               }}
             >
-              ×
-            </Button>
+              <Box component="svg" sx={{ width: 14, height: 14 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </Box>
+            </IconButton>
           </Stack>
         </Stack>
       </Box>
 
-      {/* Balance Display */}
+      {/* Streamlined Balance */}
       <Box sx={{
-        p: isEmbedded ? 2 : 2.5,
+        p: 2,
         textAlign: 'center',
         background: 'transparent'
       }}>
         <Typography sx={{
-          fontSize: isEmbedded ? '2rem' : '2.5rem',
-          fontWeight: 500,
+          fontSize: '1.8rem',
+          fontWeight: 400,
           lineHeight: 1,
           fontFamily: 'system-ui',
-          color: theme.palette.text.primary,
-          mb: isEmbedded ? 0.5 : 0.5
+          color: theme.palette.text.primary
         }}>
           {accountTotalXrp || accountBalance?.curr1?.value || '0'}
         </Typography>
         <Typography sx={{
-          fontSize: isEmbedded ? '0.7rem' : '0.75rem',
-          textTransform: 'uppercase',
-          letterSpacing: isEmbedded ? '1.5px' : '2px',
-          opacity: 0.6,
-          fontWeight: 400
+          fontSize: '0.65rem',
+          letterSpacing: '1px',
+          opacity: 0.5,
+          fontWeight: 400,
+          mt: 0.3
         }}>
-          XRP Balance
+          XRP BALANCE
         </Typography>
 
-        {typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`) && (
-          <Box
+        {/* Backup Warning */}
+        {needsBackup && (
+          <Chip
+            label="⚠ Backup needed"
+            size="small"
             onClick={onBackupSeed}
             sx={{
-              mt: 1.5,
-              px: 1.5,
-              py: 0.8,
-              borderRadius: '6px',
-              background: alpha(theme.palette.warning.main, 0.1),
-              border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+              mt: 1,
+              height: 20,
+              fontSize: '0.6rem',
+              backgroundColor: alpha(theme.palette.warning.main, 0.1),
+              color: theme.palette.warning.main,
+              border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
               cursor: 'pointer',
               '&:hover': {
-                background: alpha(theme.palette.warning.main, 0.15)
+                backgroundColor: alpha(theme.palette.warning.main, 0.15)
               }
             }}
+          />
+        )}
+
+        {/* Action Buttons */}
+        <Stack direction="row" spacing={0.5} justifyContent="center" sx={{ mt: 1 }}>
+          <IconButton
+            size="small"
+            onClick={() => {
+              navigator.clipboard.writeText(accountLogin);
+              openSnackbar('Address copied', 'success');
+            }}
+            title="Copy address"
+            sx={{
+              p: 0.6,
+              opacity: 0.6,
+              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+            }}
           >
-            <Typography sx={{
-              fontSize: '0.7rem',
-              color: theme.palette.warning.main,
-              fontWeight: 500
-            }}>
-              ⚠ Backup your wallet
-            </Typography>
+            <Box component="svg" sx={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+            </Box>
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => setShowQR(!showQR)}
+            title="Show QR code"
+            sx={{
+              p: 0.6,
+              opacity: 0.6,
+              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+            }}
+          >
+            <Box component="svg" sx={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="7" height="7"/>
+              <rect x="14" y="3" width="7" height="7"/>
+              <rect x="3" y="14" width="7" height="7"/>
+              <rect x="15" y="15" width="5" height="5"/>
+              <rect x="11" y="11" width="2" height="2"/>
+            </Box>
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={onBackupSeed}
+            title="Backup seed"
+            sx={{
+              p: 0.6,
+              opacity: 0.6,
+              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+            }}
+          >
+            <Box component="svg" sx={{ width: 16, height: 16 }} viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </Box>
+          </IconButton>
+        </Stack>
+
+        {/* QR Code Display */}
+        {showQR && (
+          <Box sx={{
+            mt: 1,
+            p: 1,
+            borderRadius: '8px',
+            background: 'white',
+            display: 'inline-block'
+          }}>
+            <Box
+              component="img"
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${accountLogin}`}
+              alt="QR Code"
+              sx={{ display: 'block', width: 120, height: 120 }}
+            />
           </Box>
         )}
       </Box>
 
-      {/* Stats Grid */}
-      <Box sx={{ px: isEmbedded ? 1.5 : 2, pb: isEmbedded ? 1.5 : 2 }}>
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 0.8,
-          mb: isEmbedded ? 1.5 : 2
-        }}>
-          <Box sx={{
-            p: isEmbedded ? 1 : 1.5,
-            borderRadius: '8px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-            background: 'transparent',
-            textAlign: 'center'
-          }}>
-            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 500 }}>
-              {accountBalance?.curr1?.value || '0'}
-            </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Available</Typography>
-          </Box>
-          <Box sx={{
-            p: isEmbedded ? 1 : 1.5,
-            borderRadius: '8px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-            background: 'transparent',
-            textAlign: 'center'
-          }}>
-            <Typography sx={{ fontSize: isEmbedded ? '1rem' : '1.2rem', fontWeight: 500, color: theme.palette.warning.main }}>
-              {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'}
-            </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Reserved</Typography>
-          </Box>
-          <Box sx={{
-            p: isEmbedded ? 1 : 1.5,
-            borderRadius: '8px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-            background: 'transparent',
-            textAlign: 'center'
-          }}>
-            <Typography sx={{ fontSize: isEmbedded ? '0.9rem' : '1rem', fontWeight: 500 }}>
-              {accountTotalXrp || '0'}
-            </Typography>
-            <Typography sx={{ fontSize: isEmbedded ? '0.55rem' : '0.6rem', opacity: 0.6 }}>Total</Typography>
-          </Box>
-        </Box>
-
+      {/* Inline Stats */}
+      <Box sx={{ px: 1.6, pb: 1.4 }}>
+        <Stack direction="row" spacing={0.5} justifyContent="center">
+          <Chip
+            label={`${accountBalance?.curr1?.value || '0'} available`}
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: '0.65rem',
+              fontWeight: 400,
+              backgroundColor: 'transparent',
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              '& .MuiChip-label': { px: 1 }
+            }}
+          />
+          <Chip
+            label={`${accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved`}
+            size="small"
+            sx={{
+              height: 22,
+              fontSize: '0.65rem',
+              fontWeight: 400,
+              backgroundColor: 'transparent',
+              border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
+              color: theme.palette.warning.main,
+              '& .MuiChip-label': { px: 1 }
+            }}
+          />
+        </Stack>
       </Box>
 
-      {/* Accounts List */}
+      {/* Accounts List - Compact */}
       {profiles.length > 1 && (
         <Box sx={{
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+          py: 1,
+          px: 1.4
         }}>
           <Typography sx={{
-            px: 2,
-            py: 1,
-            fontSize: '0.7rem',
-            fontWeight: 600,
-            opacity: 0.5,
+            fontSize: '0.6rem',
+            fontWeight: 400,
+            opacity: 0.4,
             textTransform: 'uppercase',
-            letterSpacing: '1px'
+            letterSpacing: '0.5px',
+            mb: 0.5
           }}>
-            All Accounts
+            Accounts
           </Typography>
           {[...profiles].sort((a, b) => {
-            // Current account first, then by creation time
             if (a.account === accountLogin) return -1;
             if (b.account === accountLogin) return 1;
             return (a.createdAt || 0) - (b.createdAt || 0);
@@ -383,22 +397,24 @@ const WalletContent = ({
                   }
                 }}
                 sx={{
-                  px: 2,
-                  py: 1.2,
+                  py: 0.6,
+                  px: 0.8,
+                  my: 0.2,
                   cursor: isCurrent ? 'default' : 'pointer',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  background: isCurrent ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
+                  borderRadius: '6px',
+                  background: isCurrent ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
                   '&:hover': !isCurrent ? {
-                    background: alpha(theme.palette.primary.main, 0.05)
+                    background: alpha(theme.palette.text.primary, 0.03)
                   } : {}
                 }}
               >
-                <Stack direction="row" spacing={1.5} alignItems="center">
+                <Stack direction="row" spacing={0.8} alignItems="center">
                   <Box sx={{
-                    width: 8,
-                    height: 8,
+                    width: 4,
+                    height: 4,
                     borderRadius: '50%',
                     background: accountsActivation[account] === false
                       ? theme.palette.error.main
@@ -406,23 +422,23 @@ const WalletContent = ({
                   }} />
                   <Typography sx={{
                     fontFamily: 'monospace',
-                    fontSize: '0.8rem',
-                    fontWeight: isCurrent ? 600 : 400
+                    fontSize: '0.7rem',
+                    fontWeight: isCurrent ? 500 : 400,
+                    opacity: isCurrent ? 1 : 0.8
                   }}>
-                    {truncateAccount(account, 8)}
+                    {truncateAccount(account, 6)}
                   </Typography>
                   {isCurrent && (
                     <Typography sx={{
-                      fontSize: '0.65rem',
-                      opacity: 0.5,
-                      fontWeight: 500
+                      fontSize: '0.55rem',
+                      opacity: 0.4
                     }}>
-                      (current)
+                      current
                     </Typography>
                   )}
                 </Stack>
                 {!isCurrent && (
-                  <Button
+                  <IconButton
                     size="small"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -430,18 +446,15 @@ const WalletContent = ({
                       onRemoveProfile(account);
                     }}
                     sx={{
-                      opacity: 0.5,
-                      fontSize: '1.2rem',
-                      fontWeight: 400,
-                      minWidth: 'auto',
-                      '&:hover': {
-                        opacity: 1,
-                        background: alpha(theme.palette.error.main, 0.04)
-                      }
+                      p: 0.2,
+                      opacity: 0,
+                      '&:hover': { opacity: 0.7 }
                     }}
                   >
-                    ×
-                  </Button>
+                    <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 6L6 18M6 6l12 12"/>
+                    </Box>
+                  </IconButton>
                 )}
               </Box>
             );
@@ -450,76 +463,53 @@ const WalletContent = ({
       )}
 
 
-      {/* Bottom Actions */}
+      {/* Bottom Actions - Compact */}
       <Box sx={{
-        p: 1.5,
-        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        p: 1.2,
+        borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
         display: 'flex',
-        flexDirection: 'column',
-        gap: 0.8
+        gap: 0.6
       }}>
-        {/* New Account Button - For all wallet types */}
-        {onCreateNewAccount && (
+        {/* New Account Button */}
+        {onCreateNewAccount && profiles.length < 5 && (
           <Button
             onClick={onCreateNewAccount}
-            variant="outlined"
+            variant="text"
             size="small"
-            disabled={(() => {
-              const totalCount = profiles.some(p => p.account === accountLogin)
-                ? profiles.length
-                : profiles.length + 1;
-              return totalCount >= 5;
-            })()}
             sx={{
-              width: '100%',
-              py: 0.8,
-              borderRadius: '8px',
-              borderWidth: '1.5px',
-              borderColor: alpha('#4285f4', 0.3),
-              background: 'transparent',
+              flex: 1,
+              py: 0.6,
+              borderRadius: '6px',
               color: '#4285f4',
-              fontWeight: 400,
-              fontSize: '0.8rem',
+              fontSize: '0.7rem',
               textTransform: 'none',
+              fontWeight: 400,
               '&:hover': {
-                borderWidth: '1.5px',
-                borderColor: '#4285f4',
-                background: alpha('#4285f4', 0.04)
-              },
-              '&:disabled': {
-                opacity: 0.4,
-                borderColor: alpha(theme.palette.divider, 0.3)
+                background: alpha('#4285f4', 0.06)
               }
             }}
           >
-            {(() => {
-              const totalCount = profiles.some(p => p.account === accountLogin)
-                ? profiles.length
-                : profiles.length + 1;
-              return totalCount >= 5 ? 'Maximum 5 accounts' : `+ New Account (${totalCount}/5)`;
-            })()}
+            + Account ({profiles.length}/5)
           </Button>
         )}
 
+        {/* Logout */}
         <Button
           onClick={onLogout}
-          variant="outlined"
+          variant="text"
           size="small"
           sx={{
-            width: '100%',
-            py: 0.8,
-            borderRadius: '8px',
-            borderWidth: '1.5px',
-            borderColor: alpha(theme.palette.error.main, 0.3),
-            background: 'transparent',
-            color: theme.palette.error.main,
-            fontWeight: 400,
-            fontSize: '0.8rem',
+            flex: profiles.length >= 5 ? 1 : 'none',
+            px: profiles.length >= 5 ? 0 : 2,
+            py: 0.6,
+            borderRadius: '6px',
+            color: theme.palette.text.secondary,
+            fontSize: '0.7rem',
             textTransform: 'none',
+            fontWeight: 400,
             '&:hover': {
-              borderWidth: '1.5px',
-              borderColor: theme.palette.error.main,
-              background: alpha(theme.palette.error.main, 0.04)
+              color: theme.palette.error.main,
+              background: alpha(theme.palette.error.main, 0.06)
             }
           }}
         >
@@ -1285,12 +1275,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const walletId = `${profile.provider}_${profile.provider_id}`;
         wallet = await walletStorage.findWalletBySocialId(walletId, seedPassword);
       } else if (profile.wallet_type === 'device') {
-        // Device wallets - use password
-        const wallets = await walletStorage.getWallets(seedPassword);
-        wallet = wallets.find(w => w.address === profile.address);
+        // Device wallets - try multiple retrieval methods
+        try {
+          // First try getting by address directly
+          wallet = await walletStorage.getWallet(profile.address, seedPassword);
+        } catch (e) {
+          // If that fails, try getting all wallets
+          const wallets = await walletStorage.getAllWallets(seedPassword);
+          wallet = wallets.find(w => w.address === profile.address);
+        }
       } else {
         // Other wallets use address lookup
         wallet = await walletStorage.getWallet(profile.address, seedPassword);
+      }
+
+      // Also check if seed exists in profile (for legacy wallets)
+      if (!wallet && profile.seed) {
+        wallet = { seed: profile.seed };
       }
 
       if (wallet && wallet.seed) {
@@ -1300,14 +1301,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setSeedPassword('');
         setShowSeedPassword(false);
         // Mark wallet as backed up
-        localStorage.removeItem(`wallet_needs_backup_${profile.address}`);
+        localStorage.removeItem(`wallet_needs_backup_${profile.address || profile.account}`);
       } else {
-        throw new Error('Wallet not found');
+        throw new Error('Wallet not found or incorrect password');
       }
     } catch (error) {
       devError('Error retrieving wallet:', error);
       openSnackbar('Incorrect password', 'error');
       setSeedPassword('');
+      setSeedAuthStatus('password-required');
     }
   };
 
@@ -2359,13 +2361,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           TransitionProps={{ timeout: 0 }}
           sx={{
             '& .MuiDialog-paper': {
-              borderRadius: '12px',
-              maxWidth: '320px',
+              borderRadius: '10px',
+              width: '280px',
+              maxWidth: '280px',
               background: 'transparent',
               boxShadow: 'none',
               position: 'fixed',
-              top: '64px',
-              right: '16px',
+              top: '60px',
+              right: '12px',
               left: 'auto',
               transform: 'none !important',
               margin: 0,
