@@ -1316,6 +1316,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleImportSeed = async () => {
     setIsCreatingWallet(true);
+    setOAuthPasswordError('Generating wallets from seed...');
     try {
       // Validate seed
       const seed = importSeed.trim();
@@ -1329,18 +1330,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       devLog(`Importing ${algorithm} wallet from seed`);
 
-      // Create wallet from seed with correct algorithm
-      let wallet;
+      // Create first wallet from seed to validate
+      let firstWallet;
       try {
-        // The second parameter should be the algorithm string directly, not an object
-        wallet = XRPLWallet.fromSeed(seed, algorithm);
-        devLog(`Successfully created wallet with address: ${wallet.address}`);
+        firstWallet = XRPLWallet.fromSeed(seed, algorithm);
+        devLog(`Successfully created wallet with address: ${firstWallet.address}`);
       } catch (seedError) {
         throw new Error(`Invalid ${algorithm} seed: ${seedError.message}`);
       }
 
       // Verify the wallet was created successfully
-      if (!wallet.address || !wallet.publicKey) {
+      if (!firstWallet.address || !firstWallet.publicKey) {
         throw new Error('Failed to derive wallet from seed');
       }
 
@@ -1350,20 +1350,54 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userStr = sessionStorage.getItem('oauth_temp_user');
       const user = JSON.parse(userStr);
 
-      // Create wallet profile
-      const walletProfile = {
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        seed: wallet.seed,
+      // Create all 5 wallets
+      const wallets = [];
+
+      // First wallet is the imported seed wallet
+      const firstWalletProfile = {
+        accountIndex: 0,
+        account: firstWallet.address,
+        address: firstWallet.address,
+        publicKey: firstWallet.publicKey,
+        seed: firstWallet.seed,
         wallet_type: 'oauth',
         provider: provider,
+        provider_id: user.id,
         imported: true,
-        xrp: '0'
+        xrp: '0',
+        createdAt: Date.now()
       };
+      wallets.push(firstWalletProfile);
+      await walletStorage.storeWallet(firstWalletProfile, oauthPassword);
 
-      // Store encrypted with password
-      await walletStorage.storeWallet(walletProfile, oauthPassword);
+      setOAuthPasswordError(`Created wallet 1/5...`);
+
+      // Generate 4 additional random wallets
+      for (let i = 1; i < 5; i++) {
+        const wallet = generateRandomWallet();
+
+        const walletData = {
+          accountIndex: i,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'oauth',
+          provider: provider,
+          provider_id: user.id,
+          xrp: '0',
+          createdAt: Date.now()
+        };
+
+        wallets.push(walletData);
+        await walletStorage.storeWallet(walletData, oauthPassword);
+
+        setOAuthPasswordError(`Created wallet ${i + 1}/5...`);
+      }
+
+      // Store password for provider
+      const walletId = `${provider}_${user.id}`;
+      await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
 
       // Clear session
       sessionStorage.removeItem('oauth_temp_token');
@@ -1375,15 +1409,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       await walletStorage.setSecureItem('authMethod', provider);
       await walletStorage.setSecureItem('user', user);
 
-      // Login
-      doLogIn(walletProfile, profiles);
+      // Add all wallets to profiles
+      const allProfiles = [...profiles];
+      wallets.forEach(w => {
+        if (!allProfiles.find(p => p.account === w.address)) {
+          allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
+        }
+      });
+
+      // Login with first wallet (the imported one)
+      doLogIn(wallets[0], allProfiles);
 
       setShowOAuthPasswordSetup(false);
       setOpenWalletModal(false);
       setOAuthPassword('');
       setImportSeed('');
 
-      openSnackbar('Wallet imported from seed!', 'success');
+      openSnackbar('Seed imported! Created 5 wallets (1 from seed, 4 new)', 'success');
     } catch (error) {
       setOAuthPasswordError(error.message || 'Invalid seed phrase');
     } finally {
@@ -3432,7 +3474,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               </Box>
 
               {oauthPasswordError && (
-                <Alert severity="error" onClose={() => setOAuthPasswordError('')}>
+                <Alert
+                  severity={oauthPasswordError.includes('...') || oauthPasswordError.includes('wallet') ? "info" : "error"}
+                  onClose={oauthPasswordError.includes('...') ? null : () => setOAuthPasswordError('')}
+                  icon={oauthPasswordError.includes('...') ? <Box sx={{ width: 20, height: 20 }} className="MuiCircularProgress-root MuiCircularProgress-colorPrimary"><svg className="MuiCircularProgress-svg" viewBox="22 22 44 44"><circle className="MuiCircularProgress-circle MuiCircularProgress-circleIndeterminate" cx="44" cy="44" r="20.2" fill="none" strokeWidth="3.6" style={{ strokeDasharray: '80px, 200px', strokeDashoffset: 0, animation: 'MuiCircularProgress-keyframes-circular-rotate 1.4s linear infinite' }}></circle></svg></Box> : undefined}
+                >
                   {oauthPasswordError}
                 </Alert>
               )}
@@ -3564,8 +3610,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   {importMethod === 'import' ?
                     <><strong>Note:</strong> You'll be importing your existing wallet with its current balance and history.</> :
                     importMethod === 'seed' ?
-                    <><strong>Note:</strong> Importing a seed will restore your wallet with its full balance and history.</> :
-                    <><strong>Important:</strong> Store this password safely. You'll need it to export your wallet or recover it on a new device.</>
+                    <><strong>Note:</strong> Your seed will be used for wallet 1. We'll generate 4 additional wallets for easy account management (5 total).</> :
+                    <><strong>Important:</strong> We'll create 5 wallets for you. Store this password safely - you'll need it to export your wallets or recover them on a new device.</>
                   }
                 </Typography>
               </Alert>
