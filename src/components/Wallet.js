@@ -2242,15 +2242,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               If you lose your Secret Seed, we cannot help you
                             </Typography>
                             <Typography variant="body2" sx={{ fontSize: '0.72rem', mb: 1, lineHeight: 1.3 }}>
-                              xrpl.to cannot recover or reset your seed. Write it down and store it somewhere safe.
+                              Your seed is stored locally in your browser only. xrpl.to has no access to it and cannot recover or reset it. Write it down and store it somewhere safe.
                             </Typography>
                             <Typography variant="body2" sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'error.main', mb: 0.3 }}>
                               NEVER share your seed with:
                             </Typography>
                             <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2, fontSize: '0.7rem', lineHeight: 1.4 }}>
-                              <li>xrpl.to admins or support</li>
+                              <li>xrpl.to admins or support (we cannot see your seed)</li>
                               <li>Anyone claiming to be from xrpl.to</li>
                               <li>Any website or service</li>
+                              <li>Random people on the internet</li>
                             </Box>
                           </Alert>
 
