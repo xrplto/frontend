@@ -498,8 +498,8 @@ function AMMPoolsPage({ data }) {
                 <Th darkMode={darkMode} align="right">Liquidity</Th>
                 <Th darkMode={darkMode} align="right">24h Volume</Th>
                 <Th darkMode={darkMode} align="right">7d Volume</Th>
-                <Th darkMode={darkMode} align="right">24h Trades</Th>
-                <Th darkMode={darkMode} align="right">7d Trades</Th>
+                <Th darkMode={darkMode} align="right">24h Fees</Th>
+                <Th darkMode={darkMode} align="right">7d Fees</Th>
                 <Th darkMode={darkMode} align="center">24h APY</Th>
                 <Th darkMode={darkMode} align="center">7d APY</Th>
               </tr>
@@ -545,10 +545,10 @@ function AMMPoolsPage({ data }) {
                       <span>{formatCurrency(pool.apy7d?.volume || 0)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
-                      <span>{fNumber(pool.apy24h?.trades || 0)}</span>
+                      <span>{formatCurrency(pool.apy24h?.fees || 0)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
-                      <span>{fNumber(pool.apy7d?.trades || 0)}</span>
+                      <span>{formatCurrency(pool.apy7d?.fees || 0)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="center">
                       <APYBadge {...apyColors24h}>
