@@ -653,9 +653,7 @@ export const SummaryTag = ({ tagName }) => {
       <TagTitle>Top {tagName} Tokens Ranked by Trading Volume</TagTitle>
       <TagSubtitle>
         <ContentTypography>
-          This page showcases the top {tagName} tokens, ranked by 24-hour volume in descending
-          order, with the largest volume first. To reorder the list, simply click on one of the
-          options, such as 24h or 7d, for a different perspective on the sector.
+          Top {tagName} tokens by 24h volume. Sort by price change, market cap, or liquidity to analyze {tagName.toLowerCase()} market trends.
         </ContentTypography>
       </TagSubtitle>
     </TagContainer>
@@ -700,7 +698,7 @@ export const SummaryWatchList = () => {
       <WatchTitle>My Token Watchlist</WatchTitle>
       {!account && (
         <WatchSubtitle>
-          <ContentTypography>Please log in to view your Watchlist.</ContentTypography>
+          <ContentTypography>Track your favorite XRPL tokens. Log in to manage your personalized watchlist.</ContentTypography>
         </WatchSubtitle>
       )}
     </WatchContainer>
