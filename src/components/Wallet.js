@@ -2929,18 +2929,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               sessionStorage.removeItem('oauth_temp_provider');
               sessionStorage.removeItem('oauth_temp_user');
               sessionStorage.removeItem('oauth_action');
+              // Clear input fields
+              setOAuthPassword('');
+              setOAuthConfirmPassword('');
+              setImportSeed('');
+              setImportFile(null);
+              setOAuthPasswordError('');
                   }
           }}
           maxWidth="sm"
           fullWidth
         >
           <DialogContent>
-            <Stack spacing={3}>
+            <Stack spacing={2.5}>
               <Box>
-                <Typography variant="h5" gutterBottom>
+                <Typography variant="h6" sx={{ fontWeight: 500, fontSize: '1.1rem', mb: 0.5 }}>
                   Setup Your Wallet
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
                   Choose to create a new wallet or import an existing one.
                 </Typography>
               </Box>
@@ -2952,7 +2958,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 p: 0.5,
                 background: alpha(theme.palette.divider, 0.05),
                 borderRadius: '8px'
-              }}>
+              }} role="tablist" aria-label="Wallet setup method">
                 <Button
                   variant={importMethod === 'new' ? 'contained' : 'outlined'}
                   size="small"
@@ -2961,10 +2967,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setImportFile(null);
                     setImportSeed('');
                   }}
+                  role="tab"
+                  aria-selected={importMethod === 'new'}
+                  aria-label="Create new wallet"
                   sx={{
                     flex: 1,
-                    fontSize: '0.75rem',
-                    py: 0.8
+                    fontSize: '0.8rem',
+                    py: 0.8,
+                    fontWeight: 400
                   }}
                 >
                   New
@@ -2976,10 +2986,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setImportMethod('seed');
                     setImportFile(null);
                   }}
+                  role="tab"
+                  aria-selected={importMethod === 'seed'}
+                  aria-label="Import from seed phrase"
                   sx={{
                     flex: 1,
-                    fontSize: '0.75rem',
-                    py: 0.8
+                    fontSize: '0.8rem',
+                    py: 0.8,
+                    fontWeight: 400
                   }}
                 >
                   Seed
@@ -2991,10 +3005,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setImportMethod('import');
                     setImportSeed('');
                   }}
+                  role="tab"
+                  aria-selected={importMethod === 'import'}
+                  aria-label="Import from file"
                   sx={{
                     flex: 1,
-                    fontSize: '0.75rem',
-                    py: 0.8
+                    fontSize: '0.8rem',
+                    py: 0.8,
+                    fontWeight: 400
                   }}
                 >
                   File
@@ -3017,18 +3035,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   fullWidth
                   multiline
                   rows={2}
+                  inputProps={{
+                    'aria-label': 'Family seed phrase',
+                    'aria-describedby': 'seed-helper-text'
+                  }}
                   helperText={
                     importSeed.startsWith('sEd') ? '✓ Ed25519 seed detected' :
                     importSeed.startsWith('s') ? '✓ secp256k1 seed detected' :
                     'Your XRP Ledger secret key (starts with "s")'
                   }
+                  FormHelperTextProps={{
+                    id: 'seed-helper-text'
+                  }}
                   sx={{
                     '& .MuiInputBase-input': {
                       fontFamily: 'monospace',
                       fontSize: '0.85rem'
                     },
                     '& .MuiFormHelperText-root': {
-                      color: importSeed.startsWith('s') ? 'success.main' : 'text.secondary'
+                      color: importSeed.startsWith('s') ? 'success.main' : 'text.secondary',
+                      fontSize: '0.75rem'
                     }
                   }}
                 />
@@ -3037,25 +3063,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               {/* File Upload for Import */}
               {importMethod === 'import' && (
                 <Box>
-                  <Typography variant="body2" sx={{ mb: 1, fontSize: '0.85rem' }}>
+                  <Typography variant="body2" component="label" htmlFor="wallet-file-input" sx={{ mb: 1, fontSize: '0.85rem' }}>
                     Select your encrypted wallet backup file
                   </Typography>
                   <Button
                     variant="outlined"
                     component="label"
                     fullWidth
+                    aria-label={importFile ? `File selected: ${importFile.name}` : 'Choose wallet backup file'}
                     sx={{
-                      py: 1.5,
+                      py: 1.2,
                       borderStyle: 'dashed',
-                      borderWidth: '2px',
-                      backgroundColor: importFile ? alpha(theme.palette.success.main, 0.05) : 'transparent'
+                      borderWidth: '1.5px',
+                      backgroundColor: importFile ? alpha(theme.palette.success.main, 0.05) : 'transparent',
+                      fontWeight: 400,
+                      fontSize: '0.85rem'
                     }}
                   >
                     {importFile ? `✓ ${importFile.name}` : 'Choose Wallet File'}
                     <input
+                      id="wallet-file-input"
                       type="file"
                       hidden
                       accept=".json,application/json"
+                      aria-label="Upload wallet backup file"
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
@@ -3073,9 +3104,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 value={oauthPassword}
                 onChange={(e) => setOAuthPassword(e.target.value)}
                 fullWidth
+                autoComplete="off"
+                inputProps={{
+                  'aria-label': importMethod === 'import' ? 'Wallet password' : 'New password',
+                  'aria-describedby': 'password-helper-text',
+                  autoComplete: 'off'
+                }}
                 helperText={importMethod === 'import' ?
                   'Enter the password used when you backed up this wallet' :
                   'Minimum 8 characters'}
+                FormHelperTextProps={{
+                  id: 'password-helper-text'
+                }}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -3083,6 +3123,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         onClick={() => setShowOAuthPassword(!showOAuthPassword)}
                         edge="end"
                         size="small"
+                        aria-label={showOAuthPassword ? 'Hide password' : 'Show password'}
                       >
                         {showOAuthPassword ? <VisibilityOff /> : <Visibility />}
                       </IconButton>
@@ -3098,19 +3139,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   value={oauthConfirmPassword}
                   onChange={(e) => setOAuthConfirmPassword(e.target.value)}
                   fullWidth
+                  autoComplete="off"
+                  inputProps={{
+                    'aria-label': 'Confirm new password',
+                    autoComplete: 'off'
+                  }}
                 />
               )}
 
-              <Alert severity="info">
-                <Typography variant="body2">
+              <Alert severity="info" sx={{ py: 1 }}>
+                <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
                   {importMethod === 'import' ?
                     <><strong>Note:</strong> You'll be importing your existing wallet with its current balance and history.</> :
+                    importMethod === 'seed' ?
+                    <><strong>Note:</strong> Importing a seed will restore your wallet with its full balance and history.</> :
                     <><strong>Important:</strong> Store this password safely. You'll need it to export your wallet or recover it on a new device.</>
                   }
                 </Typography>
               </Alert>
 
-              <Box sx={{ display: 'flex', gap: 2 }}>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
                 <Button
                   variant="outlined"
                   fullWidth
@@ -3121,8 +3169,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     sessionStorage.removeItem('oauth_temp_provider');
                     sessionStorage.removeItem('oauth_temp_user');
                     sessionStorage.removeItem('oauth_action');
+                    // Clear input fields
+                    setOAuthPassword('');
+                    setOAuthConfirmPassword('');
+                    setImportSeed('');
+                    setImportFile(null);
+                    setOAuthPasswordError('');
                               }}
                   disabled={isCreatingWallet}
+                  aria-label="Cancel wallet setup"
+                  sx={{
+                    fontSize: '0.85rem',
+                    fontWeight: 400,
+                    py: 1
+                  }}
                 >
                   Cancel
                 </Button>
@@ -3134,6 +3194,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     (importMethod === 'new' && !oauthConfirmPassword) ||
                     (importMethod === 'import' && !importFile) ||
                     (importMethod === 'seed' && !importSeed)}
+                  aria-label={isCreatingWallet ? 'Processing wallet setup' :
+                    (importMethod === 'seed' ? 'Import wallet from seed' :
+                     importMethod === 'import' ? 'Import wallet from file' : 'Create new wallet')}
+                  sx={{
+                    fontSize: '0.85rem',
+                    fontWeight: 400,
+                    py: 1
+                  }}
                 >
                   {isCreatingWallet ?
                     (importMethod === 'seed' ? 'Importing Seed...' :
