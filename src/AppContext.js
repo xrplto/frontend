@@ -161,7 +161,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
-    // Clear ALL storage SYNCHRONOUSLY (no state updates)
+    // Clear ALL storage (passwords are safely in IndexedDB)
     localStorage.clear();
     sessionStorage.clear();
   };

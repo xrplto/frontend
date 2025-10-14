@@ -163,9 +163,62 @@ export class UnifiedWalletStorage {
     }
   }
 
+  // Store provider password in IndexedDB (safer than localStorage)
+  async storeProviderPassword(providerId, password) {
+    const db = await this.initDB();
+    const encrypted = await this.encryptForLocalStorage(password);
+
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(['credentials'], 'readwrite');
+      const store = transaction.objectStore('credentials');
+
+      const record = {
+        id: `pwd_${providerId}`,
+        providerId: providerId,
+        data: encrypted,
+        timestamp: Date.now()
+      };
+
+      const request = store.put(record);
+      request.onsuccess = () => resolve();
+      request.onerror = () => reject(request.error);
+    });
+  }
+
+  async getProviderPassword(providerId) {
+    try {
+      const db = await this.initDB();
+
+      return new Promise(async (resolve, reject) => {
+        const transaction = db.transaction(['credentials'], 'readonly');
+        const store = transaction.objectStore('credentials');
+        const request = store.get(`pwd_${providerId}`);
+
+        request.onsuccess = async () => {
+          if (request.result && request.result.data) {
+            const decrypted = await this.decryptFromLocalStorage(request.result.data);
+            resolve(decrypted);
+          } else {
+            resolve(null);
+          }
+        };
+        request.onerror = () => resolve(null);
+      });
+    } catch (error) {
+      devError('Error getting provider password:', error);
+      return null;
+    }
+  }
+
   // Secure localStorage wrapper methods
   async setSecureItem(key, value) {
     if (typeof window === 'undefined') return;
+
+    // For wallet passwords, use IndexedDB instead
+    if (key.startsWith('wallet_pwd_')) {
+      const providerId = key.replace('wallet_pwd_', '');
+      return await this.storeProviderPassword(providerId, value);
+    }
 
     const encrypted = await this.encryptForLocalStorage(value);
     localStorage.setItem(key + '_enc', encrypted);
@@ -176,6 +229,13 @@ export class UnifiedWalletStorage {
 
   async getSecureItem(key) {
     if (typeof window === 'undefined') return null;
+
+    // For wallet passwords, check IndexedDB first
+    if (key.startsWith('wallet_pwd_')) {
+      const providerId = key.replace('wallet_pwd_', '');
+      const password = await this.getProviderPassword(providerId);
+      if (password) return password;
+    }
 
     // Try encrypted version first
     const encrypted = localStorage.getItem(key + '_enc');
@@ -249,6 +309,12 @@ export class UnifiedWalletStorage {
         }
         if (store.indexNames.contains('active')) {
           store.deleteIndex('active');
+        }
+
+        // Create credentials store for passwords
+        if (!db.objectStoreNames.contains('credentials')) {
+          const credStore = db.createObjectStore('credentials', { keyPath: 'id' });
+          credStore.createIndex('providerId', 'providerId', { unique: true });
         }
       };
     });
@@ -632,55 +698,84 @@ export class UnifiedWalletStorage {
     return this.getAllWallets(pin);
   }
 
+  /**
+   * Get ALL wallets for a specific OAuth provider
+   */
+  async getAllWalletsForProvider(provider, providerId, password) {
+    try {
+      devLog('=== getAllWalletsForProvider ===');
+      devLog('Provider:', provider, 'ID:', providerId);
+
+      // Get ALL wallets with this password
+      const allWallets = await this.getAllWallets(password);
+
+      // Filter by provider and provider_id
+      const providerWallets = allWallets.filter(w =>
+        w.provider === provider && w.provider_id === providerId
+      );
+
+      devLog('Found', providerWallets.length, 'wallets for', provider);
+      return providerWallets;
+    } catch (error) {
+      devError('Error getting provider wallets:', error);
+      return [];
+    }
+  }
+
   // ============ OAuth/Social Authentication Methods ============
 
   /**
-   * Handle OAuth login and setup wallet
+   * Handle OAuth login and setup wallet - LOADS ALL WALLETS FOR THIS PROVIDER
    */
   async handleSocialLogin(profile, accessToken, backend) {
     devLog('=== handleSocialLogin START ===');
     devLog('Profile:', profile);
 
     try {
-      // Check if user has any wallet with this social ID
       const walletId = `${profile.provider}_${profile.id}`;
-      devLog('Looking for wallet with ID:', walletId);
+      devLog('Looking for wallets with provider ID:', walletId);
 
-      // Check if wallet exists in IndexedDB (without decrypting)
+      // Check if wallet exists in IndexedDB
       const walletExists = await this.checkWalletExists(walletId);
 
       if (walletExists) {
-        devLog('✅ WALLET FOUND - auto-decrypting with stored password');
+        devLog('✅ WALLET FOUND - loading all wallets for this provider');
 
-        // Try to get stored password for auto-decryption
+        // Try to get stored password
         const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
         devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
         if (storedPassword) {
-          // Auto-decrypt wallet with stored password
-          devLog('[STORAGE] Attempting auto-decrypt...');
-          const walletData = await this.findWalletBySocialId(walletId, storedPassword);
+          // Load ALL wallets for this provider
+          devLog('[STORAGE] Loading ALL wallets for provider...');
+          const providerWallets = await this.getAllWalletsForProvider(
+            profile.provider,
+            profile.id,
+            storedPassword
+          );
 
-          if (walletData && walletData.seed) {
-            devLog('[STORAGE] ✅ Auto-decrypted successfully, seed length:', walletData.seed?.length);
+          devLog('[STORAGE] ✅ Found', providerWallets.length, 'wallets for this provider');
+
+          if (providerWallets.length > 0) {
             const result = {
               success: true,
               wallet: {
-                account: walletData.address,
-                address: walletData.address,
-                publicKey: walletData.publicKey,
-                seed: walletData.seed,
+                account: providerWallets[0].address,
+                address: providerWallets[0].address,
+                publicKey: providerWallets[0].publicKey,
+                seed: providerWallets[0].seed,
                 wallet_type: 'oauth',
                 provider: profile.provider,
                 provider_id: profile.id
               },
+              allWallets: providerWallets, // Return ALL wallets for this provider
               requiresPassword: false
             };
             return result;
           }
         }
 
-        // Fallback: return without seed (will need password later)
+        // Fallback: return without seed
         devLog('⚠️ No stored password - will need password for transactions');
         const result = {
           success: true,
@@ -699,8 +794,6 @@ export class UnifiedWalletStorage {
       }
 
       devLog('❌ No wallet found locally - new user');
-      // No backend check needed since we don't support cloud backup
-      // Brand new user - need to create wallet with password
       return {
         success: false,
         requiresPassword: true,

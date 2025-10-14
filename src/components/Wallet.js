@@ -857,7 +857,31 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         await walletStorage.setSecureItem('user', payload);
 
         if (result.wallet) {
-          doLogIn(result.wallet, profiles);
+          // Load ALL wallets for this provider into profiles
+          if (result.allWallets && result.allWallets.length > 0) {
+            const allProfiles = [...profiles];
+            result.allWallets.forEach(w => {
+              const walletProfile = {
+                account: w.address,
+                address: w.address,
+                publicKey: w.publicKey,
+                seed: w.seed,
+                wallet_type: 'oauth',
+                provider: profile.provider,
+                provider_id: profile.id,
+                createdAt: w.createdAt || Date.now(),
+                tokenCreatedAt: Date.now()
+              };
+              if (!allProfiles.find(p => p.account === w.address)) {
+                allProfiles.push(walletProfile);
+              }
+            });
+            setProfiles(allProfiles);
+            await syncProfilesToIndexedDB(allProfiles);
+            doLogIn(result.wallet, allProfiles);
+          } else {
+            doLogIn(result.wallet, profiles);
+          }
           openSnackbar('Google connect successful!', 'success');
         }
         setOpenWalletModal(false);
@@ -1175,6 +1199,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         await walletStorage.setSecureItem('jwt', token);
         await walletStorage.setSecureItem('authMethod', provider);
         await walletStorage.setSecureItem('user', user);
+
+        // Store password for provider (enables auto-loading all wallets on re-login)
+        const walletId = `${provider}_${user.id}`;
+        await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
+        console.log('Password saved for provider:', walletId);
 
         // Mark wallet as needing backup (new wallet)
         if (action === 'create') {
@@ -2167,6 +2196,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Password verified - create new wallet with SAME auth type
+      console.log('=== CREATING NEW ACCOUNT ===');
+      console.log('Current profile:', accountProfile);
       const wallet = generateRandomWallet();
 
       const walletData = {
@@ -2183,8 +2214,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         seed: wallet.seed
       };
 
+      console.log('New wallet data:', { ...walletData, seed: '[HIDDEN]' });
+
       // Store encrypted with same password
       await walletStorage.storeWallet(walletData, newAccountPassword);
+      console.log('Wallet stored in IndexedDB');
+
+      // For OAuth wallets, ensure password is stored for provider
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, newAccountPassword);
+        console.log('Password stored for provider:', walletId);
+      }
 
       // Update profiles
       const allProfiles = [...profiles, { ...walletData, tokenCreatedAt: Date.now() }];
