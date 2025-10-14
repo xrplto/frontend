@@ -147,10 +147,107 @@ const WalletContent = ({
   handleSeedPasswordSubmit,
   setShowSeedDialog,
   setSeedAuthStatus,
-  onCreateNewAccount
+  onCreateNewAccount,
+  handleDownloadBackup,
+  showBackupPassword,
+  backupPassword,
+  setBackupPassword,
+  showBackupPasswordVisible,
+  setShowBackupPasswordVisible,
+  processBackupDownload,
+  setShowBackupPassword
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
+
+  // Show backup section instead of wallet when downloading
+  if (showBackupPassword) {
+    return (
+      <Box sx={{ p: 2.5 }}>
+        <Stack spacing={2.5} alignItems="center">
+          {/* Header */}
+          <Box sx={{ textAlign: 'center' }}>
+            <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mb: 0.5 }}>
+              Download Full Wallet Backup
+            </Typography>
+            <Typography sx={{ fontSize: '0.8rem', opacity: 0.7 }}>
+              Export all {profiles.length} wallets in a single encrypted file
+            </Typography>
+          </Box>
+
+          {/* Icon */}
+          <Box sx={{ py: 1 }}>
+            <Box component="svg" sx={{ width: 48, height: 48, opacity: 0.3 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+              <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+              <path d="M12 11v6m0 0l-2-2m2 2l2-2"/>
+            </Box>
+          </Box>
+
+          {/* Password Input */}
+          <TextField
+            type={showBackupPasswordVisible ? 'text' : 'password'}
+            value={backupPassword}
+            onChange={(e) => setBackupPassword(e.target.value)}
+            placeholder="Enter your wallet password"
+            fullWidth
+            autoFocus
+            onKeyPress={(e) => {
+              if (e.key === 'Enter' && backupPassword) {
+                processBackupDownload();
+              }
+            }}
+            sx={{ maxWidth: 300 }}
+            InputProps={{
+              sx: { fontSize: '0.9rem' },
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowBackupPasswordVisible(!showBackupPasswordVisible)}
+                    edge="end"
+                  >
+                    {showBackupPasswordVisible ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              )
+            }}
+          />
+
+          {/* Info */}
+          <Alert severity="info" sx={{ maxWidth: 350 }}>
+            <Typography sx={{ fontSize: '0.75rem' }}>
+              This backup contains <strong>all {profiles.length} wallet seeds</strong> encrypted with your password. Store it safely - anyone with the file and password can access your funds.
+            </Typography>
+          </Alert>
+
+          {/* Actions */}
+          <Stack direction="row" spacing={1.5}>
+            <Button
+              variant="contained"
+              size="small"
+              onClick={processBackupDownload}
+              disabled={!backupPassword}
+              sx={{ fontSize: '0.8rem', py: 0.6, px: 2 }}
+            >
+              Download Backup
+            </Button>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                setShowBackupPassword(false);
+                setBackupPassword('');
+                setShowBackupPasswordVisible(false);
+              }}
+              sx={{ fontSize: '0.8rem', py: 0.6, px: 2 }}
+            >
+              Cancel
+            </Button>
+          </Stack>
+        </Stack>
+      </Box>
+    );
+  }
 
   return (
     <>
@@ -300,7 +397,7 @@ const WalletContent = ({
           <IconButton
             size="small"
             onClick={onBackupSeed}
-            title="Backup seed"
+            title="View seed"
             sx={{
               p: 0.7,
               opacity: 0.7,
@@ -309,6 +406,22 @@ const WalletContent = ({
           >
             <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+            </Box>
+          </IconButton>
+          <IconButton
+            size="small"
+            onClick={() => handleDownloadBackup()}
+            title="Download backup (all wallets)"
+            sx={{
+              p: 0.7,
+              opacity: 0.7,
+              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+            }}
+          >
+            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
             </Box>
           </IconButton>
         </Stack>
@@ -632,9 +745,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [importFile, setImportFile] = useState(null);
   const [importMethod, setImportMethod] = useState('new'); // 'new', 'import', or 'seed'
   const [importSeed, setImportSeed] = useState('');
+  const [importSeeds, setImportSeeds] = useState(['']); // Support multiple seeds
+  const [seedCount, setSeedCount] = useState(1);
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
   const [newAccountPassword, setNewAccountPassword] = useState('');
   const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
+  const [showBackupPassword, setShowBackupPassword] = useState(false);
+  const [backupPassword, setBackupPassword] = useState('');
+  const [showBackupPasswordVisible, setShowBackupPasswordVisible] = useState(false);
 
 
   // Device Password handlers
@@ -1316,32 +1434,41 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleImportSeed = async () => {
     setIsCreatingWallet(true);
-    setOAuthPasswordError('Generating wallets from seed...');
+    setOAuthPasswordError('Validating seeds...');
     try {
-      // Validate seed
-      const seed = importSeed.trim();
-      if (!seed.startsWith('s')) {
-        throw new Error('Invalid seed format - must start with "s"');
+      // Get all non-empty seeds
+      const seedsToImport = importSeeds.filter(s => s.trim()).map(s => s.trim());
+
+      if (seedsToImport.length === 0) {
+        throw new Error('Please enter at least one seed');
       }
 
-      // Algorithm detection based on seed prefix
-      // Ed25519 seeds start with 'sEd', secp256k1 seeds start with 's' (but not 'sEd')
-      const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+      // Validate all seeds first
+      const validatedWallets = [];
+      for (let i = 0; i < seedsToImport.length; i++) {
+        const seed = seedsToImport[i];
+        if (!seed.startsWith('s')) {
+          throw new Error(`Seed ${i + 1} invalid: must start with "s"`);
+        }
 
-      devLog(`Importing ${algorithm} wallet from seed`);
+        const algorithm = seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
-      // Create first wallet from seed to validate
-      let firstWallet;
-      try {
-        firstWallet = XRPLWallet.fromSeed(seed, algorithm);
-        devLog(`Successfully created wallet with address: ${firstWallet.address}`);
-      } catch (seedError) {
-        throw new Error(`Invalid ${algorithm} seed: ${seedError.message}`);
-      }
+        try {
+          const wallet = XRPLWallet.fromSeed(seed, algorithm);
+          if (!wallet.address || !wallet.publicKey) {
+            throw new Error(`Failed to derive wallet from seed ${i + 1}`);
+          }
 
-      // Verify the wallet was created successfully
-      if (!firstWallet.address || !firstWallet.publicKey) {
-        throw new Error('Failed to derive wallet from seed');
+          // Check for duplicates
+          if (validatedWallets.some(w => w.address === wallet.address)) {
+            throw new Error(`Seed ${i + 1} creates duplicate wallet`);
+          }
+
+          validatedWallets.push(wallet);
+          devLog(`Validated seed ${i + 1}: ${wallet.address}`);
+        } catch (seedError) {
+          throw new Error(`Seed ${i + 1} invalid: ${seedError.message}`);
+        }
       }
 
       // Get OAuth data
@@ -1350,33 +1477,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userStr = sessionStorage.getItem('oauth_temp_user');
       const user = JSON.parse(userStr);
 
-      // Create all 5 wallets
+      // Create wallets array
       const wallets = [];
+      const totalWallets = Math.min(5, validatedWallets.length + Math.max(1, 5 - validatedWallets.length));
 
-      // First wallet is the imported seed wallet
-      const firstWalletProfile = {
-        accountIndex: 0,
-        account: firstWallet.address,
-        address: firstWallet.address,
-        publicKey: firstWallet.publicKey,
-        seed: firstWallet.seed,
-        wallet_type: 'oauth',
-        provider: provider,
-        provider_id: user.id,
-        imported: true,
-        xrp: '0',
-        createdAt: Date.now()
-      };
-      wallets.push(firstWalletProfile);
-      await walletStorage.storeWallet(firstWalletProfile, oauthPassword);
-
-      setOAuthPasswordError(`Created wallet 1/5...`);
-
-      // Generate 4 additional random wallets
-      for (let i = 1; i < 5; i++) {
-        const wallet = generateRandomWallet();
-
-        const walletData = {
+      // Import all seed wallets first
+      for (let i = 0; i < validatedWallets.length && i < 5; i++) {
+        const wallet = validatedWallets[i];
+        const walletProfile = {
           accountIndex: i,
           account: wallet.address,
           address: wallet.address,
@@ -1385,14 +1493,39 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           wallet_type: 'oauth',
           provider: provider,
           provider_id: user.id,
+          imported: true,
           xrp: '0',
           createdAt: Date.now()
         };
 
-        wallets.push(walletData);
-        await walletStorage.storeWallet(walletData, oauthPassword);
+        wallets.push(walletProfile);
+        await walletStorage.storeWallet(walletProfile, oauthPassword);
+        setOAuthPasswordError(`Imported seed wallet ${i + 1}/${validatedWallets.length}...`);
+      }
 
-        setOAuthPasswordError(`Created wallet ${i + 1}/5...`);
+      // Generate additional random wallets if needed to reach 5
+      const randomWalletsNeeded = Math.max(0, 5 - validatedWallets.length);
+      if (randomWalletsNeeded > 0) {
+        setOAuthPasswordError(`Creating ${randomWalletsNeeded} additional wallet${randomWalletsNeeded > 1 ? 's' : ''}...`);
+
+        for (let i = 0; i < randomWalletsNeeded; i++) {
+          const wallet = generateRandomWallet();
+          const walletData = {
+            accountIndex: validatedWallets.length + i,
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            seed: wallet.seed,
+            wallet_type: 'oauth',
+            provider: provider,
+            provider_id: user.id,
+            xrp: '0',
+            createdAt: Date.now()
+          };
+
+          wallets.push(walletData);
+          await walletStorage.storeWallet(walletData, oauthPassword);
+        }
       }
 
       // Store password for provider
@@ -1417,15 +1550,25 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
       });
 
-      // Login with first wallet (the imported one)
+      // Login with first wallet
       doLogIn(wallets[0], allProfiles);
 
       setShowOAuthPasswordSetup(false);
       setOpenWalletModal(false);
       setOAuthPassword('');
-      setImportSeed('');
+      setImportSeeds(['']);
+      setSeedCount(1);
 
-      openSnackbar('Seed imported! Created 5 wallets (1 from seed, 4 new)', 'success');
+      const importedCount = validatedWallets.length;
+      const newCount = randomWalletsNeeded;
+
+      if (importedCount === 5) {
+        openSnackbar(`Imported all 5 wallets from seeds!`, 'success');
+      } else if (newCount === 0) {
+        openSnackbar(`Imported ${importedCount} wallet${importedCount > 1 ? 's' : ''} from seed${importedCount > 1 ? 's' : ''}!`, 'success');
+      } else {
+        openSnackbar(`Created 5 wallets (${importedCount} from seed${importedCount > 1 ? 's' : ''}, ${newCount} new)`, 'success');
+      }
     } catch (error) {
       setOAuthPasswordError(error.message || 'Invalid seed phrase');
     } finally {
@@ -1435,6 +1578,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   const handleImportWallet = async () => {
     setIsCreatingWallet(true);
+    setOAuthPasswordError('Processing backup file...');
     try {
       // Read the import file
       const fileContent = await importFile.text();
@@ -1460,20 +1604,53 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       const user = JSON.parse(userStr);
 
-      // Import the wallet with the password
-      const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
+      // Decrypt backup to get wallets
+      let wallets = [];
+      try {
+        // Try to decrypt with provided password
+        const decrypted = await walletStorage.decryptData(importData.data.encrypted, oauthPassword);
 
-      // Store the imported wallet
-      const wallet = {
-        address: importData.address,
-        provider: provider,
-        wallet_type: 'oauth',
-        imported: true,
-        encryptedData: importData.data
-      };
+        // Check if it's multi-wallet format (v3.0) or single wallet
+        if (decrypted.wallets && Array.isArray(decrypted.wallets)) {
+          // Multi-wallet backup (v3.0)
+          wallets = decrypted.wallets;
+          setOAuthPasswordError(`Found ${wallets.length} wallet${wallets.length > 1 ? 's' : ''} in backup...`);
+        } else if (decrypted.seed) {
+          // Single wallet or old format
+          wallets = [decrypted];
+        } else {
+          throw new Error('Invalid backup format');
+        }
+      } catch (decryptError) {
+        throw new Error('Incorrect password or corrupted backup file');
+      }
 
-      // Store with password encryption
-      await walletStorageInstance.storeWallet(wallet, oauthPassword);
+      // Store all imported wallets
+      const storedWallets = [];
+      for (let i = 0; i < wallets.length; i++) {
+        const walletData = wallets[i];
+        const profile = {
+          accountIndex: i,
+          account: walletData.address,
+          address: walletData.address,
+          publicKey: walletData.publicKey,
+          seed: walletData.seed,
+          wallet_type: 'oauth',
+          provider: provider,
+          provider_id: user.id,
+          imported: true,
+          xrp: '0',
+          createdAt: walletData.createdAt || Date.now()
+        };
+
+        await walletStorage.storeWallet(profile, oauthPassword);
+        storedWallets.push(profile);
+        setOAuthPasswordError(`Importing wallet ${i + 1}/${wallets.length}...`);
+      }
+
+      // Store password for provider
+      const walletId = `${provider}_${user.id}`;
+      await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
 
       // Clear temporary session data
       sessionStorage.removeItem('oauth_temp_token');
@@ -1486,8 +1663,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       await walletStorage.setSecureItem('authMethod', provider);
       await walletStorage.setSecureItem('user', user);
 
-      // Login with the imported wallet
-      doLogIn(wallet, profiles);
+      // Add all wallets to profiles
+      const allProfiles = [...profiles];
+      storedWallets.forEach(w => {
+        if (!allProfiles.find(p => p.account === w.address)) {
+          allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
+        }
+      });
+
+      // Login with the first imported wallet
+      doLogIn(storedWallets[0], allProfiles);
 
       // Close dialogs
       setShowOAuthPasswordSetup(false);
@@ -1499,7 +1684,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setImportFile(null);
       setImportMethod('new');
 
-      openSnackbar('Wallet imported successfully!', 'success');
+      openSnackbar(`Imported ${storedWallets.length} wallet${storedWallets.length > 1 ? 's' : ''} successfully!`, 'success');
     } catch (error) {
       devError('Import error:', error);
       setOAuthPasswordError(error.message || 'Failed to import wallet');
@@ -1781,6 +1966,91 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     } catch (err) {
       setSeedAuthStatus('error');
       openSnackbar('Authentication failed: ' + err.message, 'error');
+    }
+  };
+
+  const handleDownloadBackup = async () => {
+    const profile = accountProfile;
+    if (!profile) return;
+
+    // Show password input UI
+    setShowBackupPassword(true);
+    setBackupPassword('');
+  };
+
+  const processBackupDownload = async () => {
+    const profile = accountProfile;
+    if (!profile || !backupPassword) {
+      openSnackbar('Please enter your password', 'error');
+      return;
+    }
+
+    try {
+      let backupData;
+
+      if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
+        // Export all wallets for OAuth provider
+        backupData = await walletStorage.exportAllWallets(
+          profile.provider,
+          profile.provider_id,
+          backupPassword
+        );
+      } else if (profile.wallet_type === 'device') {
+        // Export all wallets for device
+        const allWallets = await walletStorage.getAllWallets(backupPassword);
+        const deviceWallets = allWallets.filter(w => w.deviceKeyId === profile.deviceKeyId);
+
+        if (deviceWallets.length === 0) {
+          throw new Error('No wallets found');
+        }
+
+        backupData = {
+          type: 'xrpl-encrypted-wallet',
+          version: '3.0',
+          walletCount: deviceWallets.length,
+          data: {
+            encrypted: await walletStorage.encryptData({
+              wallets: deviceWallets.map(w => ({
+                address: w.address,
+                publicKey: w.publicKey,
+                seed: w.seed,
+                createdAt: w.createdAt || Date.now()
+              }))
+            }, backupPassword)
+          },
+          exportedAt: new Date().toISOString()
+        };
+      } else {
+        throw new Error('Unsupported wallet type');
+      }
+
+      // Create download
+      const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `xrpl-wallet-backup-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      openSnackbar(`Backup downloaded (${backupData.walletCount} wallets)`, 'success');
+
+      // Mark as backed up
+      profiles.forEach(p => {
+        if (p.account) {
+          localStorage.removeItem(`wallet_needs_backup_${p.account}`);
+        }
+      });
+
+      // Reset and hide password UI
+      setShowBackupPassword(false);
+      setBackupPassword('');
+      setShowBackupPasswordVisible(false);
+    } catch (error) {
+      openSnackbar('Backup failed: ' + (error.message === 'Invalid PIN' ? 'Incorrect password' : error.message), 'error');
+      setBackupPassword('');
     }
   };
 
@@ -2471,6 +2741,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setShowSeedDialog={setShowSeedDialog}
                     setSeedAuthStatus={setSeedAuthStatus}
                     onCreateNewAccount={() => setShowNewAccountFlow(true)}
+                    handleDownloadBackup={handleDownloadBackup}
+                    showBackupPassword={showBackupPassword}
+                    backupPassword={backupPassword}
+                    setBackupPassword={setBackupPassword}
+                    showBackupPasswordVisible={showBackupPasswordVisible}
+                    setShowBackupPasswordVisible={setShowBackupPasswordVisible}
+                    processBackupDownload={processBackupDownload}
+                    setShowBackupPassword={setShowBackupPassword}
                   />
                 ) : showNewAccountFlow ? (
                   <Box sx={{ p: 3 }}>
@@ -3413,7 +3691,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   onClick={() => {
                     setImportMethod('new');
                     setImportFile(null);
-                    setImportSeed('');
+                    setImportSeeds(['']);
                     setOAuthPassword('');
                     setOAuthConfirmPassword('');
                   }}
@@ -3455,7 +3733,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   size="small"
                   onClick={() => {
                     setImportMethod('import');
-                    setImportSeed('');
+                    setImportSeeds(['']);
                     setOAuthPassword('');
                     setOAuthConfirmPassword('');
                   }}
@@ -3485,37 +3763,106 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
               {/* Seed Input for Import */}
               {importMethod === 'seed' && (
-                <TextField
-                  label="Family Seed"
-                  placeholder="Enter your seed starting with 's'"
-                  value={importSeed}
-                  onChange={(e) => setImportSeed(e.target.value)}
-                  fullWidth
-                  multiline
-                  rows={2}
-                  inputProps={{
-                    'aria-label': 'Family seed phrase',
-                    'aria-describedby': 'seed-helper-text'
-                  }}
-                  helperText={
-                    importSeed.startsWith('sEd') ? '✓ Ed25519 seed detected' :
-                    importSeed.startsWith('s') ? '✓ secp256k1 seed detected' :
-                    'Your XRP Ledger secret key (starts with "s")'
-                  }
-                  FormHelperTextProps={{
-                    id: 'seed-helper-text'
-                  }}
-                  sx={{
-                    '& .MuiInputBase-input': {
-                      fontFamily: 'monospace',
-                      fontSize: '0.85rem'
-                    },
-                    '& .MuiFormHelperText-root': {
-                      color: importSeed.startsWith('s') ? 'success.main' : 'text.secondary',
-                      fontSize: '0.75rem'
-                    }
-                  }}
-                />
+                <Box>
+                  <Stack spacing={1.5}>
+                    {importSeeds.map((seed, index) => (
+                      <Box key={index}>
+                        <Stack direction="row" spacing={1} alignItems="flex-start">
+                          <TextField
+                            label={`Seed ${index + 1}${index === 0 ? ' (Primary)' : ''}`}
+                            placeholder="Enter seed starting with 's'"
+                            value={seed}
+                            onChange={(e) => {
+                              const newSeeds = [...importSeeds];
+                              newSeeds[index] = e.target.value;
+                              setImportSeeds(newSeeds);
+                            }}
+                            fullWidth
+                            multiline
+                            rows={2}
+                            inputProps={{
+                              'aria-label': `Seed phrase ${index + 1}`,
+                              'aria-describedby': `seed-helper-text-${index}`
+                            }}
+                            helperText={
+                              seed.startsWith('sEd') ? '✓ Ed25519 seed' :
+                              seed.startsWith('s') ? '✓ secp256k1 seed' :
+                              index === 0 ? 'Required: XRP Ledger secret (starts with "s")' :
+                              'Optional: Additional seed to import'
+                            }
+                            FormHelperTextProps={{
+                              id: `seed-helper-text-${index}`
+                            }}
+                            sx={{
+                              '& .MuiInputBase-input': {
+                                fontFamily: 'monospace',
+                                fontSize: '0.85rem'
+                              },
+                              '& .MuiFormHelperText-root': {
+                                color: seed.startsWith('s') ? 'success.main' : 'text.secondary',
+                                fontSize: '0.7rem'
+                              }
+                            }}
+                          />
+                          {importSeeds.length > 1 && (
+                            <IconButton
+                              size="small"
+                              onClick={() => {
+                                const newSeeds = importSeeds.filter((_, i) => i !== index);
+                                setImportSeeds(newSeeds);
+                              }}
+                              sx={{
+                                mt: 1,
+                                color: 'error.main',
+                                opacity: 0.6,
+                                '&:hover': { opacity: 1 }
+                              }}
+                              aria-label={`Remove seed ${index + 1}`}
+                            >
+                              <Box component="svg" sx={{ width: 20, height: 20 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M18 6L6 18M6 6l12 12"/>
+                              </Box>
+                            </IconButton>
+                          )}
+                        </Stack>
+                      </Box>
+                    ))}
+
+                    {importSeeds.length < 5 && (
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => {
+                          if (importSeeds.length < 5) {
+                            setImportSeeds([...importSeeds, '']);
+                          }
+                        }}
+                        sx={{
+                          fontSize: '0.8rem',
+                          fontWeight: 400,
+                          color: '#4285f4',
+                          textTransform: 'none',
+                          justifyContent: 'flex-start',
+                          pl: 1,
+                          '&:hover': {
+                            backgroundColor: alpha('#4285f4', 0.04)
+                          }
+                        }}
+                      >
+                        + Add another seed ({importSeeds.length}/5)
+                      </Button>
+                    )}
+                  </Stack>
+
+                  <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+                      <strong>Tip:</strong> Import up to 5 seeds. We'll create wallets from your seeds in order.
+                      {importSeeds.filter(s => s.trim()).length > 0 && importSeeds.filter(s => s.trim()).length < 5 &&
+                        ` (${5 - importSeeds.filter(s => s.trim()).length} random wallet${5 - importSeeds.filter(s => s.trim()).length > 1 ? 's' : ''} will be added)`
+                      }
+                    </Typography>
+                  </Alert>
+                </Box>
               )}
 
               {/* File Upload for Import */}
@@ -3609,8 +3956,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
                   {importMethod === 'import' ?
                     <><strong>Note:</strong> You'll be importing your existing wallet with its current balance and history.</> :
-                    importMethod === 'seed' ?
-                    <><strong>Note:</strong> Your seed will be used for wallet 1. We'll generate 4 additional wallets for easy account management (5 total).</> :
+                    importMethod === 'seed' ? (
+                      importSeeds.filter(s => s.trim()).length === 0 ?
+                        <><strong>Note:</strong> Enter up to 5 seed phrases to import existing wallets. Any remaining slots will be filled with new wallets.</> :
+                      importSeeds.filter(s => s.trim()).length === 1 ?
+                        <><strong>Note:</strong> Your seed will be imported as wallet 1. We'll create 4 new wallets for the remaining slots (5 total).</> :
+                      importSeeds.filter(s => s.trim()).length === 5 ?
+                        <><strong>Perfect!</strong> All 5 wallet slots will be filled with your imported seeds. No new wallets will be created.</> :
+                        <><strong>Note:</strong> You're importing {importSeeds.filter(s => s.trim()).length} seeds. We'll create {5 - importSeeds.filter(s => s.trim()).length} new wallet{5 - importSeeds.filter(s => s.trim()).length > 1 ? 's' : ''} for the remaining slots.</>
+                    ) :
                     <><strong>Important:</strong> We'll create 5 wallets for you. Store this password safely - you'll need it to export your wallets or recover them on a new device.</>
                   }
                 </Typography>
@@ -3630,7 +3984,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     // Clear input fields
                     setOAuthPassword('');
                     setOAuthConfirmPassword('');
-                    setImportSeed('');
+                    setImportSeeds(['']);
                     setImportFile(null);
                     setOAuthPasswordError('');
                               }}
@@ -3651,7 +4005,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   disabled={isCreatingWallet || !oauthPassword ||
                     (importMethod === 'new' && !oauthConfirmPassword) ||
                     (importMethod === 'import' && !importFile) ||
-                    (importMethod === 'seed' && !importSeed)}
+                    (importMethod === 'seed' && !importSeeds.some(s => s.trim()))}
                   aria-label={isCreatingWallet ? 'Processing wallet setup' :
                     (importMethod === 'seed' ? 'Import wallet from seed' :
                      importMethod === 'import' ? 'Import wallet from file' : 'Create new wallet')}

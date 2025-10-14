@@ -939,6 +939,53 @@ export class UnifiedWalletStorage {
       return null;
     }
   }
+
+  /**
+   * Export all wallets for a provider as encrypted backup
+   * Returns encrypted backup containing all 5 wallets
+   */
+  async exportAllWallets(provider, providerId, password) {
+    try {
+      // Get all wallets for this provider
+      const wallets = await this.getAllWalletsForProvider(provider, providerId, password);
+
+      if (!wallets || wallets.length === 0) {
+        throw new Error('No wallets found to export');
+      }
+
+      // Create backup data with all wallets
+      const backupData = {
+        version: '3.0',
+        provider: provider,
+        walletCount: wallets.length,
+        wallets: wallets.map(w => ({
+          address: w.address,
+          publicKey: w.publicKey,
+          seed: w.seed,
+          imported: w.imported || false,
+          createdAt: w.createdAt || Date.now()
+        })),
+        exportedAt: Date.now()
+      };
+
+      // Encrypt the entire backup with the password
+      const encrypted = await this.encryptData(backupData, password);
+
+      return {
+        type: 'xrpl-encrypted-wallet',
+        version: '3.0',
+        provider: provider,
+        walletCount: wallets.length,
+        data: {
+          encrypted: encrypted
+        },
+        exportedAt: new Date().toISOString()
+      };
+    } catch (error) {
+      devError('Error exporting wallets:', error);
+      throw error;
+    }
+  }
 }
 
 // Backward compatibility
