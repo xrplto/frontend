@@ -134,6 +134,34 @@ const Label = styled.span`
   white-space: nowrap;
 `;
 
+const SummaryGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+`;
+
+const SummaryCard = styled.div`
+  padding: 16px;
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
+  border-radius: 12px;
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+`;
+
+const SummaryLabel = styled.div`
+  font-size: 12px;
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+`;
+
+const SummaryValue = styled.div`
+  font-size: 20px;
+  font-weight: 600;
+  color: ${p => p.darkMode ? '#fff' : '#000'};
+`;
+
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
@@ -266,6 +294,7 @@ function AMMPoolsPage({ data }) {
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(data?.totalPages || 0);
   const [currentPage, setCurrentPage] = useState(0);
+  const [summary, setSummary] = useState(data?.summary || null);
 
   const [params, setParams] = useState({
     sortBy: 'fees',
@@ -301,6 +330,7 @@ function AMMPoolsPage({ data }) {
         setPools(response.data.pools);
         setTotalPages(response.data.totalPages || 0);
         setCurrentPage(response.data.page || 0);
+        setSummary(response.data.summary || null);
       }
     } catch (error) {
       console.error('Error loading AMM pools:', error);
@@ -397,6 +427,35 @@ function AMMPoolsPage({ data }) {
       </h1>
 
       <Container maxWidth="xl">
+        {summary && (
+          <SummaryGrid>
+            <SummaryCard darkMode={darkMode}>
+              <SummaryLabel darkMode={darkMode}>Total Liquidity</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{currencySymbols[activeFiatCurrency]}{formatCurrency(new Decimal(summary.totalLiquidity).div(exchRate).toNumber())}</SummaryValue>
+            </SummaryCard>
+            <SummaryCard darkMode={darkMode}>
+              <SummaryLabel darkMode={darkMode}>24h Volume</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume24h)}</SummaryValue>
+            </SummaryCard>
+            <SummaryCard darkMode={darkMode}>
+              <SummaryLabel darkMode={darkMode}>7d Volume</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume7d)}</SummaryValue>
+            </SummaryCard>
+            <SummaryCard darkMode={darkMode}>
+              <SummaryLabel darkMode={darkMode}>24h Fees</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees24h)}</SummaryValue>
+            </SummaryCard>
+            <SummaryCard darkMode={darkMode}>
+              <SummaryLabel darkMode={darkMode}>7d Fees</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees7d)}</SummaryValue>
+            </SummaryCard>
+            <SummaryCard darkMode={darkMode}>
+              <SummaryLabel darkMode={darkMode}>Avg Fee</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{(summary.avgFee / 10).toFixed(4)}%</SummaryValue>
+            </SummaryCard>
+          </SummaryGrid>
+        )}
+
         <Controls darkMode={darkMode}>
           <ControlRow>
             <MobileSection>
@@ -554,7 +613,9 @@ export async function getStaticProps() {
     return {
       props: {
         data: {
-          pools: res.data?.pools || []
+          pools: res.data?.pools || [],
+          summary: res.data?.summary || null,
+          totalPages: res.data?.totalPages || 0
         },
         ogp: {
           canonical: 'https://xrpl.to/amm-pools',
