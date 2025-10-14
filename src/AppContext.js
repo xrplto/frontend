@@ -13,14 +13,14 @@ import { update_metrics } from 'src/redux/statusSlice';
 import { PuffLoader } from './components/Spinners';
 
 // Encrypted storage for sensitive data
-import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';
+import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 export const AppContext = createContext({});
 
 function ContextProviderInner({ children, data, openSnackbar }) {
   const dispatch = useDispatch();
   const BASE_URL = process.env.API_URL;
-  const walletStorage = new UnifiedWalletStorage();
+  const walletStorage = new EncryptedWalletStorage();
 
   const [sync, setSync] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -107,9 +107,35 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     return () => window.removeEventListener('message', handleMessage);
   }, [profiles]);
 
+  // Listen for storage changes (e.g., from OAuth callback updating profiles)
+  useEffect(() => {
+    const handleStorageChange = async () => {
+      console.log('🔄 Storage changed - reloading profiles');
+      const newProfiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
+      if (newProfiles && newProfiles.length > profiles.length) {
+        console.log('📦 New profiles detected:', newProfiles.length);
+        setProfiles(newProfiles);
+      }
+    };
+
+    window.addEventListener('storage-updated', handleStorageChange);
+    return () => window.removeEventListener('storage-updated', handleStorageChange);
+  }, [profiles]);
+
   useEffect(() => {
     const loadStoredData = async () => {
-      const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
+      try {
+        console.log('═══ APP INIT: Loading stored data ═══');
+
+        const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
+        console.log('Loaded profile:', profile ? {
+          account: profile.account,
+          wallet_type: profile.wallet_type,
+          provider: profile.provider,
+          provider_id: profile.provider_id,
+          deviceKeyId: profile.deviceKeyId
+        } : 'NONE');
+
       if (profile) {
         setAccountProfile(profile);
 
@@ -117,19 +143,20 @@ function ContextProviderInner({ children, data, openSnackbar }) {
         if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
           // OAuth wallets
           const walletId = `${profile.provider}_${profile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          console.log('🔐 OAuth wallet - checking password for:', walletId);
 
-          console.log('🔄 Loading all OAuth wallets for:', profile.provider);
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
           console.log('Password found:', !!storedPassword);
 
           if (storedPassword) {
+            console.log('📦 Loading ALL OAuth wallets...');
             const allWallets = await walletStorage.getAllWalletsForProvider(
               profile.provider,
               profile.provider_id,
               storedPassword
             );
 
-            console.log('Found', allWallets.length, 'OAuth wallets');
+            console.log('✅ Found', allWallets.length, 'OAuth wallets:', allWallets.map(w => w.address));
 
             if (allWallets.length > 0) {
               const loadedProfiles = allWallets.map(w => ({
@@ -144,23 +171,28 @@ function ContextProviderInner({ children, data, openSnackbar }) {
                 tokenCreatedAt: Date.now()
               }));
 
+              console.log('Setting profiles:', loadedProfiles.length);
               setProfiles(loadedProfiles);
               await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, loadedProfiles);
               return;
             }
+          } else {
+            console.log('❌ No password - cannot load wallets');
           }
         } else if (profile.wallet_type === 'device' && profile.deviceKeyId) {
           // Device/Passkey wallets
-          const storedPassword = await walletStorage.getSecureItem(`device_pwd_${profile.deviceKeyId}`);
+          const deviceKeyId = profile.deviceKeyId;
+          console.log('🔐 Device wallet - checking password for:', deviceKeyId);
 
-          console.log('🔄 Loading all device wallets for passkey:', profile.deviceKeyId);
+          const storedPassword = await walletStorage.getSecureItem(`device_pwd_${deviceKeyId}`);
           console.log('Password found:', !!storedPassword);
 
           if (storedPassword) {
+            console.log('📦 Loading ALL device wallets...');
             const allWallets = await walletStorage.getAllWallets(storedPassword);
-            const deviceWallets = allWallets.filter(w => w.deviceKeyId === profile.deviceKeyId);
+            const deviceWallets = allWallets.filter(w => w.deviceKeyId === deviceKeyId);
 
-            console.log('Found', deviceWallets.length, 'device wallets');
+            console.log('✅ Found', deviceWallets.length, 'device wallets:', deviceWallets.map(w => w.address));
 
             if (deviceWallets.length > 0) {
               const loadedProfiles = deviceWallets.map(w => ({
@@ -174,18 +206,33 @@ function ContextProviderInner({ children, data, openSnackbar }) {
                 tokenCreatedAt: Date.now()
               }));
 
+              console.log('Setting profiles:', loadedProfiles.length);
               setProfiles(loadedProfiles);
               await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, loadedProfiles);
               return;
             }
+          } else {
+            console.log('❌ No password - cannot load wallets');
           }
+        } else {
+          console.log('⚠️ Unknown wallet type or missing deviceKeyId/provider');
         }
+      } else {
+        console.log('No profile found - user not logged in');
       }
 
       // Fallback: load from storage
+      console.log('Using fallback - loading profiles from localStorage');
       const profiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
+      console.log('Fallback profiles:', profiles ? profiles.length : 'NONE');
       if (profiles) {
         setProfiles(profiles);
+      }
+
+      console.log('═══ APP INIT COMPLETE ═══');
+      } catch (error) {
+        console.error('💥 APP INIT ERROR:', error);
+        console.error('Stack:', error.stack);
       }
     };
     loadStoredData();
@@ -230,9 +277,13 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
-    // Clear all storage (wallets + passwords safe in IndexedDB)
+    // Clear everything - wallets + passwords in IndexedDB are safe
     localStorage.clear();
     sessionStorage.clear();
+    // Clear React state
+    setAccountProfile(null);
+    setProfiles([]);
+    setAccountBalance(null);
   };
 
   const removeProfile = async (account) => {
@@ -260,7 +311,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const handleLogout = () => {
     doLogOut();
-    window.location.reload();
+    // No reload needed - state is already cleared
   };
 
   useEffect(() => {

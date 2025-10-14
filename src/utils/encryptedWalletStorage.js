@@ -167,10 +167,7 @@ export class UnifiedWalletStorage {
       };
 
       const request = store.put(record);
-      request.onsuccess = () => {
-        devLog('Password stored in IndexedDB for provider:', providerId);
-        resolve();
-      };
+      request.onsuccess = () => resolve();
       request.onerror = () => reject(request.error);
     });
   }
@@ -703,62 +700,39 @@ export class UnifiedWalletStorage {
       const walletId = `${profile.provider}_${profile.id}`;
       devLog('Looking for wallets with provider ID:', walletId);
 
-      // Check if wallet exists in IndexedDB
-      const walletExists = await this.checkWalletExists(walletId);
+      // Check if password exists (means wallets were created)
+      const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
+      devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
-      if (walletExists) {
-        devLog('✅ WALLET FOUND - loading all wallets for this provider');
+      if (storedPassword) {
+        devLog('✅ Password found - loading all wallets for this provider');
 
-        // Try to get stored password
-        const storedPassword = await this.getSecureItem(`wallet_pwd_${walletId}`);
-        devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
+        // Load ALL wallets for this provider
+        const providerWallets = await this.getAllWalletsForProvider(
+          profile.provider,
+          profile.id,
+          storedPassword
+        );
 
-        if (storedPassword) {
-          // Load ALL wallets for this provider
-          devLog('[STORAGE] Loading ALL wallets for provider...');
-          const providerWallets = await this.getAllWalletsForProvider(
-            profile.provider,
-            profile.id,
-            storedPassword
-          );
+        devLog('[STORAGE] ✅ Found', providerWallets.length, 'wallets for this provider');
 
-          devLog('[STORAGE] ✅ Found', providerWallets.length, 'wallets for this provider');
-
-          if (providerWallets.length > 0) {
-            const result = {
-              success: true,
-              wallet: {
-                account: providerWallets[0].address,
-                address: providerWallets[0].address,
-                publicKey: providerWallets[0].publicKey,
-                seed: providerWallets[0].seed,
-                wallet_type: 'oauth',
-                provider: profile.provider,
-                provider_id: profile.id
-              },
-              allWallets: providerWallets, // Return ALL wallets for this provider
-              requiresPassword: false
-            };
-            return result;
-          }
+        if (providerWallets.length > 0) {
+          const result = {
+            success: true,
+            wallet: {
+              account: providerWallets[0].address,
+              address: providerWallets[0].address,
+              publicKey: providerWallets[0].publicKey,
+              seed: providerWallets[0].seed,
+              wallet_type: 'oauth',
+              provider: profile.provider,
+              provider_id: profile.id
+            },
+            allWallets: providerWallets,
+            requiresPassword: false
+          };
+          return result;
         }
-
-        // Fallback: return without seed
-        devLog('⚠️ No stored password - will need password for transactions');
-        const result = {
-          success: true,
-          wallet: {
-            account: walletExists.address,
-            address: walletExists.address,
-            publicKey: '',
-            seed: '',
-            wallet_type: 'oauth',
-            provider: profile.provider,
-            provider_id: profile.id
-          },
-          requiresPassword: false
-        };
-        return result;
       }
 
       devLog('❌ No wallet found locally - new user');
@@ -774,176 +748,25 @@ export class UnifiedWalletStorage {
     }
   }
 
-  /**
-   * Create new wallet with user-provided password (one time only)
-   */
-  async createSocialWallet(profile, password) {
-    // Validate password
-    if (!password || password.length < 8) {
-      throw new Error('Password must be at least 8 characters');
-    }
-
-    // Generate wallet
-    // Generate TRUE RANDOM wallet - NO DETERMINISTIC (2025 standard)
-    const wallet = this.generateRandomWallet();
-
-    // Store ONLY locally with user's password - no backend storage
-    await this.storeWalletWithSocialId(wallet, profile, password);
-
-    return {
-      success: true,
-      wallet: {
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        seed: wallet.seed,
-        wallet_type: 'oauth',
-        provider: profile.provider,
-        provider_id: profile.id
-      }
-    };
-  }
-
+  // REMOVED: createSocialWallet, completeSocialWalletSetup, storeWalletWithSocialId
+  // Now creating 5 wallets directly in handleOAuthPasswordSetup
 
   /**
-   * Complete wallet setup flow (called after password is provided)
-   */
-  async completeSocialWalletSetup(profile, password, action) {
-    // Only support create action - no backend storage/recovery
-    if (action === 'create') {
-      return await this.createSocialWallet(profile, password);
-    } else {
-      throw new Error('Invalid action');
-    }
-  }
-
-  /**
-   * Store wallet with OAuth metadata for finding later
+   * DEPRECATED - Just use storeWallet directly
    */
   async storeWalletWithSocialId(wallet, profile, password) {
-    devLog('=== storeWalletWithSocialId START ===');
-    devLog('Wallet address:', wallet.address);
-    devLog('Profile:', profile);
-
-    const walletId = `${profile.provider}_${profile.id}`;
-    devLog('WalletId:', walletId);
-
-    const db = await this.initDB();
-    devLog('DB initialized:', db.name, 'version:', db.version);
-
-    // Create a unique ID for the wallet record
-    const recordId = crypto.randomUUID();
-    devLog('Record ID:', recordId);
-
-    // Encrypt all wallet data
-    const fullData = {
-      seed: wallet.seed,
+    const walletData = {
       address: wallet.address,
       publicKey: wallet.publicKey,
-      wallet_type: 'social',
+      seed: wallet.seed,
+      wallet_type: 'oauth',
       provider: profile.provider,
       provider_id: profile.id,
-      oauth_key: walletId,
-      id: recordId,
-      storedAt: Date.now()
+      createdAt: Date.now()
     };
-    devLog('Full data to encrypt:', { ...fullData, seed: '[HIDDEN]' });
 
-    const encryptedData = await this.encryptData(fullData, password);
-    devLog('Encrypted data length:', encryptedData.length);
-
-    // Store password encrypted with device-specific key for auto-decryption
-    await this.setSecureItem(`wallet_pwd_${walletId}`, password);
-    devLog('[STORAGE] ✅ Password stored for auto-decryption, key:', `wallet_pwd_${walletId}`);
-
-    // Use OAuth walletId for lookup hash (not address)
-    const encoder = new TextEncoder();
-    const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
-    const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
-    devLog('Lookup hash:', lookupHash);
-
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction([this.walletsStore], 'readwrite');
-      const store = transaction.objectStore(this.walletsStore);
-
-      transaction.oncomplete = () => {
-        devLog('=== Transaction completed successfully ===');
-      };
-
-      transaction.onerror = () => {
-        devError('=== Transaction failed ===:', transaction.error);
-      };
-
-      transaction.onabort = () => {
-        devError('=== Transaction aborted ===');
-      };
-
-      // Store with metadata for quick lookup
-      // Use lookupHash as the id since the store uses inline keys
-      const record = {
-        id: lookupHash, // Use lookupHash as the id for inline key
-        lookupHash: lookupHash, // Also store for consistency
-        data: encryptedData,
-        timestamp: Date.now(), // Add timestamp at record level for visibility
-        metadata: {
-          address: wallet.address // Store address for quick auto-login check
-        }
-      };
-      devLog('Record to store:', { ...record, data: '[ENCRYPTED]' });
-
-      // First check if a wallet with this lookupHash already exists
-      const getRequest = store.get(lookupHash);
-      devLog('Checking for existing wallet with hash:', lookupHash);
-
-      getRequest.onsuccess = () => {
-        devLog('Get request success, result:', getRequest.result ? 'Found existing' : 'Not found');
-
-        if (getRequest.result) {
-          // Wallet already exists, update it
-          devLog('Updating existing wallet...');
-          const updateRequest = store.put(record);
-          updateRequest.onsuccess = () => {
-            devLog('OAuth wallet updated successfully');
-            devLog('Checking if really stored...');
-            const checkRequest = store.get(lookupHash);
-            checkRequest.onsuccess = () => {
-              devLog('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
-              resolve();
-            };
-          };
-          updateRequest.onerror = () => {
-            devError('Failed to update OAuth wallet:', updateRequest.error);
-            reject(updateRequest.error);
-          };
-        } else {
-          // New wallet, add it
-          devLog('Adding new wallet...');
-          const addRequest = store.add(record);
-          addRequest.onsuccess = () => {
-            devLog('OAuth wallet stored successfully, key:', addRequest.result);
-            devLog('Checking if really stored...');
-            const checkRequest = store.get(lookupHash);
-            checkRequest.onsuccess = () => {
-              devLog('Verification: wallet in DB:', checkRequest.result ? 'YES' : 'NO');
-              if (checkRequest.result) {
-                devLog('Stored record:', { ...checkRequest.result, data: '[ENCRYPTED]' });
-              }
-              resolve();
-            };
-          };
-          addRequest.onerror = () => {
-            devError('Failed to store OAuth wallet:', addRequest.error);
-            devError('Error details:', addRequest.error?.name, addRequest.error?.message);
-            reject(addRequest.error);
-          };
-        }
-      };
-
-      getRequest.onerror = () => {
-        devError('Failed to check for existing wallet:', getRequest.error);
-        reject(getRequest.error);
-      };
-    });
+    await this.storeWallet(walletData, password);
+    await this.setSecureItem(`wallet_pwd_${profile.provider}_${profile.id}`, password);
   }
 
   /**

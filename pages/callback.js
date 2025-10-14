@@ -373,8 +373,8 @@ const OAuthCallback = () => {
         }
 
         // Import unified wallet storage
-        const { UnifiedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-        const walletStorage = new UnifiedWalletStorage();
+        const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new EncryptedWalletStorage();
 
         // Create backend object with proper API URL
         const backend = {
@@ -414,43 +414,57 @@ const OAuthCallback = () => {
           sessionStorage.setItem('oauth_temp_provider', provider);
           sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload || {}));
           sessionStorage.setItem('oauth_action', result.action);
-          // No backend data - wallets are stored locally only
 
           // Redirect to main page where Wallet component will show password setup
           const returnUrl = sessionStorage.getItem('auth_return_url') || '/';
           sessionStorage.removeItem('auth_return_url');
           router.push(returnUrl);
         } else {
-          // Wallet already setup, store token and redirect
-          localStorage.setItem('jwt', jwtToken);
-          localStorage.setItem('authMethod', provider);
-          localStorage.setItem('user', JSON.stringify(payload || {}));
+          // Wallet already setup
+          await walletStorage.setSecureItem('jwt', jwtToken);
+          await walletStorage.setSecureItem('authMethod', provider);
+          await walletStorage.setSecureItem('user', payload || {});
 
-          // Store wallet info for auto-login
-          if (result.wallet) {
-            // Store complete wallet profile for AppContext
-            const walletProfile = {
-              account: result.wallet.address,
-              publicKey: result.wallet.publicKey,
-              seed: result.wallet.seed,
+          // Store ALL wallets in profiles
+          if (result.allWallets && result.allWallets.length > 0) {
+            console.log('📦 Storing', result.allWallets.length, 'wallets to profiles');
+
+            const allProfiles = result.allWallets.map(w => ({
+              account: w.address,
+              address: w.address,
+              publicKey: w.publicKey,
+              seed: w.seed,
               wallet_type: 'oauth',
               provider: provider,
               provider_id: payload?.id || payload?.sub,
-              token: jwtToken,
+              createdAt: w.createdAt || Date.now(),
               tokenCreatedAt: Date.now()
-            };
+            }));
 
-            // Store in sessionStorage for immediate use
-            sessionStorage.setItem('oauth_wallet_profile', JSON.stringify(walletProfile));
-            sessionStorage.setItem('oauth_logged_in', 'true');
-            sessionStorage.setItem('wallet_address', result.wallet.address);
-            sessionStorage.setItem('wallet_public_key', result.wallet.publicKey);
+            await walletStorage.setSecureItem('account_profile_2', allProfiles[0]);
+            await walletStorage.setSecureItem('account_profiles_2', allProfiles);
+
+            // Store password for provider (enables auto-loading)
+            const walletId = `${provider}_${payload?.id || payload?.sub}`;
+            const existingPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+            if (existingPassword) {
+              console.log('✅ Password already exists for provider:', walletId);
+            }
+
+            // Notify AppContext that profiles were updated
+            window.dispatchEvent(new Event('storage-updated'));
           }
 
           // Redirect to return URL or main page
           const returnUrl = sessionStorage.getItem('auth_return_url') || '/';
           sessionStorage.removeItem('auth_return_url');
-          router.push(returnUrl);
+
+          // For Twitter/X, force a page reload to ensure wallets are loaded
+          if (provider === 'twitter') {
+            window.location.href = returnUrl;
+          } else {
+            router.push(returnUrl);
+          }
         }
       } catch (error) {
         console.error('Error processing OAuth callback:', error);

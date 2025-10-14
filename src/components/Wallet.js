@@ -679,29 +679,28 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store the password for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate only 1 wallet initially for performance
+      // Generate 5 wallets immediately
       const wallets = [];
-      const i = 0; // Generate only the first wallet
+      for (let i = 0; i < 5; i++) {
+        const wallet = generateRandomWallet();
 
-      // Generate random wallet (2025 security standard - no deterministic)
-      const wallet = generateRandomWallet();
+        const walletData = {
+          deviceKeyId: deviceId,
+          accountIndex: i,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0',
+          createdAt: Date.now(),
+          seed: wallet.seed
+        };
 
-      const walletData = {
-        deviceKeyId: deviceId,
-        accountIndex: i,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0',
-        createdAt: Date.now(),
-        seed: wallet.seed
-      };
+        wallets.push(walletData);
 
-      wallets.push(walletData);
-
-      // Store wallet encrypted with password in IndexedDB (2025 standard)
-      await walletStorage.storeWallet(walletData, password);
+        // Store each wallet encrypted with password
+        await walletStorage.storeWallet(walletData, password);
+      }
 
       // Update profiles
       const allProfiles = [...profiles];
@@ -725,8 +724,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         totalWallets: wallets.length
       });
 
-      // Mark wallet as needing backup (new wallet)
-      localStorage.setItem(`wallet_needs_backup_${wallets[0].address}`, 'true');
+      // Mark all wallets as needing backup
+      wallets.forEach(w => {
+        localStorage.setItem(`wallet_needs_backup_${w.address}`, 'true');
+      });
 
       // Login with first wallet
       doLogIn(wallets[0], allProfiles);
@@ -800,9 +801,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         try {
           payload = JSON.parse(atob(jwtToken.split('.')[1]));
         } catch {
-          // Failed to decode JWT
           payload = { id: 'google_user', provider: 'google' };
         }
+      }
+
+      // Check if user already has wallets loaded (from AppContext auto-load)
+      const walletId = `${payload.provider || 'google'}_${payload.sub || payload.id}`;
+      const hasPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+
+      if (hasPassword && profiles.length > 0) {
+        console.log('✅ Wallets already loaded - skipping OAuth callback processing');
+        await walletStorage.setSecureItem('jwt', jwtToken);
+        await walletStorage.setSecureItem('authMethod', 'google');
+        await walletStorage.setSecureItem('user', payload);
+        setOpenWalletModal(false);
+        return;
       }
 
       // Use unified wallet storage
@@ -857,9 +870,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         await walletStorage.setSecureItem('user', payload);
 
         if (result.wallet) {
+          console.log('🔍 OAuth result.allWallets:', result.allWallets ? result.allWallets.length : 'NONE');
+
           // Load ALL wallets for this provider into profiles
           if (result.allWallets && result.allWallets.length > 0) {
-            const allProfiles = [...profiles];
+            const allProfiles = [];
             result.allWallets.forEach(w => {
               const walletProfile = {
                 account: w.address,
@@ -872,14 +887,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 createdAt: w.createdAt || Date.now(),
                 tokenCreatedAt: Date.now()
               };
-              if (!allProfiles.find(p => p.account === w.address)) {
-                allProfiles.push(walletProfile);
-              }
+              allProfiles.push(walletProfile);
             });
+
+            console.log('✅ Setting', allProfiles.length, 'profiles for OAuth');
             setProfiles(allProfiles);
             await syncProfilesToIndexedDB(allProfiles);
             doLogIn(result.wallet, allProfiles);
           } else {
+            console.log('❌ No allWallets - using single wallet');
             doLogIn(result.wallet, profiles);
           }
           openSnackbar('Google connect successful!', 'success');
@@ -1176,19 +1192,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Use unified wallet storage
       const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
 
-      // Complete wallet setup with password - no backend needed
-      const result = await walletStorageInstance.completeSocialWalletSetup(
-        {
-          id: user.id,
-          provider: provider,
-          email: user.account || user.email,
-          ...user
-        },
-        oauthPassword,
-        action
-      );
+      // Create 5 wallets immediately for OAuth
+      const wallets = [];
+      for (let i = 0; i < 5; i++) {
+        const wallet = generateRandomWallet();
 
-      if (result.success && result.wallet) {
+        const walletData = {
+          accountIndex: i,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'oauth',
+          provider: provider,
+          provider_id: user.id,
+          xrp: '0',
+          createdAt: Date.now(),
+          seed: wallet.seed
+        };
+
+        wallets.push(walletData);
+        await walletStorageInstance.storeWallet(walletData, oauthPassword);
+      }
+
+      if (wallets.length > 0) {
+        const result = { success: true, wallet: wallets[0] };
         // Clear temporary session data
         sessionStorage.removeItem('oauth_temp_token');
         sessionStorage.removeItem('oauth_temp_provider');
@@ -1210,8 +1237,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           localStorage.setItem(`wallet_needs_backup_${result.wallet.address}`, 'true');
         }
 
-        // Login with the wallet
-        doLogIn(result.wallet, profiles);
+        // Add all wallets to profiles
+        const allProfiles = [...profiles];
+        wallets.forEach(w => {
+          if (!allProfiles.find(p => p.account === w.address)) {
+            allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
+          }
+        });
+
+        // Login with first wallet
+        doLogIn(result.wallet, allProfiles);
 
         // Close dialogs
         setShowOAuthPasswordSetup(false);
@@ -1221,14 +1256,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthPassword('');
         setOAuthConfirmPassword('');
 
-        openSnackbar('Wallet created successfully!', 'success');
-
-        // Show backup reminder for new wallets
-        if (action === 'create') {
-          setTimeout(() => {
-            openSnackbar('Remember to backup your wallet seed phrase', 'warning');
-          }, 2000);
-        }
+        openSnackbar(`5 accounts created successfully!`, 'success');
       } else {
         throw new Error('Failed to setup wallet');
       }
@@ -1443,34 +1471,28 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate only 1 wallet initially for performance
+      // Generate 5 wallets immediately
       const wallets = [];
-      const i = 0; // Generate only the first wallet
+      for (let i = 0; i < 5; i++) {
+        const wallet = generateRandomWallet();
 
-      // Generate random wallet (2025 security standard)
-      let wallet;
-      try {
-        wallet = generateRandomWallet();
-      } catch (walletErr) {
-        throw new Error(`Wallet generation failed: ${walletErr.message}`);
+        const walletData = {
+          deviceKeyId: deviceId,
+          accountIndex: i,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          wallet_type: 'device',
+          xrp: '0',
+          createdAt: Date.now(),
+          seed: wallet.seed
+        };
+
+        wallets.push(walletData);
+
+        // Store each wallet encrypted with password
+        await walletStorage.storeWallet(walletData, password);
       }
-
-      const walletData = {
-        deviceKeyId: deviceId,
-        accountIndex: i,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        wallet_type: 'device',
-        xrp: '0',
-        createdAt: Date.now(),
-        seed: wallet.seed
-      };
-
-      wallets.push(walletData);
-
-      // Store wallet encrypted with password
-      await walletStorage.storeWallet(walletData, password);
 
       // Check if any of these wallets already exist in profiles
       const existingWallet = profiles.find(p =>
@@ -1851,34 +1873,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
   }, []);
 
-  // Load profiles from localStorage on mount
-  useEffect(() => {
-    const initializeStorage = async () => {
-      try {
-        // Load profiles from localStorage (backward compatibility)
-        const storedProfiles = localStorage.getItem('profiles');
-        if (storedProfiles) {
-          const parsedProfiles = JSON.parse(storedProfiles);
-
-          // Remove duplicates
-          const uniqueProfiles = [];
-          const seen = new Set();
-
-          parsedProfiles.forEach(profile => {
-            if (!seen.has(profile.account)) {
-              seen.add(profile.account);
-              uniqueProfiles.push(profile);
-            }
-          });
-
-          setProfiles(uniqueProfiles);
-        }
-      } catch (error) {
-        devError('Failed to load profiles:', error);
-      }
-    };
-    initializeStorage();
-  }, []); // Only run once on mount
+  // Don't load profiles here - AppContext handles it
+  // This was overwriting the auto-loaded profiles from IndexedDB
 
 
   const handleRegister = async () => {
@@ -2410,7 +2406,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       }
                       console.log('=== ACCOUNT SWITCH END ===');
                     }}
-                    onLogout={handleLogout}
+                    onLogout={() => {
+                      handleLogout();
+                      setOpen(false);
+                    }}
                     onRemoveProfile={removeProfile}
                     onBackupSeed={handleBackupSeed}
                     openSnackbar={openSnackbar}
