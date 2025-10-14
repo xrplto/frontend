@@ -464,21 +464,22 @@ const OverView = ({ account }) => {
             <Box sx={{ backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.2), borderRadius: '6px', overflow: 'hidden' }}>
               <Box sx={{
                 display: 'grid',
-                gridTemplateColumns: '100px 140px 1fr 180px 100px 140px',
-                gap: 1.5,
+                gridTemplateColumns: '80px 110px 2fr 1fr 80px 110px',
+                gap: 2,
                 p: 1.2,
                 borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
                 backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.1)
               }}>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>TYPE</Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>HASH</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>DESTINATION</Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>AMOUNT</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>ACTION</Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600, textAlign: 'right' }}>AMOUNT</Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>SOURCE</Typography>
                 <Typography variant="caption" sx={{ fontSize: '0.6rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>DATE</Typography>
               </Box>
               {txHistory.slice(0, 20).map((tx, idx) => {
                 const txData = tx.tx_json || tx.tx;
+                const meta = tx.meta;
                 const date = new Date((txData.date + 946684800) * 1000);
                 const sourceTagMap = {
                   101102979: 'xrp.cafe',
@@ -495,20 +496,96 @@ const OverView = ({ account }) => {
                   4152544945: 'ArtDept.fun',
                   123321: 'BearBull Scalper',
                   411555: 'N/A',
-                  80008000: 'Orchestra'
+                  80008000: 'Orchestra',
+                  19089388: 'Bot'
                 };
-                const sourceLabel = txData.SourceTag ? sourceTagMap[txData.SourceTag] || txData.SourceTag : '—';
+                const sourceLabel = txData.SourceTag ? sourceTagMap[txData.SourceTag] || `Tag ${txData.SourceTag}` : '';
+
+                // Helper to decode hex currency codes
+                const decodeCurrency = (code) => {
+                  if (!code || code === 'XRP') return code;
+                  if (code.length === 3) return code;
+                  try {
+                    const hex = code.replace(/0+$/, '');
+                    if (hex.length === 0) return code;
+                    const decoded = Buffer.from(hex, 'hex').toString('utf8').replace(/\0/g, '');
+                    return decoded.match(/^[A-Za-z0-9]+$/) ? decoded : code.substring(0, 6);
+                  } catch {
+                    return code.substring(0, 6);
+                  }
+                };
+
+                // Parse offer details for OfferCreate/OfferCancel
+                let offerDetails = '';
+                if (txData.TransactionType === 'OfferCreate' && txData.TakerGets && txData.TakerPays) {
+                  // TakerGets = what maker is SELLING
+                  // TakerPays = what maker is BUYING
+                  const getsVal = typeof txData.TakerGets === 'string'
+                    ? parseInt(txData.TakerGets) / 1000000
+                    : parseFloat(txData.TakerGets.value);
+                  const paysVal = typeof txData.TakerPays === 'string'
+                    ? parseInt(txData.TakerPays) / 1000000
+                    : parseFloat(txData.TakerPays.value);
+
+                  const getsCurr = typeof txData.TakerGets === 'string'
+                    ? 'XRP'
+                    : decodeCurrency(txData.TakerGets.currency);
+                  const paysCurr = typeof txData.TakerPays === 'string'
+                    ? 'XRP'
+                    : decodeCurrency(txData.TakerPays.currency);
+
+                  if (getsVal < 1e15 && paysVal < 1e15) {
+                    // Show from maker's perspective: selling → buying
+                    offerDetails = `${fCurrency5(getsVal)} ${getsCurr} → ${fCurrency5(paysVal)} ${paysCurr}`;
+                  }
+                }
+
+                // Build action description
+                let actionDesc = '';
+                let actionColor = 'inherit';
+
+                if (txData.TransactionType === 'OfferCreate' && offerDetails) {
+                  actionDesc = `Sell ${offerDetails.split(' → ')[0]} for ${offerDetails.split(' → ')[1]}`;
+                  actionColor = '#4285f4';
+                } else if (txData.TransactionType === 'OfferCancel') {
+                  actionDesc = 'Cancel offer';
+                  actionColor = '#ef4444';
+                } else if (txData.TransactionType === 'Payment') {
+                  if (txData.SendMax && meta?.delivered_amount) {
+                    const sendIsXRP = typeof txData.SendMax === 'string';
+                    const deliveredIsXRP = typeof meta.delivered_amount === 'string';
+                    if (sendIsXRP && !deliveredIsXRP) {
+                      const curr = decodeCurrency(meta.delivered_amount.currency);
+                      actionDesc = `Convert XRP to ${curr}`;
+                      actionColor = '#10b981';
+                    } else if (!sendIsXRP && deliveredIsXRP) {
+                      const curr = decodeCurrency(txData.SendMax.currency);
+                      actionDesc = `Convert ${curr} to XRP`;
+                      actionColor = '#10b981';
+                    } else {
+                      actionDesc = `Send to ${txData.Destination.substring(0, 12)}...`;
+                    }
+                  } else {
+                    actionDesc = `Send to ${txData.Destination?.substring(0, 12)}...` || 'Payment';
+                  }
+                } else {
+                  actionDesc = txData.TransactionType;
+                }
 
                 return (
                   <Box key={idx} sx={{
                     display: 'grid',
-                    gridTemplateColumns: '100px 140px 1fr 180px 100px 140px',
-                    gap: 1.5,
+                    gridTemplateColumns: '80px 110px 2fr 1fr 80px 110px',
+                    gap: 2,
                     p: 1.2,
                     borderBottom: idx < 19 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
                     '&:hover': { backgroundColor: alpha('#fff', 0.015) }
                   }}>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                    <Typography variant="caption" sx={{
+                      fontSize: '0.65rem',
+                      color: txData.TransactionType === 'OfferCreate' ? '#4285f4' : txData.TransactionType === 'OfferCancel' ? '#ef4444' : (theme) => alpha(theme.palette.text.secondary, 0.5),
+                      fontWeight: 500
+                    }}>
                       {txData.TransactionType}
                     </Typography>
                     <Typography
@@ -517,25 +594,46 @@ const OverView = ({ account }) => {
                       target="_blank"
                       variant="caption"
                       sx={{
-                        fontSize: '0.7rem',
+                        fontSize: '0.65rem',
                         fontFamily: 'monospace',
                         color: '#4285f4',
                         textDecoration: 'none',
                         '&:hover': { textDecoration: 'underline' }
                       }}
                     >
-                      {tx.hash?.substring(0, 16)}...
+                      {tx.hash?.substring(0, 12)}...
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontFamily: 'monospace' }}>
-                      {txData.Destination || '—'}
+                    <Typography variant="caption" sx={{
+                      fontSize: '0.7rem',
+                      color: actionColor,
+                      fontWeight: 400
+                    }}>
+                      {actionDesc}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>
-                      {txData.DeliverMax ? (typeof txData.DeliverMax === 'string' ? `${(parseInt(txData.DeliverMax) / 1000000).toFixed(4)} XRP` : `${parseFloat(txData.DeliverMax.value).toFixed(4)} ${txData.DeliverMax.currency}`) : '—'}
+                    <Typography variant="caption" sx={{ fontSize: '0.7rem', textAlign: 'right', fontWeight: 500 }}>
+                      {(() => {
+                        if (txData.TransactionType === 'OfferCreate' || txData.TransactionType === 'OfferCancel') return '—';
+
+                        // Use delivered_amount from metadata if available
+                        let amt = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
+                        if (!amt) return '—';
+
+                        if (typeof amt === 'string') {
+                          const xrp = parseInt(amt) / 1000000;
+                          if (xrp > 1e9) return '—';
+                          return `${fCurrency5(xrp)} XRP`;
+                        }
+
+                        const val = parseFloat(amt.value);
+                        if (val > 1e12) return '—';
+                        const curr = decodeCurrency(amt.currency);
+                        return `${fCurrency5(val)} ${curr}`;
+                      })()}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
-                      {sourceLabel}
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                      {sourceLabel || '—'}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4) }}>
+                    <Typography variant="caption" sx={{ fontSize: '0.65rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4) }}>
                       {fDateTime(date)}
                     </Typography>
                   </Box>
