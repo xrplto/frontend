@@ -2179,17 +2179,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         return;
       }
 
-      // Verify password by attempting to decrypt ALL wallets and find current one
-      let passwordValid = false;
-      try {
-        const allWallets = await walletStorage.getAllWallets(newAccountPassword);
-        // If we can decrypt any wallet with this password, it's valid
-        passwordValid = allWallets && allWallets.length > 0 && allWallets.some(w => w.address === accountProfile.address);
-      } catch (err) {
-        devError('Password verification failed:', err);
-      }
+      // Get stored password and compare directly
+      const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+      const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
-      if (!passwordValid) {
+      console.log('Password check - Provider:', accountProfile.provider);
+      console.log('Password check - Stored:', !!storedPassword);
+      console.log('Password check - Match:', storedPassword === newAccountPassword);
+
+      if (!storedPassword || storedPassword !== newAccountPassword) {
         openSnackbar('Incorrect password', 'error');
         setNewAccountPassword('');
         return;

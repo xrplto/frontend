@@ -112,8 +112,46 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
       if (profile) {
         setAccountProfile(profile);
+
+        // If OAuth wallet, load ALL wallets for this provider from IndexedDB
+        if ((profile.wallet_type === 'oauth' || profile.wallet_type === 'social') && profile.provider && profile.provider_id) {
+          const walletId = `${profile.provider}_${profile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+
+          console.log('🔄 Loading all wallets for provider:', profile.provider);
+          console.log('Password found:', !!storedPassword);
+
+          if (storedPassword) {
+            const allWallets = await walletStorage.getAllWalletsForProvider(
+              profile.provider,
+              profile.provider_id,
+              storedPassword
+            );
+
+            console.log('Found', allWallets.length, 'wallets for this provider');
+
+            if (allWallets.length > 0) {
+              const loadedProfiles = allWallets.map(w => ({
+                account: w.address,
+                address: w.address,
+                publicKey: w.publicKey,
+                seed: w.seed,
+                wallet_type: profile.wallet_type,
+                provider: profile.provider,
+                provider_id: profile.provider_id,
+                createdAt: w.createdAt || Date.now(),
+                tokenCreatedAt: Date.now()
+              }));
+
+              setProfiles(loadedProfiles);
+              await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, loadedProfiles);
+              return;
+            }
+          }
+        }
       }
 
+      // Fallback: load from storage
       const profiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
       if (profiles) {
         setProfiles(profiles);
@@ -161,7 +199,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogOut = () => {
-    // Clear ALL storage (passwords are safely in IndexedDB)
+    // Clear all storage (wallets + passwords safe in IndexedDB)
     localStorage.clear();
     sessionStorage.clear();
   };

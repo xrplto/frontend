@@ -18,7 +18,7 @@ export class UnifiedWalletStorage {
   constructor() {
     this.dbName = 'XRPLWalletDB';
     this.walletsStore = 'wallets';
-    this.version = 5;
+    this.version = 1;
     this.localStorageKey = this.generateLocalStorageKey();
   }
 
@@ -54,11 +54,8 @@ export class UnifiedWalletStorage {
 
   // Encrypt data for localStorage (using Web Crypto API)
   async encryptForLocalStorage(data) {
-    // Fallback for non-secure contexts (HTTP over IP)
     if (!this.isSecureContext()) {
-      devLog('Warning: Using base64 encoding instead of encryption (insecure context)');
-      const dataString = typeof data === 'string' ? data : JSON.stringify(data);
-      return btoa(unescape(encodeURIComponent(dataString)));
+      throw new Error('HTTPS required for wallet encryption');
     }
 
     const encoder = new TextEncoder();
@@ -106,81 +103,74 @@ export class UnifiedWalletStorage {
 
   // Decrypt data from localStorage
   async decryptFromLocalStorage(encryptedData) {
+    if (!this.isSecureContext()) {
+      throw new Error('HTTPS required for wallet decryption');
+    }
+
+    const encoder = new TextEncoder();
+    const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
+
+    const salt = combined.slice(0, 16);
+    const iv = combined.slice(16, 28);
+    const encrypted = combined.slice(28);
+
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(this.localStorageKey),
+      'PBKDF2',
+      false,
+      ['deriveBits', 'deriveKey']
+    );
+
+    const key = await crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: salt,
+        iterations: 600000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+
+    const decrypted = await crypto.subtle.decrypt(
+      { name: 'AES-GCM', iv: iv },
+      key,
+      encrypted
+    );
+
+    const decoded = new TextDecoder().decode(decrypted);
     try {
-      // Fallback for non-secure contexts (HTTP over IP)
-      if (!this.isSecureContext()) {
-        const decoded = decodeURIComponent(escape(atob(encryptedData)));
-        try {
-          return JSON.parse(decoded);
-        } catch {
-          return decoded;
-        }
-      }
-
-      const encoder = new TextEncoder();
-      const combined = Uint8Array.from(atob(encryptedData), c => c.charCodeAt(0));
-
-      const salt = combined.slice(0, 16);
-      const iv = combined.slice(16, 28);
-      const encrypted = combined.slice(28);
-
-      const keyMaterial = await crypto.subtle.importKey(
-        'raw',
-        encoder.encode(this.localStorageKey),
-        'PBKDF2',
-        false,
-        ['deriveBits', 'deriveKey']
-      );
-
-      const key = await crypto.subtle.deriveKey(
-        {
-          name: 'PBKDF2',
-          salt: salt,
-          iterations: 600000, // OWASP 2025 standard
-          hash: 'SHA-256'
-        },
-        keyMaterial,
-        { name: 'AES-GCM', length: 256 },
-        false,
-        ['encrypt', 'decrypt']
-      );
-
-      const decrypted = await crypto.subtle.decrypt(
-        { name: 'AES-GCM', iv: iv },
-        key,
-        encrypted
-      );
-
-      const decoded = new TextDecoder().decode(decrypted);
-      try {
-        return JSON.parse(decoded);
-      } catch {
-        return decoded; // Return as string if not JSON
-      }
-    } catch (error) {
-      devError('Decryption failed:', error);
-      return null;
+      return JSON.parse(decoded);
+    } catch {
+      return decoded; // Plain string (e.g., passwords)
     }
   }
 
-  // Store provider password in IndexedDB (safer than localStorage)
+  // Store provider password in IndexedDB alongside wallets
   async storeProviderPassword(providerId, password) {
     const db = await this.initDB();
     const encrypted = await this.encryptForLocalStorage(password);
 
     return new Promise((resolve, reject) => {
-      const transaction = db.transaction(['credentials'], 'readwrite');
-      const store = transaction.objectStore('credentials');
+      const transaction = db.transaction([this.walletsStore], 'readwrite');
+      const store = transaction.objectStore(this.walletsStore);
 
+      // Use special ID format for password records
       const record = {
-        id: `pwd_${providerId}`,
-        providerId: providerId,
+        id: `__pwd__${providerId}`,
+        lookupHash: `__pwd__${providerId}`,
         data: encrypted,
         timestamp: Date.now()
       };
 
       const request = store.put(record);
-      request.onsuccess = () => resolve();
+      request.onsuccess = () => {
+        devLog('Password stored in IndexedDB for provider:', providerId);
+        resolve();
+      };
       request.onerror = () => reject(request.error);
     });
   }
@@ -189,16 +179,18 @@ export class UnifiedWalletStorage {
     try {
       const db = await this.initDB();
 
-      return new Promise(async (resolve, reject) => {
-        const transaction = db.transaction(['credentials'], 'readonly');
-        const store = transaction.objectStore('credentials');
-        const request = store.get(`pwd_${providerId}`);
+      return new Promise(async (resolve) => {
+        const transaction = db.transaction([this.walletsStore], 'readonly');
+        const store = transaction.objectStore(this.walletsStore);
+        const request = store.get(`__pwd__${providerId}`);
 
         request.onsuccess = async () => {
           if (request.result && request.result.data) {
             const decrypted = await this.decryptFromLocalStorage(request.result.data);
+            devLog('Password retrieved from IndexedDB for provider:', providerId);
             resolve(decrypted);
           } else {
+            devLog('No password found in IndexedDB for provider:', providerId);
             resolve(null);
           }
         };
@@ -230,35 +222,16 @@ export class UnifiedWalletStorage {
   async getSecureItem(key) {
     if (typeof window === 'undefined') return null;
 
-    // For wallet passwords, check IndexedDB first
+    // For wallet passwords, use dedicated method
     if (key.startsWith('wallet_pwd_')) {
       const providerId = key.replace('wallet_pwd_', '');
-      const password = await this.getProviderPassword(providerId);
-      if (password) return password;
+      return await this.getProviderPassword(providerId);
     }
 
-    // Try encrypted version first
     const encrypted = localStorage.getItem(key + '_enc');
-    if (encrypted) {
-      return await this.decryptFromLocalStorage(encrypted);
-    }
+    if (!encrypted) return null;
 
-    // Check for unencrypted version (for migration)
-    const unencrypted = localStorage.getItem(key);
-    if (unencrypted) {
-      try {
-        const parsed = JSON.parse(unencrypted);
-        // Migrate to encrypted storage
-        await this.setSecureItem(key, parsed);
-        return parsed;
-      } catch {
-        // Migrate plain string
-        await this.setSecureItem(key, unencrypted);
-        return unencrypted;
-      }
-    }
-
-    return null;
+    return await this.decryptFromLocalStorage(encrypted);
   }
 
   removeSecureItem(key) {
@@ -311,11 +284,6 @@ export class UnifiedWalletStorage {
           store.deleteIndex('active');
         }
 
-        // Create credentials store for passwords
-        if (!db.objectStoreNames.contains('credentials')) {
-          const credStore = db.createObjectStore('credentials', { keyPath: 'id' });
-          credStore.createIndex('providerId', 'providerId', { unique: true });
-        }
       };
     });
   }
