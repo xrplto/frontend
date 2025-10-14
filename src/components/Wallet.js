@@ -153,7 +153,8 @@ const WalletContent = ({
   setShowSeedPassword,
   handleSeedPasswordSubmit,
   setShowSeedDialog,
-  setSeedAuthStatus
+  setSeedAuthStatus,
+  onCreateNewAccount
 }) => {
   return (
     <>
@@ -435,25 +436,60 @@ const WalletContent = ({
       {/* Bottom Actions */}
       <Box sx={{
         p: 1.5,
-        borderTop: isEmbedded ? `1px solid ${alpha(theme.palette.divider, 0.1)}` : 'none',
+        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         display: 'flex',
-        gap: 0.5
+        flexDirection: 'column',
+        gap: 0.8
       }}>
+        {/* New Account Button - Show for all wallet types temporarily for debugging */}
+        <Button
+          onClick={onCreateNewAccount || (() => openSnackbar(`Wallet type: ${accountProfile?.wallet_type || 'unknown'}`, 'info'))}
+          variant="outlined"
+          size="small"
+          disabled={!onCreateNewAccount || (accountProfile?.wallet_type === 'device' && profiles.filter(p => p.wallet_type === 'device').length >= 5)}
+          sx={{
+            width: '100%',
+            py: 0.8,
+            borderRadius: '8px',
+            borderWidth: '1.5px',
+            borderColor: alpha('#4285f4', 0.3),
+            background: 'transparent',
+            color: '#4285f4',
+            fontWeight: 400,
+            fontSize: '0.8rem',
+            textTransform: 'none',
+            '&:hover': {
+              borderWidth: '1.5px',
+              borderColor: '#4285f4',
+              background: alpha('#4285f4', 0.04)
+            },
+            '&:disabled': {
+              opacity: 0.4,
+              borderColor: alpha(theme.palette.divider, 0.3)
+            }
+          }}
+        >
+          {accountProfile?.wallet_type !== 'device'
+            ? `Wallet Type: ${accountProfile?.wallet_type || 'unknown'}`
+            : profiles.filter(p => p.wallet_type === 'device').length >= 5
+            ? 'Maximum 5 accounts'
+            : `+ New Account (${profiles.filter(p => p.wallet_type === 'device').length}/5)`}
+        </Button>
+
         <Button
           onClick={onLogout}
           variant="outlined"
           size="small"
           sx={{
-            px: isEmbedded ? 1 : 1.5,
-            py: isEmbedded ? 0.5 : 0.8,
-            minWidth: isEmbedded ? 'auto' : '70px',
+            width: '100%',
+            py: 0.8,
             borderRadius: '8px',
             borderWidth: '1.5px',
             borderColor: alpha(theme.palette.error.main, 0.3),
             background: 'transparent',
             color: theme.palette.error.main,
             fontWeight: 400,
-            fontSize: isEmbedded ? '0.75rem' : '0.8rem',
+            fontSize: '0.8rem',
             textTransform: 'none',
             '&:hover': {
               borderWidth: '1.5px',
@@ -462,7 +498,7 @@ const WalletContent = ({
             }
           }}
         >
-          {!isEmbedded && 'Logout'}
+          Logout
         </Button>
       </Box>
     </>
@@ -509,7 +545,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   // Translation removed - using hardcoded English text
   // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  // Helper to sync profiles to IndexedDB
+  // Helper to sync profiles to localStorage (profiles are NOT stored in IndexedDB)
   const syncProfilesToIndexedDB = async (profilesArray) => {
     try {
       // Remove duplicates before storing
@@ -523,9 +559,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
       });
 
-      await walletStorage.storeProfiles(uniqueProfiles);
+      // Store in localStorage (profiles array for UI state management)
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('profiles', JSON.stringify(uniqueProfiles));
+      }
+      // Note: Individual wallets are already encrypted in IndexedDB via storeWallet()
     } catch (error) {
-      devError('Failed to sync profiles to IndexedDB:', error);
+      devError('Failed to sync profiles:', error);
     }
   };
   const anchorRef = useRef(null);
@@ -576,6 +616,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [importFile, setImportFile] = useState(null);
   const [importMethod, setImportMethod] = useState('new'); // 'new', 'import', or 'seed'
   const [importSeed, setImportSeed] = useState('');
+  const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
+  const [newAccountPassword, setNewAccountPassword] = useState('');
+  const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
 
 
   // Device Password handlers
@@ -2066,6 +2109,81 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       openSnackbar('Failed to create/access device wallet: ' + err.message, 'error');
     }
   };
+
+  const handleCreateNewAccount = async () => {
+    if (!newAccountPassword) {
+      openSnackbar('Please enter your password', 'error');
+      return;
+    }
+
+    try {
+      // Count existing device wallets for this user
+      const deviceWallets = profiles.filter(p => p.wallet_type === 'device');
+
+      if (deviceWallets.length >= 5) {
+        openSnackbar('Maximum 5 accounts reached', 'warning');
+        setShowNewAccountFlow(false);
+        setNewAccountPassword('');
+        return;
+      }
+
+      // Verify password by attempting to decrypt ALL wallets and find current one
+      let passwordValid = false;
+      try {
+        const allWallets = await walletStorage.getAllWallets(newAccountPassword);
+        // If we can decrypt any wallet with this password, it's valid
+        passwordValid = allWallets && allWallets.length > 0 && allWallets.some(w => w.address === accountProfile.address);
+      } catch (err) {
+        devError('Password verification failed:', err);
+      }
+
+      if (!passwordValid) {
+        openSnackbar('Incorrect password', 'error');
+        setNewAccountPassword('');
+        return;
+      }
+
+      // Password verified - create new wallet
+      const wallet = generateRandomWallet();
+
+      const walletData = {
+        deviceKeyId: accountProfile.deviceKeyId || accountProfile.account,
+        accountIndex: deviceWallets.length,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
+
+      // Store encrypted with same password
+      await walletStorage.storeWallet(walletData, newAccountPassword);
+
+      // Update profiles
+      const allProfiles = [...profiles, { ...walletData, tokenCreatedAt: Date.now() }];
+      setProfiles(allProfiles);
+      await syncProfilesToIndexedDB(allProfiles);
+
+      // Mark as needing backup
+      localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
+
+      // Switch to new account
+      doLogIn(walletData, allProfiles);
+
+      // Close flow and clear state
+      setShowNewAccountFlow(false);
+      setNewAccountPassword('');
+      setOpen(false);
+
+      openSnackbar(`Account ${deviceWallets.length + 1} of 5 created`, 'success');
+    } catch (error) {
+      devError('Create account error:', error);
+      openSnackbar('Incorrect password', 'error');
+      setNewAccountPassword('');
+    }
+  };
   const accountLogin = accountProfile?.account;
   const accountLogo = accountProfile?.logo;
   const accountTotalXrp = accountProfile?.xrp;
@@ -2186,7 +2304,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             {accountProfile ? (
               <>
 
-                {!showSeedDialog ? (
+                {!showSeedDialog && !showNewAccountFlow ? (
                   <WalletContent
                     theme={theme}
                     accountLogin={accountLogin}
@@ -2214,7 +2332,88 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     handleSeedPasswordSubmit={handleSeedPasswordSubmit}
                     setShowSeedDialog={setShowSeedDialog}
                     setSeedAuthStatus={setSeedAuthStatus}
+                    onCreateNewAccount={() => setShowNewAccountFlow(true)}
                   />
+                ) : showNewAccountFlow ? (
+                  <Box sx={{ p: 3 }}>
+                    <Stack spacing={2.5}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                          Create New Account
+                        </Typography>
+                        <Button size="small" onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}>
+                          ×
+                        </Button>
+                      </Box>
+
+                      <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                        Account {profiles.filter(p => p.wallet_type === 'device').length + 1} of 5
+                      </Typography>
+
+                      <Alert severity="info" sx={{ py: 1 }}>
+                        <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                          Enter your password to create a new account. The new account will use the same password.
+                        </Typography>
+                      </Alert>
+
+                      <TextField
+                        fullWidth
+                        type={showNewAccountPassword ? 'text' : 'password'}
+                        label="Password"
+                        placeholder="Enter your password"
+                        value={newAccountPassword}
+                        onChange={(e) => setNewAccountPassword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && newAccountPassword && handleCreateNewAccount()}
+                        autoFocus
+                        autoComplete="off"
+                        InputProps={{
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <IconButton
+                                size="small"
+                                onClick={() => setShowNewAccountPassword(!showNewAccountPassword)}
+                                edge="end"
+                              >
+                                {showNewAccountPassword ? <VisibilityOff /> : <Visibility />}
+                              </IconButton>
+                            </InputAdornment>
+                          )
+                        }}
+                      />
+
+                      <Box sx={{ display: 'flex', gap: 1.5, mt: 1 }}>
+                        <Button
+                          variant="outlined"
+                          fullWidth
+                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}
+                          sx={{
+                            py: 1,
+                            fontSize: '0.85rem',
+                            textTransform: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 400
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          variant="contained"
+                          fullWidth
+                          onClick={handleCreateNewAccount}
+                          disabled={!newAccountPassword}
+                          sx={{
+                            py: 1,
+                            fontSize: '0.85rem',
+                            textTransform: 'none',
+                            borderRadius: '8px',
+                            fontWeight: 400
+                          }}
+                        >
+                          Create Account
+                        </Button>
+                      </Box>
+                    </Stack>
+                  </Box>
                 ) : (
                   <Box sx={{ p: 3 }}>
                     <Stack spacing={2}>
