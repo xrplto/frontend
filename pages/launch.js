@@ -1322,7 +1322,10 @@ function CreatePage() {
                         AMM Pool
                       </Typography>
                       <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                        {Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker}
+                        {formData.userCheckPercent === 0
+                          ? formData.tokenSupply.toLocaleString()
+                          : Math.floor(formData.tokenSupply * 0.5).toLocaleString()
+                        } {formData.ticker}
                       </Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
