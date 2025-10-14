@@ -432,16 +432,20 @@ function AMMPoolsPage({ data }) {
                 <Th darkMode={darkMode}>Pool</Th>
                 <Th darkMode={darkMode} align="right">Fee</Th>
                 <Th darkMode={darkMode} align="right">Liquidity</Th>
+                <Th darkMode={darkMode} align="right">24h Volume</Th>
                 <Th darkMode={darkMode} align="right">7d Volume</Th>
-                <Th darkMode={darkMode} align="right">7d Fees</Th>
+                <Th darkMode={darkMode} align="right">24h Trades</Th>
                 <Th darkMode={darkMode} align="right">7d Trades</Th>
+                <Th darkMode={darkMode} align="center">24h APY</Th>
                 <Th darkMode={darkMode} align="center">7d APY</Th>
               </tr>
             </thead>
             <tbody>
               {pools.slice(0, params.limit).map((pool, idx) => {
+                const apy24h = pool.apy24h?.apy || 0;
                 const apy7d = pool.apy7d?.apy || 0;
-                const apyColors = getAPYColor(apy7d);
+                const apyColors24h = getAPYColor(apy24h);
+                const apyColors7d = getAPYColor(apy7d);
                 const liquidityXRP = pool.apy7d?.liquidity || pool.currentLiquidity?.asset1Amount || 0;
                 const liquidityFiat = new Decimal(liquidityXRP).div(exchRate).toNumber();
 
@@ -471,16 +475,24 @@ function AMMPoolsPage({ data }) {
                       <span>{currencySymbols[activeFiatCurrency]}{formatCurrency(liquidityFiat)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
+                      <span>{formatCurrency(pool.apy24h?.volume || 0)}</span>
+                    </Td>
+                    <Td darkMode={darkMode} align="right">
                       <span>{formatCurrency(pool.apy7d?.volume || 0)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
-                      <span>{formatCurrency(pool.apy7d?.fees || 0)}</span>
+                      <span>{fNumber(pool.apy24h?.trades || 0)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="right">
                       <span>{fNumber(pool.apy7d?.trades || 0)}</span>
                     </Td>
                     <Td darkMode={darkMode} align="center">
-                      <APYBadge {...apyColors}>
+                      <APYBadge {...apyColors24h}>
+                        {apy24h > 0 ? `${apy24h.toFixed(1)}%` : '-'}
+                      </APYBadge>
+                    </Td>
+                    <Td darkMode={darkMode} align="center">
+                      <APYBadge {...apyColors7d}>
                         {apy7d > 0 ? `${apy7d.toFixed(1)}%` : '-'}
                       </APYBadge>
                     </Td>
