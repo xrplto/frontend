@@ -792,13 +792,13 @@ function CreatePage() {
     <PageWrapper>
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-        Create Token on XRPL
+        Launch Token on XRPL
       </h1>
 
       {!launchStep && !showSummary && (
       <Container>
-        <PageTitle theme={theme}>Create Token</PageTitle>
-        <Subtitle theme={theme}>Launch your token on the XRP Ledger</Subtitle>
+        <PageTitle theme={theme}>Launch Token</PageTitle>
+        <Subtitle theme={theme}>Deploy your token on the XRP Ledger</Subtitle>
 
         {/* Debug Wallet Info */}
         <Paper sx={{
@@ -1262,7 +1262,7 @@ function CreatePage() {
               }
             }}
           >
-            {isFormValid() ? 'Create Token' : `Complete Required Fields (${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 10 ? 1 : 0)} remaining)`}
+            {isFormValid() ? 'Launch Token' : `Complete Required Fields (${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 10 ? 1 : 0)} remaining)`}
           </Button>
         )}
       </Container>

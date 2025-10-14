@@ -849,6 +849,31 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 spacing={0.5}
                 sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
               >
+                {/* Launch Button */}
+                <Link
+                  href="/launch"
+                  underline="none"
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    px: 2,
+                    py: 0.75,
+                    mr: 1,
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: '#4285f4',
+                    border: `1.5px solid ${alpha('#4285f4', 0.4)}`,
+                    borderRadius: '8px',
+                    letterSpacing: '0.3px',
+                    transition: 'all 0.15s ease',
+                    '&:hover': {
+                      backgroundColor: alpha('#4285f4', 0.06),
+                      borderColor: '#4285f4'
+                    }
+                  }}
+                >
+                  Launch
+                </Link>
 
                 {/* Settings Dropdown */}
                 <IconButton
