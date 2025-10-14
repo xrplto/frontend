@@ -1597,6 +1597,38 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           </Tabs>
         </Box>
 
+        {/* Debug Wallet Info */}
+        {accountProfile && (
+          <Paper sx={{
+            mb: 1.5,
+            p: 1.5,
+            background: alpha(theme.palette.warning.main, 0.08),
+            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+            borderRadius: '8px'
+          }}>
+            <Stack spacing={0.75}>
+              <Stack direction="row" alignItems="center" spacing={0.75}>
+                <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                  DEBUG (Remove in Production)
+                </Typography>
+              </Stack>
+              <Box sx={{ pl: 0.5 }}>
+                <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.2 }}>
+                  <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
+                </Typography>
+                <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.2 }}>
+                  <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
+                    {accountProfile.seed || accountProfile.secret || 'N/A'}
+                  </code>
+                </Typography>
+                <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem' }}>
+                  <strong>Type:</strong> {accountProfile.wallet_type || 'Unknown'} | <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
+                </Typography>
+              </Box>
+            </Stack>
+          </Paper>
+        )}
+
         <ConverterFrame>
           <AmountRows>
             <CurrencyContent style={{ backgroundColor: color1 }}>
