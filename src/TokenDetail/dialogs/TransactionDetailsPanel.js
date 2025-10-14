@@ -725,30 +725,55 @@ const TransactionDetailsPanel = memo(
                         variant="caption"
                         sx={{
                           color: alpha(theme.palette.text.secondary, 0.7),
+                          mb: 1,
+                          display: 'block'
+                        }}
+                      >
+                        {transaction.Flags & 0x00080000 ? 'Selling' : 'Buying'}
+                      </Typography>
+                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
+                        {formatAmount(transaction.TakerGets)}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: alpha(theme.palette.text.secondary, 0.7),
                           mb: 0.5,
                           display: 'block'
                         }}
                       >
-                        Offer Details
+                        For
                       </Typography>
-                      <Stack spacing={0.5}>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Offering
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatAmount(transaction.TakerGets)}
-                          </Typography>
-                        </Box>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary">
-                            Requesting
-                          </Typography>
-                          <Typography variant="body2" sx={{ fontWeight: 500 }}>
-                            {formatAmount(transaction.TakerPays)}
-                          </Typography>
-                        </Box>
-                      </Stack>
+                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                        {formatAmount(transaction.TakerPays)}
+                      </Typography>
+                      {(() => {
+                        try {
+                          const getsVal = typeof transaction.TakerGets === 'string'
+                            ? new Decimal(dropsToXrp(transaction.TakerGets))
+                            : new Decimal(transaction.TakerGets.value);
+                          const paysVal = typeof transaction.TakerPays === 'string'
+                            ? new Decimal(dropsToXrp(transaction.TakerPays))
+                            : new Decimal(transaction.TakerPays.value);
+                          const rate = getsVal.div(paysVal);
+                          const getCurr = (amt) => typeof amt === 'string' ? 'XRP' : normalizeCurrencyCode(amt.currency);
+
+                          return (
+                            <Typography
+                              variant="caption"
+                              sx={{
+                                color: alpha(theme.palette.text.secondary, 0.6),
+                                display: 'block',
+                                mt: 1
+                              }}
+                            >
+                              @ {rate.toFixed(rate.lt(0.01) ? 6 : 4)} {getCurr(transaction.TakerGets)}/{getCurr(transaction.TakerPays)}
+                            </Typography>
+                          );
+                        } catch {
+                          return null;
+                        }
+                      })()}
                     </Box>
                   </>
                 )}
