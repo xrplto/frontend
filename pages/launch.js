@@ -27,77 +27,58 @@ const Container = styled.div`
 `;
 
 const PageTitle = styled.h1`
-  font-size: 1.75rem;
-  font-weight: 500;
+  font-size: 1.5rem;
+  font-weight: 400;
   color: ${props => props.theme?.palette?.text?.primary};
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 `;
 
 const Subtitle = styled.p`
-  font-size: 0.9rem;
-  color: ${props => alpha(props.theme?.palette?.text?.secondary, 0.7)};
-  margin-bottom: 32px;
+  font-size: 0.88rem;
+  color: ${props => alpha(props.theme?.palette?.text?.secondary, 0.6)};
+  margin-bottom: 28px;
 `;
 
 const ProgressContainer = styled.div`
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 `;
 
 const StepIndicator = styled.div`
   display: flex;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 `;
 
 const Step = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.8rem;
   color: ${props => props.active
-    ? props.theme?.palette?.primary?.main
-    : alpha(props.theme?.palette?.text?.secondary, 0.5)};
-  font-weight: ${props => props.active ? 500 : 400};
+    ? '#4285f4'
+    : alpha(props.theme?.palette?.text?.secondary, 0.4)};
+  font-weight: 400;
 `;
 
 const Card = styled.div`
-  padding: 18px;
-  background: ${props => props.theme?.palette?.mode === 'dark'
-    ? alpha(props.theme?.palette?.background?.paper, 0.3)
-    : 'rgba(255, 255, 255, 0.6)'};
-  border: 1.5px solid ${props => alpha(props.theme?.palette?.divider, 0.12)};
+  padding: 20px;
+  background: transparent;
+  border: 1.5px solid ${props => alpha(props.theme?.palette?.divider, 0.15)};
   border-radius: 12px;
-  margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: ${props => props.completed
-      ? 'linear-gradient(90deg, #4caf50, #45a049)'
-      : 'transparent'};
-  }
+  margin-bottom: 14px;
 `;
 
 const SectionHeader = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
 `;
 
 const SectionTitle = styled.h3`
-  font-size: 1rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 400;
   color: ${props => props.theme?.palette?.text?.primary};
-  display: flex;
-  align-items: center;
-  gap: 8px;
 `;
 
 const Label = styled.label`
@@ -109,33 +90,26 @@ const Label = styled.label`
 `;
 
 const UploadBox = styled.div`
-  border: 2px dashed ${props => props.hasFile
-    ? alpha(props.theme?.palette?.success?.main, 0.5)
+  border: 1.5px dashed ${props => props.hasFile
+    ? alpha(props.theme?.palette?.success?.main, 0.4)
     : alpha(props.theme?.palette?.divider, 0.25)};
   border-radius: 12px;
-  padding: 32px 20px;
+  padding: 36px 20px;
   text-align: center;
   cursor: pointer;
-  transition: all 0.2s;
-  background: ${props => props.hasFile
-    ? alpha(props.theme?.palette?.success?.main, 0.05)
-    : props.theme?.palette?.mode === 'dark'
-      ? alpha(props.theme?.palette?.background?.default, 0.2)
-      : alpha(props.theme?.palette?.background?.default, 0.3)};
+  background: transparent;
   position: relative;
 
   &:hover {
     border-color: ${props => props.hasFile
-      ? props.theme?.palette?.success?.main
-      : props.theme?.palette?.primary?.main};
-    background: ${props => props.hasFile
-      ? alpha(props.theme?.palette?.success?.main, 0.08)
-      : alpha(props.theme?.palette?.primary?.main, 0.04)};
+      ? alpha(props.theme?.palette?.success?.main, 0.6)
+      : alpha('#4285f4', 0.4)};
+    background: ${props => alpha('#4285f4', 0.02)};
   }
 
   &.dragging {
-    border-color: ${props => props.theme?.palette?.primary?.main};
-    background: ${props => alpha(props.theme?.palette?.primary?.main, 0.08)};
+    border-color: #4285f4;
+    background: ${props => alpha('#4285f4', 0.04)};
   }
 `;
 
@@ -907,24 +881,12 @@ function CreatePage() {
           />
         </ProgressContainer>
 
-        <Card theme={theme} completed={formData.tokenName && formData.ticker}>
+        <Card theme={theme}>
           <SectionHeader>
-            <SectionTitle theme={theme}>
-              Token Information
-              {formData.tokenName && formData.ticker && (
-                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
-              )}
-            </SectionTitle>
-            <Chip
-              label="Required"
-              size="small"
-              sx={{
-                fontSize: '0.7rem',
-                height: 20,
-                backgroundColor: alpha(theme.palette.error.main, 0.1),
-                color: theme.palette.error.main
-              }}
-            />
+            <SectionTitle theme={theme}>Token Information</SectionTitle>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+              Required
+            </Typography>
           </SectionHeader>
 
           <Stack spacing={1.5}>
@@ -1024,6 +986,20 @@ function CreatePage() {
               />
             </Stack>
 
+            {formData.userCheckPercent === 0 && (
+              <Alert
+                severity="warning"
+                sx={{
+                  mt: 1,
+                  fontSize: '0.85rem',
+                  borderRadius: '8px',
+                  border: `1.5px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                }}
+              >
+                You will not receive any tokens. 100% goes to AMM pool.
+              </Alert>
+            )}
+
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <input
                 type="checkbox"
@@ -1039,24 +1015,12 @@ function CreatePage() {
           </Stack>
         </Card>
 
-        <Card theme={theme} completed={formData.ammXrpAmount >= 10}>
+        <Card theme={theme}>
           <SectionHeader>
-            <SectionTitle theme={theme}>
-              Initial Liquidity
-              {formData.ammXrpAmount >= 10 && (
-                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
-              )}
-            </SectionTitle>
-            <Chip
-              label="Required"
-              size="small"
-              sx={{
-                fontSize: '0.7rem',
-                height: 20,
-                backgroundColor: alpha(theme.palette.error.main, 0.1),
-                color: theme.palette.error.main
-              }}
-            />
+            <SectionTitle theme={theme}>Initial Liquidity</SectionTitle>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+              Required
+            </Typography>
           </SectionHeader>
 
           <StyledTextField
@@ -1074,31 +1038,19 @@ function CreatePage() {
           />
         </Card>
 
-        <Card theme={theme} completed={formData.twitter || formData.telegram || formData.website}>
+        <Card theme={theme}>
           <SectionHeader>
-            <SectionTitle theme={theme}>
-              Social Links
-              {(formData.twitter || formData.telegram || formData.website) && (
-                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
-              )}
-            </SectionTitle>
-            <Chip
-              label="Optional"
-              size="small"
-              sx={{
-                fontSize: '0.7rem',
-                height: 20,
-                backgroundColor: alpha(theme.palette.info.main, 0.1),
-                color: theme.palette.info.main
-              }}
-            />
+            <SectionTitle theme={theme}>Social Links</SectionTitle>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+              Optional
+            </Typography>
           </SectionHeader>
 
           <Stack spacing={1.5}>
             <StyledTextField
               theme={theme}
               fullWidth
-              label="Add your project website"
+              label="Website"
               variant="outlined"
               placeholder="https://example.com"
               value={formData.website}
@@ -1106,75 +1058,42 @@ function CreatePage() {
               error={!!errors.website}
               helperText={errors.website || 'Optional'}
               size="small"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Language sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
-                  </InputAdornment>
-                ),
-              }}
             />
 
             <Stack direction="row" spacing={1.5}>
               <StyledTextField
                 theme={theme}
                 fullWidth
-                label="Connect your Telegram community"
+                label="Telegram"
                 variant="outlined"
                 placeholder="t.me/yourchannel"
                 value={formData.telegram}
                 onChange={handleInputChange('telegram')}
                 helperText="Optional"
                 size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Telegram sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
-                    </InputAdornment>
-                  ),
-                }}
               />
 
               <StyledTextField
                 theme={theme}
                 fullWidth
-                label="Link your Twitter/X account"
+                label="Twitter/X"
                 variant="outlined"
                 placeholder="@yourhandle"
                 value={formData.twitter}
                 onChange={handleInputChange('twitter')}
                 helperText="Optional"
                 size="small"
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Twitter sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.4) }} />
-                    </InputAdornment>
-                  ),
-                }}
               />
             </Stack>
           </Stack>
         </Card>
 
-        <Card theme={theme} completed={!!formData.image}>
+        <Card theme={theme}>
           <SectionHeader>
-            <SectionTitle theme={theme}>
-              Upload Media
-              {formData.image && (
-                <CheckCircle sx={{ fontSize: 18, color: theme.palette.success.main }} />
-              )}
-            </SectionTitle>
-            <Chip
-              label="Recommended"
-              size="small"
-              sx={{
-                fontSize: '0.7rem',
-                height: 20,
-                backgroundColor: alpha(theme.palette.success.main, 0.1),
-                color: theme.palette.success.main
-              }}
-            />
+            <SectionTitle theme={theme}>Token Image</SectionTitle>
+            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+              Recommended
+            </Typography>
           </SectionHeader>
 
           <UploadBox
@@ -1198,11 +1117,11 @@ function CreatePage() {
                 </>
               ) : (
                 <>
-                  <CloudUpload sx={{ fontSize: 40, color: alpha(theme.palette.text.secondary, 0.25), mb: 1.5 }} />
-                  <Typography variant="body2" sx={{ color: theme.palette.text.secondary, mb: 0.5, fontWeight: 450 }}>
-                    {fileName || 'Drop your image here, or click to browse'}
+                  <CloudUpload sx={{ fontSize: 38, color: alpha(theme.palette.text.secondary, 0.2), mb: 1.5 }} />
+                  <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, fontWeight: 400, fontSize: '0.9rem' }}>
+                    {fileName || 'Drop image here or click to browse'}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.5) }}>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.4), fontSize: '0.8rem' }}>
                     PNG, JPG, GIF, WEBP • Max 15MB
                   </Typography>
                 </>
@@ -1222,17 +1141,15 @@ function CreatePage() {
             onChange={handleFileInputChange}
           />
 
-          <InfoText theme={theme} style={{ marginTop: 16 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-              <Info sx={{ fontSize: 14, color: alpha(theme.palette.text.secondary, 0.5) }} />
-              <strong style={{ fontSize: '0.8rem' }}>Image Requirements</strong>
-            </Box>
-            <span style={{ fontSize: '0.78rem', lineHeight: 1.4 }}>
-              • Formats: PNG, JPG, GIF, WEBP<br/>
-              • Recommended: 1000x1000px minimum, 1:1 aspect ratio<br/>
-              • Max size: 15MB
-            </span>
-          </InfoText>
+          <Typography variant="caption" sx={{
+            display: 'block',
+            mt: 1.5,
+            color: alpha(theme.palette.text.secondary, 0.5),
+            fontSize: '0.78rem',
+            lineHeight: 1.5
+          }}>
+            PNG, JPG, GIF, WEBP • 1000×1000px recommended • Max 15MB
+          </Typography>
         </Card>
 
         {!launchStep && (
@@ -1416,15 +1333,29 @@ function CreatePage() {
                         {formData.ammXrpAmount} XRP
                       </Typography>
                     </Stack>
-                    {formData.userCheckPercent > 0 && (
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
-                          Your Allocation
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500, color: theme.palette.success.main }}>
-                          {Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} {formData.ticker} ({formData.userCheckPercent}%)
-                        </Typography>
-                      </Stack>
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                        Your Allocation
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 500, color: formData.userCheckPercent === 0 ? theme.palette.text.secondary : theme.palette.success.main }}>
+                        {formData.userCheckPercent > 0
+                          ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} (${formData.userCheckPercent}%)`
+                          : '0 tokens (0%)'
+                        }
+                      </Typography>
+                    </Stack>
+                    {formData.userCheckPercent === 0 && (
+                      <Alert
+                        severity="warning"
+                        sx={{
+                          mt: 1.5,
+                          fontSize: '0.85rem',
+                          borderRadius: '8px',
+                          border: `1.5px solid ${alpha(theme.palette.warning.main, 0.2)}`
+                        }}
+                      >
+                        You will not receive any tokens. 100% goes to AMM pool.
+                      </Alert>
                     )}
                   </Stack>
                 </Box>
