@@ -113,12 +113,13 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       if (profile) {
         setAccountProfile(profile);
 
-        // If OAuth wallet, load ALL wallets for this provider from IndexedDB
-        if ((profile.wallet_type === 'oauth' || profile.wallet_type === 'social') && profile.provider && profile.provider_id) {
+        // Load ALL wallets for this auth method from IndexedDB
+        if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
+          // OAuth wallets
           const walletId = `${profile.provider}_${profile.provider_id}`;
           const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
-          console.log('🔄 Loading all wallets for provider:', profile.provider);
+          console.log('🔄 Loading all OAuth wallets for:', profile.provider);
           console.log('Password found:', !!storedPassword);
 
           if (storedPassword) {
@@ -128,7 +129,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
               storedPassword
             );
 
-            console.log('Found', allWallets.length, 'wallets for this provider');
+            console.log('Found', allWallets.length, 'OAuth wallets');
 
             if (allWallets.length > 0) {
               const loadedProfiles = allWallets.map(w => ({
@@ -139,6 +140,36 @@ function ContextProviderInner({ children, data, openSnackbar }) {
                 wallet_type: profile.wallet_type,
                 provider: profile.provider,
                 provider_id: profile.provider_id,
+                createdAt: w.createdAt || Date.now(),
+                tokenCreatedAt: Date.now()
+              }));
+
+              setProfiles(loadedProfiles);
+              await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, loadedProfiles);
+              return;
+            }
+          }
+        } else if (profile.wallet_type === 'device' && profile.deviceKeyId) {
+          // Device/Passkey wallets
+          const storedPassword = await walletStorage.getSecureItem(`device_pwd_${profile.deviceKeyId}`);
+
+          console.log('🔄 Loading all device wallets for passkey:', profile.deviceKeyId);
+          console.log('Password found:', !!storedPassword);
+
+          if (storedPassword) {
+            const allWallets = await walletStorage.getAllWallets(storedPassword);
+            const deviceWallets = allWallets.filter(w => w.deviceKeyId === profile.deviceKeyId);
+
+            console.log('Found', deviceWallets.length, 'device wallets');
+
+            if (deviceWallets.length > 0) {
+              const loadedProfiles = deviceWallets.map(w => ({
+                account: w.address,
+                address: w.address,
+                publicKey: w.publicKey,
+                seed: w.seed,
+                wallet_type: 'device',
+                deviceKeyId: w.deviceKeyId,
                 createdAt: w.createdAt || Date.now(),
                 tokenCreatedAt: Date.now()
               }));
