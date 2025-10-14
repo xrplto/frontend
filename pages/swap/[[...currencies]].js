@@ -2,7 +2,6 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
-import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 
 // Material UI imports
@@ -10,9 +9,7 @@ import {
   styled,
   Container,
   Box,
-  Typography,
   Toolbar,
-  alpha,
   CircularProgress
 } from '@mui/material';
 
@@ -20,17 +17,15 @@ import {
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
-// Constants
-const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
-const RLUSD_TOKEN = { currency: 'RLUSD', issuer: 'rMxCAmhYd3xnE55fCrZKaPZS7rZwqX7LJD' };
-
 // Utils
 import { processOrderbookOffers } from 'src/utils/parseUtils';
 
 // Components
-import Logo from 'src/components/Logo';
+import Header from 'src/components/Header';
+import Footer from 'src/components/Footer';
+import ScrollToTop from 'src/components/ScrollToTop';
 
-// Lazy load the heavy swap component (165KB) with prefetch
+// Lazy load the heavy swap component
 const Swap = dynamic(() => import('src/components/SwapInterface'), {
   loading: () => (
     <Box display="flex" justifyContent="center" p={4}>
@@ -40,51 +35,39 @@ const Swap = dynamic(() => import('src/components/SwapInterface'), {
   ssr: false
 });
 
-import Header from 'src/components/Header';
-import Footer from 'src/components/Footer';
-import ScrollToTop from 'src/components/ScrollToTop';
-
 const Root = styled('div')(({ theme }) => ({
   overflowX: 'hidden',
   flex: 1,
   minHeight: '100vh'
 }));
 
+// Default tokens
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
+const RLUSD_TOKEN = { currency: 'RLUSD', issuer: 'rMxCAmhYd3xnE55fCrZKaPZS7rZwqX7LJD' };
 const DEFAULT_PAIR = {
   curr1: XRP_TOKEN,
   curr2: RLUSD_TOKEN
 };
 
-const ORDER_TYPE_BIDS = 'bids';
-const ORDER_TYPE_ASKS = 'asks';
-
-function Overview({ data }) {
+function SwapPage({ data }) {
   const WSS_URL = 'wss://xrplcluster.com';
-
-  const { accountProfile, openSnackbar } = useContext(AppContext);
-
-  const tokens = data && data.tokens ? data.tokens : [];
+  const { accountProfile } = useContext(AppContext);
 
   const [revert, setRevert] = useState(false);
   const [pair, setPair] = useState(DEFAULT_PAIR);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-
-  const [bids, setBids] = useState([]); // Orderbook Bids
-  const [asks, setAsks] = useState([]); // Orderbook Asks
-
+  const [bids, setBids] = useState([]);
+  const [asks, setAsks] = useState([]);
   const [wsReady, setWsReady] = useState(false);
-  const { sendJsonMessage /*, getWebSocket*/ } = useWebSocket(WSS_URL, {
-    onOpen: () => {
-      setWsReady(true);
-    },
-    onClose: () => {
-      setWsReady(false);
-    },
-    shouldReconnect: (closeEvent) => true,
+
+  const { sendJsonMessage } = useWebSocket(WSS_URL, {
+    onOpen: () => setWsReady(true),
+    onClose: () => setWsReady(false),
+    shouldReconnect: () => true,
     onMessage: (event) => processMessages(event)
   });
 
-  // Orderbook related useEffect - Start
+  // Orderbook WebSocket updates
   useEffect(() => {
     let reqID = 1;
     function sendRequest() {
@@ -107,6 +90,7 @@ function Overview({ data }) {
         ledger_index: 'validated',
         limit: 60
       };
+
       const cmdBid = {
         id: reqID + 1,
         command: 'book_offers',
@@ -121,25 +105,20 @@ function Overview({ data }) {
         ledger_index: 'validated',
         limit: 60
       };
+
       sendJsonMessage(cmdAsk);
       sendJsonMessage(cmdBid);
       reqID += 2;
     }
 
     sendRequest();
-
     const timer = setInterval(() => sendRequest(), 4000);
-
-    return () => {
-      clearInterval(timer);
-    };
+    return () => clearInterval(timer);
   }, [wsReady, pair, revert, sendJsonMessage]);
-  // Orderbook related useEffect - END
 
-  // web socket process messages for orderbook
+  // Process orderbook messages
   const processMessages = (event) => {
     const orderBook = JSON.parse(event.data);
-
     if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
       const req = orderBook.id % 2;
       if (req === 1) {
@@ -160,7 +139,17 @@ function Overview({ data }) {
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+      <h1 style={{
+        position: 'absolute',
+        width: 1,
+        height: 1,
+        padding: 0,
+        margin: -1,
+        overflow: 'hidden',
+        clip: 'rect(0,0,0,0)',
+        whiteSpace: 'nowrap',
+        border: 0
+      }}>
         Swap XRPL Tokens
       </h1>
 
@@ -176,12 +165,7 @@ function Overview({ data }) {
             pt: { xs: 0.5, sm: 1, md: 2 }
           }}
         >
-          <Box
-            sx={(theme) => ({
-              width: '100%',
-              maxWidth: '1200px'
-            })}
-          >
+          <Box sx={{ width: '100%', maxWidth: '1200px' }}>
             <Swap
               pair={pair}
               setPair={setPair}
@@ -200,29 +184,28 @@ function Overview({ data }) {
   );
 }
 
-export default Overview;
+export default SwapPage;
 
-export async function getStaticProps() {
+export async function getStaticPaths() {
+  return {
+    paths: [],
+    fallback: 'blocking'
+  };
+}
+
+export async function getStaticProps({ params }) {
   const startTime = performance.now();
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  let tokens = [];
   let metrics = null;
 
   try {
-    // Fetch both tokens and metrics data
-    const [tokensResponse, metricsResponse] = await Promise.all([
-      axios.get(`${BASE_URL}/tokens?limit=100&offset=0`),
-      axios.get(`${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`)
-    ]);
-
-    if (tokensResponse.status === 200) {
-      tokens = tokensResponse.data;
-    }
+    const metricsResponse = await axios.get(
+      `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`
+    );
 
     if (metricsResponse.status === 200) {
       metrics = metricsResponse.data;
-      // Add bearbull calculation for tokens
       const time = Date.now();
       for (var token of metrics.tokens) {
         token.bearbull = token.pro24h < 0 ? -1 : 1;
@@ -233,17 +216,11 @@ export async function getStaticProps() {
 
   const duration = Math.round(performance.now() - startTime);
 
-  // Provide the data structure that configureRedux expects
   const data = metrics || {
-    tokens,
+    tokens: [],
     total: 0,
     count: 0,
-    exch: {
-      USD: 100,
-      EUR: 100,
-      JPY: 100,
-      CNY: 100
-    },
+    exch: { USD: 100, EUR: 100, JPY: 100, CNY: 100 },
     H24: {
       transactions24H: 0,
       tradedXRP24H: 0,
@@ -268,7 +245,6 @@ export async function getStaticProps() {
     duration
   };
 
-  // Add OGP data for SEO
   const ogp = {
     canonical: 'https://xrpl.to/swap',
     title: 'Easily Swap XRP for Any Token on the XRPL',
@@ -278,10 +254,7 @@ export async function getStaticProps() {
   };
 
   return {
-    props: {
-      data,
-      ogp
-    },
-    revalidate: 300 // revalidate every 5 minutes
+    props: { data, ogp },
+    revalidate: 300
   };
 }

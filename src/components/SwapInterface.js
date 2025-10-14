@@ -67,7 +67,6 @@ import { fNumber } from 'src/utils/formatters';
 // Components
 import Wallet from 'src/components/Wallet';
 
-const QRDialog = () => null;
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -81,16 +80,6 @@ import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-// Commented out missing components - these files don't exist
-// const Orders = dynamic(() => import('src/TokenDetail/trade/account/Orders'), {
-//   loading: () => <div>Loading orders...</div>,
-//   ssr: false
-// });
-// // Orderbook / Tx details side panel (used in orderbook mode)
-// const TransactionDetailsPanel = dynamic(
-//   () => import('src/TokenDetail/common/TransactionDetailsPanel'),
-//   { ssr: false }
-// );
 
 // Router
 import { useRouter } from 'next/router';
@@ -500,12 +489,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [latestPrice1, setLatestPrice1] = useState(null);
   const [latestPrice2, setLatestPrice2] = useState(null);
 
-  // Add state for orderbook modal
-  const [showOrderbook, setShowOrderbook] = useState(false);
-  // Add state for showing user orders
-  const [showOrders, setShowOrders] = useState(false);
-  // Add state for order summary collapse
-  const [showOrderSummary, setShowOrderSummary] = useState(false);
 
   // Use orderbook data from props
   const bids = propsBids || [];
@@ -979,10 +962,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setTokenExch2(Number(ret.rate2) || 0);
           }
         })
-        .catch((err) => {})
-        .catch(() => {
-          // Silently handle errors
-        });
+        .catch((err) => {});
     }
 
     // Only call if both tokens exist
@@ -1025,86 +1005,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     setPair(pair);
   }, [revert, token1, token2]);
 
-  // Transaction result polling - disabled until ret variable is properly connected
-  // This useEffect was checking transaction status but ret is not defined
-  /*
-  useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    var dispatchTimer = null;
-
-    async function getDispatchResult() {
-      try {
-        const res = ret.data.data.response;
-        const dispatched_result = res.dispatched_result;
-
-        return dispatched_result;
-      } catch (err) {}
-    }
-
-    const startInterval = () => {
-      let times = 0;
-
-      dispatchTimer = setInterval(async () => {
-        const dispatched_result = await getDispatchResult();
-
-        if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-          setSync(sync + 1);
-          openSnackbar('Successfully submitted the swap!', 'success');
-          stopInterval();
-          return;
-        }
-
-        times++;
-
-        if (times >= 10) {
-          openSnackbar('Transaction signing rejected!', 'error');
-          stopInterval();
-          return;
-        }
-      }, 1000);
-    };
-
-    // Stop the interval
-    const stopInterval = () => {
-      clearInterval(dispatchTimer);
-      setAmount1('');
-      setAmount2('');
-    };
-
-    async function getPayload() {
-      if (isRunning) return;
-      isRunning = true;
-      try {
-        const res = ret.data.data.response;
-        const resolved_at = res.resolved_at;
-        if (resolved_at) {
-          startInterval();
-          return;
-        }
-      } catch (err) {}
-      isRunning = false;
-      counter--;
-      if (counter <= 0) {
-        clearInterval(timer);
-      }
-    }
-
-    if (ret && ret.data && ret.data.data) {
-      timer = setInterval(getPayload, 2000);
-    }
-
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-      if (dispatchTimer) {
-        clearInterval(dispatchTimer);
-      }
-    };
-  }, [ret]);
-  */
 
   const onSwap = async () => {
     try {
@@ -1326,8 +1226,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       let memoData = `${orderType === 'limit' ? 'Limit' : 'Swap'} via https://xrpl.to`;
       transactionData.Memos = configureMemos('', '', memoData);
 
-      switch (wallet_type) {
-      }
+      // TODO: Implement wallet-specific transaction signing here
+      // Based on wallet_type (device, xumm, etc.)
     } catch (err) {
       dispatch(updateProcess(0));
     }
@@ -1391,7 +1291,15 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   };
 
-  const handleScanQRClose = () => {
+
+  // Create trustline for missing currency
+  const onCreateTrustline = async (currency) => {
+    try {
+      // TODO: Implement trustline creation
+      enqueueSnackbar(`Creating trustline for ${currency.currency}...`, { variant: 'info' });
+    } catch (error) {
+      enqueueSnackbar('Failed to create trustline', { variant: 'error' });
+    }
   };
 
   const handlePlaceOrder = (e) => {
@@ -4046,11 +3954,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     </Box>
                   </Box>
                 </Box>
-
-                <QRDialog
-                  type={transactionType}
-                  onClose={handleScanQRClose}
-                />
               </Stack>
 
               {/* Orderbook Drawer (embedded) using TransactionDetailsPanel) */}
