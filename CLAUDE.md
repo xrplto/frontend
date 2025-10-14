@@ -9,6 +9,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 2. **DO NOT RUN `npm run build`** - Build process should not be initiated
 3. **DO NOT RUN `npm install`** - Package installation should not be executed
 
+### API URL CONFIGURATION
+**NEVER use process.env for API URLs in client-side code**
+- Always hardcode API URLs directly: `const BASE_URL = 'https://api.xrpl.to';`
+- DO NOT use `process.env.API_URL` or `process.env.NEXT_PUBLIC_API_URL`
+- Client-side environment variables are unreliable and cause 404 errors
+- Hardcoded URLs work in both development and production
+
 ### PERFORMANCE AND DEBUGGING RULES
 1. **NEVER DISABLE FEATURES TO FIX PERFORMANCE ISSUES**
    - Always fix the root cause, don't remove functionality

@@ -680,6 +680,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             icon: <TrendingUpIcon sx={{ fontSize: 16, color: '#2196f3' }} />
                           },
                           {
+                            path: '/amm-pools',
+                            name: 'AMM Pools',
+                            icon: <WavesIcon sx={{ fontSize: 16, color: '#00bcd4' }} />
+                          },
+                          {
                             path: '/top-traders',
                             name: 'Top Traders',
                             icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
