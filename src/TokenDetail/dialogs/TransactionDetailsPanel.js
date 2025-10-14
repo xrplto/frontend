@@ -461,87 +461,73 @@ const TransactionDetailsPanel = memo(
               </Alert>
             ) : mode !== 'orderbook' && transaction ? (
               <Stack spacing={2}>
-                {/* Transaction Status */}
+                {/* Human-Readable Summary */}
                 <Box
                   sx={{
                     p: 1.5,
                     borderRadius: '8px',
-                    background: alpha(
-                      transaction.meta?.TransactionResult === 'tesSUCCESS'
-                        ? theme.palette.success.main
-                        : theme.palette.error.main,
-                      0.1
-                    ),
-                    border: `1px solid ${alpha(
-                      transaction.meta?.TransactionResult === 'tesSUCCESS'
-                        ? theme.palette.success.main
-                        : theme.palette.error.main,
-                      0.2
-                    )}`
+                    background: 'transparent',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`
                   }}
                 >
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    {transaction.meta?.TransactionResult === 'tesSUCCESS' ? (
-                      <CheckCircleIcon sx={{ fontSize: 20, color: theme.palette.success.main }} />
-                    ) : (
-                      <ErrorIcon sx={{ fontSize: 20, color: theme.palette.error.main }} />
-                    )}
-                    <Box>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                        {transaction.meta?.TransactionResult === 'tesSUCCESS'
-                          ? 'Success'
-                          : 'Failed'}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}
-                      >
-                        {transaction.meta?.TransactionResult || 'Unknown'}
-                      </Typography>
-                    </Box>
-                  </Stack>
+                  <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.85rem' }}>
+                    {(() => {
+                      const { TransactionType, Account, Destination, Amount, SendMax, Flags, meta } = transaction;
+                      const formatAcc = (acc) => `${acc?.slice(0, 6)}...${acc?.slice(-3)}`;
+                      const formatAmt = (amt) => {
+                        if (typeof amt === 'string') return `${dropsToXrp(amt)} XRP`;
+                        if (amt?.value) return `${new Decimal(amt.value).toFixed(2)} ${normalizeCurrencyCode(amt.currency)}`;
+                        return '';
+                      };
+                      const delivered = meta?.delivered_amount || meta?.DeliveredAmount || Amount;
+
+                      switch (TransactionType) {
+                        case 'Payment':
+                          return Account === Destination
+                            ? `${formatAcc(Account)} swapped for ${formatAmt(delivered)}`
+                            : `${formatAcc(Account)} sent ${formatAmt(delivered)} to ${formatAcc(Destination)}`;
+                        case 'OfferCreate':
+                          return `${formatAcc(Account)} placed ${Flags & 0x00080000 ? 'sell' : 'buy'} order`;
+                        case 'OfferCancel':
+                          return `${formatAcc(Account)} cancelled order`;
+                        case 'TrustSet':
+                          return `${formatAcc(Account)} ${transaction.LimitAmount && new Decimal(transaction.LimitAmount.value).isZero() ? 'removed' : 'created'} trust line`;
+                        case 'NFTokenMint':
+                          return `${formatAcc(Account)} minted NFT`;
+                        case 'NFTokenCreateOffer':
+                          return `${formatAcc(Account)} created NFT offer`;
+                        case 'NFTokenAcceptOffer':
+                          return `${formatAcc(Account)} completed NFT trade`;
+                        case 'NFTokenBurn':
+                          return `${formatAcc(Account)} burned NFT`;
+                        case 'AMMDeposit':
+                          return `${formatAcc(Account)} added liquidity`;
+                        case 'AMMWithdraw':
+                          return `${formatAcc(Account)} removed liquidity`;
+                        default:
+                          return `${TransactionType} by ${formatAcc(Account)}`;
+                      }
+                    })()}
+                  </Typography>
                 </Box>
 
-                {/* Transaction Type */}
-                <Box>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: alpha(theme.palette.text.secondary, 0.7),
-                      mb: 0.5,
-                      display: 'block'
-                    }}
-                  >
-                    Type
-                  </Typography>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Box
-                      sx={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: '6px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: alpha(
-                          getTransactionColor(transaction.meta?.TransactionResult),
-                          0.1
-                        ),
-                        border: `1px solid ${alpha(getTransactionColor(transaction.meta?.TransactionResult), 0.2)}`
-                      }}
-                    >
-                      <SwapHorizIcon
-                        sx={{
-                          fontSize: '16px',
-                          color: getTransactionColor(transaction.meta?.TransactionResult)
-                        }}
-                      />
-                    </Box>
-                    <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {transaction.TransactionType}
-                    </Typography>
-                  </Stack>
-                </Box>
+                {/* Transaction Status */}
+                <Stack direction="row" spacing={1}>
+                  <Chip
+                    icon={transaction.meta?.TransactionResult === 'tesSUCCESS' ? <CheckCircleIcon /> : <ErrorIcon />}
+                    label={transaction.meta?.TransactionResult === 'tesSUCCESS' ? 'Success' : 'Failed'}
+                    color={transaction.meta?.TransactionResult === 'tesSUCCESS' ? 'success' : 'error'}
+                    variant="outlined"
+                    size="small"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                  <Chip
+                    label={transaction.TransactionType}
+                    variant="outlined"
+                    size="small"
+                    sx={{ fontSize: '0.75rem' }}
+                  />
+                </Stack>
 
                 <Divider />
 

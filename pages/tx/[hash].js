@@ -3690,13 +3690,24 @@ const TransactionDetails = ({ txData }) => {
                 {Memos && Memos.length > 0 && (
                   <DetailRow label="Memo">
                     {Memos.map((memo) => {
-                      const memoType =
-                        memo.Memo.MemoType &&
-                        CryptoJS.enc.Hex.parse(memo.Memo.MemoType).toString(CryptoJS.enc.Utf8);
-                      const memoData =
-                        memo.Memo.MemoData &&
-                        CryptoJS.enc.Hex.parse(memo.Memo.MemoData).toString(CryptoJS.enc.Utf8);
+                      const decodeMemoHex = (hexString) => {
+                        if (!hexString) return null;
+                        try {
+                          // Convert hex to bytes, then decode as UTF-8
+                          const bytes = [];
+                          for (let i = 0; i < hexString.length; i += 2) {
+                            bytes.push(parseInt(hexString.substr(i, 2), 16));
+                          }
+                          return new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+                        } catch (err) {
+                          return hexString;
+                        }
+                      };
+
+                      const memoType = memo.Memo.MemoType && decodeMemoHex(memo.Memo.MemoType);
+                      const memoData = memo.Memo.MemoData && decodeMemoHex(memo.Memo.MemoData);
                       const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
+
                       return (
                         <Typography key={memoKey} variant="body1" sx={{ wordBreak: 'break-all' }}>
                           {[memoType, memoData].filter(Boolean).join(' ')}
