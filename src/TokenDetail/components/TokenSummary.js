@@ -38,21 +38,29 @@ const currencySymbols = {
 
 // Simple price formatter
 const formatPrice = (price) => {
-  if (!price || isNaN(price)) return '0';
-  if (price < 0.0001) {
-    const str = price.toFixed(15);
+  // Convert to number if it's a string
+  const numPrice = typeof price === 'string' ? parseFloat(price) : price;
+
+  // Check for invalid values (null, undefined, NaN, Infinity)
+  if (numPrice == null || isNaN(numPrice) || !isFinite(numPrice)) return '0';
+
+  // Handle zero explicitly
+  if (numPrice === 0) return '0';
+
+  if (numPrice < 0.0001) {
+    const str = numPrice.toFixed(15);
     const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
     if (zeros >= 4) {
       const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
       return `0.0(${zeros})${significant.slice(0, 4)}`;
     }
-    return price.toFixed(8);
+    return numPrice.toFixed(8);
   }
-  if (price < 1) return price.toFixed(4);
-  if (price < 100) return price.toFixed(4).replace(/\.?0+$/, '').replace(/(\.\d)$/, '$10');
-  if (price < 1000) return price.toFixed(2);
-  if (price < 1000000) return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return price.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  if (numPrice < 1) return numPrice.toFixed(4);
+  if (numPrice < 100) return numPrice.toFixed(4).replace(/\.?0+$/, '').replace(/(\.\d)$/, '$10');
+  if (numPrice < 1000) return numPrice.toFixed(2);
+  if (numPrice < 1000000) return numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return numPrice.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 const CURRENCY_ISSUERS = {
   XRP_MD5: 'XRP'

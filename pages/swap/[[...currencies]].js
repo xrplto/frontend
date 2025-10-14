@@ -41,9 +41,19 @@ const Root = styled('div')(({ theme }) => ({
   minHeight: '100vh'
 }));
 
-// Default tokens
-const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
-const RLUSD_TOKEN = { currency: 'RLUSD', issuer: 'rMxCAmhYd3xnE55fCrZKaPZS7rZwqX7LJD' };
+// Default tokens with correct md5 hashes
+const XRP_TOKEN = {
+  currency: 'XRP',
+  issuer: 'XRPL',
+  md5: '84e5efeb89c4eae8f68188982dc290d8',
+  name: 'XRP'
+};
+const RLUSD_TOKEN = {
+  currency: 'RLUSD',
+  issuer: 'rMxCAmhYd3xnE55fCrZKaPZS7rZwqX7LJD',
+  md5: '0dd550278b74cb6690fdae351e8e0df3',
+  name: 'RLUSD'
+};
 const DEFAULT_PAIR = {
   curr1: XRP_TOKEN,
   curr2: RLUSD_TOKEN
