@@ -288,7 +288,7 @@ function AMMPoolsPage({ data }) {
 
   useEffect(() => {
     loadPools();
-  }, [params]);
+  }, [params.sortBy, params.status, params.limit]);
 
   const updateParam = (key, value) => {
     setParams(prev => ({ ...prev, [key]: value }));

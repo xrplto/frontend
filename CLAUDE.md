@@ -79,6 +79,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `/gainers/[period]` - Get top gainers
 - `/new` - Get new tokens
 - `/most-viewed` - Get most viewed tokens
+- `/api/amm-pools` - Get AMM pools with APY, volume, fees, liquidity metrics
+
+#### AMM Pools API (`/api/amm-pools`)
+Returns all Automated Market Maker pools with pre-calculated APY metrics, trading volumes, fees earned, and liquidity data. APY calculations are updated every minute.
+
+**Query Parameters:**
+- `status` (default: `active`) - Filter by status: `active`, `deleted`, `all`
+- `issuer` - Filter pools containing tokens from this issuer address
+- `currency` - Filter pools containing this currency code (checks both assets)
+- `sortBy` (default: `fees`) - Sort order:
+  - `fees` - Highest 7d fees earned (most reliable)
+  - `apy` - Highest 7d APY percentage
+  - `liquidity` - Most XRP liquidity
+  - `volume` - Highest 7d trading volume
+  - `created` - Newest pools first
+
+**Response Fields:**
+- `_id` - Unique pool identifier (MD5 hash)
+- `ammAccount` - AMM account address managing this pool
+- `asset1`, `asset2` - Token pair with `currency` and `issuer`
+- `currentLiquidity` - Latest liquidity snapshot (asset1Amount, asset2Amount, lpTokenBalance)
+- `lpTokenCurrency` - LP token currency code
+- `tradingFee` - Fee in basis points (1000 = 1%, 500 = 0.5%)
+- `status` - Pool status: `active` or `deleted`
+- `apy24h` / `apy7d` - Metrics with:
+  - `apy` - Annualized Percentage Yield (percentage)
+  - `volume` - Trading volume in XRP equivalent
+  - `fees` - Fees earned in XRP
+  - `liquidity` - Total pool liquidity in XRP (XRP side × 2)
+  - `trades` - Number of trades in period
+
+**Usage Examples:**
+```javascript
+// Top pools by fees earned (most reliable)
+GET /api/amm-pools?sortBy=fees
+
+// Highest APY pools
+GET /api/amm-pools?sortBy=apy
+
+// All pools for a specific token
+GET /api/amm-pools?issuer=rXXX&currency=MTG
+
+// Most liquid XRP pools
+GET /api/amm-pools?currency=XRP&sortBy=liquidity
+
+// Recently created pools
+GET /api/amm-pools?sortBy=created
+```
+
+**Important Notes:**
+- APY calculated from XRP-denominated volume only (liquidity: 0 for token/token pools)
+- High APY + low liquidity = risky (prefer sortBy=fees)
+- Metrics update every 60 seconds
+- Response time: ~100-150ms for all 5000+ pools
 
 ### Implementation Patterns to AVOID
 ```javascript
