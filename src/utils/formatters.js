@@ -26,6 +26,27 @@ export function fVolume(vol) {
   return volume.toFixed(4);
 }
 
+export function fCurrency5(num) {
+  if (num === undefined || num === null || isNaN(num)) return '0';
+  const n = typeof num === 'string' ? parseFloat(num) : num;
+  if (isNaN(n)) return '0';
+
+  // For very large numbers, use abbreviated format
+  const absN = Math.abs(n);
+  if (absN >= 1e9) return (n / 1e9).toFixed(2) + 'B';
+  if (absN >= 1e6) return (n / 1e6).toFixed(2) + 'M';
+  if (absN >= 1e3) return (n / 1e3).toFixed(2) + 'K';
+
+  // For smaller numbers, show 2 decimal places for values >= 1
+  if (absN >= 1) return n.toFixed(2);
+
+  // For very small numbers, show more precision
+  if (absN > 0 && absN < 0.01) return n.toFixed(6);
+
+  // Default to 4 decimal places
+  return n.toFixed(4);
+}
+
 // ==== DATE/TIME FORMATTING ====
 
 export function fDate(date) {
