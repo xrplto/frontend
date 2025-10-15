@@ -19,7 +19,9 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   Divider,
+  FormControlLabel,
   Link,
   MenuItem,
   Dialog,
@@ -155,7 +157,9 @@ const WalletContent = ({
   showBackupPasswordVisible,
   setShowBackupPasswordVisible,
   processBackupDownload,
-  setShowBackupPassword
+  setShowBackupPassword,
+  backupAgreed,
+  setBackupAgreed
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
@@ -164,7 +168,7 @@ const WalletContent = ({
   if (showBackupPassword) {
     return (
       <Box sx={{ p: 2.5 }}>
-        <Stack spacing={2.5} alignItems="center">
+        <Stack spacing={2} alignItems="center">
           {/* Header */}
           <Box sx={{ textAlign: 'center' }}>
             <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mb: 0.5 }}>
@@ -176,11 +180,39 @@ const WalletContent = ({
           </Box>
 
           {/* Icon */}
-          <Box sx={{ py: 1 }}>
-            <Box component="svg" sx={{ width: 48, height: 48, opacity: 0.3 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+          <Box sx={{ py: 0.5 }}>
+            <Box component="svg" sx={{ width: 40, height: 40, opacity: 0.3 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
               <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
               <path d="M12 11v6m0 0l-2-2m2 2l2-2"/>
             </Box>
+          </Box>
+
+          {/* Warning */}
+          <Alert severity="warning" sx={{ maxWidth: 350 }}>
+            <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, mb: 0.5 }}>
+              ⚠️ Critical Security Information
+            </Typography>
+            <Typography sx={{ fontSize: '0.7rem' }}>
+              This file contains all {profiles.length} wallet seeds. Anyone with this file and password can access ALL your funds. Never share it.
+            </Typography>
+          </Alert>
+
+          {/* Acknowledgment */}
+          <Box sx={{ maxWidth: 350, width: '100%' }}>
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={backupAgreed}
+                  onChange={(e) => setBackupAgreed(e.target.checked)}
+                  size="small"
+                />
+              }
+              label={
+                <Typography sx={{ fontSize: '0.75rem' }}>
+                  I understand this backup file is my responsibility. XRPL.to cannot recover it, and I will never share it.
+                </Typography>
+              }
+            />
           </Box>
 
           {/* Password Input */}
@@ -190,9 +222,9 @@ const WalletContent = ({
             onChange={(e) => setBackupPassword(e.target.value)}
             placeholder="Enter your wallet password"
             fullWidth
-            autoFocus
+            disabled={!backupAgreed}
             onKeyPress={(e) => {
-              if (e.key === 'Enter' && backupPassword) {
+              if (e.key === 'Enter' && backupPassword && backupAgreed) {
                 processBackupDownload();
               }
             }}
@@ -213,20 +245,13 @@ const WalletContent = ({
             }}
           />
 
-          {/* Info */}
-          <Alert severity="info" sx={{ maxWidth: 350 }}>
-            <Typography sx={{ fontSize: '0.75rem' }}>
-              This backup contains <strong>all {profiles.length} wallet seeds</strong> encrypted with your password. Store it safely - anyone with the file and password can access your funds.
-            </Typography>
-          </Alert>
-
           {/* Actions */}
           <Stack direction="row" spacing={1.5}>
             <Button
               variant="contained"
               size="small"
               onClick={processBackupDownload}
-              disabled={!backupPassword}
+              disabled={!backupPassword || !backupAgreed}
               sx={{ fontSize: '0.8rem', py: 0.6, px: 2 }}
             >
               Download Backup
@@ -238,6 +263,7 @@ const WalletContent = ({
                 setShowBackupPassword(false);
                 setBackupPassword('');
                 setShowBackupPasswordVisible(false);
+                setBackupAgreed(false);
               }}
               sx={{ fontSize: '0.8rem', py: 0.6, px: 2 }}
             >
@@ -277,21 +303,21 @@ const WalletContent = ({
             </Typography>
           </Stack>
           <Stack direction="row" spacing={0.5} alignItems="center">
-            <Typography
-              onClick={onBackupSeed}
-              sx={{
-                fontSize: '0.65rem',
-                color: needsBackup ? theme.palette.warning.main : theme.palette.text.secondary,
-                cursor: 'pointer',
-                opacity: needsBackup ? 1 : 0.6,
-                '&:hover': {
-                  textDecoration: 'underline',
-                  opacity: 1
-                }
-              }}
-            >
-              backup
-            </Typography>
+            {needsBackup && (
+              <Typography
+                onClick={onBackupSeed}
+                sx={{
+                  fontSize: '0.65rem',
+                  color: theme.palette.warning.main,
+                  cursor: 'pointer',
+                  '&:hover': {
+                    textDecoration: 'underline'
+                  }
+                }}
+              >
+                needs backup
+              </Typography>
+            )}
             <IconButton
               size="small"
               onClick={onClose}
@@ -397,7 +423,7 @@ const WalletContent = ({
           <IconButton
             size="small"
             onClick={onBackupSeed}
-            title="View seed"
+            title="Backup options"
             sx={{
               p: 0.7,
               opacity: 0.7,
@@ -406,22 +432,6 @@ const WalletContent = ({
           >
             <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="currentColor">
               <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-            </Box>
-          </IconButton>
-          <IconButton
-            size="small"
-            onClick={() => handleDownloadBackup()}
-            title="Download backup (all wallets)"
-            sx={{
-              p: 0.7,
-              opacity: 0.7,
-              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
-            }}
-          >
-            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
             </Box>
           </IconButton>
         </Stack>
@@ -722,6 +732,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [seedPassword, setSeedPassword] = useState('');
   const [showSeedPassword, setShowSeedPassword] = useState(false);
   const [seedWarningAgreed, setSeedWarningAgreed] = useState(false);
+  const [backupMode, setBackupMode] = useState(null); // 'seed' or 'full'
   // OAuth wallet manager is now part of unified storage
 
   // Removed additional wallet generation - each auth method has single wallet
@@ -753,6 +764,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showBackupPassword, setShowBackupPassword] = useState(false);
   const [backupPassword, setBackupPassword] = useState('');
   const [showBackupPasswordVisible, setShowBackupPasswordVisible] = useState(false);
+  const [backupAgreed, setBackupAgreed] = useState(false);
 
 
   // Device Password handlers
@@ -1414,13 +1426,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       if (wallet && wallet.seed) {
-        setSeedAuthStatus('success');
-        setDisplaySeed(wallet.seed);
-        setSeedBlurred(true);
-        setSeedPassword('');
-        setShowSeedPassword(false);
-        // Mark wallet as backed up
-        localStorage.removeItem(`wallet_needs_backup_${profile.address || profile.account}`);
+        if (backupMode === 'seed') {
+          setSeedAuthStatus('success');
+          setDisplaySeed(wallet.seed);
+          setSeedBlurred(true);
+          setSeedPassword('');
+          setShowSeedPassword(false);
+          // Mark wallet as backed up only for individual seed view
+          localStorage.removeItem(`wallet_needs_backup_${profile.address || profile.account}`);
+        }
       } else {
         throw new Error('Wallet not found or incorrect password');
       }
@@ -1950,23 +1964,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     if (!profile) return;
 
     setShowSeedDialog(true);
-    setSeedAuthStatus('authenticating');
-
-    try {
-      if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
-        // OAuth wallets - show password input
-        setSeedAuthStatus('password-required');
-        return;
-      // All wallet types now use password
-      } else if (profile.wallet_type === 'device') {
-        // Device wallets - prompt for password (wallets are now stored encrypted with password)
-        setSeedAuthStatus('password-required');
-        return;
-      }
-    } catch (err) {
-      setSeedAuthStatus('error');
-      openSnackbar('Authentication failed: ' + err.message, 'error');
-    }
+    setSeedAuthStatus('select-mode'); // Show mode selection first
+    setBackupMode(null);
+    setSeedPassword('');
+    setDisplaySeed('');
   };
 
   const handleDownloadBackup = async () => {
@@ -2048,6 +2049,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setShowBackupPassword(false);
       setBackupPassword('');
       setShowBackupPasswordVisible(false);
+      setBackupAgreed(false);
     } catch (error) {
       openSnackbar('Backup failed: ' + (error.message === 'Invalid PIN' ? 'Incorrect password' : error.message), 'error');
       setBackupPassword('');
@@ -2749,6 +2751,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setShowBackupPasswordVisible={setShowBackupPasswordVisible}
                     processBackupDownload={processBackupDownload}
                     setShowBackupPassword={setShowBackupPassword}
+                    backupAgreed={backupAgreed}
+                    setBackupAgreed={setBackupAgreed}
                   />
                 ) : showNewAccountFlow ? (
                   <Box sx={{ p: 3 }}>
@@ -2834,23 +2838,77 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   <Box sx={{ p: 3 }}>
                     <Stack spacing={2}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Typography sx={{ color: theme.palette.warning.main }}>Backup</Typography>
-                          {accountProfile?.wallet_type === 'device' ? 'Backup Private Key' : 'Backup Seed Phrase'}
+                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                          Backup Options
                         </Typography>
-                        <Button size="small" onClick={() => { setShowSeedDialog(false); setSeedAuthStatus('idle'); setDisplaySeed(''); setSeedBlurred(true); setSeedWarningAgreed(false); }}>
+                        <Button size="small" onClick={() => {
+                          setShowSeedDialog(false);
+                          setSeedAuthStatus('idle');
+                          setDisplaySeed('');
+                          setSeedBlurred(true);
+                          setSeedWarningAgreed(false);
+                          setBackupMode(null);
+                          setSeedPassword('');
+                        }}>
                           ×
                         </Button>
                       </Box>
 
-                      {seedAuthStatus === 'authenticating' && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2 }}>
-                          <Typography>Loading...</Typography>
-                          <Typography>Authenticating with passkey...</Typography>
+                      {seedAuthStatus === 'select-mode' && (
+                        <Box>
+                          <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', opacity: 0.8 }}>
+                            Choose your backup method:
+                          </Typography>
+                          <Stack spacing={2}>
+                            <Button
+                              variant="outlined"
+                              onClick={() => {
+                                setBackupMode('seed');
+                                setSeedAuthStatus('password-required');
+                              }}
+                              sx={{
+                                p: 2,
+                                textAlign: 'left',
+                                justifyContent: 'flex-start',
+                                borderRadius: '8px'
+                              }}
+                            >
+                              <Stack>
+                                <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                                  View Current Seed
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.75rem', opacity: 0.7, mt: 0.5 }}>
+                                  Shows seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} only
+                                </Typography>
+                              </Stack>
+                            </Button>
+                            <Button
+                              variant="contained"
+                              onClick={() => {
+                                setShowSeedDialog(false);
+                                handleDownloadBackup();
+                              }}
+                              sx={{
+                                p: 2,
+                                textAlign: 'left',
+                                justifyContent: 'flex-start',
+                                borderRadius: '8px'
+                              }}
+                            >
+                              <Stack>
+                                <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                                  Download Full Backup
+                                </Typography>
+                                <Typography sx={{ fontSize: '0.75rem', opacity: 0.9, mt: 0.5 }}>
+                                  All {profiles.length} wallets in one encrypted file
+                                </Typography>
+                              </Stack>
+                            </Button>
+                          </Stack>
                         </Box>
                       )}
 
-                      {seedAuthStatus === 'password-required' && (
+                      {seedAuthStatus === 'password-required' && backupMode === 'seed' && (
                         <Box sx={{ p: 2 }}>
                           <Alert severity="error" icon={false} sx={{ mb: 2, py: 1.5 }}>
                             <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.8, fontSize: '0.8rem' }}>
@@ -2978,18 +3036,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {seedAuthStatus === 'success' && (
                         <>
-                          <Alert severity="warning">
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 1, fontSize: '0.8rem' }}>
-                              Keep this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed phrase'} secure
+                          <Alert severity="info" sx={{ mb: 1.5 }}>
+                            <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                              Seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
                             </Typography>
-                            <Typography variant="body2" sx={{ mb: 1, fontSize: '0.75rem' }}>
-                              Anyone with access to this {accountProfile?.wallet_type === 'device' ? 'private key' : 'seed'} can control your wallet. Store it safely offline.
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.65rem', opacity: 0.8, wordBreak: 'break-all' }}>
-                              Address: {accountLogin}
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.65rem', opacity: 0.7, mt: 0.5 }}>
-                              This backup only restores funds in this specific wallet address.
+                            <Typography variant="body2" sx={{ fontSize: '0.7rem', opacity: 0.8, mt: 0.3 }}>
+                              ⚠️ This only backs up one wallet. Use download backup for all {profiles.length} wallets.
                             </Typography>
                           </Alert>
 
@@ -3014,68 +3066,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             {displaySeed}
                           </Box>
 
-                          <Stack direction="row" spacing={0.5} sx={{ flexWrap: 'wrap' }}>
+                          <Stack direction="row" spacing={1} justifyContent="center">
                             <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => setSeedBlurred(!seedBlurred)}
-                              sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
-                            >
-                              {seedBlurred ? 'Reveal' : 'Hide'}
-                            </Button>
-                            <Button
-                              variant="outlined"
+                              variant="contained"
                               size="small"
                               onClick={() => {
                                 navigator.clipboard.writeText(displaySeed).then(() => {
                                   openSnackbar('Seed copied to clipboard', 'success');
                                 });
                               }}
-                              sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
+                              sx={{ fontSize: '0.75rem', py: 0.6, px: 2 }}
                             >
                               Copy Seed
                             </Button>
-                            {(accountProfile?.wallet_type === 'oauth' || accountProfile?.wallet_type === 'social') && (
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={async () => {
-                                  try {
-                                    // Get encrypted wallet data from storage
-                                    const encryptedData = await walletStorage.getEncryptedWalletBlob(accountProfile.address);
-                                    if (!encryptedData) {
-                                      openSnackbar('No encrypted backup available', 'error');
-                                      return;
-                                    }
-
-                                    // Create downloadable blob - NO METADATA EXPOSED
-                                    const blob = new Blob([JSON.stringify({
-                                      version: encryptedData.version,
-                                      format: encryptedData.format,
-                                      data: encryptedData.data // Only encrypted blob
-                                      // NO address, provider, or other metadata
-                                    }, null, 2)], { type: 'application/json' });
-
-                                    // Create download link
-                                    const url = URL.createObjectURL(blob);
-                                    const a = document.createElement('a');
-                                    a.href = url;
-                                    a.download = `xrpl-wallet-${accountProfile.address.slice(0, 8)}-encrypted.json`;
-                                    document.body.appendChild(a);
-                                    a.click();
-                                    document.body.removeChild(a);
-                                    URL.revokeObjectURL(url);
-
-                                    openSnackbar('Encrypted backup downloaded', 'success');
-                                  } catch (error) {
-                                    openSnackbar('Failed to download backup: ' + error.message, 'error');
-                                  }
-                                }}
-                                sx={{ fontSize: '0.7rem', py: 0.5, px: 1.5, minWidth: 'auto' }}
-                              >
-                                Encrypted File
-                              </Button>
-                            )}
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              onClick={() => setSeedBlurred(!seedBlurred)}
+                              sx={{ fontSize: '0.75rem', py: 0.6, px: 2 }}
+                            >
+                              {seedBlurred ? 'Show' : 'Hide'}
+                            </Button>
                           </Stack>
                         </>
                       )}
