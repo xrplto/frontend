@@ -347,75 +347,59 @@ const SelectTokenButton = styled(Stack)(({ theme }) => ({
 
 const PanelContainer = styled(Box)(({ theme }) => ({
   width: '100%',
-  minHeight: '400px',
-  maxHeight: '70vh',
-  backgroundColor: alpha(theme.palette.background.paper, 0.98),
-  borderRadius: '16px',
+  maxWidth: '540px',
+  margin: '0 auto',
+  maxHeight: '80vh',
+  height: '600px',
+  backgroundColor: theme.palette.background.paper,
+  borderRadius: '12px',
   display: 'flex',
   flexDirection: 'column',
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: `0 10px 30px ${alpha(theme.palette.common.black, 0.12)}`,
-  backdropFilter: 'blur(20px)'
+  border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+  boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.15)}`
 }));
 
 const PanelHeader = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  background: alpha(theme.palette.background.paper, 0.02)
+  padding: theme.spacing(1.5),
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
 }));
 
 const SearchContainer = styled(Box)(({ theme }) => ({
-  padding: theme.spacing(1),
-  backgroundColor: alpha(theme.palette.background.default, 0.02),
+  padding: theme.spacing(1.5),
+  paddingBottom: theme.spacing(1),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
 }));
 
 const ScrollableContent = styled(Box)(({ theme }) => ({
   flex: 1,
-  overflowY: 'auto',
-  overflowX: 'hidden',
+  overflow: 'hidden',
+  display: 'flex',
+  flexDirection: 'column',
   padding: theme.spacing(1),
-  paddingBottom: theme.spacing(2),
-  '&::-webkit-scrollbar': {
-    width: '6px'
-  },
-  '&::-webkit-scrollbar-track': {
-    backgroundColor: 'transparent'
-  },
-  '&::-webkit-scrollbar-thumb': {
-    backgroundColor: alpha(theme.palette.divider, 0.2),
-    borderRadius: '3px',
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.divider, 0.3)
-    }
-  }
+  paddingBottom: theme.spacing(2)
 }));
 
 const TokenCard = styled(Box)(({ theme }) => ({
-  padding: '8px',
+  padding: '12px',
   borderRadius: '8px',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
+  border: `1px solid transparent`,
   '&:hover': {
     backgroundColor: alpha(theme.palette.primary.main, 0.04),
-    transform: 'translateX(4px)'
-  },
-  '&:active': {
-    transform: 'translateX(0)'
+    borderColor: alpha(theme.palette.primary.main, 0.15)
   }
 }));
 
 const CategoryChip = styled(Chip)(({ theme }) => ({
-  borderRadius: '6px',
-  fontWeight: 600,
+  borderRadius: '8px',
+  fontWeight: 400,
   fontSize: '0.7rem',
   height: 24,
-  transition: 'all 0.2s ease',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   '&:hover': {
-    transform: 'scale(1.05)',
-    borderColor: theme.palette.primary.main
+    borderColor: alpha(theme.palette.primary.main, 0.3),
+    backgroundColor: alpha(theme.palette.primary.main, 0.04)
   },
   '& .MuiChip-label': {
     paddingLeft: '8px',
@@ -1839,29 +1823,33 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     if (loadingTokens) return;
     setLoadingTokens(true);
     try {
-      // Use the same endpoint that provides marketcap data
-      const res = await axios.get(
-        `${BASE_URL}/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=`
-      );
-      if (res.status === 200 && res.data) {
-        const tokenList = res.data.tokens || [];
-        // Add XRP token with full data
-        const xrpToken = {
-          md5: '84e5efeb89c4eae8f68188982dc290d8',
-          name: 'XRP',
-          user: 'XRP',
-          issuer: 'XRPL',
-          currency: 'XRP',
-          ext: 'png',
-          isOMCF: 'yes',
-          marketcap: 0, // XRP marketcap is not relevant here
-          vol24hxrp: 0,
-          exch: 1
-        };
-        setSelectorTokens([xrpToken, ...tokenList]);
-      }
+      // Fetch more tokens and XRP data in parallel
+      const [tokensRes, xrpRes] = await Promise.all([
+        axios.get(`${BASE_URL}/tokens?start=0&limit=200&sortBy=vol24hxrp&sortType=desc&filter=`),
+        axios.get(`${BASE_URL}/token/84e5efeb89c4eae8f68188982dc290d8`)
+      ]);
+
+      const tokenList = tokensRes.data?.tokens || [];
+
+      // Use actual XRP data from API
+      const xrpToken = xrpRes.data?.token || {
+        md5: '84e5efeb89c4eae8f68188982dc290d8',
+        name: 'XRP',
+        user: 'XRP',
+        issuer: 'XRPL',
+        currency: 'XRP',
+        ext: 'png',
+        isOMCF: 'yes',
+        exch: 1,
+        marketcap: 65080887109,
+        vol24hxrp: 3834501
+      };
+
+      setSelectorTokens([xrpToken, ...tokenList]);
+      // Also set initial filtered tokens
+      setFilteredTokens([xrpToken, ...tokenList]);
     } catch (err) {
-      // Still include XRP even on error
+      // Fallback XRP token on error
       const xrpToken = {
         md5: '84e5efeb89c4eae8f68188982dc290d8',
         name: 'XRP',
@@ -1870,8 +1858,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         currency: 'XRP',
         ext: 'png',
         isOMCF: 'yes',
-        marketcap: 0,
-        vol24hxrp: 0,
         exch: 1
       };
       setSelectorTokens([xrpToken]);
@@ -1963,18 +1949,20 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             setFilteredTokens(nonXrpTokens);
           } else {
             // For 'all' and tag-based categories, include XRP at the top
-            const xrpToken = {
-              md5: '84e5efeb89c4eae8f68188982dc290d8',
-              name: 'XRP',
-              user: 'XRP',
-              issuer: 'XRPL',
-              currency: 'XRP',
-              ext: 'png',
-              isOMCF: 'yes',
-              marketcap: 0,
-              vol24hxrp: 0,
-              exch: 1
-            };
+            // Find XRP from the loaded tokens or use default
+            let xrpToken = selectorTokens.find(t => t.currency === 'XRP');
+            if (!xrpToken) {
+              xrpToken = {
+                md5: '84e5efeb89c4eae8f68188982dc290d8',
+                name: 'XRP',
+                user: 'XRP',
+                issuer: 'XRPL',
+                currency: 'XRP',
+                ext: 'png',
+                isOMCF: 'yes',
+                exch: 1
+              };
+            }
 
             // Filter out any duplicate XRP entries
             const nonXrpTokens = tokens.filter((t) => t.currency !== 'XRP');
@@ -2026,141 +2014,175 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         alignItems: 'center',
         padding: '8px 12px',
         cursor: 'pointer',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-        transition: 'all 0.2s ease',
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.02)}`,
+        transition: 'background-color 0.15s ease',
         '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04)
+          backgroundColor: alpha(theme.palette.primary.main, 0.015)
         },
         '&:last-child': {
           borderBottom: 'none'
         }
       }}
     >
-      <Avatar
-        src={`https://s1.xrpl.to/token/${token.md5}`}
-        alt={token.name}
-        sx={{
-          width: 28,
-          height: 28,
-          mr: 1.5
-        }}
-        imgProps={{
-          onError: (e) => {
-            e.target.src = '/static/alt.webp';
-          }
-        }}
-      />
+      {/* Token Icon */}
+      <Box sx={{
+        position: 'relative',
+        width: 30,
+        height: 30,
+        mr: 1.5,
+        flexShrink: 0
+      }}>
+        <Avatar
+          src={`https://s1.xrpl.to/token/${token.md5}`}
+          alt={token.name}
+          sx={{
+            width: 30,
+            height: 30,
+            backgroundColor: alpha(theme.palette.text.primary, 0.04),
+            fontSize: '0.8rem',
+            fontWeight: 600
+          }}
+          imgProps={{
+            onError: (e) => {
+              e.target.style.display = 'none';
+            }
+          }}
+        >
+          {token.name?.charAt(0) || '?'}
+        </Avatar>
+        {token.verified && (
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: -1,
+              right: -1,
+              width: 10,
+              height: 10,
+              borderRadius: '50%',
+              backgroundColor: '#4285f4',
+              border: `1.5px solid ${theme.palette.background.paper}`
+            }}
+          />
+        )}
+      </Box>
 
-      <Box sx={{ flex: '0 0 25%', minWidth: 0 }}>
-        <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography
-            variant="body2"
-            fontWeight={600}
-            noWrap
-            sx={{ fontSize: '0.8rem' }}
-            color={token.isOMCF === 'yes' ? '#1db954' : 'text.primary'}
-          >
-            {token.name}
-          </Typography>
-          {token.verified && (
-            <CheckCircleIcon
-              sx={{
-                fontSize: 12,
-                color: theme.palette.primary.main,
-                flexShrink: 0
-              }}
-            />
-          )}
-        </Stack>
+      {/* Token Name & Issuer */}
+      <Box sx={{ flex: '1', minWidth: 0 }}>
+        <Typography
+          variant="body2"
+          fontWeight={500}
+          noWrap
+          sx={{
+            fontSize: '0.85rem',
+            lineHeight: 1.2,
+            color: theme.palette.text.primary
+          }}
+        >
+          {token.name || token.currency}
+        </Typography>
         <Typography
           variant="caption"
           color="text.secondary"
-          sx={{ fontSize: '0.65rem', display: 'block' }}
+          sx={{
+            fontSize: '0.7rem',
+            display: 'block',
+            opacity: 0.6,
+            mt: 0.25
+          }}
+          noWrap
         >
           {token.user || 'Unknown'}
         </Typography>
       </Box>
 
-      <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
-        <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
-          {(() => {
-            if (!token.exch && token.exch !== 0) return '0 XRP';
-
-            // Convert to number, handling scientific notation
-            let price = Number(token.exch);
-
-            // Check for invalid number
-            if (isNaN(price) || price === 0) return '0 XRP';
-
-            // For large numbers
-            if (price >= 1) {
-              return `${price.toFixed(4)} XRP`;
-            }
-
-            // For smaller numbers, dynamically determine decimal places
-            // Convert to string to check how many decimals we need
-            const priceStr = price.toString();
-
-            // If already in decimal format, just format it
-            if (!priceStr.includes('e')) {
-              if (price >= 0.01) return `${price.toFixed(6)} XRP`;
-              if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
-              if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
-              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
-            }
-
-            // Handle scientific notation (e.g., 2.8273e-7)
-            // Use toFixed with enough decimal places
-            const exponent = parseInt(priceStr.split('e')[1]);
-            const decimalPlaces = Math.abs(exponent) + 4; // Add 4 more digits after the significant part
-
-            // Cap at 20 decimal places for display
-            const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
-
-            // Remove trailing zeros
-            return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
-          })()}
-        </Typography>
-      </Box>
-
-      <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
+      {/* Price */}
+      <Box sx={{ width: '100px', textAlign: 'right', flexShrink: 0 }}>
         <Typography
-          variant="caption"
-          sx={{ fontSize: '0.75rem', color: theme.palette.success.main }}
+          sx={{
+            fontSize: '0.8rem',
+            fontWeight: 500,
+            color: theme.palette.text.primary,
+            fontVariantNumeric: 'tabular-nums',
+            display: 'block'
+          }}
         >
           {(() => {
-            if (!token.vol24hxrp) return '0 XRP';
-            const vol = parseFloat(token.vol24hxrp);
-            if (vol >= 1000000) return `${(vol / 1000000).toFixed(2)}M XRP`;
-            if (vol >= 1000) return `${(vol / 1000).toFixed(2)}K XRP`;
-            if (vol >= 1) return `${vol.toFixed(2)} XRP`;
-            return `${vol.toFixed(4)} XRP`;
+            // Special case for XRP - show as 1.0000 with proper spacing
+            if (token.currency === 'XRP') return '1.0000 XRP';
+
+            if (!token.exch && token.exch !== 0) return '0 XRP';
+            let price = Number(token.exch);
+            if (isNaN(price) || price === 0) return '0 XRP';
+
+            // Format based on magnitude - consistent spacing
+            if (price >= 10000) {
+              return `${price.toLocaleString('en-US', { maximumFractionDigits: 0 })} XRP`;
+            } else if (price >= 1) {
+              return `${price.toFixed(4)} XRP`;
+            } else if (price >= 0.01) {
+              return `${price.toFixed(6)} XRP`;
+            } else if (price >= 0.0001) {
+              return `${price.toFixed(8)} XRP`;
+            } else if (price >= 0.000001) {
+              return `${price.toFixed(10)} XRP`;
+            } else if (price >= 0.00000001) {
+              return `${price.toFixed(12)} XRP`;
+            } else {
+              // For extremely small numbers, use more decimal places
+              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
+            }
           })()}
         </Typography>
       </Box>
 
-      <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
-        <Typography variant="caption" sx={{ fontSize: '0.75rem', color: theme.palette.info.main }}>
-          {(() => {
-            if (!token.marketcap) return '0 XRP';
-            const mcap = parseFloat(token.marketcap);
-            if (mcap >= 1000000) return `${(mcap / 1000000).toFixed(2)}M XRP`;
-            if (mcap >= 1000) return `${(mcap / 1000).toFixed(2)}K XRP`;
-            if (mcap >= 1) return `${mcap.toFixed(2)} XRP`;
-            return `${mcap.toFixed(4)} XRP`;
-          })()}
-        </Typography>
-      </Box>
-
-      {((isToken1 && token1?.md5 === token.md5) || (!isToken1 && token2?.md5 === token.md5)) && (
-        <CheckCircleIcon
+      {/* Volume */}
+      <Box sx={{ width: '70px', textAlign: 'right', flexShrink: 0 }}>
+        <Typography
           sx={{
-            fontSize: 16,
-            color: theme.palette.primary.main,
-            ml: 1
+            fontSize: '0.8rem',
+            fontWeight: 400,
+            color: theme.palette.text.secondary,
+            fontVariantNumeric: 'tabular-nums',
+            display: 'block'
           }}
-        />
-      )}
+        >
+          {(() => {
+            if (!token.vol24hxrp) return '0';
+            const vol = parseFloat(token.vol24hxrp);
+            if (vol >= 1000000000) return `${(vol / 1000000000).toFixed(1)}B`;
+            if (vol >= 1000000) return `${(vol / 1000000).toFixed(1)}M`;
+            if (vol >= 10000) return `${(vol / 1000).toFixed(0)}K`;
+            if (vol >= 1000) return `${(vol / 1000).toFixed(1)}K`;
+            if (vol >= 1) return vol.toFixed(0);
+            return vol.toFixed(1);
+          })()}
+        </Typography>
+      </Box>
+
+      {/* Market Cap */}
+      <Box sx={{ width: '70px', textAlign: 'right', flexShrink: 0 }}>
+        <Typography
+          sx={{
+            fontSize: '0.8rem',
+            fontWeight: 400,
+            color: theme.palette.text.secondary,
+            fontVariantNumeric: 'tabular-nums',
+            display: 'block'
+          }}
+        >
+          {(() => {
+            if (!token.marketcap) return '0';
+            const mcap = parseFloat(token.marketcap);
+            if (mcap >= 1000000000) return `${(mcap / 1000000000).toFixed(1)}B`;
+            if (mcap >= 1000000) return `${(mcap / 1000000).toFixed(1)}M`;
+            if (mcap >= 10000) return `${(mcap / 1000).toFixed(0)}K`;
+            if (mcap >= 1000) return `${(mcap / 1000).toFixed(1)}K`;
+            if (mcap >= 1) return mcap.toFixed(0);
+            return mcap.toFixed(1);
+          })()}
+        </Typography>
+      </Box>
+
     </Box>
   );
 
@@ -2258,117 +2280,159 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   };
 
   const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
-    <PanelContainer>
-      {/* Header */}
-      <PanelHeader>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" pb={2}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <IconButton
-              onClick={onClose}
-              aria-label="Back to swap interface"
-              sx={{
-                bgcolor: alpha(theme.palette.primary.main, 0.08),
-                '&:hover': {
-                  bgcolor: alpha(theme.palette.primary.main, 0.16),
-                  transform: 'translateX(-2px)'
-                }
-              }}
-            >
-              <ArrowBackIcon sx={{ width: 24, height: 24 }} />
-            </IconButton>
-            <Typography variant="h6" fontWeight={700}>
+    <>
+      {/* Backdrop overlay */}
+      <Box
+        onClick={onClose}
+        sx={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: alpha(theme.palette.common.black, 0.5),
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          zIndex: 1200
+        }}
+      />
+
+      {/* Modal Panel */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '90%',
+          maxWidth: '520px',
+          height: '90vh',
+          maxHeight: '750px',
+          backgroundColor: theme.palette.background.paper,
+          borderRadius: '12px',
+          border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+          boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.15)}`,
+          display: 'flex',
+          flexDirection: 'column',
+          zIndex: 1201
+        }}
+      >
+        {/* Header */}
+        <Box sx={{ padding: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
+          <Stack direction="row" alignItems="center" justifyContent="space-between">
+            <Typography variant="body1" fontWeight={500}>
               {title}
             </Typography>
+            <Box
+              onClick={onClose}
+              sx={{
+                cursor: 'pointer',
+                fontSize: '1.5rem',
+                lineHeight: 1,
+                color: theme.palette.text.secondary,
+                '&:hover': { color: theme.palette.text.primary }
+              }}
+            >
+              ×
+            </Box>
           </Stack>
+        </Box>
 
-          {currentToken && (
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="caption" color="text.secondary">
-                Current:
-              </Typography>
-              <Chip
-                avatar={
-                  <Avatar
-                    src={`https://s1.xrpl.to/token/${currentToken.md5}`}
-                    sx={{ width: 20, height: 20 }}
-                  />
-                }
-                label={currentToken.name}
-                size="small"
-                variant="outlined"
-              />
-            </Stack>
-          )}
-        </Stack>
-      </PanelHeader>
-
-      {/* Search Bar */}
-      <SearchContainer>
+        {/* Search and Filters */}
+        <Box sx={{ padding: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
         <TextField
           inputRef={searchInputRef}
           fullWidth
-          placeholder="Search by name, symbol, or address..."
+          placeholder="Search tokens..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           variant="outlined"
-          size="medium"
+          size="small"
           sx={{
             '& .MuiOutlinedInput-root': {
-              borderRadius: 2,
-              backgroundColor: alpha(theme.palette.background.default, 0.8),
+              borderRadius: '12px',
+              backgroundColor: 'transparent',
+              fontSize: '0.9rem',
               '& fieldset': {
-                borderColor: alpha(theme.palette.divider, 0.15)
+                borderColor: alpha(theme.palette.divider, 0.15),
+                borderWidth: '1.5px'
               },
               '&:hover fieldset': {
-                borderColor: alpha(theme.palette.primary.main, 0.3)
+                borderColor: alpha(theme.palette.divider, 0.25),
+                borderWidth: '1.5px'
               },
               '&.Mui-focused fieldset': {
-                borderColor: theme.palette.primary.main
+                borderColor: '#4285f4',
+                borderWidth: '1.5px'
+              }
+            },
+            '& .MuiInputBase-input': {
+              padding: '10px 12px',
+              '&::placeholder': {
+                opacity: 0.6
               }
             }
           }}
           InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon sx={{ width: 20, height: 20, color: theme.palette.text.secondary }} />
-              </InputAdornment>
-            ),
             endAdornment: searchQuery && (
               <InputAdornment position="end">
-                <IconButton size="small" aria-label="Clear search" onClick={() => setSearchQuery('')}>
-                  <CloseIcon fontSize="small" />
-                </IconButton>
+                <Box
+                  onClick={() => setSearchQuery('')}
+                  sx={{
+                    cursor: 'pointer',
+                    color: theme.palette.text.secondary,
+                    fontSize: '0.9rem',
+                    padding: '4px',
+                    '&:hover': {
+                      color: theme.palette.text.primary
+                    }
+                  }}
+                >
+                  ×
+                </Box>
               </InputAdornment>
             )
           }}
         />
 
         {/* Category Filters */}
-        <Stack
-          direction="row"
-          spacing={1}
+        <Box
           sx={{
-            mt: 2,
-            overflowX: 'auto',
-            pb: 1,
-            '&::-webkit-scrollbar': { height: 0 }
+            mt: 1.5,
+            display: 'flex',
+            flexWrap: 'wrap',
+            gap: 0.5
           }}
         >
-          {categories.map((cat) => (
+          {categories.slice(0, 6).map((cat) => (
             <CategoryChip
               key={cat.value}
               label={cat.label}
               onClick={() => setSelectedCategory(cat.value)}
-              color={selectedCategory === cat.value ? 'primary' : 'default'}
-              variant={selectedCategory === cat.value ? 'filled' : 'outlined'}
+              sx={{
+                backgroundColor: selectedCategory === cat.value ? alpha('#4285f4', 0.1) : 'transparent',
+                color: selectedCategory === cat.value ? '#4285f4' : theme.palette.text.secondary,
+                borderColor: selectedCategory === cat.value ? '#4285f4' : alpha(theme.palette.divider, 0.15),
+                '&:hover': {
+                  borderColor: selectedCategory === cat.value ? '#4285f4' : alpha(theme.palette.primary.main, 0.3),
+                  backgroundColor: selectedCategory === cat.value ? alpha('#4285f4', 0.15) : alpha(theme.palette.primary.main, 0.04)
+                }
+              }}
+              variant="outlined"
             />
           ))}
-        </Stack>
-      </SearchContainer>
+        </Box>
+        </Box>
 
-      {/* Content */}
-      <ScrollableContent>
-        <Box>
+        {/* Scrollable Content Area */}
+        <Box
+          sx={{
+            flex: 1,
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            padding: 2
+          }}
+        >
           {/* Recent Tokens */}
           {!searchQuery && recentTokens.length > 0 && (
             <Box mb={2}>
@@ -2429,48 +2493,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               </Grid>
             ) : filteredTokens.length > 0 ? (
               <Box>
-                {/* Table Header */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    padding: '8px 12px',
-                    borderBottom: `2px solid ${alpha(theme.palette.divider, 0.15)}`,
-                    backgroundColor: alpha(theme.palette.background.default, 0.3)
-                  }}
-                >
-                  <Box sx={{ width: 28, mr: 1.5 }} />
-                  <Box sx={{ flex: '0 0 25%' }}>
-                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                      TOKEN
-                    </Typography>
-                  </Box>
-                  <Box sx={{ flex: '0 0 20%', textAlign: 'right' }}>
-                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                      PRICE (XRP)
-                    </Typography>
-                  </Box>
-                  <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
-                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                      24H VOL (XRP)
-                    </Typography>
-                  </Box>
-                  <Box sx={{ flex: '0 0 25%', textAlign: 'right' }}>
-                    <Typography variant="caption" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
-                      MARKET CAP (XRP)
-                    </Typography>
-                  </Box>
-                </Box>
-                {/* Table Body */}
-                <Box
-                  sx={{
-                    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                    borderRadius: 1,
-                    borderTop: 'none'
-                  }}
-                >
-                  {filteredTokens.slice(0, 50).map((token) => renderTokenItem(token, isToken1))}
-                </Box>
+                {/* Simple token list without nested scrolling */}
+                {filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))}
               </Box>
             ) : (
               <Paper
@@ -2493,8 +2517,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             )}
           </Box>
         </Box>
-      </ScrollableContent>
-    </PanelContainer>
+      </Box>
+    </>
   );
 
   // Check if we should show token selector
