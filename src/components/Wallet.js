@@ -162,7 +162,9 @@ const WalletContent = ({
   setBackupAgreed,
   walletPage,
   setWalletPage,
-  walletsPerPage
+  walletsPerPage,
+  visibleWalletCount,
+  setVisibleWalletCount
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
@@ -509,12 +511,12 @@ const WalletContent = ({
             }}>
               Accounts ({profiles.length})
             </Typography>
-            {profiles.length > walletsPerPage && (
+            {visibleWalletCount > walletsPerPage && (
               <Typography sx={{
                 fontSize: '0.6rem',
                 opacity: 0.5
               }}>
-                Page {walletPage + 1} / {Math.ceil(profiles.length / walletsPerPage)}
+                Page {walletPage + 1} / {Math.ceil(visibleWalletCount / walletsPerPage)}
               </Typography>
             )}
           </Stack>
@@ -537,14 +539,12 @@ const WalletContent = ({
             }
           }}>
             {(() => {
-              // No filtering, use all profiles
-              const filtered = profiles;
+              // Only show wallets up to visibleWalletCount
+              const visibleProfiles = profiles.slice(0, visibleWalletCount);
 
-              // Sort with current account first
-              const sorted = [...filtered].sort((a, b) => {
-                if (a.account === accountLogin) return -1;
-                if (b.account === accountLogin) return 1;
-                return (a.createdAt || 0) - (b.createdAt || 0);
+              // Sort by address only - no reordering when switching accounts
+              const sorted = [...visibleProfiles].sort((a, b) => {
+                return a.account.localeCompare(b.account);
               });
 
               // Paginate
@@ -630,8 +630,32 @@ const WalletContent = ({
             })()}
           </Box>
 
+          {/* Add another wallet button */}
+          {visibleWalletCount < profiles.length && (
+            <Button
+              fullWidth
+              onClick={() => setVisibleWalletCount(prev => Math.min(prev + 1, profiles.length))}
+              sx={{
+                mt: 1,
+                py: 1.2,
+                fontSize: '0.9rem',
+                fontWeight: 400,
+                textTransform: 'none',
+                borderRadius: '8px',
+                background: alpha(theme.palette.primary.main, 0.08),
+                color: theme.palette.primary.main,
+                border: 'none',
+                '&:hover': {
+                  background: alpha(theme.palette.primary.main, 0.12)
+                }
+              }}
+            >
+              Add Another Wallet ({visibleWalletCount}/{profiles.length})
+            </Button>
+          )}
+
           {/* Pagination controls */}
-          {profiles.length > walletsPerPage && (
+          {visibleWalletCount > walletsPerPage && (
             <Stack direction="row" spacing={0.5} justifyContent="center" sx={{ mt: 0.8 }}>
               <Button
                 size="small"
@@ -650,8 +674,8 @@ const WalletContent = ({
                 display: 'flex',
                 gap: 0.25
               }}>
-                {Array.from({ length: Math.min(5, Math.ceil(profiles.length / walletsPerPage)) }, (_, i) => {
-                  const totalPages = Math.ceil(profiles.length / walletsPerPage);
+                {Array.from({ length: Math.min(5, Math.ceil(visibleWalletCount / walletsPerPage)) }, (_, i) => {
+                  const totalPages = Math.ceil(visibleWalletCount / walletsPerPage);
                   let pageNum;
 
                   if (totalPages <= 5) {
@@ -687,7 +711,7 @@ const WalletContent = ({
               </Box>
               <Button
                 size="small"
-                disabled={walletPage >= Math.ceil(profiles.length / walletsPerPage) - 1}
+                disabled={walletPage >= Math.ceil(visibleWalletCount / walletsPerPage) - 1}
                 onClick={() => setWalletPage(p => p + 1)}
                 sx={{
                   minWidth: 'auto',
@@ -845,6 +869,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [walletPage, setWalletPage] = useState(0);
   const walletsPerPage = 5;
+  const [visibleWalletCount, setVisibleWalletCount] = useState(1); // Will be loaded from IndexedDB
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
   const [seedPassword, setSeedPassword] = useState('');
@@ -994,6 +1019,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Close modal after delay to ensure UI updates
       setTimeout(() => {
         setOpenWalletModal(false);
+        setOpen(false);  // Close the main modal
         setStatus('idle');
         setShowDeviceLogin(false);
         setError('');
@@ -1531,6 +1557,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Close dialogs
         setShowOAuthPasswordSetup(false);
         setOpenWalletModal(false);
+        setOpen(false);  // Close the main modal
 
         // Clear password fields
         setOAuthPassword('');
@@ -1951,6 +1978,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Close modal after delay to ensure UI updates
       setTimeout(() => {
         setOpenWalletModal(false);
+        setOpen(false);  // Close the main modal
         setStatus('idle');
         setShowDeviceLogin(false);
         setError('');
@@ -2051,6 +2079,30 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       return false;
     }
   }, []);
+
+  // Load visible wallet count from IndexedDB
+  useEffect(() => {
+    const loadVisibleCount = async () => {
+      try {
+        const count = await walletStorage.getSecureItem('visibleWalletCount');
+        if (count && !isNaN(count)) {
+          setVisibleWalletCount(parseInt(count, 10));
+        }
+      } catch (error) {
+        console.log('Could not load visible wallet count:', error);
+      }
+    };
+    loadVisibleCount();
+  }, []);
+
+  // Save visible wallet count to IndexedDB when it changes
+  useEffect(() => {
+    if (visibleWalletCount > 1) { // Only save if more than default
+      walletStorage.setSecureItem('visibleWalletCount', visibleWalletCount.toString()).catch(err => {
+        console.log('Could not save visible wallet count:', err);
+      });
+    }
+  }, [visibleWalletCount]);
 
   useEffect(() => {
     const checkVisibleAccountsActivation = async () => {
@@ -2645,7 +2697,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         if (existingWallet) {
           openSnackbar(`Switched to device wallet ${wallets[0].address.slice(0, 8)}... (${wallets.length} total)`, 'success');
         } else {
-          openSnackbar(`5 device wallets accessed`, 'success');
+          openSnackbar(`25 device wallets accessed`, 'success');
         }
 
         setOpen(false);
@@ -2663,8 +2715,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
     try {
       // Count all existing wallets (don't filter by type - all count toward limit)
-      if (profiles.length >= 5) {
-        openSnackbar('Maximum 5 accounts reached', 'warning');
+      if (profiles.length >= 25) {
+        openSnackbar('Maximum 25 accounts reached', 'warning');
         setShowNewAccountFlow(false);
         setNewAccountPassword('');
         return;
@@ -2737,7 +2789,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         console.log('Login called');
       });
 
-      openSnackbar(`Account ${allProfiles.length} of 5 created`, 'success');
+      openSnackbar(`Account ${allProfiles.length} of 25 created`, 'success');
     } catch (error) {
       devError('Create account error:', error);
       openSnackbar('Incorrect password', 'error');
@@ -2934,6 +2986,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     walletPage={walletPage}
                     setWalletPage={setWalletPage}
                     walletsPerPage={walletsPerPage}
+                    visibleWalletCount={visibleWalletCount}
+                    setVisibleWalletCount={setVisibleWalletCount}
                   />
                 ) : showNewAccountFlow ? (
                   <Box sx={{ p: 3 }}>
