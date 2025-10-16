@@ -2119,12 +2119,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       if (!accountProfile) return;
       if (profiles.length === 0) return;
 
-      // Get ALL accounts that need to be checked
-      const uncheckedAccounts = profiles.filter(
+      // Only check wallets on current page
+      const startIndex = walletPage * walletsPerPage;
+      const endIndex = startIndex + walletsPerPage;
+      const visibleProfiles = profiles.slice(0, visibleWalletCount);
+      const sorted = [...visibleProfiles].sort((a, b) => a.account.localeCompare(b.account));
+      const currentPageProfiles = sorted.slice(startIndex, endIndex);
+
+      // Get accounts that need to be checked on current page
+      const uncheckedAccounts = currentPageProfiles.filter(
         profile => !(profile.account in accountsActivation)
       );
 
-      // Also check current account if not already checked
+      // Always check current account if not already checked
       if (accountProfile?.account && !(accountProfile.account in accountsActivation)) {
         uncheckedAccounts.unshift({ account: accountProfile.account });
       }
@@ -2133,7 +2140,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       setIsCheckingActivation(true);
 
-      // Process ALL in parallel in background (non-blocking)
+      // Check only current page wallets in parallel
       Promise.all(
         uncheckedAccounts.map(async (profile) => {
           const isActive = await checkAccountActivity(profile.account);
@@ -2152,7 +2159,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
 
     checkVisibleAccountsActivation();
-  }, [profiles, accountsActivation, checkAccountActivity, accountProfile]);
+  }, [profiles, accountsActivation, checkAccountActivity, accountProfile, walletPage, visibleWalletCount, walletsPerPage]);
 
   const generateWalletsFromDeviceKey = async (deviceKeyId) => {
     const wallets = [];
