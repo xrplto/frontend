@@ -2106,9 +2106,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   }, []);
 
-  // Sync visible wallet count with profiles length
+  // Sync visible wallet count with profiles length when profiles load
   useEffect(() => {
-    if (profiles.length > 0 && visibleWalletCount !== profiles.length) {
+    if (profiles.length > 0) {
       setVisibleWalletCount(profiles.length);
     }
   }, [profiles.length]);
@@ -2117,13 +2117,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     const checkVisibleAccountsActivation = async () => {
       // Don't check if no user is logged in
       if (!accountProfile) return;
-
       if (profiles.length === 0) return;
 
-      setIsCheckingActivation(true);
-      const startTime = performance.now();
-
-      // Get ALL accounts that need to be checked (not just visible ones)
+      // Get ALL accounts that need to be checked
       const uncheckedAccounts = profiles.filter(
         profile => !(profile.account in accountsActivation)
       );
@@ -2133,43 +2129,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         uncheckedAccounts.unshift({ account: accountProfile.account });
       }
 
-      if (uncheckedAccounts.length === 0) {
-        setIsCheckingActivation(false);
-        return;
-      }
+      if (uncheckedAccounts.length === 0) return;
 
+      setIsCheckingActivation(true);
 
-      // Process in smaller batches to avoid rate limiting
-      const batchSize = 3;
-      const newActivationStatus = { ...accountsActivation };
-      let activeCount = 0;
-
-      for (let i = 0; i < uncheckedAccounts.length; i += batchSize) {
-        const batch = uncheckedAccounts.slice(i, i + batchSize);
-        const batchPromises = batch.map(async (profile) => {
+      // Process ALL in parallel in background (non-blocking)
+      Promise.all(
+        uncheckedAccounts.map(async (profile) => {
           const isActive = await checkAccountActivity(profile.account);
           return { account: profile.account, isActive };
-        });
-
-        const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach(({ account, isActive }) => {
+        })
+      ).then((results) => {
+        const newActivationStatus = { ...accountsActivation };
+        results.forEach(({ account, isActive }) => {
           newActivationStatus[account] = isActive;
-          if (isActive) activeCount++;
         });
-
-        // Add delay between batches to avoid rate limiting
-        if (i + batchSize < uncheckedAccounts.length) {
-          await new Promise(resolve => setTimeout(resolve, 500));
-        }
-      }
-
-      const endTime = performance.now();
-      const duration = endTime - startTime;
-      const totalActive = Object.values(newActivationStatus).filter(Boolean).length;
-
-
-      setAccountsActivation(newActivationStatus);
-      setIsCheckingActivation(false);
+        setAccountsActivation(newActivationStatus);
+        setIsCheckingActivation(false);
+      }).catch(() => {
+        setIsCheckingActivation(false);
+      });
     };
 
     checkVisibleAccountsActivation();
