@@ -159,7 +159,12 @@ const WalletContent = ({
   processBackupDownload,
   setShowBackupPassword,
   backupAgreed,
-  setBackupAgreed
+  setBackupAgreed,
+  walletSearch,
+  setWalletSearch,
+  walletPage,
+  setWalletPage,
+  walletsPerPage
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
@@ -175,7 +180,7 @@ const WalletContent = ({
               Download Full Wallet Backup
             </Typography>
             <Typography sx={{ fontSize: '0.8rem', opacity: 0.7 }}>
-              Export all {profiles.length} wallets in a single encrypted file
+              Export all {profiles.length} wallet{profiles.length !== 1 ? 's' : ''} in a single encrypted file
             </Typography>
           </Box>
 
@@ -486,103 +491,239 @@ const WalletContent = ({
         </Stack>
       </Box>
 
-      {/* Accounts List - Compact */}
+      {/* Accounts List - Compact with Pagination */}
       {profiles.length > 1 && (
         <Box sx={{
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           py: 1,
-          px: 1.4
+          px: 1.4,
+          maxHeight: '400px',
+          display: 'flex',
+          flexDirection: 'column'
         }}>
-          <Typography sx={{
-            fontSize: '0.65rem',
-            fontWeight: 500,
-            opacity: 0.45,
-            textTransform: 'uppercase',
-            letterSpacing: '0.8px',
-            mb: 0.6
+          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.8 }}>
+            <Typography sx={{
+              fontSize: '0.65rem',
+              fontWeight: 500,
+              opacity: 0.45,
+              textTransform: 'uppercase',
+              letterSpacing: '0.8px'
+            }}>
+              Accounts ({profiles.length})
+            </Typography>
+            {profiles.length > walletsPerPage && (
+              <Typography sx={{
+                fontSize: '0.6rem',
+                opacity: 0.5
+              }}>
+                Page {walletPage + 1} / {Math.ceil(profiles.length / walletsPerPage)}
+              </Typography>
+            )}
+          </Stack>
+
+          {/* Search bar for many wallets */}
+          {profiles.length > 10 && (
+            <TextField
+              size="small"
+              placeholder="Search wallet..."
+              value={walletSearch}
+              onChange={(e) => {
+                setWalletSearch(e.target.value);
+                setWalletPage(0); // Reset to first page on search
+              }}
+              sx={{
+                mb: 0.8,
+                '& .MuiInputBase-root': {
+                  fontSize: '0.75rem',
+                  height: 28,
+                  backgroundColor: alpha(theme.palette.text.primary, 0.02)
+                }
+              }}
+            />
+          )}
+
+          {/* Wallets list */}
+          <Box sx={{
+            flex: 1,
+            overflowY: 'auto',
+            minHeight: 0,
+            '&::-webkit-scrollbar': {
+              width: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'transparent',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: alpha(theme.palette.text.primary, 0.1),
+              borderRadius: '4px',
+            }
           }}>
-            Accounts
-          </Typography>
-          {[...profiles].sort((a, b) => {
-            if (a.account === accountLogin) return -1;
-            if (b.account === accountLogin) return 1;
-            return (a.createdAt || 0) - (b.createdAt || 0);
-          }).map((profile) => {
-            const account = profile.account;
-            const isCurrent = account === accountLogin;
-            return (
-              <Box
-                key={account}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  if (!isCurrent) {
-                    onAccountSwitch(account);
-                  }
-                }}
-                sx={{
-                  py: 0.6,
-                  px: 0.8,
-                  my: 0.2,
-                  cursor: isCurrent ? 'default' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  borderRadius: '6px',
-                  background: isCurrent ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
-                  '&:hover': !isCurrent ? {
-                    background: alpha(theme.palette.text.primary, 0.03)
-                  } : {}
-                }}
-              >
-                <Stack direction="row" spacing={0.8} alignItems="center">
-                  <Box sx={{
-                    width: 5,
-                    height: 5,
-                    borderRadius: '50%',
-                    background: accountsActivation[account] === false
-                      ? theme.palette.error.main
-                      : theme.palette.success.main
-                  }} />
-                  <Typography sx={{
-                    fontFamily: 'monospace',
-                    fontSize: '0.72rem',
-                    fontWeight: isCurrent ? 500 : 400,
-                    opacity: isCurrent ? 1 : 0.75
-                  }}>
-                    {truncateAccount(account, 6)}
-                  </Typography>
-                  {isCurrent && (
-                    <Typography sx={{
-                      fontSize: '0.6rem',
-                      opacity: 0.4
-                    }}>
-                      current
-                    </Typography>
-                  )}
-                </Stack>
-                {!isCurrent && (
-                  <IconButton
-                    size="small"
+            {(() => {
+              // Filter profiles based on search
+              const filtered = walletSearch
+                ? profiles.filter(p => p.account.toLowerCase().includes(walletSearch.toLowerCase()))
+                : profiles;
+
+              // Sort with current account first
+              const sorted = [...filtered].sort((a, b) => {
+                if (a.account === accountLogin) return -1;
+                if (b.account === accountLogin) return 1;
+                return (a.createdAt || 0) - (b.createdAt || 0);
+              });
+
+              // Paginate
+              const startIndex = walletPage * walletsPerPage;
+              const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
+
+              return paginatedProfiles.map((profile) => {
+                const account = profile.account;
+                const isCurrent = account === accountLogin;
+                return (
+                  <Box
+                    key={account}
                     onClick={(e) => {
-                      e.stopPropagation();
                       e.preventDefault();
-                      onRemoveProfile(account);
+                      e.stopPropagation();
+                      if (!isCurrent) {
+                        onAccountSwitch(account);
+                      }
                     }}
                     sx={{
-                      p: 0.2,
-                      opacity: 0,
-                      '&:hover': { opacity: 0.7 }
+                      py: 0.5,
+                      px: 0.6,
+                      my: 0.15,
+                      cursor: isCurrent ? 'default' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      borderRadius: '4px',
+                      background: isCurrent ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
+                      '&:hover': !isCurrent ? {
+                        background: alpha(theme.palette.text.primary, 0.03)
+                      } : {}
                     }}
                   >
-                    <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M18 6L6 18M6 6l12 12"/>
-                    </Box>
-                  </IconButton>
-                )}
+                    <Stack direction="row" spacing={0.6} alignItems="center">
+                      <Box sx={{
+                        width: 4,
+                        height: 4,
+                        borderRadius: '50%',
+                        background: accountsActivation[account] === false
+                          ? theme.palette.error.main
+                          : theme.palette.success.main
+                      }} />
+                      <Typography sx={{
+                        fontFamily: 'monospace',
+                        fontSize: '0.68rem',
+                        fontWeight: isCurrent ? 500 : 400,
+                        opacity: isCurrent ? 1 : 0.75
+                      }}>
+                        {truncateAccount(account, 6)}
+                      </Typography>
+                      {isCurrent && (
+                        <Typography sx={{
+                          fontSize: '0.55rem',
+                          opacity: 0.4
+                        }}>
+                          current
+                        </Typography>
+                      )}
+                    </Stack>
+                    {!isCurrent && (
+                      <IconButton
+                        size="small"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          onRemoveProfile(account);
+                        }}
+                        sx={{
+                          p: 0.15,
+                          opacity: 0,
+                          '&:hover': { opacity: 0.7 }
+                        }}
+                      >
+                        <Box component="svg" sx={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <path d="M18 6L6 18M6 6l12 12"/>
+                        </Box>
+                      </IconButton>
+                    )}
+                  </Box>
+                );
+              });
+            })()}
+          </Box>
+
+          {/* Pagination controls */}
+          {profiles.length > walletsPerPage && (
+            <Stack direction="row" spacing={0.5} justifyContent="center" sx={{ mt: 0.8 }}>
+              <Button
+                size="small"
+                disabled={walletPage === 0}
+                onClick={() => setWalletPage(p => p - 1)}
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                  py: 0.25,
+                  fontSize: '0.65rem'
+                }}
+              >
+                Prev
+              </Button>
+              <Box sx={{
+                display: 'flex',
+                gap: 0.25
+              }}>
+                {Array.from({ length: Math.min(5, Math.ceil(profiles.length / walletsPerPage)) }, (_, i) => {
+                  const totalPages = Math.ceil(profiles.length / walletsPerPage);
+                  let pageNum;
+
+                  if (totalPages <= 5) {
+                    pageNum = i;
+                  } else if (walletPage < 3) {
+                    pageNum = i;
+                  } else if (walletPage >= totalPages - 3) {
+                    pageNum = totalPages - 5 + i;
+                  } else {
+                    pageNum = walletPage - 2 + i;
+                  }
+
+                  if (pageNum >= totalPages) return null;
+
+                  return (
+                    <Button
+                      key={pageNum}
+                      size="small"
+                      variant={walletPage === pageNum ? 'contained' : 'text'}
+                      onClick={() => setWalletPage(pageNum)}
+                      sx={{
+                        minWidth: 24,
+                        height: 24,
+                        p: 0,
+                        fontSize: '0.6rem',
+                        fontWeight: walletPage === pageNum ? 500 : 400
+                      }}
+                    >
+                      {pageNum + 1}
+                    </Button>
+                  );
+                })}
               </Box>
-            );
-          })}
+              <Button
+                size="small"
+                disabled={walletPage >= Math.ceil(profiles.length / walletsPerPage) - 1}
+                onClick={() => setWalletPage(p => p + 1)}
+                sx={{
+                  minWidth: 'auto',
+                  px: 1,
+                  py: 0.25,
+                  fontSize: '0.65rem'
+                }}
+              >
+                Next
+              </Button>
+            </Stack>
+          )}
         </Box>
       )}
 
@@ -595,7 +736,7 @@ const WalletContent = ({
         gap: 0.6
       }}>
         {/* New Account Button */}
-        {onCreateNewAccount && profiles.length < 5 && (
+        {onCreateNewAccount && profiles.length < 25 && (
           <Button
             onClick={onCreateNewAccount}
             variant="text"
@@ -613,7 +754,7 @@ const WalletContent = ({
               }
             }}
           >
-            + Account ({profiles.length}/5)
+            + Account ({profiles.length}/25)
           </Button>
         )}
 
@@ -623,8 +764,8 @@ const WalletContent = ({
           variant="text"
           size="small"
           sx={{
-            flex: profiles.length >= 5 ? 1 : 'none',
-            px: profiles.length >= 5 ? 0 : 2,
+            flex: profiles.length >= 25 ? 1 : 'none',
+            px: profiles.length >= 25 ? 0 : 2,
             py: 0.6,
             borderRadius: '6px',
             color: theme.palette.text.secondary,
@@ -727,6 +868,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [walletInfo, setWalletInfo] = useState(null);
   const [isLoadingDeps, setIsLoadingDeps] = useState(false);
   const [showSeedDialog, setShowSeedDialog] = useState(false);
+  const [walletSearch, setWalletSearch] = useState('');
+  const [walletPage, setWalletPage] = useState(0);
+  const walletsPerPage = 10;
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
   const [seedPassword, setSeedPassword] = useState('');
@@ -800,28 +944,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store the password for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate 5 wallets immediately
+      // Generate 25 wallets with progress updates
+      setStatus('creating');
       const wallets = [];
-      for (let i = 0; i < 5; i++) {
-        const wallet = generateRandomWallet();
+      const batchSize = 5; // Process in batches for better performance
 
-        const walletData = {
-          deviceKeyId: deviceId,
-          accountIndex: i,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0',
-          createdAt: Date.now(),
-          seed: wallet.seed
-        };
+      for (let batch = 0; batch < 5; batch++) {
+        const batchWallets = [];
 
-        wallets.push(walletData);
+        // Generate batch of wallets
+        for (let i = 0; i < batchSize; i++) {
+          const index = batch * batchSize + i;
+          const wallet = generateRandomWallet();
 
-        // Store each wallet encrypted with password
-        await walletStorage.storeWallet(walletData, password);
+          const walletData = {
+            deviceKeyId: deviceId,
+            accountIndex: index,
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0',
+            createdAt: Date.now(),
+            seed: wallet.seed
+          };
+
+          batchWallets.push(walletData);
+          wallets.push(walletData);
+        }
+
+        // Store batch in parallel
+        await Promise.all(
+          batchWallets.map(walletData =>
+            walletStorage.storeWallet(walletData, password)
+          )
+        );
+
+        // Update progress
+        setError(`Creating wallets... ${(batch + 1) * 5}/25`);
       }
+
+      setError(''); // Clear progress message
 
       // Update profiles
       const allProfiles = [...profiles];
@@ -854,16 +1017,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       doLogIn(wallets[0], allProfiles);
       setStatus('success');
 
-      // Close modal after brief delay to show success
+      // Close modal after delay to ensure UI updates
       setTimeout(() => {
         setOpenWalletModal(false);
         setStatus('idle');
         setShowDeviceLogin(false);
+        setError('');
         // Show backup reminder
         setTimeout(() => {
-          openSnackbar('Remember to backup your wallet seed phrase', 'warning');
+          openSnackbar('25 wallets created! Remember to backup your wallet seed phrase', 'warning');
         }, 1000);
-      }, 500);
+      }, 800); // Shorter delay for 25 wallets
     } catch (err) {
       setError('Failed to complete registration: ' + err.message);
       setStatus('idle');
@@ -1313,27 +1477,48 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Use unified wallet storage
       const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
 
-      // Create 5 wallets immediately for OAuth
+      // Create 25 wallets with progress updates for OAuth
+      setOAuthPasswordError('Creating wallets...');
       const wallets = [];
-      for (let i = 0; i < 5; i++) {
-        const wallet = generateRandomWallet();
+      const batchSize = 5; // Process in batches
 
-        const walletData = {
-          accountIndex: i,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'oauth',
-          provider: provider,
-          provider_id: user.id,
-          xrp: '0',
-          createdAt: Date.now(),
-          seed: wallet.seed
-        };
+      for (let batch = 0; batch < 5; batch++) {
+        const batchWallets = [];
 
-        wallets.push(walletData);
-        await walletStorageInstance.storeWallet(walletData, oauthPassword);
+        // Generate batch of wallets
+        for (let i = 0; i < batchSize; i++) {
+          const index = batch * batchSize + i;
+          const wallet = generateRandomWallet();
+
+          const walletData = {
+            accountIndex: index,
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'oauth',
+            provider: provider,
+            provider_id: user.id,
+            xrp: '0',
+            createdAt: Date.now(),
+            seed: wallet.seed
+          };
+
+          batchWallets.push(walletData);
+          wallets.push(walletData);
+        }
+
+        // Store batch in parallel for faster performance
+        await Promise.all(
+          batchWallets.map(walletData =>
+            walletStorageInstance.storeWallet(walletData, oauthPassword)
+          )
+        );
+
+        // Update progress
+        setOAuthPasswordError(`Creating wallets... ${(batch + 1) * 5}/25`);
       }
+
+      setOAuthPasswordError(''); // Clear progress
 
       if (wallets.length > 0) {
         const result = { success: true, wallet: wallets[0] };
@@ -1377,7 +1562,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthPassword('');
         setOAuthConfirmPassword('');
 
-        openSnackbar(`5 accounts created successfully!`, 'success');
+        openSnackbar(`25 accounts created successfully!`, 'success');
       } else {
         throw new Error('Failed to setup wallet');
       }
@@ -1493,10 +1678,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       // Create wallets array
       const wallets = [];
-      const totalWallets = Math.min(5, validatedWallets.length + Math.max(1, 5 - validatedWallets.length));
+      const totalWallets = Math.min(25, validatedWallets.length + Math.max(1, 25 - validatedWallets.length));
 
       // Import all seed wallets first
-      for (let i = 0; i < validatedWallets.length && i < 5; i++) {
+      for (let i = 0; i < validatedWallets.length && i < 25; i++) {
         const wallet = validatedWallets[i];
         const walletProfile = {
           accountIndex: i,
@@ -1517,8 +1702,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthPasswordError(`Imported seed wallet ${i + 1}/${validatedWallets.length}...`);
       }
 
-      // Generate additional random wallets if needed to reach 5
-      const randomWalletsNeeded = Math.max(0, 5 - validatedWallets.length);
+      // Generate additional random wallets if needed to reach 25
+      const randomWalletsNeeded = Math.max(0, 25 - validatedWallets.length);
       if (randomWalletsNeeded > 0) {
         setOAuthPasswordError(`Creating ${randomWalletsNeeded} additional wallet${randomWalletsNeeded > 1 ? 's' : ''}...`);
 
@@ -1576,12 +1761,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const importedCount = validatedWallets.length;
       const newCount = randomWalletsNeeded;
 
-      if (importedCount === 5) {
-        openSnackbar(`Imported all 5 wallets from seeds!`, 'success');
+      if (importedCount === 25) {
+        openSnackbar(`Imported all 25 wallets from seeds!`, 'success');
       } else if (newCount === 0) {
         openSnackbar(`Imported ${importedCount} wallet${importedCount > 1 ? 's' : ''} from seed${importedCount > 1 ? 's' : ''}!`, 'success');
       } else {
-        openSnackbar(`Created 5 wallets (${importedCount} from seed${importedCount > 1 ? 's' : ''}, ${newCount} new)`, 'success');
+        openSnackbar(`Created 25 wallets (${importedCount} from seed${importedCount > 1 ? 's' : ''}, ${newCount} new)`, 'success');
       }
     } catch (error) {
       setOAuthPasswordError(error.message || 'Invalid seed phrase');
@@ -1715,28 +1900,47 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate 5 wallets immediately
+      // Generate 25 wallets with progress updates
+      setStatus('creating');
       const wallets = [];
-      for (let i = 0; i < 5; i++) {
-        const wallet = generateRandomWallet();
+      const batchSize = 5; // Process in batches for better performance
 
-        const walletData = {
-          deviceKeyId: deviceId,
-          accountIndex: i,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          wallet_type: 'device',
-          xrp: '0',
-          createdAt: Date.now(),
-          seed: wallet.seed
-        };
+      for (let batch = 0; batch < 5; batch++) {
+        const batchWallets = [];
 
-        wallets.push(walletData);
+        // Generate batch of wallets
+        for (let i = 0; i < batchSize; i++) {
+          const index = batch * batchSize + i;
+          const wallet = generateRandomWallet();
 
-        // Store each wallet encrypted with password
-        await walletStorage.storeWallet(walletData, password);
+          const walletData = {
+            deviceKeyId: deviceId,
+            accountIndex: index,
+            account: wallet.address,
+            address: wallet.address,
+            publicKey: wallet.publicKey,
+            wallet_type: 'device',
+            xrp: '0',
+            createdAt: Date.now(),
+            seed: wallet.seed
+          };
+
+          batchWallets.push(walletData);
+          wallets.push(walletData);
+        }
+
+        // Store batch in parallel
+        await Promise.all(
+          batchWallets.map(walletData =>
+            walletStorage.storeWallet(walletData, password)
+          )
+        );
+
+        // Update progress
+        setError(`Creating wallets... ${(batch + 1) * 5}/25`);
       }
+
+      setError(''); // Clear progress message
 
       // Check if any of these wallets already exist in profiles
       const existingWallet = profiles.find(p =>
@@ -1770,12 +1974,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       doLogIn(wallets[0], allProfiles);
       setStatus('success');
 
-      // Close modal after brief delay to show success
+      // Close modal after delay to ensure UI updates
       setTimeout(() => {
         setOpenWalletModal(false);
         setStatus('idle');
         setShowDeviceLogin(false);
-      }, 500);
+        setError('');
+        openSnackbar('25 wallets accessed successfully!', 'success');
+      }, 800); // Shorter delay for 25 wallets
     } catch (err) {
       setError('Failed to complete authentication: ' + err.message);
       setStatus('idle');
@@ -2753,6 +2959,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setShowBackupPassword={setShowBackupPassword}
                     backupAgreed={backupAgreed}
                     setBackupAgreed={setBackupAgreed}
+                    walletSearch={walletSearch}
+                    setWalletSearch={setWalletSearch}
+                    walletPage={walletPage}
+                    setWalletPage={setWalletPage}
+                    walletsPerPage={walletsPerPage}
                   />
                 ) : showNewAccountFlow ? (
                   <Box sx={{ p: 3 }}>
@@ -2767,7 +2978,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       </Box>
 
                       <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
-                        Account {profiles.length} of 5 (creating #{profiles.length + 1})
+                        Account {profiles.length} of 25 (creating #{profiles.length + 1})
                       </Typography>
 
                       <Alert severity="info" sx={{ py: 1 }}>
@@ -3493,13 +3704,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       </Stack>
 
                       {error && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Hardware Security Required</strong>
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1.5 }}>
-                            {error}
-                          </Typography>
+                        <Alert severity={error.includes('Creating wallets') ? "info" : "error"} sx={{ mb: 2 }}>
+                          {error.includes('Creating wallets') ? (
+                            <Typography variant="body2">
+                              {error}
+                            </Typography>
+                          ) : (
+                            <>
+                              <Typography variant="body2" sx={{ mb: 1 }}>
+                                <strong>Hardware Security Required</strong>
+                              </Typography>
+                              <Typography variant="body2" sx={{ mb: 1.5 }}>
+                                {error}
+                              </Typography>
+                            </>
+                          )}
                         </Alert>
                       )}
 
@@ -3616,7 +3835,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering...' : 'Sign In (Existing Key)'}
+                          {status === 'authenticating' ? 'Authenticating...' :
+                           status === 'discovering' ? 'Discovering...' :
+                           status === 'creating' ? 'Creating Wallets...' :
+                           'Sign In (Existing Key)'}
                         </Button>
 
                         <Button
