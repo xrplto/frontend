@@ -160,8 +160,6 @@ const WalletContent = ({
   setShowBackupPassword,
   backupAgreed,
   setBackupAgreed,
-  walletSearch,
-  setWalletSearch,
   walletPage,
   setWalletPage,
   walletsPerPage
@@ -521,26 +519,6 @@ const WalletContent = ({
             )}
           </Stack>
 
-          {/* Search bar for many wallets */}
-          {profiles.length > 10 && (
-            <TextField
-              size="small"
-              placeholder="Search wallet..."
-              value={walletSearch}
-              onChange={(e) => {
-                setWalletSearch(e.target.value);
-                setWalletPage(0); // Reset to first page on search
-              }}
-              sx={{
-                mb: 0.8,
-                '& .MuiInputBase-root': {
-                  fontSize: '0.75rem',
-                  height: 28,
-                  backgroundColor: alpha(theme.palette.text.primary, 0.02)
-                }
-              }}
-            />
-          )}
 
           {/* Wallets list */}
           <Box sx={{
@@ -559,10 +537,8 @@ const WalletContent = ({
             }
           }}>
             {(() => {
-              // Filter profiles based on search
-              const filtered = walletSearch
-                ? profiles.filter(p => p.account.toLowerCase().includes(walletSearch.toLowerCase()))
-                : profiles;
+              // No filtering, use all profiles
+              const filtered = profiles;
 
               // Sort with current account first
               const sorted = [...filtered].sort((a, b) => {
@@ -854,7 +830,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [seedBlurred, setSeedBlurred] = useState(true);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
   const [accountsActivation, setAccountsActivation] = useState({});
-  const [visibleAccountCount, setVisibleAccountCount] = useState(5);
   const [isCheckingActivation, setIsCheckingActivation] = useState(false);
   const [showDeviceLogin, setShowDeviceLogin] = useState(false);
   const [status, setStatus] = useState('idle');
@@ -868,9 +843,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [walletInfo, setWalletInfo] = useState(null);
   const [isLoadingDeps, setIsLoadingDeps] = useState(false);
   const [showSeedDialog, setShowSeedDialog] = useState(false);
-  const [walletSearch, setWalletSearch] = useState('');
   const [walletPage, setWalletPage] = useState(0);
-  const walletsPerPage = 10;
+  const walletsPerPage = 5;
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
   const [seedPassword, setSeedPassword] = useState('');
@@ -2088,10 +2062,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setIsCheckingActivation(true);
       const startTime = performance.now();
 
-      // Get visible accounts (exclude current account, then take first visibleAccountCount)
-      const otherAccounts = profiles.filter(profile => profile.account !== accountProfile?.account);
-      const visibleAccounts = otherAccounts.slice(0, visibleAccountCount);
-      const uncheckedAccounts = visibleAccounts.filter(
+      // Get ALL accounts that need to be checked (not just visible ones)
+      const uncheckedAccounts = profiles.filter(
         profile => !(profile.account in accountsActivation)
       );
 
@@ -2140,7 +2112,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     };
 
     checkVisibleAccountsActivation();
-  }, [profiles, visibleAccountCount, accountsActivation, checkAccountActivity, accountProfile]);
+  }, [profiles, accountsActivation, checkAccountActivity, accountProfile]);
 
   const generateWalletsFromDeviceKey = async (deviceKeyId) => {
     const wallets = [];
@@ -2959,8 +2931,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     setShowBackupPassword={setShowBackupPassword}
                     backupAgreed={backupAgreed}
                     setBackupAgreed={setBackupAgreed}
-                    walletSearch={walletSearch}
-                    setWalletSearch={setWalletSearch}
                     walletPage={walletPage}
                     setWalletPage={setWalletPage}
                     walletsPerPage={walletsPerPage}
