@@ -869,7 +869,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [walletPage, setWalletPage] = useState(0);
   const walletsPerPage = 5;
-  const [visibleWalletCount, setVisibleWalletCount] = useState(1); // Will be loaded from IndexedDB
+  const [visibleWalletCount, setVisibleWalletCount] = useState(25); // Show all 25 wallets by default
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
   const [seedPassword, setSeedPassword] = useState('');
@@ -2106,29 +2106,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   }, []);
 
-  // Load visible wallet count from IndexedDB
+  // Sync visible wallet count with profiles length
   useEffect(() => {
-    const loadVisibleCount = async () => {
-      try {
-        const count = await walletStorage.getSecureItem('visibleWalletCount');
-        if (count && !isNaN(count)) {
-          setVisibleWalletCount(parseInt(count, 10));
-        }
-      } catch (error) {
-        console.log('Could not load visible wallet count:', error);
-      }
-    };
-    loadVisibleCount();
-  }, []);
-
-  // Save visible wallet count to IndexedDB when it changes
-  useEffect(() => {
-    if (visibleWalletCount > 1) { // Only save if more than default
-      walletStorage.setSecureItem('visibleWalletCount', visibleWalletCount.toString()).catch(err => {
-        console.log('Could not save visible wallet count:', err);
-      });
+    if (profiles.length > 0 && visibleWalletCount !== profiles.length) {
+      setVisibleWalletCount(profiles.length);
     }
-  }, [visibleWalletCount]);
+  }, [profiles.length]);
 
   useEffect(() => {
     const checkVisibleAccountsActivation = async () => {
