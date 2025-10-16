@@ -1406,6 +1406,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Handle OAuth password setup
   const handleOAuthPasswordSetup = async () => {
+    console.log('🔧 [DEBUG] handleOAuthPasswordSetup called');
+    console.log('🔧 [DEBUG] importMethod:', importMethod);
+
     // Validate password
     if (importMethod === 'new') {
       if (oauthPassword.length < 8) {
@@ -1426,17 +1429,21 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
 
     setOAuthPasswordError('');
+    console.log('🔧 [DEBUG] Password validation passed');
 
     // Handle different import methods
     if (importMethod === 'import' && importFile) {
+      console.log('🔧 [DEBUG] Redirecting to handleImportWallet');
       await handleImportWallet();
       return;
     } else if (importMethod === 'seed' && importSeed) {
+      console.log('🔧 [DEBUG] Redirecting to handleImportSeed');
       await handleImportSeed();
       return;
     }
 
     setIsCreatingWallet(true);
+    console.log('🔧 [DEBUG] Creating new wallet...');
 
     try {
       // Get OAuth data from session
@@ -1445,11 +1452,18 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userStr = sessionStorage.getItem('oauth_temp_user');
       const action = sessionStorage.getItem('oauth_action');
 
+      console.log('🔧 [DEBUG] OAuth session data:');
+      console.log('  - token:', token ? 'EXISTS' : 'MISSING');
+      console.log('  - provider:', provider);
+      console.log('  - action:', action);
+      console.log('  - user:', userStr ? 'EXISTS' : 'MISSING');
+
       if (!provider || !userStr) {
         throw new Error('Missing OAuth data');
       }
 
       const user = JSON.parse(userStr);
+      console.log('🔧 [DEBUG] Parsed user:', user);
 
       // For existing email users logging in, we don't need token/action
       if (provider === 'email' && !token && !action) {
@@ -1522,11 +1536,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
       if (wallets.length > 0) {
         const result = { success: true, wallet: wallets[0] };
-        // Clear temporary session data
+
+        // Clear temporary session data IMMEDIATELY
+        console.log('🔧 [DEBUG] Clearing OAuth session data NOW...');
         sessionStorage.removeItem('oauth_temp_token');
         sessionStorage.removeItem('oauth_temp_provider');
         sessionStorage.removeItem('oauth_temp_user');
         sessionStorage.removeItem('oauth_action');
+        console.log('🔧 [DEBUG] OAuth session cleared. Verifying...');
+        console.log('  - oauth_temp_token:', sessionStorage.getItem('oauth_temp_token'));
+        console.log('  - oauth_temp_provider:', sessionStorage.getItem('oauth_temp_provider'));
 
         // Store permanent auth data
         await walletStorage.setSecureItem('jwt', token);
@@ -1551,8 +1570,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
         });
 
+        console.log('🔧 [DEBUG] Wallet creation SUCCESS!');
+        console.log('🔧 [DEBUG] Created', wallets.length, 'wallets');
+        console.log('🔧 [DEBUG] Logging in with first wallet:', result.wallet.address);
+
         // Login with first wallet
         doLogIn(result.wallet, allProfiles);
+
+        console.log('🔧 [DEBUG] Closing dialogs and cleaning up...');
 
         // Close dialogs
         setShowOAuthPasswordSetup(false);
@@ -1563,6 +1588,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthPassword('');
         setOAuthConfirmPassword('');
 
+        console.log('🔧 [DEBUG] All dialogs closed, showing success message');
         openSnackbar(`25 accounts created successfully!`, 'success');
       } else {
         throw new Error('Failed to setup wallet');
@@ -2340,16 +2366,39 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     // Check if we need to show OAuth password setup
     const oauthToken = sessionStorage.getItem('oauth_temp_token');
     const oauthProvider = sessionStorage.getItem('oauth_temp_provider');
+    const oauthAction = sessionStorage.getItem('oauth_action');
+
+    console.log('🔧 [MOUNT] OAuth session check:');
+    console.log('  - oauthToken:', oauthToken ? 'EXISTS' : 'NONE');
+    console.log('  - oauthProvider:', oauthProvider);
+    console.log('  - oauthAction:', oauthAction);
+    console.log('  - accountProfile:', accountProfile ? accountProfile.account : 'NONE');
 
     if (oauthToken && oauthProvider) {
       // User came from OAuth and needs password setup
-      setShowOAuthPasswordSetup(true);
-      setOpenWalletModal(false);
-      // Don't clear session data here - we need it for password setup
+      // BUT: Only show if user is not already logged in
+      if (!accountProfile) {
+        console.log('🔧 [MOUNT] OAuth password required - redirecting to /wallet-setup');
+        // Redirect to dedicated setup page instead of showing modal
+        window.location.href = '/wallet-setup';
+        return;
+      } else {
+        console.log('🔧 [MOUNT] User already logged in, clearing stale OAuth session data');
+        sessionStorage.removeItem('oauth_temp_token');
+        sessionStorage.removeItem('oauth_temp_provider');
+        sessionStorage.removeItem('oauth_temp_user');
+        sessionStorage.removeItem('oauth_action');
+      }
     } else if (sessionStorage.getItem('wallet_modal_open') === 'true') {
       // Just reopening wallet modal after OAuth redirect
+      // BUT: Only if user is NOT already logged in
       sessionStorage.removeItem('wallet_modal_open');
-      setOpenWalletModal(true);
+      if (!accountProfile) {
+        console.log('🔧 [MOUNT] Reopening wallet modal (user not logged in)');
+        setOpenWalletModal(true);
+      } else {
+        console.log('🔧 [MOUNT] User already logged in, NOT reopening wallet modal');
+      }
     }
 
     // Initialize Google Sign-In on mount
@@ -2418,7 +2467,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     return () => {
       window.removeEventListener('google-connect-success', handleGoogleSuccess);
     };
-  }, []);
+  }, [accountProfile]); // Re-run when accountProfile changes to clean up OAuth data
 
   // Don't load profiles here - AppContext handles it
   // This was overwriting the auto-loaded profiles from IndexedDB

@@ -408,17 +408,16 @@ const OAuthCallback = () => {
         console.log('handleSocialLogin result in callback:', result);
 
         if (result.requiresPassword) {
-          console.log('Password required - storing session data');
+          console.log('Password required - redirecting to wallet-setup page');
           // Store token temporarily for password setup
           sessionStorage.setItem('oauth_temp_token', jwtToken);
           sessionStorage.setItem('oauth_temp_provider', provider);
           sessionStorage.setItem('oauth_temp_user', JSON.stringify(payload || {}));
           sessionStorage.setItem('oauth_action', result.action);
 
-          // Redirect to main page where Wallet component will show password setup
-          const returnUrl = sessionStorage.getItem('auth_return_url') || '/';
+          // Redirect to dedicated wallet-setup page
           sessionStorage.removeItem('auth_return_url');
-          router.push(returnUrl);
+          router.push('/wallet-setup');
         } else {
           // Wallet already setup
           await walletStorage.setSecureItem('jwt', jwtToken);
