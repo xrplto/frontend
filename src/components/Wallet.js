@@ -166,6 +166,7 @@ const WalletContent = ({
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
+  const [showAllAccounts, setShowAllAccounts] = useState(false);
 
   // Show backup section instead of wallet when downloading
   if (showBackupPassword) {
@@ -488,89 +489,153 @@ const WalletContent = ({
         </Stack>
       </Box>
 
-      {/* Accounts List - Compact with Pagination */}
+      {/* Accounts Section - Collapsible */}
       {profiles.length > 1 && (
         <Box sx={{
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           py: 1,
-          px: 1.4,
-          maxHeight: '500px',
-          display: 'flex',
-          flexDirection: 'column'
+          px: 1.4
         }}>
-          {/* Header */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.8 }}>
-            <Typography sx={{
-              fontSize: '0.65rem',
-              fontWeight: 500,
-              opacity: 0.45,
-              textTransform: 'uppercase',
-              letterSpacing: '0.8px'
+          {/* Toggle Button */}
+          <Button
+            fullWidth
+            size="small"
+            onClick={() => setShowAllAccounts(!showAllAccounts)}
+            sx={{
+              py: 0.8,
+              mb: showAllAccounts ? 0.8 : 0,
+              justifyContent: 'space-between',
+              textTransform: 'none',
+              fontSize: '0.85rem',
+              fontWeight: 400,
+              color: theme.palette.text.secondary,
+              borderRadius: '6px',
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.text.primary, 0.03)
+              }
+            }}
+          >
+            <span>All Accounts ({profiles.length})</span>
+            <Box
+              component="svg"
+              sx={{
+                width: 14,
+                height: 14,
+                transform: showAllAccounts ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s'
+              }}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </Box>
+          </Button>
+
+          {/* Expandable Accounts List */}
+          {showAllAccounts && (
+            <Box sx={{
+              maxHeight: '400px',
+              display: 'flex',
+              flexDirection: 'column'
             }}>
-              Accounts ({profiles.length})
-            </Typography>
-            {(() => {
-              const totalPages = Math.ceil(profiles.length / walletsPerPage);
-              return totalPages > 1 && (
-                <Typography sx={{
-                  fontSize: '0.6rem',
-                  opacity: 0.5
-                }}>
-                  {walletPage + 1} / {totalPages}
-                </Typography>
-              );
-            })()}
-          </Stack>
+              {/* Pagination Header */}
+              {(() => {
+                const totalPages = Math.ceil(profiles.length / walletsPerPage);
+                return totalPages > 1 && (
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.8 }}>
+                    <Typography sx={{
+                      fontSize: '0.65rem',
+                      fontWeight: 500,
+                      opacity: 0.45,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.8px'
+                    }}>
+                      Page
+                    </Typography>
+                    <Stack direction="row" spacing={0.5} alignItems="center">
+                      <IconButton
+                        size="small"
+                        disabled={walletPage === 0}
+                        onClick={() => setWalletPage(Math.max(0, walletPage - 1))}
+                        sx={{ p: 0.3, opacity: walletPage === 0 ? 0.3 : 0.7 }}
+                      >
+                        <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="15 18 9 12 15 6" />
+                        </Box>
+                      </IconButton>
+                      <Typography sx={{
+                        fontSize: '0.6rem',
+                        opacity: 0.5,
+                        minWidth: '30px',
+                        textAlign: 'center'
+                      }}>
+                        {walletPage + 1} / {totalPages}
+                      </Typography>
+                      <IconButton
+                        size="small"
+                        disabled={walletPage >= totalPages - 1}
+                        onClick={() => setWalletPage(Math.min(totalPages - 1, walletPage + 1))}
+                        sx={{ p: 0.3, opacity: walletPage >= totalPages - 1 ? 0.3 : 0.7 }}
+                      >
+                        <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                          <polyline points="9 18 15 12 9 6" />
+                        </Box>
+                      </IconButton>
+                    </Stack>
+                  </Stack>
+                );
+              })()}
 
-
-          {/* Wallets list */}
-          <Box sx={{
-            flex: 1,
-            overflowY: 'auto',
-            minHeight: 0,
-            '&::-webkit-scrollbar': {
-              width: '4px',
-            },
-            '&::-webkit-scrollbar-track': {
-              background: 'transparent',
-            },
-            '&::-webkit-scrollbar-thumb': {
-              background: alpha(theme.palette.text.primary, 0.1),
-              borderRadius: '4px',
-            }
-          }}>
-            {(() => {
-              // Group accounts by activation status
-              const activeAccounts = [];
-              const inactiveAccounts = [];
-
-              profiles.forEach(profile => {
-                if (accountsActivation[profile.account] === false) {
-                  inactiveAccounts.push(profile);
-                } else {
-                  activeAccounts.push(profile);
+              {/* Wallets list */}
+              <Box sx={{
+                flex: 1,
+                overflowY: 'auto',
+                minHeight: 0,
+                '&::-webkit-scrollbar': {
+                  width: '4px',
+                },
+                '&::-webkit-scrollbar-track': {
+                  background: 'transparent',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  background: alpha(theme.palette.text.primary, 0.1),
+                  borderRadius: '4px',
                 }
-              });
+              }}>
+                {(() => {
+                  // Group accounts by activation status
+                  const activeAccounts = [];
+                  const inactiveAccounts = [];
 
-              // Sort each group by address
-              const sortByAddress = (a, b) => a.account.localeCompare(b.account);
-              activeAccounts.sort(sortByAddress);
-              inactiveAccounts.sort(sortByAddress);
+                  profiles.forEach(profile => {
+                    if (accountsActivation[profile.account] === false) {
+                      inactiveAccounts.push(profile);
+                    } else {
+                      activeAccounts.push(profile);
+                    }
+                  });
 
-              // Combine: current account first, then active, then inactive
-              const currentAccount = profiles.find(p => p.account === accountLogin);
-              const otherActive = activeAccounts.filter(p => p.account !== accountLogin);
-              const sorted = [
-                ...(currentAccount ? [currentAccount] : []),
-                ...otherActive,
-                ...inactiveAccounts
-              ];
+                  // Sort each group by address
+                  const sortByAddress = (a, b) => a.account.localeCompare(b.account);
+                  activeAccounts.sort(sortByAddress);
+                  inactiveAccounts.sort(sortByAddress);
 
-              // Paginate
-              const startIndex = walletPage * walletsPerPage;
-              const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
+                  // Combine: current account first, then active, then inactive
+                  const currentAccount = profiles.find(p => p.account === accountLogin);
+                  const otherActive = activeAccounts.filter(p => p.account !== accountLogin);
+                  const sorted = [
+                    ...(currentAccount ? [currentAccount] : []),
+                    ...otherActive,
+                    ...inactiveAccounts
+                  ];
 
-              return paginatedProfiles.map((profile) => {
+                  // Paginate
+                  const startIndex = walletPage * walletsPerPage;
+                  const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
+
+                  return paginatedProfiles.map((profile) => {
                 const account = profile.account;
                 const isCurrent = account === accountLogin;
                 return (
@@ -663,116 +728,11 @@ const WalletContent = ({
                     )}
                   </Box>
                 );
-              });
-            })()}
-          </Box>
-
-          {/* Pagination controls */}
-          {(() => {
-            const totalPages = Math.ceil(profiles.length / walletsPerPage);
-
-            if (totalPages <= 1) return null;
-
-            return (
-              <Stack direction="row" spacing={0.8} justifyContent="space-between" alignItems="center" sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
-                <Button
-                  size="small"
-                  disabled={walletPage === 0}
-                  onClick={() => setWalletPage(p => p - 1)}
-                  sx={{
-                    minWidth: 'auto',
-                    px: 1.2,
-                    py: 0.4,
-                    fontSize: '0.7rem',
-                    fontWeight: 400,
-                    textTransform: 'none',
-                    borderRadius: '6px',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    '&:hover': {
-                      borderColor: theme.palette.primary.main,
-                      background: alpha(theme.palette.primary.main, 0.04)
-                    },
-                    '&.Mui-disabled': {
-                      opacity: 0.3,
-                      borderColor: alpha(theme.palette.divider, 0.1)
-                    }
-                  }}
-                >
-                  Previous
-                </Button>
-                <Box sx={{
-                  display: 'flex',
-                  gap: 0.4
-                }}>
-                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                    let pageNum;
-
-                    if (totalPages <= 5) {
-                      pageNum = i;
-                    } else if (walletPage < 2) {
-                      pageNum = i;
-                    } else if (walletPage >= totalPages - 2) {
-                      pageNum = totalPages - 5 + i;
-                    } else {
-                      pageNum = walletPage - 2 + i;
-                    }
-
-                  if (pageNum >= totalPages) return null;
-
-                  return (
-                    <Button
-                      key={pageNum}
-                      size="small"
-                      onClick={() => setWalletPage(pageNum)}
-                      sx={{
-                        minWidth: 28,
-                        height: 28,
-                        p: 0,
-                        fontSize: '0.7rem',
-                        fontWeight: 400,
-                        borderRadius: '6px',
-                        color: walletPage === pageNum ? theme.palette.primary.main : theme.palette.text.secondary,
-                        background: walletPage === pageNum ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
-                        border: `1.5px solid ${walletPage === pageNum ? theme.palette.primary.main : alpha(theme.palette.divider, 0.15)}`,
-                        '&:hover': {
-                          borderColor: theme.palette.primary.main,
-                          background: alpha(theme.palette.primary.main, 0.06)
-                        }
-                      }}
-                    >
-                      {pageNum + 1}
-                    </Button>
-                  );
-                })}
+                  });
+                })()}
               </Box>
-              <Button
-                size="small"
-                disabled={walletPage >= totalPages - 1}
-                onClick={() => setWalletPage(p => p + 1)}
-                sx={{
-                  minWidth: 'auto',
-                  px: 1.2,
-                  py: 0.4,
-                  fontSize: '0.7rem',
-                  fontWeight: 400,
-                  textTransform: 'none',
-                  borderRadius: '6px',
-                  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  '&:hover': {
-                    borderColor: theme.palette.primary.main,
-                    background: alpha(theme.palette.primary.main, 0.04)
-                  },
-                  '&.Mui-disabled': {
-                    opacity: 0.3,
-                    borderColor: alpha(theme.palette.divider, 0.1)
-                  }
-                }}
-              >
-                Next
-              </Button>
-            </Stack>
-          );
-          })()}
+            </Box>
+          )}
         </Box>
       )}
 

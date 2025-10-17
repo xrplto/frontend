@@ -346,6 +346,198 @@ sx={{
 }}
 ```
 
+## Wallet Authentication System Architecture
+
+### Overview
+The wallet system supports multiple authentication methods (OAuth providers, Email, Passkeys) with 25 wallets per authentication method. Each method uses a unified storage system with encrypted wallets in IndexedDB and profile metadata in localStorage.
+
+### Core Components - DO NOT MODIFY WITHOUT UNDERSTANDING
+
+#### 1. `src/utils/encryptedWalletStorage.js`
+**Purpose**: Unified encrypted wallet storage handling all authentication methods
+
+**Key Methods - CRITICAL BEHAVIOR**:
+
+1. **`handleSocialLogin(profile, accessToken, backend)`** (lines 695-788)
+   - Called during OAuth callback to check if user has existing wallets
+   - **MUST follow this exact flow**:
+     - Check for stored password in IndexedDB: `wallet_pwd_${provider}_${userId}`
+     - If password exists:
+       - First try localStorage for quick profile lookup
+       - **FALLBACK**: If localStorage empty, decrypt ALL wallets from IndexedDB using stored password
+       - Restore profiles to localStorage (lines 731-774)
+       - Return `{ success: true, wallet, allWallets, requiresPassword: false }`
+     - If no password: Return `{ requiresPassword: true, action: 'create' }`
+   - **WHY**: Prevents re-asking for password on subsequent logins when localStorage is cleared
+
+2. **`getAllWalletsForProvider(provider, providerId, password)`** (lines 669-688)
+   - Decrypts ALL wallets from IndexedDB for a specific OAuth provider
+   - Used for auto-loading wallets on re-login
+   - Filters by `provider` and `provider_id` fields
+
+3. **`setSecureItem(key, value)`** (lines 203-217)
+   - Stores passwords in IndexedDB (not localStorage) when key starts with `wallet_pwd_`
+   - Uses `storeProviderPassword()` for encryption
+   - **NEVER store passwords in plain localStorage**
+
+4. **`getSecureItem(key)`** (lines 219-232)
+   - Retrieves passwords from IndexedDB when key starts with `wallet_pwd_`
+   - Uses `getProviderPassword()` for decryption
+
+#### 2. `src/components/Wallet.js`
+**Purpose**: Main wallet modal and OAuth authentication handlers
+
+**Critical Flow - DO NOT BREAK**:
+
+1. **OAuth Redirect Check (lines 2339-2375)**
+   ```javascript
+   // Check for OAuth session data
+   const oauthToken = sessionStorage.getItem('oauth_temp_token');
+   const oauthProvider = sessionStorage.getItem('oauth_temp_provider');
+
+   if (oauthToken && oauthProvider) {
+     if (!accountProfile) {
+       // Only redirect if user is NOT logged in
+       window.location.href = '/wallet-setup';
+     } else {
+       // User already logged in - clean up stale OAuth data
+       sessionStorage.removeItem('oauth_temp_token');
+       // ... clear all oauth_temp_* keys
+     }
+   }
+   ```
+   - **WHY**: Prevents redirect loop when stale OAuth data exists after login
+
+2. **Password Storage After Wallet Creation** (lines 1603-1606)
+   ```javascript
+   const walletId = `${provider}_${user.id}`;
+   await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
+   ```
+   - **CRITICAL**: Must save password to enable auto-login on subsequent logins
+
+3. **Session Cleanup** (lines 1589-1596)
+   ```javascript
+   sessionStorage.removeItem('oauth_temp_token');
+   sessionStorage.removeItem('oauth_temp_provider');
+   sessionStorage.removeItem('oauth_temp_user');
+   sessionStorage.removeItem('oauth_action');
+   ```
+   - **MUST happen immediately after wallet creation**
+   - Prevents redirect loop on page refresh
+
+#### 3. `pages/wallet-setup.js`
+**Purpose**: Dedicated password setup page for new OAuth users
+
+**Flow**:
+1. Validates OAuth session data from sessionStorage (lines 52-70)
+2. Redirects to home if no valid OAuth data
+3. Creates 25 wallets on password submit (lines 101-138)
+4. Saves password for provider (lines 157-159)
+5. Clears OAuth session data (lines 145-149)
+6. Logs in and redirects to home (lines 177-185)
+
+### Storage Architecture - NEVER CHANGE
+
+#### Data Locations
+1. **IndexedDB (`XRPLWalletDB`)**:
+   - Encrypted wallet seeds (address, publicKey, seed)
+   - Encrypted provider passwords (`__pwd__${providerId}`)
+   - Lookup hashes for quick retrieval
+
+2. **localStorage**:
+   - `profiles` - Array of wallet metadata (NO seeds)
+   - Encrypted auth tokens and user data (`jwt_enc`, `authMethod_enc`)
+   - Backup flags (`wallet_needs_backup_${address}`)
+
+3. **sessionStorage (temporary)**:
+   - OAuth flow data (cleared after setup):
+     - `oauth_temp_token` - JWT from OAuth provider
+     - `oauth_temp_provider` - Provider name (google, twitter, email)
+     - `oauth_temp_user` - User profile data
+     - `oauth_action` - Action type (create/login)
+
+#### Profile Structure
+```javascript
+{
+  account: 'rXXX...',        // XRPL address
+  address: 'rXXX...',        // Same as account
+  publicKey: 'ED...',        // Public key
+  wallet_type: 'oauth',      // Type: oauth, device
+  provider: 'twitter',       // OAuth provider
+  provider_id: '12345',      // Provider user ID
+  accountIndex: 0,           // Wallet index (0-24)
+  createdAt: 1234567890,     // Timestamp
+  tokenCreatedAt: 1234567890 // UI timestamp
+  // NOTE: seed is NEVER in profiles - only in encrypted IndexedDB
+}
+```
+
+### Authentication Flow - MUST MAINTAIN
+
+#### First Time Login (New User)
+1. User clicks OAuth button (Google/Twitter/Email)
+2. Redirected to OAuth provider
+3. Returns to `/callback` with auth code/token
+4. `callback.js` calls `handleSocialLogin()`
+5. No password found → `requiresPassword: true`
+6. Redirect to `/wallet-setup` with session data
+7. User creates password → 25 wallets generated
+8. Password saved to IndexedDB: `wallet_pwd_${provider}_${userId}`
+9. Wallets encrypted and stored in IndexedDB
+10. Profiles saved to localStorage
+11. Session data cleared
+12. User logged in
+
+#### Subsequent Login (Returning User)
+1. User clicks OAuth button
+2. Returns to `/callback` with auth code/token
+3. `callback.js` calls `handleSocialLogin()`
+4. **Password found in IndexedDB** ✅
+5. Check localStorage for profiles:
+   - **Found**: Return profiles immediately (fast path)
+   - **Empty**: Decrypt all wallets from IndexedDB using stored password
+6. Restore profiles to localStorage
+7. Return `requiresPassword: false`
+8. Auto-login with first wallet
+9. No password prompt needed
+
+### Critical Rules - NEVER VIOLATE
+
+1. **NEVER remove the IndexedDB fallback** (lines 731-774 in encryptedWalletStorage.js)
+   - localStorage can be cleared by user/browser
+   - IndexedDB is persistent and contains encrypted wallets
+   - System MUST decrypt from IndexedDB when localStorage is empty
+
+2. **NEVER ask for password if stored password exists AND wallets decrypt successfully**
+   - Stored password = wallets were created before
+   - Auto-decrypt and restore profiles
+
+3. **ALWAYS clear OAuth session data after wallet creation**
+   - Prevents redirect loops
+   - Session data is temporary for setup only
+
+4. **NEVER store wallet seeds in localStorage**
+   - Seeds only in encrypted IndexedDB
+   - Profiles in localStorage contain addresses only
+
+5. **Provider password key format MUST be**: `wallet_pwd_${provider}_${userId}`
+   - Used to identify returning users
+   - Enables auto-login without password prompt
+
+### Debugging Common Issues
+
+**Issue**: User redirected to `/wallet-setup` even when already logged in
+- **Cause**: Stale `oauth_temp_*` keys in sessionStorage
+- **Fix**: Lines 2359-2364 in Wallet.js clear stale data when user is logged in
+
+**Issue**: User asked for password on every login
+- **Cause**: Password exists but localStorage profiles cleared
+- **Fix**: Lines 731-774 in encryptedWalletStorage.js decrypt from IndexedDB
+
+**Issue**: Lost all wallets after logout
+- **Cause**: localStorage cleared, no IndexedDB fallback
+- **Fix**: MUST have IndexedDB decryption fallback (current implementation)
+
 ## Wallet Encryption Standards
 
 ### Encryption Requirements (OWASP 2025)
