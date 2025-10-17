@@ -705,34 +705,32 @@ export class UnifiedWalletStorage {
       devLog('[STORAGE] Checking stored password for:', walletId, 'found:', !!storedPassword);
 
       if (storedPassword) {
-        devLog('✅ Password found - loading all wallets for this provider');
+        devLog('✅ Password found - wallets exist, loading from localStorage');
 
-        // Load ALL wallets for this provider
-        const providerWallets = await this.getAllWalletsForProvider(
-          profile.provider,
-          profile.id,
-          storedPassword
-        );
+        // DON'T decrypt from IndexedDB - just check localStorage for profiles
+        // Profiles already stored in plain localStorage with addresses
+        const storedProfiles = typeof window !== 'undefined' ? localStorage.getItem('profiles') : null;
 
-        devLog('[STORAGE] ✅ Found', providerWallets.length, 'wallets for this provider');
+        if (storedProfiles) {
+          const profiles = JSON.parse(storedProfiles);
+          const providerProfiles = profiles.filter(p =>
+            p.provider === profile.provider && p.provider_id === profile.id
+          );
 
-        if (providerWallets.length > 0) {
-          const result = {
-            success: true,
-            wallet: {
-              account: providerWallets[0].address,
-              address: providerWallets[0].address,
-              publicKey: providerWallets[0].publicKey,
-              seed: providerWallets[0].seed,
-              wallet_type: 'oauth',
-              provider: profile.provider,
-              provider_id: profile.id
-            },
-            allWallets: providerWallets,
-            requiresPassword: false
-          };
-          return result;
+          if (providerProfiles.length > 0) {
+            devLog('[STORAGE] ✅ Found', providerProfiles.length, 'profiles in localStorage (no decryption needed)');
+
+            return {
+              success: true,
+              wallet: providerProfiles[0],
+              allWallets: providerProfiles,
+              requiresPassword: false
+            };
+          }
         }
+
+        // Fallback: password exists but no profiles - need to create
+        devLog('⚠️ Password exists but no profiles found');
       }
 
       devLog('❌ No wallet found locally - new user');

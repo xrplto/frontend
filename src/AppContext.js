@@ -109,12 +109,15 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   // Listen for storage changes (e.g., from OAuth callback updating profiles)
   useEffect(() => {
-    const handleStorageChange = async () => {
+    const handleStorageChange = () => {
       console.log('🔄 Storage changed - reloading profiles');
-      const newProfiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
-      if (newProfiles && newProfiles.length > profiles.length) {
-        console.log('📦 New profiles detected:', newProfiles.length);
-        setProfiles(newProfiles);
+      const storedProfiles = localStorage.getItem('profiles');
+      if (storedProfiles) {
+        const newProfiles = JSON.parse(storedProfiles);
+        if (newProfiles.length > profiles.length) {
+          console.log('📦 New profiles detected:', newProfiles.length);
+          setProfiles(newProfiles);
+        }
       }
     };
 
@@ -127,127 +130,80 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       try {
         console.log('═══ APP INIT: Loading stored data ═══');
 
-        const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
-        console.log('Loaded profile:', profile ? {
-          account: profile.account,
-          wallet_type: profile.wallet_type,
-          provider: profile.provider,
-          provider_id: profile.provider_id,
-          deviceKeyId: profile.deviceKeyId
-        } : 'NONE');
+        // Try plain localStorage first (new format)
+        let profileStr = localStorage.getItem(KEY_ACCOUNT_PROFILE);
+        let profile = null;
 
-      if (profile) {
-        setAccountProfile(profile);
-
-        // Load ALL wallets for this auth method from IndexedDB
-        if (profile.wallet_type === 'oauth' || profile.wallet_type === 'social') {
-          // OAuth wallets
-          const walletId = `${profile.provider}_${profile.provider_id}`;
-          console.log('🔐 OAuth wallet - checking password for:', walletId);
-
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          console.log('Password found:', !!storedPassword);
-
-          if (storedPassword) {
-            console.log('📦 Loading ALL OAuth wallets...');
-            const allWallets = await walletStorage.getAllWalletsForProvider(
-              profile.provider,
-              profile.provider_id,
-              storedPassword
-            );
-
-            console.log('✅ Found', allWallets.length, 'OAuth wallets:', allWallets.map(w => w.address));
-
-            if (allWallets.length > 0) {
-              const loadedProfiles = allWallets.map(w => ({
-                account: w.address,
-                address: w.address,
-                publicKey: w.publicKey,
-                seed: w.seed,
-                wallet_type: profile.wallet_type,
-                provider: profile.provider,
-                provider_id: profile.provider_id,
-                createdAt: w.createdAt || Date.now(),
-                tokenCreatedAt: Date.now()
-              }));
-
-              console.log('Setting profiles:', loadedProfiles.length);
-              setProfiles(loadedProfiles);
-              await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, loadedProfiles);
-              return;
-            }
-          } else {
-            console.log('❌ No password - cannot load wallets');
-          }
-        } else if (profile.wallet_type === 'device' && profile.deviceKeyId) {
-          // Device/Passkey wallets
-          const deviceKeyId = profile.deviceKeyId;
-          console.log('🔐 Device wallet - checking password for:', deviceKeyId);
-
-          const storedPassword = await walletStorage.getSecureItem(`device_pwd_${deviceKeyId}`);
-          console.log('Password found:', !!storedPassword);
-
-          if (storedPassword) {
-            console.log('📦 Loading ALL device wallets...');
-            const allWallets = await walletStorage.getAllWallets(storedPassword);
-            const deviceWallets = allWallets.filter(w => w.deviceKeyId === deviceKeyId);
-
-            console.log('✅ Found', deviceWallets.length, 'device wallets:', deviceWallets.map(w => w.address));
-
-            if (deviceWallets.length > 0) {
-              const loadedProfiles = deviceWallets.map(w => ({
-                account: w.address,
-                address: w.address,
-                publicKey: w.publicKey,
-                seed: w.seed,
-                wallet_type: 'device',
-                deviceKeyId: w.deviceKeyId,
-                createdAt: w.createdAt || Date.now(),
-                tokenCreatedAt: Date.now()
-              }));
-
-              console.log('Setting profiles:', loadedProfiles.length);
-              setProfiles(loadedProfiles);
-              await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, loadedProfiles);
-              return;
-            }
-          } else {
-            console.log('❌ No password - cannot load wallets');
-          }
+        if (profileStr) {
+          profile = JSON.parse(profileStr);
         } else {
-          console.log('⚠️ Unknown wallet type or missing deviceKeyId/provider');
+          // Migrate from old encrypted format
+          const encryptedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
+          if (encryptedProfile) {
+            console.log('Migrating encrypted profile to plain...');
+            try {
+              profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
+              if (profile) {
+                // Save as plain JSON and remove encrypted version
+                localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+                localStorage.removeItem(KEY_ACCOUNT_PROFILE + '_enc');
+                console.log('✅ Migration complete');
+              }
+            } catch (err) {
+              console.error('⚠️ Crypto operation failed (browser throttling?):', err.message);
+              console.log('Close dev console and refresh to complete migration');
+              // Don't block - user can close console and refresh
+            }
+          }
         }
-      } else {
-        console.log('No profile found - user not logged in');
-      }
 
-      // Fallback: load from storage
-      console.log('Using fallback - loading profiles from localStorage');
-      const profiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
-      console.log('Fallback profiles:', profiles ? profiles.length : 'NONE');
-      if (profiles) {
-        setProfiles(profiles);
-      }
+        if (profile) {
+          console.log('Loaded profile:', profile.account);
+          setAccountProfile(profile);
+        }
 
-      console.log('═══ APP INIT COMPLETE ═══');
+        // Load profiles (try plain first, then migrate from encrypted)
+        let storedProfiles = localStorage.getItem('profiles');
+        if (storedProfiles) {
+          setProfiles(JSON.parse(storedProfiles));
+          console.log('✅ Loaded profiles');
+        } else {
+          // Migrate from encrypted
+          const encryptedProfiles = localStorage.getItem('account_profiles_2_enc');
+          if (encryptedProfiles) {
+            console.log('Migrating encrypted profiles...');
+            try {
+              const profiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
+              if (profiles) {
+                localStorage.setItem('profiles', JSON.stringify(profiles));
+                localStorage.removeItem('account_profiles_2_enc');
+                setProfiles(profiles);
+                console.log('✅ Migration complete');
+              }
+            } catch (err) {
+              console.error('⚠️ Crypto operation failed (browser throttling?):', err.message);
+              console.log('Close dev console and refresh to complete migration');
+              // Don't block - user can close console and refresh
+            }
+          }
+        }
+
+        console.log('═══ APP INIT COMPLETE ═══');
       } catch (error) {
         console.error('💥 APP INIT ERROR:', error);
-        console.error('Stack:', error.stack);
       }
     };
     loadStoredData();
   }, []);
 
-  const setActiveProfile = async (account) => {
+  const setActiveProfile = (account) => {
     const profile = profiles.find((x) => x.account === account);
     if (!profile) return;
     setAccountProfile(profile);
-    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILE, profile);
+    localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
   };
 
-  const doLogIn = async (profile, profilesOverride = null) => {
-    // Debug logging for admin login
-
+  const doLogIn = (profile, profilesOverride = null) => {
     // Add token creation timestamp
     const profileWithTimestamp = {
       ...profile,
@@ -255,9 +211,8 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     };
 
     setAccountProfile(profileWithTimestamp);
-    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILE, profileWithTimestamp);
+    localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profileWithTimestamp));
 
-    // const old = profiles.find(x => x.account === profile.account);
     let exist = false;
     const newProfiles = [];
     const currentProfiles = profilesOverride || profiles;
@@ -272,7 +227,7 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       newProfiles.push(profileWithTimestamp);
     }
 
-    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, newProfiles);
+    localStorage.setItem('profiles', JSON.stringify(newProfiles));
     setProfiles(newProfiles);
   };
 
@@ -286,11 +241,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     setAccountBalance(null);
   };
 
-  const removeProfile = async (account) => {
-    const newProfiles = profiles.filter(function (obj) {
-      return obj.account !== account;
-    });
-    await walletStorage.setSecureItem(KEY_ACCOUNT_PROFILES, newProfiles);
+  const removeProfile = (account) => {
+    const newProfiles = profiles.filter(obj => obj.account !== account);
+    localStorage.setItem('profiles', JSON.stringify(newProfiles));
     setProfiles(newProfiles);
   };
 

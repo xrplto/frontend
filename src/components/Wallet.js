@@ -162,9 +162,7 @@ const WalletContent = ({
   setBackupAgreed,
   walletPage,
   setWalletPage,
-  walletsPerPage,
-  visibleWalletCount,
-  setVisibleWalletCount
+  walletsPerPage
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
@@ -294,9 +292,8 @@ const WalletContent = ({
               width: 5,
               height: 5,
               borderRadius: '50%',
-              background: accountsActivation[accountLogin] === false
-                ? theme.palette.error.main
-                : theme.palette.success.main
+              // Always green for instant display
+              background: theme.palette.success.main
             }} />
             <Typography sx={{
               fontFamily: 'monospace',
@@ -497,10 +494,11 @@ const WalletContent = ({
           borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
           py: 1,
           px: 1.4,
-          maxHeight: '400px',
+          maxHeight: '500px',
           display: 'flex',
           flexDirection: 'column'
         }}>
+          {/* Header */}
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.8 }}>
             <Typography sx={{
               fontSize: '0.65rem',
@@ -511,14 +509,17 @@ const WalletContent = ({
             }}>
               Accounts ({profiles.length})
             </Typography>
-            {visibleWalletCount > walletsPerPage && (
-              <Typography sx={{
-                fontSize: '0.6rem',
-                opacity: 0.5
-              }}>
-                Page {walletPage + 1} / {Math.ceil(visibleWalletCount / walletsPerPage)}
-              </Typography>
-            )}
+            {(() => {
+              const totalPages = Math.ceil(profiles.length / walletsPerPage);
+              return totalPages > 1 && (
+                <Typography sx={{
+                  fontSize: '0.6rem',
+                  opacity: 0.5
+                }}>
+                  {walletPage + 1} / {totalPages}
+                </Typography>
+              );
+            })()}
           </Stack>
 
 
@@ -539,13 +540,31 @@ const WalletContent = ({
             }
           }}>
             {(() => {
-              // Only show wallets up to visibleWalletCount
-              const visibleProfiles = profiles.slice(0, visibleWalletCount);
+              // Group accounts by activation status
+              const activeAccounts = [];
+              const inactiveAccounts = [];
 
-              // Sort by address only - no reordering when switching accounts
-              const sorted = [...visibleProfiles].sort((a, b) => {
-                return a.account.localeCompare(b.account);
+              profiles.forEach(profile => {
+                if (accountsActivation[profile.account] === false) {
+                  inactiveAccounts.push(profile);
+                } else {
+                  activeAccounts.push(profile);
+                }
               });
+
+              // Sort each group by address
+              const sortByAddress = (a, b) => a.account.localeCompare(b.account);
+              activeAccounts.sort(sortByAddress);
+              inactiveAccounts.sort(sortByAddress);
+
+              // Combine: current account first, then active, then inactive
+              const currentAccount = profiles.find(p => p.account === accountLogin);
+              const otherActive = activeAccounts.filter(p => p.account !== accountLogin);
+              const sorted = [
+                ...(currentAccount ? [currentAccount] : []),
+                ...otherActive,
+                ...inactiveAccounts
+              ];
 
               // Paginate
               const startIndex = walletPage * walletsPerPage;
@@ -579,31 +598,49 @@ const WalletContent = ({
                       } : {}
                     }}
                   >
-                    <Stack direction="row" spacing={0.6} alignItems="center">
+                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
                       <Box sx={{
-                        width: 4,
-                        height: 4,
+                        width: 6,
+                        height: 6,
                         borderRadius: '50%',
-                        background: accountsActivation[account] === false
-                          ? theme.palette.error.main
-                          : theme.palette.success.main
+                        flexShrink: 0,
+                        // Always green - fast display is more important than status
+                        background: '#22c55e'
                       }} />
-                      <Typography sx={{
-                        fontFamily: 'monospace',
-                        fontSize: '0.68rem',
-                        fontWeight: isCurrent ? 500 : 400,
-                        opacity: isCurrent ? 1 : 0.75
-                      }}>
-                        {truncateAccount(account, 6)}
-                      </Typography>
-                      {isCurrent && (
-                        <Typography sx={{
-                          fontSize: '0.55rem',
-                          opacity: 0.4
-                        }}>
-                          current
-                        </Typography>
-                      )}
+                      <Stack spacing={0.1} sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction="row" spacing={0.6} alignItems="center">
+                          <Typography sx={{
+                            fontFamily: 'monospace',
+                            fontSize: '0.72rem',
+                            fontWeight: isCurrent ? 500 : 400,
+                            opacity: isCurrent ? 1 : 0.75
+                          }}>
+                            {truncateAccount(account, 8)}
+                          </Typography>
+                          {isCurrent && (
+                            <Typography sx={{
+                              fontSize: '0.55rem',
+                              opacity: 0.5,
+                              px: 0.5,
+                              py: 0.1,
+                              borderRadius: '3px',
+                              background: alpha(theme.palette.primary.main, 0.1),
+                              color: theme.palette.primary.main
+                            }}>
+                              active
+                            </Typography>
+                          )}
+                        </Stack>
+                        {profile.xrp && parseFloat(profile.xrp) > 0 && (
+                          <Typography sx={{
+                            fontSize: '0.62rem',
+                            opacity: 0.5,
+                            fontFamily: 'monospace'
+                          }}>
+                            {parseFloat(profile.xrp).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
+                          </Typography>
+                        )}
+                      </Stack>
                     </Stack>
                     {!isCurrent && (
                       <IconButton
@@ -630,63 +667,55 @@ const WalletContent = ({
             })()}
           </Box>
 
-          {/* Add another wallet button */}
-          {visibleWalletCount < profiles.length && (
-            <Button
-              fullWidth
-              onClick={() => setVisibleWalletCount(prev => Math.min(prev + 1, profiles.length))}
-              sx={{
-                mt: 1,
-                py: 1.2,
-                fontSize: '0.9rem',
-                fontWeight: 400,
-                textTransform: 'none',
-                borderRadius: '8px',
-                background: alpha(theme.palette.primary.main, 0.08),
-                color: theme.palette.primary.main,
-                border: 'none',
-                '&:hover': {
-                  background: alpha(theme.palette.primary.main, 0.12)
-                }
-              }}
-            >
-              Add Another Wallet ({visibleWalletCount}/{profiles.length})
-            </Button>
-          )}
-
           {/* Pagination controls */}
-          {visibleWalletCount > walletsPerPage && (
-            <Stack direction="row" spacing={0.5} justifyContent="center" sx={{ mt: 0.8 }}>
-              <Button
-                size="small"
-                disabled={walletPage === 0}
-                onClick={() => setWalletPage(p => p - 1)}
-                sx={{
-                  minWidth: 'auto',
-                  px: 1,
-                  py: 0.25,
-                  fontSize: '0.65rem'
-                }}
-              >
-                Prev
-              </Button>
-              <Box sx={{
-                display: 'flex',
-                gap: 0.25
-              }}>
-                {Array.from({ length: Math.min(5, Math.ceil(visibleWalletCount / walletsPerPage)) }, (_, i) => {
-                  const totalPages = Math.ceil(visibleWalletCount / walletsPerPage);
-                  let pageNum;
+          {(() => {
+            const totalPages = Math.ceil(profiles.length / walletsPerPage);
 
-                  if (totalPages <= 5) {
-                    pageNum = i;
-                  } else if (walletPage < 3) {
-                    pageNum = i;
-                  } else if (walletPage >= totalPages - 3) {
-                    pageNum = totalPages - 5 + i;
-                  } else {
-                    pageNum = walletPage - 2 + i;
-                  }
+            if (totalPages <= 1) return null;
+
+            return (
+              <Stack direction="row" spacing={0.8} justifyContent="space-between" alignItems="center" sx={{ mt: 1, pt: 1, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
+                <Button
+                  size="small"
+                  disabled={walletPage === 0}
+                  onClick={() => setWalletPage(p => p - 1)}
+                  sx={{
+                    minWidth: 'auto',
+                    px: 1.2,
+                    py: 0.4,
+                    fontSize: '0.7rem',
+                    fontWeight: 400,
+                    textTransform: 'none',
+                    borderRadius: '6px',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    '&:hover': {
+                      borderColor: theme.palette.primary.main,
+                      background: alpha(theme.palette.primary.main, 0.04)
+                    },
+                    '&.Mui-disabled': {
+                      opacity: 0.3,
+                      borderColor: alpha(theme.palette.divider, 0.1)
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                <Box sx={{
+                  display: 'flex',
+                  gap: 0.4
+                }}>
+                  {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                    let pageNum;
+
+                    if (totalPages <= 5) {
+                      pageNum = i;
+                    } else if (walletPage < 2) {
+                      pageNum = i;
+                    } else if (walletPage >= totalPages - 2) {
+                      pageNum = totalPages - 5 + i;
+                    } else {
+                      pageNum = walletPage - 2 + i;
+                    }
 
                   if (pageNum >= totalPages) return null;
 
@@ -694,14 +723,21 @@ const WalletContent = ({
                     <Button
                       key={pageNum}
                       size="small"
-                      variant={walletPage === pageNum ? 'contained' : 'text'}
                       onClick={() => setWalletPage(pageNum)}
                       sx={{
-                        minWidth: 24,
-                        height: 24,
+                        minWidth: 28,
+                        height: 28,
                         p: 0,
-                        fontSize: '0.6rem',
-                        fontWeight: walletPage === pageNum ? 500 : 400
+                        fontSize: '0.7rem',
+                        fontWeight: 400,
+                        borderRadius: '6px',
+                        color: walletPage === pageNum ? theme.palette.primary.main : theme.palette.text.secondary,
+                        background: walletPage === pageNum ? alpha(theme.palette.primary.main, 0.1) : 'transparent',
+                        border: `1.5px solid ${walletPage === pageNum ? theme.palette.primary.main : alpha(theme.palette.divider, 0.15)}`,
+                        '&:hover': {
+                          borderColor: theme.palette.primary.main,
+                          background: alpha(theme.palette.primary.main, 0.06)
+                        }
                       }}
                     >
                       {pageNum + 1}
@@ -711,19 +747,32 @@ const WalletContent = ({
               </Box>
               <Button
                 size="small"
-                disabled={walletPage >= Math.ceil(visibleWalletCount / walletsPerPage) - 1}
+                disabled={walletPage >= totalPages - 1}
                 onClick={() => setWalletPage(p => p + 1)}
                 sx={{
                   minWidth: 'auto',
-                  px: 1,
-                  py: 0.25,
-                  fontSize: '0.65rem'
+                  px: 1.2,
+                  py: 0.4,
+                  fontSize: '0.7rem',
+                  fontWeight: 400,
+                  textTransform: 'none',
+                  borderRadius: '6px',
+                  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  '&:hover': {
+                    borderColor: theme.palette.primary.main,
+                    background: alpha(theme.palette.primary.main, 0.04)
+                  },
+                  '&.Mui-disabled': {
+                    opacity: 0.3,
+                    borderColor: alpha(theme.palette.divider, 0.1)
+                  }
                 }}
               >
                 Next
               </Button>
             </Stack>
-          )}
+          );
+          })()}
         </Box>
       )}
 
@@ -869,7 +918,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showSeedDialog, setShowSeedDialog] = useState(false);
   const [walletPage, setWalletPage] = useState(0);
   const walletsPerPage = 5;
-  const [visibleWalletCount, setVisibleWalletCount] = useState(25); // Show all 25 wallets by default
   const [seedAuthStatus, setSeedAuthStatus] = useState('idle');
   const [displaySeed, setDisplaySeed] = useState('');
   const [seedPassword, setSeedPassword] = useState('');
@@ -2106,60 +2154,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
   }, []);
 
-  // Sync visible wallet count with profiles length when profiles load
+  // Removed visibleWalletCount - now showing all accounts by default with search/pagination
+
+  // Disabled - activation checks were slowing down modal open
+  // Accounts now show green by default (optimistic UI)
+  // Balance is shown from profile.xrp which is updated on account switch
   useEffect(() => {
-    if (profiles.length > 0) {
-      setVisibleWalletCount(profiles.length);
-    }
-  }, [profiles.length]);
-
-  useEffect(() => {
-    const checkVisibleAccountsActivation = async () => {
-      // Don't check if no user is logged in
-      if (!accountProfile) return;
-      if (profiles.length === 0) return;
-
-      // Only check wallets on current page
-      const startIndex = walletPage * walletsPerPage;
-      const endIndex = startIndex + walletsPerPage;
-      const visibleProfiles = profiles.slice(0, visibleWalletCount);
-      const sorted = [...visibleProfiles].sort((a, b) => a.account.localeCompare(b.account));
-      const currentPageProfiles = sorted.slice(startIndex, endIndex);
-
-      // Get accounts that need to be checked on current page
-      const uncheckedAccounts = currentPageProfiles.filter(
-        profile => !(profile.account in accountsActivation)
-      );
-
-      // Always check current account if not already checked
-      if (accountProfile?.account && !(accountProfile.account in accountsActivation)) {
-        uncheckedAccounts.unshift({ account: accountProfile.account });
-      }
-
-      if (uncheckedAccounts.length === 0) return;
-
-      setIsCheckingActivation(true);
-
-      // Check only current page wallets in parallel
-      Promise.all(
-        uncheckedAccounts.map(async (profile) => {
-          const isActive = await checkAccountActivity(profile.account);
-          return { account: profile.account, isActive };
-        })
-      ).then((results) => {
-        const newActivationStatus = { ...accountsActivation };
-        results.forEach(({ account, isActive }) => {
-          newActivationStatus[account] = isActive;
-        });
-        setAccountsActivation(newActivationStatus);
-        setIsCheckingActivation(false);
-      }).catch(() => {
-        setIsCheckingActivation(false);
-      });
-    };
-
-    checkVisibleAccountsActivation();
-  }, [profiles, accountsActivation, checkAccountActivity, accountProfile, walletPage, visibleWalletCount, walletsPerPage]);
+    // Skip activation checks - instant display is more important
+    // The green/red dots will always show green now (optimistic)
+    return;
+  }, [profiles, accountProfile, walletPage, walletsPerPage]);
 
   const generateWalletsFromDeviceKey = async (deviceKeyId) => {
     const wallets = [];
@@ -3004,8 +3008,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     walletPage={walletPage}
                     setWalletPage={setWalletPage}
                     walletsPerPage={walletsPerPage}
-                    visibleWalletCount={visibleWalletCount}
-                    setVisibleWalletCount={setVisibleWalletCount}
                   />
                 ) : showNewAccountFlow ? (
                   <Box sx={{ p: 3 }}>
