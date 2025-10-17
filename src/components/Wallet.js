@@ -492,42 +492,40 @@ const WalletContent = ({
       {/* Accounts Section - Collapsible */}
       {profiles.length > 1 && (
         <Box sx={{
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          py: 1,
-          px: 1.4
+          borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
         }}>
           {/* Toggle Button */}
           <Button
             fullWidth
-            size="small"
             onClick={() => setShowAllAccounts(!showAllAccounts)}
             sx={{
-              py: 0.8,
-              mb: showAllAccounts ? 0.8 : 0,
+              py: 1.2,
+              px: 1.8,
               justifyContent: 'space-between',
               textTransform: 'none',
-              fontSize: '0.85rem',
+              fontSize: '0.82rem',
               fontWeight: 400,
               color: theme.palette.text.secondary,
-              borderRadius: '6px',
+              borderRadius: 0,
               '&:hover': {
-                backgroundColor: alpha(theme.palette.text.primary, 0.03)
+                backgroundColor: alpha(theme.palette.text.primary, 0.02)
               }
             }}
           >
-            <span>All Accounts ({profiles.length})</span>
+            <span style={{ letterSpacing: '0.3px' }}>All Accounts ({profiles.length})</span>
             <Box
               component="svg"
               sx={{
-                width: 14,
-                height: 14,
+                width: 12,
+                height: 12,
                 transform: showAllAccounts ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.2s'
+                transition: 'transform 0.15s ease-out',
+                opacity: 0.6
               }}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
             >
               <polyline points="6 9 12 15 18 9" />
             </Box>
@@ -536,72 +534,84 @@ const WalletContent = ({
           {/* Expandable Accounts List */}
           {showAllAccounts && (
             <Box sx={{
-              maxHeight: '400px',
-              display: 'flex',
-              flexDirection: 'column'
+              backgroundColor: alpha(theme.palette.background.default, 0.3),
+              borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
             }}>
-              {/* Pagination Header */}
+              {/* Compact Pagination */}
               {(() => {
                 const totalPages = Math.ceil(profiles.length / walletsPerPage);
                 return totalPages > 1 && (
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.8 }}>
+                  <Box sx={{
+                    px: 1.8,
+                    py: 0.8,
+                    display: 'flex',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+                  }}>
+                    <IconButton
+                      size="small"
+                      disabled={walletPage === 0}
+                      onClick={() => setWalletPage(Math.max(0, walletPage - 1))}
+                      sx={{
+                        p: 0.4,
+                        minWidth: 24,
+                        height: 24,
+                        opacity: walletPage === 0 ? 0.2 : 0.5,
+                        '&:hover': { opacity: walletPage === 0 ? 0.2 : 0.8 }
+                      }}
+                    >
+                      <Box component="svg" sx={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="15 18 9 12 15 6" />
+                      </Box>
+                    </IconButton>
+
                     <Typography sx={{
-                      fontSize: '0.65rem',
-                      fontWeight: 500,
+                      fontSize: '0.7rem',
                       opacity: 0.45,
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.8px'
+                      fontWeight: 500,
+                      letterSpacing: '0.5px',
+                      minWidth: 60,
+                      textAlign: 'center'
                     }}>
-                      Page
+                      {walletPage + 1} / {totalPages}
                     </Typography>
-                    <Stack direction="row" spacing={0.5} alignItems="center">
-                      <IconButton
-                        size="small"
-                        disabled={walletPage === 0}
-                        onClick={() => setWalletPage(Math.max(0, walletPage - 1))}
-                        sx={{ p: 0.3, opacity: walletPage === 0 ? 0.3 : 0.7 }}
-                      >
-                        <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="15 18 9 12 15 6" />
-                        </Box>
-                      </IconButton>
-                      <Typography sx={{
-                        fontSize: '0.6rem',
-                        opacity: 0.5,
-                        minWidth: '30px',
-                        textAlign: 'center'
-                      }}>
-                        {walletPage + 1} / {totalPages}
-                      </Typography>
-                      <IconButton
-                        size="small"
-                        disabled={walletPage >= totalPages - 1}
-                        onClick={() => setWalletPage(Math.min(totalPages - 1, walletPage + 1))}
-                        sx={{ p: 0.3, opacity: walletPage >= totalPages - 1 ? 0.3 : 0.7 }}
-                      >
-                        <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <polyline points="9 18 15 12 9 6" />
-                        </Box>
-                      </IconButton>
-                    </Stack>
-                  </Stack>
+
+                    <IconButton
+                      size="small"
+                      disabled={walletPage >= totalPages - 1}
+                      onClick={() => setWalletPage(Math.min(totalPages - 1, walletPage + 1))}
+                      sx={{
+                        p: 0.4,
+                        minWidth: 24,
+                        height: 24,
+                        opacity: walletPage >= totalPages - 1 ? 0.2 : 0.5,
+                        '&:hover': { opacity: walletPage >= totalPages - 1 ? 0.2 : 0.8 }
+                      }}
+                    >
+                      <Box component="svg" sx={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                        <polyline points="9 18 15 12 9 6" />
+                      </Box>
+                    </IconButton>
+                  </Box>
                 );
               })()}
 
               {/* Wallets list */}
               <Box sx={{
-                flex: 1,
+                maxHeight: '280px',
                 overflowY: 'auto',
-                minHeight: 0,
+                py: 0.5,
                 '&::-webkit-scrollbar': {
-                  width: '4px',
+                  width: '3px',
                 },
                 '&::-webkit-scrollbar-track': {
                   background: 'transparent',
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  background: alpha(theme.palette.text.primary, 0.1),
-                  borderRadius: '4px',
+                  background: alpha(theme.palette.text.primary, 0.08),
+                  borderRadius: '3px',
                 }
               }}>
                 {(() => {
@@ -635,9 +645,11 @@ const WalletContent = ({
                   const startIndex = walletPage * walletsPerPage;
                   const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
 
-                  return paginatedProfiles.map((profile) => {
+                  return paginatedProfiles.map((profile, index) => {
                 const account = profile.account;
                 const isCurrent = account === accountLogin;
+                const isInactive = accountsActivation[account] === false;
+
                 return (
                   <Box
                     key={account}
@@ -649,82 +661,59 @@ const WalletContent = ({
                       }
                     }}
                     sx={{
-                      py: 0.5,
-                      px: 0.6,
-                      my: 0.15,
+                      py: 0.9,
+                      px: 1.8,
                       cursor: isCurrent ? 'default' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'space-between',
-                      borderRadius: '4px',
-                      background: isCurrent ? alpha(theme.palette.primary.main, 0.06) : 'transparent',
+                      background: isCurrent ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
+                      borderLeft: isCurrent ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
                       '&:hover': !isCurrent ? {
-                        background: alpha(theme.palette.text.primary, 0.03)
+                        background: alpha(theme.palette.text.primary, 0.02)
                       } : {}
                     }}
                   >
-                    <Stack direction="row" spacing={0.8} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
                       <Box sx={{
-                        width: 6,
-                        height: 6,
+                        width: 5,
+                        height: 5,
                         borderRadius: '50%',
                         flexShrink: 0,
-                        // Always green - fast display is more important than status
-                        background: '#22c55e'
+                        background: isInactive ? alpha(theme.palette.warning.main, 0.5) : '#22c55e'
                       }} />
-                      <Stack spacing={0.1} sx={{ flex: 1, minWidth: 0 }}>
-                        <Stack direction="row" spacing={0.6} alignItems="center">
+                      <Stack spacing={0} sx={{ flex: 1, minWidth: 0 }}>
+                        <Stack direction="row" spacing={0.8} alignItems="center">
                           <Typography sx={{
                             fontFamily: 'monospace',
-                            fontSize: '0.72rem',
+                            fontSize: '0.75rem',
                             fontWeight: isCurrent ? 500 : 400,
-                            opacity: isCurrent ? 1 : 0.75
+                            opacity: isCurrent ? 1 : 0.8
                           }}>
                             {truncateAccount(account, 8)}
                           </Typography>
                           {isCurrent && (
                             <Typography sx={{
                               fontSize: '0.55rem',
-                              opacity: 0.5,
-                              px: 0.5,
-                              py: 0.1,
-                              borderRadius: '3px',
-                              background: alpha(theme.palette.primary.main, 0.1),
-                              color: theme.palette.primary.main
+                              fontWeight: 500,
+                              color: theme.palette.primary.main,
+                              letterSpacing: '0.3px'
                             }}>
                               active
                             </Typography>
                           )}
                         </Stack>
-                        {profile.xrp && parseFloat(profile.xrp) > 0 && (
-                          <Typography sx={{
-                            fontSize: '0.62rem',
-                            opacity: 0.5,
-                            fontFamily: 'monospace'
-                          }}>
-                            {parseFloat(profile.xrp).toLocaleString(undefined, { maximumFractionDigits: 2 })} XRP
-                          </Typography>
-                        )}
                       </Stack>
                     </Stack>
-                    {!isCurrent && (
-                      <IconButton
-                        size="small"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          onRemoveProfile(account);
-                        }}
-                        sx={{
-                          p: 0.15,
-                          opacity: 0,
-                          '&:hover': { opacity: 0.7 }
-                        }}
-                      >
-                        <Box component="svg" sx={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                          <path d="M18 6L6 18M6 6l12 12"/>
-                        </Box>
-                      </IconButton>
+                    {profile.xrp !== undefined && parseFloat(profile.xrp) > 0 && (
+                      <Typography sx={{
+                        fontSize: '0.65rem',
+                        opacity: 0.4,
+                        fontFamily: 'monospace',
+                        ml: 'auto'
+                      }}>
+                        {parseFloat(profile.xrp).toFixed(0)} XRP
+                      </Typography>
                     )}
                   </Box>
                 );
