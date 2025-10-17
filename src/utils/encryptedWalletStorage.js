@@ -707,8 +707,7 @@ export class UnifiedWalletStorage {
       if (storedPassword) {
         devLog('✅ Password found - wallets exist, loading from localStorage');
 
-        // DON'T decrypt from IndexedDB - just check localStorage for profiles
-        // Profiles already stored in plain localStorage with addresses
+        // First check localStorage for profiles
         const storedProfiles = typeof window !== 'undefined' ? localStorage.getItem('profiles') : null;
 
         if (storedProfiles) {
@@ -729,8 +728,50 @@ export class UnifiedWalletStorage {
           }
         }
 
-        // Fallback: password exists but no profiles - need to create
-        devLog('⚠️ Password exists but no profiles found');
+        // Fallback: password exists but localStorage is empty - decrypt from IndexedDB
+        devLog('⚠️ Password exists but localStorage is empty - decrypting wallets from IndexedDB');
+
+        try {
+          const allWallets = await this.getAllWalletsForProvider(profile.provider, profile.id, storedPassword);
+
+          if (allWallets && allWallets.length > 0) {
+            devLog('[STORAGE] ✅ Decrypted', allWallets.length, 'wallets from IndexedDB');
+
+            // Restore profiles to localStorage
+            if (typeof window !== 'undefined') {
+              const existingProfiles = localStorage.getItem('profiles');
+              const currentProfiles = existingProfiles ? JSON.parse(existingProfiles) : [];
+
+              // Add these wallets to profiles
+              allWallets.forEach(w => {
+                if (!currentProfiles.find(p => p.account === w.address)) {
+                  currentProfiles.push({
+                    account: w.address,
+                    address: w.address,
+                    publicKey: w.publicKey,
+                    wallet_type: 'oauth',
+                    provider: profile.provider,
+                    provider_id: profile.id,
+                    createdAt: w.createdAt || Date.now(),
+                    tokenCreatedAt: Date.now()
+                  });
+                }
+              });
+
+              localStorage.setItem('profiles', JSON.stringify(currentProfiles));
+            }
+
+            return {
+              success: true,
+              wallet: allWallets[0],
+              allWallets: allWallets,
+              requiresPassword: false
+            };
+          }
+        } catch (error) {
+          devError('[STORAGE] Failed to decrypt wallets with stored password:', error);
+          // Password might be wrong or wallets corrupted - need new password
+        }
       }
 
       devLog('❌ No wallet found locally - new user');
