@@ -174,6 +174,7 @@ export class UnifiedWalletStorage {
 
   async getProviderPassword(providerId) {
     try {
+      console.log('[getProviderPassword] Looking for password with ID:', `__pwd__${providerId}`);
       const db = await this.initDB();
 
       return new Promise(async (resolve) => {
@@ -182,18 +183,36 @@ export class UnifiedWalletStorage {
         const request = store.get(`__pwd__${providerId}`);
 
         request.onsuccess = async () => {
+          console.log('[getProviderPassword] Request result:', {
+            found: !!request.result,
+            hasData: !!request.result?.data,
+            dataLength: request.result?.data?.length
+          });
+
           if (request.result && request.result.data) {
-            const decrypted = await this.decryptFromLocalStorage(request.result.data);
-            devLog('Password retrieved from IndexedDB for provider:', providerId);
-            resolve(decrypted);
+            try {
+              const decrypted = await this.decryptFromLocalStorage(request.result.data);
+              console.log('[getProviderPassword] ✅ Password decrypted successfully for:', providerId);
+              devLog('Password retrieved from IndexedDB for provider:', providerId);
+              resolve(decrypted);
+            } catch (decryptError) {
+              console.error('[getProviderPassword] ❌ Decryption failed:', decryptError);
+              console.error('[getProviderPassword] Device fingerprint may have changed');
+              resolve(null);
+            }
           } else {
+            console.log('[getProviderPassword] ❌ No password record found for:', providerId);
             devLog('No password found in IndexedDB for provider:', providerId);
             resolve(null);
           }
         };
-        request.onerror = () => resolve(null);
+        request.onerror = () => {
+          console.error('[getProviderPassword] IndexedDB error:', request.error);
+          resolve(null);
+        };
       });
     } catch (error) {
+      console.error('[getProviderPassword] Exception:', error);
       devError('Error getting provider password:', error);
       return null;
     }
@@ -855,59 +874,106 @@ export class UnifiedWalletStorage {
    * Find wallet in IndexedDB for OAuth user
    * Now requires password since all data is encrypted
    */
-  async findWalletBySocialId(walletId, password) {
+  async findWalletBySocialId(walletId, password, knownAddress = null) {
     try {
-      devLog('findWalletBySocialId called with:', walletId);
+      devLog('findWalletBySocialId called with:', walletId, 'knownAddress:', knownAddress);
+
+      // OPTIMIZATION: If we have the address, look up directly by address (much faster!)
+      if (knownAddress) {
+        try {
+          const wallet = await this.getWalletByAddress(knownAddress, password);
+          if (wallet) {
+            devLog('✅ Found wallet by address (fast path):', wallet.address);
+            return wallet;
+          }
+        } catch (err) {
+          devLog('Fast path failed, falling back to full search:', err.message);
+        }
+      }
+
+      // SLOW PATH: Extract provider and provider_id from walletId (format: "provider_id")
+      const [provider, ...idParts] = walletId.split('_');
+      const providerId = idParts.join('_'); // Handle IDs that might contain underscores
+
+      devLog('Searching for provider:', provider, 'ID:', providerId);
+
+      // Get all wallets and filter by provider/provider_id
+      const allWallets = await this.getAllWallets(password);
+
+      devLog('Total wallets decrypted:', allWallets.length);
+
+      // Find the first wallet matching this provider and provider_id
+      const wallet = allWallets.find(w =>
+        w.provider === provider && w.provider_id === providerId
+      );
+
+      if (wallet) {
+        devLog('✅ Found wallet for social ID:', wallet.address);
+        return {
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          provider: wallet.provider,
+          provider_id: wallet.provider_id,
+          found: true
+        };
+      } else {
+        devLog('❌ No wallet found for provider:', provider, 'ID:', providerId);
+        return null;
+      }
+    } catch (e) {
+      devError('Error finding wallet:', e);
+      return null;
+    }
+  }
+
+  /**
+   * Get wallet by address (fast lookup using lookupHash index)
+   */
+  async getWalletByAddress(address, password) {
+    try {
       const db = await this.initDB();
 
-      // Create lookup hash for direct access
+      // Generate lookup hash from address
       const encoder = new TextEncoder();
-      const hashBuffer = await crypto.subtle.digest('SHA-256', encoder.encode(walletId));
-      const lookupHash = btoa(String.fromCharCode(...new Uint8Array(hashBuffer))).slice(0, 12);
-      devLog('Looking up with hash:', lookupHash);
+      const addressHash = await crypto.subtle.digest('SHA-256', encoder.encode(address));
+      const lookupHash = btoa(String.fromCharCode(...new Uint8Array(addressHash))).slice(0, 12);
 
       return new Promise(async (resolve, reject) => {
         const transaction = db.transaction([this.walletsStore], 'readonly');
         const store = transaction.objectStore(this.walletsStore);
+        const index = store.index('lookupHash');
 
-        // Direct lookup using the hash
-        const request = store.get(lookupHash);
+        // Use index to find by lookupHash
+        const request = index.getAll(lookupHash);
 
         request.onsuccess = async () => {
-          const record = request.result;
+          const records = request.result;
 
-          if (!record) {
-            devLog('❌ No wallet found for social ID');
+          if (!records || records.length === 0) {
             resolve(null);
             return;
           }
 
+          // Try to decrypt the first matching record
           try {
-            // Decrypt the wallet data
-            const decrypted = await this.decryptData(record.data, password);
-            devLog('✅ Found and decrypted wallet for social ID');
+            const decrypted = await this.decryptData(records[0].data, password);
             resolve({
               address: decrypted.address,
               publicKey: decrypted.publicKey,
               seed: decrypted.seed,
               provider: decrypted.provider,
-              provider_id: decrypted.provider_id,
-              found: true
+              provider_id: decrypted.provider_id
             });
           } catch (e) {
-            // Decryption failed - wrong password
-            devError('❌ Decryption failed:', e.message);
             reject(new Error('Incorrect password'));
           }
         };
 
-        request.onerror = () => {
-          devError('Error finding wallet:', request.error);
-          reject(request.error);
-        };
+        request.onerror = () => reject(request.error);
       });
     } catch (e) {
-      devError('Error finding wallet:', e);
+      devError('Error getting wallet by address:', e);
       return null;
     }
   }

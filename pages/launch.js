@@ -264,25 +264,43 @@ function CreatePage() {
 
           if (storedPassword) {
             console.log('[DEBUG] Attempting to decrypt wallet...');
-            const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword);
-            console.log('[DEBUG] Wallet decrypted:', {
-              found: !!wallet,
-              hasSeed: !!wallet?.seed,
-              address: wallet?.address
-            });
+            try {
+              // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
+              const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, accountProfile.account || accountProfile.address);
+              console.log('[DEBUG] Wallet decrypted:', {
+                found: !!wallet,
+                hasSeed: !!wallet?.seed,
+                address: wallet?.address
+              });
 
-            if (wallet?.seed) {
-              setDecryptedSeed(wallet.seed);
-              console.log('[DEBUG] ✅ Seed decrypted successfully');
-            } else {
-              console.log('[DEBUG] ❌ Wallet found but no seed');
+              if (wallet?.seed) {
+                setDecryptedSeed(wallet.seed);
+                console.log('[DEBUG] ✅ Seed decrypted successfully');
+              } else {
+                console.log('[DEBUG] ❌ Wallet found but no seed');
+              }
+            } catch (walletError) {
+              console.error('[DEBUG] ❌ Failed to decrypt wallet with stored password:', walletError);
+              // Password exists but decryption failed - likely device fingerprint changed
+              // Don't set decryptedSeed, user will need to use the manual "Decrypt" button
             }
           } else {
-            console.log('[DEBUG] ❌ No stored password found');
+            console.log('[DEBUG] ❌ No stored password found for key:', `wallet_pwd_${walletId}`);
+            console.log('[DEBUG] 💡 User may need to re-login to restore password');
           }
         } catch (error) {
           console.error('[DEBUG] ❌ Failed to decrypt seed:', error);
+          console.error('[DEBUG] Error details:', {
+            message: error.message,
+            stack: error.stack
+          });
         }
+      } else if (accountProfile.wallet_type === 'device') {
+        console.log('[DEBUG] Device wallet - seed requires password prompt');
+        // Device wallets always require password on-demand
+        setDecryptedSeed(null);
+      } else {
+        console.log('[DEBUG] Unknown wallet type:', accountProfile.wallet_type);
       }
     };
 
@@ -801,6 +819,37 @@ function CreatePage() {
                   <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
                     {decryptedSeed || accountProfile.seed || accountProfile.secret || 'N/A'}
                   </code>
+                  {!decryptedSeed && !accountProfile.seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') && (
+                    <Button
+                      size="small"
+                      onClick={async () => {
+                        const password = prompt('Enter your wallet password to decrypt seed:');
+                        if (!password) return;
+
+                        try {
+                          const walletStorage = new UnifiedWalletStorage();
+                          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+                          // Pass known address for fast lookup
+                          const wallet = await walletStorage.findWalletBySocialId(walletId, password, accountProfile.account || accountProfile.address);
+
+                          if (wallet?.seed) {
+                            setDecryptedSeed(wallet.seed);
+                            // Save password for future use
+                            await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
+                            openSnackbar?.('Seed decrypted and password saved!', 'success');
+                          } else {
+                            openSnackbar?.('Incorrect password or wallet not found', 'error');
+                          }
+                        } catch (error) {
+                          console.error('Decrypt error:', error);
+                          openSnackbar?.('Failed to decrypt: ' + error.message, 'error');
+                        }
+                      }}
+                      sx={{ ml: 1, fontSize: '0.7rem', textTransform: 'none' }}
+                    >
+                      Decrypt
+                    </Button>
+                  )}
                 </Typography>
                 <Typography variant="body2" gutterBottom>
                   <strong>Wallet Type:</strong> {accountProfile.wallet_type || 'Unknown'}

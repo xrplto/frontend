@@ -22,14 +22,43 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const BASE_URL = process.env.API_URL;
   const walletStorage = new EncryptedWalletStorage();
 
+  // Define constants first before using them
+  const KEY_ACCOUNT_PROFILE = 'account_profile_2';
+  const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
+
   const [sync, setSync] = useState(0);
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [themeName, setThemeName] = useState('XrplToLightTheme');
   const [activeFiatCurrency, setActiveFiatCurrency] = useState('XRP');
-  const [accountProfile, setAccountProfile] = useState(null);
-  const [profiles, setProfiles] = useState([]);
+
+  // Load profile synchronously on mount to avoid flash of "No wallet connected"
+  const [accountProfile, setAccountProfile] = useState(() => {
+    if (typeof window === 'undefined') return null;
+    try {
+      const profileStr = localStorage.getItem(KEY_ACCOUNT_PROFILE);
+      if (profileStr) {
+        return JSON.parse(profileStr);
+      }
+    } catch (err) {
+      console.error('Failed to load profile on init:', err);
+    }
+    return null;
+  });
+
+  const [profiles, setProfiles] = useState(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const profilesStr = localStorage.getItem('profiles');
+      if (profilesStr) {
+        return JSON.parse(profilesStr);
+      }
+    } catch (err) {
+      console.error('Failed to load profiles on init:', err);
+    }
+    return [];
+  });
   const [deletingNfts, setDeletingNfts] = useState([]);
 
   const [open, setOpen] = useState(false);
@@ -37,9 +66,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const [accountBalance, setAccountBalance] = useState(null);
   const [watchList, setWatchList] = useState([]);
   const [metricsLoaded, setMetricsLoaded] = useState(false);
-
-  const KEY_ACCOUNT_PROFILE = 'account_profile_2';
-  const KEY_ACCOUNT_PROFILES = 'account_profiles_2';
 
   const toggleTheme = () => {
     window.localStorage.setItem('appTheme', !darkMode);
@@ -128,63 +154,60 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   useEffect(() => {
     const loadStoredData = async () => {
       try {
-        console.log('═══ APP INIT: Loading stored data ═══');
+        console.log('═══ APP INIT: Decrypting seeds and migrations ═══');
 
-        // Try plain localStorage first (new format)
-        let profileStr = localStorage.getItem(KEY_ACCOUNT_PROFILE);
-        let profile = null;
-
-        if (profileStr) {
-          profile = JSON.parse(profileStr);
-        } else {
-          // Migrate from old encrypted format
-          const encryptedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
-          if (encryptedProfile) {
-            console.log('Migrating encrypted profile to plain...');
-            try {
-              profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
-              if (profile) {
-                // Save as plain JSON and remove encrypted version
-                localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
-                localStorage.removeItem(KEY_ACCOUNT_PROFILE + '_enc');
-                console.log('✅ Migration complete');
-              }
-            } catch (err) {
-              console.error('⚠️ Crypto operation failed (browser throttling?):', err.message);
-              console.log('Close dev console and refresh to complete migration');
-              // Don't block - user can close console and refresh
+        // Handle encrypted profile migration (if exists)
+        const encryptedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
+        if (encryptedProfile) {
+          console.log('Migrating encrypted profile to plain...');
+          try {
+            const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
+            if (profile) {
+              localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
+              localStorage.removeItem(KEY_ACCOUNT_PROFILE + '_enc');
+              setAccountProfile(profile);
+              console.log('✅ Profile migration complete');
             }
+          } catch (err) {
+            console.error('⚠️ Crypto operation failed:', err.message);
           }
         }
 
-        if (profile) {
-          console.log('Loaded profile:', profile.account);
-          setAccountProfile(profile);
+        // For OAuth wallets, decrypt seed immediately if not already present
+        if (accountProfile && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') && !accountProfile.seed) {
+          try {
+            const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+            const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+
+            if (storedPassword) {
+              // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
+              const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, accountProfile.account || accountProfile.address);
+              if (wallet?.seed) {
+                const updatedProfile = { ...accountProfile, seed: wallet.seed };
+                setAccountProfile(updatedProfile);
+                localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(updatedProfile));
+                console.log('✅ Seed decrypted on load');
+              }
+            }
+          } catch (err) {
+            console.log('⚠️ Could not decrypt seed on load:', err.message);
+          }
         }
 
-        // Load profiles (try plain first, then migrate from encrypted)
-        let storedProfiles = localStorage.getItem('profiles');
-        if (storedProfiles) {
-          setProfiles(JSON.parse(storedProfiles));
-          console.log('✅ Loaded profiles');
-        } else {
-          // Migrate from encrypted
-          const encryptedProfiles = localStorage.getItem('account_profiles_2_enc');
-          if (encryptedProfiles) {
-            console.log('Migrating encrypted profiles...');
-            try {
-              const profiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
-              if (profiles) {
-                localStorage.setItem('profiles', JSON.stringify(profiles));
-                localStorage.removeItem('account_profiles_2_enc');
-                setProfiles(profiles);
-                console.log('✅ Migration complete');
-              }
-            } catch (err) {
-              console.error('⚠️ Crypto operation failed (browser throttling?):', err.message);
-              console.log('Close dev console and refresh to complete migration');
-              // Don't block - user can close console and refresh
+        // Handle encrypted profiles migration (if exists)
+        const encryptedProfiles = localStorage.getItem('account_profiles_2_enc');
+        if (encryptedProfiles) {
+          console.log('Migrating encrypted profiles...');
+          try {
+            const migratedProfiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
+            if (migratedProfiles) {
+              localStorage.setItem('profiles', JSON.stringify(migratedProfiles));
+              localStorage.removeItem('account_profiles_2_enc');
+              setProfiles(migratedProfiles);
+              console.log('✅ Profiles migration complete');
             }
+          } catch (err) {
+            console.error('⚠️ Crypto operation failed:', err.message);
           }
         }
 
@@ -203,12 +226,31 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
   };
 
-  const doLogIn = (profile, profilesOverride = null) => {
+  const doLogIn = async (profile, profilesOverride = null) => {
     // Add token creation timestamp
     const profileWithTimestamp = {
       ...profile,
       tokenCreatedAt: Date.now()
     };
+
+    // For OAuth wallets, ensure seed is included
+    if ((profileWithTimestamp.wallet_type === 'oauth' || profileWithTimestamp.wallet_type === 'social') && !profileWithTimestamp.seed) {
+      try {
+        const walletId = `${profileWithTimestamp.provider}_${profileWithTimestamp.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+
+        if (storedPassword) {
+          // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
+          const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, profileWithTimestamp.account || profileWithTimestamp.address);
+          if (wallet?.seed) {
+            profileWithTimestamp.seed = wallet.seed;
+            console.log('✅ Seed included in login profile');
+          }
+        }
+      } catch (err) {
+        console.log('⚠️ Could not decrypt seed during login:', err.message);
+      }
+    }
 
     setAccountProfile(profileWithTimestamp);
     localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profileWithTimestamp));
