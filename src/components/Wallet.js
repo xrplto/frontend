@@ -489,11 +489,10 @@ const WalletContent = ({
         </Stack>
       </Box>
 
-      {/* Accounts Section - Collapsible */}
-      {profiles.length > 1 && (
-        <Box sx={{
-          borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-        }}>
+      {/* Accounts Section - Always show for better UX */}
+      <Box sx={{
+        borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+      }}>
           {/* Toggle Button */}
           <Button
             fullWidth
@@ -722,8 +721,7 @@ const WalletContent = ({
               </Box>
             </Box>
           )}
-        </Box>
-      )}
+      </Box>
 
 
       {/* Bottom Actions - Compact */}
