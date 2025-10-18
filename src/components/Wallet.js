@@ -940,45 +940,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store the password for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate 25 wallets with progress updates
+      // Generate 1 wallet
       setStatus('creating');
-      const wallets = [];
-      const batchSize = 5; // Process in batches for better performance
+      const wallet = generateRandomWallet();
 
-      for (let batch = 0; batch < 5; batch++) {
-        const batchWallets = [];
+      const walletData = {
+        deviceKeyId: deviceId,
+        accountIndex: 0,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
 
-        // Generate batch of wallets
-        for (let i = 0; i < batchSize; i++) {
-          const index = batch * batchSize + i;
-          const wallet = generateRandomWallet();
-
-          const walletData = {
-            deviceKeyId: deviceId,
-            accountIndex: index,
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            wallet_type: 'device',
-            xrp: '0',
-            createdAt: Date.now(),
-            seed: wallet.seed
-          };
-
-          batchWallets.push(walletData);
-          wallets.push(walletData);
-        }
-
-        // Store batch in parallel
-        await Promise.all(
-          batchWallets.map(walletData =>
-            walletStorage.storeWallet(walletData, password)
-          )
-        );
-
-        // Update progress
-        setError(`Creating wallets... ${(batch + 1) * 5}/25`);
-      }
+      await walletStorage.storeWallet(walletData, password);
+      const wallets = [walletData];
 
       setError(''); // Clear progress message
 
@@ -1022,9 +1001,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setError('');
         // Show backup reminder
         setTimeout(() => {
-          openSnackbar('25 wallets created! Remember to backup your wallet seed phrase', 'warning');
+          openSnackbar('Wallet created! Remember to backup your seed phrase', 'warning');
         }, 1000);
-      }, 800); // Shorter delay for 25 wallets
+      }, 800);
     } catch (err) {
       setError('Failed to complete registration: ' + err.message);
       setStatus('idle');
@@ -1488,46 +1467,25 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Use unified wallet storage
       const walletStorageInstance = walletStorage || new EncryptedWalletStorage();
 
-      // Create 25 wallets with progress updates for OAuth
-      setOAuthPasswordError('Creating wallets...');
-      const wallets = [];
-      const batchSize = 5; // Process in batches
+      // Create 1 wallet for OAuth
+      setOAuthPasswordError('Creating wallet...');
+      const wallet = generateRandomWallet();
 
-      for (let batch = 0; batch < 5; batch++) {
-        const batchWallets = [];
+      const walletData = {
+        accountIndex: 0,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'oauth',
+        provider: provider,
+        provider_id: user.id,
+        xrp: '0',
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
 
-        // Generate batch of wallets
-        for (let i = 0; i < batchSize; i++) {
-          const index = batch * batchSize + i;
-          const wallet = generateRandomWallet();
-
-          const walletData = {
-            accountIndex: index,
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            wallet_type: 'oauth',
-            provider: provider,
-            provider_id: user.id,
-            xrp: '0',
-            createdAt: Date.now(),
-            seed: wallet.seed
-          };
-
-          batchWallets.push(walletData);
-          wallets.push(walletData);
-        }
-
-        // Store batch in parallel for faster performance
-        await Promise.all(
-          batchWallets.map(walletData =>
-            walletStorageInstance.storeWallet(walletData, oauthPassword)
-          )
-        );
-
-        // Update progress
-        setOAuthPasswordError(`Creating wallets... ${(batch + 1) * 5}/25`);
-      }
+      await walletStorageInstance.storeWallet(walletData, oauthPassword);
+      const wallets = [walletData];
 
       setOAuthPasswordError(''); // Clear progress
 
@@ -1586,7 +1544,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthConfirmPassword('');
 
         console.log('🔧 [DEBUG] All dialogs closed, showing success message');
-        openSnackbar(`25 accounts created successfully!`, 'success');
+        openSnackbar(`Wallet created successfully!`, 'success');
       } else {
         throw new Error('Failed to setup wallet');
       }
@@ -1924,45 +1882,24 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // Store for future use
       await walletStorage.storeWalletCredential(deviceId, password);
 
-      // Generate 25 wallets with progress updates
+      // Generate 1 wallet
       setStatus('creating');
-      const wallets = [];
-      const batchSize = 5; // Process in batches for better performance
+      const wallet = generateRandomWallet();
 
-      for (let batch = 0; batch < 5; batch++) {
-        const batchWallets = [];
+      const walletData = {
+        deviceKeyId: deviceId,
+        accountIndex: 0,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        wallet_type: 'device',
+        xrp: '0',
+        createdAt: Date.now(),
+        seed: wallet.seed
+      };
 
-        // Generate batch of wallets
-        for (let i = 0; i < batchSize; i++) {
-          const index = batch * batchSize + i;
-          const wallet = generateRandomWallet();
-
-          const walletData = {
-            deviceKeyId: deviceId,
-            accountIndex: index,
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            wallet_type: 'device',
-            xrp: '0',
-            createdAt: Date.now(),
-            seed: wallet.seed
-          };
-
-          batchWallets.push(walletData);
-          wallets.push(walletData);
-        }
-
-        // Store batch in parallel
-        await Promise.all(
-          batchWallets.map(walletData =>
-            walletStorage.storeWallet(walletData, password)
-          )
-        );
-
-        // Update progress
-        setError(`Creating wallets... ${(batch + 1) * 5}/25`);
-      }
+      await walletStorage.storeWallet(walletData, password);
+      const wallets = [walletData];
 
       setError(''); // Clear progress message
 
@@ -1978,7 +1915,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const exists = allProfiles.find(p => p.account === profile.account);
         if (!exists) {
           allProfiles.push(profile);
-        } else {
         }
       });
 
@@ -2005,8 +1941,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setStatus('idle');
         setShowDeviceLogin(false);
         setError('');
-        openSnackbar('25 wallets accessed successfully!', 'success');
-      }, 800); // Shorter delay for 25 wallets
+        openSnackbar('Wallet created successfully!', 'success');
+      }, 800);
     } catch (err) {
       setError('Failed to complete authentication: ' + err.message);
       setStatus('idle');

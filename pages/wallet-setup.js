@@ -98,44 +98,25 @@ const WalletSetupPage = () => {
 
       const { token, provider, user, action } = oauthData;
 
-      // Create 25 wallets
-      setError('Creating wallets...');
-      const wallets = [];
-      const batchSize = 5;
+      // Create 1 wallet
+      setError('Creating wallet...');
+      const wallet = generateRandomWallet();
 
-      for (let batch = 0; batch < 5; batch++) {
-        const batchWallets = [];
+      const walletData = {
+        provider,
+        provider_id: user.id,
+        accountIndex: 0,
+        account: wallet.address,
+        address: wallet.address,
+        publicKey: wallet.publicKey,
+        seed: wallet.seed,
+        wallet_type: 'oauth',
+        xrp: '0',
+        createdAt: Date.now()
+      };
 
-        for (let i = 0; i < batchSize; i++) {
-          const index = batch * batchSize + i;
-          const wallet = generateRandomWallet();
-
-          const walletData = {
-            provider,
-            provider_id: user.id,
-            accountIndex: index,
-            account: wallet.address,
-            address: wallet.address,
-            publicKey: wallet.publicKey,
-            seed: wallet.seed,
-            wallet_type: 'oauth',
-            xrp: '0',
-            createdAt: Date.now()
-          };
-
-          batchWallets.push(walletData);
-          wallets.push(walletData);
-        }
-
-        // Store batch
-        await Promise.all(
-          batchWallets.map(walletData =>
-            walletStorage.storeWallet(walletData, password)
-          )
-        );
-
-        setError(`Creating wallets... ${(batch + 1) * 5}/25`);
-      }
+      await walletStorage.storeWallet(walletData, password);
+      const wallets = [walletData];
 
       setError(''); // Clear progress
 
@@ -177,7 +158,7 @@ const WalletSetupPage = () => {
       doLogIn(wallets[0], allProfiles);
 
       console.log('🔧 [SETUP PAGE] Login complete, redirecting to home');
-      openSnackbar(`25 accounts created successfully!`, 'success');
+      openSnackbar(`Wallet created successfully!`, 'success');
 
       // Redirect to home
       setTimeout(() => {
