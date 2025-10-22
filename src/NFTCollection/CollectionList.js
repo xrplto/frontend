@@ -940,24 +940,20 @@ export default function CollectionList({ type, category }) {
   useEffect(() => {
     const loadCollections = () => {
       const params = new URLSearchParams({
+        page: page.toString(),
         limit: rows.toString(),
-        orderBy: orderBy,
-        order: order,
-        compact: 'true'
+        sortBy: orderBy,
+        order: order
       });
 
-      if (page > 0) {
-        params.append('offset', (page * rows).toString());
-      }
-
       axios
-        .get(`${BASE_URL}/collections?${params.toString()}`)
+        .get(`${BASE_URL}/nft/collections?${params.toString()}`)
         .then((res) => {
           try {
             if (res.status === 200 && res.data) {
               const ret = res.data;
-              setTotal(ret.count);
-              setCollections(ret.collections);
+              setTotal(ret.pagination?.total || ret.count || 0);
+              setCollections(ret.collections || []);
             }
           } catch (error) {
           }
