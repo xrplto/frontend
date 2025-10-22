@@ -48,9 +48,11 @@ const Sparkline = dynamic(() => import('src/components/Sparkline'), {
 const OptimizedChart = memo(
   ({ salesData, darkMode }) => {
     const [isVisible, setIsVisible] = useState(false);
+    const [tooltip, setTooltip] = useState(null);
     const chartRef = useRef(null);
     const canvasRef = useRef(null);
     const observerRef = useRef(null);
+    const pointsRef = useRef([]);
     const theme = useTheme();
 
     useEffect(() => {
@@ -119,8 +121,10 @@ const OptimizedChart = memo(
           range === 0
             ? height / 2
             : padding + chartHeight - ((item.value - minValue) / range) * chartHeight;
-        return { x, y };
+        return { x, y, value: item.value, sales: item.sales, date: item.date };
       });
+
+      pointsRef.current = points;
 
       const color = '#00AB55';
 
@@ -148,6 +152,18 @@ const OptimizedChart = memo(
       ctx.stroke();
     }, [salesData, isVisible, theme]);
 
+    const handleMouseMove = (e) => {
+      if (!pointsRef.current.length) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const closest = pointsRef.current.reduce((prev, curr) =>
+        Math.abs(curr.x - x) < Math.abs(prev.x - x) ? curr : prev
+      );
+      setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, ...closest });
+    };
+
+    const handleMouseLeave = () => setTooltip(null);
+
     // Don't render chart until visible
     if (!isVisible) {
       return (
@@ -167,11 +183,14 @@ const OptimizedChart = memo(
     return (
       <div
         ref={chartRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseLeave}
         style={{
           width: '260px',
           height: '60px',
           display: 'inline-block',
-          contain: 'layout size style'
+          contain: 'layout size style',
+          position: 'relative'
         }}
       >
         <canvas
@@ -182,6 +201,29 @@ const OptimizedChart = memo(
             display: 'block'
           }}
         />
+        {tooltip && (
+          <Box
+            sx={{
+              position: 'absolute',
+              left: Math.min(Math.max(tooltip.x, 50), 210),
+              top: -65,
+              transform: 'translateX(-50%)',
+              bgcolor: 'rgba(0,0,0,0.9)',
+              color: '#fff',
+              px: 1.5,
+              py: 1,
+              borderRadius: 1,
+              fontSize: '11px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              zIndex: 9999
+            }}
+          >
+            <div>{tooltip.date}</div>
+            <div>Vol: ✕{tooltip.value.toFixed(2)}</div>
+            <div>Sales: {tooltip.sales}</div>
+          </Box>
+        )}
       </div>
     );
   },
@@ -408,15 +450,15 @@ const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0 }) =
           '& .MuiTableCell-root': {
             fontSize: isMobile ? '9px' : '11px',
             fontWeight: '500',
-            padding: isMobile ? '8px 4px' : '12px 8px',
+            padding: isMobile ? '8px 4px' : '16px 12px',
             height: 'auto',
             whiteSpace: 'nowrap',
             color: darkMode ? 'rgba(145, 158, 171, 0.8)' : 'rgba(99, 115, 129, 0.8)',
             textTransform: 'uppercase',
             letterSpacing: '0.01em',
             borderBottom: 'none',
-            '&:not(:first-of-type)': {
-              paddingLeft: isMobile ? '4px' : '6px'
+            '&:nth-of-type(n+6)': {
+              padding: isMobile ? '8px 4px' : '16px 8px'
             }
           },
           '& .MuiTableSortLabel-root': {
@@ -526,7 +568,8 @@ const Row = memo(({ id, item }) => {
       .filter((item) => item && item.date)
       .map((item) => ({
         date: item.date,
-        value: item.sales || 0 // Use sales count for the chart
+        value: item.volume || 0,
+        sales: item.sales || 0
       }))
       .slice(-30); // Get last 30 days
 
@@ -620,14 +663,6 @@ const Row = memo(({ id, item }) => {
                 >
                   {name}
                 </Typography>
-                {verified && (
-                  <VerifiedIcon
-                    sx={{
-                      fontSize: isMobile ? 14 : 18,
-                      color: theme.palette.primary.main
-                    }}
-                  />
-                )}
               </Stack>
               <Typography
                 variant={isMobile ? 'caption' : 'body2'}
@@ -691,36 +726,56 @@ const Row = memo(({ id, item }) => {
         </TableCell>
       )}
 
-      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-        <Typography
-          variant={isMobile ? 'subtitle2' : 'h6'}
-          noWrap
-          sx={{
-            fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px',
-            color: darkMode ? '#fff' : '#212B36'
-          }}
-        >
-          {fIntNumber(sales24h || 0)}
-        </Typography>
-      </TableCell>
+      {isMobile ? (
+        <>
+          <TableCell align="right" sx={{ padding: '8px 4px' }}>
+            <Typography
+              variant="subtitle2"
+              noWrap
+              sx={{
+                fontWeight: '600',
+                fontSize: '12px',
+                color: darkMode ? '#fff' : '#212B36'
+              }}
+            >
+              {fIntNumber(sales24h || 0)}
+            </Typography>
+          </TableCell>
 
-      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-        <Typography
-          variant={isMobile ? 'subtitle2' : 'h6'}
-          noWrap
-          sx={{
-            color: '#00AB55',
-            fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px'
-          }}
-        >
-          ✕ {isMobile ? fVolume(totalVolume || 0) : totalVolumeDisplay}
-        </Typography>
-      </TableCell>
+          <TableCell align="right" sx={{ padding: '8px 4px' }}>
+            <Typography
+              variant="subtitle2"
+              noWrap
+              sx={{
+                color: '#00AB55',
+                fontWeight: '600',
+                fontSize: '12px'
+              }}
+            >
+              ✕ {fVolume(totalVolume || 0)}
+            </Typography>
+          </TableCell>
+        </>
+      ) : (
+        <>
+          <TableCell align="right" sx={{ padding: '16px 12px' }}>
+            <Typography
+              variant="h6"
+              noWrap
+              sx={{
+                fontWeight: '600',
+                fontSize: '16px',
+                color: darkMode ? '#fff' : '#212B36'
+              }}
+            >
+              {fIntNumber(sales24h || 0)}
+            </Typography>
+          </TableCell>
+        </>
+      )}
 
       {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+        <TableCell align="right" sx={{ padding: '16px 8px' }}>
           <Typography
             variant="h6"
             noWrap
@@ -736,7 +791,7 @@ const Row = memo(({ id, item }) => {
       )}
 
       {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+        <TableCell align="right" sx={{ padding: '16px 8px' }}>
           <Typography
             variant="h6"
             noWrap
@@ -752,7 +807,7 @@ const Row = memo(({ id, item }) => {
       )}
 
       {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+        <TableCell align="right" sx={{ padding: '16px 8px' }}>
           <Typography
             variant="h6"
             noWrap
@@ -768,7 +823,7 @@ const Row = memo(({ id, item }) => {
       )}
 
       {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 12px' }}>
+        <TableCell align="right" sx={{ padding: '16px 8px' }}>
           <Typography
             variant="h6"
             noWrap
