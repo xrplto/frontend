@@ -160,34 +160,27 @@ const MainContainer = styled(Box)({
 
 const CompactCard = styled(Box)(({ theme }) => ({
   background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  borderRadius: '24px',
-  padding: theme.spacing(3),
-  marginBottom: theme.spacing(3),
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
+  borderRadius: '12px',
+  padding: theme.spacing(2.5),
+  marginBottom: theme.spacing(2.5),
   position: 'relative',
   overflow: 'hidden',
-  transition: 'transform 0.2s ease, border-color 0.2s ease',
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    borderRadius: '16px'
+    borderRadius: '10px'
   }
 }));
 
 const IconCover = styled(Box)(({ theme }) => ({
   width: '80px',
   height: '80px',
-  border: `2px solid ${alpha(theme.palette.divider, 0.2)}`,
-  borderRadius: '16px',
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  borderRadius: '10px',
   background: 'transparent',
   position: 'relative',
   overflow: 'hidden',
-  transition: 'transform 0.2s ease',
-  willChange: 'transform',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    borderColor: alpha(theme.palette.primary.main, 0.3)
-  },
   [theme.breakpoints.up('sm')]: {
     width: '100px',
     height: '100px'
@@ -649,11 +642,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
         display: 'block',
         position: 'relative',
         '&:hover .nft-card': {
-          transform: 'translateY(-4px)',
-          borderColor: alpha(theme.palette.primary.main, 0.3),
-          '& .card-media': {
-            transform: 'scale(1.05)'
-          }
+          borderColor: alpha(theme.palette.primary.main, 0.25)
         }
       }}
     >
@@ -662,14 +651,13 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
         sx={{
           width: '100%',
           aspectRatio: '1 / 1.4',
-          borderRadius: 2,
+          borderRadius: '10px',
           background: 'transparent',
-          border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          transition: 'transform 0.15s ease',
           cursor: 'pointer'
         }}
       >
@@ -883,8 +871,8 @@ const NFTGrid = React.memo(({ collection }) => {
   const sortOptions = useMemo(
     () => [
       { value: 'activity', label: 'Latest Activity' },
-      { value: 'price-low', label: 'Price: Low to High' },
-      { value: 'price-high', label: 'Price: High to Low' },
+      { value: 'price-low', label: 'Low to High' },
+      { value: 'price-high', label: 'High to Low' },
       { value: 'minted-latest', label: 'Recently Minted' },
       { value: 'minted-earliest', label: 'First Minted' }
     ],
@@ -981,24 +969,21 @@ const NFTGrid = React.memo(({ collection }) => {
               flex: 1,
               display: 'flex',
               alignItems: 'center',
-              px: 2.5,
-              py: 1.5,
-              borderRadius: '16px',
-              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              px: 1.5,
+              py: 0.6,
+              borderRadius: '8px',
+              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
               backgroundColor: 'transparent',
-              transition: 'transform 0.2s ease, border-color 0.2s ease',
               '&:focus-within': {
-                borderColor: theme.palette.primary.main,
-                transform: 'translateY(-1px)',
-                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`
+                borderColor: alpha(theme.palette.divider, 0.25)
               }
             }}
           >
-            <SearchIcon sx={{ color: 'text.secondary', mr: 1.5, fontSize: '1.3rem' }} />
+            <SearchIcon sx={{ color: 'text.disabled', mr: 1, fontSize: '1.1rem' }} />
             <TextField
               fullWidth
               variant="standard"
-              placeholder={isMobile ? 'Search NFTs...' : 'Search by name, ID, or attribute...'}
+              placeholder="Search..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
@@ -1006,7 +991,7 @@ const NFTGrid = React.memo(({ collection }) => {
               }}
               InputProps={{
                 disableUnderline: true,
-                sx: { fontSize: '0.95rem' },
+                sx: { fontSize: '0.85rem' },
                 endAdornment: (
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     {search && (
@@ -1042,18 +1027,18 @@ const NFTGrid = React.memo(({ collection }) => {
               onClick={(e) => setAnchorEl(e.currentTarget)}
               endIcon={<ExpandMoreIcon sx={{ fontSize: '1.1rem' }} />}
               sx={{
-                px: 2,
-                py: 0.8,
+                px: 1.5,
+                py: 0.6,
                 borderRadius: '8px',
                 textTransform: 'none',
                 fontWeight: 400,
-                fontSize: '0.875rem',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                color: theme.palette.text.secondary,
+                fontSize: '0.8rem',
+                border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                color: 'text.secondary',
                 backgroundColor: 'transparent',
                 '&:hover': {
                   backgroundColor: 'transparent',
-                  borderColor: alpha(theme.palette.divider, 0.3)
+                  borderColor: alpha(theme.palette.divider, 0.25)
                 }
               }}
             >
