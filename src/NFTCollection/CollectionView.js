@@ -920,12 +920,11 @@ const NFTGrid = React.memo(({ collection }) => {
 
   const sortOptions = useMemo(
     () => [
-      { value: 'default', label: 'Default', icon: '📊', desc: 'Collection order' },
-      { value: 'pricexrpasc', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
-      { value: 'pricexrpdesc', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
-      { value: 'rarityasc', label: 'Rarity: Common First', icon: '🌟', desc: 'Common to rare' },
-      { value: 'raritydesc', label: 'Rarity: Rare First', icon: '👑', desc: 'Rare to common' },
-      { value: 'recent', label: 'Recently Listed', icon: '🆕', desc: 'Newest listings' }
+      { value: 'activity', label: 'Latest Activity', icon: '📊', desc: 'Recent activity' },
+      { value: 'price-low', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
+      { value: 'price-high', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
+      { value: 'minted-latest', label: 'Recently Minted', icon: '🆕', desc: 'Newest first' },
+      { value: 'minted-earliest', label: 'First Minted', icon: '⏰', desc: 'Oldest first' }
     ],
     []
   );
@@ -938,8 +937,17 @@ const NFTGrid = React.memo(({ collection }) => {
     setLoading(true);
     const limit = isMobile ? 16 : 24;
 
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sortBy: subFilter === 'default' ? 'activity' : subFilter
+    });
+
+    if (filter === 1) params.append('listed', 'true');
+    if (filter === 2) params.append('listed', 'xrp');
+
     axios
-      .get(`${BASE_URL}/nft/collections/${slug}/nfts?page=${page}&limit=${limit}`)
+      .get(`${BASE_URL}/nft/collections/${slug}/nfts?${params}`)
       .then((res) => {
         const newNfts = res.data.nfts || [];
         setHasMore(newNfts.length === limit);
@@ -948,7 +956,7 @@ const NFTGrid = React.memo(({ collection }) => {
       })
       .catch((err) => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
-  }, [page, slug, isMobile, setDeletingNfts]);
+  }, [page, slug, subFilter, filter, isMobile, setDeletingNfts]);
 
   // Reset on filter change
   useEffect(() => {
