@@ -914,7 +914,7 @@ const NFTGrid = React.memo(({ collection }) => {
   const [loading, setLoading] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
   const [filter, setFilter] = useState(0);
-  const [subFilter, setSubFilter] = useState('default');
+  const [subFilter, setSubFilter] = useState('price-low');
   const [filterAttrs, setFilterAttrs] = useState([]);
   const [isFirstLoad, setIsFirstLoad] = useState(initialNfts.length === 0);
 
@@ -940,7 +940,7 @@ const NFTGrid = React.memo(({ collection }) => {
     const params = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
-      sortBy: subFilter === 'default' ? 'activity' : subFilter
+      sortBy: subFilter
     });
 
     if (filter === 1) params.append('listed', 'true');
