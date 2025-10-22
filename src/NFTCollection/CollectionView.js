@@ -901,6 +901,10 @@ const NFTGrid = React.memo(({ collection }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [anchorEl, setAnchorEl] = useState(null);
 
+  // Extract slug from collection
+  const collectionData = collection?.collection || collection || {};
+  const slug = collectionData.slug;
+
   // Initialize with SSR data if available
   const initialNfts = collection?.initialNfts || [];
   const [nfts, setNfts] = useState(initialNfts);
@@ -930,21 +934,12 @@ const NFTGrid = React.memo(({ collection }) => {
 
   // Fetch NFTs with optimized batch size
   const fetchNfts = useCallback(() => {
+    if (!slug) return;
     setLoading(true);
     const limit = isMobile ? 16 : 24;
-    const body = {
-      page,
-      limit,
-      flag: 0,
-      cid: collection?.uuid,
-      search,
-      filter,
-      subFilter,
-      filterAttrs
-    };
 
     axios
-      .post(`${BASE_URL}/nfts`, body)
+      .get(`${BASE_URL}/nft/collections/${slug}/nfts?page=${page}&limit=${limit}`)
       .then((res) => {
         const newNfts = res.data.nfts || [];
         setHasMore(newNfts.length === limit);
@@ -953,7 +948,7 @@ const NFTGrid = React.memo(({ collection }) => {
       })
       .catch((err) => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
-  }, [page, search, filter, subFilter, filterAttrs, collection?.uuid, setDeletingNfts]);
+  }, [page, slug, isMobile, setDeletingNfts]);
 
   // Reset on filter change
   useEffect(() => {
@@ -2650,7 +2645,7 @@ export default function CollectionView({ collection }) {
     floor,
     totalVol24h,
     extra
-  } = collection;
+  } = collection?.collection || collection || {};
 
   const floorPrice = floor?.amount || 0;
   const volume1 = fVolume(volume || 0);
