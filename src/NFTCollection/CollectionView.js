@@ -196,13 +196,11 @@ const IconCover = styled(Box)(({ theme }) => ({
 
 const CompactStatsCard = styled(Box)(({ theme }) => ({
   background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  borderRadius: { xs: '12px', sm: '16px' },
-  padding: { xs: theme.spacing(1.5), sm: theme.spacing(2) },
+  border: 'none',
+  borderRadius: '8px',
+  padding: theme.spacing(1.5),
   textAlign: 'center',
-  minWidth: { xs: 'unset', sm: '100px' },
-  width: { xs: '100%', sm: 'auto' },
-  aspectRatio: { xs: '1 / 1', sm: 'unset' },
+  minWidth: '90px',
   display: 'flex',
   flexDirection: 'column',
   justifyContent: 'center',
@@ -211,13 +209,12 @@ const CompactStatsCard = styled(Box)(({ theme }) => ({
 
 const ActionButton = styled(IconButton)(({ theme }) => ({
   background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  borderRadius: '14px',
-  padding: { xs: '8px', sm: '12px' },
-  transition: 'border-color 0.15s ease',
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  borderRadius: '8px',
+  padding: '8px',
   '&:hover': {
-    background: alpha(theme.palette.primary.main, 0.08),
-    borderColor: alpha(theme.palette.primary.main, 0.3)
+    background: 'transparent',
+    borderColor: alpha(theme.palette.divider, 0.25)
   }
 }));
 
@@ -747,73 +744,29 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
           )}
 
           {/* Sale Badge - top left */}
+          {/* Last Event Badge - Top Right */}
           {isSold && !isAdmin && (
             <Box
               sx={{
                 position: 'absolute',
-                top: 8,
-                left: 8,
+                top: 6,
+                right: 6,
                 zIndex: 9,
-                px: 1,
-                py: 0.5,
-                borderRadius: 1,
-                backgroundColor: theme.palette.error.main,
-                color: 'white',
-                fontSize: '0.65rem',
-                fontWeight: 'bold',
-                textTransform: 'uppercase'
+                px: 0.8,
+                py: 0.25,
+                borderRadius: '4px',
+                backgroundColor: alpha(theme.palette.divider, 0.15),
+                backdropFilter: 'blur(8px)',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                color: theme.palette.text.secondary,
+                fontSize: '0.55rem',
+                fontWeight: 400,
+                letterSpacing: '0.3px'
               }}
             >
-              SALE
+              Sold
             </Box>
           )}
-
-          {/* Bottom overlays */}
-          <Stack
-            direction="row"
-            spacing={0.5}
-            sx={{
-              position: 'absolute',
-              bottom: 8,
-              left: 8,
-              right: 8,
-              flexWrap: 'wrap',
-              gap: 0.5
-            }}
-          >
-            {/* Offer Badge */}
-            {costb?.amount && (
-              <Chip
-                label={`Offer ✕ ${fNumber(costb.amount)}`}
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: '0.6rem',
-                  fontWeight: 600,
-                  backgroundColor: alpha(theme.palette.success.main, 0.9),
-                  color: 'white',
-                  '& .MuiChip-label': { px: 1 }
-                }}
-              />
-            )}
-
-            {/* Transfer Badge */}
-            {destination && getMinterName(account) && (
-              <Chip
-                icon={<SendIcon sx={{ fontSize: '0.7rem !important', color: 'white' }} />}
-                label="Transfer"
-                size="small"
-                sx={{
-                  height: 20,
-                  fontSize: '0.6rem',
-                  fontWeight: 600,
-                  backgroundColor: alpha(theme.palette.primary.main, 0.9),
-                  color: 'white',
-                  '& .MuiChip-label': { px: 0.5 }
-                }}
-              />
-            )}
-          </Stack>
         </Box>
 
         {/* Content Section */}
@@ -831,7 +784,9 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
             <Typography
               variant="subtitle2"
               sx={{
-                fontWeight: 700,
+                fontWeight: 600,
+                fontSize: '0.95rem',
+                color: theme.palette.text.primary,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
@@ -854,37 +809,44 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
           {/* Ranks */}
           <Stack direction="row" spacing={0.5} justifyContent="flex-end">
             {MasterSequence > 0 && (
-              <Tooltip title="On-Chain Rank">
-                <Chip
-                  label={`# ${fIntNumber(MasterSequence)}`}
-                  size="small"
-                  sx={{
-                    height: 22,
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                    color: theme.palette.info.main
-                  }}
-                />
-              </Tooltip>
+              <Box
+                sx={{
+                  px: 0.8,
+                  py: 0.3,
+                  borderRadius: '6px',
+                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.4
+                }}
+              >
+                <Typography sx={{ fontSize: '0.65rem', fontWeight: 500, color: theme.palette.primary.main }}>
+                  #
+                </Typography>
+                <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: theme.palette.text.primary }}>
+                  {fIntNumber(MasterSequence)}
+                </Typography>
+              </Box>
             )}
             {rarity_rank > 0 && (
-              <Tooltip title="Rarity Rank">
-                <Chip
-                  icon={<LeaderboardOutlinedIcon sx={{ fontSize: 14 }} />}
-                  label={fIntNumber(rarity_rank)}
-                  size="small"
-                  sx={{
-                    height: 22,
-                    fontSize: '0.65rem',
-                    fontWeight: 700,
-                    backgroundColor: 'transparent',
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                    color: theme.palette.info.main
-                  }}
-                />
-              </Tooltip>
+              <Box
+                sx={{
+                  px: 0.8,
+                  py: 0.3,
+                  borderRadius: '6px',
+                  backgroundColor: alpha(theme.palette.divider, 0.06),
+                  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 0.4
+                }}
+              >
+                <LeaderboardOutlinedIcon sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary }} />
+                <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: theme.palette.text.primary }}>
+                  {fIntNumber(rarity_rank)}
+                </Typography>
+              </Box>
             )}
           </Stack>
         </Box>
@@ -920,11 +882,11 @@ const NFTGrid = React.memo(({ collection }) => {
 
   const sortOptions = useMemo(
     () => [
-      { value: 'activity', label: 'Latest Activity', icon: '📊', desc: 'Recent activity' },
-      { value: 'price-low', label: 'Price: Low to High', icon: '💰', desc: 'Cheapest first' },
-      { value: 'price-high', label: 'Price: High to Low', icon: '💎', desc: 'Most expensive' },
-      { value: 'minted-latest', label: 'Recently Minted', icon: '🆕', desc: 'Newest first' },
-      { value: 'minted-earliest', label: 'First Minted', icon: '⏰', desc: 'Oldest first' }
+      { value: 'activity', label: 'Latest Activity' },
+      { value: 'price-low', label: 'Price: Low to High' },
+      { value: 'price-high', label: 'Price: High to Low' },
+      { value: 'minted-latest', label: 'Recently Minted' },
+      { value: 'minted-earliest', label: 'First Minted' }
     ],
     []
   );
@@ -1078,78 +1040,26 @@ const NFTGrid = React.memo(({ collection }) => {
             <Button
               variant="outlined"
               onClick={(e) => setAnchorEl(e.currentTarget)}
-              endIcon={<ExpandMoreIcon />}
+              endIcon={<ExpandMoreIcon sx={{ fontSize: '1.1rem' }} />}
               sx={{
                 px: 2,
-                borderRadius: '16px',
+                py: 0.8,
+                borderRadius: '8px',
                 textTransform: 'none',
-                fontWeight: 600,
-                border: `1px solid ${alpha(theme.palette.divider, 0.3)}`,
-                color: theme.palette.text.primary,
+                fontWeight: 400,
+                fontSize: '0.875rem',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                color: theme.palette.text.secondary,
                 backgroundColor: 'transparent',
-                transition: 'transform 0.2s ease, border-color 0.2s ease',
                 '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  borderColor: theme.palette.primary.main,
-                  transform: 'translateY(-1px)'
+                  backgroundColor: 'transparent',
+                  borderColor: alpha(theme.palette.divider, 0.3)
                 }
               }}
             >
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography sx={{ fontSize: '1rem' }}>{currentSort.icon}</Typography>
-                {!isMobile && (
-                  <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                    {currentSort.label}
-                  </Typography>
-                )}
-              </Stack>
+              {currentSort.label}
             </Button>
 
-            <Button
-              variant={showFilter ? 'contained' : 'outlined'}
-              onClick={() => setShowFilter(!showFilter)}
-              startIcon={<TuneIcon />}
-              sx={{
-                px: 3,
-                borderRadius: '16px',
-                textTransform: 'none',
-                fontWeight: 600,
-                minWidth: 'auto',
-                backgroundColor: showFilter ? theme.palette.primary.main : 'transparent',
-                border: `1px solid ${showFilter ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
-                color: showFilter ? 'white' : theme.palette.text.primary,
-                transition: 'transform 0.2s ease, border-color 0.2s ease',
-                '&:hover': {
-                  backgroundColor: showFilter
-                    ? theme.palette.primary.dark
-                    : alpha(theme.palette.primary.main, 0.08),
-                  borderColor: theme.palette.primary.main,
-                  transform: 'translateY(-1px)'
-                }
-              }}
-            >
-              {!isMobile && 'Filters'}
-              {(filter > 0 || filterAttrs.length > 0) && (
-                <Chip
-                  size="small"
-                  label={[
-                    (filter & 1 ? 1 : 0) +
-                      (filter & 2 ? 1 : 0) +
-                      (filter & 4 ? 1 : 0) +
-                      (filter & 16 ? 1 : 0) +
-                      filterAttrs.length
-                  ]}
-                  sx={{
-                    ml: 1,
-                    height: 20,
-                    backgroundColor: showFilter ? 'white' : alpha(theme.palette.primary.main, 0.2),
-                    color: showFilter ? theme.palette.primary.main : 'white',
-                    fontWeight: 700,
-                    fontSize: '0.7rem'
-                  }}
-                />
-              )}
-            </Button>
           </Stack>
         </Box>
 
@@ -1474,94 +1384,28 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
         border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`
       }}
     >
-      {/* Header Section */}
-      <Box sx={{ mb: 4 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={2}>
-            <Box
-              sx={{
-                p: 1.5,
-                borderRadius: '12px',
-                background: 'transparent',
-                border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}
-            >
-              <TuneIcon sx={{ color: 'primary.main', fontSize: '1.3rem' }} />
-            </Box>
-            <Box>
-              <Typography
-                variant="h6"
-                sx={{ fontWeight: 700, color: 'text.primary', fontSize: '1.1rem' }}
+      {/* Action Buttons */}
+      <Box sx={{ mb: 3 }}>
+        <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+            {activeFiltersCount > 0 ? `${activeFiltersCount} trait${activeFiltersCount > 1 ? 's' : ''} selected` : 'Select traits to filter'}
+          </Typography>
+          <Stack direction="row" spacing={1}>
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="outlined"
+                onClick={handleClearAttrFilter}
+                size="small"
+                sx={{
+                  textTransform: 'none',
+                  borderRadius: '8px',
+                  fontSize: '0.8rem'
+                }}
               >
-                Attribute Filters
-              </Typography>
-              <Typography
-                variant="body2"
-                color="text.secondary"
-                sx={{ fontWeight: 500, fontSize: '0.85rem' }}
-              >
-                Refine by specific traits
-              </Typography>
-            </Box>
+                Clear
+              </Button>
+            )}
           </Stack>
-          <Chip
-            label={`${activeFiltersCount} active`}
-            variant={activeFiltersCount > 0 ? 'filled' : 'outlined'}
-            size="small"
-            sx={{
-              backgroundColor:
-                activeFiltersCount > 0 ? (theme) => theme.palette.primary.main : 'transparent',
-              color: activeFiltersCount > 0 ? 'white' : (theme) => theme.palette.text.primary,
-              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-              fontWeight: 600
-            }}
-            icon={
-              activeFiltersCount > 0 ? (
-                <CheckCircleIcon sx={{ fontSize: '16px !important' }} />
-              ) : undefined
-            }
-          />
-        </Stack>
-
-        {/* Action Buttons */}
-        <Stack direction="row" spacing={2} justifyContent="flex-end">
-          {activeFiltersCount > 0 && (
-            <Button
-              variant="outlined"
-              onClick={handleClearAttrFilter}
-              size="small"
-              startIcon={<FilterListIcon sx={{ fontSize: '16px' }} />}
-              sx={{
-                backgroundColor: 'transparent',
-                border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                  borderColor: (theme) => theme.palette.primary.main
-                }
-              }}
-            >
-              Clear All
-            </Button>
-          )}
-          {!isEqual(fAttrs, filterAttrs) && (
-            <Button
-              variant="contained"
-              onClick={handleApplyAttrFilter}
-              size="small"
-              startIcon={<CheckCircleIcon sx={{ fontSize: '16px' }} />}
-              sx={{
-                backgroundColor: (theme) => theme.palette.primary.main,
-                '&:hover': {
-                  backgroundColor: (theme) => theme.palette.primary.dark
-                }
-              }}
-            >
-              Apply Filters
-            </Button>
-          )}
         </Stack>
       </Box>
 
@@ -2783,297 +2627,97 @@ export default function CollectionView({ collection }) {
 
       {/* Collection Header */}
       <CompactCard>
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          spacing={{ xs: 2, sm: 3 }}
-          alignItems={{ xs: 'stretch', sm: 'center' }}
-        >
-          {/* Logo Section */}
-          <Box
-            sx={{ flexShrink: 0, display: { xs: 'flex', sm: 'block' }, justifyContent: 'center' }}
-          >
-            <IconCover>
-              <Box sx={{ position: 'relative', width: '100%', height: '100%' }}>
-                <Image
-                  src={`https://s1.xrpl.to/collection/${logoImage}`}
-                  alt={`${name} collection logo`}
-                  fill
-                  priority
-                  sizes="(max-width: 600px) 90px, 100px"
-                  style={{ objectFit: 'cover', borderRadius: '12px' }}
-                />
-              </Box>
-            </IconCover>
-          </Box>
+        <Stack direction="row" spacing={2.5} alignItems="center">
+          <IconCover sx={{ width: '70px', height: '70px' }}>
+            <Image
+              src={`https://s1.xrpl.to/collection/${logoImage}`}
+              alt={name}
+              fill
+              priority
+              sizes="70px"
+              style={{ objectFit: 'cover', borderRadius: '10px' }}
+            />
+          </IconCover>
 
-          {/* Main Content Section */}
-          <Stack spacing={1.5} flex={1} sx={{ minWidth: 0 }}>
-            {/* Title and Actions Row */}
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={{ xs: 1, sm: 2 }}
-              justifyContent="space-between"
-              alignItems={{ xs: 'center', sm: 'flex-start' }}
-            >
-              <Stack direction="row" spacing={1.5} alignItems="center" sx={{ flex: 1 }}>
-                <Typography
-                  variant="h5"
-                  fontWeight="bold"
-                  sx={{ fontSize: { xs: '1.1rem', sm: '1.4rem' } }}
-                >
-                  {name}
-                </Typography>
-                {verified === 'yes' && (
-                  <Tooltip title="Verified Collection">
-                    <Chip
-                      icon={<VerifiedIcon sx={{ fontSize: '14px !important' }} />}
-                      label="Verified"
-                      size="small"
-                      sx={{
-                        backgroundColor: 'transparent',
-                        border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                        color: theme.palette.info.main,
-                        fontWeight: 600,
-                        height: '24px',
-                        fontSize: '0.7rem'
-                      }}
-                    />
-                  </Tooltip>
-                )}
-              </Stack>
-
-              <Stack direction="row" alignItems="center" spacing={{ xs: 1, sm: 1.5 }}>
+          <Stack spacing={0.5} sx={{ minWidth: 0 }}>
+            <Stack direction="row" spacing={0.8} alignItems="center">
+              <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 600 }}>
+                {name}
+              </Typography>
+              {verified === 'yes' && <VerifiedIcon sx={{ fontSize: '1rem', color: 'primary.main' }} />}
+              <Stack direction="row" spacing={0.8} sx={{ ml: 2 }}>
                 {accountLogin === collection.account && (
-                  <Link href={`/collection/${slug}/edit`} underline="none">
-                    <Tooltip title="Edit Collection">
-                      <ActionButton size="small">
-                        <EditIcon sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' } }} />
-                      </ActionButton>
-                    </Tooltip>
-                  </Link>
+                  <Button
+                    component={Link}
+                    href={`/collection/${slug}/edit`}
+                    variant="outlined"
+                    size="small"
+                    startIcon={<EditIcon sx={{ fontSize: '0.8rem' }} />}
+                    sx={{
+                      textTransform: 'none',
+                      fontSize: '0.75rem',
+                      py: 0.4,
+                      px: 1,
+                      borderRadius: '6px',
+                      borderColor: alpha(theme.palette.divider, 0.2),
+                      color: 'text.secondary',
+                      '&:hover': { borderColor: alpha(theme.palette.divider, 0.3), backgroundColor: 'transparent' }
+                    }}
+                  >
+                    Edit
+                  </Button>
                 )}
                 <Watch collection={collection} />
-                <Tooltip title="Share Collection">
-                  <ActionButton size="small" ref={anchorRef} onClick={() => setOpenShare(true)}>
-                    <ShareIcon sx={{ fontSize: { xs: '0.9rem', sm: '1.1rem' } }} />
-                  </ActionButton>
-                </Tooltip>
-              </Stack>
-            </Stack>
-
-            {/* Creator and Description Row */}
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={{ xs: 1.5, sm: 3 }}
-              alignItems="center"
-            >
-              <Box
-                sx={{
-                  px: 2.5,
-                  py: 1.2,
-                  borderRadius: '12px',
-                  background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.03)} 0%, ${alpha(theme.palette.primary.light, 0.01)} 100%)`,
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                  position: 'relative',
-                  overflow: 'hidden',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
-                    borderColor: alpha(theme.palette.primary.main, 0.25),
-                    '& .date-badge': {
-                      transform: 'scale(1.05)',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.light, 0.1)} 100%)`
-                    }
-                  },
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: '-100%',
-                    width: '100%',
-                    height: '100%',
-                    background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.05)}, transparent)`,
-                    animation: 'shimmer 3s infinite'
-                  },
-                  '@keyframes shimmer': {
-                    '100%': { left: '100%' }
-                  }
-                }}
-              >
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Box
-                    sx={{
-                      p: 0.5,
-                      borderRadius: '6px',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.1)} 0%, ${alpha(theme.palette.primary.light, 0.05)} 100%)`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <PeopleIcon sx={{ fontSize: '0.9rem', color: theme.palette.primary.main }} />
-                  </Box>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontSize: '0.75rem',
-                      fontWeight: 500,
-                      color: alpha(theme.palette.text.secondary, 0.7),
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
-                    }}
-                  >
-                    Created by
-                  </Typography>
-                  <Link color="inherit" href={`/profile/${account}`} underline="none">
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor: 'transparent',
-                        backgroundClip: 'text',
-                        transition: 'all 0.2s ease',
-                        '&:hover': {
-                          transform: 'translateY(-1px)',
-                          filter: 'brightness(1.2)'
-                        }
-                      }}
-                    >
-                      {accountName || account.slice(0, 4) + '...' + account.slice(-4)}
-                    </Typography>
-                  </Link>
-                  <Box
-                    className="date-badge"
-                    sx={{
-                      ml: 'auto',
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: '20px',
-                      background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 100%)`,
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 0.5,
-                      transition: 'all 0.2s ease',
-                      position: 'relative',
-                      '&::after': {
-                        content: '""',
-                        position: 'absolute',
-                        top: '50%',
-                        left: '50%',
-                        transform: 'translate(-50%, -50%)',
-                        width: '4px',
-                        height: '4px',
-                        borderRadius: '50%',
-                        background: theme.palette.success.main,
-                        boxShadow: `0 0 8px ${alpha(theme.palette.success.main, 0.6)}`,
-                        animation: 'pulse 2s infinite'
-                      },
-                      '@keyframes pulse': {
-                        '0%, 100%': { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
-                        '50%': { opacity: 0.6, transform: 'translate(-50%, -50%) scale(1.5)' }
-                      }
-                    }}
-                  >
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.7rem',
-                        fontWeight: 600,
-                        color: theme.palette.primary.main,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        pl: 1.5
-                      }}
-                    >
-                      {formatMonthYear(created)}
-                    </Typography>
-                  </Box>
-                </Stack>
-              </Box>
-
-              {description && (
-                <Typography
-                  variant="body2"
+                <Button
+                  variant="outlined"
+                  size="small"
+                  startIcon={<ShareIcon sx={{ fontSize: '0.8rem' }} />}
+                  onClick={() => setOpenShare(true)}
                   sx={{
+                    textTransform: 'none',
+                    fontSize: '0.75rem',
+                    py: 0.4,
+                    px: 1,
+                    borderRadius: '6px',
+                    borderColor: alpha(theme.palette.divider, 0.2),
                     color: 'text.secondary',
-                    fontSize: { xs: '0.75rem', sm: '0.85rem' },
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    flex: 1,
-                    minWidth: 0,
-                    lineHeight: 1.3,
-                    fontStyle: 'italic'
+                    '&:hover': { borderColor: alpha(theme.palette.divider, 0.3), backgroundColor: 'transparent' }
                   }}
                 >
-                  "{truncate(description, fullScreen ? 60 : 100)}"
-                </Typography>
-              )}
+                  Share
+                </Button>
+              </Stack>
             </Stack>
+            <Stack direction="row" spacing={0.8} alignItems="center">
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                {accountName || account?.slice(0, 6) + '...' + account?.slice(-4)}
+              </Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>•</Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                {formatMonthYear(created)}
+              </Typography>
+            </Stack>
+            {description && (
+              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', fontStyle: 'italic' }}>
+                {truncate(description, 80)}
+              </Typography>
+            )}
           </Stack>
 
-          {/* Stats Section */}
-          <Box
-            sx={{
-              display: { xs: 'grid', sm: 'flex' },
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)' },
-              gap: { xs: 0.5, sm: 1.5 },
-              flexDirection: 'row',
-              flexShrink: 0,
-              width: { xs: '100%', sm: 'auto' },
-              mt: { xs: 2, sm: 0 }
-            }}
-          >
-            {statsData
-              .filter((item, index) => index < 4)
-              .map((item) => (
-                <CompactStatsCard key={item.label}>
-                  <Box sx={{ width: '100%' }}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight="bold"
-                      sx={{ fontSize: { xs: '1rem', sm: '1.1rem' }, mb: 0.5 }}
-                    >
-                      {item.icon && <span style={{ marginRight: '3px' }}>{item.icon}</span>}
-                      {item.value}
-                    </Typography>
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{
-                        fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                        fontWeight: 500,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 0.5
-                      }}
-                    >
-                      {item.label}
-                      {item.tooltip && (
-                        <Tooltip title={`Volume on XRPNFT: ${volume1}`}>
-                          <MoreVertIcon
-                            icon={<InfoIcon />}
-                            style={{
-                              fontSize: '10px',
-                              color: theme.palette.text.secondary,
-                              cursor: 'help'
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </Typography>
-                  </Box>
-                </CompactStatsCard>
-              ))}
-          </Box>
+          <Box sx={{ flex: 1 }} />
+
+          <Stack direction="row" spacing={3}>
+            {statsData.filter((item, index) => index < 4).map((item) => (
+              <Box key={item.label} sx={{ textAlign: 'center' }}>
+                <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, mb: 0.2 }}>
+                  {item.icon}{item.value}
+                </Typography>
+                <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                  {item.label}
+                </Typography>
+              </Box>
+            ))}
+          </Stack>
         </Stack>
       </CompactCard>
 
@@ -3093,33 +2737,27 @@ export default function CollectionView({ collection }) {
               value={value}
               exclusive
               onChange={(e, newValue) => newValue && handleChange(e, newValue)}
-              size="medium"
+              size="small"
               sx={{
                 bgcolor: 'transparent',
-                borderRadius: '16px',
-                padding: '4px',
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                 '& .MuiToggleButton-root': {
                   border: 'none',
-                  borderRadius: '12px !important',
-                  color: alpha(theme.palette.text.secondary, 0.8),
-                  fontSize: '0.95rem',
-                  fontWeight: 500,
+                  borderBottom: `2px solid transparent`,
+                  borderRadius: 0,
+                  color: 'text.secondary',
+                  fontSize: '0.85rem',
+                  fontWeight: 400,
                   textTransform: 'none',
-                  px: 3,
-                  py: 1.5,
-                  minWidth: '100px',
-                  transition: 'transform 0.2s ease, border-color 0.2s ease',
+                  px: 2,
+                  py: 0.8,
                   '&.Mui-selected': {
                     bgcolor: 'transparent',
-                    color: theme.palette.primary.main,
-                    fontWeight: 600,
-                    borderColor: theme.palette.primary.main,
-                    border: `1px solid ${theme.palette.primary.main}`
+                    color: 'text.primary',
+                    fontWeight: 500,
+                    borderBottom: `2px solid ${theme.palette.primary.main}`
                   },
                   '&:hover': {
-                    bgcolor: 'transparent',
-                    color: theme.palette.primary.main
+                    bgcolor: 'transparent'
                   }
                 }
               }}

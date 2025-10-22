@@ -2,7 +2,7 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 
 // Material
-import { useTheme, Chip, Tooltip, IconButton } from '@mui/material';
+import { useTheme, Chip, Tooltip, IconButton, Button, alpha } from '@mui/material';
 import StarOutlineIcon from '@mui/icons-material/StarOutline';
 import StarRateIcon from '@mui/icons-material/StarRate';
 
@@ -97,48 +97,23 @@ export default function Watch({ collection }) {
   };
 
   return (
-    <>
-      {watchList.includes(md5) ? (
-        <Tooltip title="Remove from Watchlist">
-          <IconButton
-            aria-label="Remove from watchlist"
-            sx={{
-              '& .MuiChip-icon': {
-                color: '#F6B87E'
-              }
-              //borderRadius: '4px',
-              //border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
-            }}
-            onClick={() => {
-              onChangeWatchList(md5);
-            }}
-          >
-            <StarRateIcon fontSize="small" sx={{ color: '#F6B87E' }} />
-          </IconButton>
-        </Tooltip>
-      ) : (
-        <Tooltip title="Add to Watchlist and follow">
-          <IconButton
-            aria-label="Add to watchlist"
-            sx={{
-              // cursor: 'pointer',
-              '&:hover': {
-                // color: '#F6B87E',
-                '& .MuiChip-icon': {
-                  color: '#F6B87E'
-                }
-              }
-              //borderRadius: '4px',
-              //border: `1px solid ${darkMode ? '#616161' : '#bdbdbd'}`
-            }}
-            onClick={() => {
-              onChangeWatchList(md5);
-            }}
-          >
-            <StarOutlineIcon fontSize="small" />
-          </IconButton>
-        </Tooltip>
-      )}
-    </>
+    <Button
+      variant="outlined"
+      size="small"
+      startIcon={watchList.includes(md5) ? <StarRateIcon sx={{ fontSize: '0.85rem' }} /> : <StarOutlineIcon sx={{ fontSize: '0.85rem' }} />}
+      onClick={() => onChangeWatchList(md5)}
+      sx={{
+        textTransform: 'none',
+        fontSize: '0.75rem',
+        py: 0.5,
+        px: 1.2,
+        borderRadius: '6px',
+        borderColor: alpha(theme.palette.divider, 0.2),
+        color: 'text.secondary',
+        '&:hover': { borderColor: alpha(theme.palette.divider, 0.3), backgroundColor: 'transparent' }
+      }}
+    >
+      {watchList.includes(md5) ? 'Following' : 'Follow'}
+    </Button>
   );
 }
