@@ -153,11 +153,11 @@ export async function getStaticProps({ params }) {
     data = res.data;
     if (tab) data.tab = tab;
 
-    // SEO: 301 redirect non-canonical URLs to md5 format (prevents duplicate content)
-    if (data && data.token && data.token.md5 && slug !== data.token.md5) {
+    // SEO: 301 redirect md5 hash to human-readable slug (better for SEO + UX)
+    if (data && data.token && data.token.slug && slug !== data.token.slug) {
       return {
         redirect: {
-          destination: `/token/${data.token.md5}${tab ? `/${tab}` : ''}`,
+          destination: `/token/${data.token.slug}${tab ? `/${tab}` : ''}`,
           permanent: true // 301 redirect
         }
       };
@@ -167,7 +167,7 @@ export async function getStaticProps({ params }) {
     if (tab === 'trustset') {
       return {
         redirect: {
-          destination: `/token/${data.token.md5 || slug}`,
+          destination: `/token/${data.token.slug || slug}`,
           permanent: true // 301 redirect
         }
       };
@@ -249,8 +249,8 @@ export async function getStaticProps({ params }) {
 
     const imageData = getOptimalImage();
 
-    // Use md5 for canonical URL (SEO best practice: one canonical URL per resource)
-    const canonicalSlug = md5 || slug;
+    // Use human-readable slug for canonical URL (SEO best practice: descriptive URLs)
+    const canonicalSlug = slug || md5;
 
     ogp.canonical = `https://xrpl.to/token/${canonicalSlug}`;
     ogp.title = seoTitle;
