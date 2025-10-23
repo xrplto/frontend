@@ -466,6 +466,22 @@ const MobileTokenRow = ({
         : '#2E7D32';
   };
 
+  const getMarketCapColor = (mcap) => {
+    if (!mcap || isNaN(mcap)) return theme.palette.text.primary;
+    // Elite: $5M+ (3% - dark green)
+    if (mcap >= 5e6) return theme.palette.mode === 'dark' ? '#2E7D32' : '#1B5E20';
+    // Established: $1M-$5M (8% - green)
+    if (mcap >= 1e6) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    // Mid-tier: $100K-$1M (24% - blue)
+    if (mcap >= 1e5) return theme.palette.mode === 'dark' ? '#42A5F5' : '#1976D2';
+    // Small: $10K-$100K (32% - yellow)
+    if (mcap >= 1e4) return theme.palette.mode === 'dark' ? '#FFC107' : '#F57F17';
+    // Micro: $1K-$10K (orange)
+    if (mcap >= 1e3) return theme.palette.mode === 'dark' ? '#FF9800' : '#E65100';
+    // Nano: <$1K (red)
+    return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
+  };
+
   useEffect(() => {
     setPriceColor(token.bearbull === -1 ? '#EF5350' : token.bearbull === 1 ? '#4CAF50' : '');
     const timer = setTimeout(() => setPriceColor(''), 1500);
@@ -509,7 +525,11 @@ const MobileTokenRow = ({
       case 'marketCap':
         const mcap =
           marketcap && exchRate ? new Decimal(marketcap || 0).div(exchRate).toNumber() : 0;
-        return `${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap / 1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap / 1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap / 1e3).toFixed(1)}K` : formatNumber(mcap)}`;
+        return (
+          <span style={{ color: getMarketCapColor(mcap), fontWeight: '600' }}>
+            {`${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap / 1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap / 1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap / 1e3).toFixed(1)}K` : formatNumber(mcap)}`}
+          </span>
+        );
       case 'tvl':
         const tvlVal = tvl && exchRate ? new Decimal(tvl || 0).div(exchRate).toNumber() : 0;
         return `${currencySymbols[activeFiatCurrency]}${tvlVal >= 1e6 ? `${(tvlVal / 1e6).toFixed(1)}M` : tvlVal >= 1e3 ? `${(tvlVal / 1e3).toFixed(1)}K` : formatNumber(tvlVal)}`;
@@ -610,6 +630,22 @@ const DesktopTokenRow = ({
       : theme.palette.mode === 'dark'
         ? '#4CAF50'
         : '#2E7D32';
+  };
+
+  const getMarketCapColor = (mcap) => {
+    if (!mcap || isNaN(mcap)) return theme.palette.text.primary;
+    // Elite: $5M+ (3% - dark green)
+    if (mcap >= 5e6) return theme.palette.mode === 'dark' ? '#2E7D32' : '#1B5E20';
+    // Established: $1M-$5M (8% - green)
+    if (mcap >= 1e6) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    // Mid-tier: $100K-$1M (24% - blue)
+    if (mcap >= 1e5) return theme.palette.mode === 'dark' ? '#42A5F5' : '#1976D2';
+    // Small: $10K-$100K (32% - yellow)
+    if (mcap >= 1e4) return theme.palette.mode === 'dark' ? '#FFC107' : '#F57F17';
+    // Micro: $1K-$10K (orange)
+    if (mcap >= 1e3) return theme.palette.mode === 'dark' ? '#FF9800' : '#E65100';
+    // Nano: <$1K (red)
+    return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
   };
 
   useEffect(() => {
@@ -740,7 +776,7 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontWeight: '600' }}>
+              <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
@@ -869,7 +905,7 @@ const DesktopTokenRow = ({
                 {formatValue(convertedValues.volume)}
               </StyledCell>
               <StyledCell align="right" darkMode={darkMode}>
-                <span style={{ fontWeight: '600' }}>
+                <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
                   {currencySymbols[activeFiatCurrency]}
                   {formatValue(convertedValues.marketCap)}
                 </span>
@@ -991,7 +1027,7 @@ const DesktopTokenRow = ({
             case 'marketCap':
               columnElements.push(
                 <StyledCell key="marketCap" align="right" darkMode={darkMode} style={extraStyle}>
-                  <span style={{ fontWeight: '600' }}>
+                  <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(convertedValues.marketCap)}
                   </span>
@@ -1129,7 +1165,7 @@ const DesktopTokenRow = ({
               {formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontWeight: '600' }}>
+              <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>

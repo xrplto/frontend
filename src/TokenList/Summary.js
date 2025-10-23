@@ -938,7 +938,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={7} mdCols={3} smCols={1}>
+            <Grid cols={5} mdCols={3} smCols={1}>
               <MetricBox>
                 <MetricTitle>MCap</MetricTitle>
                 <MetricValue>
@@ -956,15 +956,43 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>24h Vol</MetricTitle>
-                <MetricValue>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(
-                    new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0)
-                      .div(fiatRate)
-                      .toNumber()
-                  )}
-                </MetricValue>
+                <MetricTitle>24h Volume</MetricTitle>
+                {(() => {
+                  const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
+                  const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
+                  return (
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                      <MetricValue>
+                        {currencySymbols[activeFiatCurrency]}
+                        {formatNumberWithDecimals(
+                          new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0)
+                            .div(fiatRate)
+                            .toNumber()
+                        )}
+                      </MetricValue>
+                      <span style={{
+                        fontSize: '0.55rem',
+                        fontWeight: 500,
+                        padding: '2px 5px',
+                        borderRadius: '3px',
+                        background: theme?.palette?.mode === 'dark' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                        color: '#10b981'
+                      }}>
+                        Stable {stablePercent.toFixed(1)}%
+                      </span>
+                      <span style={{
+                        fontSize: '0.55rem',
+                        fontWeight: 500,
+                        padding: '2px 5px',
+                        borderRadius: '3px',
+                        background: theme?.palette?.mode === 'dark' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
+                        color: '#f59e0b'
+                      }}>
+                        Meme {memePercent.toFixed(1)}%
+                      </span>
+                    </div>
+                  );
+                })()}
                 <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
                   {(metrics.global?.gDexVolumePro || 0) >= 0 ? '▲' : '▼'}
                   {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
@@ -983,32 +1011,6 @@ export default function Summary() {
                   {(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
                   {Math.abs(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0).toFixed(2)}%
                 </PercentageChange>
-              </MetricBox>
-
-              <MetricBox>
-                <MetricTitle>Stable Vol</MetricTitle>
-                <MetricValue>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(
-                    new Decimal(metrics.global?.gStableVolume || 0).div(fiatRate).toNumber()
-                  )}
-                </MetricValue>
-                <VolumePercentage>
-                  {((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%
-                </VolumePercentage>
-              </MetricBox>
-
-              <MetricBox>
-                <MetricTitle>Meme Vol</MetricTitle>
-                <MetricValue>
-                  {currencySymbols[activeFiatCurrency]}
-                  {formatNumberWithDecimals(
-                    new Decimal(metrics.global?.gMemeVolume || 0).div(fiatRate).toNumber()
-                  )}
-                </MetricValue>
-                <VolumePercentage>
-                  {((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100).toFixed(1)}%
-                </VolumePercentage>
               </MetricBox>
 
               <MetricBox>
