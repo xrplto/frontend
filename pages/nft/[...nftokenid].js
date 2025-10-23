@@ -98,19 +98,16 @@ export default function Overview({ nft }) {
 }
 
 export async function getServerSideProps(ctx) {
-  const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   let data = null;
   try {
     const params = ctx.params.nftokenid;
-
     const NFTokenID = params[0];
 
-    // Self: true  https://api.xrpnft.com/api/nft/00081388A47691FB124F91B5FF0F5246AED2B5275385689F9494918200001FE8
-    // Self: false https://api.xrpnft.com/api/nft/00081388C182B4F213B82CCFA4C6F59AD76F0AFCFBDF04D5048B654B00000070
-    const res = await axios.get(`${BASE_URL}/nft/${NFTokenID}`);
+    const res = await axios.get(`${BASE_URL}/nft/nfts/${NFTokenID}`);
 
-    data = res.data;
+    data = { nft: res.data };
   } catch (e) {
     console.log(e);
   }

@@ -367,49 +367,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
   return (
     <StyledCard>
-      {/* Header */}
-      <Box sx={{ p: 2, pb: 1 }}>
-        <Stack direction="row" justifyContent="space-between" alignItems="flex-start" spacing={2}>
-          <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 700,
-                mb: 0.5,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {NFTName}
-            </Typography>
-            {collectionName && (
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Avatar sx={{ width: 20, height: 20 }} src="/static/collection-placeholder.png" />
-                <Typography variant="body2" color="text.secondary">
-                  {collectionName}
-                </Typography>
-              </Stack>
-            )}
-          </Box>
-          <Stack direction="row" spacing={1}>
-            {rarity && (
-              <Chip
-                label={`Rank #${rarity}`}
-                size="small"
-                color="primary"
-                variant="outlined"
-                sx={{ fontWeight: 600 }}
-              />
-            )}
-            <Tooltip title="Share">
-              <IconButton size="small" onClick={handleTweetNFT}>
-                <ShareIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Stack>
-        </Stack>
-      </Box>
 
       {/* Tabs */}
       {contentTabList.length > 1 && (
@@ -543,69 +500,43 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
   return (
     <Container>
-      {/* NFT Preview */}
-      <Box sx={{ mb: 1.5, width: '100%' }}>
-        <NFTPreviewComponent nft={nft} showDetails={true} />
+      {/* Title and Collection */}
+      <Box sx={{ mb: 1, px: 1, py: 0.8, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+        <Stack direction="row" alignItems="baseline" spacing={1}>
+          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>
+            {nft.name || meta?.name || 'Untitled'}
+          </Typography>
+          {cslug && (
+            <>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>•</Typography>
+              <Link href={`/collection/${cslug}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                  {collectionName}
+                </Typography>
+              </Link>
+            </>
+          )}
+          {date && (
+            <>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>•</Typography>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>
+                {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </Typography>
+            </>
+          )}
+        </Stack>
       </Box>
 
-      {/* Basic Info */}
-      <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-        <Grid container spacing={1}>
-          <Grid size={{ xs: 12 }}>
-            <Stack direction="row" justifyContent="space-between" alignItems="center">
-              <Box>
-                <Label>Collection</Label>
-                {cslug ? (
-                  <Link href={`/collection/${cslug}`} underline="hover">
-                    <Value sx={{ color: 'primary.main', fontSize: '0.7rem' }}>
-                      {collectionName}
-                    </Value>
-                  </Link>
-                ) : (
-                  <Value sx={{ fontSize: '0.7rem' }}>{collectionName}</Value>
-                )}
-              </Box>
-              {rarity_rank > 0 && (
-                <CompactChip
-                  label={`Rank #${rarity_rank}`}
-                  size="small"
-                  color="primary"
-                  variant="outlined"
-                />
-              )}
-            </Stack>
-          </Grid>
-
-          {(strDateTime || volume > 0) && (
-            <Grid size={{ xs: 12 }}>
-              <Stack direction="row" justifyContent="space-between" sx={{ mt: 0.5 }}>
-                {strDateTime && (
-                  <Stack direction="row" alignItems="center" spacing={0.25}>
-                    <CalendarTodayIcon sx={{ fontSize: '0.65rem', color: 'text.secondary' }} />
-                    <Value sx={{ fontSize: '0.65rem' }}>{strDateTime}</Value>
-                  </Stack>
-                )}
-                {volume > 0 && (
-                  <Stack direction="row" alignItems="center" spacing={0.25}>
-                    <Value sx={{ fontSize: '0.65rem' }}>✕ {fVolume(volume)}</Value>
-                    <Tooltip title="Traded volume on XRPL">
-                      <InfoOutlinedIcon sx={{ fontSize: '0.65rem', color: 'text.secondary' }} />
-                    </Tooltip>
-                  </Stack>
-                )}
-              </Stack>
-            </Grid>
-          )}
-        </Grid>
-      </Paper>
-
-      <Divider sx={{ mb: 1 }} />
+      {/* NFT Preview */}
+      <Box sx={{ mb: 1.5, width: '100%' }}>
+        <NFTPreviewComponent nft={nft} showDetails={false} />
+      </Box>
 
       {/* Properties */}
       {properties && properties.length > 0 && (
         <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
           <SectionTitle>Properties</SectionTitle>
-          <Grid container spacing={0.5} sx={{ maxHeight: 120, overflowY: 'auto' }}>
+          <Grid container spacing={0.5}>
             {properties.map((item, idx) => {
               const type = item.type || item.trait_type;
               const value = item.value;
@@ -660,181 +591,64 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         </Paper>
       )}
 
-      {/* Technical Details */}
-      <Paper sx={{ p: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-        <SectionTitle>Details</SectionTitle>
-
-        <Grid container spacing={0.5}>
-          <Grid size={{ xs: 12 }}>
-            <Stack direction="row" alignItems="center" spacing={0.5}>
-              <Label sx={{ mb: 0 }}>Flags:</Label>
-              <Box sx={{ transform: 'scale(0.85)', transformOrigin: 'left' }}>
-                {/* Inline Flags component (previously FlagsContainer) */}
-                <Stack direction="row" alignItems="center" justifyContent="start" sx={{ fontSize: 20, gap: 2 }}>
-                  {(flag & 0x00000001) !== 0 && (
-                    <Tooltip title={<Typography sx={{ color: 'white' }}>Burnable</Typography>}>
-                      <LocalFireDepartmentIcon />
-                    </Tooltip>
-                  )}
-                  {(flag & 0x00000002) !== 0 && (
-                    <Tooltip title={<Typography sx={{ color: 'white' }}>OnlyXRP</Typography>}>
-                      <CurrencyExchangeIcon />
-                    </Tooltip>
-                  )}
-                  {(flag & 0x00000004) !== 0 && (
-                    <Tooltip title={<Typography sx={{ color: 'white' }}>TrustLine</Typography>}>
-                      <VerifiedUserIcon />
-                    </Tooltip>
-                  )}
-                  {(flag & 0x00000008) !== 0 && (
-                    <Tooltip title={<Typography sx={{ color: 'white' }}>Transferable</Typography>}>
-                      <SwapHorizIcon />
-                    </Tooltip>
-                  )}
-                </Stack>
+      {/* Stats */}
+      {(rarity_rank > 0 || volume > 0) && (
+        <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
+          <Stack direction="row" spacing={3}>
+            {rarity_rank > 0 && (
+              <Box>
+                <Label sx={{ mb: 0.3 }}>Rarity Rank</Label>
+                <Value sx={{ fontSize: '0.75rem' }}>#{rarity_rank}</Value>
               </Box>
-            </Stack>
-          </Grid>
+            )}
+            {volume > 0 && (
+              <Box>
+                <Label sx={{ mb: 0.3 }}>Volume</Label>
+                <Value sx={{ fontSize: '0.75rem' }}>✕{fVolume(volume)}</Value>
+              </Box>
+            )}
+          </Stack>
+        </Paper>
+      )}
 
-          <Grid size={{ xs: 12 }}>
-            <Stack spacing={0.5}>
-              <Stack direction="row" alignItems="center">
-                <Label sx={{ mb: 0, minWidth: 40 }}>Owner:</Label>
-                <Link href={`/account/${account}`} underline="hover">
-                  <Value
-                    sx={{ fontSize: '0.65rem' }}
-                  >{`${account.slice(0, 8)}...${account.slice(-6)}`}</Value>
-                </Link>
-                <Tooltip title="Copy">
-                  <CopyButton
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(account).then(() => {
-                        openSnackbar('Copied!', 'success');
-                      });
-                    }}
-                  >
-                    <ContentCopyIcon />
-                  </CopyButton>
-                </Tooltip>
-              </Stack>
-
-              <Stack direction="row" alignItems="center">
-                <Label sx={{ mb: 0, minWidth: 40 }}>Issuer:</Label>
-                <Link href={`/account/${issuer}`} underline="hover">
-                  <Value
-                    sx={{ fontSize: '0.65rem' }}
-                  >{`${issuer.slice(0, 8)}...${issuer.slice(-6)}`}</Value>
-                </Link>
-                <Tooltip title="Copy">
-                  <CopyButton
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(issuer).then(() => {
-                        openSnackbar('Copied!', 'success');
-                      });
-                    }}
-                  >
-                    <ContentCopyIcon />
-                  </CopyButton>
-                </Tooltip>
-              </Stack>
-            </Stack>
-          </Grid>
-
-          <Grid size={{ xs: 12 }}>
-            <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
-              <Label sx={{ mb: 0 }}>Fee:</Label>
-              <Value sx={{ fontSize: '0.65rem' }}>{transferFee}%</Value>
-            </Stack>
-          </Grid>
-
-          <Grid size={{ xs: 12 }}>
-            <Stack direction="row" alignItems="center" sx={{ mt: 0.5 }}>
-              <Label sx={{ mb: 0, minWidth: 60 }}>TokenID:</Label>
-              <Link
-                href={`https://livenet.xrpl.org/nfts/${NFTokenID}`}
-                target="_blank"
-                rel="noreferrer noopener nofollow"
-                underline="hover"
-              >
-                <Value
-                  sx={{ fontSize: '0.6rem', color: 'primary.main' }}
-                >{`${NFTokenID.slice(0, 12)}...${NFTokenID.slice(-12)}`}</Value>
+      {/* Technical Details */}
+      <Paper sx={{ p: 1.5, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
+        <Stack spacing={1}>
+          <Stack direction="row" spacing={3}>
+            <Box>
+              <Label sx={{ mb: 0.3 }}>Owner</Label>
+              <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all' }}>{account}</Value>
               </Link>
-            </Stack>
-          </Grid>
-        </Grid>
-
-        {/* Media Files */}
-        {files && files.length > 0 && (
-          <Box sx={{ mt: 1, pt: 0.5, borderTop: 1, borderColor: 'divider' }}>
-            <Label>Media Files</Label>
-            <Box sx={{ maxHeight: 60, overflowY: 'auto' }}>
-              {files.map((file, index) => {
-                let cachedHref;
-                if (file.isIPFS && file.IPFSPinned) {
-                  cachedHref = `https://gateway.xrpnft.com/ipfs/${file.IPFSPath}`;
-                } else if (!file.isIPFS && file.dfile) {
-                  cachedHref = `https://s2.xrpl.to/d1/${file.dfile}`;
-                }
-
-                return (
-                  <Stack key={file.type} direction="row" spacing={0.5} alignItems="center">
-                    <Typography
-                      variant="caption"
-                      color="text.secondary"
-                      sx={{ fontSize: '0.6rem' }}
-                    >
-                      {file.type}:
-                    </Typography>
-                    {/^https?:\/\//.test(file.parsedUrl) ? (
-                      <Link
-                        href={file.parsedUrl}
-                        target="_blank"
-                        rel="noreferrer noopener nofollow"
-                        underline="hover"
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{ fontSize: '0.6rem', wordBreak: 'break-all' }}
-                        >
-                          {file.parsedUrl.length > 30
-                            ? `${file.parsedUrl.slice(0, 30)}...`
-                            : file.parsedUrl}
-                        </Typography>
-                      </Link>
-                    ) : (
-                      <Typography
-                        variant="caption"
-                        sx={{ fontSize: '0.6rem', wordBreak: 'break-all' }}
-                      >
-                        {file.parsedUrl.length > 30
-                          ? `${file.parsedUrl.slice(0, 30)}...`
-                          : file.parsedUrl}
-                      </Typography>
-                    )}
-                    {cachedHref && (
-                      <Link
-                        href={cachedHref}
-                        target="_blank"
-                        rel="noreferrer noopener nofollow"
-                        underline="hover"
-                      >
-                        <Typography
-                          variant="caption"
-                          sx={{ fontSize: '0.6rem', color: 'primary.main' }}
-                        >
-                          [C]
-                        </Typography>
-                      </Link>
-                    )}
-                  </Stack>
-                );
-              })}
             </Box>
+            <Box>
+              <Label sx={{ mb: 0.3 }}>Transfer Fee</Label>
+              <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
+            </Box>
+          </Stack>
+
+          <Box>
+            <Label sx={{ mb: 0.3 }}>Issuer</Label>
+            <Link href={`/account/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all' }}>{issuer}</Value>
+            </Link>
           </Box>
-        )}
+
+          <Box>
+            <Label sx={{ mb: 0.3 }}>Flags</Label>
+            <Stack direction="row" spacing={0.5}>
+              {(flag & 0x00000001) !== 0 && <Chip label="Burnable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
+              {(flag & 0x00000008) !== 0 && <Chip label="Transferable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
+            </Stack>
+          </Box>
+
+          <Box>
+            <Label sx={{ mb: 0.3 }}>Token ID</Label>
+            <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Value sx={{ fontSize: '0.65rem', wordBreak: 'break-all' }}>{NFTokenID}</Value>
+            </Link>
+          </Box>
+        </Stack>
       </Paper>
     </Container>
   );
