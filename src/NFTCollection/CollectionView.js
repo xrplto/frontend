@@ -2768,7 +2768,7 @@ export default function CollectionView({ collection }) {
             <NFTGrid collection={collection} />
           </TabPanel>
           <TabPanel value="tab-creator-transactions" sx={{ p: 0 }}>
-            <AccountTransactions creatorAccount={collection?.account} />
+            <AccountTransactions collectionSlug={slug} />
           </TabPanel>
         </TabContext>
       </CompactCard>

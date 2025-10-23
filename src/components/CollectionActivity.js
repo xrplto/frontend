@@ -270,546 +270,65 @@ const renderAddressLink = (address, displayText = null) => {
 };
 
 // Main AccountTransactions Component
-export default function AccountTransactions({ creatorAccount }) {
+export default function AccountTransactions({ creatorAccount, collectionSlug }) {
   const theme = useTheme();
   const { openSnackbar } = useContext(AppContext);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState(null);
-  const [nftData, setNftData] = useState({}); // Store NFT data by NFTokenID
-  const [marker, setMarker] = useState(null); // For pagination
-  const [hasMore, setHasMore] = useState(true); // Track if more transactions are available
+  const [page, setPage] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [filterType, setFilterType] = useState('SALE');
 
-  const fetchNFTData = async (nftokenId) => {
-    if (nftData[nftokenId]) return nftData[nftokenId]; // Return cached data
-
-    try {
-      const response = await axios.get(`https://api.xrpl.to/api/nft/${nftokenId}`);
-
-      if (response.data && response.data.res === 'success' && response.data.nft) {
-        const nft = response.data.nft;
-        const thumbnailUrl = nft.files?.[0]?.dfile
-          ? `https://s2.xrpl.to/d1/thumbnail_small-${nft.files[0].dfile.replace(
-              '.png',
-              '.webp'
-            )}`
-          : null;
-
-
-        const nftInfo = {
-          name: nft.meta?.name || 'Unknown NFT',
-          thumbnail: thumbnailUrl,
-          collection: nft.collection || 'Unknown Collection'
-        };
-
-        setNftData((prev) => ({ ...prev, [nftokenId]: nftInfo }));
-        return nftInfo;
-      }
-    } catch (err) {
-      console.error('Error fetching NFT data:', err);
-    }
-
-    // Set empty data to prevent repeated requests
-    setNftData((prev) => ({ ...prev, [nftokenId]: null }));
-    return null;
-  };
-
-  const fetchAccountTransactions = async (isLoadMore = false) => {
-    if (isLoadMore) {
-      setLoadingMore(true);
-    } else {
-      setLoading(true);
-      setError(null);
-      setTransactions([]);
-      setMarker(null);
-      setHasMore(true);
-    }
+  const fetchHistory = async () => {
+    if (!collectionSlug) return;
+    setLoading(true);
+    setError(null);
 
     try {
-      const requestParams = {
-        account: creatorAccount,
-        ledger_index_min: -1,
-        ledger_index_max: -1,
-        binary: false,
-        limit: 200, // Increased to 200 as requested
-        forward: false
-      };
+      const params = new URLSearchParams({ page: page.toString(), limit: '20' });
+      if (filterType) params.append('type', filterType);
 
-      // Add marker for pagination if loading more
-      if (isLoadMore && marker) {
-        requestParams.marker = marker;
-      }
+      const res = await axios.get(`https://api.xrpl.to/api/nft/collections/${collectionSlug}/history?${params}`);
 
-      const response = await axios.post('https://xrplcluster.com/', {
-        method: 'account_tx',
-        params: [requestParams]
-      });
-
-      if (response.data && response.data.result && response.data.result.transactions) {
-        const newTransactions = response.data.result.transactions;
-
-        if (isLoadMore) {
-          setTransactions((prev) => [...prev, ...newTransactions]);
-        } else {
-          setTransactions(newTransactions);
-        }
-
-        // Update pagination marker
-        if (response.data.result.marker) {
-          setMarker(response.data.result.marker);
-          setHasMore(true);
-        } else {
-          setMarker(null);
-          setHasMore(false);
-        }
-
-        // Fetch NFT data for transactions with NFTokenIDs
-        const nftTransactions = newTransactions.filter((txData) => {
-          const tx = txData.tx;
-          const meta = txData.meta;
-          return (
-            tx.NFTokenID ||
-            meta.nftoken_id ||
-            (meta.AffectedNodes &&
-              meta.AffectedNodes.some(
-                (node) =>
-                  node.DeletedNode?.LedgerEntryType === 'NFTokenOffer' ||
-                  node.CreatedNode?.LedgerEntryType === 'NFTokenOffer'
-              ))
-          );
-        });
-
-        // Fetch NFT data for each NFT transaction
-        const nftPromises = nftTransactions.map(async (txData) => {
-          const tx = txData.tx;
-          const meta = txData.meta;
-          const nftInfo = extractNFTInfo(meta);
-
-          if (nftInfo.nftokenId) {
-            return await fetchNFTData(nftInfo.nftokenId);
-          } else if (tx.NFTokenID) {
-            return await fetchNFTData(tx.NFTokenID);
-          }
-          return null;
-        });
-
-        // Wait for all NFT data to be fetched
-        await Promise.allSettled(nftPromises);
-      } else {
-        if (!isLoadMore) {
-          setError('No transactions found');
-        }
-        setHasMore(false);
-      }
+      setTransactions(res.data.history || []);
+      setTotal(res.data.pagination?.total || 0);
+      setHasMore(res.data.pagination?.hasMore || false);
     } catch (err) {
-      console.error('Error fetching account transactions:', err);
-      if (!isLoadMore) {
-        setError('Failed to fetch transactions');
-        openSnackbar('Failed to fetch account transactions', 'error');
-      } else {
-        openSnackbar('Failed to load more transactions', 'error');
-      }
-      setHasMore(false);
+      console.error('Error fetching history:', err);
+      setError('Failed to fetch collection history');
     } finally {
-      if (isLoadMore) {
-        setLoadingMore(false);
-      } else {
-        setLoading(false);
-      }
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!creatorAccount) return;
-    fetchAccountTransactions();
-  }, [creatorAccount]);
+    fetchHistory();
+  }, [collectionSlug, page, filterType]);
 
-  // Debug useEffect to monitor nftData changes
-  useEffect(() => {
-  }, [nftData]);
-
-  const getTransactionIcon = (transactionType) => {
-    switch (transactionType) {
-      case 'Payment':
-        return <PaymentIcon />;
-      case 'OfferCreate':
-      case 'OfferCancel':
-        return <LocalOfferIcon />;
-      case 'TrustSet':
-        return <AccountBalanceIcon />;
-      case 'AMMDeposit':
-      case 'AMMWithdraw':
-        return <SwapHorizIcon />;
-      case 'NFTokenAcceptOffer':
-        return <SellIcon />;
-      case 'NFTokenCreateOffer':
-        return <LocalOfferIcon />;
-      case 'NFTokenMint':
-        return <CollectionsIcon />;
-      default:
-        return <HelpOutlineIcon />;
-    }
+  const getTransactionColor = (type) => {
+    if (type === 'SALE') return 'success';
+    if (type.includes('BUY')) return 'primary';
+    if (type.includes('SELL')) return 'info';
+    if (type.includes('CANCEL')) return 'warning';
+    if (type === 'TRANSFER') return 'secondary';
+    return 'default';
   };
 
-  const getTransactionColor = (transactionType) => {
-    switch (transactionType) {
-      case 'Payment':
-        return 'success';
-      case 'OfferCreate':
-        return 'primary';
-      case 'OfferCancel':
-        return 'warning';
-      case 'TrustSet':
-        return 'info';
-      case 'AMMDeposit':
-      case 'AMMWithdraw':
-        return 'secondary';
-      case 'NFTokenAcceptOffer':
-        return 'success';
-      case 'NFTokenCreateOffer':
-        return 'primary';
-      case 'NFTokenMint':
-        return 'info';
-      default:
-        return 'default';
-    }
-  };
-
-  const formatAmount = (amount) => {
-    if (typeof amount === 'string') {
-      // XRP amount in drops
-      return `${(parseInt(amount) / 1000000).toFixed(2)} XRP`;
-    } else if (typeof amount === 'object' && amount.value) {
-      // Token amount
-      return `${parseFloat(amount.value).toFixed(2)} ${amount.currency}`;
-    }
-    return 'N/A';
-  };
-
-  const formatDate = (rippleTime) => {
-    // Convert Ripple timestamp to Unix timestamp
-    const unixTime = (rippleTime + 946684800) * 1000;
-    const date = new Date(unixTime);
+  const formatDate = (timestamp) => {
+    const date = new Date(timestamp);
     const now = new Date();
     const diffInSeconds = Math.floor((now - date) / 1000);
 
-    if (diffInSeconds < 60) {
-      return 'Just now';
-    } else if (diffInSeconds < 3600) {
-      const minutes = Math.floor(diffInSeconds / 60);
-      return `${minutes} minute${minutes === 1 ? '' : 's'} ago`;
-    } else if (diffInSeconds < 86400) {
-      const hours = Math.floor(diffInSeconds / 3600);
-      return `${hours} hour${hours === 1 ? '' : 's'} ago`;
-    } else if (diffInSeconds < 2592000) {
-      const days = Math.floor(diffInSeconds / 86400);
-      return `${days} day${days === 1 ? '' : 's'} ago`;
-    } else if (diffInSeconds < 31536000) {
-      const months = Math.floor(diffInSeconds / 2592000);
-      return `${months} month${months === 1 ? '' : 's'} ago`;
-    } else {
-      const years = Math.floor(diffInSeconds / 31536000);
-      return `${years} year${years === 1 ? '' : 's'} ago`;
-    }
+    if (diffInSeconds < 60) return 'Just now';
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
+    if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    return date.toLocaleDateString();
   };
 
-  const extractNFTInfo = (meta) => {
-    const nftInfo = {
-      nftokenId: null,
-      amount: null,
-      buyer: null,
-      seller: null,
-      from: null,
-      to: null,
-      offers: []
-    };
-
-    // Check for NFToken ID in meta
-    if (meta.nftoken_id) {
-      nftInfo.nftokenId = meta.nftoken_id;
-    }
-
-    // Parse AffectedNodes for NFT-related information
-    if (meta.AffectedNodes) {
-      // First, collect all deleted offers
-      const deletedOffers = [];
-
-      meta.AffectedNodes.forEach((node) => {
-        if (node.DeletedNode?.LedgerEntryType === 'NFTokenOffer') {
-          const offer = node.DeletedNode.FinalFields;
-          deletedOffers.push({
-            type: 'deleted',
-            amount: offer.Amount,
-            destination: offer.Destination,
-            owner: offer.Owner,
-            nftokenId: offer.NFTokenID
-          });
-        }
-      });
-
-      // Find the specific offer that matches the NFToken being transferred
-      let matchingOffer = null;
-      if (nftInfo.nftokenId) {
-        matchingOffer = deletedOffers.find((offer) => offer.nftokenId === nftInfo.nftokenId);
-      } else if (deletedOffers.length === 1) {
-        // If there's only one offer, use it
-        matchingOffer = deletedOffers[0];
-        nftInfo.nftokenId = matchingOffer.nftokenId;
-      }
-
-      // Set the from/to based on the matching offer
-      if (matchingOffer) {
-        nftInfo.amount = matchingOffer.amount;
-        nftInfo.seller = matchingOffer.owner;
-        nftInfo.from = matchingOffer.owner;
-        nftInfo.buyer = matchingOffer.destination;
-        nftInfo.to = matchingOffer.destination;
-      }
-
-      // Override buyer/to with actual NFT recipient from DirectoryNode
-      meta.AffectedNodes.forEach((node) => {
-        if (node.ModifiedNode?.LedgerEntryType === 'DirectoryNode') {
-          const owner = node.ModifiedNode.FinalFields?.Owner;
-          // Skip marketplace addresses - find the actual recipient
-          if (owner && owner !== matchingOffer?.destination) {
-            // Check if this owner corresponds to where the NFT was added
-            const nftAddedToThisOwner = meta.AffectedNodes.some((otherNode) => {
-              if (otherNode.ModifiedNode?.LedgerEntryType === 'NFTokenPage') {
-                const prevTokens = otherNode.ModifiedNode.PreviousFields?.NFTokens || [];
-                const finalTokens = otherNode.ModifiedNode.FinalFields?.NFTokens || [];
-
-                const wasInPrevious = prevTokens.some(
-                  (token) => token.NFToken.NFTokenID === nftInfo.nftokenId
-                );
-                const isInFinal = finalTokens.some(
-                  (token) => token.NFToken.NFTokenID === nftInfo.nftokenId
-                );
-
-                return !wasInPrevious && isInFinal; // NFT was added to this page
-              }
-              return false;
-            });
-
-            if (nftAddedToThisOwner) {
-              nftInfo.to = owner;
-              nftInfo.buyer = owner;
-            }
-          }
-        }
-      });
-
-      // Store all offers for detailed view
-      nftInfo.offers = deletedOffers;
-
-      // Continue with other node processing
-      meta.AffectedNodes.forEach((node) => {
-        if (node.CreatedNode?.LedgerEntryType === 'NFTokenOffer') {
-          const offer = node.CreatedNode.NewFields;
-          nftInfo.offers.push({
-            type: 'created',
-            amount: offer.Amount,
-            destination: offer.Destination,
-            owner: offer.Owner,
-            nftokenId: offer.NFTokenID
-          });
-        }
-
-        // Check for NFTokenPage changes to identify NFT transfers
-        if (node.ModifiedNode?.LedgerEntryType === 'NFTokenPage') {
-          // NFT ownership changes happen here
-          const prevFields = node.ModifiedNode.PreviousFields;
-          const finalFields = node.ModifiedNode.FinalFields;
-
-          // Look for NFToken ownership changes in the page
-          if (prevFields?.NFTokens && finalFields?.NFTokens && nftInfo.nftokenId) {
-            // Check if this NFT was removed from this page
-            const wasInPrevious = prevFields.NFTokens.some(
-              (token) => token.NFToken.NFTokenID === nftInfo.nftokenId
-            );
-            const isInFinal = finalFields.NFTokens.some(
-              (token) => token.NFToken.NFTokenID === nftInfo.nftokenId
-            );
-
-            // If NFT was added to this page, extract owner from LedgerIndex
-            if (!wasInPrevious && isInFinal) {
-              const ledgerIndex = node.ModifiedNode.LedgerIndex;
-              // NFTokenPage LedgerIndex format: first 32 chars are the account hash
-              // For account r9cxaBARPSxd2zYNNMz5yrBxcbN9Fakz9s, the page starts with 5E8D8D21CB7410F4866069136CBC23A4B877AD94
-              if (ledgerIndex.startsWith('5E8D8D21CB7410F4866069136CBC23A4B877AD94')) {
-                nftInfo.to = 'r9cxaBARPSxd2zYNNMz5yrBxcbN9Fakz9s';
-                nftInfo.buyer = 'r9cxaBARPSxd2zYNNMz5yrBxcbN9Fakz9s';
-              }
-            }
-          }
-        }
-
-        // Check DirectoryNode changes to identify page owners
-        if (node.ModifiedNode?.LedgerEntryType === 'DirectoryNode') {
-          const owner = node.ModifiedNode.FinalFields?.Owner;
-          if (owner && nftInfo.nftokenId) {
-            // Check if this directory is related to our NFT
-            const nftokenIdInDirectory = node.ModifiedNode.FinalFields?.NFTokenID;
-            if (nftokenIdInDirectory === nftInfo.nftokenId) {
-              // This directory node is for our specific NFT
-              if (!nftInfo.to) {
-                nftInfo.to = owner;
-                nftInfo.buyer = owner;
-              }
-            } else if (owner && !nftInfo.to) {
-              // This might be the buyer's directory - check if NFT was added to their page
-              // Look for corresponding NFTokenPage changes
-              const buyerPageFound = meta.AffectedNodes.some((otherNode) => {
-                if (otherNode.ModifiedNode?.LedgerEntryType === 'NFTokenPage') {
-                  const prevTokens = otherNode.ModifiedNode.PreviousFields?.NFTokens || [];
-                  const finalTokens = otherNode.ModifiedNode.FinalFields?.NFTokens || [];
-
-                  const wasInPrevious = prevTokens.some(
-                    (token) => token.NFToken.NFTokenID === nftInfo.nftokenId
-                  );
-                  const isInFinal = finalTokens.some(
-                    (token) => token.NFToken.NFTokenID === nftInfo.nftokenId
-                  );
-
-                  return !wasInPrevious && isInFinal; // NFT was added to this page
-                }
-                return false;
-              });
-
-              if (buyerPageFound) {
-                nftInfo.to = owner;
-                nftInfo.buyer = owner;
-              }
-            }
-          }
-        }
-
-        // Check for AccountRoot changes to identify balance changes (secondary method)
-        if (node.ModifiedNode?.LedgerEntryType === 'AccountRoot' && !nftInfo.from && !nftInfo.to) {
-          const account = node.ModifiedNode.FinalFields.Account;
-          const prevBalance = parseInt(node.ModifiedNode.PreviousFields?.Balance || '0');
-          const finalBalance = parseInt(node.ModifiedNode.FinalFields.Balance);
-
-          if (prevBalance && finalBalance) {
-            const balanceChange = finalBalance - prevBalance;
-            if (balanceChange > 0 && !nftInfo.buyer) {
-              nftInfo.buyer = account;
-              if (!nftInfo.to) nftInfo.to = account;
-            } else if (balanceChange < 0 && !nftInfo.seller) {
-              nftInfo.seller = account;
-              if (!nftInfo.from) nftInfo.from = account;
-            }
-          }
-        }
-      });
-    }
-
-    return nftInfo;
-  };
-
-  const getMarketplaceName = (address) => {
-    const marketplaces = {
-      rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC: 'xrp.cafe'
-    };
-    return marketplaces[address] || null;
-  };
-
-  const getTransactionDetails = (tx, meta) => {
-    const nftInfo = extractNFTInfo(meta);
-
-    switch (tx.TransactionType) {
-      case 'NFTokenAcceptOffer':
-        // For NFTokenAcceptOffer:
-        // - The seller is from the deleted offer's Owner
-        // - The buyer is tx.Account (the one who accepted the offer)
-        const seller = nftInfo.seller || nftInfo.from;
-        const buyer = nftInfo.buyer || nftInfo.to || tx.Account; // Use the corrected buyer info
-
-        // Check if the original offer destination was a marketplace
-        const originalDestination = nftInfo.offers?.find(
-          (offer) => offer.type === 'deleted'
-        )?.destination;
-        const marketplace = getMarketplaceName(originalDestination);
-
-        // Get NFT name from cached data
-        const nftTokenId = nftInfo.nftokenId || tx.NFTokenID;
-        const nft = nftTokenId ? nftData[nftTokenId] : null;
-        const nftName = nft?.name;
-
-        return {
-          description: 'NFT Sale',
-          details: [
-            nftName && `${nftName}`,
-            nftInfo.nftokenId && {
-              type: 'nft-link',
-              id: nftInfo.nftokenId,
-              text: `ID: ${nftInfo.nftokenId.slice(0, 12)}...`
-            },
-            nftInfo.amount && `${formatAmount(nftInfo.amount)}`,
-            seller &&
-              buyer && {
-                type: 'address-transfer',
-                seller: seller,
-                buyer: buyer
-              },
-            marketplace && `via ${marketplace}`
-          ].filter(Boolean)
-        };
-
-      case 'NFTokenCreateOffer':
-        return {
-          description: 'NFT Offer',
-          details: [
-            tx.NFTokenID && `ID: ${tx.NFTokenID.slice(0, 12)}...`,
-            tx.Amount && `${formatAmount(tx.Amount)}`,
-            tx.Destination && {
-              type: 'address-destination',
-              address: tx.Destination
-            }
-          ].filter(Boolean)
-        };
-
-      case 'NFTokenMint':
-        return {
-          description: 'NFT Mint',
-          details: [
-            tx.NFTokenTaxon && `Taxon: ${tx.NFTokenTaxon}`,
-            tx.Account && {
-              type: 'address-minter',
-              address: tx.Account
-            }
-          ].filter(Boolean)
-        };
-
-      case 'Payment':
-        return {
-          description: 'Payment',
-          details: [
-            tx.Amount && `${formatAmount(tx.Amount)}`,
-            tx.Account &&
-              tx.Destination && {
-                type: 'address-payment',
-                from: tx.Account,
-                to: tx.Destination
-              }
-          ].filter(Boolean)
-        };
-
-      default:
-        return {
-          description: tx.TransactionType,
-          details: []
-        };
-    }
-  };
-
-  const handleLoadMore = () => {
-    if (!loadingMore && hasMore && marker) {
-      fetchAccountTransactions(true);
-    }
-  };
-
-  if (!creatorAccount) {
+  if (!collectionSlug) {
     return (
       <Container
         maxWidth={false}
@@ -848,127 +367,35 @@ export default function AccountTransactions({ creatorAccount }) {
         maxWidth: '2000px'
       }}
     >
-      <Card
-        sx={{
-          mb: 3,
-          borderRadius: { xs: '16px', sm: '24px' },
-          background: 'transparent',
-          backdropFilter: 'blur(10px)',
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          boxShadow: 'none',
-          overflow: 'hidden',
-          position: 'relative',
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '2px',
-            background: `linear-gradient(90deg, ${alpha(theme.palette.primary.main, 0.5)}, ${alpha(theme.palette.secondary.main, 0.5)}, ${alpha(theme.palette.primary.main, 0.5)})`,
-            backgroundSize: '200% 100%'
-          }
-        }}
-      >
-        <CardContent sx={{ p: 0 }}>
-          {/* Header Section */}
-          <Box
-            sx={{
-              px: { xs: 3, sm: 4 },
-              py: { xs: 3, sm: 4 },
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              background: 'transparent',
-              backdropFilter: 'blur(10px)',
-              position: 'relative',
-              overflow: 'hidden',
-              '&::after': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                right: 0,
-                width: '300px',
-                height: '300px',
-                background: 'transparent',
-                borderRadius: '50%',
-                transform: 'translate(100px, -150px)'
-              }
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={2}>
-              <Box
-                sx={{
-                  p: 2,
-                  borderRadius: '20px',
-                  background: alpha(theme.palette.primary.main, 0.1),
-                  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: 'none',
-                  position: 'relative',
-                  zIndex: 1
-                }}
-              >
-                <TrendingUpIcon
+      <Box sx={{ mb: 3 }}>
+
+          <Box sx={{ mb: 2, px: 2 }}>
+            <Stack direction="row" spacing={1} flexWrap="wrap">
+              {['ALL', 'SALE', 'CREATE_BUY_OFFER', 'CREATE_SELL_OFFER', 'CANCEL_BUY_OFFER', 'TRANSFER'].map(type => (
+                <Chip
+                  key={type}
+                  label={type === 'ALL' ? 'ALL' : type.replace(/_/g, ' ')}
+                  onClick={() => setFilterType(type === 'ALL' ? '' : type)}
+                  variant={(type === 'ALL' && !filterType) || filterType === type ? 'filled' : 'outlined'}
+                  size="small"
                   sx={{
-                    color: theme.palette.primary.main,
-                    fontSize: '1.8rem',
-                    filter: 'none'
+                    fontSize: '0.7rem',
+                    height: '24px',
+                    borderColor: alpha(theme.palette.divider, 0.2),
+                    color: (type === 'ALL' && !filterType) || filterType === type ? 'white' : 'text.secondary',
+                    backgroundColor: (type === 'ALL' && !filterType) || filterType === type ? 'primary.main' : 'transparent'
                   }}
                 />
-              </Box>
-              <Box>
-                <Typography
-                  sx={{
-                    color: theme.palette.text.primary,
-                    fontSize: '1.4rem',
-                    fontWeight: 700,
-                    lineHeight: 1.2,
-                    letterSpacing: '-0.02em',
-                    background:
-                      theme.palette.mode === 'dark'
-                        ? `linear-gradient(135deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`
-                        : `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    position: 'relative',
-                    zIndex: 1
-                  }}
-                  variant="h5"
-                >
-                  Collection Activity
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{ fontWeight: 500, mt: 0.5 }}
-                >
-                  Real-time transaction monitoring and NFT activity tracking
-                </Typography>
-              </Box>
+              ))}
             </Stack>
           </Box>
 
-          {/* Content Section */}
           <Box sx={{ p: 0 }}>
             {loading ? (
-              <Box sx={{ p: 4 }}>
-                <Stack spacing={2}>
-                  {[...Array(8)].map((_, index) => (
-                    <Box
-                      key={index}
-                      sx={{
-                        p: 2,
-                        borderRadius: '12px',
-                        background: 'transparent',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.06)}`
-                      }}
-                    >
-                      <Skeleton variant="rectangular" height={40} sx={{ borderRadius: '8px' }} />
-                    </Box>
-                  ))}
-                </Stack>
+              <Box sx={{ p: 2 }}>
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} variant="rectangular" height={50} sx={{ mb: 1, borderRadius: '6px' }} />
+                ))}
               </Box>
             ) : error ? (
               <Box
@@ -1029,253 +456,94 @@ export default function AccountTransactions({ creatorAccount }) {
                   >
                     <TableHead>
                       <TableRow>
-                        <StyledTableCell>Type</StyledTableCell>
-                        <StyledTableCell>Details</StyledTableCell>
-                        <StyledTableCell>Date</StyledTableCell>
-                        <StyledTableCell align="center">Actions</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Type</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>NFT</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Price</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>From</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>To</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Date</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }} align="center">Tx</StyledTableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {transactions.map((txData, idx) => {
-                        const tx = txData.tx;
-                        const meta = txData.meta;
-                        const txDetails = getTransactionDetails(tx, meta);
-
-                        return (
-                          <StyledTableRow key={tx.hash || idx}>
-                            <StyledTableCell>
-                              <CompactChip
-                                icon={getTransactionIcon(tx.TransactionType)}
-                                label={tx.TransactionType}
-                                color={getTransactionColor(tx.TransactionType)}
-                                variant="outlined"
-                                size="small"
-                              />
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <Box>
-                                {txDetails.details.length > 0 && (
-                                  <Stack direction="row" spacing={1.5} alignItems="center">
-                                    {/* NFT Thumbnail */}
-                                    {(() => {
-                                      const tx = txData.tx;
-                                      const meta = txData.meta;
-                                      const nftInfo = extractNFTInfo(meta);
-                                      const nftTokenId = nftInfo.nftokenId || tx.NFTokenID;
-                                      const nft = nftTokenId ? nftData[nftTokenId] : null;
-
-                                      if (nft?.thumbnail) {
-                                        return (
-                                          <Box
-                                            sx={{
-                                              position: 'relative',
-                                              borderRadius: '8px',
-                                              overflow: 'hidden',
-                                              boxShadow: `0 4px 12px ${alpha(
-                                                theme.palette.common.black,
-                                                0.15
-                                              )}`,
-                                              border: `2px solid ${alpha(
-                                                theme.palette.primary.main,
-                                                0.2
-                                              )}`
-                                            }}
-                                          >
-                                            <CardMedia
-                                              component="img"
-                                              image={nft.thumbnail}
-                                              alt={nft.name}
-                                              onError={(e) => {
-                                                e.target.style.display = 'none';
-                                              }}
-                                              sx={{
-                                                width: { xs: 28, sm: 32 },
-                                                height: { xs: 28, sm: 32 },
-                                                objectFit: 'cover'
-                                              }}
-                                            />
-                                          </Box>
-                                        );
-                                      }
-                                      return null;
-                                    })()}
-
-                                    <Box sx={{ flex: 1, minWidth: 0 }}>
-                                      <Typography
-                                        variant="body2"
-                                        color="text.primary"
-                                        sx={{
-                                          fontSize: '0.85rem',
-                                          lineHeight: 1.4,
-                                          fontWeight: 500,
-                                          display: 'block'
-                                        }}
-                                      >
-                                        {txDetails.details.map((detail, index) => (
-                                          <span key={index}>
-                                            {typeof detail === 'object' &&
-                                            detail.type === 'nft-link' ? (
-                                              <Link
-                                                href={`/nft/${detail.id}`}
-                                                color="primary"
-                                                underline="hover"
-                                                sx={{
-                                                  fontSize: '0.85rem',
-                                                  fontWeight: 600
-                                                }}
-                                              >
-                                                {detail.text}
-                                              </Link>
-                                            ) : typeof detail === 'object' &&
-                                              detail.type === 'address-transfer' ? (
-                                              <span>
-                                                {renderAddressLink(detail.seller)} →{' '}
-                                                {renderAddressLink(detail.buyer)}
-                                              </span>
-                                            ) : typeof detail === 'object' &&
-                                              detail.type === 'address-destination' ? (
-                                              <span>→ {renderAddressLink(detail.address)}</span>
-                                            ) : typeof detail === 'object' &&
-                                              detail.type === 'address-minter' ? (
-                                              <span>by {renderAddressLink(detail.address)}</span>
-                                            ) : typeof detail === 'object' &&
-                                              detail.type === 'address-payment' ? (
-                                              <span>
-                                                {renderAddressLink(detail.from)} →{' '}
-                                                {renderAddressLink(detail.to)}
-                                              </span>
-                                            ) : (
-                                              <span
-                                                style={{
-                                                  color:
-                                                    typeof detail === 'string' &&
-                                                    detail.includes('XRP')
-                                                      ? theme.palette.success.main
-                                                      : 'inherit'
-                                                }}
-                                              >
-                                                {detail}
-                                              </span>
-                                            )}
-                                            {index < txDetails.details.length - 1 && (
-                                              <span
-                                                style={{
-                                                  margin: '0 8px',
-                                                  color: alpha(theme.palette.text.secondary, 0.6)
-                                                }}
-                                              >
-                                                •
-                                              </span>
-                                            )}
-                                          </span>
-                                        ))}
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                )}
-                              </Box>
-                            </StyledTableCell>
-                            <StyledTableCell>
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  fontSize: '0.8rem',
-                                  color: theme.palette.text.secondary,
-                                  fontWeight: 500
-                                }}
-                              >
-                                {tx.date ? formatDate(tx.date) : 'N/A'}
+                      {transactions.map((item, idx) => (
+                        <StyledTableRow key={item.hash || idx}>
+                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                            <Chip
+                              label={item.type.replace(/_/g, ' ')}
+                              color={getTransactionColor(item.type)}
+                              size="small"
+                              sx={{ fontSize: '0.65rem', height: '20px', fontWeight: 500 }}
+                            />
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                            <Stack direction="row" spacing={1} alignItems="center">
+                              {item.files?.[0]?.thumbnail?.small && (
+                                <Box sx={{ width: 28, height: 28, borderRadius: '6px', overflow: 'hidden', border: `1px solid ${alpha(theme.palette.divider, 0.15)}` }}>
+                                  <img src={`https://s2.xrpl.to/d1/${item.files[0].thumbnail.small}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                </Box>
+                              )}
+                              <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                                {item.name}
                               </Typography>
-                            </StyledTableCell>
-                            <StyledTableCell align="center">
-                              <Tooltip title="View Transaction Details" placement="top">
-                                <IconButton
-                                  size="small"
-                                  sx={{
-                                    padding: '8px',
-                                    borderRadius: '10px',
-                                    color: theme.palette.primary.main,
-                                    bgcolor: 'transparent',
-                                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
-                                  }}
-                                  onClick={() => window.open(`/tx/${tx.hash}`, '_blank')}
-                                >
-                                  <OpenInNewIcon sx={{ fontSize: '1rem' }} />
-                                </IconButton>
-                              </Tooltip>
-                            </StyledTableCell>
-                          </StyledTableRow>
-                        );
-                      })}
+                            </Stack>
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                            {item.costXRP || item.amountXRP ? (
+                              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#00AB55', fontWeight: 600 }}>
+                                ✕{item.costXRP || item.amountXRP}
+                              </Typography>
+                            ) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                            {item.seller || item.account ? (
+                              <Link href={`/profile/${item.seller || item.account}`} underline="none" color="inherit" sx={{ fontSize: '0.72rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                                {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
+                              </Link>
+                            ) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                            {item.buyer || item.destination ? (
+                              <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '0.72rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                                {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
+                              </Link>
+                            ) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                              {formatDate(item.time)}
+                            </Typography>
+                          </StyledTableCell>
+                          <StyledTableCell align="center" sx={{ py: 1.2, px: 2 }}>
+                            <IconButton
+                              size="small"
+                              sx={{ p: 0.4 }}
+                              onClick={() => window.open(`/tx/${item.hash}`, '_blank')}
+                            >
+                              <OpenInNewIcon sx={{ fontSize: '0.8rem', color: 'text.secondary' }} />
+                            </IconButton>
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      ))}
                     </TableBody>
                   </Table>
                 </Box>
 
-                {/* Load More Button */}
-                {hasMore && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      p: 4,
-                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                      background: 'transparent',
-                      backdropFilter: 'blur(5px)'
-                    }}
-                  >
-                    <Button
-                      variant="outlined"
-                      onClick={handleLoadMore}
-                      disabled={loadingMore}
-                      startIcon={loadingMore ? <CircularProgress size={16} /> : null}
-                      sx={{
-                        borderRadius: '16px',
-                        px: 4,
-                        py: 1.5,
-                        fontWeight: 600,
-                        fontSize: '0.9rem',
-                        textTransform: 'none',
-                        border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                        color: theme.palette.primary.main,
-                        background: 'transparent',
-                        '&:disabled': {
-                          opacity: 0.6
-                        }
-                      }}
-                    >
-                      {loadingMore ? 'Loading...' : 'Load More Transactions'}
-                    </Button>
-                  </Box>
-                )}
-
-                {!hasMore && transactions.length > 0 && (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      p: 3,
-                      borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                      background: 'transparent'
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{
-                        fontWeight: 500,
-                        fontSize: '0.85rem',
-                        textAlign: 'center'
-                      }}
-                    >
-                      🎉 You've reached the end! No more transactions to load
-                    </Typography>
+                {/* Pagination */}
+                {total > 20 && (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                    <Pagination
+                      page={page + 1}
+                      count={Math.ceil(total / 20)}
+                      onChange={(e, newPage) => setPage(newPage - 1)}
+                      color="primary"
+                    />
                   </Box>
                 )}
               </>
             )}
           </Box>
-        </CardContent>
-      </Card>
+      </Box>
     </Container>
   );
 }
