@@ -57,6 +57,7 @@ function Status404() {
       <Head>
         <title>404 | XRPL.to</title>
         <meta name="description" content="Page not found" />
+        <meta name="robots" content="noindex, nofollow" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
       <MainContent>

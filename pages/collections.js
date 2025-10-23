@@ -74,10 +74,7 @@ export async function getStaticProps() {
   ret = { ogp };
 
   return {
-    props: ret // will be passed to the page component as props
-    // Next.js will attempt to re-generate the page:
-    // - When a request comes in
-    // - At most once every 10 seconds
-    // revalidate: 10, // In seconds
+    props: ret, // will be passed to the page component as props
+    revalidate: 3600 // ISR: Regenerate page every hour
   };
 }

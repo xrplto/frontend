@@ -14,7 +14,7 @@ import Footer from 'src/components/Footer';
 
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const BASE_URL = process.env.API_URL;
+const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `

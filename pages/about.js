@@ -629,7 +629,6 @@ export async function getStaticProps() {
   if (data) {
     let ogp = {};
 
-    ogp.canonical = 'https://xrpl.to';
     ogp.title = 'About XRPL.to | Premier XRP Ledger Analytics Platform';
     ogp.url = 'https://xrpl.to/about';
     ogp.canonical = 'https://xrpl.to/about';
