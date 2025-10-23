@@ -108,7 +108,7 @@ export async function getServerSideProps(ctx) {
     const params = ctx.params.nftokenid;
     const NFTokenID = params[0];
 
-    const res = await axios.get(`${BASE_URL}/nft/nfts/${NFTokenID}`);
+    const res = await axios.get(`${BASE_URL}/nft/${NFTokenID}`);
 
     data = { nft: res.data };
   } catch (e) {

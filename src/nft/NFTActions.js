@@ -197,24 +197,25 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
   },
   '& .MuiAccordionSummary-root': {
     padding: theme.spacing(0, 1),
-    minHeight: { xs: 48, sm: 56 },
+    minHeight: 44,
     '&.Mui-expanded': {
-      minHeight: { xs: 48, sm: 56 }
+      minHeight: 44
     },
     [theme.breakpoints.down('sm')]: {
       padding: theme.spacing(0, 0.5)
     }
   },
   '& .MuiAccordionSummary-content': {
-    margin: { xs: '8px 0', sm: '12px 0' },
+    margin: '8px 0',
     '&.Mui-expanded': {
-      margin: { xs: '8px 0', sm: '12px 0' }
+      margin: '8px 0'
     }
   },
   '& .MuiAccordionDetails-root': {
-    padding: { xs: theme.spacing(0.5), sm: theme.spacing(1) },
+    padding: theme.spacing(1),
+    paddingTop: theme.spacing(0.5),
     [theme.breakpoints.down('sm')]: {
-      padding: 0
+      padding: theme.spacing(0.5)
     }
   }
 }));
@@ -224,10 +225,10 @@ const OffersBadge = styled('span')(({ theme }) => ({
   backgroundColor: alpha(theme.palette.primary.main, 0.1),
   color: theme.palette.primary.main,
   borderRadius: theme.shape.borderRadius,
-  padding: '2px 8px',
-  fontSize: '0.75rem',
-  fontWeight: 'bold',
-  marginLeft: theme.spacing(1)
+  padding: '2px 6px',
+  fontSize: '0.7rem',
+  fontWeight: 600,
+  marginLeft: theme.spacing(0.5)
 }));
 
 // Add this styled component for the offer count badge
@@ -235,10 +236,10 @@ const OfferCountBadge = styled('span')(({ theme }) => ({
   backgroundColor: alpha(theme.palette.primary.main, 0.1),
   color: theme.palette.primary.main,
   borderRadius: theme.shape.borderRadius,
-  padding: '2px 8px',
-  fontSize: '0.75rem',
-  fontWeight: 'bold',
-  marginLeft: theme.spacing(1)
+  padding: '2px 6px',
+  fontSize: '0.7rem',
+  fontWeight: 600,
+  marginLeft: theme.spacing(0.5)
 }));
 
 // Add this new component to display the price warning
@@ -300,11 +301,7 @@ const SquareAvatar = styled(Avatar)(({ theme }) => ({
   width: 56,
   height: 56,
   boxShadow: `0 4px 15px ${alpha(theme.palette.common.black, 0.1)}`,
-  border: `2px solid ${alpha(theme.palette.background.paper, 0.9)}`,
-  transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    transform: 'scale(1.05)'
-  }
+  border: `2px solid ${alpha(theme.palette.background.paper, 0.9)}`
 }));
 
 // Add this new styled component near the top with other styled components
@@ -342,12 +339,7 @@ const FloorPriceCard = styled(Paper)(({ theme }) => ({
   backgroundColor: alpha(theme.palette.primary.main, 0.04),
   borderRadius: theme.shape.borderRadius * 2,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  width: 'fit-content',
-  transition: 'all 0.2s ease-in-out',
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-  }
+  width: 'fit-content'
 }));
 
 // Update the FloorPriceValue styling for better alignment
@@ -481,10 +473,10 @@ export default function NFTActions({ nft }) {
     function getOffers() {
       setLoading(true);
       axios
-        .get(`${BASE_URL}/offers/${NFTokenID}`)
+        .get(`${BASE_URL}/nft/${NFTokenID}/offers`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
+          if (ret && ret.result === 'success') {
             const offers = ret.sellOffers;
             const nftOwner = nft.account;
             setCost(getCostFromOffers(nftOwner, offers, true));
@@ -855,7 +847,7 @@ export default function NFTActions({ nft }) {
   return (
     <>
       <GlassPanel elevation={0} sx={{ mt: 0 }}>
-        <Stack spacing={2}>
+        <Stack spacing={1.5}>
           {self && (
             <CollectionHeader>
               <CollectionInfo>
@@ -939,17 +931,14 @@ export default function NFTActions({ nft }) {
               <IconButton
                 size="large"
                 sx={{
-                  background: (theme) =>
-                    `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.15)} 0%, ${alpha(theme.palette.primary.main, 0.08)} 100%)`,
-                  boxShadow: (theme) => `0 4px 15px ${alpha(theme.palette.primary.main, 0.2)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+                  border: (theme) => `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                  borderRadius: '8px',
+                  color: 'primary.main',
                   '&:hover': {
-                    background: (theme) =>
-                      `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.25)} 0%, ${alpha(theme.palette.primary.main, 0.15)} 100%)`,
-                    transform: 'translateY(-2px) rotate(15deg)',
-                    boxShadow: (theme) => `0 6px 20px ${alpha(theme.palette.primary.main, 0.3)}`
-                  },
-                  color: 'primary.main'
+                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.15),
+                    borderColor: (theme) => alpha(theme.palette.primary.main, 0.3)
+                  }
                 }}
                 onClick={handleShareClick}
                 ref={anchorRef}
@@ -962,7 +951,7 @@ export default function NFTActions({ nft }) {
 
 
           {/* Action buttons */}
-          <Stack spacing={2}>
+          <Stack spacing={1.2}>
             {burnt ? (
               <Typography variant="h6" color="error">
                 This NFT is burnt.
@@ -990,27 +979,27 @@ export default function NFTActions({ nft }) {
                 <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
               </Stack>
             ) : (
-              <Stack spacing={1.5}>
+              <Stack spacing={1.2}>
                 {loading ? (
                   <PulseLoader color={theme.palette.primary.main} size={10} />
                 ) : lowestSellOffer ? (
-                  <Box sx={{ p: 1.5, backgroundColor: alpha(theme.palette.background.default, 0.4), borderRadius: '8px' }}>
-                    <Stack spacing={0.8}>
-                      <Stack direction="row" justifyContent="space-between">
-                        <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Price</Typography>
-                        <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
+                  <Box sx={{ p: 1.2, backgroundColor: alpha(theme.palette.background.default, 0.4), borderRadius: '8px' }}>
+                    <Stack spacing={0.5}>
+                      <Stack direction="row" justifyContent="space-between" alignItems="center">
+                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>Price</Typography>
+                        <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600 }}>
                           ✕{formatXRPAmount(lowestSellOffer.totalAmount, false)}
                         </Typography>
                       </Stack>
                       {lowestSellOffer.hasBroker && (
                         <>
                           <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>Base</Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>✕{lowestSellOffer.baseAmount}</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>Base</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>✕{lowestSellOffer.baseAmount}</Typography>
                           </Stack>
                           <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>{lowestSellOffer.brokerName} Fee ({(lowestSellOffer.brokerFeePercentage * 100).toFixed(2)}%)</Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>✕{lowestSellOffer.brokerFee}</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>{lowestSellOffer.brokerName} Fee</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>✕{lowestSellOffer.brokerFee}</Typography>
                           </Stack>
                         </>
                       )}
@@ -1035,20 +1024,20 @@ export default function NFTActions({ nft }) {
 
 
           {/* Offers and History sections */}
-          <Stack spacing={2}>
+          <Stack spacing={1.5}>
             {isOwner && (
               <StyledAccordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
-                  <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-                    <Stack direction="row" alignItems="center" spacing={2}>
-                      <LocalOfferIcon color="primary" />
-                      <Typography variant="h6" color="primary.main">
+                <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
+                  <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
+                    <Stack direction="row" alignItems="center" spacing={1.5}>
+                      <LocalOfferIcon color="primary" sx={{ fontSize: 20 }} />
+                      <Typography variant="h6" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
                         Sell Offers
                       </Typography>
                     </Stack>
                     {sellOffers.length > 0 && (
                       <OffersBadge>
-                        {sellOffers.length} {sellOffers.length === 1 ? 'Offer' : 'Offers'}
+                        {sellOffers.length}
                       </OffersBadge>
                     )}
                   </Stack>
@@ -1065,50 +1054,41 @@ export default function NFTActions({ nft }) {
                       <PulseLoader color={theme.palette.primary.main} size={10} />
                     </Box>
                   ) : sellOffers.length > 0 ? (
-                    <Stack spacing={2}>
+                    <Stack spacing={1}>
                       {sellOffers.map((offer, index) => {
                         const amount = normalizeAmount(offer.amount);
                         return (
                           <Paper
                             key={index}
                             sx={{
-                              p: 2,
+                              p: 1.5,
                               backgroundColor: (theme) =>
                                 alpha(theme.palette.background.default, 0.6)
                             }}
                           >
-                            <Stack spacing={2}>
+                            <Stack spacing={1}>
                               <Stack
                                 direction="row"
                                 justifyContent="space-between"
                                 alignItems="center"
                               >
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                  <InfoIcon sx={{ width: 20, height: 20 }} />
-                                  <Typography variant="h6" fontWeight="bold">
-                                    {formatXRPAmount(amount.amount, true, 'sell_offer')}
-                                  </Typography>
-                                </Stack>
+                                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '0.95rem' }}>
+                                  ✕{formatXRPAmount(amount.amount, false, 'sell_offer')}
+                                </Typography>
                                 <Button
                                   variant="outlined"
                                   size="small"
                                   color="error"
                                   onClick={() => handleCancelOffer(offer)}
-                                  startIcon={<InfoIcon />}
+                                  sx={{ py: 0.5, fontSize: '0.75rem' }}
                                 >
                                   Cancel
                                 </Button>
                               </Stack>
                               {offer.destination && (
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                  <Typography variant="body2" color="text.secondary">
-                                    Broker:
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {BROKER_ADDRESSES[offer.destination]?.name ||
-                                      truncate(offer.destination, 16)}
-                                  </Typography>
-                                </Stack>
+                                <Typography variant="caption" color="text.secondary">
+                                  Broker: {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 12)}
+                                </Typography>
                               )}
                             </Stack>
                           </Paper>
@@ -1143,17 +1123,17 @@ export default function NFTActions({ nft }) {
             )}
 
             <StyledAccordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" />}>
-                <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <PanToolIcon color="primary" />
-                    <Typography variant="h6" color="primary.main">
+              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
+                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
+                  <Stack direction="row" alignItems="center" spacing={1.5}>
+                    <PanToolIcon color="primary" sx={{ fontSize: 20 }} />
+                    <Typography variant="h6" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
                       Buy Offers
                     </Typography>
                   </Stack>
                   {buyOffers.length > 0 && (
                     <OfferCountBadge>
-                      {buyOffers.length} {buyOffers.length === 1 ? 'Offer' : 'Offers'}
+                      {buyOffers.length}
                     </OfferCountBadge>
                   )}
                 </Stack>
@@ -1170,7 +1150,7 @@ export default function NFTActions({ nft }) {
                     <PulseLoader color={theme.palette.primary.main} size={10} />
                   </Box>
                 ) : buyOffers.length > 0 ? (
-                  <Stack spacing={2}>
+                  <Stack spacing={1}>
                     {buyOffers.map((offer, index) => {
                       const amount = normalizeAmount(offer.amount);
                       const offerPrice = parseFloat(amount.amount);
@@ -1183,26 +1163,19 @@ export default function NFTActions({ nft }) {
                         <Paper
                           key={index}
                           sx={{
-                            p: 2,
+                            p: 1.5,
                             backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6)
                           }}
                         >
-                          <Stack spacing={2}>
+                          <Stack spacing={1}>
                             <Stack
                               direction="row"
                               justifyContent="space-between"
                               alignItems="center"
                             >
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                <InfoIcon sx={{ width: 20, height: 20 }} />
-                                <Typography variant="h6" fontWeight="bold">
-                                  {formatXRPAmount(amount.amount, true, offer.destination)}
-                                </Typography>
-                                <PriceWarningIcon
-                                  discrepancy={discrepancy}
-                                  floorPrice={parsedFloorPrice}
-                                />
-                              </Stack>
+                              <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '0.95rem' }}>
+                                ✕{formatXRPAmount(amount.amount, false, offer.destination)}
+                              </Typography>
                               <Stack direction="row" spacing={1}>
                                 {isOwner ? (
                                   <Button
@@ -1210,7 +1183,7 @@ export default function NFTActions({ nft }) {
                                     size="small"
                                     color="primary"
                                     onClick={() => handleAcceptOffer(offer)}
-                                    startIcon={<CheckIcon />}
+                                    sx={{ py: 0.5, fontSize: '0.75rem' }}
                                   >
                                     Accept
                                   </Button>
@@ -1221,7 +1194,7 @@ export default function NFTActions({ nft }) {
                                       size="small"
                                       color="error"
                                       onClick={() => handleCancelOffer(offer)}
-                                      startIcon={<InfoIcon />}
+                                      sx={{ py: 0.5, fontSize: '0.75rem' }}
                                     >
                                       Cancel
                                     </Button>
@@ -1229,27 +1202,14 @@ export default function NFTActions({ nft }) {
                                 )}
                               </Stack>
                             </Stack>
-                            <Stack spacing={1}>
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                <Typography variant="body2" color="text.secondary">
-                                  From:
-                                </Typography>
-                                <Link href={`/profile/${offer.owner}`} underline="hover">
-                                  <Typography variant="body2">
-                                    {truncate(offer.owner, 16)}
-                                  </Typography>
-                                </Link>
-                              </Stack>
+                            <Stack direction="row" spacing={2} sx={{ fontSize: '0.75rem' }}>
+                              <Typography variant="caption" color="text.secondary">
+                                From: <Link href={`/profile/${offer.owner}`} underline="none" sx={{ color: 'text.primary', '&:hover': { color: 'primary.main' } }}>{truncate(offer.owner, 12)}</Link>
+                              </Typography>
                               {offer.destination && (
-                                <Stack direction="row" spacing={1} alignItems="center">
-                                  <Typography variant="body2" color="text.secondary">
-                                    Broker:
-                                  </Typography>
-                                  <Typography variant="body2">
-                                    {BROKER_ADDRESSES[offer.destination]?.name ||
-                                      truncate(offer.destination, 16)}
-                                  </Typography>
-                                </Stack>
+                                <Typography variant="caption" color="text.secondary">
+                                  Broker: {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 12)}
+                                </Typography>
                               )}
                             </Stack>
                           </Stack>
@@ -1286,23 +1246,10 @@ export default function NFTActions({ nft }) {
             </StyledAccordion>
 
             <StyledAccordion defaultExpanded>
-              <AccordionSummary
-                expandIcon={
-                  <ExpandMoreIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />
-                }
-                sx={{
-                  '& .MuiAccordionSummary-expandIconWrapper': {
-                    marginRight: { xs: 0, sm: 1 }
-                  }
-                }}
-              >
-                <Stack direction="row" spacing={{ xs: 1, sm: 2 }} alignItems="center">
-                  <HistoryIcon color="primary" sx={{ fontSize: { xs: 20, sm: 24 } }} />
-                  <Typography
-                    variant={{ xs: 'body1', sm: 'h6' }}
-                    color="primary.main"
-                    sx={{ fontWeight: { xs: 600, sm: 500 } }}
-                  >
+              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
+                <Stack direction="row" spacing={1.5} alignItems="center">
+                  <HistoryIcon color="primary" sx={{ fontSize: 20 }} />
+                  <Typography variant="h6" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
                     History
                   </Typography>
                 </Stack>

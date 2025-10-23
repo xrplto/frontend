@@ -16,9 +16,7 @@ import {
   Typography,
   Paper,
   Chip,
-  Skeleton,
-  Fade,
-  Avatar
+  Skeleton
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 
@@ -52,10 +50,10 @@ const StyledTableHead = styled(TableHead)(({ theme }) => ({
   '& .MuiTableCell-head': {
     color: theme.palette.text.secondary,
     fontWeight: 600,
-    fontSize: '0.75rem',
+    fontSize: '0.65rem',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
-    padding: theme.spacing(1.5, 2),
+    padding: theme.spacing(1, 1.5),
     borderBottom: 'none'
   }
 }));
@@ -70,29 +68,24 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 }));
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  padding: theme.spacing(2),
+  padding: theme.spacing(1.2, 1.5),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-  fontSize: '0.875rem'
+  fontSize: '0.8rem'
 }));
 
 const TransactionCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
   borderRadius: theme.spacing(1),
   backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    borderColor: alpha(theme.palette.primary.main, 0.2),
-    boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`
-  }
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
 }));
 
 const TypeChip = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'transactionType'
 })(({ theme, transactionType }) => ({
-  height: 26,
-  fontSize: '0.75rem',
-  fontWeight: 600,
+  height: 22,
+  fontSize: '0.7rem',
+  fontWeight: 500,
   backgroundColor:
     transactionType === 'SALE'
       ? alpha(theme.palette.success.main, 0.1)
@@ -100,11 +93,15 @@ const TypeChip = styled(Chip, {
   color: transactionType === 'SALE' ? theme.palette.success.dark : theme.palette.info.dark,
   border: `1px solid ${
     transactionType === 'SALE'
-      ? alpha(theme.palette.success.main, 0.3)
-      : alpha(theme.palette.info.main, 0.3)
+      ? alpha(theme.palette.success.main, 0.2)
+      : alpha(theme.palette.info.main, 0.2)
   }`,
   '& .MuiChip-icon': {
-    color: 'inherit'
+    fontSize: '0.9rem',
+    marginLeft: '4px'
+  },
+  '& .MuiChip-label': {
+    padding: '0 8px'
   }
 }));
 
@@ -113,22 +110,21 @@ const AddressLink = styled(Link)(({ theme }) => ({
   textDecoration: 'none',
   fontFamily: 'monospace',
   fontSize: '0.875rem',
-  transition: 'color 0.2s ease',
   '&:hover': {
-    color: theme.palette.primary.main,
-    textDecoration: 'underline'
+    color: theme.palette.primary.main
   }
 }));
 
 const PriceText = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
+  fontSize: '0.8rem',
   color: theme.palette.text.primary,
   fontFamily: 'monospace'
 }));
 
 function formatAddress(address) {
   if (!address) return '';
-  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+  return `${address.slice(0, 8)}...${address.slice(-6)}`;
 }
 
 function formatDate(dateString) {
@@ -141,16 +137,15 @@ function formatDate(dateString) {
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     if (diffInHours === 0) {
       const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
-      return `${diffInMinutes}m ago`;
+      return `${diffInMinutes}m`;
     }
-    return `${diffInHours}h ago`;
+    return `${diffInHours}h`;
   } else if (diffInDays < 7) {
-    return `${diffInDays}d ago`;
+    return `${diffInDays}d`;
   } else {
     return date.toLocaleDateString('en-US', {
       month: 'short',
-      day: 'numeric',
-      year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
+      day: 'numeric'
     });
   }
 }
@@ -185,10 +180,10 @@ export default function HistoryList({ nft }) {
     function getHistories() {
       setLoading(true);
       axios
-        .get(`${BASE_URL}/history/${nft.NFTokenID}`)
+        .get(`${BASE_URL}/nft/history?NFTokenID=${nft.NFTokenID}&limit=50`)
         .then((res) => {
           let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
+          if (ret && ret.result === 'success') {
             setHists(ret.histories);
           }
           setLoading(false);
@@ -225,8 +220,7 @@ export default function HistoryList({ nft }) {
         // Mobile view - Cards
         <Stack spacing={1.5} sx={{ p: 2 }}>
           {sortedHists.map((row, index) => (
-            <Fade in key={row.uuid} timeout={300} style={{ transitionDelay: `${index * 50}ms` }}>
-              <TransactionCard elevation={0}>
+            <TransactionCard key={row.uuid} elevation={0}>
                 <Stack spacing={1.5}>
                   {/* Header */}
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -248,7 +242,7 @@ export default function HistoryList({ nft }) {
                   <Stack spacing={1}>
                     <Stack direction="row" alignItems="center" spacing={1}>
                       <AccountCircleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      <AddressLink href={`/account/${row.account}`}>
+                      <AddressLink href={`/profile/${row.account}`}>
                         {formatAddress(row.account)}
                       </AddressLink>
                     </Stack>
@@ -271,14 +265,13 @@ export default function HistoryList({ nft }) {
                     )}
                   </Stack>
                 </Stack>
-              </TransactionCard>
-            </Fade>
+            </TransactionCard>
           ))}
         </Stack>
       ) : (
         // Desktop view - Table
-        <Box sx={{ overflow: 'auto', maxHeight: 400 }}>
-          <Table stickyHeader size="small">
+        <Box>
+          <Table size="small">
             <StyledTableHead>
               <TableRow>
                 <StyledTableCell>Type</StyledTableCell>
@@ -289,13 +282,7 @@ export default function HistoryList({ nft }) {
             </StyledTableHead>
             <TableBody>
               {sortedHists.map((row, index) => (
-                <Fade
-                  in
-                  key={row.uuid}
-                  timeout={300}
-                  style={{ transitionDelay: `${index * 30}ms` }}
-                >
-                  <StyledTableRow>
+                  <StyledTableRow key={row.uuid}>
                     <StyledTableCell>
                       <TypeChip
                         label={row.type}
@@ -305,12 +292,7 @@ export default function HistoryList({ nft }) {
                       />
                     </StyledTableCell>
                     <StyledTableCell>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Avatar sx={{ width: 24, height: 24, bgcolor: 'primary.light' }}>
-                          <AccountCircleIcon sx={{ fontSize: 16 }} />
-                        </Avatar>
-                        <AddressLink href={`/account/${row.account}`}>{row.account}</AddressLink>
-                      </Stack>
+                      <AddressLink href={`/profile/${row.account}`}>{formatAddress(row.account)}</AddressLink>
                     </StyledTableCell>
                     <StyledTableCell align="right">
                       {row.type === 'SALE' && row.cost ? (
@@ -325,20 +307,11 @@ export default function HistoryList({ nft }) {
                       )}
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      <Stack
-                        direction="row"
-                        alignItems="center"
-                        justifyContent="flex-end"
-                        spacing={0.5}
-                      >
-                        <AccessTimeIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                        <Typography variant="body2" color="text.secondary">
-                          {formatDate(row.time)}
-                        </Typography>
-                      </Stack>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                        {formatDate(row.time)}
+                      </Typography>
                     </StyledTableCell>
                   </StyledTableRow>
-                </Fade>
               ))}
             </TableBody>
           </Table>

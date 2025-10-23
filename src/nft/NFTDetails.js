@@ -24,8 +24,8 @@ import {
   Card,
   CardMedia,
   Modal,
-  Backdrop,
-  Avatar
+  Avatar,
+  CircularProgress
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
@@ -293,18 +293,17 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const loadingImage = () => {
     if (errored) {
       return (
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          {t('general.load-failed')}
-          <br />
-        </div>
+        <Box sx={{ textAlign: 'center', py: 5, color: 'text.secondary' }}>
+          <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+            Failed to load
+          </Typography>
+        </Box>
       );
     } else if (!loaded) {
       return (
-        <div style={{ textAlign: 'center', marginTop: '40px' }}>
-          <span className="waiting"></span>
-          <br />
-          {t('general.loading')}
-        </div>
+        <Box sx={{ textAlign: 'center', py: 5 }}>
+          <CircularProgress size={24} />
+        </Box>
       );
     }
   };
@@ -375,8 +374,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
             <Modal
               open={openImage}
               onClose={() => setOpenImage(false)}
-              closeAfterTransition
-              BackdropComponent={Backdrop}
             >
               <Box
                 sx={{
