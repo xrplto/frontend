@@ -608,13 +608,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Technical Details */}
       <Paper sx={{ p: 1.2, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-        <Stack spacing={0.8}>
-          <Box>
-            <Label sx={{ mb: 0.2 }}>Owner</Label>
-            <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{account}</Value>
-            </Link>
-          </Box>
+        <Stack spacing={0.6}>
+          <Stack direction="row" spacing={2}>
+            <Box sx={{ flex: 1 }}>
+              <Label sx={{ mb: 0.2 }}>Owner</Label>
+              <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+                <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{account}</Value>
+              </Link>
+            </Box>
+            <Box>
+              <Label sx={{ mb: 0.2 }}>Royalties</Label>
+              <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
+            </Box>
+          </Stack>
 
           <Box>
             <Label sx={{ mb: 0.2 }}>Issuer</Label>
@@ -622,22 +628,6 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{issuer}</Value>
             </Link>
           </Box>
-
-          <Stack direction="row" spacing={3}>
-            <Box>
-              <Label sx={{ mb: 0.2 }}>Royalties</Label>
-              <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
-            </Box>
-            {((flag & 0x00000001) !== 0 || (flag & 0x00000008) !== 0) && (
-              <Box>
-                <Label sx={{ mb: 0.2 }}>Flags</Label>
-                <Stack direction="row" spacing={0.5}>
-                  {(flag & 0x00000001) !== 0 && <Chip label="Burnable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
-                  {(flag & 0x00000008) !== 0 && <Chip label="Transferable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
-                </Stack>
-              </Box>
-            )}
-          </Stack>
 
           <Box>
             <Label sx={{ mb: 0.2 }}>Token ID</Label>
