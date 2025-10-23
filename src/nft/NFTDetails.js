@@ -474,10 +474,13 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
     total,
     volume,
     rarity_rank,
-    files
+    files,
+    royalty,
+    MasterSequence
   } = nft;
 
-  const { flag, issuer, transferFee } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
+  const { flag, issuer } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
+  const transferFee = royalty ? (royalty / 1000).toFixed(1) : 0;
 
   const strDateTime = useMemo(() => {
     if (!date) return '';
@@ -592,13 +595,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       )}
 
       {/* Stats */}
-      {(rarity_rank > 0 || volume > 0) && (
+      {(rarity_rank > 0 || MasterSequence > 0 || volume > 0) && (
         <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
           <Stack direction="row" spacing={3}>
             {rarity_rank > 0 && (
               <Box>
                 <Label sx={{ mb: 0.3 }}>Rarity Rank</Label>
                 <Value sx={{ fontSize: '0.75rem' }}>#{rarity_rank}</Value>
+              </Box>
+            )}
+            {MasterSequence > 0 && (
+              <Box>
+                <Label sx={{ mb: 0.3 }}>On-Chain Rank</Label>
+                <Value sx={{ fontSize: '0.75rem' }}>#{MasterSequence}</Value>
               </Box>
             )}
             {volume > 0 && (
@@ -612,40 +621,42 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       )}
 
       {/* Technical Details */}
-      <Paper sx={{ p: 1.5, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-        <Stack spacing={1}>
-          <Stack direction="row" spacing={3}>
-            <Box>
-              <Label sx={{ mb: 0.3 }}>Owner</Label>
-              <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-                <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all' }}>{account}</Value>
-              </Link>
-            </Box>
-            <Box>
-              <Label sx={{ mb: 0.3 }}>Transfer Fee</Label>
-              <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
-            </Box>
-          </Stack>
-
+      <Paper sx={{ p: 1.2, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
+        <Stack spacing={0.8}>
           <Box>
-            <Label sx={{ mb: 0.3 }}>Issuer</Label>
-            <Link href={`/account/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all' }}>{issuer}</Value>
+            <Label sx={{ mb: 0.2 }}>Owner</Label>
+            <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{account}</Value>
             </Link>
           </Box>
 
           <Box>
-            <Label sx={{ mb: 0.3 }}>Flags</Label>
-            <Stack direction="row" spacing={0.5}>
-              {(flag & 0x00000001) !== 0 && <Chip label="Burnable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
-              {(flag & 0x00000008) !== 0 && <Chip label="Transferable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
-            </Stack>
+            <Label sx={{ mb: 0.2 }}>Issuer</Label>
+            <Link href={`/account/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{issuer}</Value>
+            </Link>
           </Box>
 
+          <Stack direction="row" spacing={3}>
+            <Box>
+              <Label sx={{ mb: 0.2 }}>Transfer Fee</Label>
+              <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
+            </Box>
+            {((flag & 0x00000001) !== 0 || (flag & 0x00000008) !== 0) && (
+              <Box>
+                <Label sx={{ mb: 0.2 }}>Flags</Label>
+                <Stack direction="row" spacing={0.5}>
+                  {(flag & 0x00000001) !== 0 && <Chip label="Burnable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
+                  {(flag & 0x00000008) !== 0 && <Chip label="Transferable" size="small" sx={{ fontSize: '0.6rem', height: '18px' }} />}
+                </Stack>
+              </Box>
+            )}
+          </Stack>
+
           <Box>
-            <Label sx={{ mb: 0.3 }}>Token ID</Label>
+            <Label sx={{ mb: 0.2 }}>Token ID</Label>
             <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '0.65rem', wordBreak: 'break-all' }}>{NFTokenID}</Value>
+              <Value sx={{ fontSize: '0.62rem', wordBreak: 'break-all' }}>{NFTokenID}</Value>
             </Link>
           </Box>
         </Stack>

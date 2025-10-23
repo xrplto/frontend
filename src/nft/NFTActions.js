@@ -975,99 +975,7 @@ export default function NFTActions({ nft }) {
             </CollectionHeader>
           )}
 
-          <Stack direction="row" spacing={2} sx={{ mt: 1, mb: 2 }}>
-            {self && rarity_rank > 0 && (
-              <RankingBadge elevation={0}>
-                <LeaderboardOutlinedIcon
-                  sx={{
-                    color: 'primary.main',
-                    fontSize: 18
-                  }}
-                />
-                <Stack>
-                  <Typography variant="caption" color="primary.main" fontWeight="medium">
-                    Rarity Rank
-                  </Typography>
-                  <Typography variant="body1" color="primary.main" fontWeight="bold">
-                    #{fIntNumber(rarity_rank)}
-                  </Typography>
-                </Stack>
-              </RankingBadge>
-            )}
 
-            {MasterSequence && (
-              <MasterSequenceBadge elevation={0}>
-                <InfoIcon
-                  sx={{
-                    width: 18,
-                    height: 18,
-                    color: theme.palette.secondary.main
-                  }}
-                />
-                <Stack>
-                  <Typography variant="caption" color="secondary.main" fontWeight="medium">
-                    On-Chain Rank
-                  </Typography>
-                  <Typography variant="body1" color="secondary.main" fontWeight="bold">
-                    #{MasterSequence}
-                  </Typography>
-                </Stack>
-              </MasterSequenceBadge>
-            )}
-          </Stack>
-
-          <OwnerCard elevation={0}>
-            <SquareAvatar alt="C" src={accountLogo} />
-            <OwnerInfo>
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Typography variant="body2" color="text.secondary">
-                  Owned by
-                </Typography>
-                {isOwner && (
-                  <Chip
-                    label="You"
-                    size="small"
-                    color="primary"
-                    variant="outlined"
-                    sx={{ height: 20 }}
-                  />
-                )}
-              </Stack>
-              <OwnerAddress href={`/profile/${account}`}>
-                <Typography variant="subtitle1" fontWeight="medium">
-                  {truncate(account, 16)}
-                </Typography>
-                <LaunchIcon
-                  sx={{
-                    width: 16,
-                    height: 16,
-                    opacity: 0.7
-                  }}
-                />
-              </OwnerAddress>
-              {minter && minter === account && (
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mt: 0.5 }}>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: 'primary.main',
-                      fontWeight: 'medium'
-                    }}
-                  >
-                    Original Creator
-                  </Typography>
-                  <VerifiedIcon
-                    sx={{
-                      fontSize: 14,
-                      color: 'primary.main'
-                    }}
-                  />
-                </Stack>
-              )}
-            </OwnerInfo>
-          </OwnerCard>
-
-          <Divider />
 
           {/* Action buttons */}
           <Stack spacing={2}>
@@ -1098,63 +1006,41 @@ export default function NFTActions({ nft }) {
                 <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
               </Stack>
             ) : (
-              <Stack spacing={2}>
-                <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                  <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                    Current Price
-                  </Typography>
-                  {loading ? (
-                    <PulseLoader color={theme.palette.primary.main} size={10} />
-                  ) : lowestSellOffer ? (
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <InfoIcon
-                        sx={{
-                          width: 24,
-                          height: 24,
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                        }}
-                      />
-                      <Typography
-                        variant="h5"
-                        fontWeight="bold"
-                        sx={{
-                          background: (theme) =>
-                            `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                          backgroundClip: 'text',
-                          WebkitBackgroundClip: 'text',
-                          WebkitTextFillColor: 'transparent',
-                          filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-                        }}
-                      >
-                        {formatXRPAmount(
-                          lowestSellOffer.totalAmount,
-                          true,
-                          lowestSellOffer.destination
-                        )}
-                      </Typography>
+              <Stack spacing={1.5}>
+                {loading ? (
+                  <PulseLoader color={theme.palette.primary.main} size={10} />
+                ) : lowestSellOffer ? (
+                  <Box sx={{ p: 1.5, backgroundColor: alpha(theme.palette.background.default, 0.4), borderRadius: '8px' }}>
+                    <Stack spacing={0.8}>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>Price</Typography>
+                        <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
+                          ✕{formatXRPAmount(lowestSellOffer.totalAmount, false)}
+                        </Typography>
+                      </Stack>
+                      {lowestSellOffer.hasBroker && (
+                        <>
+                          <Stack direction="row" justifyContent="space-between">
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>Base</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>✕{lowestSellOffer.baseAmount}</Typography>
+                          </Stack>
+                          <Stack direction="row" justifyContent="space-between">
+                            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>{lowestSellOffer.brokerName} Fee ({(lowestSellOffer.brokerFeePercentage * 100).toFixed(2)}%)</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '0.7rem' }}>✕{lowestSellOffer.brokerFee}</Typography>
+                          </Stack>
+                        </>
+                      )}
                     </Stack>
-                  ) : (
-                    <Typography variant="body1" sx={{ opacity: 0.5 }}>
-                      - - -
-                    </Typography>
-                  )}
-                </Stack>
+                  </Box>
+                ) : (
+                  <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'center', py: 1 }}>Not listed</Typography>
+                )}
                 {accountLogin ? (
                   <>
                     {lowestSellOffer && !burnt && (
-                      <Button fullWidth variant="contained" size="large" onClick={handleBuyNow}>
-                        Buy Now
-                      </Button>
+                      <Button fullWidth variant="contained" onClick={handleBuyNow}>Buy Now</Button>
                     )}
-                    <Button
-                      fullWidth
-                      disabled={burnt}
-                      variant="outlined"
-                      size="large"
-                      onClick={handleCreateBuyOffer}
-                    >
-                      Make Offer
-                    </Button>
+                    <Button fullWidth disabled={burnt} variant="outlined" onClick={handleCreateBuyOffer}>Make Offer</Button>
                   </>
                 ) : (
                   <Wallet />
@@ -1163,59 +1049,6 @@ export default function NFTActions({ nft }) {
             )}
           </Stack>
 
-          {/* Add this section to display the lowest sell offer */}
-          {!isOwner && lowestSellOffer && (
-            <Stack spacing={2}>
-              <Stack direction="row" justifyContent="space-between" alignItems="baseline">
-                <Typography variant="body2" color="text.secondary">
-                  Lowest Sell Offer
-                </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <InfoIcon sx={{ width: 24, height: 24 }} />
-                  <Typography variant="h5" fontWeight="bold">
-                    {formatXRPAmount(
-                      lowestSellOffer.totalAmount,
-                      true,
-                      lowestSellOffer.destination
-                    )}
-                  </Typography>
-                </Stack>
-              </Stack>
-              {lowestSellOffer.hasBroker && (
-                <>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2" color="text.secondary">
-                      Base Price
-                    </Typography>
-                    <Typography variant="body2">
-                      {formatXRPAmount(
-                        lowestSellOffer.baseAmount,
-                        true,
-                        lowestSellOffer.destination
-                      )}
-                    </Typography>
-                  </Stack>
-                  <Stack direction="row" justifyContent="space-between">
-                    <Typography variant="body2" color="text.secondary">
-                      Broker Fee ({(lowestSellOffer.brokerFeePercentage * 100).toFixed(3)}
-                      %)
-                    </Typography>
-                    <Typography variant="body2">
-                      {formatXRPAmount(
-                        lowestSellOffer.brokerFee,
-                        true,
-                        lowestSellOffer.destination
-                      )}
-                    </Typography>
-                  </Stack>
-                  <Typography variant="body2" color="text.secondary">
-                    Broker: {lowestSellOffer.brokerName} (
-                    {truncate(lowestSellOffer.destination, 16)})
-                  </Typography>
-                </>
-              )}
-            </Stack>
-          )}
 
           {/* Offers and History sections */}
           <Stack spacing={2}>
