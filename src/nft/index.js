@@ -19,12 +19,11 @@ export default function Detail({ nft }) {
   const { status, costs } = nft;
 
   return (
-    <Grid container spacing={3} justifyContent="center">
-      <Grid size={{ xs: 12, md: 5.16 }}>
-        {/* trying to fit 480px image, was 5/7 */}
+    <Grid container spacing={2} sx={{ maxWidth: '1200px', mx: 'auto' }} alignItems="flex-start">
+      <Grid size={{ xs: 12, md: 5 }}>
         <NFTDetails nft={nft} />
       </Grid>
-      <Grid size={{ xs: 12, md: 6.84 }}>
+      <Grid size={{ xs: 12, md: 7 }}>
         {status === NFToken.SELL_WITH_MINT_BULK ? (
           <NFTActionsBulk nft={nft} />
         ) : (

@@ -141,12 +141,10 @@ function getProperties(meta) {
 // Styled components
 const Container = styled(Box)(({ theme }) => ({
   width: '100%',
-  padding: theme.spacing(1.5),
-  [theme.breakpoints.down('md')]: {
-    padding: theme.spacing(1)
-  },
+  maxWidth: '480px',
+  padding: 0,
   [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.5)
+    maxWidth: '100%'
   }
 }));
 
@@ -197,11 +195,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   overflow: 'hidden',
   boxShadow: theme.shadows[4],
   backgroundColor: theme.palette.background.paper,
-  transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    boxShadow: theme.shadows[8]
-  }
+  width: '100%'
 }));
 
 const MediaContainer = styled(Box)(({ theme }) => ({
@@ -213,13 +207,7 @@ const MediaContainer = styled(Box)(({ theme }) => ({
   justifyContent: 'center',
   backgroundColor:
     theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
-  overflow: 'hidden',
-  [theme.breakpoints.down('md')]: {
-    aspectRatio: '4 / 3'
-  },
-  [theme.breakpoints.down('sm')]: {
-    aspectRatio: '16 / 9'
-  }
+  overflow: 'hidden'
 }));
 
 // NFT Preview Component (embedded)
@@ -321,49 +309,53 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
     }
   };
 
-  const renderImageLink = (file) => (
-    <Link
-      component="button"
-      underline="none"
-      onClick={() => handleOpenImage(file.cachedUrl)}
-      sx={{
-        width: '100%',
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative'
-      }}
-    >
-      {loadingImage()}
-      <img
-        style={{
+  const renderImageLink = (file) => {
+    const cdn = 'https://s2.xrpnft.com/d1/';
+    const imageUrl = typeof file === 'string'
+      ? file
+      : file.thumbnail?.big
+        ? cdn + file.thumbnail.big
+        : file.thumbnail?.small
+          ? cdn + file.thumbnail.small
+          : file.cachedUrl;
+
+    return (
+      <Box
+        onClick={() => handleOpenImage(imageUrl)}
+        sx={{
           width: '100%',
           height: '100%',
-          objectFit: 'contain',
-          maxWidth: '100%',
-          maxHeight: '100%',
-          display: loaded ? 'block' : 'none',
-          position: 'absolute',
-          top: 0,
-          left: 0
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          cursor: 'pointer'
         }}
-        onLoad={() => {
-          setLoaded(true);
-          setErrored(false);
-        }}
-        onError={() => setErrored(true)}
-        src={
-          typeof file === 'string'
-            ? file
-            : file.thumbnail
-              ? 'https://s2.xrpl.to/d1/' + (file.thumbnail?.big || file.thumbnail?.small)
-              : file.cachedUrl
-        }
-        alt={NFTName}
-      />
-    </Link>
-  );
+      >
+        {loadingImage()}
+        <img
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            maxWidth: '100%',
+            maxHeight: '100%',
+            display: loaded ? 'block' : 'none',
+            position: 'absolute',
+            top: 0,
+            left: 0
+          }}
+          onLoad={() => {
+            setLoaded(true);
+            setErrored(false);
+          }}
+          onError={() => setErrored(true)}
+          src={imageUrl}
+          alt={NFTName}
+        />
+      </Box>
+    );
+  };
 
   return (
     <StyledCard>
@@ -503,36 +495,30 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
   return (
     <Container>
-      {/* Title and Collection */}
-      <Box sx={{ mb: 1, px: 1, py: 0.8, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <Stack direction="row" alignItems="baseline" spacing={1}>
-          <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600 }}>
-            {nft.name || meta?.name || 'Untitled'}
-          </Typography>
-          {cslug && (
-            <>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>•</Typography>
-              <Link href={`/collection/${cslug}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
-                  {collectionName}
-                </Typography>
-              </Link>
-            </>
-          )}
-          {date && (
-            <>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>•</Typography>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>
-                {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </Typography>
-            </>
-          )}
-        </Stack>
+      {/* NFT Preview */}
+      <Box sx={{ mb: 1, width: '100%' }}>
+        <NFTPreviewComponent nft={nft} showDetails={false} />
       </Box>
 
-      {/* NFT Preview */}
-      <Box sx={{ mb: 1.5, width: '100%' }}>
-        <NFTPreviewComponent nft={nft} showDetails={false} />
+      {/* Title and Collection */}
+      <Box sx={{ mb: 1, px: 1, py: 0.8 }}>
+        <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600, mb: 0.3 }}>
+          {nft.name || meta?.name || 'Untitled'}
+        </Typography>
+        <Stack direction="row" spacing={1} alignItems="center">
+          {cslug && (
+            <Link href={`/collection/${cslug}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                {collectionName}
+              </Typography>
+            </Link>
+          )}
+          {date && (
+            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>
+              {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+            </Typography>
+          )}
+        </Stack>
       </Box>
 
       {/* Properties */}
@@ -639,7 +625,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
           <Stack direction="row" spacing={3}>
             <Box>
-              <Label sx={{ mb: 0.2 }}>Transfer Fee</Label>
+              <Label sx={{ mb: 0.2 }}>Royalties</Label>
               <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
             </Box>
             {((flag & 0x00000001) !== 0 || (flag & 0x00000008) !== 0) && (

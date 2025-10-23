@@ -112,11 +112,10 @@ const GlassPanel = styled(Glass)(({ theme }) => ({
   background: alpha(theme.palette.background.paper, 0.7),
   backdropFilter: 'blur(10px)',
   borderRadius: theme.shape.borderRadius * 2,
-  padding: theme.spacing(3),
+  padding: theme.spacing(2),
   boxShadow: `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.1)}`,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-  maxWidth: '95%',
-  margin: '0 auto'
+  width: '100%'
 }));
 
 // Add this new styled component for the verification badge
@@ -855,23 +854,8 @@ export default function NFTActions({ nft }) {
 
   return (
     <>
-      <GlassPanel
-        elevation={0}
-        sx={{
-          animation: 'fadeInScale 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-          '@keyframes fadeInScale': {
-            '0%': {
-              opacity: 0,
-              transform: 'scale(0.95) translateY(20px)'
-            },
-            '100%': {
-              opacity: 1,
-              transform: 'scale(1) translateY(0)'
-            }
-          }
-        }}
-      >
-        <Stack spacing={3}>
+      <GlassPanel elevation={0} sx={{ mt: 0 }}>
+        <Stack spacing={2}>
           {self && (
             <CollectionHeader>
               <CollectionInfo>
