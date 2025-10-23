@@ -792,18 +792,17 @@ export const ConnectWallet = () => {
       onClick={() => setOpenWalletModal(true)}
       fullWidth
       sx={{
-        mt: 1,
-        mb: 0.5,
-        px: 2,
-        py: 1.5,
+        mt: 0,
+        mb: 0,
+        height: { xs: '40px', sm: '36px' },
         fontWeight: 400,
-        borderRadius: '12px',
+        borderRadius: '8px',
         borderWidth: '1.5px',
         borderColor: alpha(theme.palette.divider, 0.2),
         color: '#4285f4',
         backgroundColor: 'transparent',
         textTransform: 'none',
-        fontSize: '0.95rem',
+        fontSize: { xs: '0.9rem', sm: '0.875rem' },
         '&:hover': {
           borderColor: '#4285f4',
           backgroundColor: alpha('#4285f4', 0.04),
