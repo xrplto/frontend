@@ -1,9 +1,9 @@
 import React from 'react';
-import Image from 'next/image';
 import NextLink from 'next/link';
 import { Box, Container, Link, Typography, IconButton, Tooltip } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 import { Twitter, Send, Reddit, Forum } from '@mui/icons-material';
+import Logo from 'src/components/Logo';
 
 const Root = styled('footer')(({ theme }) => ({
   width: '100%',
@@ -93,9 +93,6 @@ const SocialIcons = React.memo(() => (
 
 function Footer() {
   const year = new Date().getFullYear();
-  const logo = '/logo/xrpl-to-logo-black.svg';
-
-  // Link groups are hoisted as constants above to keep references stable
 
   return (
     <Root>
@@ -114,7 +111,7 @@ function Footer() {
         >
           <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
             <Link href="/" underline="none" sx={{ display: 'inline-flex' }}>
-              <Image src={logo} alt="XRPL.to" width={110} height={38} priority />
+              <Logo alt="XRPL.to" style={{ width: '110px', height: 'auto' }} />
             </Link>
             <Typography
               variant="body2"
