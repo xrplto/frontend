@@ -400,6 +400,7 @@ const OptimizedImage = memo(
           width={size}
           height={size}
           priority={priority}
+          unoptimized={true}
           onError={handleError}
           style={{
             width: '100%',

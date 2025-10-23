@@ -1648,6 +1648,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     width={32}
                     height={32}
                     alt={`${curr1.name} token icon`}
+                    unoptimized={true}
                     onError={(event) => (event.target.src = '/static/alt.webp')}
                   />
                   <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
@@ -1766,6 +1767,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     width={32}
                     height={32}
                     alt={`${curr2.name} token icon`}
+                    unoptimized={true}
                     onError={(event) => (event.target.src = '/static/alt.webp')}
                   />
                   <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>

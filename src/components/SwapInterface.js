@@ -2201,6 +2201,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             width={36}
             height={36}
             alt={name || 'Token'}
+            unoptimized={true}
             onError={(event) => (event.target.src = '/static/alt.webp')}
           />
           {kyc && (
