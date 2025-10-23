@@ -620,41 +620,33 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 
 // SummaryTag component (previously in separate file)
 export const SummaryTag = ({ tagName }) => {
-  const ContentTypography = styled.div`
-    color: rgba(145, 158, 171, 0.99);
-  `;
-
   const TagContainer = styled.div`
     margin-top: 16px;
   `;
 
   const TagTitle = styled.h1`
-    margin: 0;
-    font-size: 2.125rem;
-    font-weight: 300;
-    line-height: 1.235;
-    letter-spacing: -0.00833em;
+    margin: 0 0 8px 0;
+    font-size: 1.75rem;
+    font-weight: 400;
+    line-height: 1.2;
 
     @media (max-width: 600px) {
-      font-size: 1.5rem;
+      font-size: 1.25rem;
     }
   `;
 
   const TagSubtitle = styled.div`
-    font-size: 1rem;
+    font-size: 0.875rem;
     font-weight: 400;
-    line-height: 1.5;
-    letter-spacing: 0.00938em;
-    margin-top: 16px;
+    line-height: 1.4;
+    opacity: 0.6;
   `;
 
   return (
     <TagContainer>
-      <TagTitle>Top {tagName} Tokens Ranked by Trading Volume</TagTitle>
+      <TagTitle>{tagName} Tokens</TagTitle>
       <TagSubtitle>
-        <ContentTypography>
-          Top {tagName} tokens by 24h volume. Sort by price change, market cap, or liquidity to analyze {tagName.toLowerCase()} market trends.
-        </ContentTypography>
+        Ranked by 24h trading volume
       </TagSubtitle>
     </TagContainer>
   );
@@ -938,7 +930,7 @@ export default function Summary() {
           </div>
         ) : (
           <div style={{ width: '100%' }}>
-            <Grid cols={5} mdCols={3} smCols={1}>
+            <Grid cols={6} mdCols={3} smCols={1}>
               <MetricBox>
                 <MetricTitle>MCap</MetricTitle>
                 <MetricValue>
@@ -953,6 +945,18 @@ export default function Summary() {
                   {(metrics.global?.gMarketcapPro || 0) >= 0 ? '▲' : '▼'}
                   {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(2)}%
                 </PercentageChange>
+              </MetricBox>
+
+              <MetricBox>
+                <MetricTitle>TVL</MetricTitle>
+                <MetricValue>
+                  {currencySymbols[activeFiatCurrency]}
+                  {formatNumberWithDecimals(
+                    new Decimal(metrics.H24?.totalTVL || 0)
+                      .div(fiatRate)
+                      .toNumber()
+                  )}
+                </MetricValue>
               </MetricBox>
 
               <MetricBox>

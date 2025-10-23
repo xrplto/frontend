@@ -153,6 +153,26 @@ export async function getStaticProps({ params }) {
     data = res.data;
     if (tab) data.tab = tab;
 
+    // SEO: 301 redirect non-canonical URLs to md5 format (prevents duplicate content)
+    if (data && data.token && data.token.md5 && slug !== data.token.md5) {
+      return {
+        redirect: {
+          destination: `/token/${data.token.md5}${tab ? `/${tab}` : ''}`,
+          permanent: true // 301 redirect
+        }
+      };
+    }
+
+    // SEO: Redirect legacy /trustset URLs (feature removed, prevents duplicate content)
+    if (tab === 'trustset') {
+      return {
+        redirect: {
+          destination: `/token/${data.token.md5 || slug}`,
+          permanent: true // 301 redirect
+        }
+      };
+    }
+
     const t2 = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const dt = (t2 - t1).toFixed(2);
 
@@ -229,18 +249,13 @@ export async function getStaticProps({ params }) {
 
     const imageData = getOptimalImage();
 
-    // Override meta data for trustset pages
-    if (tab === 'trustset') {
-      ogp.canonical = `https://xrpl.to/token/${slug}/trustset`;
-      ogp.title = `Establish a ${name} Trustline on the XRP Ledger`;
-      ogp.url = `https://xrpl.to/token/${slug}/trustset`;
-      ogp.desc = `Easily set up a ${name} Trustline on the XRPL for secure and streamlined transactions.`;
-    } else {
-      ogp.canonical = `https://xrpl.to/token/${slug}`;
-      ogp.title = seoTitle;
-      ogp.url = `https://xrpl.to/token/${slug}`;
-      ogp.desc = metaDesc;
-    }
+    // Use md5 for canonical URL (SEO best practice: one canonical URL per resource)
+    const canonicalSlug = md5 || slug;
+
+    ogp.canonical = `https://xrpl.to/token/${canonicalSlug}`;
+    ogp.title = seoTitle;
+    ogp.url = `https://xrpl.to/token/${canonicalSlug}`;
+    ogp.desc = metaDesc;
 
     ogp.imgUrl = imageData.url;
     ogp.imgWidth = imageData.width;
