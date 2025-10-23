@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react';
+import { useState, useContext, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import {
   Box,
@@ -40,7 +40,7 @@ const WalletSetupPage = () => {
   const [importFile, setImportFile] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
-  const [walletStorage] = useState(new EncryptedWalletStorage());
+  const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
 
   // OAuth data from session
   const [oauthData, setOauthData] = useState(null);

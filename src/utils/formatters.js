@@ -47,6 +47,15 @@ export function fCurrency5(num) {
   return n.toFixed(4);
 }
 
+export function fPercent(value) {
+  if (value === undefined || value === null || isNaN(value)) return '0%';
+  const num = typeof value === 'string' ? parseFloat(value) : value;
+  if (isNaN(num)) return '0%';
+
+  // For percentages, show 2 decimal places
+  return `${num.toFixed(2)}%`;
+}
+
 // ==== DATE/TIME FORMATTING ====
 
 export function fDate(date) {

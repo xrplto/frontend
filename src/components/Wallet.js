@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect, useCallback } from 'react';
+import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
 import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
 
@@ -877,7 +877,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // OAuth password setup state
   const [showOAuthPasswordSetup, setShowOAuthPasswordSetup] = useState(false);
+  // eslint-disable-next-line react/hook-use-state
   const [oauthPassword, setOAuthPassword] = useState('');
+  // eslint-disable-next-line react/hook-use-state
   const [oauthConfirmPassword, setOAuthConfirmPassword] = useState('');
   const [showOAuthPassword, setShowOAuthPassword] = useState(false);
 
@@ -887,9 +889,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [verificationEmail, setVerificationEmail] = useState('');
   const [verificationCode, setVerificationCode] = useState('');
   const [emailPassword, setEmailPassword] = useState('');
+  // eslint-disable-next-line react/hook-use-state
   const [oauthPasswordError, setOAuthPasswordError] = useState('');
   const [isCreatingWallet, setIsCreatingWallet] = useState(false);
-  const [walletStorage, setWalletStorage] = useState(new EncryptedWalletStorage());
+  const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
   const [showImportOption, setShowImportOption] = useState(false);
   const [importFile, setImportFile] = useState(null);
   const [importMethod, setImportMethod] = useState('new'); // 'new', 'import', or 'seed'

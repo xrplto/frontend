@@ -1,5 +1,6 @@
 import { useContext, useState, useMemo } from 'react';
 import { Box, useTheme } from '@mui/material';
+import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
 
@@ -55,7 +56,7 @@ function Logo({ style }) {
           XRPL.to
         </Box>
       ) : (
-        <img
+        <Image
           src={img}
           width={100}
           height={37}
@@ -66,6 +67,7 @@ function Logo({ style }) {
             width: '100%',
             height: 'auto'
           }}
+          priority
         />
       )}
     </Box>
