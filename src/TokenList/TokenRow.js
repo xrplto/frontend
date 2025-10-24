@@ -201,8 +201,8 @@ const MobilePercentCell = styled.div`
 
 // Shared components with mobile/desktop variations
 const TokenImage = styled.div`
-  width: ${(props) => (props.isMobile ? '24px' : '32px')};
-  height: ${(props) => (props.isMobile ? '24px' : '32px')};
+  width: ${(props) => (props.isMobile ? '20px' : '28px')};
+  height: ${(props) => (props.isMobile ? '20px' : '28px')};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -215,19 +215,19 @@ const TokenDetails = styled.div`
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 0;
 `;
 
 const TokenName = styled.span`
   font-weight: 600;
-  font-size: ${(props) => (props.isMobile ? '12px' : '14px')};
+  font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
   color: ${(props) => props.theme.palette.text.primary};
   max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   display: block;
-  line-height: ${(props) => (props.isMobile ? '1.2' : '1.4')};
+  line-height: 1.2;
 `;
 
 const UserName = styled.span`
@@ -240,8 +240,8 @@ const UserName = styled.span`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  line-height: ${(props) => (props.isMobile ? '1.2' : '1.4')};
-  margin-top: ${(props) => (props.isMobile ? '1px' : '3px')};
+  line-height: 1.2;
+  margin-top: 0;
 `;
 
 const PriceText = styled.span`
@@ -563,7 +563,7 @@ const MobileTokenRow = ({
           <OptimizedImage
             src={imgError ? '/static/alt.webp' : imgUrl}
             alt={name || 'Token'}
-            size={24}
+            size={20}
             onError={() => setImgError(true)}
             priority={false}
             md5={md5}
@@ -675,7 +675,7 @@ const DesktopTokenRow = ({
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt={name || 'Token'}
-              size={32}
+              size={28}
               onError={() => setImgError(true)}
               priority={false}
               md5={md5}

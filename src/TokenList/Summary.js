@@ -957,6 +957,10 @@ export default function Summary() {
                       .toNumber()
                   )}
                 </MetricValue>
+                <PercentageChange isPositive={(metrics.H24?.totalTVLPro || 0) >= 0}>
+                  {(metrics.H24?.totalTVLPro || 0) >= 0 ? '▲' : '▼'}
+                  {Math.abs(metrics.H24?.totalTVLPro || 0).toFixed(2)}%
+                </PercentageChange>
               </MetricBox>
 
               <MetricBox>

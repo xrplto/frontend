@@ -15,7 +15,9 @@ const initialState = {
       tradedTokens24H: 0,
       activeAddresses24H: 0,
       totalTVL: 0,
-      uniqueTraders24H: 0
+      totalTVLPro: 0,
+      uniqueTraders24H: 0,
+      xrpPro24h: 0
     },
     global: {
       total: 0,
