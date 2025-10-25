@@ -69,17 +69,18 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
     borderRadius: '8px',
-    margin: '0 2px',
+    margin: '0 3px',
     fontWeight: 400,
+    minWidth: '32px',
+    height: '32px',
     '&:hover': {
-      backgroundColor:
-        theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
     }
   },
   '& .Mui-selected': {
     backgroundColor: `${theme.palette.primary.main} !important`,
     color: '#fff !important',
-    fontWeight: 'bold',
+    fontWeight: 500,
     borderRadius: '8px',
     '&:hover': {
       backgroundColor: `${theme.palette.primary.dark} !important`

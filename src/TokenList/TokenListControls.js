@@ -124,82 +124,91 @@ const StyledToolbar = styled.div`
 const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 8px 14px;
+  min-height: 48px;
   border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  box-shadow: none;
 
   @media (max-width: 900px) {
     width: 100%;
     justify-content: center;
-    padding: 2px 4px;
+    padding: 6px 10px;
+    gap: 4px;
   }
 `;
 
 const RowsSelector = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 8px;
+  gap: 6px;
+  padding: 8px 14px;
+  min-height: 48px;
   border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  box-shadow: none;
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: center;
-    padding: 4px 8px;
-    gap: 2px;
+    padding: 6px 10px;
+    gap: 4px;
   }
 `;
 
 const InfoBox = styled.div`
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.12)};
+  padding: 8px 14px;
+  min-height: 48px;
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
   border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  padding: 4px 8px;
+  box-shadow: none;
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: flex-start;
     gap: 4px;
-    padding: 4px 8px;
+    padding: 6px 10px;
   }
 `;
 
 const Chip = styled.span`
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.32)};
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
   border-radius: 6px;
   color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.primary};
 `;
 
 const Text = styled.span`
-  font-size: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
   font-weight: ${(props) => props.fontWeight || 400};
 `;
 
 const NavButton = styled.button`
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
   border: none;
   background: transparent;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: inherit;
+  color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
   padding: 0;
 
   &:hover:not(:disabled) {
@@ -208,30 +217,33 @@ const NavButton = styled.button`
   }
 
   &:disabled {
-    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.48)};
+    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.3)};
     cursor: not-allowed;
   }
 `;
 
 const PageButton = styled.button`
-  min-width: 20px;
-  height: 20px;
-  border-radius: 6px;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 8px;
   border: none;
   background: ${(props) =>
     props.selected
       ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main
       : 'transparent'};
   color: ${(props) =>
-    props.selected ? props.theme.pagination?.selectedTextColor || 'white' : 'inherit'};
+    props.selected
+      ? props.theme.pagination?.selectedTextColor || 'white'
+      : props.theme.palette.text.primary || 'inherit'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 4px;
+  padding: 0 6px;
   margin: 0;
-  font-size: 12px;
-  font-weight: ${(props) => (props.selected ? 600 : 500)};
+  font-size: 13px;
+  font-weight: ${(props) => (props.selected ? 500 : 400)};
+  font-variant-numeric: tabular-nums;
 
   &:hover:not(:disabled) {
     background: ${(props) =>
@@ -242,7 +254,7 @@ const PageButton = styled.button`
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.3;
   }
 `;
 
