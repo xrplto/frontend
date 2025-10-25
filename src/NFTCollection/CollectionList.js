@@ -745,6 +745,9 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const theme = useTheme();
   const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
 
+  // Handle name being an object or string
+  const collectionName = typeof name === 'string' ? name : (name?.name || 'Unnamed Collection');
+
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor?.amount || 0;
   const floorChangePercent = floor1dPercent || 0;
@@ -765,10 +768,10 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
     <MobileCollectionCard onClick={handleRowClick}>
       <MobileCollectionInfo>
         <CollectionImage isMobile={true}>
-          <OptimizedImage src={logoImageUrl} alt={name || 'Collection'} size={20} />
+          <OptimizedImage src={logoImageUrl} alt={collectionName} size={20} />
         </CollectionImage>
         <CollectionDetails>
-          <CollectionName isMobile={true}>{name}</CollectionName>
+          <CollectionName isMobile={true}>{collectionName}</CollectionName>
           <CollectionSubtext isMobile={true}>{slug}</CollectionSubtext>
         </CollectionDetails>
       </MobileCollectionInfo>
@@ -806,6 +809,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     created,
     graphData30d
   } = collection;
+
+  // Handle name being an object or string
+  const collectionName = typeof name === 'string' ? name : (name?.name || 'Unnamed Collection');
 
   const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor?.amount || 0;
@@ -873,10 +879,10 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <CollectionImage>
-            <OptimizedImage src={logoImageUrl} alt={name || 'Collection'} size={28} />
+            <OptimizedImage src={logoImageUrl} alt={collectionName} size={28} />
           </CollectionImage>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <CollectionName title={name}>{name}</CollectionName>
+            <CollectionName title={collectionName}>{collectionName}</CollectionName>
             <CollectionSubtext>{strDateTime}</CollectionSubtext>
           </div>
         </div>

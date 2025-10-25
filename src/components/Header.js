@@ -256,7 +256,7 @@ const HeaderWrapper = styled(Box)(
     right: 0;
     z-index: 1100;
     background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
-    border-bottom: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
+    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
     box-shadow: none;
     overflow: hidden;
 
@@ -281,18 +281,19 @@ const StyledLink = styled(Link, {
   ({ darkMode, theme }) => `
     color: ${theme.palette.text.primary} !important;
     font-weight: 400;
-    margin-right: 16px;
-    padding: 6px 12px;
-    border-radius: 6px;
+    margin-right: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
     display: inline-flex;
     align-items: center;
     background: transparent;
     border: none;
-    font-size: 0.9rem;
-    
+    font-size: 0.875rem;
+    letter-spacing: 0.01em;
+
     &:hover {
       color: ${theme.palette.primary.main} !important;
-      background: ${theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
+      background: ${alpha(theme.palette.primary.main, 0.04)};
       cursor: pointer;
     }
 `
@@ -304,9 +305,9 @@ const StyledMenuItem = styled(MenuItem, {
   ({ darkMode, theme }) => `
     color: ${darkMode ? 'white' : theme.palette.text.primary};
     margin: 4px 8px;
-    border-radius: 12px;
+    border-radius: 8px;
     background: transparent;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
+    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
     box-shadow: none;
     position: relative;
     overflow: hidden;
@@ -318,7 +319,7 @@ const StyledMenuItem = styled(MenuItem, {
     &:hover {
       color: ${theme.palette.primary.main};
       background: ${alpha(theme.palette.primary.main, 0.04)};
-      border: 1.5px solid ${alpha(theme.palette.primary.main, 0.4)};
+      border: 1px solid ${alpha(theme.palette.primary.main, 0.3)};
       box-shadow: none;
     }
 `
@@ -532,7 +533,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       mt: 0,
                       minWidth: 600,
                       borderRadius: '12px',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       boxShadow: 'none',
                       bgcolor:
                         theme.header?.background ||
@@ -851,21 +852,21 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   size="small"
                   aria-label="Settings"
                   sx={{
-                    padding: '7px',
-                    minWidth: '36px',
-                    width: '36px',
-                    height: '36px',
+                    padding: '6px',
+                    minWidth: '34px',
+                    width: '34px',
+                    height: '34px',
                     backgroundColor: 'transparent',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                     borderRadius: '8px',
                     '&:hover': {
-                      backgroundColor: alpha(theme.palette.divider, 0.04),
-                      borderColor: alpha(theme.palette.divider, 0.4)
+                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                      borderColor: alpha(theme.palette.primary.main, 0.3)
                     }
                   }}
                   title="Settings"
                 >
-                  <SettingsIcon sx={{ fontSize: 18 }} />
+                  <SettingsIcon sx={{ fontSize: 17 }} />
                 </IconButton>
 
                 {/* Launch Button */}
@@ -875,16 +876,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    height: '36px',
-                    px: 2,
-                    fontSize: '0.95rem',
+                    height: '34px',
+                    px: 2.5,
+                    fontSize: '0.875rem',
                     fontWeight: 400,
+                    letterSpacing: '0.01em',
                     color: '#4285f4',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    borderRadius: '12px',
+                    border: `1px solid ${alpha('#4285f4', 0.2)}`,
+                    borderRadius: '8px',
                     backgroundColor: 'transparent',
                     '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.04),
+                      backgroundColor: alpha('#4285f4', 0.06),
                       borderColor: '#4285f4'
                     }
                   }}
@@ -910,7 +912,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       mt: 1,
                       minWidth: 240,
                       borderRadius: '12px',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                       background: theme.palette.mode === 'dark'
                         ? alpha('#000000', 0.98)
                         : alpha('#ffffff', 0.98),
