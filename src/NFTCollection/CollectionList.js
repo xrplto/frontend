@@ -12,6 +12,7 @@ import LastPageIcon from '@mui/icons-material/LastPage';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { alpha } from '@mui/material';
+import { MobileHeader, HeaderCell } from 'src/TokenList/TokenRow';
 
 // Lazy load chart component
 const Sparkline = dynamic(() => import('src/components/Sparkline'), {
@@ -625,33 +626,6 @@ const MobileContainer = styled.div`
   padding: 0;
   margin: 0;
   background: ${(props) => props.theme.palette.background.default};
-`;
-
-const MobileHeader = styled.div`
-  display: flex;
-  width: 100%;
-  padding: 6px 4px;
-  background: ${(props) => props.theme.palette.background.paper};
-  border-bottom: 1px solid ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  color: ${(props) => props.theme.palette.text.secondary};
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-sizing: border-box;
-`;
-
-const HeaderCell = styled.div`
-  flex: ${(props) => props.flex || 1};
-  text-align: ${(props) => props.align || 'left'};
-  padding: 0 4px;
-  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-
-  &:hover {
-    color: ${(props) => props.sortable && props.theme.palette.text.primary};
-  }
 `;
 
 // Table Head Configuration

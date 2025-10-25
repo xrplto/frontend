@@ -215,15 +215,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const { darkMode } = useContext(AppContext);
   const noImg = '/static/nft_no_image.webp';
 
-  // Load Swiper styles on client only
-  React.useEffect(() => {
-    if (typeof window !== 'undefined') {
-      import('swiper/css');
-      import('swiper/css/navigation');
-      import('swiper/css/pagination');
-    }
-  }, []);
-
   // Slider state
   const [loadedSlider, setLoadedSlider] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);

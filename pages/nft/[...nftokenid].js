@@ -14,7 +14,7 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import CollectionBreadcrumb from 'src/NFTCollection/CollectionBreadcrumb';
 import { useContext } from 'react';
-const TokenDetail = lazy(() => import('src/nft'));
+const TokenDetail = lazy(() => import('src/NFT'));
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
