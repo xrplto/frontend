@@ -108,6 +108,15 @@ if (typeof window !== 'undefined') {
   setInterval(preloadTrendingData, CACHE_DURATION);
 }
 
+// Currency symbols mapping
+const currencySymbols = {
+  USD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNH: '¥',
+  XRP: ''
+};
+
 // Memoized price formatter
 const formatPrice = (price) => {
   if (price === 0) return '0.00';
@@ -126,6 +135,18 @@ function SearchModal({ open, onClose }) {
   const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
+
+  // Convert USD price to selected currency
+  const convertPrice = useCallback((usdPrice) => {
+    if (activeFiatCurrency === 'XRP') {
+      // Convert USD to XRP (divide by XRP price in USD)
+      return usdPrice / (metrics.XRP || 1);
+    }
+    // For other currencies, multiply by the exchange rate
+    return usdPrice * exchRate;
+  }, [activeFiatCurrency, exchRate, metrics]);
+
+  const currencySymbol = currencySymbols[activeFiatCurrency] || '$';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ tokens: [], collections: [] });
@@ -509,7 +530,9 @@ function SearchModal({ open, onClose }) {
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {token.exch !== undefined && token.exch !== null && (
                               <Typography variant="body2" fontSize="14px" fontWeight={400}>
-                                ${formatPrice(token.exch)}
+                                {activeFiatCurrency === 'XRP'
+                                  ? `${formatPrice(convertPrice(token.exch))} XRP`
+                                  : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
                               </Typography>
                             )}
                             {token.pro24h !== undefined && token.pro24h !== null && (
@@ -713,7 +736,9 @@ function SearchModal({ open, onClose }) {
                         <Stack alignItems="flex-end" spacing={0.25}>
                           {token.exch !== undefined && token.exch !== null && (
                             <Typography variant="body2" fontSize="14px" fontWeight={400}>
-                              ${formatPrice(token.exch)}
+                              {activeFiatCurrency === 'XRP'
+                                ? `${formatPrice(convertPrice(token.exch))} XRP`
+                                : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
                             </Typography>
                           )}
                           {token.pro24h !== undefined && token.pro24h !== null && (

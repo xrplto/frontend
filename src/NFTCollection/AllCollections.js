@@ -33,7 +33,7 @@ function Collections() {
               fontWeight: 600,
               color: theme.palette.text.primary,
               mb: 1,
-              fontSize: { xs: '1.25rem', sm: '1.5rem' }
+              fontSize: { xs: '20px', sm: '24px' }
             }}
           >
             Top Collections by Volume
@@ -42,7 +42,7 @@ function Collections() {
             variant="body2"
             sx={{
               color: theme.palette.text.secondary,
-              fontSize: { xs: '0.75rem', sm: '0.875rem' }
+              fontSize: { xs: '12px', sm: '14px' }
             }}
           >
             Collections with highest trading volume in the last 30 days

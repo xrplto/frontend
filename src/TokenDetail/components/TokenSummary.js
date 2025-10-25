@@ -1128,7 +1128,7 @@ const TokenSummary = memo(
                     <Typography
                       variant="h5"
                       sx={{
-                        fontSize: { xs: '0.8rem', sm: '0.95rem', md: '1.15rem' },
+                        fontSize: { xs: '13px', sm: '15px', md: '18px' },
                         fontWeight: 800,
                         color: theme.palette.text.primary,
                         overflow: 'hidden',
@@ -1184,7 +1184,7 @@ const TokenSummary = memo(
                             sx={{
                               fontWeight: 600,
                               color: theme.palette.primary.main,
-                              fontSize: { xs: '0.6rem', sm: '0.7rem' },
+                              fontSize: { xs: '12px', sm: '11px' },
                               lineHeight: 1
                             }}
                           >
@@ -1256,7 +1256,7 @@ const TokenSummary = memo(
                     <Typography
                       variant="h6"
                       sx={{
-                        fontSize: { xs: '0.6rem', sm: '0.7rem', md: '0.85rem' },
+                        fontSize: { xs: '12px', sm: '11px', md: '14px' },
                         color: theme.palette.mode === 'dark' ? theme.palette.grey[400] : theme.palette.grey[700],
                         fontWeight: 600,
                         letterSpacing: '-0.01em',
@@ -1293,7 +1293,7 @@ const TokenSummary = memo(
                           sx={{
                             fontWeight: 600,
                             color: origin ? theme.palette.text.primary : '#1976d2',
-                            fontSize: { xs: '0.45rem', sm: '0.6rem' }
+                            fontSize: { xs: '9px', sm: '12px' }
                           }}
                         >
                           {origin || 'XRPL'}
@@ -2151,7 +2151,7 @@ const TokenSummary = memo(
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: { xs: '0.55rem', sm: '0.7rem' },
+                    fontSize: { xs: '11px', sm: '11px' },
                     color: alpha(theme.palette.text.secondary, 0.8),
                     display: 'block',
                     mb: { xs: 0.1, sm: 0.25 },
@@ -2164,7 +2164,7 @@ const TokenSummary = memo(
                 <Typography
                   variant="subtitle2"
                   sx={{
-                    fontSize: { xs: '0.65rem', sm: '0.85rem' },
+                    fontSize: { xs: '13px', sm: '14px' },
                     fontWeight: 600,
                     color: metric.color,
                     lineHeight: 1,
@@ -2193,7 +2193,7 @@ const TokenSummary = memo(
                 size="small"
                 color="error"
                 sx={{
-                  fontSize: { xs: '0.45rem', sm: '0.5rem' },
+                  fontSize: { xs: '9px', sm: '10px' },
                   height: { xs: '12px', sm: '14px' }
                 }}
               />

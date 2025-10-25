@@ -1609,7 +1609,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   variant="caption"
                   sx={{
                     fontWeight: 400,
-                    fontSize: isMobile ? '0.7rem' : '0.75rem',
+                    fontSize: isMobile ? '11px' : '12px',
                     color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
                     flexShrink: 0
                   }}
@@ -1619,7 +1619,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: isMobile ? '0.65rem' : '0.7rem',
+                    fontSize: isMobile ? '13px' : '11px',
                     color: 'text.secondary',
                     opacity: 0.7,
                     flexShrink: 0
@@ -1751,7 +1751,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 variant={chartType === type ? 'contained' : 'outlined'}
                 sx={{
                   px: isMobile ? 0.75 : 1.25,
-                  fontSize: isMobile ? '0.7rem' : '0.8rem',
+                  fontSize: isMobile ? '11px' : '13px',
                   minWidth: isMobile ? 'auto' : 'unset',
                   height: isMobile ? 26 : 30,
                   borderRadius: '6px',
@@ -1765,7 +1765,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   '& .MuiButton-startIcon': {
                     marginRight: isMobile ? '2px' : '6px',
                     '& > svg': {
-                      fontSize: isMobile ? '0.75rem' : '1rem'
+                      fontSize: isMobile ? '12px' : '16px'
                     }
                   }
                 }}
@@ -1811,7 +1811,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 variant={range === r ? 'contained' : 'outlined'}
                 sx={{
                   px: isMobile ? 0.5 : 0.75,
-                  fontSize: isMobile ? '0.65rem' : '0.75rem',
+                  fontSize: isMobile ? '13px' : '12px',
                   minWidth: isMobile ? 26 : 32,
                   height: isMobile ? 26 : 30,
                   letterSpacing: '-0.02em',
@@ -1836,7 +1836,7 @@ const PriceChartAdvanced = memo(({ token }) => {
               ml: isMobile ? 0.5 : 1,
               p: isMobile ? 0.5 : 1,
               '& .MuiSvgIcon-root': {
-                fontSize: isMobile ? '1rem' : '1.25rem'
+                fontSize: isMobile ? '16px' : '20px'
               }
             }}
           >
