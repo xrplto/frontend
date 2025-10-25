@@ -2340,7 +2340,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
   const [loadingImg, setLoadingImg] = useState(true);
 
   const { NFTokenID } = collection;
-  const imgUrl = `https://s1.xrpl.to/collection/${collection.logoImage}`;
+  const imgUrl = `https://s1.xrpl.to/nft-collection/${collection.logoImage}`;
   const name = collection.name || 'No Name';
   const collectionType = type.charAt(0).toUpperCase() + type.slice(1);
 
@@ -2615,7 +2615,7 @@ export default function CollectionView({ collection }) {
         <Stack direction="row" spacing={2.5} alignItems="center">
           <IconCover sx={{ width: '70px', height: '70px' }}>
             <Image
-              src={`https://s1.xrpl.to/collection/${logoImage}`}
+              src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
               alt={name}
               fill
               priority

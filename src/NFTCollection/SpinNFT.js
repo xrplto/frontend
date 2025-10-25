@@ -369,7 +369,7 @@ export default function SpinNFT({ collection, setView }) {
   const isVideo = nft?.meta?.video;
 
   const spinImgUrl = spinnerImage
-    ? `https://s1.xrpl.to/collection/${spinnerImage}`
+    ? `https://s1.xrpl.to/nft-collection/${spinnerImage}`
     : '/static/spin.gif';
 
   const pendingProgress =
@@ -495,7 +495,7 @@ export default function SpinNFT({ collection, setView }) {
       <Stack alignItems="center" sx={{ mb: 5 }}>
         <IconCover>
           <IconWrapper>
-            <IconImage src={`https://s1.xrpl.to/collection/${logoImage}`} />
+            <IconImage src={`https://s1.xrpl.to/nft-collection/${logoImage}`} />
             {account === collection.account && (
               <Link href={`/collection/${slug}/edit`} underline="none">
                 <CardOverlay>

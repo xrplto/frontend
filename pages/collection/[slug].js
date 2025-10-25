@@ -123,7 +123,7 @@ export async function getServerSideProps(ctx) {
       title: `${name} | XRPL NFT Collection`,
       url: `https://xrpl.to/collection/${slug}`,
       imgUrl: logoImage
-        ? `https://s1.xrpl.to/collection/${logoImage}`
+        ? `https://s1.xrpl.to/nft-collection/${logoImage}`
         : '/logo/xrpl-to-logo-black.svg',
       desc:
         description ||

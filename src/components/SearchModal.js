@@ -409,7 +409,7 @@ function SearchModal({ open, onClose }) {
                             <Avatar
                               src={
                                 item.type === 'collection'
-                                  ? `https://s1.xrpl.to/collection/${item.logoImage}`
+                                  ? `https://s1.xrpl.to/nft-collection/${item.logoImage}`
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
                               sx={{
@@ -564,7 +564,7 @@ function SearchModal({ open, onClose }) {
                         >
                           <ListItemAvatar sx={{ minWidth: 44 }}>
                             <Avatar
-                              src={`https://s1.xrpl.to/collection/${collection.logoImage}`}
+                              src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`}
                               sx={{
                                 width: 36,
                                 height: 36,

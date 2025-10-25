@@ -545,7 +545,7 @@ const Row = memo(({ id, item }) => {
   const floorChangePercent = floor1dPercent || 0;
 
   const strDateTime = formatMonthYearDate(created);
-  const logoImageUrl = `https://s1.xrpl.to/collection/${logoImage}`;
+  const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
 
   // Format floor change percentage with color
   const getFloorChangeColor = (percent) => {

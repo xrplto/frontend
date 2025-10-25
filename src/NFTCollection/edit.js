@@ -313,16 +313,16 @@ export default function EditCollection({ collection }) {
     }*/
 
   const logoImageUrl = collection.logoImage
-    ? `https://s1.xrpl.to/collection/${collection.logoImage}`
+    ? `https://s1.xrpl.to/nft-collection/${collection.logoImage}`
     : null;
   const featuredImageUrl = collection.featuredImage
-    ? `https://s1.xrpl.to/collection/${collection.featuredImage}`
+    ? `https://s1.xrpl.to/nft-collection/${collection.featuredImage}`
     : null;
   const bannerImageUrl = collection.bannerImage
-    ? `https://s1.xrpl.to/collection/${collection.bannerImage}`
+    ? `https://s1.xrpl.to/nft-collection/${collection.bannerImage}`
     : null;
   const spinnerImageUrl = collection.spinnerImage
-    ? `https://s1.xrpl.to/collection/${collection.spinnerImage}`
+    ? `https://s1.xrpl.to/nft-collection/${collection.spinnerImage}`
     : null;
 
   const fileRef1 = useRef();
