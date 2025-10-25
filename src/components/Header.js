@@ -877,14 +877,14 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     alignItems: 'center',
                     height: '36px',
                     px: 2,
-                    fontSize: '14px',
+                    fontSize: '0.95rem',
                     fontWeight: 400,
                     color: '#4285f4',
-                    border: `1.5px solid ${alpha('#4285f4', 0.4)}`,
-                    borderRadius: '8px',
-                    letterSpacing: '0.3px',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    borderRadius: '12px',
+                    backgroundColor: 'transparent',
                     '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.08),
+                      backgroundColor: alpha('#4285f4', 0.04),
                       borderColor: '#4285f4'
                     }
                   }}

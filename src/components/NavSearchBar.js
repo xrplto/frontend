@@ -15,7 +15,6 @@ const NavSearchBar = ({
 }) => {
   const { darkMode } = useContext(AppContext);
   const theme = useTheme();
-  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -40,82 +39,63 @@ const NavSearchBar = ({
   };
 
   return (
-    <>
-      <Stack
-        direction="row"
-        alignItems="center"
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
+    <Stack
+      direction="row"
+      alignItems="center"
+      sx={{
+        borderRadius: '12px',
+        cursor: 'pointer',
+        px: 2,
+        py: 1,
+        height: '36px',
+        width: '280px',
+        backgroundColor: alpha(theme.palette.background.paper, 0.02),
+        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+        boxShadow: 'none',
+        '&:hover': {
+          backgroundColor: alpha(theme.palette.primary.main, 0.04),
+          borderColor: alpha(theme.palette.primary.main, 0.3)
+        }
+      }}
+      onClick={openModal}
+      {...props}
+    >
+      <SearchIcon
         sx={{
-          borderRadius: '12px',
-          cursor: 'pointer',
-          px: 2,
-          py: 1,
-          height: '32px',
-          width: '280px',
-          backgroundColor: 'transparent',
-          backdropFilter: 'blur(10px) saturate(150%)',
-          WebkitBackdropFilter: 'blur(10px) saturate(150%)',
-          border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.12 : 0.18)}`,
-          boxShadow: 'none',
-          position: 'relative',
-          '&:hover': {
-            backgroundColor: 'transparent',
-            border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.25 : 0.35)}`,
-            boxShadow: 'none',
-          },
-          '&:active': {
-          }
+          fontSize: '18px',
+          mr: 1.5,
+          color: alpha(theme.palette.text.secondary, 0.6)
         }}
-        onClick={openModal}
-        {...props}
+      />
+      <Typography
+        sx={{
+          fontSize: '14px',
+          flex: 1,
+          color: alpha(theme.palette.text.secondary, 0.7),
+          fontWeight: 400
+        }}
       >
-        <SearchIcon
-          sx={{
-            fontSize: '18px',
-            mr: 1.5,
-            color: isHovered
-              ? alpha(theme.palette.primary.main, 0.8)
-              : alpha(theme.palette.primary.main, 0.6),
-            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
-          }}
-        />
-        <Typography
-          sx={{
-            fontSize: '14px',
-            flex: 1,
-            color: darkMode
-              ? alpha(theme.palette.text.primary, 0.8)
-              : alpha(theme.palette.text.secondary, 0.8),
-            fontWeight: 400,
-            letterSpacing: '0.02em',
-            lineHeight: 1.2,
-          }}
-        >
-          {placeholder || 'Search'}
-        </Typography>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: '22px',
-            height: '22px',
-            borderRadius: '7px',
-            backgroundColor: alpha(theme.palette.primary.main, darkMode ? 0.08 : 0.12),
-            border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.15 : 0.2)}`,
-            color: alpha(theme.palette.primary.main, darkMode ? 0.7 : 0.8),
-            fontSize: '11px',
-            fontWeight: '500',
-            fontFamily: 'SF Mono, Monaco, Consolas, monospace',
-            boxShadow: 'none',
-            transform: isHovered ? 'scale(1.05)' : 'scale(1)'
-          }}
-        >
-          /
-        </Box>
-      </Stack>
-    </>
+        {placeholder || 'Search'}
+      </Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          px: 1,
+          height: '22px',
+          borderRadius: '6px',
+          backgroundColor: alpha(theme.palette.divider, 0.08),
+          border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+          color: alpha(theme.palette.text.secondary, 0.6),
+          fontSize: '12px',
+          fontWeight: 400,
+          fontFamily: 'monospace'
+        }}
+      >
+        /
+      </Box>
+    </Stack>
   );
 };
 

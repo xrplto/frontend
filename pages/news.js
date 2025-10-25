@@ -34,15 +34,8 @@ const PaginationContainer = styled.div`
   padding: 6px 12px;
   border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.08)};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
-  backdrop-filter: blur(20px);
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 6px 16px rgba(0, 0, 0, 0.08)'};
-  }
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  box-shadow: none;
 
   @media (max-width: 900px) {
     width: 100%;
@@ -64,16 +57,10 @@ const NavButton = styled.button`
   justify-content: center;
   color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
   padding: 0;
-  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
     background: ${({ theme }) =>
-      theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.1)};
-    transform: scale(1.05);
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.95);
+      theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
   }
 
   &:disabled {
@@ -102,20 +89,14 @@ const PageButton = styled.button`
   padding: 0 6px;
   margin: 0;
   font-size: 13px;
-  font-weight: ${(props) => (props.selected ? 600 : 400)};
+  font-weight: ${(props) => (props.selected ? 500 : 400)};
   font-variant-numeric: tabular-nums;
-  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
     background: ${(props) =>
       props.selected
         ? props.theme.palette.primary.dark || '#1976D2'
-        : props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.1)};
-    transform: ${(props) => (props.selected ? 'none' : 'translateY(-1px)')};
-  }
-
-  &:active:not(:disabled) {
-    transform: scale(0.95);
+        : props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08)};
   }
 
   &:disabled {
@@ -136,18 +117,11 @@ const InfoBox = styled.div`
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.08)};
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
   border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
+  box-shadow: none;
   padding: 8px 14px;
-  backdrop-filter: blur(20px);
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateY(-1px);
-    box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 6px 16px rgba(0, 0, 0, 0.08)'};
-  }
 
   @media (max-width: 900px) {
     flex: 1;
@@ -160,10 +134,10 @@ const InfoBox = styled.div`
 
 const StyledChip = styled.span`
   font-size: 13px;
-  font-weight: 600;
+  font-weight: 500;
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.32)};
+  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
   border-radius: 6px;
   color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.primary};
 `;
@@ -218,20 +192,21 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
     <Paper
       elevation={0}
       sx={{
-        p: { xs: 1, sm: 1.5 },
+        p: { xs: 1.5, sm: 2 },
         mb: 2,
         background: 'transparent',
-        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-        borderRadius: 1
+        border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+        borderRadius: '12px'
       }}
     >
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1}>
+      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
         <Typography
           variant="caption"
           sx={{
-            fontWeight: 600,
+            fontWeight: 500,
             textTransform: 'uppercase',
             letterSpacing: 0.5,
+            fontSize: '11px',
             color: theme.palette.text.secondary
           }}
         >
@@ -241,20 +216,26 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
           <Button
             size="small"
             onClick={() => setShowAll(!showAll)}
+            variant="outlined"
             sx={{
               fontSize: '13px',
-              px: 1,
+              fontWeight: 400,
+              px: 1.5,
               py: 0.5,
               minHeight: 'auto',
               textTransform: 'none',
-              borderRadius: 1
+              borderRadius: '8px',
+              borderWidth: '1.5px',
+              '&:hover': {
+                borderWidth: '1.5px'
+              }
             }}
           >
             {showAll ? 'Show Less' : `Show All (+${hiddenCount})`}
           </Button>
         )}
       </Stack>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.75 }}>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
         <Chip
           label="All Sources"
           onClick={() => onSourceSelect(null)}
@@ -262,8 +243,15 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
           size="small"
           sx={{
             fontSize: '13px',
-            height: 26,
-            '& .MuiChip-label': { px: 1 }
+            fontWeight: 400,
+            height: 28,
+            borderWidth: '1.5px',
+            borderRadius: '8px',
+            '& .MuiChip-label': { px: 1.5 },
+            '&:hover': {
+              borderWidth: '1.5px',
+              bgcolor: !selectedSource ? undefined : alpha(theme.palette.primary.main, 0.08)
+            }
           }}
         />
         {displayedSources.map(([source, data]) => {
@@ -275,24 +263,9 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
             <Box key={source} sx={{ position: 'relative' }}>
               <Chip
                 label={
-                  <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Stack direction="row" spacing={0.75} alignItems="center">
                     <span>{source}</span>
-                    <span style={{ opacity: 0.6 }}>({data.count})</span>
-                    {hasSentiment && !isMobile && (
-                      <Stack direction="row" spacing={0.25} alignItems="center">
-                        <Typography sx={{ color: '#10B981', fontSize: '11px', fontWeight: 600 }}>
-                          {sentiment.Bullish}
-                        </Typography>
-                        <span>·</span>
-                        <Typography sx={{ color: '#EF4444', fontSize: '11px', fontWeight: 600 }}>
-                          {sentiment.Bearish}
-                        </Typography>
-                        <span>·</span>
-                        <Typography sx={{ color: '#F59E0B', fontSize: '11px', fontWeight: 600 }}>
-                          {sentiment.Neutral}
-                        </Typography>
-                      </Stack>
-                    )}
+                    <span style={{ opacity: 0.5, fontSize: '12px' }}>({data.count})</span>
                   </Stack>
                 }
                 onClick={() => onSourceSelect(source)}
@@ -300,10 +273,17 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
                 size="small"
                 sx={{
                   fontSize: '13px',
-                  height: 26,
-                  '& .MuiChip-label': { px: 1 },
+                  fontWeight: 400,
+                  height: 28,
+                  borderWidth: '1.5px',
+                  borderRadius: '8px',
+                  '& .MuiChip-label': { px: 1.5 },
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  '&:hover': {
+                    borderWidth: '1.5px',
+                    bgcolor: isSelected ? undefined : alpha(theme.palette.primary.main, 0.08)
+                  }
                 }}
               />
               {hasSentiment && !isSelected && (
@@ -313,15 +293,15 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: 2,
+                    height: 2.5,
                     display: 'flex',
-                    borderRadius: '0 0 16px 16px',
+                    borderRadius: '0 0 7px 7px',
                     overflow: 'hidden'
                   }}
                 >
-                  <Box sx={{ width: `${sentiment.Bullish}%`, bgcolor: '#10B981' }} />
-                  <Box sx={{ width: `${sentiment.Bearish}%`, bgcolor: '#EF4444' }} />
-                  <Box sx={{ width: `${sentiment.Neutral}%`, bgcolor: '#F59E0B' }} />
+                  <Box sx={{ width: `${sentiment.Bullish}%`, bgcolor: '#10B981', opacity: 0.9 }} />
+                  <Box sx={{ width: `${sentiment.Bearish}%`, bgcolor: '#EF4444', opacity: 0.9 }} />
+                  <Box sx={{ width: `${sentiment.Neutral}%`, bgcolor: '#F59E0B', opacity: 0.9 }} />
                 </Box>
               )}
             </Box>
@@ -581,7 +561,7 @@ function NewsPage() {
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         XRPL News & Updates
       </h1>
-      <Container maxWidth={notificationPanelOpen ? false : "xl"} sx={{ flex: 1, py: 3 }}>
+      <Container maxWidth={notificationPanelOpen ? false : "xl"} sx={{ flex: 1, py: { xs: 2, sm: 3 } }}>
         {loading ? (
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
             <CircularProgress />
@@ -596,11 +576,11 @@ function NewsPage() {
             <Paper
               elevation={0}
               sx={{
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
                 mb: 2,
                 background: alpha(theme.palette.background.paper, 0.02),
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                borderRadius: 2
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                borderRadius: '12px'
               }}
             >
               <Stack
@@ -610,7 +590,7 @@ function NewsPage() {
                 justifyContent="space-between"
               >
                 <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
                     XRP News
                   </Typography>
                   {totalCount > 0 && (
@@ -620,7 +600,9 @@ function NewsPage() {
                       sx={{
                         height: 24,
                         fontSize: '13px',
-                        bgcolor: alpha(theme.palette.primary.main, 0.1)
+                        fontWeight: 400,
+                        bgcolor: 'transparent',
+                        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`
                       }}
                     />
                   )}
@@ -632,21 +614,23 @@ function NewsPage() {
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    borderRadius: 2,
+                    borderRadius: '12px',
                     px: 2,
                     py: 1,
+                    height: '40px',
                     minWidth: { xs: '100%', sm: 320 },
-                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                    bgcolor: 'transparent',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    bgcolor: alpha(theme.palette.background.paper, 0.02),
                     '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
                       borderColor: alpha(theme.palette.primary.main, 0.3)
                     },
                     '&:focus-within': {
-                      borderColor: theme.palette.primary.main
+                      borderColor: alpha(theme.palette.primary.main, 0.5)
                     }
                   }}
                 >
-                  <SearchIcon sx={{ mr: 1.5, color: theme.palette.text.secondary, fontSize: 20 }} />
+                  <SearchIcon sx={{ mr: 1.5, color: alpha(theme.palette.text.secondary, 0.6), fontSize: 18 }} />
                   <input
                     type="text"
                     placeholder="Search news..."
@@ -666,6 +650,7 @@ function NewsPage() {
                       <IconButton
                         size="small"
                         aria-label="Clear search"
+                        sx={{ p: 0.5 }}
                         onClick={() => {
                           setSearchInput('');
                           setSearchQuery('');
@@ -677,17 +662,24 @@ function NewsPage() {
                           router.push({ pathname: '/news', query }, undefined, { shallow: true });
                         }}
                       >
-                        <ClearIcon fontSize="small" />
+                        <ClearIcon sx={{ fontSize: 18 }} />
                       </IconButton>
                       <Button
                         type="submit"
+                        variant="outlined"
                         size="small"
                         sx={{
                           ml: 1,
                           minWidth: 'auto',
                           px: 2,
-                          py: 0.75,
-                          fontSize: '14px'
+                          py: 0.5,
+                          fontSize: '0.95rem',
+                          fontWeight: 400,
+                          borderRadius: '8px',
+                          borderWidth: '1.5px',
+                          '&:hover': {
+                            borderWidth: '1.5px'
+                          }
                         }}
                       >
                         Search
@@ -702,56 +694,42 @@ function NewsPage() {
             <Paper
               elevation={0}
               sx={{
-                p: 2,
+                p: { xs: 1.5, sm: 2 },
                 mb: 2,
                 background: 'transparent',
-                border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                borderRadius: 2
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                borderRadius: '12px'
               }}
             >
-              <Stack direction="row" alignItems="center" justifyContent="space-between" mb={2}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="caption" sx={{ fontWeight: 600, textTransform: 'uppercase' }}>
+              {searchQuery && searchSentimentScore !== null ? (
+                <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+                  <Typography variant="caption" sx={{ fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '11px', color: theme.palette.text.secondary }}>
                     {isMobile ? 'Sentiment' : 'Market Sentiment'}
                   </Typography>
-                  {searchQuery && searchSentimentScore !== null && (
-                    <Chip
-                      label={searchSentimentScore}
-                      size="small"
-                      sx={{
-                        height: 20,
-                        fontSize: '11px',
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        borderRadius: '4px'
-                      }}
-                    />
-                  )}
+                  <Chip
+                    label={searchSentimentScore}
+                    size="small"
+                    sx={{
+                      height: 20,
+                      fontSize: '11px',
+                      fontWeight: 400,
+                      bgcolor: 'transparent',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      borderRadius: '6px'
+                    }}
+                  />
                 </Stack>
-                <Stack
-                  direction="row"
-                  spacing={1.5}
-                  sx={{ display: { xs: 'none', sm: 'flex' }, fontSize: '11px' }}
-                >
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Box sx={{ width: 6, height: 6, bgcolor: '#10B981', borderRadius: '50%' }} />
-                    <Typography variant="caption">Bull</Typography>
-                  </Stack>
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Box sx={{ width: 6, height: 6, bgcolor: '#EF4444', borderRadius: '50%' }} />
-                    <Typography variant="caption">Bear</Typography>
-                  </Stack>
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    <Box sx={{ width: 6, height: 6, bgcolor: '#F59E0B', borderRadius: '50%' }} />
-                    <Typography variant="caption">Neutral</Typography>
-                  </Stack>
-                </Stack>
-              </Stack>
+              ) : (
+                <Typography variant="caption" sx={{ fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '11px', color: theme.palette.text.secondary, mb: 2, display: 'block' }}>
+                  {isMobile ? 'Sentiment' : 'Market Sentiment'}
+                </Typography>
+              )}
 
               <Box
                 sx={{
                   display: 'grid',
-                  gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(4, 1fr)' },
-                  gap: 1
+                  gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
+                  gap: { xs: 1.5, sm: 2 }
                 }}
               >
                 {[
@@ -764,31 +742,45 @@ function NewsPage() {
                     key={item.period}
                     elevation={0}
                     sx={{
-                      p: 1.5,
+                      p: 2,
                       textAlign: 'center',
-                      bgcolor: alpha(theme.palette.background.paper, 0.4),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-                      borderRadius: 1.5
+                      bgcolor: alpha(theme.palette.background.paper, 0.02),
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      borderRadius: '12px'
                     }}
                   >
-                    <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
+                    <Typography variant="caption" sx={{ fontWeight: 500, color: theme.palette.text.secondary, fontSize: '11px', mb: 1 }}>
                       {item.period}
                     </Typography>
                     <Stack
-                      direction={{ xs: 'column', sm: 'row' }}
+                      direction="row"
                       justifyContent="center"
-                      spacing={0.5}
-                      sx={{ mt: 0.5, fontSize: '12px', fontWeight: 600 }}
+                      spacing={1.5}
                     >
-                      <Typography sx={{ color: '#10B981', fontSize: '12px' }}>
-                        {item.stats?.bullish || 0}%
-                      </Typography>
-                      <Typography sx={{ color: '#EF4444', fontSize: '12px', display: { xs: 'none', sm: 'block' } }}>
-                        {item.stats?.bearish || 0}%
-                      </Typography>
-                      <Typography sx={{ color: '#F59E0B', fontSize: '12px', display: { xs: 'none', sm: 'block' } }}>
-                        {item.stats?.neutral || 0}%
-                      </Typography>
+                      <Stack spacing={0.5} alignItems="center">
+                        <Typography sx={{ color: '#10B981', fontSize: '15px', fontWeight: 500 }}>
+                          {item.stats?.bullish || 0}%
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.7), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Bull
+                        </Typography>
+                      </Stack>
+                      <Stack spacing={0.5} alignItems="center">
+                        <Typography sx={{ color: '#EF4444', fontSize: '15px', fontWeight: 500 }}>
+                          {item.stats?.bearish || 0}%
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.7), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Bear
+                        </Typography>
+                      </Stack>
+                      <Stack spacing={0.5} alignItems="center">
+                        <Typography sx={{ color: '#F59E0B', fontSize: '15px', fontWeight: 500 }}>
+                          {item.stats?.neutral || 0}%
+                        </Typography>
+                        <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.7), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                          Neutral
+                        </Typography>
+                      </Stack>
                     </Stack>
                   </Paper>
                 ))}
@@ -809,8 +801,8 @@ function NewsPage() {
                   align="center"
                   sx={{
                     py: 8,
-                    color: theme.palette.text.secondary,
-                    fontSize: '15px',
+                    color: alpha(theme.palette.text.secondary, 0.7),
+                    fontSize: '14px',
                     fontWeight: 400
                   }}
                 >
@@ -822,37 +814,43 @@ function NewsPage() {
                     key={article._id}
                     elevation={0}
                     sx={{
-                      p: 3,
+                      p: { xs: 2, sm: 2.5 },
                       background: 'transparent',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                      borderRadius: 2,
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      borderRadius: '12px',
                       cursor: 'pointer',
-                      transition: 'background-color 0.15s ease',
                       '&:hover': {
-                        bgcolor: alpha(theme.palette.action.hover, 0.02)
+                        bgcolor: alpha(theme.palette.action.hover, 0.02),
+                        borderColor: alpha(theme.palette.divider, 0.25)
                       }
                     }}
                   >
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                      <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '15px', pr: 2 }}>
+                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
+                      <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '15px', pr: 2 }}>
                         {extractTitle(article.title)}
                       </Typography>
                       <Chip
                         label={article.sentiment || 'Unknown'}
                         size="small"
+                        variant="outlined"
                         sx={{
-                          bgcolor: getSentimentColor(article.sentiment),
-                          color: 'white',
-                          fontSize: '13px'
+                          borderColor: getSentimentColor(article.sentiment),
+                          borderWidth: '1.5px',
+                          color: getSentimentColor(article.sentiment),
+                          bgcolor: alpha(getSentimentColor(article.sentiment), 0.08),
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          height: '24px',
+                          '& .MuiChip-label': { px: 1.5 }
                         }}
                       />
                     </Stack>
 
-                    <Typography variant="body2" color="text.secondary" paragraph>
+                    <Typography variant="body2" color="text.secondary" paragraph sx={{ mb: 1.5 }}>
                       {article.summary}
                     </Typography>
 
-                    <Divider sx={{ my: 2 }} />
+                    <Divider sx={{ my: 1.5, opacity: 0.6 }} />
 
                     <Stack
                       direction={{ xs: 'column', sm: 'row' }}
@@ -875,6 +873,7 @@ function NewsPage() {
                           color: theme.palette.primary.main,
                           textDecoration: 'none',
                           fontSize: '14px',
+                          fontWeight: 400,
                           display: 'flex',
                           alignItems: 'center',
                           '&:hover': {
