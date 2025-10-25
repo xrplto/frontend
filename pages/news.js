@@ -834,14 +834,15 @@ function NewsPage() {
                         size="small"
                         variant="outlined"
                         sx={{
-                          borderColor: getSentimentColor(article.sentiment),
-                          borderWidth: '1.5px',
-                          color: getSentimentColor(article.sentiment),
-                          bgcolor: alpha(getSentimentColor(article.sentiment), 0.08),
-                          fontSize: '12px',
-                          fontWeight: 500,
-                          height: '24px',
-                          '& .MuiChip-label': { px: 1.5 }
+                          fontSize: '10px',
+                          height: '22px',
+                          fontWeight: 400,
+                          borderRadius: '6px',
+                          borderColor: alpha(getSentimentColor(article.sentiment), 0.3),
+                          color: alpha(getSentimentColor(article.sentiment), 0.9),
+                          backgroundColor: alpha(getSentimentColor(article.sentiment), 0.08),
+                          borderWidth: '1px',
+                          textTransform: 'capitalize'
                         }}
                       />
                     </Stack>
