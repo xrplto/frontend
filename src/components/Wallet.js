@@ -191,7 +191,7 @@ const WalletContent = ({
 
           {/* Warning */}
           <Alert severity="warning" sx={{ maxWidth: 350 }}>
-            <Typography sx={{ fontSize: '12px', fontWeight: 400, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '11px', fontWeight: 400, mb: 0.5 }}>
               ⚠️ Critical Security Information
             </Typography>
             <Typography sx={{ fontSize: '11px' }}>
@@ -210,7 +210,7 @@ const WalletContent = ({
                 />
               }
               label={
-                <Typography sx={{ fontSize: '12px' }}>
+                <Typography sx={{ fontSize: '11px' }}>
                   I understand this backup file is my responsibility. XRPL.to cannot recover it, and I will never share it.
                 </Typography>
               }
@@ -254,7 +254,7 @@ const WalletContent = ({
               size="small"
               onClick={processBackupDownload}
               disabled={!backupPassword || !backupAgreed}
-              sx={{ fontSize: '13px', py: 0.6, px: 2 }}
+              sx={{ fontSize: '13px', py: 0.5, px: 2 }}
             >
               Download Backup
             </Button>
@@ -267,7 +267,7 @@ const WalletContent = ({
                 setShowBackupPasswordVisible(false);
                 setBackupAgreed(false);
               }}
-              sx={{ fontSize: '13px', py: 0.6, px: 2 }}
+              sx={{ fontSize: '13px', py: 0.5, px: 2 }}
             >
               Cancel
             </Button>
@@ -283,7 +283,7 @@ const WalletContent = ({
       <Box sx={{
         p: 1.4,
         background: 'transparent',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
       }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
           <Stack direction="row" spacing={0.8} alignItems="center">
@@ -296,7 +296,7 @@ const WalletContent = ({
             }} />
             <Typography sx={{
               fontFamily: 'monospace',
-              fontSize: '12px',
+              fontSize: '11px',
               fontWeight: 400,
               opacity: 0.9
             }}>
@@ -371,13 +371,13 @@ const WalletContent = ({
             sx={{
               mt: 1,
               height: 20,
-              fontSize: '12px',
-              backgroundColor: alpha(theme.palette.warning.main, 0.1),
+              fontSize: '11px',
+              backgroundColor: alpha(theme.palette.warning.main, 0.08),
               color: theme.palette.warning.main,
               border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
               cursor: 'pointer',
               '&:hover': {
-                backgroundColor: alpha(theme.palette.warning.main, 0.15)
+                backgroundColor: alpha(theme.palette.warning.main, 0.12)
               }
             }}
           />
@@ -457,7 +457,7 @@ const WalletContent = ({
       </Box>
 
       {/* Inline Stats */}
-      <Box sx={{ px: 1.8, pb: 1.2 }}>
+      <Box sx={{ px: 2, pb: 1.2 }}>
         <Stack direction="row" spacing={0.6} justifyContent="center">
           <Chip
             label={`${accountBalance?.curr1?.value || '0'} available`}
@@ -468,7 +468,7 @@ const WalletContent = ({
               fontWeight: 400,
               backgroundColor: 'transparent',
               border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-              '& .MuiChip-label': { px: 1.2 }
+              '& .MuiChip-label': { px: 1 }
             }}
           />
           <Chip
@@ -479,9 +479,9 @@ const WalletContent = ({
               fontSize: '11px',
               fontWeight: 400,
               backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.warning.main, 0.25)}`,
+              border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
               color: theme.palette.warning.main,
-              '& .MuiChip-label': { px: 1.2 }
+              '& .MuiChip-label': { px: 1 }
             }}
           />
         </Stack>
@@ -496,8 +496,8 @@ const WalletContent = ({
             fullWidth
             onClick={() => setShowAllAccounts(!showAllAccounts)}
             sx={{
-              py: 1.2,
-              px: 1.8,
+              py: 1,
+              px: 2,
               justifyContent: 'space-between',
               textTransform: 'none',
               fontSize: '13px',
@@ -505,7 +505,7 @@ const WalletContent = ({
               color: theme.palette.text.secondary,
               borderRadius: 0,
               '&:hover': {
-                backgroundColor: alpha(theme.palette.text.primary, 0.02)
+                backgroundColor: alpha(theme.palette.text.primary, 0.04)
               }
             }}
           >
@@ -530,7 +530,7 @@ const WalletContent = ({
           {/* Expandable Accounts List */}
           {showAllAccounts && (
             <Box sx={{
-              backgroundColor: alpha(theme.palette.background.default, 0.3),
+              backgroundColor: alpha(theme.palette.background.default, 0.4),
               borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
             }}>
               {/* Compact Pagination */}
@@ -538,13 +538,13 @@ const WalletContent = ({
                 const totalPages = Math.ceil(profiles.length / walletsPerPage);
                 return totalPages > 1 && (
                   <Box sx={{
-                    px: 1.8,
-                    py: 0.8,
+                    px: 2,
+                    py: 1,
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
                     gap: 1.5,
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`
+                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                   }}>
                     <IconButton
                       size="small"
@@ -657,8 +657,8 @@ const WalletContent = ({
                       }
                     }}
                     sx={{
-                      py: 0.9,
-                      px: 1.8,
+                      py: 1,
+                      px: 2,
                       cursor: isCurrent ? 'default' : 'pointer',
                       display: 'flex',
                       alignItems: 'center',
@@ -666,7 +666,7 @@ const WalletContent = ({
                       background: isCurrent ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
                       borderLeft: isCurrent ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
                       '&:hover': !isCurrent ? {
-                        background: alpha(theme.palette.text.primary, 0.02)
+                        background: alpha(theme.palette.text.primary, 0.04)
                       } : {}
                     }}
                   >
@@ -676,13 +676,13 @@ const WalletContent = ({
                         height: 5,
                         borderRadius: '50%',
                         flexShrink: 0,
-                        background: isInactive ? alpha(theme.palette.warning.main, 0.5) : '#22c55e'
+                        background: isInactive ? alpha(theme.palette.warning.main, 0.4) : '#22c55e'
                       }} />
                       <Stack spacing={0} sx={{ flex: 1, minWidth: 0 }}>
                         <Stack direction="row" spacing={0.8} alignItems="center">
                           <Typography sx={{
                             fontFamily: 'monospace',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             fontWeight: isCurrent ? 600 : 400,
                             opacity: isCurrent ? 1 : 0.8
                           }}>
@@ -726,7 +726,7 @@ const WalletContent = ({
         p: 1.2,
         borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
         display: 'flex',
-        gap: 0.6
+        gap: 0.5
       }}>
         {/* New Account Button */}
         {onCreateNewAccount && profiles.length < 25 && (
@@ -736,14 +736,14 @@ const WalletContent = ({
             size="small"
             sx={{
               flex: 1,
-              py: 0.6,
+              py: 0.5,
               borderRadius: '6px',
               color: '#4285f4',
               fontSize: '11px',
               textTransform: 'none',
               fontWeight: 400,
               '&:hover': {
-                background: alpha('#4285f4', 0.06)
+                background: alpha('#4285f4', 0.08)
               }
             }}
           >
@@ -759,7 +759,7 @@ const WalletContent = ({
           sx={{
             flex: profiles.length >= 25 ? 1 : 'none',
             px: profiles.length >= 25 ? 0 : 2,
-            py: 0.6,
+            py: 0.5,
             borderRadius: '6px',
             color: theme.palette.text.secondary,
             fontSize: '11px',
@@ -767,7 +767,7 @@ const WalletContent = ({
             fontWeight: 400,
             '&:hover': {
               color: theme.palette.error.main,
-              background: alpha(theme.palette.error.main, 0.06)
+              background: alpha(theme.palette.error.main, 0.08)
             }
           }}
         >
@@ -2743,7 +2743,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           background: 'transparent',
           border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
           borderRadius: '12px',
-          height: '38px',
+          height: '36px',
           padding: accountProfile ? '0 14px' : '0 16px',
           minWidth: accountProfile ? '110px' : '90px',
           color: '#4285f4',
@@ -2754,7 +2754,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '6px',
+          gap: 1,
           outline: 'none'
         }}
         onMouseEnter={(e) => {
@@ -2768,7 +2768,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         title={accountProfile ? 'Account Details' : 'Connect Wallet'}
       >
 {accountProfile ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <div style={{
               width: '6px',
               height: '6px',
@@ -3013,7 +3013,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                                   View Current Seed
                                 </Typography>
-                                <Typography sx={{ fontSize: '12px', opacity: 0.7, mt: 0.5 }}>
+                                <Typography sx={{ fontSize: '11px', opacity: 0.7, mt: 0.5 }}>
                                   Shows seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} only
                                 </Typography>
                               </Stack>
@@ -3035,7 +3035,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                                   Download Full Backup
                                 </Typography>
-                                <Typography sx={{ fontSize: '12px', opacity: 0.9, mt: 0.5 }}>
+                                <Typography sx={{ fontSize: '11px', opacity: 0.9, mt: 0.5 }}>
                                   All {profiles.length} wallets in one encrypted file
                                 </Typography>
                               </Stack>
@@ -3075,7 +3075,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             cursor: 'pointer',
                             '&:hover': {
                               borderColor: theme.palette.primary.main,
-                              background: alpha(theme.palette.primary.main, 0.02)
+                              background: alpha(theme.palette.primary.main, 0.04)
                             }
                           }}
                           onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
@@ -3101,7 +3101,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </Typography>
                           </Box>
 
-                          <Typography variant="body2" sx={{ mb: 1.2, fontSize: '12px', opacity: 0.8 }}>
+                          <Typography variant="body2" sx={{ mb: 1.2, fontSize: '11px', opacity: 0.8 }}>
                             Enter your password to view the seed phrase
                           </Typography>
                           <TextField
@@ -3147,7 +3147,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               }}
                               sx={{
                                 fontSize: '13px',
-                                py: 0.6,
+                                py: 0.5,
                                 px: 2
                               }}
                             >
@@ -3160,7 +3160,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               disabled={!seedPassword || !seedWarningAgreed}
                               sx={{
                                 fontSize: '13px',
-                                py: 0.6,
+                                py: 0.5,
                                 px: 2
                               }}
                             >
@@ -3173,7 +3173,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {seedAuthStatus === 'success' && (
                         <>
                           <Alert severity="info" sx={{ mb: 1.5 }}>
-                            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
+                            <Typography variant="body2" sx={{ fontSize: '11px', fontWeight: 400 }}>
                               Seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
                             </Typography>
                             <Typography variant="body2" sx={{ fontSize: '11px', opacity: 0.8, mt: 0.3 }}>
@@ -3182,13 +3182,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           </Alert>
 
                           <Box sx={{
-                            py: 0.75,
+                            py: 1,
                             px: 1,
                             borderRadius: 1,
                             background: alpha(theme.palette.background.paper, 0.8),
                             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                             fontFamily: 'monospace',
-                            fontSize: '12px',
+                            fontSize: '11px',
                             wordBreak: 'break-all',
                             lineHeight: 1.5,
                             filter: seedBlurred ? 'blur(5px)' : 'none',
@@ -3210,7 +3210,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   openSnackbar('Seed copied to clipboard', 'success');
                                 });
                               }}
-                              sx={{ fontSize: '12px', py: 0.6, px: 2 }}
+                              sx={{ fontSize: '11px', py: 0.5, px: 2 }}
                             >
                               Copy Seed
                             </Button>
@@ -3218,7 +3218,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               variant="outlined"
                               size="small"
                               onClick={() => setSeedBlurred(!seedBlurred)}
-                              sx={{ fontSize: '12px', py: 0.6, px: 2 }}
+                              sx={{ fontSize: '11px', py: 0.5, px: 2 }}
                             >
                               {seedBlurred ? 'Show' : 'Hide'}
                             </Button>
@@ -3248,7 +3248,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 <Box sx={{
                   padding: theme.spacing(2, 2.5),
                   background: 'transparent',
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography variant="h6" sx={{
@@ -3271,7 +3271,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         color: theme.palette.text.secondary,
                         '&:hover': {
                           color: theme.palette.text.primary,
-                          backgroundColor: alpha(theme.palette.text.primary, 0.05)
+                          backgroundColor: alpha(theme.palette.text.primary, 0.04)
                         }
                       }}
                     >
@@ -3307,7 +3307,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             justifyContent: 'flex-start',
                             '&:hover': {
                               borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.3),
+                              borderColor: alpha(theme.palette.divider, 0.4),
                               backgroundColor: alpha(theme.palette.action.hover, 0.04)
                             }
                           }}
@@ -3334,7 +3334,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             justifyContent: 'flex-start',
                             '&:hover': {
                               borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.3),
+                              borderColor: alpha(theme.palette.divider, 0.4),
                               backgroundColor: alpha(theme.palette.action.hover, 0.04)
                             }
                           }}
@@ -3361,7 +3361,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             justifyContent: 'flex-start',
                             '&:hover': {
                               borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.3),
+                              borderColor: alpha(theme.palette.divider, 0.4),
                               backgroundColor: alpha(theme.palette.action.hover, 0.04)
                             }
                           }}
@@ -3388,7 +3388,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             justifyContent: 'flex-start',
                             '&:hover': {
                               borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.3),
+                              borderColor: alpha(theme.palette.divider, 0.4),
                               backgroundColor: alpha(theme.palette.action.hover, 0.04)
                             }
                           }}
@@ -3408,8 +3408,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         sx={{
                           mt: 1.5,
                           mb: 1.5,
-                          py: 1.8,
-                          fontSize: '15px',
+                          py: 2,
+                          fontSize: '14px',
                           fontWeight: 400,
                           textTransform: 'none',
                           borderRadius: '12px',
@@ -3429,7 +3429,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {/* Email Verification UI */}
                       {showEmailVerification && (
-                        <Box sx={{ mt: 2, p: 2, background: alpha(theme.palette.background.default, 0.5), borderRadius: '12px' }}>
+                        <Box sx={{ mt: 2, p: 2, background: alpha(theme.palette.background.default, 0.4), borderRadius: '12px' }}>
                           {emailStep === 'email' ? (
                             <>
                               <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
@@ -3570,7 +3570,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
                         <Typography variant="caption" sx={{
                           fontSize: '11px',
-                          color: alpha(theme.palette.text.secondary, 0.5),
+                          color: alpha(theme.palette.text.secondary, 0.4),
                           display: 'block',
                           textAlign: 'center',
                           mb: 1
@@ -3754,8 +3754,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handleAuthenticate}
                           disabled={status !== 'idle' || isLoadingDeps}
                           sx={{
-                            py: 1.2,
-                            fontSize: '15px',
+                            py: 1,
+                            fontSize: '14px',
                             fontWeight: 500,
                             background: 'transparent',
                             '&:hover': {
@@ -3776,8 +3776,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handleRegister}
                           disabled={status !== 'idle' || isLoadingDeps}
                           sx={{
-                            py: 1.2,
-                            fontSize: '15px',
+                            py: 1,
+                            fontSize: '14px',
                             fontWeight: 500,
                             borderColor: theme.palette.warning.main,
                             color: theme.palette.warning.main,
@@ -3794,7 +3794,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           textAlign: 'center',
                           color: 'text.secondary',
                           mt: 1,
-                          fontSize: '12px'
+                          fontSize: '11px'
                         }}>
                           Hardware Secured • Zero-Knowledge
                         </Typography>
@@ -3862,7 +3862,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   sx={{
                     flex: 1,
                     fontSize: '13px',
-                    py: 0.8,
+                    py: 1,
                     fontWeight: 400
                   }}
                 >
@@ -3883,7 +3883,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   sx={{
                     flex: 1,
                     fontSize: '13px',
-                    py: 0.8,
+                    py: 1,
                     fontWeight: 400
                   }}
                 >
@@ -3904,7 +3904,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   sx={{
                     flex: 1,
                     fontSize: '13px',
-                    py: 0.8,
+                    py: 1,
                     fontWeight: 400
                   }}
                 >
@@ -4016,7 +4016,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   </Stack>
 
                   <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '12px' }}>
+                    <Typography variant="body2" sx={{ fontSize: '11px' }}>
                       <strong>Tip:</strong> Import up to 5 seeds. We'll create wallets from your seeds in order.
                       {importSeeds.filter(s => s.trim()).length > 0 && importSeeds.filter(s => s.trim()).length < 5 &&
                         ` (${5 - importSeeds.filter(s => s.trim()).length} random wallet${5 - importSeeds.filter(s => s.trim()).length > 1 ? 's' : ''} will be added)`
@@ -4038,10 +4038,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     fullWidth
                     aria-label={importFile ? `File selected: ${importFile.name}` : 'Choose wallet backup file'}
                     sx={{
-                      py: 1.2,
+                      py: 1,
                       borderStyle: 'dashed',
                       borderWidth: '1.5px',
-                      backgroundColor: importFile ? alpha(theme.palette.success.main, 0.05) : 'transparent',
+                      backgroundColor: importFile ? alpha(theme.palette.success.main, 0.04) : 'transparent',
                       fontWeight: 400,
                       fontSize: '14px'
                     }}

@@ -104,13 +104,13 @@ export default function Watch({ collection }) {
       onClick={() => onChangeWatchList(md5)}
       sx={{
         textTransform: 'none',
-        fontSize: '12px',
+        fontSize: '11px',
         py: 0.5,
-        px: 1.2,
+        px: 1,
         borderRadius: '6px',
         borderColor: alpha(theme.palette.divider, 0.2),
         color: 'text.secondary',
-        '&:hover': { borderColor: alpha(theme.palette.divider, 0.3), backgroundColor: 'transparent' }
+        '&:hover': { borderColor: alpha(theme.palette.divider, 0.4), backgroundColor: 'transparent' }
       }}
     >
       {watchList.includes(md5) ? 'Following' : 'Follow'}

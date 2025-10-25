@@ -39,7 +39,7 @@ const StyledButton = styled('button')(({ theme, open }) => ({
   borderRadius: '6px',
   cursor: 'pointer',
   fontFamily: 'inherit',
-  fontSize: '12px',
+  fontSize: '11px',
   fontWeight: 400,
   color: theme.palette.text.primary,
   minWidth: '60px',
@@ -93,7 +93,7 @@ const StyledMenuItem = styled(MenuItem)(({ theme, selected }) => ({
   justifyContent: 'space-between',
   gap: '8px',
   margin: '1px 0',
-  fontSize: '12px',
+  fontSize: '11px',
   background: selected
     ? theme.palette.mode === 'dark'
       ? 'rgba(255, 255, 255, 0.08)'
@@ -194,7 +194,7 @@ export default function CurrencySwithcer() {
                 variant="body2"
                 sx={{
                   fontWeight: option === activeCurrency ? 600 : 400,
-                  fontSize: '12px',
+                  fontSize: '11px',
                   color: 'text.primary'
                 }}
               >

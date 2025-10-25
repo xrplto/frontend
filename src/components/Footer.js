@@ -7,7 +7,7 @@ import Logo from 'src/components/Logo';
 
 const Root = styled('footer')(({ theme }) => ({
   width: '100%',
-  borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+  borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
   backgroundColor: 'transparent',
   marginTop: theme.spacing(4)
 }));

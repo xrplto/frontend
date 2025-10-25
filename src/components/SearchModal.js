@@ -313,7 +313,7 @@ function SearchModal({ open, onClose }) {
       alignItems: 'flex-start',
       justifyContent: 'center',
       pt: '12vh',
-      backgroundColor: alpha(theme.palette.background.default, 0.75)
+      backgroundColor: alpha(theme.palette.background.default, 0.8)
     }),
     [theme]
   );
@@ -326,7 +326,7 @@ function SearchModal({ open, onClose }) {
       overflow: 'hidden',
       borderRadius: '12px',
       background: theme.palette.background.paper,
-      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+      border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
       boxShadow: 'none'
     }),
     [theme]
@@ -345,12 +345,12 @@ function SearchModal({ open, onClose }) {
         <Box
           sx={{
             p: 2,
-            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
+            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`,
             backgroundColor: 'transparent'
           }}
         >
           <Stack direction="row" alignItems="center" spacing={1.5}>
-            <SearchIcon sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: 20 }} />
+            <SearchIcon sx={{ color: alpha(theme.palette.text.primary, 0.4), fontSize: 20 }} />
             <InputBase
               ref={inputRef}
               placeholder="Search tokens and collections..."
@@ -359,13 +359,13 @@ function SearchModal({ open, onClose }) {
               fullWidth
               autoComplete="off"
               sx={{
-                fontSize: '15px',
+                fontSize: '14px',
                 fontWeight: 400,
                 '& input': {
                   padding: 0,
                   '&::placeholder': {
                     opacity: 0.45,
-                    fontSize: '15px'
+                    fontSize: '14px'
                   }
                 }
               }}
@@ -393,7 +393,7 @@ function SearchModal({ open, onClose }) {
                 <>
                   <Typography
                     variant="subtitle2"
-                    sx={{ px: 2, pt: 2, pb: 0.75, fontSize: '12px', fontWeight: 400, opacity: 0.6 }}
+                    sx={{ px: 2, pt: 2, pb: 0.75, fontSize: '11px', fontWeight: 400, opacity: 0.6 }}
                     color="text.secondary"
                   >
                     Recent
@@ -436,7 +436,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -447,7 +447,7 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={item.user || item.name}
                             secondary={item.name}
-                            primaryTypographyProps={{ fontSize: '15px', fontWeight: 400 }}
+                            primaryTypographyProps={{ fontSize: '14px', fontWeight: 400 }}
                             secondaryTypographyProps={{
                               fontSize: '13px',
                               sx: { color: alpha(theme.palette.text.secondary, 0.6) }
@@ -481,8 +481,8 @@ function SearchModal({ open, onClose }) {
                     sx={{ px: 2, pt: 1.5, pb: 0.75 }}
                     spacing={1}
                   >
-                    <TrendingUpIcon sx={{ fontSize: 16, color: alpha(theme.palette.primary.main, 0.7) }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '12px', fontWeight: 400, opacity: 0.6 }}>
+                    <TrendingUpIcon sx={{ fontSize: 16, color: alpha(theme.palette.primary.main, 0.6) }} />
+                    <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
                       Trending
                     </Typography>
                   </Stack>
@@ -508,7 +508,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -519,7 +519,7 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={token.user}
                             secondary={token.name}
-                            primaryTypographyProps={{ fontSize: '15px', fontWeight: 400, noWrap: true }}
+                            primaryTypographyProps={{ fontSize: '14px', fontWeight: 400, noWrap: true }}
                             secondaryTypographyProps={{
                               fontSize: '13px',
                               noWrap: true,
@@ -564,8 +564,8 @@ function SearchModal({ open, onClose }) {
                     sx={{ px: 2, pt: 1.5, pb: 0.75 }}
                     spacing={1}
                   >
-                    <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.7) }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '12px', fontWeight: 400, opacity: 0.6 }}>
+                    <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.6) }} />
+                    <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
                       Trending Collections
                     </Typography>
                   </Stack>
@@ -591,7 +591,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -604,7 +604,7 @@ function SearchModal({ open, onClose }) {
                             secondary={
                               collection.type ? `${collection.type} collection` : 'Collection'
                             }
-                            primaryTypographyProps={{ fontSize: '15px', fontWeight: 400, noWrap: true }}
+                            primaryTypographyProps={{ fontSize: '14px', fontWeight: 400, noWrap: true }}
                             secondaryTypographyProps={{
                               fontSize: '13px',
                               noWrap: true,
@@ -681,8 +681,8 @@ function SearchModal({ open, onClose }) {
                             ? `1.5px solid ${alpha(theme.palette.primary.main, 0.2)}`
                             : '1.5px solid transparent',
                           '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.06),
-                            borderColor: alpha(theme.palette.primary.main, 0.25)
+                            backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                            borderColor: alpha(theme.palette.primary.main, 0.2)
                           }
                         }}
                       >
@@ -692,7 +692,7 @@ function SearchModal({ open, onClose }) {
                             sx={{
                               width: 36,
                               height: 36,
-                              border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                              border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
                               backgroundColor: 'transparent'
                             }}
                             imgProps={{ loading: 'lazy', decoding: 'async' }}

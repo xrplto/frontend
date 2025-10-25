@@ -31,7 +31,7 @@ function Logo({ style }) {
     cursor: 'pointer',
     position: 'relative',
     width: '100px',
-    height: '37px',
+    height: '36px',
     ...style
   };
 
@@ -45,7 +45,7 @@ function Logo({ style }) {
         <Box
           sx={{
             width: '100px',
-            height: '37px',
+            height: '36px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',

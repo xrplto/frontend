@@ -54,7 +54,7 @@ export default function ThemeSwitcher() {
         onClick={handleClick}
         size="small"
         sx={{
-          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
+          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
           borderRadius: '6px',
           padding: '4px',
           minWidth: '32px',
@@ -91,7 +91,7 @@ export default function ThemeSwitcher() {
             selected={themeName === theme.id}
             sx={{
               '&.Mui-selected': {
-                backgroundColor: (t) => alpha(t.palette.primary.main, 0.1),
+                backgroundColor: (t) => alpha(t.palette.primary.main, 0.08),
                 '&:hover': {
                   backgroundColor: (t) => alpha(t.palette.primary.main, 0.2)
                 }

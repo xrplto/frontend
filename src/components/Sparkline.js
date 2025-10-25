@@ -215,7 +215,7 @@ const Sparkline = ({
           animation="wave"
           sx={{
             borderRadius: 2,
-            bgcolor: alpha(theme.palette.primary.main, 0.1),
+            bgcolor: alpha(theme.palette.primary.main, 0.08),
             '&::after': {
               background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.2)}, transparent)`
             }

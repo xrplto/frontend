@@ -318,7 +318,7 @@ const StyledMenuItem = styled(MenuItem, {
     &:hover {
       color: ${theme.palette.primary.main};
       background: ${alpha(theme.palette.primary.main, 0.04)};
-      border: 1.5px solid ${alpha(theme.palette.primary.main, 0.3)};
+      border: 1.5px solid ${alpha(theme.palette.primary.main, 0.4)};
       box-shadow: none;
     }
 `
@@ -859,8 +859,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
                     borderRadius: '8px',
                     '&:hover': {
-                      backgroundColor: alpha(theme.palette.divider, 0.05),
-                      borderColor: alpha(theme.palette.divider, 0.3)
+                      backgroundColor: alpha(theme.palette.divider, 0.04),
+                      borderColor: alpha(theme.palette.divider, 0.4)
                     }
                   }}
                   title="Settings"
@@ -884,7 +884,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     borderRadius: '8px',
                     letterSpacing: '0.3px',
                     '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.06),
+                      backgroundColor: alpha('#4285f4', 0.08),
                       borderColor: '#4285f4'
                     }
                   }}
@@ -953,9 +953,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         borderRadius: '6px',
                         mb: 0.5,
                         '&.Mui-selected': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
                           '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.15)
+                            backgroundColor: alpha(theme.palette.primary.main, 0.12)
                           }
                         }
                       }}
@@ -1008,9 +1008,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         borderRadius: '6px',
                         mb: 0.5,
                         '&.Mui-selected': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
                           '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.15)
+                            backgroundColor: alpha(theme.palette.primary.main, 0.12)
                           }
                         }
                       }}

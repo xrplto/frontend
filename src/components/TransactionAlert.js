@@ -112,7 +112,7 @@ const AlertBox = styled.div`
 const Header = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 1.5px;
   margin-bottom: 8px;
 `;
 
@@ -200,7 +200,7 @@ const Content = styled.div`
 const ViewLink = styled.a`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 1px;
   margin-top: 8px;
   padding: 6px 12px;
   background: rgba(255, 255, 255, 0.2);
@@ -294,7 +294,7 @@ const TransactionAlert = () => {
             </svg>
           </ClockIcon>
           <Spinner
-            style={{ position: 'absolute', width: '36px', height: '36px', borderWidth: '3px' }}
+            style={{ position: 'absolute', width: '36px', height: '36px', borderWidth: '1.5px' }}
           />
         </>
       ),

@@ -51,7 +51,7 @@ const NavSearchBar = ({
           cursor: 'pointer',
           px: 2,
           py: 1,
-          height: '34px',
+          height: '32px',
           width: '280px',
           backgroundColor: 'transparent',
           backdropFilter: 'blur(10px) saturate(150%)',
@@ -72,7 +72,7 @@ const NavSearchBar = ({
       >
         <SearchIcon
           sx={{
-            fontSize: '19px',
+            fontSize: '18px',
             mr: 1.5,
             color: isHovered
               ? alpha(theme.palette.primary.main, 0.8)
@@ -85,8 +85,8 @@ const NavSearchBar = ({
             fontSize: '14px',
             flex: 1,
             color: darkMode
-              ? alpha(theme.palette.text.primary, 0.85)
-              : alpha(theme.palette.text.secondary, 0.9),
+              ? alpha(theme.palette.text.primary, 0.8)
+              : alpha(theme.palette.text.secondary, 0.8),
             fontWeight: 400,
             letterSpacing: '0.02em',
             lineHeight: 1.2,
@@ -105,7 +105,7 @@ const NavSearchBar = ({
             backgroundColor: alpha(theme.palette.primary.main, darkMode ? 0.08 : 0.12),
             border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.15 : 0.2)}`,
             color: alpha(theme.palette.primary.main, darkMode ? 0.7 : 0.8),
-            fontSize: '12px',
+            fontSize: '11px',
             fontWeight: '500',
             fontFamily: 'SF Mono, Monaco, Consolas, monospace',
             boxShadow: 'none',

@@ -70,7 +70,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
   padding: theme.spacing(1, 1.5),
   borderRadius: theme.shape.borderRadius,
   backgroundColor: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   boxShadow: 'none'
 }));
 
@@ -100,7 +100,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontWeight: 500,
     fontSize: '14px',
     padding: '20px 24px',
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     backdropFilter: 'blur(10px)',
     position: 'sticky',
     top: 0,
@@ -112,7 +112,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     fontSize: '14px',
     padding: '16px 24px',
     lineHeight: 1.6,
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
     backgroundColor: 'transparent'
   }
 }));
@@ -121,7 +121,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   position: 'relative',
   backgroundColor: 'transparent',
   '&:nth-of-type(even)': {
-    backgroundColor: alpha(theme.palette.action.hover, 0.02)
+    backgroundColor: alpha(theme.palette.action.hover, 0.04)
   },
   '&:last-child td, &:last-child th': {
     border: 0
@@ -145,7 +145,7 @@ const CompactAccordion = styled(Accordion)(({ theme }) => ({
     borderRadius: '12px',
     background: 'transparent',
     backdropFilter: 'blur(10px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
     boxShadow: 'none',
     '&:before': {
       display: 'none'
@@ -168,7 +168,7 @@ const CompactAccordion = styled(Accordion)(({ theme }) => ({
   },
   '& .MuiAccordionDetails-root': {
     padding: '16px 20px 20px',
-    borderTop: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
+    borderTop: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
     backgroundColor: 'transparent'
   }
 }));
@@ -345,7 +345,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
             borderRadius: '0',
             background: 'transparent',
             backdropFilter: 'blur(10px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
             boxShadow: 'none',
             textAlign: 'center'
           }}
@@ -442,7 +442,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                       borderRadius: '4px'
                     },
                     '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.3),
+                      backgroundColor: alpha(theme.palette.primary.main, 0.4),
                       borderRadius: '4px'
                     }
                   }}
@@ -468,7 +468,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                     <TableBody>
                       {transactions.map((item, idx) => (
                         <StyledTableRow key={item.hash || idx}>
-                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
                             <Chip
                               label={item.type.replace(/_/g, ' ')}
                               color={getTransactionColor(item.type)}
@@ -476,45 +476,45 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                               sx={{ fontSize: '13px', height: '20px', fontWeight: 400 }}
                             />
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
                             <Stack direction="row" spacing={1} alignItems="center">
                               {item.files?.[0]?.thumbnail?.small && (
-                                <Box sx={{ width: 28, height: 28, borderRadius: '6px', overflow: 'hidden', border: `1px solid ${alpha(theme.palette.divider, 0.15)}` }}>
+                                <Box sx={{ width: 28, height: 28, borderRadius: '6px', overflow: 'hidden', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
                                   <img src={`https://s2.xrpl.to/d1/${item.files[0].thumbnail.small}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </Box>
                               )}
-                              <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 400 }}>
+                              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 400 }}>
                                 {item.name}
                               </Typography>
                             </Stack>
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
                             {item.costXRP || item.amountXRP ? (
-                              <Typography variant="caption" sx={{ fontSize: '12px', color: '#00AB55', fontWeight: 500 }}>
+                              <Typography variant="caption" sx={{ fontSize: '11px', color: '#00AB55', fontWeight: 500 }}>
                                 ✕{item.costXRP || item.amountXRP}
                               </Typography>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
                             {item.seller || item.account ? (
                               <Link href={`/profile/${item.seller || item.account}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
                             {item.buyer || item.destination ? (
                               <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
                             <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                               {formatDate(item.time)}
                             </Typography>
                           </StyledTableCell>
-                          <StyledTableCell align="center" sx={{ py: 1.2, px: 2 }}>
+                          <StyledTableCell align="center" sx={{ py: 1, px: 2 }}>
                             <IconButton
                               size="small"
                               sx={{ p: 0.4 }}
