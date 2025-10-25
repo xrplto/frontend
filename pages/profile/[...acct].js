@@ -469,7 +469,7 @@ const OverView = ({ account }) => {
                       color: txFilter === filter ? '#4285f4' : (theme) => alpha(theme.palette.text.secondary, 0.5),
                       cursor: 'pointer',
                       textTransform: 'none',
-                      fontWeight: txFilter === filter ? 500 : 400
+                      fontWeight: txFilter === filter ? 600 : 400
                     }}
                   >
                     {filter === 'all' ? 'All' : filter}

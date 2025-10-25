@@ -198,7 +198,7 @@ export default function CurrencySwithcer() {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: option === activeCurrency ? 600 : 500,
+                  fontWeight: option === activeCurrency ? 600 : 400,
                   fontSize: '12px',
                   color: 'text.primary'
                 }}

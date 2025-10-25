@@ -138,7 +138,12 @@ const SummaryGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 16px;
+  margin-top: 20px;
   margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    margin-top: 16px;
+  }
 `;
 
 const SummaryCard = styled.div`
@@ -426,7 +431,7 @@ function AMMPoolsPage({ data }) {
         AMM Pools - XRPL Automated Market Maker Analytics
       </h1>
 
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{ mt: { xs: 0, md: -1 } }}>
         {summary && (
           <SummaryGrid>
             <SummaryCard darkMode={darkMode}>

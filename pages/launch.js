@@ -1520,7 +1520,7 @@ function CreatePage() {
 
                   <Box>
                     <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                      <Typography variant="caption" fontWeight={500}>
+                      <Typography variant="caption" fontWeight={400}>
                         Balance: {fundingBalance} / {fundingAmount.required} XRP
                       </Typography>
                       {fundingProgress > 0 && (
@@ -1808,7 +1808,7 @@ function CreatePage() {
 
               {(sessionData.data?.userCheckId || sessionData.userCheckId) && (
                 <Paper sx={{ p: 2, bgcolor: checkClaimed ? alpha(theme.palette.success.main, 0.05) : alpha(theme.palette.info.main, 0.05), border: `1px solid ${checkClaimed ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.info.main, 0.2)}` }}>
-                  <Typography variant="body2" fontWeight={500} gutterBottom>
+                  <Typography variant="body2" fontWeight={400} gutterBottom>
                     {checkClaimed ? '✅ Tokens Claimed' : '💰 Claim Your Tokens'}
                   </Typography>
                   <Typography variant="caption" display="block" sx={{ mb: 2, color: alpha(theme.palette.text.secondary, 0.8) }}>

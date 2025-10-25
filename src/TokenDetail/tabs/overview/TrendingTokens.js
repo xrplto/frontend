@@ -208,7 +208,7 @@ const TrendingTokens = () => {
         }}
       >
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography variant="h6" fontWeight={500} fontSize="0.75rem">
+          <Typography variant="h6" fontWeight={400} fontSize="0.75rem">
             Trending Tokens
           </Typography>
           <Chip
@@ -314,7 +314,7 @@ const TrendingTokens = () => {
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <Typography
                         variant="body2"
-                        fontWeight={500}
+                        fontWeight={400}
                         sx={{
                           fontSize: '11px',
                           overflow: 'hidden',

@@ -686,7 +686,7 @@ const WalletContent = ({
                           <Typography sx={{
                             fontFamily: 'monospace',
                             fontSize: '12px',
-                            fontWeight: isCurrent ? 500 : 400,
+                            fontWeight: isCurrent ? 600 : 400,
                             opacity: isCurrent ? 1 : 0.8
                           }}>
                             {truncateAccount(account, 8)}

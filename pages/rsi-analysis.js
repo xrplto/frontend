@@ -901,7 +901,7 @@ function RSIAnalysisPage({ data }) {
                 top: '20px',
                 left: '20px',
                 fontSize: '18px',
-                fontWeight: '700',
+                fontWeight: '600',
                 color: darkMode ? '#fff' : '#000'
               }}>
                 RSI Heatmap - {params.timeframe.toUpperCase()}

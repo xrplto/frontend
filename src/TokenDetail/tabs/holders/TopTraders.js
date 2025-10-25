@@ -624,7 +624,7 @@ export default function TopTraders({ token }) {
                         >
                           <Typography
                             variant="body2"
-                            fontWeight="500"
+                            fontWeight="400"
                             sx={{ fontSize: '13px', color: 'primary.main' }}
                           >
                             {`${trader.address.slice(0, 4)}...${trader.address.slice(-4)}`}
@@ -762,7 +762,7 @@ export default function TopTraders({ token }) {
                         </Typography>
                         <Typography
                           variant="body2"
-                          fontWeight="500"
+                          fontWeight="400"
                           color="text.secondary"
                           sx={{ fontSize: '13px' }}
                         >

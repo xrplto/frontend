@@ -463,7 +463,7 @@ const Chip = styled.span`
 const Text = styled.span`
   font-size: 12px;
   color: ${({ theme }) => theme.palette.text.secondary};
-  font-weight: ${(props) => props.fontWeight || 500};
+  font-weight: ${(props) => props.fontWeight || 400};
 `;
 
 const NavButton = styled.button`

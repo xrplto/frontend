@@ -1756,7 +1756,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   height: isMobile ? 26 : 30,
                   borderRadius: '6px',
                   textTransform: 'none',
-                  fontWeight: chartType === type ? 600 : 500,
+                  fontWeight: chartType === type ? 600 : 400,
                   border: `1px solid ${chartType === type ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2)}`,
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.primary.main, 0.04),
@@ -1816,7 +1816,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   height: isMobile ? 26 : 30,
                   letterSpacing: '-0.02em',
                   borderRadius: '6px',
-                  fontWeight: range === r ? 600 : 500,
+                  fontWeight: range === r ? 600 : 400,
                   border: `1px solid ${range === r ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2)}`,
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.primary.main, 0.04),

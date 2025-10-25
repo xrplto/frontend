@@ -727,7 +727,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  fontWeight="500"
+                  fontWeight="400"
                   sx={{
                     width: '65px',
                     fontSize: '12px',
@@ -844,7 +844,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   >
                     <Typography
                       variant="body2"
-                      fontWeight="500"
+                      fontWeight="400"
                       sx={{ fontSize: '12px', color: 'primary.main', opacity: 0.9 }}
                     >
                       {addressToShow

@@ -2070,7 +2070,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <Box sx={{ flex: '1', minWidth: 0 }}>
         <Typography
           variant="body2"
-          fontWeight={500}
+          fontWeight={400}
           noWrap
           sx={{
             fontSize: '14px',
@@ -2321,7 +2321,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         {/* Header */}
         <Box sx={{ padding: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="body1" fontWeight={500}>
+            <Typography variant="body1" fontWeight={400}>
               {title}
             </Typography>
             <Box
@@ -4065,7 +4065,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   {(token1.exch || tokenExch1 || latestPrice1) && (
                     <Typography
                       variant="caption"
-                      fontWeight={700}
+                      fontWeight={600}
                       color="text.primary"
                       sx={{ fontSize: '12px' }}
                     >
@@ -4119,7 +4119,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   {(token2.exch || tokenExch2 || latestPrice2) && (
                     <Typography
                       variant="caption"
-                      fontWeight={700}
+                      fontWeight={600}
                       color="text.primary"
                       sx={{ fontSize: '12px' }}
                     >

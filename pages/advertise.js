@@ -462,7 +462,7 @@ export default function Advertise() {
                 />
                 <Typography
                   variant="h3"
-                  fontWeight={700}
+                  fontWeight={600}
                   sx={{
                     background:
                       theme.palette.mode === 'dark'
@@ -948,10 +948,10 @@ export default function Advertise() {
                           }}
                         >
                           <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Typography variant="body2" fontWeight={500}>
+                            <Typography variant="body2" fontWeight={400}>
                               {tier.label}
                             </Typography>
-                            <Typography variant="body2" fontWeight={700} color="primary">
+                            <Typography variant="body2" fontWeight={600} color="primary">
                               ${formatNumber(tier.price)}
                             </Typography>
                           </Box>
@@ -1210,7 +1210,7 @@ export default function Advertise() {
                         }
                       }}
                     >
-                      <Typography variant="body2" fontWeight={500}>
+                      <Typography variant="body2" fontWeight={400}>
                         Include the destination tag in your transaction to ensure proper order
                         processing
                       </Typography>

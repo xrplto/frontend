@@ -1238,7 +1238,7 @@ const NFTGrid = React.memo(({ collection }) => {
                   <Typography
                     variant="body2"
                     sx={{
-                      fontWeight: subFilter === option.value ? 600 : 500,
+                      fontWeight: subFilter === option.value ? 600 : 400,
                       color:
                         subFilter === option.value ? theme.palette.primary.main : 'text.primary'
                     }}
