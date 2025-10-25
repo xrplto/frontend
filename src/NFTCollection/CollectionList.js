@@ -20,8 +20,8 @@ const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   loading: () => (
     <div
       style={{
-        width: '260px',
-        height: '60px',
+        width: '200px',
+        height: '45px',
         background: 'rgba(128, 128, 128, 0.05)',
         borderRadius: '4px'
       }}
@@ -155,8 +155,8 @@ const OptimizedChart = memo(
         <div
           ref={chartRef}
           style={{
-            width: '260px',
-            height: '60px',
+            width: '200px',
+            height: '45px',
             background: 'rgba(128, 128, 128, 0.05)',
             borderRadius: '4px',
             contain: 'layout size style'
@@ -171,8 +171,8 @@ const OptimizedChart = memo(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
-          width: '260px',
-          height: '60px',
+          width: '200px',
+          height: '45px',
           display: 'inline-block',
           contain: 'layout size style',
           position: 'relative'
@@ -190,7 +190,7 @@ const OptimizedChart = memo(
           <Box
             sx={{
               position: 'absolute',
-              left: Math.min(Math.max(tooltip.x, 50), 210),
+              left: Math.min(Math.max(tooltip.x, 40), 160),
               top: -65,
               transform: 'translateX(-50%)',
               bgcolor: 'rgba(0,0,0,0.9)',
@@ -658,7 +658,7 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true },
   { id: 'owners', label: 'OWNERS', align: 'right', width: '8%', order: true },
   { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true },
-  { id: 'sparkline', label: '30D CHART', align: 'center', width: '15%', order: false, style: { paddingLeft: '16px' } }
+  { id: 'sparkline', label: '30D CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' } }
 ];
 
 // ListHead Component
@@ -826,6 +826,22 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     return `${sign}${percent.toFixed(1)}%`;
   };
 
+  const getMarketCapColor = (mcap) => {
+    if (!mcap || isNaN(mcap)) return theme.palette.text.primary;
+    // Elite: $5M+ (3% - dark green)
+    if (mcap >= 5e6) return theme.palette.mode === 'dark' ? '#2E7D32' : '#1B5E20';
+    // Established: $1M-$5M (8% - green)
+    if (mcap >= 1e6) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    // Mid-tier: $100K-$1M (24% - blue)
+    if (mcap >= 1e5) return theme.palette.mode === 'dark' ? '#42A5F5' : '#1976D2';
+    // Small: $10K-$100K (32% - yellow)
+    if (mcap >= 1e4) return theme.palette.mode === 'dark' ? '#FFC107' : '#F57F17';
+    // Micro: $1K-$10K (orange)
+    if (mcap >= 1e3) return theme.palette.mode === 'dark' ? '#FF9800' : '#E65100';
+    // Nano: <$1K (red)
+    return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
+  };
+
   // Process chart data
   const salesData = useMemo(() => {
     if (!graphData30d || !Array.isArray(graphData30d)) return null;
@@ -837,7 +853,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         value: item.volume || 0,
         sales: item.sales || 0
       }))
-      .slice(-30);
+      .slice(-50);
 
     if (processedData.length === 0) return null;
     return processedData;
@@ -882,7 +898,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         {fIntNumber(sales24h || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor(marketCapAmount)} fontWeight={600}>
         ✕ {fVolume(marketCapAmount)}
       </StyledCell>
 
@@ -898,7 +914,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         {fIntNumber(items)}
       </StyledCell>
 
-      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
+      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', paddingLeft: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
         {salesData ? (
           <OptimizedChart salesData={salesData} darkMode={darkMode} />
         ) : (
