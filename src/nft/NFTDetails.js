@@ -284,9 +284,18 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const loadingImage = () => {
     if (errored) {
       return (
-        <Box sx={{ textAlign: 'center', py: 5, color: 'text.secondary' }}>
-          <Typography variant="body2" sx={{ fontSize: '13px' }}>
-            Failed to load
+        <Box
+          sx={{
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            bgcolor: (theme) => alpha(theme.palette.common.black, 0.7)
+          }}
+        >
+          <Typography variant="caption" color="text.secondary">
+            Image unavailable
           </Typography>
         </Box>
       );

@@ -11,7 +11,7 @@ import FirstPageIcon from '@mui/icons-material/FirstPage';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { alpha } from '@mui/material';
+import { alpha, Box } from '@mui/material';
 import { MobileHeader, HeaderCell } from 'src/TokenList/TokenRow';
 
 // Lazy load chart component
