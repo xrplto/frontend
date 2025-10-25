@@ -105,21 +105,21 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: 'transparent',
-    color: theme.palette.text.primary,
-    fontWeight: 500,
-    fontSize: '14px',
-    padding: '20px 24px',
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+    color: theme.palette.text.secondary,
+    fontWeight: 400,
+    fontSize: '12px',
+    padding: '16px 16px',
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
     backdropFilter: 'blur(10px)',
     position: 'sticky',
     top: 0,
     zIndex: 10,
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase'
+    letterSpacing: '0.3px',
+    textTransform: 'none'
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: '14px',
-    padding: '16px 24px',
+    fontSize: '13px',
+    padding: '14px 16px',
     lineHeight: 1.6,
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
     backgroundColor: 'transparent'
@@ -378,21 +378,34 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
     >
       <Box sx={{ mb: 3 }}>
 
-          <Box sx={{ mb: 2, px: 2 }}>
-            <Stack direction="row" spacing={1} flexWrap="wrap">
+          <Box sx={{ mb: 2.5, px: 2 }}>
+            <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap>
               {['ALL', 'SALE', 'CREATE_BUY_OFFER', 'CREATE_SELL_OFFER', 'CANCEL_BUY_OFFER', 'TRANSFER'].map(type => (
                 <Chip
                   key={type}
-                  label={type === 'ALL' ? 'ALL' : type.replace(/_/g, ' ')}
+                  label={type === 'ALL' ? 'All' : type.replace(/_/g, ' ').toLowerCase()}
                   onClick={() => setFilterType(type === 'ALL' ? '' : type)}
-                  variant={(type === 'ALL' && !filterType) || filterType === type ? 'filled' : 'outlined'}
+                  variant="outlined"
                   size="small"
                   sx={{
                     fontSize: '11px',
-                    height: '24px',
-                    borderColor: alpha(theme.palette.divider, 0.2),
-                    color: (type === 'ALL' && !filterType) || filterType === type ? 'white' : 'text.secondary',
-                    backgroundColor: (type === 'ALL' && !filterType) || filterType === type ? 'primary.main' : 'transparent'
+                    height: '26px',
+                    fontWeight: 400,
+                    borderRadius: '8px',
+                    textTransform: 'capitalize',
+                    borderColor: (type === 'ALL' && !filterType) || filterType === type
+                      ? alpha(theme.palette.primary.main, 0.5)
+                      : alpha(theme.palette.divider, 0.2),
+                    color: (type === 'ALL' && !filterType) || filterType === type
+                      ? theme.palette.primary.main
+                      : 'text.secondary',
+                    backgroundColor: (type === 'ALL' && !filterType) || filterType === type
+                      ? alpha(theme.palette.primary.main, 0.1)
+                      : 'transparent',
+                    '&:hover': {
+                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                      borderColor: alpha(theme.palette.primary.main, 0.3)
+                    }
                   }}
                 />
               ))}
@@ -465,85 +478,101 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   >
                     <TableHead>
                       <TableRow>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Type</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>NFT</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Price</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Fees</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>From</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>To</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Origin</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Date</StyledTableCell>
-                        <StyledTableCell sx={{ py: 1.5, px: 2 }} align="center">Tx</StyledTableCell>
+                        <StyledTableCell>Type</StyledTableCell>
+                        <StyledTableCell>NFT</StyledTableCell>
+                        <StyledTableCell>Price</StyledTableCell>
+                        <StyledTableCell>Fees</StyledTableCell>
+                        <StyledTableCell>From</StyledTableCell>
+                        <StyledTableCell>To</StyledTableCell>
+                        <StyledTableCell>Origin</StyledTableCell>
+                        <StyledTableCell>Date</StyledTableCell>
+                        <StyledTableCell align="center">Tx</StyledTableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {transactions.map((item, idx) => (
                         <StyledTableRow key={item.hash || idx}>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             <Chip
                               label={item.type.replace(/_/g, ' ')}
-                              color={getTransactionColor(item.type)}
+                              variant="outlined"
                               size="small"
-                              sx={{ fontSize: '13px', height: '20px', fontWeight: 400 }}
+                              sx={{
+                                fontSize: '10px',
+                                height: '22px',
+                                fontWeight: 400,
+                                borderRadius: '6px',
+                                borderColor: alpha(theme.palette[getTransactionColor(item.type)]?.main || theme.palette.divider, 0.3),
+                                color: alpha(theme.palette[getTransactionColor(item.type)]?.main || theme.palette.text.secondary, 0.9),
+                                backgroundColor: alpha(theme.palette[getTransactionColor(item.type)]?.main || theme.palette.divider, 0.08),
+                                borderWidth: '1px',
+                                textTransform: 'capitalize'
+                              }}
                             />
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             {item.NFTokenID ? (
                               <Link href={`/nft/${item.NFTokenID}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {item.NFTokenID.slice(0,8)}...{item.NFTokenID.slice(-6)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             {item.costXRP || item.amountXRP ? (
                               <Typography variant="caption" sx={{ fontSize: '11px', color: '#00AB55', fontWeight: 500 }}>
                                 ✕{item.costXRP || item.amountXRP}
                               </Typography>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             {item.brokerFeeXRP || item.royaltyAmountXRP ? (
-                              <Stack spacing={0.3}>
+                              <Box sx={{ display: 'flex', gap: 0.8, alignItems: 'center', flexWrap: 'wrap' }}>
                                 {item.brokerFeeXRP && (
-                                  <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
-                                    Broker: ✕{item.brokerFeeXRP}
-                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                                    <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: alpha(theme.palette.warning.main, 0.9) }} />
+                                    <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+                                      {item.brokerFeeXRP}
+                                    </Typography>
+                                  </Box>
                                 )}
                                 {item.royaltyAmountXRP && (
-                                  <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
-                                    Royalty: ✕{item.royaltyAmountXRP}
-                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
+                                    <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: alpha(theme.palette.info.main, 0.9) }} />
+                                    <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+                                      {item.royaltyAmountXRP}
+                                    </Typography>
+                                  </Box>
                                 )}
-                              </Stack>
+                              </Box>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             {item.seller || item.account ? (
                               <Link href={`/profile/${item.seller || item.account}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             {item.buyer || item.destination ? (
                               <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             {item.origin ? (
                               <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                                 {item.origin === 'XRPL' && (item.broker === 'rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC' || item.SourceTag === 101102979) ? 'XRP Cafe' : item.origin}
                               </Typography>
                             ) : '-'}
                           </StyledTableCell>
-                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell>
                             <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                               {formatDate(item.time)}
                             </Typography>
                           </StyledTableCell>
-                          <StyledTableCell align="center" sx={{ py: 1, px: 2 }}>
+                          <StyledTableCell align="center">
                             <IconButton
                               size="small"
                               sx={{ p: 0.4 }}
