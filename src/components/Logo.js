@@ -28,7 +28,6 @@ function Logo({ style }) {
     paddingTop: 0,
     margin: 0,
     display: 'inline-flex',
-    transition: 'opacity 0.3s',
     cursor: 'pointer',
     position: 'relative',
     width: '100px',

@@ -94,7 +94,7 @@ const StatCard = styled.div`
   background: ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.02)'
     : 'rgba(0, 0, 0, 0.02)'};
-  border-radius: 16px;
+  border-radius: 12px;
   border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.05)'
     : 'rgba(0, 0, 0, 0.05)'};
@@ -144,7 +144,7 @@ const FeatureCard = styled.div`
   border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.06)'
     : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 24px;
+  border-radius: 0;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
 
@@ -178,7 +178,7 @@ const FeatureIcon = styled.div`
   align-items: center;
   justify-content: center;
   background: ${props => props.gradient || 'linear-gradient(135deg, #147DFE, #00D4FF)'};
-  border-radius: 16px;
+  border-radius: 12px;
   color: white;
 
   .MuiSvgIcon-root {

@@ -47,7 +47,7 @@ const NavSearchBar = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         sx={{
-          borderRadius: '14px',
+          borderRadius: '12px',
           cursor: 'pointer',
           px: 2,
           py: 1,
@@ -58,17 +58,13 @@ const NavSearchBar = ({
           WebkitBackdropFilter: 'blur(10px) saturate(150%)',
           border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.12 : 0.18)}`,
           boxShadow: 'none',
-          transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
           position: 'relative',
           '&:hover': {
             backgroundColor: 'transparent',
             border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.25 : 0.35)}`,
             boxShadow: 'none',
-            transform: 'translateY(-1px)'
           },
           '&:active': {
-            transform: 'translateY(0)',
-            transition: 'all 0.1s ease'
           }
         }}
         onClick={openModal}
@@ -81,7 +77,6 @@ const NavSearchBar = ({
             color: isHovered
               ? alpha(theme.palette.primary.main, 0.8)
               : alpha(theme.palette.primary.main, 0.6),
-            transition: 'all 0.25s ease',
             transform: isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
         />
@@ -95,7 +90,6 @@ const NavSearchBar = ({
             fontWeight: 400,
             letterSpacing: '0.02em',
             lineHeight: 1.2,
-            transition: 'color 0.2s ease'
           }}
         >
           {placeholder || 'Search'}
@@ -112,10 +106,9 @@ const NavSearchBar = ({
             border: `0.5px solid ${alpha(theme.palette.primary.main, darkMode ? 0.15 : 0.2)}`,
             color: alpha(theme.palette.primary.main, darkMode ? 0.7 : 0.8),
             fontSize: '12px',
-            fontWeight: '600',
+            fontWeight: '500',
             fontFamily: 'SF Mono, Monaco, Consolas, monospace',
             boxShadow: 'none',
-            transition: 'all 0.2s ease',
             transform: isHovered ? 'scale(1.05)' : 'scale(1)'
           }}
         >

@@ -48,7 +48,7 @@ const OfferDialog = styled(Dialog)(({ theme }) => ({
     margin: 0,
     width: '100%',
     maxWidth: 'sm',
-    borderRadius: '24px',
+    borderRadius: '0',
     background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
       theme.palette.background.paper,
       0.8
@@ -125,7 +125,7 @@ const OfferDialogTitle = (props) => {
             )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
             backdropFilter: 'blur(12px)',
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            borderRadius: '10px',
+            borderRadius: '12px',
             color: theme.palette.text.secondary,
             transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
             '&:hover': {
@@ -415,7 +415,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
             <Box
               sx={{
                 p: 3,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.background.paper,
                   0.8
@@ -480,7 +480,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
             <Box
               sx={{
                 p: 3,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.background.paper,
                   0.8
@@ -521,7 +521,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
             <Box
               sx={{
                 p: 3,
-                borderRadius: '16px',
+                borderRadius: '12px',
                 background: `linear-gradient(135deg, ${alpha(
                   theme.palette.background.paper,
                   0.8

@@ -284,7 +284,6 @@ const StyledLink = styled(Link, {
     margin-right: 16px;
     padding: 6px 12px;
     border-radius: 6px;
-    transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
     background: transparent;
@@ -561,7 +560,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           variant="overline"
                           sx={{
                             fontSize: '11px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             color: theme.palette.text.secondary,
                             mb: 1,
                             display: 'block'
@@ -639,7 +638,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               px: 1.5,
                               borderRadius: 0,
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease',
                               '&:hover': {
                                 bgcolor: alpha(theme.palette.primary.main, 0.08),
                                 color: theme.palette.primary.main
@@ -660,7 +658,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           variant="overline"
                           sx={{
                             fontSize: '11px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             color: theme.palette.text.secondary,
                             mb: 1,
                             display: 'block'
@@ -706,7 +704,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               px: 1.5,
                               borderRadius: 0,
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease',
                               '&:hover': {
                                 bgcolor: alpha(theme.palette.primary.main, 0.08),
                                 color: theme.palette.primary.main
@@ -727,7 +724,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                           variant="overline"
                           sx={{
                             fontSize: '11px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             color: theme.palette.text.secondary,
                             mb: 1,
                             display: 'block'
@@ -747,7 +744,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                               px: 1.5,
                               borderRadius: 0,
                               cursor: 'pointer',
-                              transition: 'all 0.2s ease',
                               '&:hover': {
                                 bgcolor: alpha(theme.palette.primary.main, 0.08),
                                 color: theme.palette.primary.main
@@ -887,7 +883,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     border: `1.5px solid ${alpha('#4285f4', 0.4)}`,
                     borderRadius: '8px',
                     letterSpacing: '0.3px',
-                    transition: 'all 0.15s ease',
                     '&:hover': {
                       backgroundColor: alpha('#4285f4', 0.06),
                       borderColor: '#4285f4'
@@ -933,7 +928,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       px: 2,
                       py: 1,
                       fontSize: '11px',
-                      fontWeight: 600,
+                      fontWeight: 500,
                       color: theme.palette.text.secondary,
                       display: 'flex',
                       alignItems: 'center',
@@ -985,7 +980,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       px: 2,
                       py: 1,
                       fontSize: '11px',
-                      fontWeight: 600,
+                      fontWeight: 500,
                       color: theme.palette.text.secondary,
                       display: 'flex',
                       alignItems: 'center',

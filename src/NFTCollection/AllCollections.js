@@ -71,7 +71,7 @@ function Collections() {
       >
         <Box
           sx={{
-            borderRadius: '24px',
+            borderRadius: '0',
             background: 'transparent',
             backdropFilter: 'none',
             border: 'none',

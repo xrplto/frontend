@@ -83,7 +83,6 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
           height: size,
           bgcolor: getColor(),
           cursor: 'pointer',
-          transition: 'transform 0.2s',
           '&:hover': {
             transform: 'scale(1.1)'
           }

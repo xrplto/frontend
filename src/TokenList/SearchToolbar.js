@@ -269,7 +269,7 @@ const ButtonGroup = styled.div`
   flex-shrink: 0;
   background: rgba(0, 0, 0, 0.02);
   padding: 2px;
-  border-radius: 10px;
+  border-radius: 12px;
 
   & > button {
     border-radius: 8px;
@@ -329,7 +329,7 @@ const Chip = styled.button`
   gap: 4px;
   padding: 4px 12px;
   border: ${(props) => props.border || 'none'};
-  border-radius: 16px;
+  border-radius: 12px;
   background: ${(props) => props.background || 'rgba(145, 158, 171, 0.05)'};
   color: ${(props) => props.color || 'inherit'};
   font-size: 0.8rem;
@@ -486,7 +486,7 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
                   px: 1.5,
                   border: '1.5px solid',
                   borderColor: 'rgba(145, 158, 171, 0.2)',
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   background: 'transparent',
                   color: 'text.primary',
                   fontSize: '13px',

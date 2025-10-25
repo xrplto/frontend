@@ -32,7 +32,7 @@ const PaginationContainer = styled.div`
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  border-radius: 20px;
+  border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.08)};
   box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
@@ -137,7 +137,7 @@ const InfoBox = styled.div`
   gap: 6px;
   flex-wrap: wrap;
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.08)};
-  border-radius: 20px;
+  border-radius: 12px;
   background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
   box-shadow: ${({ theme }) => theme.pagination?.boxShadow || '0 4px 12px rgba(0, 0, 0, 0.06)'};
   padding: 8px 14px;
@@ -834,7 +834,7 @@ function NewsPage() {
                     }}
                   >
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                      <Typography variant="body1" sx={{ fontWeight: 400, pr: 2 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 600, fontSize: '15px', pr: 2 }}>
                         {extractTitle(article.title)}
                       </Typography>
                       <Chip

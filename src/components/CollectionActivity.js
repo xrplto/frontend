@@ -55,7 +55,7 @@ const CustomSelect = styled(Select)(({ theme }) => ({
   },
   '& .MuiSelect-select': {
     paddingRight: theme.spacing(4),
-    fontWeight: 600,
+    fontWeight: 500,
     color: theme.palette.primary.main
   },
   '&:hover': {
@@ -75,7 +75,7 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
+  fontWeight: 500,
   color: theme.palette.text.secondary
 }));
 
@@ -97,7 +97,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: 'transparent',
     color: theme.palette.text.primary,
-    fontWeight: 600,
+    fontWeight: 500,
     fontSize: '14px',
     padding: '20px 24px',
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -131,8 +131,8 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const CompactChip = styled(Chip)(({ theme }) => ({
   height: '32px',
   fontSize: '13px',
-  fontWeight: 600,
-  borderRadius: '16px',
+  fontWeight: 500,
+  borderRadius: '12px',
   letterSpacing: '0.3px',
   '& .MuiChip-icon': {
     fontSize: '18px'
@@ -261,7 +261,7 @@ const renderAddressLink = (address, displayText = null) => {
       underline="hover"
       sx={{
         fontSize: 'inherit',
-        fontWeight: 600
+        fontWeight: 500
       }}
     >
       {text}
@@ -342,7 +342,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
           sx={{
             p: 4,
             mb: 3,
-            borderRadius: '24px',
+            borderRadius: '0',
             background: 'transparent',
             backdropFilter: 'blur(10px)',
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
@@ -405,7 +405,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   background: 'transparent'
                 }}
               >
-                <Typography variant="h6" color="error.main" sx={{ fontWeight: 600, mb: 1 }}>
+                <Typography variant="h6" color="error.main" sx={{ fontWeight: 500, mb: 1 }}>
                   {error}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -420,7 +420,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   background: 'transparent'
                 }}
               >
-                <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
                   No Transactions Found
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
@@ -490,7 +490,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1.2, px: 2 }}>
                             {item.costXRP || item.amountXRP ? (
-                              <Typography variant="caption" sx={{ fontSize: '12px', color: '#00AB55', fontWeight: 600 }}>
+                              <Typography variant="caption" sx={{ fontSize: '12px', color: '#00AB55', fontWeight: 500 }}>
                                 ✕{item.costXRP || item.amountXRP}
                               </Typography>
                             ) : '-'}

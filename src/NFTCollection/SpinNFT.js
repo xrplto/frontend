@@ -95,7 +95,7 @@ const IconCover = styled('div')(
             margin-top: -156px;
         }
         border: 6px solid ${theme.colors.alpha.black[50]};
-        border-radius: 10px;
+        border-radius: 12px;
         box-shadow: rgb(0 0 0 / 8%) 0px 5px 10px;
         background-color: ${theme.colors.alpha.white[70]};
         position: relative;
@@ -164,7 +164,7 @@ const SlotBox = styled('div')(
         justify-content: center;
         overflow: hidden;
         // line-height: 4;
-        border-radius: 20px;
+        border-radius: 12px;
     `
 );
 

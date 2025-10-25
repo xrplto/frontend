@@ -124,7 +124,7 @@ const ShareDialog = styled(Dialog)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.85)' : 'rgba(0, 0, 0, 0.4)'
   },
   '& .MuiDialog-paper': {
-    borderRadius: '24px',
+    borderRadius: '0',
     background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
       theme.palette.background.paper,
       0.8
@@ -172,7 +172,7 @@ const ShareDialog = styled(Dialog)(({ theme }) => ({
   '@media (max-width: 600px)': {
     '& .MuiDialog-paper': {
       margin: theme.spacing(2),
-      borderRadius: '16px'
+      borderRadius: '12px'
     },
     '& .MuiDialogContent-root': {
       padding: theme.spacing(2)
@@ -238,7 +238,7 @@ const PriceCard = styled(Box)(({ theme }) => ({
     0.7
   )} 100%)`,
   backdropFilter: 'blur(20px)',
-  borderRadius: '16px',
+  borderRadius: '12px',
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   position: 'relative',
   overflow: 'hidden',

@@ -38,7 +38,6 @@ const StyledButton = styled('button')(({ theme, open }) => ({
     : 'rgba(0, 0, 0, 0.08)'}`,
   borderRadius: '6px',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
   fontFamily: 'inherit',
   fontSize: '12px',
   fontWeight: 400,
@@ -61,7 +60,6 @@ const StyledButton = styled('button')(({ theme, open }) => ({
   '& .expand-icon': {
     fontSize: '14px',
     opacity: 0.7,
-    transition: 'transform 0.2s ease',
     transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
   }
 }));
@@ -79,9 +77,7 @@ const StyledMenu = styled(Menu)(({ theme }) => ({
       ? 'rgba(0, 0, 0, 0.95)'
       : 'rgba(255, 255, 255, 0.95)',
     backdropFilter: 'blur(12px)',
-    boxShadow: theme.palette.mode === 'dark'
-      ? '0 4px 20px rgba(0, 0, 0, 0.3)'
-      : '0 4px 20px rgba(0, 0, 0, 0.1)',
+    boxShadow: 'none',
     '& .MuiList-root': {
       padding: '4px'
     }
@@ -97,7 +93,6 @@ const StyledMenuItem = styled(MenuItem)(({ theme, selected }) => ({
   justifyContent: 'space-between',
   gap: '8px',
   margin: '1px 0',
-  transition: 'all 0.15s ease',
   fontSize: '12px',
   background: selected
     ? theme.palette.mode === 'dark'
@@ -167,7 +162,7 @@ export default function CurrencySwithcer() {
         aria-label="Select currency"
       >
         <CurrencyIcon>{currencyIcons[activeCurrency]}</CurrencyIcon>
-        <span style={{ fontWeight: 600, letterSpacing: '0.02em' }}>
+        <span style={{ fontWeight: 500, letterSpacing: '0.02em' }}>
           {activeCurrency}
         </span>
         <ExpandMoreIcon className="expand-icon" />

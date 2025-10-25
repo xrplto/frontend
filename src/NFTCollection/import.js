@@ -213,7 +213,7 @@ import AddCostDialog from './AddCostDialog';
 const CardWrapper = styled('div')(
   ({ theme }) => `
     border: dashed 3px;
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 5px;
     width: fit-content;
     &:hover {
@@ -238,7 +238,7 @@ const CardWrapperCircle = styled('div')(
 const CardWrapper3 = styled('div')(
   ({ theme }) => `
     border: dashed 3px;
-    border-radius: 5px;
+    border-radius: 6px;
     padding: 5px;
     // width: fit-content;
     &:hover {

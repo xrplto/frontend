@@ -74,22 +74,19 @@ const AlertBox = styled.div`
   min-width: 360px;
   max-width: 480px;
   padding: 20px;
-  border-radius: 16px;
+  border-radius: 12px;
   backdrop-filter: blur(20px);
   background: ${(props) => {
     switch (props.severity) {
       case 'success':
-        return 'linear-gradient(135deg, rgba(16, 185, 129, 0.95) 0%, rgba(5, 150, 105, 0.95) 100%)';
+        return 'rgba(16, 185, 129, 0.95)';
       case 'error':
-        return 'linear-gradient(135deg, rgba(239, 68, 68, 0.95) 0%, rgba(220, 38, 38, 0.95) 100%)';
+        return 'rgba(239, 68, 68, 0.95)';
       default:
-        return 'linear-gradient(135deg, rgba(59, 130, 246, 0.95) 0%, rgba(37, 99, 235, 0.95) 100%)';
+        return 'rgba(59, 130, 246, 0.95)';
     }
   }};
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04),
-    inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  box-shadow: none;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: white;
   position: relative;
@@ -102,7 +99,7 @@ const AlertBox = styled.div`
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    background: transparent;
     animation: ${pulse} 2s ease-in-out infinite;
   }
 
@@ -125,7 +122,7 @@ const IconWrapper = styled.div`
   justify-content: center;
   width: 36px;
   height: 36px;
-  border-radius: 10px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.2);
   backdrop-filter: blur(10px);
   flex-shrink: 0;
@@ -176,7 +173,6 @@ const CloseButton = styled.button`
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.3);
@@ -213,11 +209,9 @@ const ViewLink = styled.a`
   text-decoration: none;
   font-size: 13px;
   font-weight: 400;
-  transition: all 0.2s ease;
 
   &:hover {
     background: rgba(255, 255, 255, 0.3);
-    transform: translateY(-1px);
   }
 
   svg {

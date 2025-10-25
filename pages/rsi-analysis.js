@@ -146,7 +146,7 @@ const FilterChip = styled.div`
 const SearchInput = styled.input`
   padding: 10px 16px;
   border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
-  border-radius: 10px;
+  border-radius: 12px;
   background: ${p => p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
   color: ${p => p.darkMode ? '#fff' : '#333'};
   font-size: 14px;
@@ -167,7 +167,7 @@ const SearchInput = styled.input`
 const Button = styled.button`
   padding: 10px 18px;
   border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : 'rgba(145,158,171,0.15)'};
-  border-radius: 10px;
+  border-radius: 12px;
   background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
   cursor: pointer;
@@ -184,7 +184,7 @@ const Select = styled.select`
   padding: 10px 16px;
   padding-right: 32px;
   border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
-  border-radius: 10px;
+  border-radius: 12px;
   background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
   font-size: 14px;

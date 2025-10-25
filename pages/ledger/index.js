@@ -63,7 +63,7 @@ const LedgerDetails = ({ ledgerData, error }) => {
       elevation={0}
       sx={{
         p: { xs: 2, sm: 3, md: 4 },
-        borderRadius: '24px',
+        borderRadius: '0',
         background: 'transparent',
         border: `1px solid ${theme.palette.divider}`
       }}

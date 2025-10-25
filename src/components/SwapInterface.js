@@ -89,11 +89,10 @@ const ExchangeButton = memo(
     ({ theme }) => `
     width: 100%;
     padding: 12px 16px;
-    border-radius: 10px;
+    border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
     letter-spacing: 0.3px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     background: ${theme.palette.primary.main};
     color: white;
     border: none;
@@ -110,22 +109,19 @@ const ExchangeButton = memo(
       border-radius: 50%;
       background: rgba(255, 255, 255, 0.3);
       transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
     }
     
     &:hover:not(:disabled) {
       background: ${theme.palette.primary.dark};
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px ${alpha(theme.palette.primary.main, 0.25)};
-      
+      box-shadow: none;
+
       &::after {
         width: 250px;
         height: 250px;
       }
     }
-    
+
     &:active {
-      transform: translateY(0);
     }
     
     &:disabled {
@@ -150,7 +146,6 @@ const AllowButton = memo(
     font-size: 11px;
     font-weight: 600;
     text-transform: none;
-    transition: all 0.2s ease;
     background: ${alpha(theme.palette.primary.main, 0.1)};
     color: ${theme.palette.primary.main};
     border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
@@ -176,14 +171,13 @@ const ToggleButton = memo(
     top: 50%;
     transform: translate(-50%, -50%);
     z-index: 2;
-    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-    box-shadow: 0 1px 4px ${alpha(theme.palette.common.black, 0.08)};
+    box-shadow: none;
     
     &:hover {
       background: ${theme.palette.primary.main};
       border-color: ${theme.palette.primary.main};
       transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
-      box-shadow: 0 2px 8px ${alpha(theme.palette.primary.main, 0.25)};
+      box-shadow: none;
       
       svg {
         color: white;
@@ -220,7 +214,6 @@ const WalletDisplay = memo(
     border-radius: 8px;
     background: ${alpha(theme.palette.success.main, 0.05)};
     border: 1px solid ${alpha(theme.palette.success.main, 0.15)};
-    transition: all 0.3s ease;
     
     &:hover {
       background: ${alpha(theme.palette.success.main, 0.08)};
@@ -298,13 +291,13 @@ const StatusIndicator = styled('div')(
     
     @keyframes pulse {
       0% {
-        box-shadow: 0 0 0 0 ${alpha(theme.palette.success.main, 0.7)};
+        box-shadow: none;
       }
       70% {
-        box-shadow: 0 0 0 3px ${alpha(theme.palette.success.main, 0)};
+        box-shadow: none;
       }
       100% {
-        box-shadow: 0 0 0 0 ${alpha(theme.palette.success.main, 0)};
+        box-shadow: none;
       }
     }
 `
@@ -321,14 +314,12 @@ const TokenImage = styled(Image)(({ theme }) => ({
       ? alpha(theme.palette.divider, 0.1)
       : alpha(theme.palette.divider, 0.08)
   }`,
-  transition: 'all 0.3s ease'
 }));
 
 const SelectTokenButton = styled(Stack)(({ theme }) => ({
   padding: '6px 10px',
   borderRadius: '8px',
   cursor: 'pointer',
-  transition: 'all 0.2s ease',
   backgroundColor: alpha(theme.palette.background.paper, 0.5),
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   backdropFilter: 'blur(10px)',
@@ -357,7 +348,7 @@ const PanelContainer = styled(Box)(({ theme }) => ({
   flexDirection: 'column',
   overflow: 'hidden',
   border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-  boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.15)}`
+  boxShadow: 'none'
 }));
 
 const PanelHeader = styled(Box)(({ theme }) => ({
@@ -408,7 +399,7 @@ const CategoryChip = styled(Chip)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
+  fontWeight: 500,
   fontSize: '13px',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
@@ -2015,7 +2006,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         padding: '8px 12px',
         cursor: 'pointer',
         borderBottom: `1px solid ${alpha(theme.palette.divider, 0.02)}`,
-        transition: 'background-color 0.15s ease',
         '&:hover': {
           backgroundColor: alpha(theme.palette.primary.main, 0.015)
         },
@@ -2040,7 +2030,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             height: 30,
             backgroundColor: alpha(theme.palette.text.primary, 0.04),
             fontSize: '13px',
-            fontWeight: 600
+            fontWeight: 500
           }}
           imgProps={{
             onError: (e) => {
@@ -2218,7 +2208,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 alignItems: 'center',
                 justifyContent: 'center',
                 border: `2px solid ${darkMode ? '#1a1a1a' : '#ffffff'}`,
-                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                boxShadow: 'none'
               }}
             >
               <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 'bold' }}>
@@ -2233,7 +2223,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             color={isOMCF !== 'yes' ? 'text.primary' : darkMode ? '#00AB55' : '#4E8DF4'}
             sx={{
               lineHeight: 1.2,
-              fontWeight: 600,
+              fontWeight: 500,
               fontSize: '15px',
               letterSpacing: '-0.01em'
             }}
@@ -2272,7 +2262,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             sx={{
               fontSize: 18,
               color: 'primary.main',
-              transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
             }}
           />
         </Box>
@@ -2312,7 +2301,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           backgroundColor: theme.palette.background.paper,
           borderRadius: '12px',
           border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-          boxShadow: `0 20px 60px ${alpha(theme.palette.common.black, 0.15)}`,
+          boxShadow: 'none',
           display: 'flex',
           flexDirection: 'column',
           zIndex: 1201
@@ -2537,7 +2526,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           maxWidth: '680px',
           margin: '0 auto',
           px: { xs: 0.5, sm: 2, md: 3 },
-          transition: 'max-width 0.3s ease'
         }}
       >
         <Box sx={{ position: 'relative', width: '100%' }}>
@@ -2548,7 +2536,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               visibility: showTokenSelector ? 'visible' : 'hidden',
               position: showTokenSelector ? 'relative' : 'absolute',
               width: '100%',
-              transition: 'opacity 0.3s ease, visibility 0.3s ease',
               pointerEvents: showTokenSelector ? 'auto' : 'none'
             }}
           >
@@ -2571,7 +2558,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               visibility: showTokenSelector ? 'hidden' : 'visible',
               position: showTokenSelector ? 'absolute' : 'relative',
               width: '100%',
-              transition: 'opacity 0.3s ease, visibility 0.3s ease',
               pointerEvents: showTokenSelector ? 'none' : 'auto'
             }}
           >
@@ -2587,7 +2573,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   width: '100%',
                   flex: 1,
                   maxWidth: '100%',
-                  transition: 'all 0.3s ease'
                 }}
               >
                 {/* Minimalist Swap Container */}
@@ -2597,13 +2582,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     backgroundColor: 'transparent',
                     backdropFilter: 'blur(24px)',
                     border: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-                    borderRadius: '20px',
+                    borderRadius: '12px',
                     overflow: 'hidden',
-                    boxShadow: `0 20px 40px ${alpha(theme.palette.common.black, 0.04)}`,
-                    transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                    boxShadow: 'none',
                     '&:hover': {
-                      transform: 'translateY(-2px)',
-                      boxShadow: `0 24px 48px ${alpha(theme.palette.common.black, 0.06)}`
+                      boxShadow: 'none'
                     }
                   }}
                 >
@@ -2633,7 +2616,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             py: 0.75,
                             borderRadius: '8px',
                             fontSize: '13px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             textTransform: 'none',
                             backgroundColor:
                               orderType === 'market' ? theme.palette.primary.main : 'transparent',
@@ -2660,7 +2643,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             py: 0.75,
                             borderRadius: '8px',
                             fontSize: '13px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             textTransform: 'none',
                             backgroundColor:
                               orderType === 'limit' ? theme.palette.primary.main : 'transparent',
@@ -2729,23 +2712,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <Box
                       sx={{
                         position: 'relative',
-                        borderRadius: '20px',
+                        borderRadius: '12px',
                         border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.3) : alpha(theme.palette.divider, 0.08)}`,
-                        transition: 'all 0.3s ease',
                         backgroundColor: alpha(theme.palette.background.paper, 0.5),
                         backdropFilter: 'blur(12px)',
                         overflow: 'hidden',
-                        background: `linear-gradient(135deg,
-                  ${alpha(theme.palette.background.paper, 0.6)},
-                  ${alpha(theme.palette.background.paper, 0.4)})`,
-                        boxShadow: focusTop
-                          ? `0 0 0 2px ${alpha(theme.palette.primary.main, 0.1)}`
-                          : 'none',
+                        background: 'transparent',
+                        boxShadow: 'none',
                         '&:hover': {
                           backgroundColor: alpha(theme.palette.background.paper, 0.6),
                           borderColor: alpha(theme.palette.primary.main, 0.15),
-                          transform: 'translateY(-1px)',
-                          boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.08)}`
+                          boxShadow: 'none'
                         }
                       }}
                     >
@@ -2788,7 +2765,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 mb: 1,
                                 display: 'block',
                                 fontSize: '12px',
-                                fontWeight: 600,
+                                fontWeight: 500,
                                 letterSpacing: '0.05em',
                                 textTransform: 'uppercase',
                                 color: theme.palette.text.primary,
@@ -2829,7 +2806,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 input: {
                                   textAlign: 'right',
                                   fontSize: { xs: '24px', sm: '32px' },
-                                  fontWeight: 600,
+                                  fontWeight: 500,
                                   padding: '8px 0',
                                   background: 'transparent',
                                   color: theme.palette.text.primary,
@@ -2838,7 +2815,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   fontFamily:
                                     '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
                                   letterSpacing: '-0.02em',
-                                  transition: 'all 0.2s ease',
                                   '&::placeholder': {
                                     color: alpha(theme.palette.text.primary, 0.3),
                                     fontWeight: 400
@@ -2861,7 +2837,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 fontSize: '13px',
                                 fontWeight: 400,
                                 opacity: focusTop ? 1 : 0.7,
-                                transition: 'opacity 0.2s ease'
                               }}
                             >
                               {tokenPrice1 > 0
@@ -2915,20 +2890,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                       py: 0.5,
                                       borderRadius: '8px',
                                       fontSize: '11px',
-                                      fontWeight: 600,
+                                      fontWeight: 500,
                                       cursor: 'pointer',
                                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
                                       color: theme.palette.primary.main,
                                       border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                                      transition: 'all 0.2s ease',
                                       '&:hover': {
                                         backgroundColor: alpha(theme.palette.primary.main, 0.2),
                                         borderColor: theme.palette.primary.main,
-                                        transform: 'translateY(-1px)',
-                                        boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.15)}`
+                                        boxShadow: 'none'
                                       },
                                       '&:active': {
-                                        transform: 'translateY(0)'
                                       }
                                     }}
                                   >
@@ -2958,19 +2930,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     <Box
                       sx={{
                         position: 'relative',
-                        borderRadius: '20px',
+                        borderRadius: '12px',
                         border: `2px dashed ${focusBottom ? alpha(theme.palette.primary.main, 0.25) : alpha(theme.palette.divider, 0.12)}`,
-                        transition: 'all 0.3s ease',
                         backgroundColor: alpha(theme.palette.background.default, 0.3),
                         backdropFilter: 'blur(8px)',
                         overflow: 'hidden',
-                        background: `linear-gradient(135deg,
-                  ${alpha(theme.palette.background.default, 0.2)},
-                  ${alpha(theme.palette.background.paper, 0.1)})`,
+                        background: 'transparent',
                         opacity: amount2 ? 1 : 0.9,
-                        boxShadow: focusBottom
-                          ? `inset 0 0 0 1px ${alpha(theme.palette.primary.main, 0.1)}`
-                          : `inset 0 2px 4px ${alpha(theme.palette.common.black, 0.05)}`,
+                        boxShadow: 'none',
                         '&:hover': {
                           backgroundColor: alpha(theme.palette.background.default, 0.4),
                           borderColor: alpha(theme.palette.primary.main, 0.2),
@@ -3017,7 +2984,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 mb: 1,
                                 display: 'block',
                                 fontSize: '12px',
-                                fontWeight: 600,
+                                fontWeight: 500,
                                 letterSpacing: '0.05em',
                                 textTransform: 'uppercase',
                                 color: theme.palette.text.secondary,
@@ -3058,7 +3025,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 input: {
                                   textAlign: 'right',
                                   fontSize: { xs: '24px', sm: '32px' },
-                                  fontWeight: 600,
+                                  fontWeight: 500,
                                   padding: '8px 0',
                                   background: 'transparent',
                                   color: theme.palette.text.primary,
@@ -3067,7 +3034,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   fontFamily:
                                     '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
                                   letterSpacing: '-0.02em',
-                                  transition: 'all 0.2s ease',
                                   '&::placeholder': {
                                     color: alpha(theme.palette.text.primary, 0.3),
                                     fontWeight: 400
@@ -3090,7 +3056,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 fontSize: '13px',
                                 fontWeight: 400,
                                 opacity: focusBottom ? 1 : 0.7,
-                                transition: 'opacity 0.2s ease'
                               }}
                             >
                               {tokenPrice2 > 0
@@ -3190,7 +3155,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           <Box
                             sx={{
                               p: 1.5,
-                              borderRadius: '10px',
+                              borderRadius: '12px',
                               backgroundColor: alpha(theme.palette.background.paper, 0.03),
                               border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                             }}
@@ -3282,7 +3247,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           mt: 1.5,
                           mb: 1.5,
                           p: 1.5,
-                          borderRadius: '10px',
+                          borderRadius: '12px',
                           backgroundColor: alpha(theme.palette.background.paper, 0.2),
                           border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
                         }}
@@ -3300,7 +3265,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 variant="caption"
                                 sx={{
                                   fontSize: '13px',
-                                  fontWeight: 600,
+                                  fontWeight: 500,
                                   color: theme.palette.text.secondary,
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.03em'
@@ -3340,10 +3305,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 borderRadius: '8px',
                                 padding: '8px 12px',
                                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                                transition: 'all 0.2s ease',
                                 input: {
                                   fontSize: '14px',
-                                  fontWeight: 600,
+                                  fontWeight: 500,
                                   fontFamily:
                                     '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
                                 },
@@ -3372,7 +3336,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     cursor: 'pointer',
                                     backgroundColor: alpha(theme.palette.success.main, 0.08),
                                     border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-                                    transition: 'all 0.2s ease',
                                     textAlign: 'center',
                                     '&:hover': {
                                       backgroundColor: alpha(theme.palette.success.main, 0.15)
@@ -3383,7 +3346,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     variant="caption"
                                     sx={{
                                       fontSize: '12px',
-                                      fontWeight: 600,
+                                      fontWeight: 500,
                                       color: theme.palette.success.main
                                     }}
                                   >
@@ -3402,7 +3365,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     cursor: 'pointer',
                                     backgroundColor: alpha(theme.palette.error.main, 0.08),
                                     border: `1px solid ${alpha(theme.palette.error.main, 0.15)}`,
-                                    transition: 'all 0.2s ease',
                                     textAlign: 'center',
                                     '&:hover': {
                                       backgroundColor: alpha(theme.palette.error.main, 0.15)
@@ -3413,7 +3375,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     variant="caption"
                                     sx={{
                                       fontSize: '12px',
-                                      fontWeight: 600,
+                                      fontWeight: 500,
                                       color: theme.palette.error.main
                                     }}
                                   >
@@ -3430,7 +3392,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               variant="caption"
                               sx={{
                                 fontSize: '13px',
-                                fontWeight: 600,
+                                fontWeight: 500,
                                 color: theme.palette.text.secondary,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.03em',
@@ -3470,7 +3432,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                         ? alpha(theme.palette.primary.main, 0.2)
                                         : alpha(theme.palette.divider, 0.08)
                                     }`,
-                                    transition: 'all 0.2s ease',
                                     '&:hover': {
                                       backgroundColor:
                                         orderExpiry === exp.value
@@ -3481,7 +3442,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 >
                                   <Typography
                                     variant="caption"
-                                    sx={{ fontSize: '12px', fontWeight: 600 }}
+                                    sx={{ fontSize: '12px', fontWeight: 500 }}
                                   >
                                     {exp.label}
                                   </Typography>
@@ -3560,7 +3521,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                       <Typography
                                         variant="caption"
                                         sx={{
-                                          fontWeight: 600,
+                                          fontWeight: 500,
                                           color: isAbove
                                             ? theme.palette.error.main
                                             : theme.palette.success.main
@@ -3585,7 +3546,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                         <Typography
                                           variant="caption"
                                           color="warning.main"
-                                          sx={{ fontWeight: 600 }}
+                                          sx={{ fontWeight: 500 }}
                                         >
                                           ⚠️ Order will execute immediately at market price
                                         </Typography>
@@ -3915,7 +3876,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 variant="caption"
                                 sx={{
                                   color: getPriceImpactColor(Math.abs(priceImpact)),
-                                  fontWeight: 600,
+                                  fontWeight: 500,
                                   fontSize: '12px'
                                 }}
                               >
@@ -3959,7 +3920,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           sx={{
                             minHeight: '52px',
                             fontSize: '16px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             borderRadius: '12px',
                             textTransform: 'none',
                             boxShadow: 'none',
@@ -4041,7 +4002,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   backgroundColor: alpha(theme.palette.background.paper, 0.6),
                   backdropFilter: 'blur(20px)',
-                  transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.background.paper, 0.7),
                     borderColor: alpha(theme.palette.primary.main, 0.15)
@@ -4095,7 +4055,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   backgroundColor: alpha(theme.palette.background.paper, 0.6),
                   backdropFilter: 'blur(20px)',
-                  transition: 'all 0.2s ease',
                   '&:hover': {
                     backgroundColor: alpha(theme.palette.background.paper, 0.7),
                     borderColor: alpha(theme.palette.primary.main, 0.15)

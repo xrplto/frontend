@@ -169,7 +169,7 @@ const CompactCard = styled(Box)(({ theme }) => ({
   [theme.breakpoints.down('sm')]: {
     padding: theme.spacing(2),
     marginBottom: theme.spacing(2),
-    borderRadius: '10px'
+    borderRadius: '12px'
   }
 }));
 
@@ -177,7 +177,7 @@ const IconCover = styled(Box)(({ theme }) => ({
   width: '80px',
   height: '80px',
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  borderRadius: '10px',
+  borderRadius: '12px',
   background: 'transparent',
   position: 'relative',
   overflow: 'hidden',
@@ -651,7 +651,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
         sx={{
           width: '100%',
           aspectRatio: '1 / 1.4',
-          borderRadius: '10px',
+          borderRadius: '12px',
           background: 'transparent',
           border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
           overflow: 'hidden',
@@ -1186,7 +1186,7 @@ const NFTGrid = React.memo(({ collection }) => {
         PaperProps={{
           sx: {
             mt: 1,
-            borderRadius: '16px',
+            borderRadius: '12px',
             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
             backgroundColor: 'transparent',
             backdropFilter: 'blur(20px)',
@@ -1429,7 +1429,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                       sx={{
                         px: 2,
                         py: 0.5,
-                        borderRadius: '16px',
+                        borderRadius: '12px',
                         background: 'transparent',
                         border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                         color: 'info.main',
@@ -1587,7 +1587,7 @@ function FilterDetail({
       sx={{
         background: 'transparent',
         p: 2,
-        borderRadius: '20px',
+        borderRadius: '12px',
         border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
         position: 'sticky',
         top: 20,
@@ -1684,7 +1684,7 @@ function FilterDetail({
               <Box
                 sx={{
                   p: 0.75,
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   background: alpha(theme.palette.primary.main, 0.08),
                   display: 'flex',
                   alignItems: 'center',
@@ -1750,7 +1750,7 @@ function FilterDetail({
                         justifyContent: 'center',
                         width: 40,
                         height: 40,
-                        borderRadius: '10px',
+                        borderRadius: '12px',
                         background: filter & 1 ? theme.palette.primary.main : 'transparent',
                         border: `1px solid ${filter & 1 ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.2)}`,
                         transition: 'all 0.2s ease'
@@ -1838,7 +1838,7 @@ function FilterDetail({
                 <Box
                   sx={{
                     p: 3,
-                    borderRadius: '16px',
+                    borderRadius: '12px',
                     background: 'transparent',
                     border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
                     transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -1881,7 +1881,7 @@ function FilterDetail({
                           sx={{
                             px: 2,
                             py: 0.5,
-                            borderRadius: '20px',
+                            borderRadius: '12px',
                             background: (theme) => theme.palette.success.main,
                             color: 'white',
                             fontWeight: 600,
@@ -1951,7 +1951,7 @@ function FilterDetail({
                       justifyContent: 'center',
                       width: 40,
                       height: 40,
-                      borderRadius: '10px',
+                      borderRadius: '12px',
                       background: filter & 4 ? theme.palette.warning.main : 'transparent',
                       border: `1px solid ${filter & 4 ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.2)}`,
                       transition: 'all 0.2s ease'
@@ -2015,7 +2015,7 @@ function FilterDetail({
                         p: 2,
                         background: alpha(theme.palette.warning.main, 0.02),
                         border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                        borderRadius: '10px'
+                        borderRadius: '12px'
                       }}
                     >
                       <Typography
@@ -2137,7 +2137,7 @@ function FilterDetail({
               <Box
                 sx={{
                   p: 3,
-                  borderRadius: '16px',
+                  borderRadius: '12px',
                   background: 'transparent',
                   border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -2254,7 +2254,7 @@ function FilterDetail({
               <Box
                 sx={{
                   p: 0.75,
-                  borderRadius: '10px',
+                  borderRadius: '12px',
                   background: alpha(theme.palette.success.main, 0.08),
                   display: 'flex',
                   alignItems: 'center',
@@ -2312,7 +2312,7 @@ function FilterDetail({
 
 // Collection Card Component
 const CardWrapper = styled(Card)(({ theme }) => ({
-  borderRadius: '10px',
+  borderRadius: '12px',
   background: 'transparent',
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   padding: 0,
@@ -2571,7 +2571,7 @@ export default function CollectionView({ collection }) {
           sx: {
             background: 'transparent',
             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            borderRadius: '16px',
+            borderRadius: '12px',
             p: 2
           }
         }}
@@ -2620,7 +2620,7 @@ export default function CollectionView({ collection }) {
               fill
               priority
               sizes="70px"
-              style={{ objectFit: 'cover', borderRadius: '10px' }}
+              style={{ objectFit: 'cover', borderRadius: '12px' }}
             />
           </IconCover>
 

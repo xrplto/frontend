@@ -92,9 +92,7 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
   background: theme.palette.background.paper,
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
   borderRadius: 10,
-  boxShadow: theme.palette.mode === 'dark'
-    ? '0 8px 32px rgba(0,0,0,0.4)'
-    : '0 4px 24px rgba(0,0,0,0.08)',
+  boxShadow: 'none',
   overflow: 'hidden',
   position: 'relative'
 }));
@@ -518,7 +516,6 @@ const WalletContent = ({
                 width: 12,
                 height: 12,
                 transform: showAllAccounts ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 0.15s ease-out',
                 opacity: 0.6
               }}
               viewBox="0 0 24 24"
@@ -2813,7 +2810,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           TransitionProps={{ timeout: 0 }}
           sx={{
             '& .MuiDialog-paper': {
-              borderRadius: '10px',
+              borderRadius: '12px',
               width: '320px',
               maxWidth: '320px',
               background: 'transparent',
@@ -2824,7 +2821,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               left: 'auto',
               transform: 'none !important',
               margin: 0,
-              transition: 'none !important'
             },
             zIndex: 9999
           }}
@@ -2978,7 +2974,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   <Box sx={{ p: 3 }}>
                     <Stack spacing={2}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 500 }}>
                           Backup Options
                         </Typography>
                         <Button size="small" onClick={() => {
@@ -3051,13 +3047,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {seedAuthStatus === 'password-required' && backupMode === 'seed' && (
                         <Box sx={{ p: 2 }}>
                           <Alert severity="error" icon={false} sx={{ mb: 2, py: 1.5 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.8, fontSize: '13px' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.8, fontSize: '13px' }}>
                               If you lose your Secret Seed, we cannot help you
                             </Typography>
                             <Typography variant="body2" sx={{ fontSize: '11px', mb: 1, lineHeight: 1.3 }}>
                               Your seed is stored locally in your browser only. xrpl.to has no access to it and cannot recover or reset it. Write it down and store it somewhere safe.
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '11px', fontWeight: 600, color: 'error.main', mb: 0.3 }}>
+                            <Typography variant="body2" sx={{ fontSize: '11px', fontWeight: 500, color: 'error.main', mb: 0.3 }}>
                               NEVER share your seed with:
                             </Typography>
                             <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2, fontSize: '11px', lineHeight: 1.4 }}>
@@ -3097,7 +3093,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               mt: 0.1
                             }}>
                               {seedWarningAgreed && (
-                                <Box component="span" sx={{ color: 'white', fontSize: '11px', fontWeight: 600 }}>✓</Box>
+                                <Box component="span" sx={{ color: 'white', fontSize: '11px', fontWeight: 500 }}>✓</Box>
                               )}
                             </Box>
                             <Typography variant="body2" sx={{ fontSize: '11px', lineHeight: 1.35 }}>
@@ -3196,7 +3192,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             wordBreak: 'break-all',
                             lineHeight: 1.5,
                             filter: seedBlurred ? 'blur(5px)' : 'none',
-                            transition: 'filter 0.3s ease',
                             cursor: seedBlurred ? 'pointer' : 'default',
                             userSelect: seedBlurred ? 'none' : 'auto'
                           }}
@@ -3274,7 +3269,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         justifyContent: 'center',
                         borderRadius: '8px',
                         color: theme.palette.text.secondary,
-                        transition: 'all 0.2s',
                         '&:hover': {
                           color: theme.palette.text.primary,
                           backgroundColor: alpha(theme.palette.text.primary, 0.05)
@@ -3609,7 +3603,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         alignItems: 'center',
                         mb: 2,
                         p: 1.5,
-                        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.primary.light, 0.04)} 50%)`,
+                        background: 'transparent',
                         borderRadius: 2,
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
                       }}>
@@ -3629,7 +3623,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         >
                           ← Back
                         </Button>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '16px' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 500, color: theme.palette.primary.main, fontSize: '16px' }}>
                           Key Authentication
                         </Typography>
                       </Box>
@@ -3762,10 +3756,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           sx={{
                             py: 1.2,
                             fontSize: '15px',
-                            fontWeight: 600,
-                            background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 50%)`,
+                            fontWeight: 500,
+                            background: 'transparent',
                             '&:hover': {
-                              background: `linear-gradient(135deg, ${theme.palette.success.dark} 0%, ${theme.palette.success.main} 50%)`
+                              background: 'transparent'
                             }
                           }}
                         >
@@ -3784,7 +3778,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           sx={{
                             py: 1.2,
                             fontSize: '15px',
-                            fontWeight: 600,
+                            fontWeight: 500,
                             borderColor: theme.palette.warning.main,
                             color: theme.palette.warning.main,
                             '&:hover': {
