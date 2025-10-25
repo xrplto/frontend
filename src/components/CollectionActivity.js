@@ -468,8 +468,10 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                         <StyledTableCell sx={{ py: 1.5, px: 2 }}>Type</StyledTableCell>
                         <StyledTableCell sx={{ py: 1.5, px: 2 }}>NFT</StyledTableCell>
                         <StyledTableCell sx={{ py: 1.5, px: 2 }}>Price</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Fees</StyledTableCell>
                         <StyledTableCell sx={{ py: 1.5, px: 2 }}>From</StyledTableCell>
                         <StyledTableCell sx={{ py: 1.5, px: 2 }}>To</StyledTableCell>
+                        <StyledTableCell sx={{ py: 1.5, px: 2 }}>Origin</StyledTableCell>
                         <StyledTableCell sx={{ py: 1.5, px: 2 }}>Date</StyledTableCell>
                         <StyledTableCell sx={{ py: 1.5, px: 2 }} align="center">Tx</StyledTableCell>
                       </TableRow>
@@ -486,22 +488,33 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                             />
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1, px: 2 }}>
-                            <Stack direction="row" spacing={1} alignItems="center">
-                              {item.files?.[0]?.thumbnail?.small && (
-                                <Box sx={{ width: 28, height: 28, borderRadius: '6px', overflow: 'hidden', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
-                                  <img src={`https://s2.xrpl.to/d1/${item.files[0].thumbnail.small}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                </Box>
-                              )}
-                              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 400 }}>
-                                {item.name}
-                              </Typography>
-                            </Stack>
+                            {item.NFTokenID ? (
+                              <Link href={`/nft/${item.NFTokenID}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                                {item.NFTokenID.slice(0,8)}...{item.NFTokenID.slice(-6)}
+                              </Link>
+                            ) : '-'}
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1, px: 2 }}>
                             {item.costXRP || item.amountXRP ? (
                               <Typography variant="caption" sx={{ fontSize: '11px', color: '#00AB55', fontWeight: 500 }}>
                                 ✕{item.costXRP || item.amountXRP}
                               </Typography>
+                            ) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                            {item.brokerFeeXRP || item.royaltyAmountXRP ? (
+                              <Stack spacing={0.3}>
+                                {item.brokerFeeXRP && (
+                                  <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+                                    Broker: ✕{item.brokerFeeXRP}
+                                  </Typography>
+                                )}
+                                {item.royaltyAmountXRP && (
+                                  <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
+                                    Royalty: ✕{item.royaltyAmountXRP}
+                                  </Typography>
+                                )}
+                              </Stack>
                             ) : '-'}
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1, px: 2 }}>
@@ -516,6 +529,13 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                               <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
                               </Link>
+                            ) : '-'}
+                          </StyledTableCell>
+                          <StyledTableCell sx={{ py: 1, px: 2 }}>
+                            {item.origin ? (
+                              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                                {item.origin === 'XRPL' && (item.broker === 'rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC' || item.SourceTag === 101102979) ? 'XRP Cafe' : item.origin}
+                              </Typography>
                             ) : '-'}
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1, px: 2 }}>
