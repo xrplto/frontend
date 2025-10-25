@@ -30,7 +30,7 @@ function Collections() {
           <Typography
             variant="h5"
             sx={{
-              fontWeight: 600,
+              fontWeight: 500,
               color: theme.palette.text.primary,
               mb: 1,
               fontSize: { xs: '20px', sm: '24px' }

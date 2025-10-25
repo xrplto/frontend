@@ -329,7 +329,7 @@ const MobileCell = styled.div`
   flex: ${(props) => props.flex || 1};
   text-align: ${(props) => props.align || 'right'};
   padding: 0 2px;
-  font-weight: ${(props) => props.fontWeight || 600};
+  font-weight: ${(props) => props.fontWeight || 500};
   font-size: 11px;
   color: ${(props) => props.color || props.theme.palette.text.primary};
   min-width: ${(props) => props.minWidth || 'auto'};
@@ -355,7 +355,7 @@ const CollectionDetails = styled.div`
 `;
 
 const CollectionName = styled.span`
-  font-weight: 600;
+  font-weight: 500;
   font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
   color: ${(props) => props.theme.palette.text.primary};
   max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
@@ -598,7 +598,7 @@ const StyledTableHead = styled.thead`
 `;
 
 const StyledTableCell = styled.th`
-  font-weight: 600;
+  font-weight: 500;
   font-size: 0.7rem;
   letter-spacing: 0.02em;
   text-transform: uppercase;
@@ -611,7 +611,7 @@ const StyledTableCell = styled.th`
   min-width: ${(props) => (props.isCollectionColumn ? '250px' : props.width || 'auto')};
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   &:hover {
     color: ${(props) =>
@@ -882,35 +882,35 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         </div>
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         ✕ {fNumber(floorPrice)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color={getFloorChangeColor(floorChangePercent)} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} color={getFloorChangeColor(floorChangePercent)} fontWeight={500}>
         {formatFloorChange(floorChangePercent)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={500}>
         ✕ {volume24h}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {fIntNumber(sales24h || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor(marketCapAmount)} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} color={getMarketCapColor(marketCapAmount)} fontWeight={500}>
         ✕ {fVolume(marketCapAmount)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {fIntNumber(listedCount || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {fIntNumber(owners || 0)}
       </StyledCell>
 
-      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {fIntNumber(items)}
       </StyledCell>
 
