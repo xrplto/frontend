@@ -154,14 +154,14 @@ const colors = {
 
 export const XrplToLightTheme = createTheme({
   typography: {
-    fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', 'Courier New', monospace)",
+    fontFamily: 'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     fontSize: 14,
-    h1: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
-    h2: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
-    h3: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
-    h4: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
-    h5: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
-    h6: { fontFamily: "var(--font-jetbrains-mono, 'JetBrains Mono', monospace)" },
+    h1: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h2: { fontWeight: 700, letterSpacing: '-0.01em' },
+    h3: { fontWeight: 700, letterSpacing: '-0.01em' },
+    h4: { fontWeight: 600, letterSpacing: '-0.01em' },
+    h5: { fontWeight: 700 },
+    h6: {},
     body1: { fontVariantNumeric: 'tabular-nums' },
     body2: { fontVariantNumeric: 'tabular-nums' }
   },

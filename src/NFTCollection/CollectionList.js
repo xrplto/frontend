@@ -1,33 +1,17 @@
 import axios from 'axios';
 import React, { useState, useEffect, useContext, useMemo, useCallback, memo, useRef } from 'react';
-import {
-  Box,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableHead,
-  TableSortLabel,
-  useMediaQuery,
-  useTheme,
-  styled,
-  IconButton,
-  Link,
-  Stack,
-  Tooltip,
-  Typography,
-  Grid,
-  Pagination,
-  Select,
-  MenuItem
-} from '@mui/material';
-import { visuallyHidden } from '@mui/utils';
-import EditIcon from '@mui/icons-material/Edit';
-import VerifiedIcon from '@mui/icons-material/Verified';
+import styled from '@emotion/styled';
+import { useTheme } from '@mui/material/styles';
+import Image from 'next/image';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
 import dynamic from 'next/dynamic';
+import FirstPageIcon from '@mui/icons-material/FirstPage';
+import LastPageIcon from '@mui/icons-material/LastPage';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { alpha } from '@mui/material';
 
 // Lazy load chart component
 const Sparkline = dynamic(() => import('src/components/Sparkline'), {
@@ -237,321 +221,553 @@ const OptimizedChart = memo(
 
 OptimizedChart.displayName = 'OptimizedChart';
 
-// Styled Components
-const StickyTableCell = styled(TableCell)({
-  position: 'sticky',
-  zIndex: 1000,
-  top: 0,
-  fontWeight: '500',
-  fontSize: '11px',
-  letterSpacing: '0.01em',
-  textTransform: 'uppercase'
-});
+// Styled Components - TokenList Pattern
+const Container = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  contain: layout style;
+  overflow: visible;
+`;
 
-const CollectionImageWrapper = styled(Box)(({ theme }) => ({
-  borderRadius: '12px',
-  overflow: 'hidden',
-  width: '32px',
-  height: '32px',
-  [theme.breakpoints.up('sm')]: {
-    width: '40px',
-    height: '40px'
-  },
-  position: 'relative',
-  border: '1px solid rgba(145, 158, 171, 0.05)',
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  '&:hover': {
-    cursor: 'pointer',
-    transform: 'scale(1.05)',
-    borderColor: 'rgba(99, 115, 129, 0.15)',
-    '& > img': {
-      opacity: 0.9
+const TableContainer = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  gap: 0;
+  padding-top: 2px;
+  padding-bottom: 2px;
+  padding-left: ${(props) => (props.isMobile ? '0' : '0')};
+  padding-right: ${(props) => (props.isMobile ? '0' : '0')};
+  overflow-x: auto;
+  overflow-y: visible;
+  width: 100%;
+  min-width: 0;
+  scrollbar-width: none;
+  box-sizing: border-box;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+`;
+
+const StyledTable = styled.table`
+  table-layout: fixed;
+  width: 100%;
+  border-collapse: collapse;
+  contain: layout style paint;
+  margin: 0;
+  padding: 0;
+`;
+
+const StyledTableBody = styled.tbody`
+  margin: 0;
+  padding: 0;
+
+  tr {
+    margin: 0;
+    padding: 0;
+
+    &:hover {
+      background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
     }
   }
-}));
 
-const IconImage = styled('img')(`
-  position: absolute;
-  inset: 0px;
+  td {
+    padding: 12px 10px;
+  }
+`;
+
+const StyledRow = styled.tr`
+  border-bottom: 1px solid ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+  cursor: pointer;
+
+  &:hover {
+    background: ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+  }
+`;
+
+const StyledCell = styled.td`
+  padding: 12px 10px;
+  white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
+  text-align: ${(props) => props.align || 'left'};
+  font-size: 13px;
+  font-weight: ${(props) => props.fontWeight || 400};
+  color: ${(props) => props.color || props.theme.palette.text.primary};
+  vertical-align: middle;
+  width: ${(props) => props.width || 'auto'};
+  min-width: ${(props) => (props.isCollectionColumn ? '250px' : 'auto')};
+`;
+
+// Mobile components
+const MobileCollectionCard = styled.div`
+  display: flex;
+  width: 100%;
+  padding: 10px 8px;
+  border-bottom: 1px solid ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
+  cursor: pointer;
   box-sizing: border-box;
-  padding: 0px;
-  border: none;
-  margin: auto;
-  display: block;
-  width: 0px; height: 0px;
-  min-width: 100%;
-  max-width: 100%;
-  min-height: 100%;
-  max-height: 100%;
-  object-fit: cover;
-  border-radius: 0px;
-`);
+  align-items: center;
 
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  minWidth: 'auto'
-}));
+  &:hover {
+    background: ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+  }
+`;
+
+const MobileCollectionInfo = styled.div`
+  flex: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 2px;
+  min-width: 0;
+`;
+
+const MobileCell = styled.div`
+  flex: ${(props) => props.flex || 1};
+  text-align: ${(props) => props.align || 'right'};
+  padding: 0 2px;
+  font-weight: ${(props) => props.fontWeight || 600};
+  font-size: 11px;
+  color: ${(props) => props.color || props.theme.palette.text.primary};
+  min-width: ${(props) => props.minWidth || 'auto'};
+  ${(props) => props.wordBreak && `word-break: ${props.wordBreak};`}
+  ${(props) => props.lineHeight && `line-height: ${props.lineHeight};`}
+`;
+
+const CollectionImage = styled.div`
+  width: ${(props) => (props.isMobile ? '20px' : '28px')};
+  height: ${(props) => (props.isMobile ? '20px' : '28px')};
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+`;
+
+const CollectionDetails = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+const CollectionName = styled.span`
+  font-weight: 600;
+  font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
+  color: ${(props) => props.theme.palette.text.primary};
+  max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: block;
+  line-height: 1.2;
+`;
+
+const CollectionSubtext = styled.span`
+  font-size: ${(props) => (props.isMobile ? '9px' : '10px')};
+  color: ${(props) => props.theme.palette.text.secondary};
+  opacity: 1;
+  font-weight: 400;
+  display: block;
+  max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  line-height: 1.2;
+  margin-top: 0;
+`;
+
+// Toolbar styled components
+const StyledToolbar = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  gap: 6px;
+  flex-wrap: wrap;
+
+  @media (max-width: 900px) {
+    flex-direction: row;
+    align-items: stretch;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 2px;
+  }
+`;
+
+const PaginationContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+
+  @media (max-width: 900px) {
+    width: 100%;
+    justify-content: center;
+    padding: 2px 4px;
+  }
+`;
+
+const RowsSelector = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 12px;
+  background: ${({ theme }) => theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+
+  @media (max-width: 900px) {
+    flex: 1;
+    min-width: calc(50% - 8px);
+    justify-content: center;
+    padding: 4px 8px;
+    gap: 2px;
+  }
+`;
+
+const InfoBox = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+  border-radius: 12px;
+  background: ${({ theme }) => theme.palette.background.paper};
+  padding: 4px 8px;
+
+  @media (max-width: 900px) {
+    flex: 1;
+    min-width: calc(50% - 8px);
+    justify-content: flex-start;
+    gap: 4px;
+    padding: 4px 8px;
+  }
+`;
+
+const Chip = styled.span`
+  font-size: 12px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.32)};
+  border-radius: 6px;
+  color: ${({ theme }) => theme.palette.text.primary};
+`;
+
+const Text = styled.span`
+  font-size: 12px;
+  color: ${({ theme }) => theme.palette.text.secondary};
+  font-weight: ${(props) => props.fontWeight || 500};
+`;
+
+const NavButton = styled.button`
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+  padding: 0;
+
+  &:hover:not(:disabled) {
+    background: ${({ theme }) => alpha(theme.palette.primary.main, 0.08)};
+  }
+
+  &:disabled {
+    color: ${({ theme }) => alpha(theme.palette.text.primary, 0.48)};
+    cursor: not-allowed;
+  }
+`;
+
+const PageButton = styled.button`
+  min-width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: none;
+  background: ${(props) => (props.selected ? props.theme.palette.primary.main : 'transparent')};
+  color: ${(props) => (props.selected ? 'white' : 'inherit')};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  margin: 0;
+  font-size: 12px;
+  font-weight: ${(props) => (props.selected ? 600 : 500)};
+
+  &:hover:not(:disabled) {
+    background: ${(props) =>
+      props.selected ? props.theme.palette.primary.dark || '#1976D2' : alpha(props.theme.palette.primary.main, 0.08)};
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+`;
+
+const Select = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const SelectButton = styled.button`
+  background: transparent;
+  border: none;
+  color: ${({ theme }) => theme.palette.primary.main};
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 40px;
+
+  &:hover {
+    background: ${({ theme }) => alpha(theme.palette.primary.main, 0.04)};
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin: -2px -4px;
+  }
+`;
+
+const SelectMenu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  background: ${({ theme }) => theme.palette.background.paper};
+  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+  border-radius: 4px;
+  box-shadow: ${({ theme }) => theme.shadows?.[4] || '0 4px 12px rgba(0, 0, 0, 0.15)'};
+  z-index: 1000;
+  min-width: 60px;
+  backdrop-filter: blur(10px);
+`;
+
+const SelectOption = styled.button`
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  color: ${({ theme }) => theme.palette.text.primary};
+
+  &:hover {
+    background: ${({ theme }) => alpha(theme.palette.action.hover, 0.04)};
+  }
+`;
+
+const CenterBox = styled.div`
+  flex-grow: 1;
+  display: flex;
+  justify-content: center;
+`;
+
+const StyledTableHead = styled.thead`
+  position: sticky;
+  top: ${(props) => props.scrollTopLength || 0}px;
+  z-index: 100;
+  background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.98)' : 'rgba(255, 255, 255, 0.98)')};
+  backdrop-filter: blur(10px);
+`;
+
+const StyledTableCell = styled.th`
+  font-weight: 600;
+  font-size: 0.7rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)')};
+  padding: 14px 12px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
+  text-align: ${(props) => props.align || 'left'};
+  width: ${(props) => props.width || 'auto'};
+  min-width: ${(props) => (props.isCollectionColumn ? '250px' : props.width || 'auto')};
+  box-sizing: border-box;
+  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  &:hover {
+    color: ${(props) =>
+      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)') : 'inherit'};
+  }
+`;
+
+const SortIndicator = styled.span`
+  display: inline-block;
+  margin-left: 4px;
+  font-size: 0.6rem;
+  color: ${(props) =>
+    props.active ? '#4285f4' : props.darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'};
+  transform: ${(props) => (props.direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
+  opacity: ${(props) => (props.active ? 1 : 0.6)};
+`;
+
+const MobileContainer = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  padding: 0;
+  margin: 0;
+  background: ${(props) => props.theme.palette.background.default};
+`;
+
+const MobileHeader = styled.div`
+  display: flex;
+  width: 100%;
+  padding: 6px 4px;
+  background: ${(props) => props.theme.palette.background.paper};
+  border-bottom: 1px solid ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: ${(props) => props.theme.palette.text.secondary};
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-sizing: border-box;
+`;
+
+const HeaderCell = styled.div`
+  flex: ${(props) => props.flex || 1};
+  text-align: ${(props) => props.align || 'left'};
+  padding: 0 4px;
+  cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
+
+  &:hover {
+    color: ${(props) => props.sortable && props.theme.palette.text.primary};
+  }
+`;
 
 // Table Head Configuration
-const TABLE_HEAD = (isMobile) => {
-  if (isMobile) {
-    return [
-      {
-        no: 0,
-        id: 'name',
-        label: 'Collection',
-        align: 'left',
-        width: '35%',
-        order: false
-      },
-      {
-        no: 1,
-        id: 'floor.amount',
-        label: 'Floor',
-        align: 'right',
-        width: '15%',
-        order: true
-      },
-      {
-        no: 2,
-        id: 'floor1dPercent',
-        label: '24h %',
-        align: 'right',
-        width: '15%',
-        order: true
-      },
-      {
-        no: 3,
-        id: 'sales24h',
-        label: 'Sales',
-        align: 'right',
-        width: '15%',
-        order: true
-      },
-      {
-        no: 4,
-        id: 'totalVolume',
-        label: 'Volume',
-        align: 'right',
-        width: '20%',
-        order: true
-      }
-    ];
-  }
-  return [
-    {
-      no: 0,
-      id: 'name',
-      label: 'Collection',
-      align: 'left',
-      width: '25%',
-      order: false
-    },
-    {
-      no: 1,
-      id: 'floor.amount',
-      label: 'Floor',
-      align: 'right',
-      width: '10%',
-      order: true
-    },
-    {
-      no: 2,
-      id: 'floor1dPercent',
-      label: 'Floor 24h %',
-      align: 'right',
-      width: '10%',
-      order: true
-    },
-    {
-      no: 3,
-      id: 'totalVol24h',
-      label: 'Volume (24h)',
-      align: 'right',
-      width: '12%',
-      order: true
-    },
-    {
-      no: 4,
-      id: 'sales24h',
-      label: 'Sales (24h)',
-      align: 'right',
-      width: '10%',
-      order: true
-    },
-    {
-      no: 5,
-      id: 'marketcap.amount',
-      label: 'Market Cap',
-      align: 'right',
-      width: '12%',
-      order: true
-    },
-    {
-      no: 6,
-      id: 'listedCount',
-      label: 'Listed',
-      align: 'right',
-      width: '8%',
-      order: true
-    },
-    {
-      no: 7,
-      id: 'owners',
-      label: 'Owners',
-      align: 'right',
-      width: '8%',
-      order: true
-    },
-    {
-      no: 8,
-      id: 'items',
-      label: 'Supply',
-      align: 'right',
-      width: '5%',
-      order: true
-    },
-    {
-      no: 9,
-      id: 'sparkline',
-      label: '30D Chart',
-      align: 'center',
-      width: '20%',
-      order: false
-    }
-  ];
-};
+const TABLE_HEAD_MOBILE = [
+  { id: 'name', label: 'COLLECTION', align: 'left', width: '40%', order: false },
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '20%', order: true },
+  { id: 'floor1dPercent', label: '24H %', align: 'right', width: '20%', order: true },
+  { id: 'totalVolume', label: 'VOL', align: 'right', width: '20%', order: true }
+];
+
+const TABLE_HEAD_DESKTOP = [
+  { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
+  { id: 'name', label: 'COLLECTION', align: 'left', width: '250px', order: false },
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true },
+  { id: 'floor1dPercent', label: 'FLOOR 24H %', align: 'right', width: '10%', order: true },
+  { id: 'totalVol24h', label: 'VOLUME (24H)', align: 'right', width: '12%', order: true },
+  { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: '10%', order: true },
+  { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: '12%', order: true },
+  { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true },
+  { id: 'owners', label: 'OWNERS', align: 'right', width: '8%', order: true },
+  { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true },
+  { id: 'sparkline', label: '30D CHART', align: 'center', width: '15%', order: false, style: { paddingLeft: '16px' } }
+];
 
 // ListHead Component
-const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-  const { darkMode } = useContext(AppContext);
+const ListHead = memo(({ order, orderBy, onRequestSort, scrollTopLength = 0, darkMode, isMobile }) => {
+  const createSortHandler = useCallback(
+    (id) => (event) => {
+      onRequestSort(event, id);
+    },
+    [onRequestSort]
+  );
 
-  const createSortHandler = (id) => (event) => {
-    onRequestSort(event, id);
-  };
+  const TABLE_HEAD = isMobile ? TABLE_HEAD_MOBILE : TABLE_HEAD_DESKTOP;
 
   return (
-    <TableHead
-      sx={{
-        position: 'sticky',
-        zIndex: 1002,
-        transform: `translateY(${scrollTopLength}px)`,
-        background: 'transparent',
-        backdropFilter: 'none',
-        borderBottom: 'none'
-      }}
-    >
-      <TableRow
-        sx={{
-          '& .MuiTableCell-root': {
-            fontSize: isMobile ? '9px' : '11px',
-            fontWeight: '500',
-            padding: isMobile ? '8px 4px' : '16px 12px',
-            height: 'auto',
-            whiteSpace: 'nowrap',
-            color: darkMode ? 'rgba(145, 158, 171, 0.8)' : 'rgba(99, 115, 129, 0.8)',
-            textTransform: 'uppercase',
-            letterSpacing: '0.01em',
-            borderBottom: 'none',
-            '&:nth-of-type(n+6)': {
-              padding: isMobile ? '8px 4px' : '16px 8px'
-            }
-          },
-          '& .MuiTableSortLabel-root': {
-            fontSize: isMobile ? '9px' : '11px',
-            fontWeight: '500',
-            color: 'inherit',
-            '&:hover': {
-              color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(33, 43, 54, 0.9)'
-            },
-            '&.Mui-active': {
-              color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(33, 43, 54, 0.9)',
-              '& .MuiTableSortLabel-icon': {
-                color: 'inherit'
-              }
-            },
-            '& .MuiTableSortLabel-icon': {
-              fontSize: '14px'
-            }
-          }
-        }}
-      >
-        {TABLE_HEAD(isMobile).map((headCell) => (
-          <StickyTableCell
+    <StyledTableHead scrollTopLength={scrollTopLength} darkMode={darkMode}>
+      <tr>
+        {TABLE_HEAD.map((headCell) => (
+          <StyledTableCell
             key={headCell.id}
             align={headCell.align}
-            sortDirection={orderBy === headCell.id ? order : false}
             width={headCell.width}
+            darkMode={darkMode}
+            sortable={headCell.order}
+            isCollectionColumn={headCell.id === 'name'}
+            onClick={headCell.order ? createSortHandler(headCell.id) : undefined}
+            style={headCell.style || {}}
           >
             {headCell.order ? (
-              <TableSortLabel
-                hideSortIcon={!headCell.order}
-                active={orderBy === headCell.id}
-                direction={orderBy === headCell.id ? order : 'desc'}
-                onClick={createSortHandler(headCell.id)}
-              >
+              <span>
                 {headCell.label}
                 {orderBy === headCell.id && (
-                  <Box component="span" sx={{ ...visuallyHidden }}>
-                    {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                  </Box>
+                  <SortIndicator active={true} direction={order} darkMode={darkMode}>
+                    ▼
+                  </SortIndicator>
                 )}
-              </TableSortLabel>
+              </span>
             ) : (
               headCell.label
             )}
-          </StickyTableCell>
+          </StyledTableCell>
         ))}
-      </TableRow>
-    </TableHead>
+      </tr>
+    </StyledTableHead>
   );
 });
 
-// Row Component
-const Row = memo(({ id, item }) => {
-  const {
-    uuid,
-    name,
-    slug,
-    items,
-    logoImage,
-    verified,
-    created,
-    totalVol24h,
-    totalVolume,
-    floor,
-    owners,
-    sales24h,
-    listedCount,
-    marketcap,
-    floor1dPercent,
-    website,
-    twitter,
-    graphData30d
-  } = item;
+// Optimized image component
+const OptimizedImage = memo(
+  ({ src, alt, size }) => {
+    const [imgSrc, setImgSrc] = useState(src);
 
-  const { darkMode } = useContext(AppContext);
+    const handleError = useCallback(() => {
+      setImgSrc('/static/alt.webp');
+    }, []);
+
+    return (
+      <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
+        <Image
+          src={imgSrc}
+          alt={alt}
+          width={size}
+          height={size}
+          unoptimized={true}
+          onError={handleError}
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            display: 'block'
+          }}
+        />
+      </div>
+    );
+  },
+  (prevProps, nextProps) => {
+    return prevProps.src === nextProps.src && prevProps.size === nextProps.size;
+  }
+);
+
+OptimizedImage.displayName = 'OptimizedImage';
+
+// Mobile Collection Row Component
+const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
 
+  const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
   const floorPrice = floor?.amount || 0;
-  const volume24h = fVolume(totalVol24h || 0);
-  const totalVolumeDisplay = fVolume(totalVolume || 0);
-  const marketCapAmount = marketcap?.amount || 0;
   const floorChangePercent = floor1dPercent || 0;
 
-  const strDateTime = formatMonthYearDate(created);
-  const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
-
-  // Format floor change percentage with color
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return '#00AB55'; // Green for positive
-    if (percent < 0) return '#FF4842'; // Red for negative
-    return '#919EAB'; // Gray for zero/neutral
+    if (percent > 0) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    if (percent < 0) return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
+    return theme.palette.text.secondary;
   };
 
   const formatFloorChange = (percent) => {
@@ -560,7 +776,72 @@ const Row = memo(({ id, item }) => {
     return `${sign}${percent.toFixed(1)}%`;
   };
 
-  // Process chart data for sparkline
+  return (
+    <MobileCollectionCard onClick={handleRowClick}>
+      <MobileCollectionInfo>
+        <CollectionImage isMobile={true}>
+          <OptimizedImage src={logoImageUrl} alt={name || 'Collection'} size={20} />
+        </CollectionImage>
+        <CollectionDetails>
+          <CollectionName isMobile={true}>{name}</CollectionName>
+          <CollectionSubtext isMobile={true}>{slug}</CollectionSubtext>
+        </CollectionDetails>
+      </MobileCollectionInfo>
+
+      <MobileCell flex={1.2} align="right">
+        ✕ {fNumber(floorPrice)}
+      </MobileCell>
+
+      <MobileCell flex={0.9} align="right" color={getFloorChangeColor(floorChangePercent)}>
+        {formatFloorChange(floorChangePercent)}
+      </MobileCell>
+
+      <MobileCell flex={1} align="right" color="#00AB55">
+        ✕ {fVolume(totalVolume || 0)}
+      </MobileCell>
+    </MobileCollectionCard>
+  );
+};
+
+// Desktop Collection Row Component
+const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => {
+  const theme = useTheme();
+  const {
+    name,
+    slug,
+    logoImage,
+    items,
+    floor,
+    floor1dPercent,
+    totalVol24h,
+    sales24h,
+    marketcap,
+    listedCount,
+    owners,
+    created,
+    graphData30d
+  } = collection;
+
+  const logoImageUrl = `https://s1.xrpl.to/nft-collection/${logoImage}`;
+  const floorPrice = floor?.amount || 0;
+  const floorChangePercent = floor1dPercent || 0;
+  const volume24h = fVolume(totalVol24h || 0);
+  const marketCapAmount = marketcap?.amount || 0;
+  const strDateTime = formatMonthYearDate(created);
+
+  const getFloorChangeColor = (percent) => {
+    if (percent > 0) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    if (percent < 0) return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
+    return theme.palette.text.secondary;
+  };
+
+  const formatFloorChange = (percent) => {
+    if (percent === 0) return '0%';
+    const sign = percent > 0 ? '+' : '';
+    return `${sign}${percent.toFixed(1)}%`;
+  };
+
+  // Process chart data
   const salesData = useMemo(() => {
     if (!graphData30d || !Array.isArray(graphData30d)) return null;
 
@@ -571,317 +852,140 @@ const Row = memo(({ id, item }) => {
         value: item.volume || 0,
         sales: item.sales || 0
       }))
-      .slice(-30); // Get last 30 days
+      .slice(-30);
 
     if (processedData.length === 0) return null;
-
     return processedData;
   }, [graphData30d]);
 
-  const tableRowStyle = useMemo(
-    () => ({
-      borderBottom: 'none',
-      transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-      backgroundColor: 'transparent',
-      '&:hover': {
-        '& .MuiTableCell-root': {
-          backgroundColor: 'transparent'
-        },
-        cursor: 'pointer',
-        transform: 'translateY(-1px)'
-      },
-      '& .MuiTypography-root': {
-        fontSize: isMobile ? '11px' : '14px',
-        fontWeight: '500'
-      },
-      '& .MuiTableCell-root': {
-        padding: isMobile ? '8px 4px' : '16px 12px',
-        whiteSpace: 'nowrap',
-        borderBottom: 'none',
-        backgroundColor: 'transparent',
-        '&:not(:first-of-type)': {
-          paddingLeft: isMobile ? '4px' : '8px'
-        }
-      }
-    }),
-    [darkMode, isMobile]
-  );
-
-  const handleRowClick = () => {
-    document.location = `/collection/${slug}`;
-  };
-
   return (
-    <TableRow key={uuid} sx={tableRowStyle} onClick={handleRowClick}>
-      <TableCell align="left" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
-          <Typography
-            variant={isMobile ? 'caption' : 'body2'}
-            sx={{
-              minWidth: '24px',
-              color: darkMode ? '#919EAB' : '#637381',
-              fontWeight: '500'
-            }}
-          >
-            {id}
-          </Typography>
+    <StyledRow onClick={handleRowClick}>
+      <StyledCell align="center" darkMode={darkMode} style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
+        <span style={{ fontWeight: '600', color: theme.palette.text.secondary }}>{idx + 1}</span>
+      </StyledCell>
 
-          <Box
-            sx={{
-              width: isMobile ? 32 : 40,
-              height: isMobile ? 32 : 40,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <CollectionImageWrapper>
-              <IconImage src={logoImageUrl} alt={`${name} Logo`} loading="lazy" />
-            </CollectionImageWrapper>
-          </Box>
+      <StyledCell
+        align="left"
+        darkMode={darkMode}
+        isCollectionColumn={true}
+        style={{ width: '250px', minWidth: '250px', maxWidth: '250px' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <CollectionImage>
+            <OptimizedImage src={logoImageUrl} alt={name || 'Collection'} size={28} />
+          </CollectionImage>
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <CollectionName title={name}>{name}</CollectionName>
+            <CollectionSubtext>{strDateTime}</CollectionSubtext>
+          </div>
+        </div>
+      </StyledCell>
 
-          <Link
-            underline="none"
-            color="inherit"
-            href={`/collection/${slug}`}
-            rel="noreferrer noopener nofollow"
-          >
-            <Stack direction="column" spacing={0.5}>
-              <Stack direction="row" spacing={isMobile ? 0.5 : 1} alignItems="center">
-                <Typography
-                  variant={isMobile ? 'subtitle2' : 'h6'}
-                  sx={{
-                    fontWeight: '700',
-                    fontSize: isMobile ? '12px' : '16px',
-                    lineHeight: 1.2,
-                    width: isMobile ? '90px' : '180px',
-                    minWidth: isMobile ? '90px' : '180px',
-                    letterSpacing: '-0.02em',
-                    color: darkMode ? '#fff' : '#212B36'
-                  }}
-                  noWrap
-                >
-                  {name}
-                </Typography>
-              </Stack>
-              <Typography
-                variant={isMobile ? 'caption' : 'body2'}
-                sx={{
-                  fontWeight: '500',
-                  fontSize: isMobile ? '10px' : '13px',
-                  lineHeight: 1.2,
-                  color: darkMode ? '#919EAB' : '#637381'
-                }}
-              >
-                {isMobile
-                  ? `${fIntNumber(items)} items • ${fIntNumber(owners)} owners • ${fIntNumber(sales24h || 0)} sales`
-                  : strDateTime}
-              </Typography>
-            </Stack>
-          </Link>
-        </Stack>
-      </TableCell>
+      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+        ✕ {fNumber(floorPrice)}
+      </StyledCell>
 
-      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-        <Typography
-          variant={isMobile ? 'subtitle2' : 'h6'}
-          noWrap
-          sx={{
-            fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px',
-            color: darkMode ? '#fff' : '#212B36'
-          }}
-        >
-          ✕ {fNumber(floorPrice)}
-        </Typography>
-      </TableCell>
+      <StyledCell align="right" darkMode={darkMode} color={getFloorChangeColor(floorChangePercent)} fontWeight={600}>
+        {formatFloorChange(floorChangePercent)}
+      </StyledCell>
 
-      <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-        <Typography
-          variant={isMobile ? 'subtitle2' : 'h6'}
-          noWrap
-          sx={{
-            color: getFloorChangeColor(floorChangePercent),
-            fontWeight: '600',
-            fontSize: isMobile ? '12px' : '16px'
-          }}
-        >
-          {formatFloorChange(floorChangePercent)}
-        </Typography>
-      </TableCell>
+      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={600}>
+        ✕ {volume24h}
+      </StyledCell>
 
-      {!isMobile && (
-        <TableCell align="right" sx={{ padding: isMobile ? '8px 4px' : '16px 12px' }}>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              color: '#00AB55',
-              fontWeight: '600',
-              fontSize: '16px'
-            }}
-          >
-            ✕ {volume24h}
-          </Typography>
-        </TableCell>
-      )}
+      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+        {fIntNumber(sales24h || 0)}
+      </StyledCell>
 
-      {isMobile ? (
-        <>
-          <TableCell align="right" sx={{ padding: '8px 4px' }}>
-            <Typography
-              variant="subtitle2"
-              noWrap
-              sx={{
-                fontWeight: '600',
-                fontSize: '12px',
-                color: darkMode ? '#fff' : '#212B36'
-              }}
-            >
-              {fIntNumber(sales24h || 0)}
-            </Typography>
-          </TableCell>
+      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={600}>
+        ✕ {fVolume(marketCapAmount)}
+      </StyledCell>
 
-          <TableCell align="right" sx={{ padding: '8px 4px' }}>
-            <Typography
-              variant="subtitle2"
-              noWrap
-              sx={{
-                color: '#00AB55',
-                fontWeight: '600',
-                fontSize: '12px'
-              }}
-            >
-              ✕ {fVolume(totalVolume || 0)}
-            </Typography>
-          </TableCell>
-        </>
-      ) : (
-        <>
-          <TableCell align="right" sx={{ padding: '16px 12px' }}>
-            <Typography
-              variant="h6"
-              noWrap
-              sx={{
-                fontWeight: '600',
-                fontSize: '16px',
-                color: darkMode ? '#fff' : '#212B36'
-              }}
-            >
-              {fIntNumber(sales24h || 0)}
-            </Typography>
-          </TableCell>
-        </>
-      )}
+      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+        {fIntNumber(listedCount || 0)}
+      </StyledCell>
 
-      {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 8px' }}>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              color: '#00AB55',
-              fontWeight: '600',
-              fontSize: '16px'
-            }}
-          >
-            ✕ {fVolume(marketCapAmount)}
-          </Typography>
-        </TableCell>
-      )}
+      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+        {fIntNumber(owners || 0)}
+      </StyledCell>
 
-      {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 8px' }}>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              fontWeight: '600',
-              fontSize: '16px',
-              color: darkMode ? '#fff' : '#212B36'
-            }}
-          >
-            {fIntNumber(listedCount || 0)}
-          </Typography>
-        </TableCell>
-      )}
+      <StyledCell align="right" darkMode={darkMode} fontWeight={600}>
+        {fIntNumber(items)}
+      </StyledCell>
 
-      {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 8px' }}>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              fontWeight: '600',
-              fontSize: '16px',
-              color: darkMode ? '#fff' : '#212B36'
-            }}
-          >
-            {fIntNumber(owners || 0)}
-          </Typography>
-        </TableCell>
-      )}
-
-      {!isMobile && (
-        <TableCell align="right" sx={{ padding: '16px 8px' }}>
-          <Typography
-            variant="h6"
-            noWrap
-            sx={{
-              fontWeight: '600',
-              fontSize: '16px',
-              color: darkMode ? '#fff' : '#212B36'
-            }}
-          >
-            {fIntNumber(items)}
-          </Typography>
-        </TableCell>
-      )}
-
-      {!isMobile && (
-        <TableCell align="center" sx={{ padding: '16px 12px', minWidth: '280px' }}>
-          {salesData ? (
-            <OptimizedChart salesData={salesData} darkMode={darkMode} />
-          ) : (
-            <Typography
-              variant="body2"
-              sx={{
-                color: theme.palette.text.disabled,
-                fontSize: '12px'
-              }}
-            >
-              No data
-            </Typography>
-          )}
-        </TableCell>
-      )}
-    </TableRow>
+      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '280px', paddingLeft: '16px' }}>
+        {salesData ? (
+          <OptimizedChart salesData={salesData} darkMode={darkMode} />
+        ) : (
+          <span style={{ color: theme.palette.text.disabled, fontSize: '12px' }}>No data</span>
+        )}
+      </StyledCell>
+    </StyledRow>
   );
-});
+};
+
+// Main Collection Row Component
+const CollectionRow = memo(
+  function CollectionRow({ collection, idx, isMobile, darkMode }) {
+    const { slug } = collection;
+
+    const handleRowClick = useCallback(() => {
+      window.location.href = `/collection/${slug}`;
+    }, [slug]);
+
+    if (isMobile) {
+      return <MobileCollectionRow collection={collection} darkMode={darkMode} handleRowClick={handleRowClick} />;
+    }
+
+    return <DesktopCollectionRow collection={collection} idx={idx} darkMode={darkMode} handleRowClick={handleRowClick} />;
+  },
+  (prevProps, nextProps) => {
+    const prev = prevProps.collection;
+    const next = nextProps.collection;
+
+    return (
+      prev.slug === next.slug &&
+      prev.floor?.amount === next.floor?.amount &&
+      prev.floor1dPercent === next.floor1dPercent &&
+      prev.totalVol24h === next.totalVol24h &&
+      prev.sales24h === next.sales24h &&
+      prevProps.isMobile === nextProps.isMobile &&
+      prevProps.darkMode === nextProps.darkMode
+    );
+  }
+);
+
 
 // ListToolbar Component
-const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, total }) {
+  const [selectOpen, setSelectOpen] = useState(false);
+  const selectRef = useRef(null);
 
   const num = total / rows;
   let page_count = Math.floor(num);
-  if (num % 1 != 0) page_count++;
+  if (num % 1 !== 0) page_count++;
+  page_count = Math.max(page_count, 1);
 
-  const start = page * rows + 1;
+  const start = total > 0 ? page * rows + 1 : 0;
   let end = start + rows - 1;
   if (end > total) end = total;
 
-  const handleChangeRows = (event) => {
-    setRows(parseInt(event.target.value, 10));
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (selectRef.current && !selectRef.current.contains(event.target)) {
+        setSelectOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleChangeRows = (value) => {
+    setRows(value);
+    setSelectOpen(false);
   };
 
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage - 1);
-    gotoTop(event);
-  };
-
-  const gotoTop = (event) => {
+  const gotoTop = useCallback((event) => {
     const anchor = (event.target.ownerDocument || document).querySelector('#back-to-top-anchor');
     if (anchor) {
       anchor.scrollIntoView({
@@ -889,95 +993,114 @@ const ListToolbar = ({ rows, setRows, page, setPage, total }) => {
         block: 'center'
       });
     }
+  }, []);
+
+  const handleChangePage = useCallback(
+    (newPage) => {
+      setPage(newPage);
+      gotoTop({ target: document });
+    },
+    [setPage, gotoTop]
+  );
+
+  const handleFirstPage = useCallback(() => {
+    setPage(0);
+    gotoTop({ target: document });
+  }, [setPage, gotoTop]);
+
+  const handleLastPage = useCallback(() => {
+    setPage(page_count - 1);
+    gotoTop({ target: document });
+  }, [setPage, gotoTop, page_count]);
+
+  const getPageNumbers = () => {
+    const pages = [];
+    const current = page + 1;
+    const total = page_count;
+
+    if (total <= 7) {
+      for (let i = 1; i <= total; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (current <= 3) {
+        for (let i = 1; i <= 5; i++) pages.push(i);
+        pages.push('...');
+        pages.push(total);
+      } else if (current >= total - 2) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = total - 4; i <= total; i++) pages.push(i);
+      } else {
+        pages.push(1);
+        pages.push('...');
+        for (let i = current - 1; i <= current + 1; i++) pages.push(i);
+        pages.push('...');
+        pages.push(total);
+      }
+    }
+    return pages;
   };
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: isMobile ? 1 : 2,
-        mt: 0,
-        px: isMobile ? 1 : 0
-      }}
-    >
-      <Box sx={{ display: { xs: 'block', md: 'none' } }}>
-        <Stack alignItems="center">
-          <Pagination page={page + 1} onChange={handleChangePage} count={page_count} size="small" />
-        </Stack>
-      </Box>
+    <StyledToolbar>
+      <InfoBox>
+        <Chip>{`${start}-${end} of ${total.toLocaleString()}`}</Chip>
+        <Text>collections</Text>
+      </InfoBox>
 
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 1
-        }}
-      >
-        <Typography
-          variant="body2"
-          sx={{
-            fontSize: isMobile ? '0.75rem' : '0.875rem',
-            color: theme.palette.text.secondary,
-            fontWeight: 500
-          }}
-        >
-          {isMobile ? `${start}-${end} of ${total}` : `Showing ${start} - ${end} out of ${total}`}
-        </Typography>
+      <CenterBox>
+        <PaginationContainer>
+          <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page">
+            <FirstPageIcon sx={{ width: 14, height: 14 }} />
+          </NavButton>
 
-        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-          <Stack alignItems="center">
-            <Pagination page={page + 1} onChange={handleChangePage} count={page_count} />
-          </Stack>
-        </Box>
+          {getPageNumbers().map((pageNum, idx) => {
+            if (pageNum === '...') {
+              return (
+                <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>
+                  ...
+                </span>
+              );
+            }
+            return (
+              <PageButton key={pageNum} selected={pageNum === page + 1} onClick={() => handleChangePage(pageNum - 1)}>
+                {pageNum}
+              </PageButton>
+            );
+          })}
 
-        <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1}>
-          <Typography
-            variant="body2"
-            sx={{
-              fontSize: isMobile ? '0.75rem' : '0.875rem',
-              color: theme.palette.text.secondary,
-              display: isMobile ? 'none' : 'block'
-            }}
-          >
-            Show Rows
-          </Typography>
-          <CustomSelect
-            value={rows}
-            onChange={handleChangeRows}
-            size={isMobile ? 'small' : 'medium'}
-            sx={{
-              fontSize: isMobile ? '0.75rem' : '0.875rem',
-              '& .MuiSelect-select': {
-                py: isMobile ? 0.5 : 1,
-                px: isMobile ? 1 : 2
-              }
-            }}
-          >
-            <MenuItem value={100} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
-              100
-            </MenuItem>
-            <MenuItem value={50} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
-              50
-            </MenuItem>
-            <MenuItem value={20} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
-              20
-            </MenuItem>
-            <MenuItem value={10} sx={{ fontSize: isMobile ? '0.75rem' : '0.875rem' }}>
-              10
-            </MenuItem>
-          </CustomSelect>
-        </Stack>
-      </Box>
-    </Box>
+          <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
+            <LastPageIcon sx={{ width: 14, height: 14 }} />
+          </NavButton>
+        </PaginationContainer>
+      </CenterBox>
+
+      <RowsSelector>
+        <ViewListIcon sx={{ width: 14, height: 14 }} />
+        <Text>Rows</Text>
+        <Select ref={selectRef}>
+          <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
+            {rows}
+            <ArrowDropDownIcon sx={{ width: 16, height: 16 }} />
+          </SelectButton>
+          {selectOpen && (
+            <SelectMenu>
+              <SelectOption onClick={() => handleChangeRows(100)}>100</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(50)}>50</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(20)}>20</SelectOption>
+            </SelectMenu>
+          )}
+        </Select>
+      </RowsSelector>
+    </StyledToolbar>
   );
-};
+});
 
 // Main CollectionList Component
 export default function CollectionList({ type, category }) {
   const BASE_URL = 'https://api.xrpl.to/api';
+  const { darkMode } = useContext(AppContext);
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(50);
@@ -988,9 +1111,17 @@ export default function CollectionList({ type, category }) {
   const [collections, setCollections] = useState([]);
 
   const [sync, setSync] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
 
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth < 960;
+      setIsMobile(mobile);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     const loadCollections = () => {
@@ -1031,32 +1162,61 @@ export default function CollectionList({ type, category }) {
   );
 
   return (
-    <>
-      <Box sx={{ mb: 1 }} />
-
-      <Box
-        sx={{
-          display: 'flex',
-          gap: 1,
-          py: 1,
-          overflow: 'auto',
-          width: '100%',
-          '& > *': {
-            scrollSnapAlign: 'center'
-          },
-          '::-webkit-scrollbar': { display: 'none' }
-        }}
-      >
-        <Table style={{ minWidth: isMobile ? undefined : '1000px' }}>
-          <ListHead order={order} orderBy={orderBy} onRequestSort={handleRequestSort} />
-          <TableBody>
-            {collections.map((row, idx) => (
-              <Row key={row.slug || row.name || idx} id={page * rows + idx + 1} item={row} />
-            ))}
-          </TableBody>
-        </Table>
-      </Box>
-      <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} />
-    </>
+    <Container>
+      {isMobile ? (
+        <MobileContainer darkMode={darkMode}>
+          <MobileHeader darkMode={darkMode}>
+            <HeaderCell flex={2} align="left" sortable={false}>
+              COLLECTION
+            </HeaderCell>
+            <HeaderCell flex={1.2} align="right" sortable={false}>
+              FLOOR
+            </HeaderCell>
+            <HeaderCell flex={0.9} align="right" sortable={false}>
+              24H %
+            </HeaderCell>
+            <HeaderCell flex={1} align="right" sortable={false}>
+              VOL
+            </HeaderCell>
+          </MobileHeader>
+          {collections.map((collection, idx) => (
+            <CollectionRow
+              key={collection.slug || collection.name || idx}
+              collection={collection}
+              idx={page * rows + idx}
+              isMobile={true}
+              darkMode={darkMode}
+            />
+          ))}
+        </MobileContainer>
+      ) : (
+        <TableContainer>
+          <StyledTable>
+            <ListHead
+              order={order}
+              orderBy={orderBy}
+              onRequestSort={handleRequestSort}
+              scrollTopLength={0}
+              darkMode={darkMode}
+              isMobile={false}
+            />
+            <StyledTableBody darkMode={darkMode}>
+              {collections.map((collection, idx) => (
+                <CollectionRow
+                  key={collection.slug || collection.name || idx}
+                  collection={collection}
+                  idx={page * rows + idx}
+                  isMobile={false}
+                  darkMode={darkMode}
+                />
+              ))}
+            </StyledTableBody>
+          </StyledTable>
+        </TableContainer>
+      )}
+      <div style={{ marginTop: '8px' }}>
+        <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} />
+      </div>
+    </Container>
   );
 }

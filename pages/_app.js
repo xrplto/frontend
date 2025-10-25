@@ -11,6 +11,7 @@ import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import { SnackbarProvider } from 'notistack';
 import { Alert, Slide, Snackbar } from '@mui/material';
+import { inter, jetbrainsMono } from 'src/theme/fonts';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {
@@ -225,7 +226,20 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
 
   return (
     <CacheProvider value={emotionCache}>
-      <>
+      <div className={`${inter.variable} ${jetbrainsMono.variable}`}>
+        <style jsx global>{`
+          :root {
+            --font-inter: ${inter.style.fontFamily};
+            --font-jetbrains-mono: ${jetbrainsMono.style.fontFamily};
+          }
+          body {
+            font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          }
+          code, .monospace, input[type="number"] {
+            font-family: var(--font-jetbrains-mono), 'Courier New', monospace;
+            font-variant-numeric: tabular-nums;
+          }
+        `}</style>
         <Head>
           <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
           <meta
@@ -327,7 +341,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
               </SnackbarProvider>
           </ThemeProvider>
         </ContextProvider>
-      </>
+      </div>
     </CacheProvider>
   );
 }
