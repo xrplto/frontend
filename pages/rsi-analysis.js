@@ -122,7 +122,7 @@ const FilterChip = styled.div`
   color: #2196f3;
   border-radius: 12px;
   font-size: 12px;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
   transition: all 0.2s;
 
@@ -172,7 +172,7 @@ const Button = styled.button`
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   transition: all 0.2s;
 
   &:hover {
@@ -219,7 +219,7 @@ const FilterInput = styled.input`
 const Label = styled.span`
   font-size: 13px;
   color: ${p => p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
 `;
 

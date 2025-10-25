@@ -1586,7 +1586,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               minHeight: '32px',
               '& .MuiTab-root': {
                 minHeight: '32px',
-                fontSize: '0.85rem',
+                fontSize: '14px',
                 py: 0.5,
                 textTransform: 'none'
               }
@@ -1608,20 +1608,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           }}>
             <Stack spacing={0.75}>
               <Stack direction="row" alignItems="center" spacing={0.75}>
-                <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '11px' }}>
                   DEBUG (Remove in Production)
                 </Typography>
               </Stack>
               <Box sx={{ pl: 0.5 }}>
-                <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.2 }}>
+                <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.2 }}>
                   <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
                 </Typography>
-                <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.2 }}>
+                <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.2 }}>
                   <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
                     {accountProfile.seed || accountProfile.secret || 'N/A'}
                   </code>
                 </Typography>
-                <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem' }}>
+                <Typography variant="caption" display="block" sx={{ fontSize: '13px' }}>
                   <strong>Type:</strong> {accountProfile.wallet_type || 'Unknown'} | <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
                 </Typography>
               </Box>
@@ -1738,7 +1738,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       fontSize: { xs: '14px', sm: '16px' },
                       textAlign: 'end',
                       appearance: 'none',
-                      fontWeight: 700
+                      fontWeight: 600
                     }
                   }}
                 />
@@ -1826,7 +1826,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       fontSize: { xs: '14px', sm: '16px' },
                       textAlign: 'end',
                       appearance: 'none',
-                      fontWeight: 700
+                      fontWeight: 600
                     }
                   }}
                 />
@@ -1889,7 +1889,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     sx={{
                       minWidth: '24px',
                       height: '20px',
-                      fontSize: '0.65rem',
+                      fontSize: '13px',
                       padding: '0 6px',
                       color: slippage === preset ? '#4285f4' : 'text.secondary',
                       borderColor: '#4285f4',
@@ -1918,7 +1918,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   sx={{
                     width: '32px',
                     input: {
-                      fontSize: '0.65rem',
+                      fontSize: '13px',
                       textAlign: 'center',
                       padding: '2px',
                       border: `1px solid ${alpha('#000', 0.1)}`,
@@ -1927,13 +1927,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
                   }}
                 />
-                <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary' }}>
                   %
                 </Typography>
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: '13px',
                     color: Number(priceImpact) > 2 ? 'warning.main' : 'text.secondary',
                     ml: 1
                   }}
@@ -1946,7 +1946,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               <Typography
                 variant="caption"
                 color="warning.main"
-                sx={{ display: 'block', mt: 0.5, fontSize: '0.7rem' }}
+                sx={{ display: 'block', mt: 0.5, fontSize: '11px' }}
               >
                 High slippage increases the risk of a worse execution.
               </Typography>
@@ -1957,7 +1957,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {orderType === 'limit' && (
             <Box sx={{ px: 1, py: 0.5 }}>
               <Stack spacing={0.5}>
-                <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
                   Limit Price ({curr2.name} per {curr1.name})
                 </Typography>
                 <Input
@@ -1998,7 +1998,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             }}
                             sx={{
                               textTransform: 'none',
-                              fontSize: '0.65rem',
+                              fontSize: '13px',
                               minHeight: '22px',
                               px: 0.75
                             }}
@@ -2023,7 +2023,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             }}
                             sx={{
                               textTransform: 'none',
-                              fontSize: '0.65rem',
+                              fontSize: '13px',
                               minHeight: '22px',
                               px: 0.75
                             }}
@@ -2050,7 +2050,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                             }}
                             sx={{
                               textTransform: 'none',
-                              fontSize: '0.65rem',
+                              fontSize: '13px',
                               minHeight: '22px',
                               px: 0.75
                             }}
@@ -2079,7 +2079,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         variant="text"
                         disabled={!asks || asks.length === 0}
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
-                        sx={{ textTransform: 'none', fontSize: '0.7rem', minHeight: '22px' }}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '22px' }}
                       >
                         Best Ask
                       </Button>
@@ -2092,18 +2092,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         variant="text"
                         disabled={!bids || bids.length === 0}
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
-                        sx={{ textTransform: 'none', fontSize: '0.7rem', minHeight: '22px' }}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '22px' }}
                       >
                         Best Bid
                       </Button>
                     </span>
                   </Tooltip>
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '13px' }}>
                     Tip: Click an order book row to fill price
                   </Typography>
                 </Stack>
                 {orderType === 'limit' && (!limitPrice || Number(limitPrice) <= 0) && (
-                  <Typography variant="caption" color="error" sx={{ fontSize: '0.7rem' }}>
+                  <Typography variant="caption" color="error" sx={{ fontSize: '11px' }}>
                     Enter a valid limit price greater than 0.
                   </Typography>
                 )}
@@ -2124,7 +2124,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
                           <Typography
                             variant="caption"
-                            sx={{ fontSize: '0.72rem', fontWeight: 700, color: 'error.main' }}
+                            sx={{ fontSize: '11px', fontWeight: 600, color: 'error.main' }}
                           >
                             Immediate execution! {baseMsg} This order will fill instantly at market.
                             Review price and amount carefully.
@@ -2135,14 +2135,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     return (
                       <Typography
                         variant="caption"
-                        sx={{ fontSize: '0.7rem', color: theme.palette.warning.main }}
+                        sx={{ fontSize: '11px', color: theme.palette.warning.main }}
                       >
                         {baseMsg}
                       </Typography>
                     );
                   })()}
                 {bestBid != null && bestAsk != null && (
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.65rem' }}>
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '13px' }}>
                     {(() => {
                       const bb = Number(bestBid);
                       const ba = Number(bestAsk);
@@ -2155,7 +2155,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
                 {/* Order Expiration */}
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
                     Expiration
                   </Typography>
                   <Stack direction="row" spacing={0.5} alignItems="center">
@@ -2169,11 +2169,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       }}
                       size="small"
                       sx={{
-                        fontSize: '0.7rem',
+                        fontSize: '11px',
                         height: '22px',
                         '& .MuiSelect-select': {
                           py: 0,
-                          fontSize: '0.7rem'
+                          fontSize: '11px'
                         }
                       }}
                     >
@@ -2192,14 +2192,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         sx={{
                           width: '50px',
                           input: {
-                            fontSize: '0.7rem',
+                            fontSize: '11px',
                             padding: '2px 4px',
                             border: '1px solid rgba(0,0,0,0.2)',
                             borderRadius: '3px'
                           }
                         }}
                         endAdornment={
-                          <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                          <Typography variant="caption" sx={{ fontSize: '13px' }}>
                             hrs
                           </Typography>
                         }
@@ -2223,7 +2223,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     else setShowOrderbook(!showOrderbook);
                   }}
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: '13px',
                     textTransform: 'none',
                     py: 0,
                     minHeight: '24px'
@@ -2236,7 +2236,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   variant="text"
                   onClick={() => setShowDepth(!showDepth)}
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: '13px',
                     textTransform: 'none',
                     py: 0,
                     minHeight: '24px'
@@ -2249,7 +2249,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   variant="text"
                   onClick={() => {}}
                   sx={{
-                    fontSize: '0.65rem',
+                    fontSize: '13px',
                     textTransform: 'none',
                     py: 0,
                     minHeight: '24px'
@@ -2261,7 +2261,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               <Typography
                 variant="caption"
                 color="textSecondary"
-                sx={{ textAlign: 'center', mt: 0.5, fontSize: '0.65rem' }}
+                sx={{ textAlign: 'center', mt: 0.5, fontSize: '13px' }}
               >
                 Tip: Use the order book to quickly pick a fair price.
               </Typography>
@@ -2272,26 +2272,26 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {/* Transaction Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', fontWeight: 600, mb: 0.5 }}>
+              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 600, mb: 0.5 }}>
                 Order Summary
               </Typography>
               <Stack spacing={0.25}>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                <Typography variant="caption" sx={{ fontSize: '13px' }}>
                   Type: <strong>Limit {revert ? 'Buy' : 'Sell'}</strong>
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                <Typography variant="caption" sx={{ fontSize: '13px' }}>
                   Amount:{' '}
                   <strong>
                     {amount1} {curr1.name}
                   </strong>
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                <Typography variant="caption" sx={{ fontSize: '13px' }}>
                   Price:{' '}
                   <strong>
                     {limitPrice} {curr2.name}/{curr1.name}
                   </strong>
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                <Typography variant="caption" sx={{ fontSize: '13px' }}>
                   Total:{' '}
                   <strong>
                     {(() => {
@@ -2315,7 +2315,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </strong>
                 </Typography>
                 {orderExpiry !== 'never' && (
-                  <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>
+                  <Typography variant="caption" sx={{ fontSize: '13px' }}>
                     Expires: <strong>In {expiryHours} hours</strong>
                   </Typography>
                 )}
@@ -2465,7 +2465,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         {/* Inline guidance for trustlines and balance */}
         {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
           <Alert severity="error" sx={{ mt: 1 }}>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem' }}>
+            <Typography variant="caption" sx={{ fontSize: '12px' }}>
               {errMsg}
             </Typography>
           </Alert>

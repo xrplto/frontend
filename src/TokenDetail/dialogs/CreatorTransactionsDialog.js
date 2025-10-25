@@ -493,7 +493,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                   variant="body2"
                   sx={{
                     fontWeight: 600,
-                    fontSize: '0.75rem',
+                    fontSize: '12px',
                     color:
                       meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS'
                         ? theme.palette.error.main
@@ -548,9 +548,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                     size="small"
                     sx={{
                       height: '14px',
-                      fontSize: '0.6rem',
+                      fontSize: '12px',
                       px: 0.5,
-                      fontWeight: 700,
+                      fontWeight: 600,
                       background: theme.palette.primary.main,
                       color: 'white'
                     }}
@@ -563,7 +563,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                     color="warning"
                     sx={{
                       height: '14px',
-                      fontSize: '0.6rem',
+                      fontSize: '12px',
                       px: 0.5
                     }}
                   />
@@ -574,7 +574,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                 variant="caption"
                 sx={{
                   color: alpha(theme.palette.text.secondary, 0.6),
-                  fontSize: '0.7rem',
+                  fontSize: '11px',
                   lineHeight: 1,
                   display: 'block',
                   mt: 0.25
@@ -591,7 +591,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               sx={{
                 fontWeight: 600,
                 color: getTxColor,
-                fontSize: '0.75rem',
+                fontSize: '12px',
                 lineHeight: 1.2,
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
@@ -609,7 +609,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                   variant="caption"
                   sx={{
                     color: alpha(theme.palette.text.secondary, 0.7),
-                    fontSize: '0.7rem',
+                    fontSize: '11px',
                     display: 'block'
                   }}
                 >
@@ -913,7 +913,7 @@ const CreatorTransactionsDialog = memo(
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '16px' }}>
                   Creator Activity
                 </Typography>
                 {isSubscribed && (
@@ -937,7 +937,7 @@ const CreatorTransactionsDialog = memo(
                     color="primary"
                     sx={{
                       '& .MuiBadge-badge': {
-                        fontSize: '0.7rem',
+                        fontSize: '11px',
                         height: '16px',
                         minWidth: '16px'
                       }
@@ -981,7 +981,7 @@ const CreatorTransactionsDialog = memo(
               variant="caption"
               sx={{
                 color: alpha(theme.palette.text.secondary, 0.7),
-                fontSize: '0.7rem',
+                fontSize: '11px',
                 display: 'block',
                 mt: 0.25,
                 whiteSpace: 'nowrap',

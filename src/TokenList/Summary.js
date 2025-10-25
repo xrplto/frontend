@@ -121,7 +121,7 @@ const MetricBox = styled.div`
 
 const MetricTitle = styled.span`
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 400;
   color: ${(props) =>
     props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   margin-bottom: 6px;
@@ -212,7 +212,7 @@ const ContentTypography = styled.span`
   color: ${(props) =>
     props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   font-size: 0.7rem;
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
@@ -455,12 +455,12 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           minWidth: '200px',
           zIndex: 999999,
           pointerEvents: 'none',
-          fontSize: '0.75rem'
+          fontSize: '12px'
         }}
       >
         <div
           style={{
-            fontSize: '0.875rem',
+            fontSize: '14px',
             fontWeight: 600,
             marginBottom: '8px',
             color: theme.palette.primary.main
@@ -518,7 +518,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                       display: 'flex',
                       justifyContent: 'space-between',
                       margin: '2px 0',
-                      fontSize: '0.7rem',
+                      fontSize: '11px',
                       opacity: 0.8
                     }}
                   >
@@ -549,7 +549,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   margin: '2px 0',
-                  fontSize: '0.7rem',
+                  fontSize: '11px',
                   opacity: 0.8
                 }}
               >
@@ -979,8 +979,8 @@ export default function Summary() {
                         )}
                       </MetricValue>
                       <span style={{
-                        fontSize: '0.55rem',
-                        fontWeight: 500,
+                        fontSize: '11px',
+                        fontWeight: 400,
                         padding: '2px 5px',
                         borderRadius: '3px',
                         background: theme?.palette?.mode === 'dark' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
@@ -989,8 +989,8 @@ export default function Summary() {
                         Stable {stablePercent.toFixed(1)}%
                       </span>
                       <span style={{
-                        fontSize: '0.55rem',
-                        fontWeight: 500,
+                        fontSize: '11px',
+                        fontWeight: 400,
                         padding: '2px 5px',
                         borderRadius: '3px',
                         background: theme?.palette?.mode === 'dark' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
@@ -1028,7 +1028,7 @@ export default function Summary() {
                     <VolumePercentage style={{ display: 'block', marginBottom: '2px' }}>Sentiment</VolumePercentage>
                     <MetricValue
                       style={{
-                        fontSize: '1rem',
+                        fontSize: '16px',
                         color:
                           metrics.global?.sentimentScore >= 60
                             ? '#10b981'
@@ -1044,7 +1044,7 @@ export default function Summary() {
                     <VolumePercentage style={{ display: 'block', marginBottom: '2px' }}>RSI</VolumePercentage>
                     <MetricValue
                       style={{
-                        fontSize: '1rem',
+                        fontSize: '16px',
                         color:
                           (metrics.global?.avgRSI || 50) <= 30
                             ? '#ef4444'

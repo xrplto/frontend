@@ -734,7 +734,7 @@ function TokenListComponent({
             style={{
               margin: '0 0 10px 0',
               color: darkMode ? '#fff' : '#000',
-              fontSize: '1.1rem'
+              fontSize: '18px'
             }}
           >
             Customize Table Columns
@@ -884,7 +884,7 @@ function TokenListComponent({
                       style={{
                         color: darkMode ? '#fff' : '#000',
                         fontSize: '14px',
-                        fontWeight: '500'
+                        fontWeight: 400
                       }}
                     >
                       {column.label}
@@ -920,7 +920,7 @@ function TokenListComponent({
                 color: darkMode ? '#fff' : '#000',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: 400
               }}
             >
               Reset Default
@@ -941,7 +941,7 @@ function TokenListComponent({
                 color: 'white',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: 400
               }}
             >
               Apply Changes
@@ -959,7 +959,7 @@ function TokenListComponent({
                 color: darkMode ? '#ff6666' : '#cc0000',
                 cursor: 'pointer',
                 fontSize: '14px',
-                fontWeight: '500'
+                fontWeight: 400
               }}
             >
               Cancel

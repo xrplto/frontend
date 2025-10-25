@@ -490,7 +490,7 @@ export default function Advertise() {
                     icon={<ViewIcon />}
                     label="40K+ Monthly Users"
                     variant="outlined"
-                    sx={{ fontWeight: 500 }}
+                    sx={{ fontWeight: 400 }}
                   />
                   <Chip
                     icon={<TrendingIcon />}
@@ -498,13 +498,13 @@ export default function Advertise() {
                       totalTokens > 0 ? `${totalTokens.toLocaleString()} Tokens` : 'Loading...'
                     }
                     variant="outlined"
-                    sx={{ fontWeight: 500 }}
+                    sx={{ fontWeight: 400 }}
                   />
                   <Chip
                     icon={<SpeedIcon />}
                     label="Instant Activation"
                     variant="outlined"
-                    sx={{ fontWeight: 500 }}
+                    sx={{ fontWeight: 400 }}
                   />
                 </Stack>
               </Stack>
@@ -644,7 +644,7 @@ export default function Advertise() {
                                     label="Verified"
                                     size="small"
                                     color="primary"
-                                    sx={{ height: 18, fontSize: '0.7rem' }}
+                                    sx={{ height: 18, fontSize: '11px' }}
                                   />
                                 )}
                                 {option.volume24h > 10000 && (
@@ -652,7 +652,7 @@ export default function Advertise() {
                                     label="High Volume"
                                     size="small"
                                     color="success"
-                                    sx={{ height: 18, fontSize: '0.7rem' }}
+                                    sx={{ height: 18, fontSize: '11px' }}
                                   />
                                 )}
                               </Stack>
@@ -745,8 +745,8 @@ export default function Advertise() {
                       variant="outlined"
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          fontSize: '1.2rem',
-                          fontWeight: 500,
+                          fontSize: '19px',
+                          fontWeight: 400,
                           transition: 'all 0.3s',
                           '&:hover': {
                             transform: 'translateY(-1px)',
@@ -1101,7 +1101,7 @@ export default function Advertise() {
                           label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
                           color="primary"
                           size="large"
-                          sx={{ fontWeight: 600, fontSize: '1.1rem' }}
+                          sx={{ fontWeight: 600, fontSize: '18px' }}
                         />
                         <Typography variant="caption" color="text.secondary">
                           @ ${xrpRate.toFixed(2)}/XRP
@@ -1148,7 +1148,7 @@ export default function Advertise() {
                                 variant="body1"
                                 sx={{
                                   fontFamily: 'monospace',
-                                  fontSize: '1.1rem',
+                                  fontSize: '18px',
                                   fontWeight: 600,
                                   wordBreak: 'break-all'
                                 }}
@@ -1190,7 +1190,7 @@ export default function Advertise() {
                             variant="h5"
                             sx={{
                               fontFamily: 'monospace',
-                              fontWeight: 700,
+                              fontWeight: 600,
                               color: 'primary.main'
                             }}
                           >

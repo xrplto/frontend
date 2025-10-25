@@ -109,7 +109,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     color: theme.palette.text.primary,
     borderRadius: '8px',
     margin: '0 2px',
-    fontWeight: '500',
+    fontWeight: 400,
     '&:hover': {
       backgroundColor:
         theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
@@ -127,7 +127,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
 }));
 
 const PairChip = styled(Chip)(({ theme }) => ({
-  fontSize: '0.7rem',
+  fontSize: '11px',
   height: '24px',
   fontWeight: 'bold',
   borderRadius: '12px',
@@ -233,7 +233,7 @@ const StyledTableRow = styled(TableRow, {
     whiteSpace: 'nowrap',
     borderBottom: 'none',
     fontSize: isMobile ? '11px' : '14px',
-    fontWeight: '500',
+    fontWeight: 400,
     backgroundColor: 'transparent',
     '&:not(:first-of-type)': {
       paddingLeft: isMobile ? '2px' : '8px'
@@ -304,7 +304,7 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
               sx={{
                 color: darkMode ? '#919EAB' : '#637381',
                 fontSize: '11px',
-                fontWeight: '500'
+                fontWeight: 400
               }}
             >
               No Chart Data
@@ -458,7 +458,7 @@ export default function PairsList({ token, pairs }) {
           '& > *': {
             fontWeight: 'bold',
             color: theme.palette.text.secondary,
-            fontSize: '0.75rem',
+            fontSize: '12px',
             textTransform: 'uppercase',
             letterSpacing: '0.5px'
           }
@@ -536,7 +536,7 @@ export default function PairsList({ token, pairs }) {
                       variant="body2"
                       fontWeight="600"
                       color="text.primary"
-                      sx={{ fontSize: '0.85rem' }}
+                      sx={{ fontSize: '14px' }}
                     >
                       {id}
                     </Typography>
@@ -558,7 +558,7 @@ export default function PairsList({ token, pairs }) {
                       variant="body2"
                       fontWeight="600"
                       color="primary.main"
-                      sx={{ fontSize: '0.85rem' }}
+                      sx={{ fontSize: '14px' }}
                     >
                       {name1}
                     </Typography>
@@ -583,7 +583,7 @@ export default function PairsList({ token, pairs }) {
                       variant="body2"
                       fontWeight="600"
                       color="primary.main"
-                      sx={{ fontSize: '0.85rem' }}
+                      sx={{ fontSize: '14px' }}
                     >
                       {name2}
                     </Typography>
@@ -604,7 +604,7 @@ export default function PairsList({ token, pairs }) {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                      sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
                     >
                       Volume (24h)
                     </Typography>
@@ -614,14 +614,14 @@ export default function PairsList({ token, pairs }) {
                           variant="body2"
                           fontWeight="600"
                           color="primary.main"
-                          sx={{ fontSize: '0.85rem' }}
+                          sx={{ fontSize: '14px' }}
                         >
                           {fNumber(curr1.value)}
                         </Typography>
                         <Typography
                           variant="caption"
                           color="primary.main"
-                          sx={{ fontSize: '0.75rem' }}
+                          sx={{ fontSize: '12px' }}
                         >
                           {name1}
                         </Typography>
@@ -631,14 +631,14 @@ export default function PairsList({ token, pairs }) {
                           variant="body2"
                           fontWeight="600"
                           color="primary.main"
-                          sx={{ fontSize: '0.85rem' }}
+                          sx={{ fontSize: '14px' }}
                         >
                           {fNumber(curr2.value)}
                         </Typography>
                         <Typography
                           variant="caption"
                           color="primary.main"
-                          sx={{ fontSize: '0.75rem' }}
+                          sx={{ fontSize: '12px' }}
                         >
                           {name2}
                         </Typography>
@@ -651,7 +651,7 @@ export default function PairsList({ token, pairs }) {
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                      sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
                     >
                       Trades (24h)
                     </Typography>
@@ -659,7 +659,7 @@ export default function PairsList({ token, pairs }) {
                       variant="body2"
                       fontWeight="600"
                       color="text.primary"
-                      sx={{ fontSize: '0.85rem' }}
+                      sx={{ fontSize: '14px' }}
                     >
                       {fNumber(count)}
                     </Typography>
@@ -676,8 +676,8 @@ export default function PairsList({ token, pairs }) {
                           sx={{
                             textDecoration: 'none',
                             color: 'primary.main',
-                            fontWeight: '500',
-                            fontSize: '0.8rem',
+                            fontWeight: 400,
+                            fontSize: '13px',
                             '&:hover': {
                               textDecoration: 'underline',
                               color: 'primary.dark'
@@ -695,8 +695,8 @@ export default function PairsList({ token, pairs }) {
                           sx={{
                             textDecoration: 'none',
                             color: 'primary.main',
-                            fontWeight: '500',
-                            fontSize: '0.8rem',
+                            fontWeight: 400,
+                            fontSize: '13px',
                             '&:hover': {
                               textDecoration: 'underline',
                               color: 'primary.dark'
@@ -720,8 +720,8 @@ export default function PairsList({ token, pairs }) {
                           sx={{
                             textDecoration: 'none',
                             color: 'text.secondary',
-                            fontWeight: '500',
-                            fontSize: '0.8rem',
+                            fontWeight: 400,
+                            fontSize: '13px',
                             '&:hover': {
                               textDecoration: 'underline',
                               color: 'text.primary'
@@ -739,8 +739,8 @@ export default function PairsList({ token, pairs }) {
                           sx={{
                             textDecoration: 'none',
                             color: 'text.secondary',
-                            fontWeight: '500',
-                            fontSize: '0.8rem',
+                            fontWeight: 400,
+                            fontSize: '13px',
                             '&:hover': {
                               textDecoration: 'underline',
                               color: 'text.primary'

@@ -76,7 +76,7 @@ const NavSearchBar = ({
       >
         <SearchIcon
           sx={{
-            fontSize: '1.2rem',
+            fontSize: '19px',
             mr: 1.5,
             color: isHovered
               ? alpha(theme.palette.primary.main, 0.8)
@@ -87,12 +87,12 @@ const NavSearchBar = ({
         />
         <Typography
           sx={{
-            fontSize: '0.9rem',
+            fontSize: '14px',
             flex: 1,
             color: darkMode
               ? alpha(theme.palette.text.primary, 0.85)
               : alpha(theme.palette.text.secondary, 0.9),
-            fontWeight: 500,
+            fontWeight: 400,
             letterSpacing: '0.02em',
             lineHeight: 1.2,
             transition: 'color 0.2s ease'

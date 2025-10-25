@@ -633,7 +633,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 : '#F44336';
 
           ohlcData = `
-            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="font-weight: 400; margin-bottom: 4px">${dateStr}</div>
             <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
             <div style="display: flex; justify-content: space-between"><span>O:</span><span>${symbol}${formatPrice(candle.open)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>H:</span><span>${symbol}${formatPrice(candle.high)}</span></div>
@@ -657,7 +657,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           `;
         } else if (chartType === 'line') {
           ohlcData = `
-            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="font-weight: 400; margin-bottom: 4px">${dateStr}</div>
             <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
             <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close || candle.value)}</span></div>
             <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${(candle.volume || 0).toLocaleString()}</span></div>
@@ -673,7 +673,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           `;
         } else if (chartType === 'holders') {
           ohlcData = `
-            <div style="font-weight: 500; margin-bottom: 4px">${dateStr}</div>
+            <div style="font-weight: 400; margin-bottom: 4px">${dateStr}</div>
             <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
             <div style="display: flex; justify-content: space-between"><span>Holders:</span><span>${candle.holders ? candle.holders.toLocaleString() : candle.value.toLocaleString()}</span></div>
             ${
@@ -1552,7 +1552,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+          <Typography variant="h6" sx={{ fontSize: '14px', fontWeight: 400 }}>
             {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} •{' '}
             {range} • {chartInterval}
           </Typography>
@@ -1608,7 +1608,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Typography
                   variant="caption"
                   sx={{
-                    fontWeight: 500,
+                    fontWeight: 400,
                     fontSize: isMobile ? '0.7rem' : '0.75rem',
                     color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
                     flexShrink: 0
@@ -1631,7 +1631,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   <Typography
                     variant="caption"
                     sx={{
-                      fontSize: '0.65rem',
+                      fontSize: '13px',
                       color: 'text.secondary',
                       opacity: 0.6,
                       fontFamily: 'monospace',
@@ -1699,8 +1699,8 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Typography
                   component="span"
                   sx={{
-                    fontSize: '0.6875rem',
-                    fontWeight: 500,
+                    fontSize: '13px',
+                    fontWeight: 400,
                     letterSpacing: '0.03em',
                     fontFamily: '"SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace',
                     color: 'text.secondary',
@@ -1718,7 +1718,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   <Typography
                     component="span"
                     sx={{
-                      fontSize: '0.625rem',
+                      fontSize: '12px',
                       fontWeight: 400,
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
@@ -1852,7 +1852,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   ml: 1,
                   p: 1,
                   '& .MuiSvgIcon-root': {
-                    fontSize: '1.25rem'
+                    fontSize: '20px'
                   }
                 }}
                 title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
@@ -1870,7 +1870,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                     handleFullscreen();
                     setAnchorEl(null);
                   }}
-                  sx={{ fontSize: '0.875rem' }}
+                  sx={{ fontSize: '14px' }}
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {isFullscreen ? (
@@ -1884,7 +1884,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Divider />
               </>
             )}
-            <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
+            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 'bold' }}>
               Interval
             </MenuItem>
             {['1m', '5m', '15m', '30m', '1h', '4h', '1d'].map((int) => {
@@ -1912,7 +1912,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                     }
                   }}
                   sx={{
-                    fontSize: '0.875rem',
+                    fontSize: '14px',
                     backgroundColor: chartInterval === int ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
                     opacity: !isValid ? 0.4 : 1
                   }}
@@ -1942,14 +1942,14 @@ const PriceChartAdvanced = memo(({ token }) => {
               );
             })}
             <Divider />
-            <MenuItem disabled sx={{ fontSize: '0.875rem', fontWeight: 'bold' }}>
+            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 'bold' }}>
               Indicators
             </MenuItem>
             {indicatorOptions.map((indicator) => (
               <MenuItem
                 key={indicator.id}
                 onClick={() => handleIndicatorToggle(indicator)}
-                sx={{ fontSize: '0.875rem' }}
+                sx={{ fontSize: '14px' }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                   <Box

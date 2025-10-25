@@ -118,7 +118,7 @@ function Footer() {
               color="text.secondary"
               sx={{
                 display: { xs: 'none', md: 'inline' },
-                fontSize: '0.9rem',
+                fontSize: '14px',
                 opacity: 0.6
               }}
             >

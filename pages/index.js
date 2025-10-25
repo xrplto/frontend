@@ -40,7 +40,7 @@ const MaintenanceMessage = styled(Box)(
     h1 {
       color: ${theme.palette.mode === 'dark' ? '#4285f4' : '#2563eb'};
       font-size: 1.75rem;
-      font-weight: 500;
+      font-weight: 400;
       margin: ${theme.spacing(3)} 0 ${theme.spacing(1.5)} 0;
       letter-spacing: -0.01em;
     }

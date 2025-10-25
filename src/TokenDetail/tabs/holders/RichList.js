@@ -50,8 +50,8 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
   width: 20,
   height: 20,
   borderRadius: '4px',
-  fontWeight: 500,
-  fontSize: '0.65rem',
+  fontWeight: 400,
+  fontSize: '13px',
   flexShrink: 0,
   background:
     rank === 1
@@ -70,7 +70,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     color: theme.palette.text.primary,
     borderRadius: '8px',
     margin: '0 2px',
-    fontWeight: '500',
+    fontWeight: 400,
     '&:hover': {
       backgroundColor:
         theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
@@ -265,7 +265,7 @@ const RichList = ({ token, amm }) => {
                       sx={{
                         textDecoration: 'none',
                         color: 'primary.main',
-                        fontWeight: '500',
+                        fontWeight: 400,
                         '&:hover': {
                           textDecoration: 'underline',
                           color: 'primary.dark'

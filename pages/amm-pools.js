@@ -92,7 +92,7 @@ const Button = styled.button`
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
   cursor: pointer;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   transition: all 0.2s;
 
   &:hover {
@@ -130,7 +130,7 @@ const Select = styled.select`
 const Label = styled.span`
   font-size: 13px;
   color: ${p => p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
 `;
 
@@ -276,7 +276,7 @@ const StatusBadge = styled.span`
   justify-content: center;
   padding: 4px 10px;
   border-radius: 6px;
-  font-weight: 500;
+  font-weight: 400;
   font-size: 12px;
   text-transform: uppercase;
   background: ${p => p.active ? 'rgba(76,175,80,0.1)' : 'rgba(158,158,158,0.1)'};

@@ -439,7 +439,7 @@ const DeviceLoginPage = () => {
             <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
               <WarningIcon sx={{ fontSize: 20, mt: 0.25 }} />
               <Box>
-                <Typography variant="body2" sx={{ fontWeight: 500, mb: 0.5 }}>
+                <Typography variant="body2" sx={{ fontWeight: 400, mb: 0.5 }}>
                   Important: One Passkey = One Set of Wallets
                 </Typography>
                 <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>

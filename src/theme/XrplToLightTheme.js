@@ -567,7 +567,7 @@ export const XrplToLightTheme = createTheme({
         },
         input: {
           padding: '12px 14px',
-          fontSize: '0.875rem'
+          fontSize: '14px'
         }
       }
     },
@@ -604,8 +604,8 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 16,
-          fontWeight: 500,
-          fontSize: '0.75rem',
+          fontWeight: 400,
+          fontSize: '12px',
           height: 28
         },
         filled: {
@@ -638,7 +638,7 @@ export const XrplToLightTheme = createTheme({
         },
         deleteIcon: {
           color: colors.error.light,
-          fontSize: '1rem',
+          fontSize: '16px',
           '&:hover': {
             color: colors.error.main
           }
@@ -782,16 +782,16 @@ export const XrplToLightTheme = createTheme({
         },
         sizeSmall: {
           padding: '6px 12px',
-          fontSize: '0.75rem',
+          fontSize: '12px',
           lineHeight: 1.5
         },
         sizeMedium: {
           padding: '8px 16px',
-          fontSize: '0.875rem'
+          fontSize: '14px'
         },
         sizeLarge: {
           padding: '12px 24px',
-          fontSize: '0.875rem'
+          fontSize: '14px'
         }
       }
     },
@@ -985,8 +985,8 @@ export const XrplToLightTheme = createTheme({
           minHeight: 34,
           borderRadius: 6,
           textTransform: 'none',
-          fontWeight: 500,
-          fontSize: '0.875rem',
+          fontWeight: 400,
+          fontSize: '14px',
           color: themeColors.neutral[600],
           transition: 'all 0.2s ease-in-out',
           marginRight: 2,
@@ -1436,46 +1436,46 @@ export const XrplToLightTheme = createTheme({
       margin: 0
     },
     pay_name: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 14,
       color: colors.alpha.black[100],
       margin: 0
     },
     pay_label: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 12,
       color: '#878787',
       margin: 0
     },
     link_cascade: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 12,
       lineHeight: '18px',
       color: colors.alpha.black[100]
     },
     label1: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 14,
       lineHeight: '21px',
       color: colors.alpha.black[50]
     },
     sponsored: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 13,
       lineHeight: '21px',
       color: colors.alpha.black[50]
     },
     h1: {
       fontWeight: 700,
-      fontSize: '1.2rem' // 35
+      fontSize: '19px' // 35
     },
     h1_trustline: {
       fontWeight: 700,
-      fontSize: '1.2rem' // 35
+      fontSize: '19px' // 35
     },
     h2: {
       fontWeight: 700,
-      fontSize: '1rem' // 30
+      fontSize: '16px' // 30
     },
     h2a: {
       fontWeight: 700,
@@ -1483,7 +1483,7 @@ export const XrplToLightTheme = createTheme({
     },
     h3: {
       fontWeight: 700,
-      fontSize: '0.9rem' // 30
+      fontSize: '14px' // 30
     },
     // h3: {
     //   fontWeight: 700,
@@ -1497,7 +1497,7 @@ export const XrplToLightTheme = createTheme({
     },
     h4a: {
       fontSize: 14,
-      fontWeight: 500,
+      fontWeight: 400,
       textTransform: 'uppercase'
     },
     h5: {
@@ -1521,7 +1521,7 @@ export const XrplToLightTheme = createTheme({
     },
     // link: {
     //   fontSize: 14,
-    //   fontWeight: 500,
+    //   fontWeight: 400,
     //   color: '#58667E'
     // },
     kyc: {
@@ -1555,12 +1555,12 @@ export const XrplToLightTheme = createTheme({
     },
     desc: {
       fontWeight: 700,
-      fontSize: '1.25rem',
+      fontSize: '20px',
       lineHeight: 1.5
     },
     price: {
       fontWeight: 700,
-      fontSize: '2rem',
+      fontSize: '32px',
       lineHeight: 1.5
     },
     small: {
@@ -1578,7 +1578,7 @@ export const XrplToLightTheme = createTheme({
       fontWeight: 700
     },
     s2: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 12,
       color: '#EB5757'
     },
@@ -1593,12 +1593,12 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[50]
     },
     s5: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 16,
       color: colors.alpha.black[100]
     },
     s6: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 14
     },
     s7: {
@@ -1632,7 +1632,7 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[50]
     },
     s14: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 12,
       color: colors.alpha.black[90]
     },
@@ -1647,7 +1647,7 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[70]
     },
     s18: {
-      fontWeight: 500,
+      fontWeight: 400,
       fontSize: 14,
       color: colors.alpha.black[100]
     },

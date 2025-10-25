@@ -106,7 +106,7 @@ const OfferDialogTitle = (props) => {
         sx={{
           fontWeight: 600,
           color: theme.palette.primary.main,
-          fontSize: '1.2rem'
+          fontSize: '19px'
         }}
       >
         {children}
@@ -444,9 +444,9 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   <Typography
                     variant="subtitle1"
                     sx={{
-                      fontWeight: 700,
+                      fontWeight: 600,
                       color: theme.palette.text.primary,
-                      fontSize: '1.1rem'
+                      fontSize: '18px'
                     }}
                   >
                     {nft?.name}
@@ -456,7 +456,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                       variant="body2"
                       sx={{
                         color: theme.palette.text.secondary,
-                        fontWeight: 500
+                        fontWeight: 400
                       }}
                     >
                       Collection: {nft.collection}
@@ -546,7 +546,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   component="span"
                   sx={{
                     color: theme.palette.error.main,
-                    fontWeight: 700
+                    fontWeight: 600
                   }}
                 >
                   *

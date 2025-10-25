@@ -161,7 +161,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar src={imageUrl} sx={{ mr: 2, width: 48, height: 48 }} />
           <Box>
-            <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 'bold', mb: 0.5 }}>
+            <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 'bold', mb: 0.5 }}>
               XRP
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -183,17 +183,17 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 <Chip
                   label={`$${new Decimal(exch.USD).toFixed(4)}`}
                   size="small"
-                  sx={{ fontSize: '0.75rem' }}
+                  sx={{ fontSize: '12px' }}
                 />
                 <Chip
                   label={`€${new Decimal(exch.EUR).toFixed(4)}`}
                   size="small"
-                  sx={{ fontSize: '0.75rem' }}
+                  sx={{ fontSize: '12px' }}
                 />
                 <Chip
                   label={`¥${new Decimal(exch.JPY).toFixed(4)}`}
                   size="small"
-                  sx={{ fontSize: '0.75rem' }}
+                  sx={{ fontSize: '12px' }}
                 />
               </>
             )}
@@ -300,7 +300,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                       label={tag}
                       size="small"
                       variant="outlined"
-                      sx={{ fontSize: '0.7rem', height: 20 }}
+                      sx={{ fontSize: '11px', height: 20 }}
                     />
                   ))}
                   {token.tags.length > 3 && (
@@ -308,7 +308,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                       label={`+${token.tags.length - 3}`}
                       size="small"
                       variant="outlined"
-                      sx={{ fontSize: '0.7rem', height: 20 }}
+                      sx={{ fontSize: '11px', height: 20 }}
                     />
                   )}
                 </Box>
@@ -326,7 +326,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         {imageUrl && <Avatar src={imageUrl} sx={{ mr: 2, width: 48, height: 48 }} />}
         <Box>
-          <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 'bold', mb: 0.5 }}>
+          <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 'bold', mb: 0.5 }}>
             {token.name || token.user || 'Unknown Token'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -353,14 +353,14 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
               <Chip
                 label={`$${new Decimal(token.usd).toFixed(6)}`}
                 size="small"
-                sx={{ fontSize: '0.75rem' }}
+                sx={{ fontSize: '12px' }}
               />
             )}
             {token.exch && (
               <Chip
                 label={`${new Decimal(token.exch).toFixed(6)} XRP`}
                 size="small"
-                sx={{ fontSize: '0.75rem' }}
+                sx={{ fontSize: '12px' }}
               />
             )}
           </Box>
@@ -484,7 +484,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 size="small"
                 color="success"
                 variant="outlined"
-                sx={{ fontSize: '0.7rem', height: 20 }}
+                sx={{ fontSize: '11px', height: 20 }}
               />
             )}
             {token.verified && (
@@ -493,7 +493,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 size="small"
                 color="primary"
                 variant="outlined"
-                sx={{ fontSize: '0.7rem', height: 20 }}
+                sx={{ fontSize: '11px', height: 20 }}
               />
             )}
             {token.AMM && (
@@ -502,7 +502,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 size="small"
                 color="info"
                 variant="outlined"
-                sx={{ fontSize: '0.7rem', height: 20 }}
+                sx={{ fontSize: '11px', height: 20 }}
               />
             )}
           </Box>
@@ -536,7 +536,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                     label="Twitter"
                     size="small"
                     variant="outlined"
-                    sx={{ fontSize: '0.7rem', height: 20 }}
+                    sx={{ fontSize: '11px', height: 20 }}
                   />
                 )}
                 {token.social.telegram && (
@@ -544,7 +544,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                     label="Telegram"
                     size="small"
                     variant="outlined"
-                    sx={{ fontSize: '0.7rem', height: 20 }}
+                    sx={{ fontSize: '11px', height: 20 }}
                   />
                 )}
               </Box>
@@ -562,7 +562,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                     label={tag}
                     size="small"
                     variant="outlined"
-                    sx={{ fontSize: '0.7rem', height: 20 }}
+                    sx={{ fontSize: '11px', height: 20 }}
                   />
                 ))}
                 {token.tags.length > 3 && (
@@ -570,7 +570,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                     label={`+${token.tags.length - 3}`}
                     size="small"
                     variant="outlined"
-                    sx={{ fontSize: '0.7rem', height: 20 }}
+                    sx={{ fontSize: '11px', height: 20 }}
                   />
                 )}
               </Box>
@@ -1665,7 +1665,7 @@ const TransactionSummaryCard = ({ txData }) => {
         <Stack direction="row" spacing={1.5} alignItems="flex-start" mb={2}>
           <Box flex={1}>
             <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 500 }}>
+              <Typography variant="h6" component="h2" sx={{ fontWeight: 400 }}>
                 {description.title}
               </Typography>
               <Chip
@@ -1673,10 +1673,10 @@ const TransactionSummaryCard = ({ txData }) => {
                 color={isSuccess ? 'success' : 'error'}
                 size="small"
                 variant="outlined"
-                sx={{ height: 22, fontSize: '0.75rem' }}
+                sx={{ height: 22, fontSize: '12px' }}
               />
             </Stack>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.5, fontSize: '0.95rem' }}>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.5, fontSize: '15px' }}>
               {description.description}
             </Typography>
 
@@ -1686,29 +1686,29 @@ const TransactionSummaryCard = ({ txData }) => {
               divider={<Divider orientation="vertical" flexItem />}
             >
               <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
                   Hash
                 </Typography>
                 <Typography
                   variant="body2"
-                  sx={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '0.85rem' }}
+                  sx={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '14px' }}
                 >
                   {hash.slice(0, 16)}...
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
                   Ledger #{ledger_index}
                 </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>
+                <Typography variant="body2" sx={{ fontSize: '14px' }}>
                   {formatDistanceToNow(new Date(rippleTimeToISO8601(date)))} ago
                 </Typography>
               </Box>
               <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
                   Network Fee
                 </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem' }}>{dropsToXrp(Fee)} XRP</Typography>
+                <Typography variant="body2" sx={{ fontSize: '14px' }}>{dropsToXrp(Fee)} XRP</Typography>
               </Box>
             </Stack>
           </Box>
@@ -1724,7 +1724,7 @@ const TransactionSummaryCard = ({ txData }) => {
               mt: 1.5
             }}
           >
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
               Amount
             </Typography>
             <Box mt={0.5}>
@@ -2316,7 +2316,7 @@ const TransactionDetails = ({ txData }) => {
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ wordBreak: 'break-all', mr: 1.5, fontWeight: 500 }}>
+          <Typography variant="h6" sx={{ wordBreak: 'break-all', mr: 1.5, fontWeight: 400 }}>
             Transaction Details
           </Typography>
           <Tooltip title={copied ? 'Copied!' : 'Copy Hash'}>
@@ -2337,7 +2337,7 @@ const TransactionDetails = ({ txData }) => {
                 borderRadius: '8px'
               }}
             >
-              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 400, fontSize: '14px' }}>
                 Key Information
               </Typography>
               <Stack spacing={2}>

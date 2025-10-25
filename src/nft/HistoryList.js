@@ -50,7 +50,7 @@ const StyledTableHead = styled(TableHead)(({ theme }) => ({
   '& .MuiTableCell-head': {
     color: theme.palette.text.secondary,
     fontWeight: 600,
-    fontSize: '0.65rem',
+    fontSize: '13px',
     textTransform: 'uppercase',
     letterSpacing: '0.05em',
     padding: theme.spacing(1, 1.5),
@@ -70,7 +70,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   padding: theme.spacing(1.2, 1.5),
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-  fontSize: '0.8rem'
+  fontSize: '13px'
 }));
 
 const TransactionCard = styled(Paper)(({ theme }) => ({
@@ -84,8 +84,8 @@ const TypeChip = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'transactionType'
 })(({ theme, transactionType }) => ({
   height: 22,
-  fontSize: '0.7rem',
-  fontWeight: 500,
+  fontSize: '11px',
+  fontWeight: 400,
   backgroundColor:
     transactionType === 'SALE'
       ? alpha(theme.palette.success.main, 0.1)
@@ -97,7 +97,7 @@ const TypeChip = styled(Chip, {
       : alpha(theme.palette.info.main, 0.2)
   }`,
   '& .MuiChip-icon': {
-    fontSize: '0.9rem',
+    fontSize: '14px',
     marginLeft: '4px'
   },
   '& .MuiChip-label': {
@@ -109,7 +109,7 @@ const AddressLink = styled(Link)(({ theme }) => ({
   color: theme.palette.text.primary,
   textDecoration: 'none',
   fontFamily: 'monospace',
-  fontSize: '0.875rem',
+  fontSize: '14px',
   '&:hover': {
     color: theme.palette.primary.main
   }
@@ -117,7 +117,7 @@ const AddressLink = styled(Link)(({ theme }) => ({
 
 const PriceText = styled(Typography)(({ theme }) => ({
   fontWeight: 600,
-  fontSize: '0.8rem',
+  fontSize: '13px',
   color: theme.palette.text.primary,
   fontFamily: 'monospace'
 }));
@@ -307,7 +307,7 @@ export default function HistoryList({ nft }) {
                       )}
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
                         {formatDate(row.time)}
                       </Typography>
                     </StyledTableCell>

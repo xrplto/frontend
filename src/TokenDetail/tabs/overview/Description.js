@@ -26,7 +26,7 @@ const MarkdownParagraph = ({ children }) => (
       color: 'text.primary',
       lineHeight: 1.4,
       mb: 0.5,
-      fontSize: '0.7rem'
+      fontSize: '11px'
     }}
   >
     {children}
@@ -34,13 +34,13 @@ const MarkdownParagraph = ({ children }) => (
 );
 
 const MarkdownH1 = ({ children }) => (
-  <Typography variant="h6" gutterBottom sx={{ mt: 0.5, fontWeight: 500, fontSize: '0.8rem' }}>
+  <Typography variant="h6" gutterBottom sx={{ mt: 0.5, fontWeight: 400, fontSize: '13px' }}>
     {children}
   </Typography>
 );
 
 const MarkdownH2 = ({ children }) => (
-  <Typography variant="subtitle1" gutterBottom sx={{ mt: 0.5, fontWeight: 500, fontSize: '0.75rem' }}>
+  <Typography variant="subtitle1" gutterBottom sx={{ mt: 0.5, fontWeight: 400, fontSize: '12px' }}>
     {children}
   </Typography>
 );
@@ -49,7 +49,7 @@ const MarkdownH3 = ({ children }) => (
   <Typography
     variant="subtitle2"
     gutterBottom
-    sx={{ mt: 0.5, fontWeight: 500, fontSize: '0.7rem' }}
+    sx={{ mt: 0.5, fontWeight: 400, fontSize: '11px' }}
   >
     {children}
   </Typography>
@@ -75,7 +75,7 @@ const MarkdownLI = ({ children }) => (
       color: 'text.primary',
       mb: 0.15,
       lineHeight: 1.4,
-      fontSize: '0.7rem'
+      fontSize: '11px'
     }}
   >
     {children}
@@ -137,8 +137,8 @@ export default function Description({
         title={`About ${displayName}`}
         titleTypographyProps={{
           variant: 'h6',
-          fontWeight: 500,
-          fontSize: '0.75rem'
+          fontWeight: 400,
+          fontSize: '12px'
         }}
         action={
           <Stack direction="row" spacing={0.5}>
@@ -248,7 +248,7 @@ export default function Description({
               sx={{
                 color: 'text.secondary',
                 fontStyle: 'italic',
-                fontSize: '0.7rem'
+                fontSize: '11px'
               }}
             >
               No description available.

@@ -219,7 +219,7 @@ const Overview = memo(
                       borderRadius: '4px',
                       border: '1px solid #ccc',
                       fontFamily: 'monospace',
-                      fontSize: '0.75rem'
+                      fontSize: '12px'
                     }}
                     placeholder="Enter description..."
                   />

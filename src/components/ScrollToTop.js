@@ -75,7 +75,7 @@ export default function ScrollToTop(props) {
           }`,
           borderRadius: '12px',
           cursor: 'pointer',
-          fontSize: '1rem',
+          fontSize: '16px',
           fontWeight: 400,
           color: theme.palette.mode === 'dark'
             ? alpha('#ffffff', 0.4)

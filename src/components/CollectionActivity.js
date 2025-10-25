@@ -97,8 +97,8 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: 'transparent',
     color: theme.palette.text.primary,
-    fontWeight: 700,
-    fontSize: '0.9rem',
+    fontWeight: 600,
+    fontSize: '14px',
     padding: '20px 24px',
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
     backdropFilter: 'blur(10px)',
@@ -109,7 +109,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
     textTransform: 'uppercase'
   },
   [`&.${tableCellClasses.body}`]: {
-    fontSize: '0.875rem',
+    fontSize: '14px',
     padding: '16px 24px',
     lineHeight: 1.6,
     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
@@ -130,12 +130,12 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const CompactChip = styled(Chip)(({ theme }) => ({
   height: '32px',
-  fontSize: '0.8rem',
+  fontSize: '13px',
   fontWeight: 600,
   borderRadius: '16px',
   letterSpacing: '0.3px',
   '& .MuiChip-icon': {
-    fontSize: '1.1rem'
+    fontSize: '18px'
   }
 }));
 
@@ -350,7 +350,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
             textAlign: 'center'
           }}
         >
-          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400 }}>
             No creator account available
           </Typography>
         </Card>
@@ -379,7 +379,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                   variant={(type === 'ALL' && !filterType) || filterType === type ? 'filled' : 'outlined'}
                   size="small"
                   sx={{
-                    fontSize: '0.7rem',
+                    fontSize: '11px',
                     height: '24px',
                     borderColor: alpha(theme.palette.divider, 0.2),
                     color: (type === 'ALL' && !filterType) || filterType === type ? 'white' : 'text.secondary',
@@ -473,7 +473,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                               label={item.type.replace(/_/g, ' ')}
                               color={getTransactionColor(item.type)}
                               size="small"
-                              sx={{ fontSize: '0.65rem', height: '20px', fontWeight: 500 }}
+                              sx={{ fontSize: '13px', height: '20px', fontWeight: 400 }}
                             />
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1.2, px: 2 }}>
@@ -483,34 +483,34 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                                   <img src={`https://s2.xrpl.to/d1/${item.files[0].thumbnail.small}`} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                 </Box>
                               )}
-                              <Typography variant="caption" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                              <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 400 }}>
                                 {item.name}
                               </Typography>
                             </Stack>
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1.2, px: 2 }}>
                             {item.costXRP || item.amountXRP ? (
-                              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: '#00AB55', fontWeight: 600 }}>
+                              <Typography variant="caption" sx={{ fontSize: '12px', color: '#00AB55', fontWeight: 600 }}>
                                 ✕{item.costXRP || item.amountXRP}
                               </Typography>
                             ) : '-'}
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1.2, px: 2 }}>
                             {item.seller || item.account ? (
-                              <Link href={`/profile/${item.seller || item.account}`} underline="none" color="inherit" sx={{ fontSize: '0.72rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                              <Link href={`/profile/${item.seller || item.account}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1.2, px: 2 }}>
                             {item.buyer || item.destination ? (
-                              <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '0.72rem', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
+                              <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
                                 {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
                               </Link>
                             ) : '-'}
                           </StyledTableCell>
                           <StyledTableCell sx={{ py: 1.2, px: 2 }}>
-                            <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+                            <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                               {formatDate(item.time)}
                             </Typography>
                           </StyledTableCell>
@@ -520,7 +520,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                               sx={{ p: 0.4 }}
                               onClick={() => window.open(`/tx/${item.hash}`, '_blank')}
                             >
-                              <OpenInNewIcon sx={{ fontSize: '0.8rem', color: 'text.secondary' }} />
+                              <OpenInNewIcon sx={{ fontSize: '13px', color: 'text.secondary' }} />
                             </IconButton>
                           </StyledTableCell>
                         </StyledTableRow>

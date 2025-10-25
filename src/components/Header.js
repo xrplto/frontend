@@ -560,8 +560,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <Typography
                           variant="overline"
                           sx={{
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
+                            fontSize: '11px',
+                            fontWeight: 600,
                             color: theme.palette.text.secondary,
                             mb: 1,
                             display: 'block'
@@ -659,8 +659,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <Typography
                           variant="overline"
                           sx={{
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
+                            fontSize: '11px',
+                            fontWeight: 600,
                             color: theme.palette.text.secondary,
                             mb: 1,
                             display: 'block'
@@ -726,8 +726,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                         <Typography
                           variant="overline"
                           sx={{
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
+                            fontSize: '11px',
+                            fontWeight: 600,
                             color: theme.palette.text.secondary,
                             mb: 1,
                             display: 'block'
@@ -881,8 +881,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     alignItems: 'center',
                     height: '36px',
                     px: 2,
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
+                    fontSize: '14px',
+                    fontWeight: 400,
                     color: '#4285f4',
                     border: `1.5px solid ${alpha('#4285f4', 0.4)}`,
                     borderRadius: '8px',
@@ -932,8 +932,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     sx={{
                       px: 2,
                       py: 1,
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
+                      fontSize: '11px',
+                      fontWeight: 600,
                       color: theme.palette.text.secondary,
                       display: 'flex',
                       alignItems: 'center',
@@ -984,8 +984,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     sx={{
                       px: 2,
                       py: 1,
-                      fontSize: '0.7rem',
-                      fontWeight: 700,
+                      fontSize: '11px',
+                      fontWeight: 600,
                       color: theme.palette.text.secondary,
                       display: 'flex',
                       alignItems: 'center',

@@ -98,7 +98,7 @@ const TraderCard = styled(Card, {
 }));
 
 const ProfitChip = styled(Chip)(({ theme, profittype }) => ({
-  fontSize: '0.7rem',
+  fontSize: '11px',
   height: '24px',
   fontWeight: 'bold',
   borderRadius: '12px',
@@ -133,7 +133,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     color: theme.palette.text.primary,
     borderRadius: '8px',
     margin: '0 2px',
-    fontWeight: '500',
+    fontWeight: 400,
     '&:hover': {
       backgroundColor:
         theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
@@ -304,7 +304,7 @@ function ProfitCell({ value }) {
         sx={{
           color: isPositive ? theme.palette.primary.main : '#F44336',
           fontWeight: 600,
-          fontSize: '0.85rem'
+          fontSize: '14px'
         }}
       >
         {fNumber(Math.abs(value))}
@@ -324,7 +324,7 @@ function MarketShareCell({ value }) {
         height: '20px',
         '& .MuiChip-label': {
           px: 0.75,
-          fontSize: '0.7rem'
+          fontSize: '11px'
         }
       }}
     />
@@ -555,7 +555,7 @@ export default function TopTraders({ token }) {
               '& > *': {
                 fontWeight: 'bold',
                 color: theme.palette.text.secondary,
-                fontSize: '0.75rem',
+                fontSize: '12px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.5px'
               }
@@ -602,7 +602,7 @@ export default function TopTraders({ token }) {
                           variant="body2"
                           fontWeight="600"
                           color="text.primary"
-                          sx={{ fontSize: '0.85rem' }}
+                          sx={{ fontSize: '14px' }}
                         >
                           {page * rowsPerPage + index + 1}
                         </Typography>
@@ -615,7 +615,7 @@ export default function TopTraders({ token }) {
                           sx={{
                             textDecoration: 'none',
                             color: 'primary.main',
-                            fontWeight: '500',
+                            fontWeight: 400,
                             '&:hover': {
                               textDecoration: 'underline',
                               color: 'primary.dark'
@@ -625,7 +625,7 @@ export default function TopTraders({ token }) {
                           <Typography
                             variant="body2"
                             fontWeight="500"
-                            sx={{ fontSize: '0.8rem', color: 'primary.main' }}
+                            sx={{ fontSize: '13px', color: 'primary.main' }}
                           >
                             {`${trader.address.slice(0, 4)}...${trader.address.slice(-4)}`}
                           </Typography>
@@ -637,7 +637,7 @@ export default function TopTraders({ token }) {
                             color="secondary"
                             sx={{
                               height: 18,
-                              fontSize: '0.65rem',
+                              fontSize: '13px',
                               '& .MuiChip-label': {
                                 px: 0.5
                               }
@@ -651,7 +651,7 @@ export default function TopTraders({ token }) {
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                          sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
                         >
                           P&L (24h)
                         </Typography>
@@ -673,7 +673,7 @@ export default function TopTraders({ token }) {
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                          sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
                         >
                           Vol (24h)
                         </Typography>
@@ -681,7 +681,7 @@ export default function TopTraders({ token }) {
                           variant="body2"
                           fontWeight="600"
                           color="text.primary"
-                          sx={{ fontSize: '0.85rem' }}
+                          sx={{ fontSize: '14px' }}
                         >
                           {fNumber(trader.volume24h)}
                         </Typography>
@@ -698,7 +698,7 @@ export default function TopTraders({ token }) {
                           variant="body2"
                           fontWeight="600"
                           color="text.primary"
-                          sx={{ fontSize: '0.85rem' }}
+                          sx={{ fontSize: '14px' }}
                         >
                           {fNumber(trader.totalVolume)}
                         </Typography>
@@ -709,7 +709,7 @@ export default function TopTraders({ token }) {
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                          sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
                         >
                           Trades
                         </Typography>
@@ -717,7 +717,7 @@ export default function TopTraders({ token }) {
                           variant="body2"
                           fontWeight="600"
                           color="text.primary"
-                          sx={{ fontSize: '0.85rem' }}
+                          sx={{ fontSize: '14px' }}
                         >
                           {fNumber(trader.totalTrades)}
                         </Typography>
@@ -744,7 +744,7 @@ export default function TopTraders({ token }) {
                           sx={{
                             color: trader.roi >= 0 ? theme.palette.primary.main : '#F44336',
                             fontWeight: 600,
-                            fontSize: '0.85rem'
+                            fontSize: '14px'
                           }}
                         >
                           {fPercent(trader.roi)}
@@ -756,7 +756,7 @@ export default function TopTraders({ token }) {
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' } }}
+                          sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
                         >
                           Last Trade
                         </Typography>
@@ -764,7 +764,7 @@ export default function TopTraders({ token }) {
                           variant="body2"
                           fontWeight="500"
                           color="text.secondary"
-                          sx={{ fontSize: '0.8rem' }}
+                          sx={{ fontSize: '13px' }}
                         >
                           {formatDate(trader.lastTradeDate)}
                         </Typography>

@@ -175,10 +175,10 @@ const WalletContent = ({
         <Stack spacing={2} alignItems="center">
           {/* Header */}
           <Box sx={{ textAlign: 'center' }}>
-            <Typography sx={{ fontSize: '1.1rem', fontWeight: 500, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '18px', fontWeight: 400, mb: 0.5 }}>
               Download Full Wallet Backup
             </Typography>
-            <Typography sx={{ fontSize: '0.8rem', opacity: 0.7 }}>
+            <Typography sx={{ fontSize: '13px', opacity: 0.7 }}>
               Export all {profiles.length} wallet{profiles.length !== 1 ? 's' : ''} in a single encrypted file
             </Typography>
           </Box>
@@ -193,10 +193,10 @@ const WalletContent = ({
 
           {/* Warning */}
           <Alert severity="warning" sx={{ maxWidth: 350 }}>
-            <Typography sx={{ fontSize: '0.75rem', fontWeight: 500, mb: 0.5 }}>
+            <Typography sx={{ fontSize: '12px', fontWeight: 400, mb: 0.5 }}>
               ⚠️ Critical Security Information
             </Typography>
-            <Typography sx={{ fontSize: '0.7rem' }}>
+            <Typography sx={{ fontSize: '11px' }}>
               This file contains all {profiles.length} wallet seeds. Anyone with this file and password can access ALL your funds. Never share it.
             </Typography>
           </Alert>
@@ -212,7 +212,7 @@ const WalletContent = ({
                 />
               }
               label={
-                <Typography sx={{ fontSize: '0.75rem' }}>
+                <Typography sx={{ fontSize: '12px' }}>
                   I understand this backup file is my responsibility. XRPL.to cannot recover it, and I will never share it.
                 </Typography>
               }
@@ -234,7 +234,7 @@ const WalletContent = ({
             }}
             sx={{ maxWidth: 300 }}
             InputProps={{
-              sx: { fontSize: '0.9rem' },
+              sx: { fontSize: '14px' },
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
@@ -256,7 +256,7 @@ const WalletContent = ({
               size="small"
               onClick={processBackupDownload}
               disabled={!backupPassword || !backupAgreed}
-              sx={{ fontSize: '0.8rem', py: 0.6, px: 2 }}
+              sx={{ fontSize: '13px', py: 0.6, px: 2 }}
             >
               Download Backup
             </Button>
@@ -269,7 +269,7 @@ const WalletContent = ({
                 setShowBackupPasswordVisible(false);
                 setBackupAgreed(false);
               }}
-              sx={{ fontSize: '0.8rem', py: 0.6, px: 2 }}
+              sx={{ fontSize: '13px', py: 0.6, px: 2 }}
             >
               Cancel
             </Button>
@@ -298,8 +298,8 @@ const WalletContent = ({
             }} />
             <Typography sx={{
               fontFamily: 'monospace',
-              fontSize: '0.75rem',
-              fontWeight: 500,
+              fontSize: '12px',
+              fontWeight: 400,
               opacity: 0.9
             }}>
               {truncateAccount(accountLogin, 6)}
@@ -310,7 +310,7 @@ const WalletContent = ({
               <Typography
                 onClick={onBackupSeed}
                 sx={{
-                  fontSize: '0.65rem',
+                  fontSize: '13px',
                   color: theme.palette.warning.main,
                   cursor: 'pointer',
                   '&:hover': {
@@ -346,7 +346,7 @@ const WalletContent = ({
         background: 'transparent'
       }}>
         <Typography sx={{
-          fontSize: '2rem',
+          fontSize: '32px',
           fontWeight: 300,
           lineHeight: 1.2,
           fontFamily: 'system-ui',
@@ -355,7 +355,7 @@ const WalletContent = ({
           {accountTotalXrp || accountBalance?.curr1?.value || '0'}
         </Typography>
         <Typography sx={{
-          fontSize: '0.7rem',
+          fontSize: '11px',
           letterSpacing: '0.5px',
           opacity: 0.5,
           fontWeight: 400,
@@ -373,7 +373,7 @@ const WalletContent = ({
             sx={{
               mt: 1,
               height: 20,
-              fontSize: '0.6rem',
+              fontSize: '12px',
               backgroundColor: alpha(theme.palette.warning.main, 0.1),
               color: theme.palette.warning.main,
               border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
@@ -466,7 +466,7 @@ const WalletContent = ({
             size="small"
             sx={{
               height: 24,
-              fontSize: '0.7rem',
+              fontSize: '11px',
               fontWeight: 400,
               backgroundColor: 'transparent',
               border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
@@ -478,7 +478,7 @@ const WalletContent = ({
             size="small"
             sx={{
               height: 24,
-              fontSize: '0.7rem',
+              fontSize: '11px',
               fontWeight: 400,
               backgroundColor: 'transparent',
               border: `1px solid ${alpha(theme.palette.warning.main, 0.25)}`,
@@ -502,7 +502,7 @@ const WalletContent = ({
               px: 1.8,
               justifyContent: 'space-between',
               textTransform: 'none',
-              fontSize: '0.82rem',
+              fontSize: '13px',
               fontWeight: 400,
               color: theme.palette.text.secondary,
               borderRadius: 0,
@@ -567,9 +567,9 @@ const WalletContent = ({
                     </IconButton>
 
                     <Typography sx={{
-                      fontSize: '0.7rem',
+                      fontSize: '11px',
                       opacity: 0.45,
-                      fontWeight: 500,
+                      fontWeight: 400,
                       letterSpacing: '0.5px',
                       minWidth: 60,
                       textAlign: 'center'
@@ -685,7 +685,7 @@ const WalletContent = ({
                         <Stack direction="row" spacing={0.8} alignItems="center">
                           <Typography sx={{
                             fontFamily: 'monospace',
-                            fontSize: '0.75rem',
+                            fontSize: '12px',
                             fontWeight: isCurrent ? 500 : 400,
                             opacity: isCurrent ? 1 : 0.8
                           }}>
@@ -693,8 +693,8 @@ const WalletContent = ({
                           </Typography>
                           {isCurrent && (
                             <Typography sx={{
-                              fontSize: '0.55rem',
-                              fontWeight: 500,
+                              fontSize: '11px',
+                              fontWeight: 400,
                               color: theme.palette.primary.main,
                               letterSpacing: '0.3px'
                             }}>
@@ -706,7 +706,7 @@ const WalletContent = ({
                     </Stack>
                     {profile.xrp !== undefined && parseFloat(profile.xrp) > 0 && (
                       <Typography sx={{
-                        fontSize: '0.65rem',
+                        fontSize: '13px',
                         opacity: 0.4,
                         fontFamily: 'monospace',
                         ml: 'auto'
@@ -742,7 +742,7 @@ const WalletContent = ({
               py: 0.6,
               borderRadius: '6px',
               color: '#4285f4',
-              fontSize: '0.7rem',
+              fontSize: '11px',
               textTransform: 'none',
               fontWeight: 400,
               '&:hover': {
@@ -765,7 +765,7 @@ const WalletContent = ({
             py: 0.6,
             borderRadius: '6px',
             color: theme.palette.text.secondary,
-            fontSize: '0.7rem',
+            fontSize: '11px',
             textTransform: 'none',
             fontWeight: 400,
             '&:hover': {
@@ -2750,7 +2750,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           padding: accountProfile ? '0 14px' : '0 16px',
           minWidth: accountProfile ? '110px' : '90px',
           color: '#4285f4',
-          fontSize: '0.9rem',
+          fontSize: '14px',
           fontWeight: '400',
           fontFamily: 'inherit',
           cursor: 'pointer',
@@ -2783,7 +2783,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             <span style={{
               fontFamily: 'monospace',
               fontSize: '13px',
-              fontWeight: '500'
+              fontWeight: 400
             }}>
               {truncateAccount(accountLogin, 6)}
             </span>
@@ -2898,7 +2898,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   <Box sx={{ p: 3 }}>
                     <Stack spacing={2.5}>
                       <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 500 }}>
+                        <Typography variant="h6" sx={{ fontWeight: 400 }}>
                           Create New Account
                         </Typography>
                         <Button size="small" onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}>
@@ -2906,12 +2906,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </Button>
                       </Box>
 
-                      <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                      <Typography variant="body2" sx={{ fontSize: '14px', opacity: 0.7 }}>
                         Account {profiles.length} of 25 (creating #{profiles.length + 1})
                       </Typography>
 
                       <Alert severity="info" sx={{ py: 1 }}>
-                        <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                        <Typography variant="body2" sx={{ fontSize: '13px' }}>
                           Enter your password to create a new account. The new account will use the same password.
                         </Typography>
                       </Alert>
@@ -2948,7 +2948,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}
                           sx={{
                             py: 1,
-                            fontSize: '0.85rem',
+                            fontSize: '14px',
                             textTransform: 'none',
                             borderRadius: '8px',
                             fontWeight: 400
@@ -2963,7 +2963,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           disabled={!newAccountPassword}
                           sx={{
                             py: 1,
-                            fontSize: '0.85rem',
+                            fontSize: '14px',
                             textTransform: 'none',
                             borderRadius: '8px',
                             fontWeight: 400
@@ -2996,7 +2996,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
                       {seedAuthStatus === 'select-mode' && (
                         <Box>
-                          <Typography variant="body2" sx={{ mb: 2, fontSize: '0.85rem', opacity: 0.8 }}>
+                          <Typography variant="body2" sx={{ mb: 2, fontSize: '14px', opacity: 0.8 }}>
                             Choose your backup method:
                           </Typography>
                           <Stack spacing={2}>
@@ -3014,10 +3014,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               }}
                             >
                               <Stack>
-                                <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                                <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                                   View Current Seed
                                 </Typography>
-                                <Typography sx={{ fontSize: '0.75rem', opacity: 0.7, mt: 0.5 }}>
+                                <Typography sx={{ fontSize: '12px', opacity: 0.7, mt: 0.5 }}>
                                   Shows seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} only
                                 </Typography>
                               </Stack>
@@ -3036,10 +3036,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               }}
                             >
                               <Stack>
-                                <Typography sx={{ fontWeight: 500, fontSize: '0.9rem' }}>
+                                <Typography sx={{ fontWeight: 400, fontSize: '14px' }}>
                                   Download Full Backup
                                 </Typography>
-                                <Typography sx={{ fontSize: '0.75rem', opacity: 0.9, mt: 0.5 }}>
+                                <Typography sx={{ fontSize: '12px', opacity: 0.9, mt: 0.5 }}>
                                   All {profiles.length} wallets in one encrypted file
                                 </Typography>
                               </Stack>
@@ -3051,16 +3051,16 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {seedAuthStatus === 'password-required' && backupMode === 'seed' && (
                         <Box sx={{ p: 2 }}>
                           <Alert severity="error" icon={false} sx={{ mb: 2, py: 1.5 }}>
-                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.8, fontSize: '0.8rem' }}>
+                            <Typography variant="body2" sx={{ fontWeight: 600, mb: 0.8, fontSize: '13px' }}>
                               If you lose your Secret Seed, we cannot help you
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.72rem', mb: 1, lineHeight: 1.3 }}>
+                            <Typography variant="body2" sx={{ fontSize: '11px', mb: 1, lineHeight: 1.3 }}>
                               Your seed is stored locally in your browser only. xrpl.to has no access to it and cannot recover or reset it. Write it down and store it somewhere safe.
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.72rem', fontWeight: 600, color: 'error.main', mb: 0.3 }}>
+                            <Typography variant="body2" sx={{ fontSize: '11px', fontWeight: 600, color: 'error.main', mb: 0.3 }}>
                               NEVER share your seed with:
                             </Typography>
-                            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2, fontSize: '0.7rem', lineHeight: 1.4 }}>
+                            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2, fontSize: '11px', lineHeight: 1.4 }}>
                               <li>xrpl.to admins or support (we cannot see your seed)</li>
                               <li>Anyone claiming to be from xrpl.to</li>
                               <li>Any website or service</li>
@@ -3097,15 +3097,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               mt: 0.1
                             }}>
                               {seedWarningAgreed && (
-                                <Box component="span" sx={{ color: 'white', fontSize: '0.7rem', fontWeight: 600 }}>✓</Box>
+                                <Box component="span" sx={{ color: 'white', fontSize: '11px', fontWeight: 600 }}>✓</Box>
                               )}
                             </Box>
-                            <Typography variant="body2" sx={{ fontSize: '0.72rem', lineHeight: 1.35 }}>
+                            <Typography variant="body2" sx={{ fontSize: '11px', lineHeight: 1.35 }}>
                               I understand my Secret Seed is my responsibility. xrpl.to cannot recover it, and I will never share it.
                             </Typography>
                           </Box>
 
-                          <Typography variant="body2" sx={{ mb: 1.2, fontSize: '0.75rem', opacity: 0.8 }}>
+                          <Typography variant="body2" sx={{ mb: 1.2, fontSize: '12px', opacity: 0.8 }}>
                             Enter your password to view the seed phrase
                           </Typography>
                           <TextField
@@ -3133,7 +3133,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }}
                             sx={{
                               '& .MuiInputBase-input': {
-                                fontSize: '0.9rem',
+                                fontSize: '14px',
                                 py: 1
                               }
                             }}
@@ -3150,7 +3150,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 setSeedWarningAgreed(false);
                               }}
                               sx={{
-                                fontSize: '0.8rem',
+                                fontSize: '13px',
                                 py: 0.6,
                                 px: 2
                               }}
@@ -3163,7 +3163,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               onClick={handleSeedPasswordSubmit}
                               disabled={!seedPassword || !seedWarningAgreed}
                               sx={{
-                                fontSize: '0.8rem',
+                                fontSize: '13px',
                                 py: 0.6,
                                 px: 2
                               }}
@@ -3177,10 +3177,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {seedAuthStatus === 'success' && (
                         <>
                           <Alert severity="info" sx={{ mb: 1.5 }}>
-                            <Typography variant="body2" sx={{ fontSize: '0.75rem', fontWeight: 500 }}>
+                            <Typography variant="body2" sx={{ fontSize: '12px', fontWeight: 400 }}>
                               Seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
                             </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '0.7rem', opacity: 0.8, mt: 0.3 }}>
+                            <Typography variant="body2" sx={{ fontSize: '11px', opacity: 0.8, mt: 0.3 }}>
                               ⚠️ This only backs up one wallet. Use download backup for all {profiles.length} wallets.
                             </Typography>
                           </Alert>
@@ -3192,7 +3192,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             background: alpha(theme.palette.background.paper, 0.8),
                             border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                             fontFamily: 'monospace',
-                            fontSize: '0.75rem',
+                            fontSize: '12px',
                             wordBreak: 'break-all',
                             lineHeight: 1.5,
                             filter: seedBlurred ? 'blur(5px)' : 'none',
@@ -3215,7 +3215,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   openSnackbar('Seed copied to clipboard', 'success');
                                 });
                               }}
-                              sx={{ fontSize: '0.75rem', py: 0.6, px: 2 }}
+                              sx={{ fontSize: '12px', py: 0.6, px: 2 }}
                             >
                               Copy Seed
                             </Button>
@@ -3223,7 +3223,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                               variant="outlined"
                               size="small"
                               onClick={() => setSeedBlurred(!seedBlurred)}
-                              sx={{ fontSize: '0.75rem', py: 0.6, px: 2 }}
+                              sx={{ fontSize: '12px', py: 0.6, px: 2 }}
                             >
                               {seedBlurred ? 'Show' : 'Hide'}
                             </Button>
@@ -3257,8 +3257,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 }}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <Typography variant="h6" sx={{
-                      fontWeight: 500,
-                      fontSize: '1.15rem',
+                      fontWeight: 400,
+                      fontSize: '18px',
                       color: theme.palette.text.primary
                     }}>
                       Connect Wallet
@@ -3302,7 +3302,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handleGoogleConnect}
                           sx={{
                             py: 1.5,
-                            fontSize: '0.9rem',
+                            fontSize: '14px',
                             fontWeight: 400,
                             textTransform: 'none',
                             borderRadius: '12px',
@@ -3318,7 +3318,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          <Google sx={{ fontSize: '1.1rem', mr: 1.5 }} />
+                          <Google sx={{ fontSize: '18px', mr: 1.5 }} />
                           Google
                         </Button>
 
@@ -3329,7 +3329,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handleEmailConnect}
                           sx={{
                             py: 1.5,
-                            fontSize: '0.9rem',
+                            fontSize: '14px',
                             fontWeight: 400,
                             textTransform: 'none',
                             borderRadius: '12px',
@@ -3345,7 +3345,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          <Email sx={{ fontSize: '1.1rem', mr: 1.5 }} />
+                          <Email sx={{ fontSize: '18px', mr: 1.5 }} />
                           Email
                         </Button>
 
@@ -3356,7 +3356,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handleXConnect}
                           sx={{
                             py: 1.5,
-                            fontSize: '0.9rem',
+                            fontSize: '14px',
                             fontWeight: 400,
                             textTransform: 'none',
                             borderRadius: '12px',
@@ -3372,7 +3372,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             }
                           }}
                         >
-                          <X sx={{ fontSize: '1.1rem', mr: 1.5 }} />
+                          <X sx={{ fontSize: '18px', mr: 1.5 }} />
                           Twitter
                         </Button>
 
@@ -3383,7 +3383,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           onClick={handleDiscordConnect}
                           sx={{
                             py: 1.5,
-                            fontSize: '0.9rem',
+                            fontSize: '14px',
                             fontWeight: 400,
                             textTransform: 'none',
                             borderRadius: '12px',
@@ -3415,8 +3415,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           mt: 1.5,
                           mb: 1.5,
                           py: 1.8,
-                          fontSize: '0.95rem',
-                          fontWeight: 500,
+                          fontSize: '15px',
+                          fontWeight: 400,
                           textTransform: 'none',
                           borderRadius: '12px',
                           backgroundColor: theme.palette.primary.main,
@@ -3429,7 +3429,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           }
                         }}
                       >
-                        <SecurityOutlined sx={{ fontSize: '1.1rem', mr: 1.5 }} />
+                        <SecurityOutlined sx={{ fontSize: '18px', mr: 1.5 }} />
                         Passkeys
                       </Button>
 
@@ -3438,7 +3438,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         <Box sx={{ mt: 2, p: 2, background: alpha(theme.palette.background.default, 0.5), borderRadius: '12px' }}>
                           {emailStep === 'email' ? (
                             <>
-                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem' }}>
+                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
                                 Enter your email address
                               </Typography>
                               <TextField
@@ -3459,7 +3459,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   onClick={handleEmailContinue}
                                   sx={{
                                     py: 1,
-                                    fontSize: '0.85rem',
+                                    fontSize: '14px',
                                     textTransform: 'none',
                                     borderRadius: '8px'
                                   }}
@@ -3471,7 +3471,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   onClick={() => setShowEmailVerification(false)}
                                   sx={{
                                     py: 1,
-                                    fontSize: '0.85rem',
+                                    fontSize: '14px',
                                     textTransform: 'none',
                                     borderRadius: '8px'
                                   }}
@@ -3482,7 +3482,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </>
                           ) : emailStep === 'code' ? (
                             <>
-                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem' }}>
+                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
                                 Enter the 6-digit code sent to {verificationEmail}
                               </Typography>
                               <TextField
@@ -3503,7 +3503,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   onClick={handleVerifyEmailCode}
                                   sx={{
                                     py: 1,
-                                    fontSize: '0.85rem',
+                                    fontSize: '14px',
                                     textTransform: 'none',
                                     borderRadius: '8px'
                                   }}
@@ -3515,7 +3515,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   onClick={() => setEmailStep('email')}
                                   sx={{
                                     py: 1,
-                                    fontSize: '0.85rem',
+                                    fontSize: '14px',
                                     textTransform: 'none',
                                     borderRadius: '8px'
                                   }}
@@ -3526,7 +3526,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             </>
                           ) : (
                             <>
-                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '0.85rem' }}>
+                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
                                 Enter your password for {verificationEmail}
                               </Typography>
                               <TextField
@@ -3547,7 +3547,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   onClick={handleEmailPasswordLogin}
                                   sx={{
                                     py: 1,
-                                    fontSize: '0.85rem',
+                                    fontSize: '14px',
                                     textTransform: 'none',
                                     borderRadius: '8px'
                                   }}
@@ -3559,7 +3559,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                   onClick={() => { setEmailStep('email'); setEmailPassword(''); }}
                                   sx={{
                                     py: 1,
-                                    fontSize: '0.85rem',
+                                    fontSize: '14px',
                                     textTransform: 'none',
                                     borderRadius: '8px'
                                   }}
@@ -3575,7 +3575,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Footer */}
                       <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
                         <Typography variant="caption" sx={{
-                          fontSize: '0.7rem',
+                          fontSize: '11px',
                           color: alpha(theme.palette.text.secondary, 0.5),
                           display: 'block',
                           textAlign: 'center',
@@ -3587,7 +3587,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           size="small"
                           onClick={handleDeleteIndexedDB}
                           sx={{
-                            fontSize: '0.65rem',
+                            fontSize: '13px',
                             color: alpha(theme.palette.error.main, 0.6),
                             textTransform: 'none',
                             display: 'block',
@@ -3629,7 +3629,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         >
                           ← Back
                         </Button>
-                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '1rem' }}>
+                        <Typography variant="h6" sx={{ fontWeight: 600, color: theme.palette.primary.main, fontSize: '16px' }}>
                           Key Authentication
                         </Typography>
                       </Box>
@@ -3659,7 +3659,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Password Input for Device Connect */}
                       {showDevicePasswordInput && (
                         <Box sx={{ mb: 3 }}>
-                          <Typography variant="body2" sx={{ mb: 2, fontWeight: 500 }}>
+                          <Typography variant="body2" sx={{ mb: 2, fontWeight: 400 }}>
                             {devicePasswordMode === 'create'
                               ? 'Create a password to secure your wallet'
                               : 'Enter your password to access your wallet'}
@@ -3761,7 +3761,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           disabled={status !== 'idle' || isLoadingDeps}
                           sx={{
                             py: 1.2,
-                            fontSize: '0.95rem',
+                            fontSize: '15px',
                             fontWeight: 600,
                             background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 50%)`,
                             '&:hover': {
@@ -3783,7 +3783,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           disabled={status !== 'idle' || isLoadingDeps}
                           sx={{
                             py: 1.2,
-                            fontSize: '0.95rem',
+                            fontSize: '15px',
                             fontWeight: 600,
                             borderColor: theme.palette.warning.main,
                             color: theme.palette.warning.main,
@@ -3800,7 +3800,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           textAlign: 'center',
                           color: 'text.secondary',
                           mt: 1,
-                          fontSize: '0.75rem'
+                          fontSize: '12px'
                         }}>
                           Hardware Secured • Zero-Knowledge
                         </Typography>
@@ -3839,10 +3839,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           <DialogContent>
             <Stack spacing={2.5}>
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 500, fontSize: '1.1rem', mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '18px', mb: 0.5 }}>
                   Setup Your Wallet
                 </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', opacity: 0.7 }}>
+                <Typography variant="body2" sx={{ fontSize: '14px', opacity: 0.7 }}>
                   Choose to create a new wallet or import an existing one.
                 </Typography>
               </Box>
@@ -3867,7 +3867,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   aria-label="Create new wallet"
                   sx={{
                     flex: 1,
-                    fontSize: '0.8rem',
+                    fontSize: '13px',
                     py: 0.8,
                     fontWeight: 400
                   }}
@@ -3888,7 +3888,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   aria-label="Import from seed phrase"
                   sx={{
                     flex: 1,
-                    fontSize: '0.8rem',
+                    fontSize: '13px',
                     py: 0.8,
                     fontWeight: 400
                   }}
@@ -3909,7 +3909,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   aria-label="Import from file"
                   sx={{
                     flex: 1,
-                    fontSize: '0.8rem',
+                    fontSize: '13px',
                     py: 0.8,
                     fontWeight: 400
                   }}
@@ -3963,11 +3963,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             sx={{
                               '& .MuiInputBase-input': {
                                 fontFamily: 'monospace',
-                                fontSize: '0.85rem'
+                                fontSize: '14px'
                               },
                               '& .MuiFormHelperText-root': {
                                 color: seed.startsWith('s') ? 'success.main' : 'text.secondary',
-                                fontSize: '0.7rem'
+                                fontSize: '11px'
                               }
                             }}
                           />
@@ -4005,7 +4005,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           }
                         }}
                         sx={{
-                          fontSize: '0.8rem',
+                          fontSize: '13px',
                           fontWeight: 400,
                           color: '#4285f4',
                           textTransform: 'none',
@@ -4022,7 +4022,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   </Stack>
 
                   <Alert severity="info" sx={{ mt: 1.5, py: 0.5 }}>
-                    <Typography variant="body2" sx={{ fontSize: '0.75rem' }}>
+                    <Typography variant="body2" sx={{ fontSize: '12px' }}>
                       <strong>Tip:</strong> Import up to 5 seeds. We'll create wallets from your seeds in order.
                       {importSeeds.filter(s => s.trim()).length > 0 && importSeeds.filter(s => s.trim()).length < 5 &&
                         ` (${5 - importSeeds.filter(s => s.trim()).length} random wallet${5 - importSeeds.filter(s => s.trim()).length > 1 ? 's' : ''} will be added)`
@@ -4035,7 +4035,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               {/* File Upload for Import */}
               {importMethod === 'import' && (
                 <Box>
-                  <Typography variant="body2" component="label" htmlFor="wallet-file-input" sx={{ mb: 1, fontSize: '0.85rem' }}>
+                  <Typography variant="body2" component="label" htmlFor="wallet-file-input" sx={{ mb: 1, fontSize: '14px' }}>
                     Select your encrypted wallet backup file
                   </Typography>
                   <Button
@@ -4049,7 +4049,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       borderWidth: '1.5px',
                       backgroundColor: importFile ? alpha(theme.palette.success.main, 0.05) : 'transparent',
                       fontWeight: 400,
-                      fontSize: '0.85rem'
+                      fontSize: '14px'
                     }}
                   >
                     {importFile ? `✓ ${importFile.name}` : 'Choose Wallet File'}
@@ -4120,7 +4120,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               )}
 
               <Alert severity="info" sx={{ py: 1 }}>
-                <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+                <Typography variant="body2" sx={{ fontSize: '13px' }}>
                   {importMethod === 'import' ?
                     <><strong>Note:</strong> You'll be importing your existing wallet with its current balance and history.</> :
                     importMethod === 'seed' ? (
@@ -4158,7 +4158,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   disabled={isCreatingWallet}
                   aria-label="Cancel wallet setup"
                   sx={{
-                    fontSize: '0.85rem',
+                    fontSize: '14px',
                     fontWeight: 400,
                     py: 1
                   }}
@@ -4177,7 +4177,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     (importMethod === 'seed' ? 'Import wallet from seed' :
                      importMethod === 'import' ? 'Import wallet from file' : 'Create new wallet')}
                   sx={{
-                    fontSize: '0.85rem',
+                    fontSize: '14px',
                     fontWeight: 400,
                     py: 1
                   }}

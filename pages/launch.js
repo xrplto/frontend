@@ -144,7 +144,7 @@ const WarningText = styled.p`
   font-size: 0.9rem;
   color: ${props => props.theme?.palette?.warning?.main};
   margin: 0;
-  font-weight: 500;
+  font-weight: 400;
 `;
 
 const StyledTextField = styled(TextField)`
@@ -845,7 +845,7 @@ function CreatePage() {
                           openSnackbar?.('Failed to decrypt: ' + error.message, 'error');
                         }
                       }}
-                      sx={{ ml: 1, fontSize: '0.7rem', textTransform: 'none' }}
+                      sx={{ ml: 1, fontSize: '11px', textTransform: 'none' }}
                     >
                       Decrypt
                     </Button>
@@ -933,7 +933,7 @@ function CreatePage() {
         <Card theme={theme}>
           <SectionHeader>
             <SectionTitle theme={theme}>Token Information</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
               Required
             </Typography>
           </SectionHeader>
@@ -1040,7 +1040,7 @@ function CreatePage() {
                 severity="warning"
                 sx={{
                   mt: 1,
-                  fontSize: '0.85rem',
+                  fontSize: '14px',
                   borderRadius: '8px',
                   border: `1.5px solid ${alpha(theme.palette.warning.main, 0.2)}`
                 }}
@@ -1057,7 +1057,7 @@ function CreatePage() {
                 onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
                 style={{ width: 18, height: 18, cursor: 'pointer' }}
               />
-              <label htmlFor="antiSnipe" style={{ cursor: 'pointer', fontSize: '0.92rem' }}>
+              <label htmlFor="antiSnipe" style={{ cursor: 'pointer', fontSize: '15px' }}>
                 Enable anti-snipe mode (RequireAuth)
               </label>
             </Box>
@@ -1067,7 +1067,7 @@ function CreatePage() {
         <Card theme={theme}>
           <SectionHeader>
             <SectionTitle theme={theme}>Initial Liquidity</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
               Required
             </Typography>
           </SectionHeader>
@@ -1090,7 +1090,7 @@ function CreatePage() {
         <Card theme={theme}>
           <SectionHeader>
             <SectionTitle theme={theme}>Social Links</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
               Optional
             </Typography>
           </SectionHeader>
@@ -1140,7 +1140,7 @@ function CreatePage() {
         <Card theme={theme}>
           <SectionHeader>
             <SectionTitle theme={theme}>Token Image</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.5) }}>
+            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
               Recommended
             </Typography>
           </SectionHeader>
@@ -1157,7 +1157,7 @@ function CreatePage() {
               {imagePreview ? (
                 <>
                   <ImagePreview src={imagePreview} alt="Preview" />
-                  <Typography variant="body2" sx={{ color: theme.palette.success.main, fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ color: theme.palette.success.main, fontWeight: 400 }}>
                     {fileName}
                   </Typography>
                   <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.6), mt: 0.5 }}>
@@ -1167,10 +1167,10 @@ function CreatePage() {
               ) : (
                 <>
                   <CloudUpload sx={{ fontSize: 38, color: alpha(theme.palette.text.secondary, 0.2), mb: 1.5 }} />
-                  <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, fontWeight: 400, fontSize: '0.9rem' }}>
+                  <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, fontWeight: 400, fontSize: '14px' }}>
                     {fileName || 'Drop image here or click to browse'}
                   </Typography>
-                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.4), fontSize: '0.8rem' }}>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.4), fontSize: '13px' }}>
                     PNG, JPG, GIF, WEBP • Max 15MB
                   </Typography>
                 </>
@@ -1194,7 +1194,7 @@ function CreatePage() {
             display: 'block',
             mt: 1.5,
             color: alpha(theme.palette.text.secondary, 0.5),
-            fontSize: '0.78rem',
+            fontSize: '12px',
             lineHeight: 1.5
           }}>
             PNG, JPG, GIF, WEBP • 1000×1000px recommended • Max 15MB
@@ -1209,7 +1209,7 @@ function CreatePage() {
             onClick={handleSubmit}
             sx={{
               py: 1.6,
-              fontSize: '0.95rem',
+              fontSize: '15px',
               fontWeight: 450,
               textTransform: 'none',
               borderColor: isFormValid() ? '#4285f4' : alpha(theme.palette.divider, 0.2),
@@ -1273,18 +1273,18 @@ function CreatePage() {
                 {/* Name & Ticker Row */}
                 <Stack direction="row" spacing={3}>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       Token Name
                     </Typography>
-                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 500 }}>
+                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 400 }}>
                       {formData.tokenName}
                     </Typography>
                   </Box>
                   <Box sx={{ flex: 1 }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       Ticker
                     </Typography>
-                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 500 }}>
+                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 400 }}>
                       {formData.ticker}
                     </Typography>
                   </Box>
@@ -1298,7 +1298,7 @@ function CreatePage() {
                     borderRadius: '8px',
                     border: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
                   }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       Description
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 0.8, lineHeight: 1.6 }}>
@@ -1315,14 +1315,14 @@ function CreatePage() {
                     borderRadius: '8px',
                     border: `1.5px solid ${alpha(theme.palette.info.main, 0.15)}`
                   }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
+                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
                       Social Links
                     </Typography>
                     <Stack spacing={1}>
                       {formData.website && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Language sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                          <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                          <Typography variant="body2" sx={{ fontSize: '14px' }}>
                             {formData.website}
                           </Typography>
                         </Box>
@@ -1330,7 +1330,7 @@ function CreatePage() {
                       {formData.twitter && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Twitter sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                          <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                          <Typography variant="body2" sx={{ fontSize: '14px' }}>
                             {formData.twitter}
                           </Typography>
                         </Box>
@@ -1338,7 +1338,7 @@ function CreatePage() {
                       {formData.telegram && (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <Telegram sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                          <Typography variant="body2" sx={{ fontSize: '0.9rem' }}>
+                          <Typography variant="body2" sx={{ fontSize: '14px' }}>
                             {formData.telegram}
                           </Typography>
                         </Box>
@@ -1354,23 +1354,23 @@ function CreatePage() {
                   borderRadius: '8px',
                   border: `1.5px solid ${alpha(theme.palette.success.main, 0.15)}`
                 }}>
-                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1.5 }}>
+                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1.5 }}>
                     Token Economics
                   </Typography>
                   <Stack spacing={1.5}>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
                         Total Supply
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 400 }}>
                         {formData.tokenSupply.toLocaleString()}
                       </Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
                         AMM Pool
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 400 }}>
                         {formData.userCheckPercent === 0
                           ? formData.tokenSupply.toLocaleString()
                           : Math.floor(formData.tokenSupply * 0.5).toLocaleString()
@@ -1378,18 +1378,18 @@ function CreatePage() {
                       </Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
                         Initial XRP
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 400 }}>
                         {formData.ammXrpAmount} XRP
                       </Typography>
                     </Stack>
                     <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '0.9rem' }}>
+                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
                         Your Allocation
                       </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 500, color: formData.userCheckPercent === 0 ? theme.palette.text.secondary : theme.palette.success.main }}>
+                      <Typography variant="body1" sx={{ fontWeight: 400, color: formData.userCheckPercent === 0 ? theme.palette.text.secondary : theme.palette.success.main }}>
                         {formData.userCheckPercent > 0
                           ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} (${formData.userCheckPercent}%)`
                           : '0 tokens (0%)'
@@ -1401,7 +1401,7 @@ function CreatePage() {
                         severity="warning"
                         sx={{
                           mt: 1.5,
-                          fontSize: '0.85rem',
+                          fontSize: '14px',
                           borderRadius: '8px',
                           border: `1.5px solid ${alpha(theme.palette.warning.main, 0.2)}`
                         }}
@@ -1419,7 +1419,7 @@ function CreatePage() {
                     sx={{
                       borderRadius: '8px',
                       border: `1.5px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                      '& .MuiAlert-message': { fontSize: '0.9rem' }
+                      '& .MuiAlert-message': { fontSize: '14px' }
                     }}
                   >
                     Anti-snipe protection enabled (RequireAuth)
@@ -1444,7 +1444,7 @@ function CreatePage() {
                     py: 1.5,
                     borderRadius: '12px',
                     borderWidth: '1.5px',
-                    fontSize: '0.95rem',
+                    fontSize: '15px',
                     fontWeight: 400,
                     textTransform: 'none',
                     borderColor: alpha(theme.palette.divider, 0.2),
@@ -1464,8 +1464,8 @@ function CreatePage() {
                   sx={{
                     py: 1.5,
                     borderRadius: '12px',
-                    fontSize: '0.95rem',
-                    fontWeight: 500,
+                    fontSize: '15px',
+                    fontWeight: 400,
                     textTransform: 'none',
                     bgcolor: '#4285f4',
                     '&:hover': {
@@ -1512,7 +1512,7 @@ function CreatePage() {
                         : `The issuer account needs at least ${fundingAmount.required} XRP to continue (Testnet requirement)`}
                     </Typography>
                     {fundingBalance > 0 && fundingProgress < 100 && (
-                      <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'warning.main', fontWeight: 500 }}>
+                      <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'warning.main', fontWeight: 400 }}>
                         ⚠️ Partially funded - need {fundingAmount.required - fundingBalance} more XRP
                       </Typography>
                     )}
@@ -1628,11 +1628,11 @@ function CreatePage() {
 
               {/* Debug Info (collapsible) */}
               <details open>
-                <summary style={{ cursor: 'pointer', fontSize: '0.8rem', color: theme.palette.text.secondary }}>
+                <summary style={{ cursor: 'pointer', fontSize: '13px', color: theme.palette.text.secondary }}>
                   Session Debug Info
                 </summary>
                 <Paper sx={{ mt: 1, p: 1.5, bgcolor: alpha(theme.palette.warning.main, 0.05) }}>
-                  <Typography variant="caption" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '0.7rem' }}>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '11px' }}>
                     Session ID: {sessionData?.sessionId || 'N/A'}{'\n'}
                     Status: {sessionData?.status || 'awaiting_funding'}{'\n'}
                     Issuer: {sessionData?.issuerAddress || 'N/A'}{'\n'}
@@ -1650,7 +1650,7 @@ function CreatePage() {
             <Stack spacing={3}>
               <Box sx={{ textAlign: 'center', py: 2 }}>
                 <CircularProgress size={48} sx={{ mb: 2 }} />
-                <Typography variant="h6" sx={{ fontWeight: 500, mb: 0.5 }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, mb: 0.5 }}>
                   Processing token launch...
                 </Typography>
                 <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
@@ -1669,7 +1669,7 @@ function CreatePage() {
                     bgcolor: alpha(theme.palette.info.main, 0.05)
                   }}
                 >
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 400 }}>
                     Current Step: {
                       sessionData.status === 'funded' ? 'Funding received, starting launch...' :
                       sessionData.status === 'configuring_issuer' ? 'Configuring issuer account...' :
@@ -1692,19 +1692,19 @@ function CreatePage() {
                 border: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
               }}>
                 <Stack spacing={1}>
-                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
                     • Setting up issuer account
                   </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
                     • Creating trustlines
                   </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
                     • Distributing tokens
                   </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
                     • Creating AMM pool
                   </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: alpha(theme.palette.text.secondary, 0.8) }}>
+                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
                     • Blackholing accounts
                   </Typography>
                 </Stack>
@@ -1713,7 +1713,7 @@ function CreatePage() {
               {/* Insufficient Funding Warning */}
               {launchLogs.some(log => log.message?.includes('Insufficient')) && (
                 <Alert severity="error" sx={{ borderRadius: '8px' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 400 }}>
                     Insufficient Funding!
                   </Typography>
                   <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
@@ -1728,7 +1728,7 @@ function CreatePage() {
                   size="small"
                   onClick={() => setShowDebugPanel(!showDebugPanel)}
                   sx={{
-                    fontSize: '0.85rem',
+                    fontSize: '14px',
                     textTransform: 'none',
                     color: theme.palette.primary.main
                   }}
@@ -1755,7 +1755,7 @@ function CreatePage() {
                         variant="caption"
                         sx={{
                           fontFamily: 'monospace',
-                          fontSize: '0.75rem',
+                          fontSize: '12px',
                           display: 'block',
                           color: log.level === 'error' ? theme.palette.error.main :
                                  log.level === 'warn' ? theme.palette.warning.main :
@@ -1818,7 +1818,7 @@ function CreatePage() {
                     }
                   </Typography>
                   {!checkClaimed && (
-                    <Alert severity="info" sx={{ mb: 2, fontSize: '0.85rem' }}>
+                    <Alert severity="info" sx={{ mb: 2, fontSize: '14px' }}>
                       {accountProfile
                         ? 'Click the button below to claim your tokens. You will need to sign a CheckCash transaction.'
                         : 'Connect your wallet to claim your tokens. You need to sign a CheckCash transaction.'
@@ -1826,7 +1826,7 @@ function CreatePage() {
                     </Alert>
                   )}
                   {checkClaimed && (
-                    <Alert severity="success" sx={{ mb: 2, fontSize: '0.85rem' }}>
+                    <Alert severity="success" sx={{ mb: 2, fontSize: '14px' }}>
                       Your tokens have been successfully claimed and are now in your wallet.
                     </Alert>
                   )}
@@ -2010,7 +2010,7 @@ function CreatePage() {
                   bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : alpha(theme.palette.background.default, 0.9),
                   border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
                 }}>
-                  <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 400 }}>
                     Error Logs:
                   </Typography>
                   <Stack spacing={0.5}>
@@ -2024,7 +2024,7 @@ function CreatePage() {
                       }}>
                         <Typography variant="caption" sx={{
                           fontFamily: 'monospace',
-                          fontSize: '0.7rem',
+                          fontSize: '11px',
                           display: 'block',
                           color: log.level === 'error' ? theme.palette.error.main :
                                  log.level === 'warn' ? theme.palette.warning.main :

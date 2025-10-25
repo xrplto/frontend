@@ -102,7 +102,8 @@ const PageButton = styled.button`
   padding: 0 6px;
   margin: 0;
   font-size: 13px;
-  font-weight: ${(props) => (props.selected ? 700 : 500)};
+  font-weight: ${(props) => (props.selected ? 600 : 400)};
+  font-variant-numeric: tabular-nums;
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
@@ -125,7 +126,8 @@ const PageButton = styled.button`
 
 const PageEllipsis = styled.span`
   padding: 0 4px;
-  font-size: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   color: ${({ theme }) => theme.palette.text.secondary};
 `;
 
@@ -157,8 +159,9 @@ const InfoBox = styled.div`
 `;
 
 const StyledChip = styled.span`
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   padding: 2px 6px;
   border: 1px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.32)};
   border-radius: 6px;
@@ -166,9 +169,10 @@ const StyledChip = styled.span`
 `;
 
 const Text = styled.span`
-  font-size: 12px;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
   color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
-  font-weight: ${(props) => props.fontWeight || 500};
+  font-weight: ${(props) => props.fontWeight || 400};
 `;
 
 const PaginationWrapper = styled.div`
@@ -238,7 +242,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
             size="small"
             onClick={() => setShowAll(!showAll)}
             sx={{
-              fontSize: '0.75rem',
+              fontSize: '13px',
               px: 1,
               py: 0.5,
               minHeight: 'auto',
@@ -257,7 +261,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
           variant={!selectedSource ? "filled" : "outlined"}
           size="small"
           sx={{
-            fontSize: '0.7rem',
+            fontSize: '13px',
             height: 26,
             '& .MuiChip-label': { px: 1 }
           }}
@@ -276,15 +280,15 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
                     <span style={{ opacity: 0.6 }}>({data.count})</span>
                     {hasSentiment && !isMobile && (
                       <Stack direction="row" spacing={0.25} alignItems="center">
-                        <Typography sx={{ color: '#10B981', fontSize: '0.65rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: '#10B981', fontSize: '11px', fontWeight: 600 }}>
                           {sentiment.Bullish}
                         </Typography>
                         <span>·</span>
-                        <Typography sx={{ color: '#EF4444', fontSize: '0.65rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: '#EF4444', fontSize: '11px', fontWeight: 600 }}>
                           {sentiment.Bearish}
                         </Typography>
                         <span>·</span>
-                        <Typography sx={{ color: '#F59E0B', fontSize: '0.65rem', fontWeight: 600 }}>
+                        <Typography sx={{ color: '#F59E0B', fontSize: '11px', fontWeight: 600 }}>
                           {sentiment.Neutral}
                         </Typography>
                       </Stack>
@@ -295,7 +299,7 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
                 variant={isSelected ? "filled" : "outlined"}
                 size="small"
                 sx={{
-                  fontSize: '0.7rem',
+                  fontSize: '13px',
                   height: 26,
                   '& .MuiChip-label': { px: 1 },
                   position: 'relative',
@@ -615,7 +619,7 @@ function NewsPage() {
                       size="small"
                       sx={{
                         height: 24,
-                        fontSize: '0.75rem',
+                        fontSize: '13px',
                         bgcolor: alpha(theme.palette.primary.main, 0.1)
                       }}
                     />
@@ -653,7 +657,7 @@ function NewsPage() {
                       border: 'none',
                       outline: 'none',
                       background: 'transparent',
-                      fontSize: '0.9rem',
+                      fontSize: '14px',
                       color: theme.palette.text.primary
                     }}
                   />
@@ -683,7 +687,7 @@ function NewsPage() {
                           minWidth: 'auto',
                           px: 2,
                           py: 0.75,
-                          fontSize: '0.875rem'
+                          fontSize: '14px'
                         }}
                       >
                         Search
@@ -716,7 +720,7 @@ function NewsPage() {
                       size="small"
                       sx={{
                         height: 20,
-                        fontSize: '0.65rem',
+                        fontSize: '11px',
                         bgcolor: alpha(theme.palette.primary.main, 0.05),
                         borderRadius: '4px'
                       }}
@@ -726,7 +730,7 @@ function NewsPage() {
                 <Stack
                   direction="row"
                   spacing={1.5}
-                  sx={{ display: { xs: 'none', sm: 'flex' }, fontSize: '0.65rem' }}
+                  sx={{ display: { xs: 'none', sm: 'flex' }, fontSize: '11px' }}
                 >
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     <Box sx={{ width: 6, height: 6, bgcolor: '#10B981', borderRadius: '50%' }} />
@@ -767,22 +771,22 @@ function NewsPage() {
                       borderRadius: 1.5
                     }}
                   >
-                    <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>
+                    <Typography variant="caption" sx={{ fontWeight: 600, color: theme.palette.text.primary }}>
                       {item.period}
                     </Typography>
                     <Stack
                       direction={{ xs: 'column', sm: 'row' }}
                       justifyContent="center"
                       spacing={0.5}
-                      sx={{ mt: 0.5, fontSize: '0.7rem', fontWeight: 600 }}
+                      sx={{ mt: 0.5, fontSize: '12px', fontWeight: 600 }}
                     >
-                      <Typography sx={{ color: '#10B981', fontSize: '0.7rem' }}>
+                      <Typography sx={{ color: '#10B981', fontSize: '12px' }}>
                         {item.stats?.bullish || 0}%
                       </Typography>
-                      <Typography sx={{ color: '#EF4444', fontSize: '0.7rem', display: { xs: 'none', sm: 'block' } }}>
+                      <Typography sx={{ color: '#EF4444', fontSize: '12px', display: { xs: 'none', sm: 'block' } }}>
                         {item.stats?.bearish || 0}%
                       </Typography>
-                      <Typography sx={{ color: '#F59E0B', fontSize: '0.7rem', display: { xs: 'none', sm: 'block' } }}>
+                      <Typography sx={{ color: '#F59E0B', fontSize: '12px', display: { xs: 'none', sm: 'block' } }}>
                         {item.stats?.neutral || 0}%
                       </Typography>
                     </Stack>
@@ -806,8 +810,8 @@ function NewsPage() {
                   sx={{
                     py: 8,
                     color: theme.palette.text.secondary,
-                    fontSize: '1.1rem',
-                    fontWeight: 500
+                    fontSize: '15px',
+                    fontWeight: 400
                   }}
                 >
                   No news found at the moment
@@ -830,7 +834,7 @@ function NewsPage() {
                     }}
                   >
                     <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={2}>
-                      <Typography variant="body1" sx={{ fontWeight: 500, pr: 2 }}>
+                      <Typography variant="body1" sx={{ fontWeight: 400, pr: 2 }}>
                         {extractTitle(article.title)}
                       </Typography>
                       <Chip
@@ -839,7 +843,7 @@ function NewsPage() {
                         sx={{
                           bgcolor: getSentimentColor(article.sentiment),
                           color: 'white',
-                          fontSize: '0.75rem'
+                          fontSize: '13px'
                         }}
                       />
                     </Stack>
@@ -870,7 +874,7 @@ function NewsPage() {
                         sx={{
                           color: theme.palette.primary.main,
                           textDecoration: 'none',
-                          fontSize: '0.875rem',
+                          fontSize: '14px',
                           display: 'flex',
                           alignItems: 'center',
                           '&:hover': {

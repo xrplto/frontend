@@ -40,8 +40,8 @@ const StyledButton = styled('button')(({ theme, open }) => ({
   cursor: 'pointer',
   transition: 'all 0.2s ease',
   fontFamily: 'inherit',
-  fontSize: '0.75rem',
-  fontWeight: 500,
+  fontSize: '12px',
+  fontWeight: 400,
   color: theme.palette.text.primary,
   minWidth: '60px',
   height: '32px',
@@ -98,7 +98,7 @@ const StyledMenuItem = styled(MenuItem)(({ theme, selected }) => ({
   gap: '8px',
   margin: '1px 0',
   transition: 'all 0.15s ease',
-  fontSize: '0.75rem',
+  fontSize: '12px',
   background: selected
     ? theme.palette.mode === 'dark'
       ? 'rgba(255, 255, 255, 0.08)'
@@ -124,7 +124,7 @@ const StyledMenuItem = styled(MenuItem)(({ theme, selected }) => ({
 const CurrencyIcon = styled('span')({
   display: 'flex',
   alignItems: 'center',
-  fontSize: '0.9rem',
+  fontSize: '14px',
   lineHeight: 1
 });
 
@@ -199,7 +199,7 @@ export default function CurrencySwithcer() {
                 variant="body2"
                 sx={{
                   fontWeight: option === activeCurrency ? 600 : 500,
-                  fontSize: '0.75rem',
+                  fontSize: '12px',
                   color: 'text.primary'
                 }}
               >

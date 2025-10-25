@@ -226,7 +226,7 @@ const OffersBadge = styled('span')(({ theme }) => ({
   color: theme.palette.primary.main,
   borderRadius: theme.shape.borderRadius,
   padding: '2px 6px',
-  fontSize: '0.7rem',
+  fontSize: '11px',
   fontWeight: 600,
   marginLeft: theme.spacing(0.5)
 }));
@@ -237,7 +237,7 @@ const OfferCountBadge = styled('span')(({ theme }) => ({
   color: theme.palette.primary.main,
   borderRadius: theme.shape.borderRadius,
   padding: '2px 6px',
-  fontSize: '0.7rem',
+  fontSize: '11px',
   fontWeight: 600,
   marginLeft: theme.spacing(0.5)
 }));
@@ -353,8 +353,8 @@ const FloorPriceValue = styled('div')(({ theme }) => ({
     height: 20
   },
   '& .amount': {
-    fontWeight: 700,
-    fontSize: '1.1rem',
+    fontWeight: 600,
+    fontSize: '18px',
     color: theme.palette.primary.main,
     letterSpacing: '0.02em'
   }
@@ -900,7 +900,7 @@ export default function NFTActions({ nft }) {
                         variant="body2"
                         sx={{
                           color: 'primary.main',
-                          fontWeight: 500,
+                          fontWeight: 400,
                           letterSpacing: '0.02em'
                         }}
                       >
@@ -986,20 +986,20 @@ export default function NFTActions({ nft }) {
                   <Box sx={{ p: 1.2, backgroundColor: alpha(theme.palette.background.default, 0.4), borderRadius: '8px' }}>
                     <Stack spacing={0.5}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary' }}>Price</Typography>
-                        <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600 }}>
+                        <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary' }}>Price</Typography>
+                        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 600 }}>
                           ✕{formatXRPAmount(lowestSellOffer.totalAmount, false)}
                         </Typography>
                       </Stack>
                       {lowestSellOffer.hasBroker && (
                         <>
                           <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>Base</Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>✕{lowestSellOffer.baseAmount}</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.disabled' }}>Base</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '13px' }}>✕{lowestSellOffer.baseAmount}</Typography>
                           </Stack>
                           <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="caption" sx={{ fontSize: '0.6rem', color: 'text.disabled' }}>{lowestSellOffer.brokerName} Fee</Typography>
-                            <Typography variant="caption" sx={{ fontSize: '0.65rem' }}>✕{lowestSellOffer.brokerFee}</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.disabled' }}>{lowestSellOffer.brokerName} Fee</Typography>
+                            <Typography variant="caption" sx={{ fontSize: '13px' }}>✕{lowestSellOffer.brokerFee}</Typography>
                           </Stack>
                         </>
                       )}
@@ -1031,7 +1031,7 @@ export default function NFTActions({ nft }) {
                   <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
                     <Stack direction="row" alignItems="center" spacing={1.5}>
                       <LocalOfferIcon color="primary" sx={{ fontSize: 20 }} />
-                      <Typography variant="h6" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                      <Typography variant="h6" color="primary.main" sx={{ fontSize: '14px', fontWeight: 400 }}>
                         Sell Offers
                       </Typography>
                     </Stack>
@@ -1072,7 +1072,7 @@ export default function NFTActions({ nft }) {
                                 justifyContent="space-between"
                                 alignItems="center"
                               >
-                                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '0.95rem' }}>
+                                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '15px' }}>
                                   ✕{formatXRPAmount(amount.amount, false, 'sell_offer')}
                                 </Typography>
                                 <Button
@@ -1080,7 +1080,7 @@ export default function NFTActions({ nft }) {
                                   size="small"
                                   color="error"
                                   onClick={() => handleCancelOffer(offer)}
-                                  sx={{ py: 0.5, fontSize: '0.75rem' }}
+                                  sx={{ py: 0.5, fontSize: '12px' }}
                                 >
                                   Cancel
                                 </Button>
@@ -1127,7 +1127,7 @@ export default function NFTActions({ nft }) {
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
                   <Stack direction="row" alignItems="center" spacing={1.5}>
                     <PanToolIcon color="primary" sx={{ fontSize: 20 }} />
-                    <Typography variant="h6" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                    <Typography variant="h6" color="primary.main" sx={{ fontSize: '14px', fontWeight: 400 }}>
                       Buy Offers
                     </Typography>
                   </Stack>
@@ -1173,7 +1173,7 @@ export default function NFTActions({ nft }) {
                               justifyContent="space-between"
                               alignItems="center"
                             >
-                              <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '0.95rem' }}>
+                              <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '15px' }}>
                                 ✕{formatXRPAmount(amount.amount, false, offer.destination)}
                               </Typography>
                               <Stack direction="row" spacing={1}>
@@ -1183,7 +1183,7 @@ export default function NFTActions({ nft }) {
                                     size="small"
                                     color="primary"
                                     onClick={() => handleAcceptOffer(offer)}
-                                    sx={{ py: 0.5, fontSize: '0.75rem' }}
+                                    sx={{ py: 0.5, fontSize: '12px' }}
                                   >
                                     Accept
                                   </Button>
@@ -1194,7 +1194,7 @@ export default function NFTActions({ nft }) {
                                       size="small"
                                       color="error"
                                       onClick={() => handleCancelOffer(offer)}
-                                      sx={{ py: 0.5, fontSize: '0.75rem' }}
+                                      sx={{ py: 0.5, fontSize: '12px' }}
                                     >
                                       Cancel
                                     </Button>
@@ -1202,7 +1202,7 @@ export default function NFTActions({ nft }) {
                                 )}
                               </Stack>
                             </Stack>
-                            <Stack direction="row" spacing={2} sx={{ fontSize: '0.75rem' }}>
+                            <Stack direction="row" spacing={2} sx={{ fontSize: '12px' }}>
                               <Typography variant="caption" color="text.secondary">
                                 From: <Link href={`/profile/${offer.owner}`} underline="none" sx={{ color: 'text.primary', '&:hover': { color: 'primary.main' } }}>{truncate(offer.owner, 12)}</Link>
                               </Typography>
@@ -1249,7 +1249,7 @@ export default function NFTActions({ nft }) {
               <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
                 <Stack direction="row" spacing={1.5} alignItems="center">
                   <HistoryIcon color="primary" sx={{ fontSize: 20 }} />
-                  <Typography variant="h6" color="primary.main" sx={{ fontSize: '0.9rem', fontWeight: 500 }}>
+                  <Typography variant="h6" color="primary.main" sx={{ fontSize: '14px', fontWeight: 400 }}>
                     History
                   </Typography>
                 </Stack>

@@ -306,7 +306,7 @@ const TransactionDetailsPanel = memo(
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '1rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '16px' }}>
                   {mode === 'orderbook' ? 'Order Book' : 'Transaction Details'}
                 </Typography>
               </Stack>
@@ -379,7 +379,7 @@ const TransactionDetailsPanel = memo(
                 variant="caption"
                 sx={{
                   color: alpha(theme.palette.text.secondary, 0.7),
-                  fontSize: '0.7rem',
+                  fontSize: '11px',
                   display: 'block',
                   mt: 0.25,
                   fontFamily: 'monospace',
@@ -398,7 +398,7 @@ const TransactionDetailsPanel = memo(
                   variant="caption"
                   sx={{
                     color: alpha(theme.palette.text.secondary, 0.7),
-                    fontSize: '0.7rem',
+                    fontSize: '11px',
                     display: 'block',
                     mt: 0.25
                   }}
@@ -413,7 +413,7 @@ const TransactionDetailsPanel = memo(
                       color="success"
                       variant="outlined"
                       label={bestBid != null ? `Best Bid ${fNumber(bestBid)}` : 'No bids'}
-                      sx={{ height: 22, fontSize: '0.7rem' }}
+                      sx={{ height: 22, fontSize: '11px' }}
                     />
                   </Tooltip>
                   <Tooltip title="Lowest price sellers are willing to accept">
@@ -422,12 +422,12 @@ const TransactionDetailsPanel = memo(
                       color="error"
                       variant="outlined"
                       label={bestAsk != null ? `Best Ask ${fNumber(bestAsk)}` : 'No asks'}
-                      sx={{ height: 22, fontSize: '0.7rem' }}
+                      sx={{ height: 22, fontSize: '11px' }}
                     />
                   </Tooltip>
                   <Typography
                     variant="caption"
-                    sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.7rem' }}
+                    sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px' }}
                   >
                     Tip: Click a row to set price
                   </Typography>
@@ -470,7 +470,7 @@ const TransactionDetailsPanel = memo(
                     border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`
                   }}
                 >
-                  <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '0.85rem' }}>
+                  <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize: '14px' }}>
                     {(() => {
                       const { TransactionType, Account, Destination, Amount, SendMax, Flags, meta } = transaction;
                       const formatAcc = (acc) => `${acc?.slice(0, 6)}...${acc?.slice(-3)}`;
@@ -519,13 +519,13 @@ const TransactionDetailsPanel = memo(
                     color={transaction.meta?.TransactionResult === 'tesSUCCESS' ? 'success' : 'error'}
                     variant="outlined"
                     size="small"
-                    sx={{ fontSize: '0.75rem' }}
+                    sx={{ fontSize: '12px' }}
                   />
                   <Chip
                     label={transaction.TransactionType}
                     variant="outlined"
                     size="small"
-                    sx={{ fontSize: '0.75rem' }}
+                    sx={{ fontSize: '12px' }}
                   />
                 </Stack>
 
@@ -548,7 +548,7 @@ const TransactionDetailsPanel = memo(
                       <Typography variant="caption" color="text.secondary">
                         Ledger
                       </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 400 }}>
                         #{transaction.ledger_index}
                       </Typography>
                     </Box>
@@ -556,7 +556,7 @@ const TransactionDetailsPanel = memo(
                       <Typography variant="caption" color="text.secondary">
                         Time
                       </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 400 }}>
                         {formatTime(transaction.date)}
                       </Typography>
                     </Box>
@@ -564,7 +564,7 @@ const TransactionDetailsPanel = memo(
                       <Typography variant="caption" color="text.secondary">
                         Fee
                       </Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 500 }}>
+                      <Typography variant="caption" sx={{ fontWeight: 400 }}>
                         {dropsToXrp(transaction.Fee)} XRP
                       </Typography>
                     </Box>
@@ -593,7 +593,7 @@ const TransactionDetailsPanel = memo(
                           label={getPlatformFromSourceTag(transaction.SourceTag)}
                           size="small"
                           sx={{
-                            fontSize: '0.75rem',
+                            fontSize: '12px',
                             height: '22px',
                             background: alpha(theme.palette.primary.main, 0.1),
                             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -793,7 +793,7 @@ const TransactionDetailsPanel = memo(
                       >
                         Trust Line
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 400 }}>
                         {formatAmount(transaction.LimitAmount)}
                       </Typography>
                       <Typography
@@ -826,7 +826,7 @@ const TransactionDetailsPanel = memo(
                         sx={{
                           fontFamily: 'monospace',
                           wordBreak: 'break-all',
-                          fontSize: '0.7rem'
+                          fontSize: '11px'
                         }}
                       >
                         {transaction.NFTokenID}
@@ -873,7 +873,7 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       color: alpha(theme.palette.text.secondary, 0.6),
-                                      fontSize: '0.65rem'
+                                      fontSize: '13px'
                                     }}
                                   >
                                     Type:
@@ -882,8 +882,8 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       ml: 0.5,
-                                      fontSize: '0.7rem',
-                                      fontWeight: 500
+                                      fontSize: '11px',
+                                      fontWeight: 400
                                     }}
                                   >
                                     {decodedType}
@@ -896,7 +896,7 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       color: alpha(theme.palette.text.secondary, 0.6),
-                                      fontSize: '0.65rem'
+                                      fontSize: '13px'
                                     }}
                                   >
                                     Format:
@@ -905,8 +905,8 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       ml: 0.5,
-                                      fontSize: '0.7rem',
-                                      fontWeight: 500
+                                      fontSize: '11px',
+                                      fontWeight: 400
                                     }}
                                   >
                                     {decodedFormat}
@@ -919,7 +919,7 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       color: alpha(theme.palette.text.secondary, 0.6),
-                                      fontSize: '0.65rem',
+                                      fontSize: '13px',
                                       display: 'block',
                                       mb: 0.25
                                     }}
@@ -929,7 +929,7 @@ const TransactionDetailsPanel = memo(
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '0.7rem',
+                                      fontSize: '11px',
                                       wordBreak: 'break-word',
                                       fontFamily: 'monospace',
                                       display: 'block'
@@ -993,14 +993,14 @@ const TransactionDetailsPanel = memo(
                   >
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <TrendingDownIcon
-                        sx={{ fontSize: '0.85rem', color: theme.palette.error.main }}
+                        sx={{ fontSize: '14px', color: theme.palette.error.main }}
                       />
                       <Typography
                         variant="caption"
                         sx={{
                           color: theme.palette.error.main,
                           fontWeight: 600,
-                          fontSize: '0.75rem'
+                          fontSize: '12px'
                         }}
                       >
                         Sell Orders ({asks.length})
@@ -1103,7 +1103,7 @@ const TransactionDetailsPanel = memo(
                                       position: 'relative',
                                       display: 'flex',
                                       justifyContent: 'space-between',
-                                      fontSize: '0.75rem',
+                                      fontSize: '12px',
                                       cursor: 'pointer',
                                       px: 0.5,
                                       py: 0.25,
@@ -1199,7 +1199,7 @@ const TransactionDetailsPanel = memo(
                         sx={{
                           fontWeight: 600,
                           color: theme.palette.text.secondary,
-                          fontSize: '0.7rem'
+                          fontSize: '11px'
                         }}
                       >
                         Spread
@@ -1209,8 +1209,8 @@ const TransactionDetailsPanel = memo(
                           variant="caption"
                           sx={{
                             color: theme.palette.text.secondary,
-                            fontSize: '0.7rem',
-                            fontWeight: 500
+                            fontSize: '11px',
+                            fontWeight: 400
                           }}
                         >
                           {fNumber(spread.spreadAmount)}
@@ -1219,7 +1219,7 @@ const TransactionDetailsPanel = memo(
                           variant="caption"
                           sx={{
                             color: theme.palette.warning.main,
-                            fontSize: '0.7rem',
+                            fontSize: '11px',
                             fontWeight: 600
                           }}
                         >
@@ -1258,14 +1258,14 @@ const TransactionDetailsPanel = memo(
                   >
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <TrendingUpIcon
-                        sx={{ fontSize: '0.85rem', color: theme.palette.success.main }}
+                        sx={{ fontSize: '14px', color: theme.palette.success.main }}
                       />
                       <Typography
                         variant="caption"
                         sx={{
                           color: theme.palette.success.main,
                           fontWeight: 600,
-                          fontSize: '0.75rem'
+                          fontSize: '12px'
                         }}
                       >
                         Buy Orders ({bids.length})
@@ -1364,7 +1364,7 @@ const TransactionDetailsPanel = memo(
                                       position: 'relative',
                                       display: 'flex',
                                       justifyContent: 'space-between',
-                                      fontSize: '0.75rem',
+                                      fontSize: '12px',
                                       cursor: 'pointer',
                                       px: 0.5,
                                       py: 0.25,
@@ -1453,8 +1453,8 @@ const TransactionDetailsPanel = memo(
                       variant="body2"
                       sx={{
                         color: alpha(theme.palette.text.secondary, 0.8),
-                        fontSize: '0.85rem',
-                        fontWeight: 500
+                        fontSize: '14px',
+                        fontWeight: 400
                       }}
                     >
                       No orders available

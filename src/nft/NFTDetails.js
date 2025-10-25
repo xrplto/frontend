@@ -149,7 +149,7 @@ const Container = styled(Box)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '0.7rem',
+  fontSize: '11px',
   fontWeight: 600,
   color: theme.palette.text.secondary,
   marginBottom: theme.spacing(0.5),
@@ -158,14 +158,14 @@ const SectionTitle = styled(Typography)(({ theme }) => ({
 }));
 
 const Label = styled(Typography)(({ theme }) => ({
-  fontSize: '0.65rem',
+  fontSize: '13px',
   color: theme.palette.text.secondary,
   marginBottom: 2,
   lineHeight: 1.2
 }));
 
 const Value = styled(Typography)(({ theme }) => ({
-  fontSize: '0.75rem',
+  fontSize: '12px',
   color: theme.palette.text.primary,
   wordBreak: 'break-all',
   lineHeight: 1.3
@@ -175,15 +175,15 @@ const CopyButton = styled(IconButton)(({ theme }) => ({
   padding: 2,
   marginLeft: theme.spacing(0.25),
   '& .MuiSvgIcon-root': {
-    fontSize: '0.75rem'
+    fontSize: '12px'
   }
 }));
 
 const CompactChip = styled(Chip)(({ theme }) => ({
   height: 18,
-  fontSize: '0.65rem',
+  fontSize: '13px',
   '& .MuiChip-icon': {
-    fontSize: '0.75rem'
+    fontSize: '12px'
   },
   '& .MuiChip-label': {
     padding: '0 6px'
@@ -285,7 +285,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
     if (errored) {
       return (
         <Box sx={{ textAlign: 'center', py: 5, color: 'text.secondary' }}>
-          <Typography variant="body2" sx={{ fontSize: '0.8rem' }}>
+          <Typography variant="body2" sx={{ fontSize: '13px' }}>
             Failed to load
           </Typography>
         </Box>
@@ -490,19 +490,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Title and Collection */}
       <Box sx={{ mb: 1, px: 1, py: 0.8 }}>
-        <Typography variant="h6" sx={{ fontSize: '0.95rem', fontWeight: 600, mb: 0.3 }}>
+        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 600, mb: 0.3 }}>
           {nft.name || meta?.name || 'Untitled'}
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center">
           {cslug && (
             <Link href={`/collection/${cslug}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                 {collectionName}
               </Typography>
             </Link>
           )}
           {date && (
-            <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.disabled' }}>
+            <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.disabled' }}>
               {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
             </Typography>
           )}
@@ -534,7 +534,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   >
                     <Typography
                       sx={{
-                        fontSize: '0.6rem',
+                        fontSize: '12px',
                         color: 'text.secondary',
                         textTransform: 'uppercase',
                         fontWeight: 600
@@ -542,11 +542,11 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                     >
                       {type}
                     </Typography>
-                    <Typography sx={{ fontSize: '0.7rem', fontWeight: 500, my: 0.25 }}>
+                    <Typography sx={{ fontSize: '11px', fontWeight: 400, my: 0.25 }}>
                       {value}
                     </Typography>
                     {total > 0 && count > 0 && (
-                      <Typography sx={{ fontSize: '0.55rem', color: 'text.secondary' }}>
+                      <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>
                         {count} ({rarity}%)
                       </Typography>
                     )}
@@ -562,7 +562,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {meta?.description && (
         <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
           <SectionTitle>Description</SectionTitle>
-          <Value sx={{ lineHeight: 1.4, fontSize: '0.7rem', maxHeight: 60, overflowY: 'auto' }}>
+          <Value sx={{ lineHeight: 1.4, fontSize: '11px', maxHeight: 60, overflowY: 'auto' }}>
             {meta.description}
           </Value>
         </Paper>
@@ -575,19 +575,19 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             {rarity_rank > 0 && (
               <Box>
                 <Label sx={{ mb: 0.3 }}>Rarity Rank</Label>
-                <Value sx={{ fontSize: '0.75rem' }}>#{rarity_rank}</Value>
+                <Value sx={{ fontSize: '12px' }}>#{rarity_rank}</Value>
               </Box>
             )}
             {MasterSequence > 0 && (
               <Box>
                 <Label sx={{ mb: 0.3 }}>On-Chain Rank</Label>
-                <Value sx={{ fontSize: '0.75rem' }}>#{MasterSequence}</Value>
+                <Value sx={{ fontSize: '12px' }}>#{MasterSequence}</Value>
               </Box>
             )}
             {volume > 0 && (
               <Box>
                 <Label sx={{ mb: 0.3 }}>Volume</Label>
-                <Value sx={{ fontSize: '0.75rem' }}>✕{fVolume(volume)}</Value>
+                <Value sx={{ fontSize: '12px' }}>✕{fVolume(volume)}</Value>
               </Box>
             )}
           </Stack>
@@ -601,26 +601,26 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
             <Box sx={{ flex: 1 }}>
               <Label sx={{ mb: 0.2 }}>Owner</Label>
               <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-                <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{account}</Value>
+                <Value sx={{ fontSize: '13px', wordBreak: 'break-all' }}>{account}</Value>
               </Link>
             </Box>
             <Box>
               <Label sx={{ mb: 0.2 }}>Royalties</Label>
-              <Value sx={{ fontSize: '0.7rem' }}>{transferFee}%</Value>
+              <Value sx={{ fontSize: '11px' }}>{transferFee}%</Value>
             </Box>
           </Stack>
 
           <Box>
             <Label sx={{ mb: 0.2 }}>Issuer</Label>
             <Link href={`/account/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '0.68rem', wordBreak: 'break-all' }}>{issuer}</Value>
+              <Value sx={{ fontSize: '13px', wordBreak: 'break-all' }}>{issuer}</Value>
             </Link>
           </Box>
 
           <Box>
             <Label sx={{ mb: 0.2 }}>Token ID</Label>
             <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '0.62rem', wordBreak: 'break-all' }}>{NFTokenID}</Value>
+              <Value sx={{ fontSize: '12px', wordBreak: 'break-all' }}>{NFTokenID}</Value>
             </Link>
           </Box>
         </Stack>

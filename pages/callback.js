@@ -498,7 +498,7 @@ const OAuthCallback = () => {
         minHeight="100vh"
         sx={{ px: 2 }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 500, mb: 1 }}>
+        <Typography variant="h5" sx={{ fontWeight: 400, mb: 1 }}>
           {errorState.title}
         </Typography>
         <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, textAlign: 'center' }}>
@@ -511,7 +511,7 @@ const OAuthCallback = () => {
             sx={{
               py: 1.5,
               px: 3,
-              fontSize: '0.95rem',
+              fontSize: '15px',
               fontWeight: 400,
               textTransform: 'none',
               borderRadius: '12px',
@@ -532,7 +532,7 @@ const OAuthCallback = () => {
             sx={{
               py: 1.5,
               px: 3,
-              fontSize: '0.95rem',
+              fontSize: '15px',
               fontWeight: 400,
               textTransform: 'none',
               borderRadius: '12px',
@@ -560,7 +560,7 @@ const OAuthCallback = () => {
       minHeight="100vh"
     >
       <CircularProgress size={60} />
-      <Typography variant="h6" sx={{ mt: 3, fontWeight: 500 }}>
+      <Typography variant="h6" sx={{ mt: 3, fontWeight: 400 }}>
         Authenticating...
       </Typography>
       <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>

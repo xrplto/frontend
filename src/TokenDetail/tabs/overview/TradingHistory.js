@@ -161,7 +161,7 @@ const TradeCard = styled(Card, {
 }));
 
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  fontSize: '0.65rem',
+  fontSize: '13px',
   height: '20px',
   fontWeight: 600,
   borderRadius: '4px',
@@ -193,7 +193,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     color: theme.palette.text.primary,
     borderRadius: '6px',
     margin: '0 1px',
-    fontWeight: '500',
+    fontWeight: 400,
     '&:hover': {
       backgroundColor:
         theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
@@ -730,7 +730,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   fontWeight="500"
                   sx={{
                     width: '65px',
-                    fontSize: '0.75rem',
+                    fontSize: '12px',
                     opacity: 0.7,
                     flexShrink: 0
                   }}
@@ -749,7 +749,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                  sx={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
                 >
                   Price (XRP)
                 </Typography>
@@ -757,7 +757,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   variant="body2"
                   fontWeight="600"
                   color="text.primary"
-                  sx={{ fontSize: '0.85rem' }}
+                  sx={{ fontSize: '14px' }}
                 >
                   {formatPrice(price)}
                 </Typography>
@@ -774,7 +774,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                    sx={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
                   >
                     Amount
                   </Typography>
@@ -782,7 +782,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     variant="body2"
                     fontWeight="600"
                     color="text.primary"
-                    sx={{ fontSize: '0.85rem' }}
+                    sx={{ fontSize: '14px' }}
                   >
                     {formatTradeValue(amountData.value)}{' '}
                     {decodeCurrency(amountData.currency)}
@@ -801,7 +801,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ fontSize: '0.6rem', display: { xs: 'block', md: 'none' } }}
+                    sx={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
                   >
                     Total
                   </Typography>
@@ -809,12 +809,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     variant="body2"
                     fontWeight="600"
                     color="text.primary"
-                    sx={{ fontSize: '0.85rem' }}
+                    sx={{ fontSize: '14px' }}
                   >
                     {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                   </Typography>
                 </Box>
-                <Box component="span" sx={{ fontSize: '0.65rem', ml: 0.5, opacity: 0.7 }}>
+                <Box component="span" sx={{ fontSize: '13px', ml: 0.5, opacity: 0.7 }}>
                   {(() => {
                     const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
                     if (val < 500) return '🦐';
@@ -835,7 +835,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     sx={{
                       textDecoration: 'none',
                       color: 'primary.main',
-                      fontWeight: '500',
+                      fontWeight: 400,
                       '&:hover': {
                         textDecoration: 'underline',
                         color: 'primary.dark'
@@ -845,7 +845,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     <Typography
                       variant="body2"
                       fontWeight="500"
-                      sx={{ fontSize: '0.75rem', color: 'primary.main', opacity: 0.9 }}
+                      sx={{ fontSize: '12px', color: 'primary.main', opacity: 0.9 }}
                     >
                       {addressToShow
                         ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
@@ -937,8 +937,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           aria-label="trading tabs"
           sx={{
             '& .MuiTab-root': {
-              fontSize: '0.8rem',
-              fontWeight: 500,
+              fontSize: '13px',
+              fontWeight: 400,
               textTransform: 'none',
               minHeight: 36,
               py: 1
@@ -970,8 +970,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               label="XRP Trades Only"
               sx={{
                 '& .MuiFormControlLabel-label': {
-                  fontSize: '0.8rem',
-                  fontWeight: 500,
+                  fontSize: '13px',
+                  fontWeight: 400,
                   opacity: 0.8
                 }
               }}
@@ -994,9 +994,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
               boxShadow: 'none',
               '& > *': {
-                fontWeight: 500,
+                fontWeight: 400,
                 color: theme.palette.text.secondary,
-                fontSize: '0.65rem',
+                fontSize: '13px',
                 textTransform: 'uppercase',
                 letterSpacing: '0.02em',
                 opacity: 0.7
@@ -1004,23 +1004,23 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             }}
           >
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>TIME / TYPE</Typography>
+              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>TIME / TYPE</Typography>
               <LiveIndicator sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}>
                 <LiveCircle />
                 <Typography
                   variant="caption"
                   fontWeight="600"
-                  sx={{ color: 'primary.main', fontSize: '0.5rem' }}
+                  sx={{ color: 'primary.main', fontSize: '10px' }}
                 >
                   LIVE
                 </Typography>
               </LiveIndicator>
             </Box>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>PRICE (XRP)</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>AMOUNT</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>TOTAL</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}>BY</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '0.7rem' }}></Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>PRICE (XRP)</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>AMOUNT</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>TOTAL</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>BY</Typography>
+            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}></Typography>
           </Box>
 
           <Stack spacing={0.25} sx={{ mt: 0.5 }}>

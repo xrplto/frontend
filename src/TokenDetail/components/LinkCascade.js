@@ -24,8 +24,8 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
       <Link underline="none" color="inherit" href={`/`} rel="noreferrer noopener nofollow">
         <Typography
           sx={{
-            fontSize: '0.8rem',
-            fontWeight: 500,
+            fontSize: '13px',
+            fontWeight: 400,
             color: 'primary.main',
             opacity: 0.8,
             '&:hover': { opacity: 1 }
@@ -46,8 +46,8 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
           >
             <Typography
               sx={{
-                fontSize: '0.8rem',
-                fontWeight: 500,
+                fontSize: '13px',
+                fontWeight: 400,
                 color: 'primary.main',
                 opacity: 0.8,
                 '&:hover': { opacity: 1 }
@@ -59,8 +59,8 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
           <ChevronRightIcon sx={{ fontSize: 16, opacity: 0.4 }} />
           <Typography
             sx={{
-              fontSize: '0.8rem',
-              fontWeight: 500,
+              fontSize: '13px',
+              fontWeight: 400,
               opacity: 0.7
             }}
           >
@@ -70,8 +70,8 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
       ) : (
         <Typography
           sx={{
-            fontSize: '0.8rem',
-            fontWeight: 500,
+            fontSize: '13px',
+            fontWeight: 400,
             opacity: 0.9
           }}
         >

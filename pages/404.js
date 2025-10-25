@@ -82,7 +82,7 @@ function Status404() {
             sx={{
               mb: 4,
               color: theme => alpha(theme.palette.text.secondary, 0.6),
-              fontSize: '0.95rem'
+              fontSize: '15px'
             }}
           >
             The page you're looking for doesn't exist

@@ -572,7 +572,7 @@ const ApiDocsPage = () => {
               <Box
                 component="pre"
                 sx={{
-                  fontSize: '0.9rem',
+                  fontSize: '14px',
                   overflow: 'auto',
                   p: 2,
                   backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa',

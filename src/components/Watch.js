@@ -100,11 +100,11 @@ export default function Watch({ collection }) {
     <Button
       variant="outlined"
       size="small"
-      startIcon={watchList.includes(md5) ? <StarRateIcon sx={{ fontSize: '0.85rem' }} /> : <StarOutlineIcon sx={{ fontSize: '0.85rem' }} />}
+      startIcon={watchList.includes(md5) ? <StarRateIcon sx={{ fontSize: '14px' }} /> : <StarOutlineIcon sx={{ fontSize: '14px' }} />}
       onClick={() => onChangeWatchList(md5)}
       sx={{
         textTransform: 'none',
-        fontSize: '0.75rem',
+        fontSize: '12px',
         py: 0.5,
         px: 1.2,
         borderRadius: '6px',

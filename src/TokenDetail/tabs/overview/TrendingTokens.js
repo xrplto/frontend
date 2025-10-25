@@ -70,8 +70,8 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
   width: 20,
   height: 20,
   borderRadius: '4px',
-  fontWeight: 500,
-  fontSize: '0.65rem',
+  fontWeight: 400,
+  fontSize: '13px',
   flexShrink: 0,
   background:
     rank === 1
@@ -86,7 +86,7 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
   [theme.breakpoints.down('sm')]: {
     width: 18,
     height: 18,
-    fontSize: '0.6rem'
+    fontSize: '12px'
   }
 }));
 
@@ -96,8 +96,8 @@ const StatsBox = styled(Box)(({ theme }) => ({
   gap: 0,
   minWidth: '55px',
   '& .value': {
-    fontSize: '0.7rem',
-    fontWeight: 500,
+    fontSize: '11px',
+    fontWeight: 400,
     lineHeight: 1.2,
     letterSpacing: '-0.01em'
   }
@@ -149,8 +149,8 @@ const TrendingTokens = () => {
         // Show up to 4 significant digits for better precision
         const sigDigits = significant.slice(0, 4);
         return (
-          <span style={{ fontSize: '0.65rem' }}>
-            {symbol}0.0<sub style={{ fontSize: '0.5rem' }}>{zeros}</sub>
+          <span style={{ fontSize: '13px' }}>
+            {symbol}0.0<sub style={{ fontSize: '10px' }}>{zeros}</sub>
             {sigDigits}
           </span>
         );
@@ -216,10 +216,10 @@ const TrendingTokens = () => {
             size="small"
             sx={{
               height: 14,
-              fontSize: '0.45rem',
+              fontSize: '9px',
               bgcolor: alpha('#4caf50', 0.08),
               color: '#4caf50',
-              fontWeight: 500,
+              fontWeight: 400,
               px: 0.5
             }}
           />
@@ -230,8 +230,8 @@ const TrendingTokens = () => {
           endIcon={<ArrowForwardIcon sx={{ fontSize: 12 }} />}
           sx={{
             textTransform: 'none',
-            fontSize: '0.65rem',
-            fontWeight: 500,
+            fontSize: '13px',
+            fontWeight: 400,
             color: theme.palette.primary.main,
             padding: '2px 6px',
             minHeight: 'auto'
@@ -263,16 +263,16 @@ const TrendingTokens = () => {
             ml: 'auto'
           }}
         >
-          <Typography sx={{ fontSize: '0.45rem', textTransform: 'uppercase', fontWeight: 500, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, color: 'text.secondary' }}>
             Price
           </Typography>
-          <Typography sx={{ fontSize: '0.45rem', textTransform: 'uppercase', fontWeight: 500, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, color: 'text.secondary' }}>
             24h
           </Typography>
-          <Typography sx={{ fontSize: '0.45rem', textTransform: 'uppercase', fontWeight: 500, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, color: 'text.secondary' }}>
             MCap
           </Typography>
-          <Typography sx={{ fontSize: '0.45rem', textTransform: 'uppercase', fontWeight: 500, color: 'text.secondary' }}>
+          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, color: 'text.secondary' }}>
             Vol
           </Typography>
         </Box>
@@ -304,7 +304,7 @@ const TrendingTokens = () => {
                   {/* Token Avatar */}
                   <Avatar
                     src={`https://s1.xrpl.to/token/${token.md5}`}
-                    sx={{ width: 24, height: 24, fontSize: '0.65rem' }}
+                    sx={{ width: 24, height: 24, fontSize: '13px' }}
                   >
                     {token.user?.[0]}
                   </Avatar>
@@ -316,7 +316,7 @@ const TrendingTokens = () => {
                         variant="body2"
                         fontWeight={500}
                         sx={{
-                          fontSize: '0.7rem',
+                          fontSize: '11px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap'
@@ -330,7 +330,7 @@ const TrendingTokens = () => {
                       variant="caption"
                       color="text.secondary"
                       sx={{
-                        fontSize: '0.55rem',
+                        fontSize: '11px',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',

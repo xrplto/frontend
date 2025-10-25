@@ -192,7 +192,7 @@ const ShareDialogTitle = styled(DialogTitle)(({ theme }) => ({
   position: 'relative',
   '& .MuiTypography-root': {
     fontWeight: 600,
-    fontSize: '1.25rem',
+    fontSize: '20px',
     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
     WebkitBackgroundClip: 'text',
     WebkitTextFillColor: 'transparent',
@@ -310,7 +310,7 @@ const CopyButton = styled(IconButton)(({ theme }) => ({
     boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
   },
   '& .MuiSvgIcon-root': {
-    fontSize: '1.1rem',
+    fontSize: '18px',
     color: theme.palette.primary.main
   }
 }));
@@ -441,7 +441,7 @@ export default function Share({ token }) {
                 <Typography
                   variant="h5"
                   sx={{
-                    fontWeight: 700,
+                    fontWeight: 600,
                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -457,7 +457,7 @@ export default function Share({ token }) {
                   sx={{
                     textAlign: 'center',
                     color: 'text.secondary',
-                    fontWeight: 500,
+                    fontWeight: 400,
                     opacity: 0.8
                   }}
                 >
@@ -480,7 +480,7 @@ export default function Share({ token }) {
                   variant="h6"
                   sx={{
                     textAlign: 'center',
-                    fontWeight: 700,
+                    fontWeight: 600,
                     color: theme.palette.primary.main
                   }}
                 >
@@ -565,7 +565,7 @@ export default function Share({ token }) {
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
                       color: 'text.secondary',
-                      fontSize: '0.875rem'
+                      fontSize: '14px'
                     }}
                   >
                     {url}

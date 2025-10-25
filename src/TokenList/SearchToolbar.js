@@ -116,7 +116,7 @@ const RowsSelector = styled.select`
     props.darkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.95)'};
   color: ${(props) => (props.darkMode ? '#fff' : '#333')};
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 400;
   cursor: pointer;
   height: 32px;
   min-width: 80px;
@@ -278,7 +278,7 @@ const ButtonGroup = styled.div`
     height: 32px;
     padding: 0 8px;
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 400;
     background: transparent;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -489,7 +489,7 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
                   borderRadius: '10px',
                   background: 'transparent',
                   color: 'text.primary',
-                  fontSize: '0.8125rem',
+                  fontSize: '13px',
                   fontWeight: 400,
                   cursor: 'pointer',
                   fontFamily: 'inherit',
@@ -612,7 +612,7 @@ const SearchToolbar = memo(function SearchToolbar({
           tempTag.style.cssText = `
             padding: ${isMobile ? '0px 4px' : '2px 8px'};
             font-size: ${isMobile ? '0.55rem' : '0.7rem'};
-            font-weight: 500;
+            font-weight: 400;
             white-space: nowrap;
             border: 1px solid transparent;
           `;
@@ -1066,7 +1066,7 @@ const SearchToolbar = memo(function SearchToolbar({
             setGainersMenuAnchor(null);
           }}
           sx={{
-            fontSize: '0.875rem',
+            fontSize: '14px',
             py: 1,
             '&:hover': {
               backgroundColor: alpha('#4caf50', 0.08)
@@ -1081,7 +1081,7 @@ const SearchToolbar = memo(function SearchToolbar({
             setGainersMenuAnchor(null);
           }}
           sx={{
-            fontSize: '0.875rem',
+            fontSize: '14px',
             py: 1,
             '&:hover': {
               backgroundColor: alpha('#4caf50', 0.08)
@@ -1096,7 +1096,7 @@ const SearchToolbar = memo(function SearchToolbar({
             setGainersMenuAnchor(null);
           }}
           sx={{
-            fontSize: '0.875rem',
+            fontSize: '14px',
             py: 1,
             '&:hover': {
               backgroundColor: alpha('#4caf50', 0.08)
@@ -1111,7 +1111,7 @@ const SearchToolbar = memo(function SearchToolbar({
             setGainersMenuAnchor(null);
           }}
           sx={{
-            fontSize: '0.875rem',
+            fontSize: '14px',
             py: 1,
             '&:hover': {
               backgroundColor: alpha('#4caf50', 0.08)
@@ -1144,7 +1144,7 @@ const SearchToolbar = memo(function SearchToolbar({
             borderColor: 'divider'
           }}
         >
-          <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1rem' }}>
+          <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '16px' }}>
             Categories {tags?.length ? `(${tags.length})` : ''}
           </Typography>
           <Box

@@ -186,7 +186,7 @@ const WalletSetupPage = () => {
     <Container maxWidth="sm" sx={{ py: 4 }}>
       <Card>
         <CardContent sx={{ p: 4 }}>
-          <Typography variant="h5" sx={{ fontWeight: 500, mb: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 400, mb: 1 }}>
             Setup Your Wallet
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>

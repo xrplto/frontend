@@ -58,7 +58,7 @@ function OGPTestPage({ imageUrls }) {
                       sx={{
                         display: 'block',
                         wordBreak: 'break-all',
-                        fontSize: '0.7rem'
+                        fontSize: '11px'
                       }}
                     >
                       {url.split('/').pop()}

@@ -282,7 +282,7 @@ const WalletType = styled(Typography)(
   ({ theme }) => `
     font-size: 0.65rem;
     color: ${theme.palette.success.main};
-    font-weight: 500;
+    font-weight: 400;
     text-transform: capitalize;
     line-height: 1.2;
 `
@@ -394,7 +394,7 @@ const TokenCard = styled(Box)(({ theme }) => ({
 const CategoryChip = styled(Chip)(({ theme }) => ({
   borderRadius: '8px',
   fontWeight: 400,
-  fontSize: '0.7rem',
+  fontSize: '11px',
   height: 24,
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   '&:hover': {
@@ -408,8 +408,8 @@ const CategoryChip = styled(Chip)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 700,
-  fontSize: '0.65rem',
+  fontWeight: 600,
+  fontSize: '13px',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   color: theme.palette.text.secondary,
@@ -2039,7 +2039,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             width: 30,
             height: 30,
             backgroundColor: alpha(theme.palette.text.primary, 0.04),
-            fontSize: '0.8rem',
+            fontSize: '13px',
             fontWeight: 600
           }}
           imgProps={{
@@ -2073,7 +2073,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           fontWeight={500}
           noWrap
           sx={{
-            fontSize: '0.85rem',
+            fontSize: '14px',
             lineHeight: 1.2,
             color: theme.palette.text.primary
           }}
@@ -2084,7 +2084,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           variant="caption"
           color="text.secondary"
           sx={{
-            fontSize: '0.7rem',
+            fontSize: '11px',
             display: 'block',
             opacity: 0.6,
             mt: 0.25
@@ -2099,8 +2099,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <Box sx={{ width: '100px', textAlign: 'right', flexShrink: 0 }}>
         <Typography
           sx={{
-            fontSize: '0.8rem',
-            fontWeight: 500,
+            fontSize: '13px',
+            fontWeight: 400,
             color: theme.palette.text.primary,
             fontVariantNumeric: 'tabular-nums',
             display: 'block'
@@ -2139,7 +2139,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <Box sx={{ width: '70px', textAlign: 'right', flexShrink: 0 }}>
         <Typography
           sx={{
-            fontSize: '0.8rem',
+            fontSize: '13px',
             fontWeight: 400,
             color: theme.palette.text.secondary,
             fontVariantNumeric: 'tabular-nums',
@@ -2163,7 +2163,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <Box sx={{ width: '70px', textAlign: 'right', flexShrink: 0 }}>
         <Typography
           sx={{
-            fontSize: '0.8rem',
+            fontSize: '13px',
             fontWeight: 400,
             color: theme.palette.text.secondary,
             fontVariantNumeric: 'tabular-nums',
@@ -2233,8 +2233,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             color={isOMCF !== 'yes' ? 'text.primary' : darkMode ? '#00AB55' : '#4E8DF4'}
             sx={{
               lineHeight: 1.2,
-              fontWeight: 700,
-              fontSize: '0.95rem',
+              fontWeight: 600,
+              fontSize: '15px',
               letterSpacing: '-0.01em'
             }}
             noWrap
@@ -2246,7 +2246,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             color="text.secondary"
             sx={{
               lineHeight: 1,
-              fontSize: '0.75rem',
+              fontSize: '12px',
               opacity: 0.8,
               letterSpacing: '0.02em'
             }}
@@ -2328,7 +2328,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               onClick={onClose}
               sx={{
                 cursor: 'pointer',
-                fontSize: '1.5rem',
+                fontSize: '24px',
                 lineHeight: 1,
                 color: theme.palette.text.secondary,
                 '&:hover': { color: theme.palette.text.primary }
@@ -2353,7 +2353,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             '& .MuiOutlinedInput-root': {
               borderRadius: '12px',
               backgroundColor: 'transparent',
-              fontSize: '0.9rem',
+              fontSize: '14px',
               '& fieldset': {
                 borderColor: alpha(theme.palette.divider, 0.15),
                 borderWidth: '1.5px'
@@ -2382,7 +2382,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   sx={{
                     cursor: 'pointer',
                     color: theme.palette.text.secondary,
-                    fontSize: '0.9rem',
+                    fontSize: '14px',
                     padding: '4px',
                     '&:hover': {
                       color: theme.palette.text.primary
@@ -2447,7 +2447,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   sx={{
                     cursor: 'pointer',
                     color: theme.palette.error.main,
-                    fontSize: '0.7rem',
+                    fontSize: '11px',
                     '&:hover': { textDecoration: 'underline' }
                   }}
                   onClick={handleClearRecent}
@@ -2632,7 +2632,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             px: 2,
                             py: 0.75,
                             borderRadius: '8px',
-                            fontSize: '0.8rem',
+                            fontSize: '13px',
                             fontWeight: 600,
                             textTransform: 'none',
                             backgroundColor:
@@ -2659,7 +2659,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             px: 2,
                             py: 0.75,
                             borderRadius: '8px',
-                            fontSize: '0.8rem',
+                            fontSize: '13px',
                             fontWeight: 600,
                             textTransform: 'none',
                             backgroundColor:
@@ -2695,29 +2695,29 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         <Stack spacing={1}>
                           <Stack direction="row" alignItems="center" spacing={1}>
                             <AccountBalanceWalletIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />
-                            <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '0.7rem' }}>
+                            <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '11px' }}>
                               DEBUG (Remove in Production)
                             </Typography>
                           </Stack>
                           <Box sx={{ pl: 0.5 }}>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.25 }}>
+                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
                               <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
                             </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.25 }}>
+                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
                               <strong>Public Key:</strong> <code>{accountProfile.publicKey || 'N/A'}</code>
                             </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.25 }}>
+                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
                               <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
                                 {accountProfile.seed || accountProfile.secret || 'N/A'}
                               </code>
                             </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.25 }}>
+                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
                               <strong>Type:</strong> {accountProfile.wallet_type || 'Unknown'}
                             </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem', mb: 0.25 }}>
+                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
                               <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
                             </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '0.65rem' }}>
+                            <Typography variant="caption" display="block" sx={{ fontSize: '13px' }}>
                               <strong>Provider ID:</strong> <code>{accountProfile.provider_id || accountProfile.socialId || 'N/A'}</code>
                             </Typography>
                           </Box>
@@ -2787,7 +2787,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               sx={{
                                 mb: 1,
                                 display: 'block',
-                                fontSize: '0.75rem',
+                                fontSize: '12px',
                                 fontWeight: 600,
                                 letterSpacing: '0.05em',
                                 textTransform: 'uppercase',
@@ -2829,7 +2829,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 input: {
                                   textAlign: 'right',
                                   fontSize: { xs: '24px', sm: '32px' },
-                                  fontWeight: 700,
+                                  fontWeight: 600,
                                   padding: '8px 0',
                                   background: 'transparent',
                                   color: theme.palette.text.primary,
@@ -2858,8 +2858,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               sx={{
                                 mt: 1,
                                 display: 'block',
-                                fontSize: '0.8rem',
-                                fontWeight: 500,
+                                fontSize: '13px',
+                                fontWeight: 400,
                                 opacity: focusTop ? 1 : 0.7,
                                 transition: 'opacity 0.2s ease'
                               }}
@@ -2881,8 +2881,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               variant="caption"
                               color="text.secondary"
                               sx={{
-                                fontSize: '0.75rem',
-                                fontWeight: 500,
+                                fontSize: '12px',
+                                fontWeight: 400,
                                 letterSpacing: '0.01em'
                               }}
                             >
@@ -2914,7 +2914,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                       px: 1.5,
                                       py: 0.5,
                                       borderRadius: '8px',
-                                      fontSize: '0.7rem',
+                                      fontSize: '11px',
                                       fontWeight: 600,
                                       cursor: 'pointer',
                                       backgroundColor: alpha(theme.palette.primary.main, 0.1),
@@ -3016,7 +3016,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               sx={{
                                 mb: 1,
                                 display: 'block',
-                                fontSize: '0.75rem',
+                                fontSize: '12px',
                                 fontWeight: 600,
                                 letterSpacing: '0.05em',
                                 textTransform: 'uppercase',
@@ -3058,7 +3058,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 input: {
                                   textAlign: 'right',
                                   fontSize: { xs: '24px', sm: '32px' },
-                                  fontWeight: 700,
+                                  fontWeight: 600,
                                   padding: '8px 0',
                                   background: 'transparent',
                                   color: theme.palette.text.primary,
@@ -3087,8 +3087,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               sx={{
                                 mt: 1,
                                 display: 'block',
-                                fontSize: '0.8rem',
-                                fontWeight: 500,
+                                fontSize: '13px',
+                                fontWeight: 400,
                                 opacity: focusBottom ? 1 : 0.7,
                                 transition: 'opacity 0.2s ease'
                               }}
@@ -3130,7 +3130,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             }
                             sx={{
                               py: 0.6,
-                              fontSize: '0.7rem',
+                              fontSize: '11px',
                               textTransform: 'none',
                               borderColor: showOrderbook
                                 ? theme.palette.primary.main
@@ -3158,7 +3158,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               startIcon={<ListIcon sx={{ width: 14, height: 14 }} />}
                               sx={{
                                 py: 0.6,
-                                fontSize: '0.7rem',
+                                fontSize: '11px',
                                 textTransform: 'none',
                                 borderColor: showOrders
                                   ? theme.palette.primary.main
@@ -3221,7 +3221,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     onClick={() => setSlippage(val)}
                                     sx={{
                                       height: '18px',
-                                      fontSize: '0.6rem',
+                                      fontSize: '12px',
                                       cursor: 'pointer',
                                       backgroundColor:
                                         slippage === val
@@ -3299,7 +3299,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.65rem',
+                                  fontSize: '13px',
                                   fontWeight: 600,
                                   color: theme.palette.text.secondary,
                                   textTransform: 'uppercase',
@@ -3311,7 +3311,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '0.6rem',
+                                  fontSize: '12px',
                                   color: theme.palette.text.secondary,
                                   opacity: 0.7
                                 }}
@@ -3342,7 +3342,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                                 transition: 'all 0.2s ease',
                                 input: {
-                                  fontSize: '0.9rem',
+                                  fontSize: '14px',
                                   fontWeight: 600,
                                   fontFamily:
                                     '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
@@ -3382,7 +3382,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '0.6rem',
+                                      fontSize: '12px',
                                       fontWeight: 600,
                                       color: theme.palette.success.main
                                     }}
@@ -3412,7 +3412,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '0.6rem',
+                                      fontSize: '12px',
                                       fontWeight: 600,
                                       color: theme.palette.error.main
                                     }}
@@ -3429,7 +3429,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <Typography
                               variant="caption"
                               sx={{
-                                fontSize: '0.65rem',
+                                fontSize: '13px',
                                 fontWeight: 600,
                                 color: theme.palette.text.secondary,
                                 textTransform: 'uppercase',
@@ -3481,7 +3481,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 >
                                   <Typography
                                     variant="caption"
-                                    sx={{ fontSize: '0.6rem', fontWeight: 600 }}
+                                    sx={{ fontSize: '12px', fontWeight: 600 }}
                                   >
                                     {exp.label}
                                   </Typography>
@@ -3504,7 +3504,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     backgroundColor: alpha(theme.palette.background.paper, 0.05),
                                     border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
                                     input: {
-                                      fontSize: '0.7rem',
+                                      fontSize: '11px',
                                       textAlign: 'center'
                                     }
                                   }}
@@ -3659,7 +3659,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           >
                             <Typography
                               variant="caption"
-                              sx={{ fontSize: '0.65rem', color: theme.palette.text.secondary }}
+                              sx={{ fontSize: '13px', color: theme.palette.text.secondary }}
                             >
                               ORDER SUMMARY
                             </Typography>
@@ -3916,7 +3916,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 sx={{
                                   color: getPriceImpactColor(Math.abs(priceImpact)),
                                   fontWeight: 600,
-                                  fontSize: '0.75rem'
+                                  fontSize: '12px'
                                 }}
                               >
                                 {priceImpact > 0 ? '+' : ''}
@@ -4058,7 +4058,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     variant="caption"
                     color="text.secondary"
                     fontWeight={600}
-                    sx={{ fontSize: '0.7rem' }}
+                    sx={{ fontSize: '11px' }}
                   >
                     {token1.name}
                   </Typography>
@@ -4067,7 +4067,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       variant="caption"
                       fontWeight={700}
                       color="text.primary"
-                      sx={{ fontSize: '0.75rem' }}
+                      sx={{ fontSize: '12px' }}
                     >
                       {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
                     </Typography>
@@ -4112,7 +4112,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     variant="caption"
                     color="text.secondary"
                     fontWeight={600}
-                    sx={{ fontSize: '0.7rem' }}
+                    sx={{ fontSize: '11px' }}
                   >
                     {token2.name}
                   </Typography>
@@ -4121,7 +4121,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       variant="caption"
                       fontWeight={700}
                       color="text.primary"
-                      sx={{ fontSize: '0.75rem' }}
+                      sx={{ fontSize: '12px' }}
                     >
                       {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
                     </Typography>

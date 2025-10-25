@@ -212,7 +212,7 @@ const ViewLink = styled.a`
   color: white;
   text-decoration: none;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   transition: all 0.2s ease;
 
   &:hover {

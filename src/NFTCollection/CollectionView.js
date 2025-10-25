@@ -368,7 +368,7 @@ const CountChip = styled(Box)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
   color: theme.palette.success.main,
   fontWeight: 600,
-  fontSize: '0.65rem',
+  fontSize: '13px',
   minWidth: '24px',
   textAlign: 'center'
 }));
@@ -421,7 +421,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
               background: 'transparent',
               color: (theme) => theme.palette.primary.main,
               fontWeight: 600,
-              fontSize: '0.7rem',
+              fontSize: '11px',
               height: '24px',
               border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
               '&:hover': {
@@ -466,7 +466,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                       <CategoryIcon
                         sx={{
                           color: 'info.main',
-                          fontSize: '0.9rem'
+                          fontSize: '14px'
                         }}
                       />
                     </Box>
@@ -476,7 +476,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                         sx={{
                           fontWeight: 600,
                           color: 'text.primary',
-                          fontSize: '0.85rem',
+                          fontSize: '14px',
                           lineHeight: 1.2
                         }}
                       >
@@ -487,8 +487,8 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                           variant="caption"
                           color="primary.main"
                           sx={{
-                            fontWeight: 500,
-                            fontSize: '0.65rem'
+                            fontWeight: 400,
+                            fontSize: '13px'
                           }}
                         >
                           {selectedCount} selected
@@ -506,7 +506,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                         border: (theme) => `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
                         color: 'warning.main',
                         fontWeight: 600,
-                        fontSize: '0.65rem',
+                        fontSize: '13px',
                         minWidth: '24px',
                         textAlign: 'center'
                       }}
@@ -540,7 +540,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                             size="small"
                             sx={{
                               '& .MuiSvgIcon-root': {
-                                fontSize: '1rem'
+                                fontSize: '16px'
                               }
                             }}
                           />
@@ -554,9 +554,9 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                               <Typography
                                 variant="body2"
                                 sx={{
-                                  fontWeight: 500,
+                                  fontWeight: 400,
                                   color: 'text.primary',
-                                  fontSize: '0.75rem'
+                                  fontSize: '12px'
                                 }}
                               >
                                 {key}
@@ -572,7 +572,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
                                   position: 'absolute',
                                   right: 0,
                                   top: -14,
-                                  fontSize: '0.6rem',
+                                  fontSize: '12px',
                                   fontWeight: 400
                                 }}
                               >
@@ -747,7 +747,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 backdropFilter: 'blur(8px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                 color: theme.palette.text.secondary,
-                fontSize: '0.55rem',
+                fontSize: '11px',
                 fontWeight: 400,
                 letterSpacing: '0.3px'
               }}
@@ -773,7 +773,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
               variant="subtitle2"
               sx={{
                 fontWeight: 600,
-                fontSize: '0.95rem',
+                fontSize: '15px',
                 color: theme.palette.text.primary,
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -809,10 +809,10 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                   gap: 0.4
                 }}
               >
-                <Typography sx={{ fontSize: '0.65rem', fontWeight: 500, color: theme.palette.primary.main }}>
+                <Typography sx={{ fontSize: '13px', fontWeight: 400, color: theme.palette.primary.main }}>
                   #
                 </Typography>
-                <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: theme.palette.text.primary }}>
+                <Typography sx={{ fontSize: '13px', fontWeight: 600, color: theme.palette.text.primary }}>
                   {fIntNumber(MasterSequence)}
                 </Typography>
               </Box>
@@ -830,8 +830,8 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                   gap: 0.4
                 }}
               >
-                <LeaderboardOutlinedIcon sx={{ fontSize: '0.75rem', color: theme.palette.text.secondary }} />
-                <Typography sx={{ fontSize: '0.65rem', fontWeight: 600, color: theme.palette.text.primary }}>
+                <LeaderboardOutlinedIcon sx={{ fontSize: '12px', color: theme.palette.text.secondary }} />
+                <Typography sx={{ fontSize: '13px', fontWeight: 600, color: theme.palette.text.primary }}>
                   {fIntNumber(rarity_rank)}
                 </Typography>
               </Box>
@@ -979,7 +979,7 @@ const NFTGrid = React.memo(({ collection }) => {
               }
             }}
           >
-            <SearchIcon sx={{ color: 'text.disabled', mr: 1, fontSize: '1.1rem' }} />
+            <SearchIcon sx={{ color: 'text.disabled', mr: 1, fontSize: '18px' }} />
             <TextField
               fullWidth
               variant="standard"
@@ -991,7 +991,7 @@ const NFTGrid = React.memo(({ collection }) => {
               }}
               InputProps={{
                 disableUnderline: true,
-                sx: { fontSize: '0.85rem' },
+                sx: { fontSize: '14px' },
                 endAdornment: (
                   <Stack direction="row" spacing={0.5} alignItems="center">
                     {search && (
@@ -1025,14 +1025,14 @@ const NFTGrid = React.memo(({ collection }) => {
             <Button
               variant="outlined"
               onClick={(e) => setAnchorEl(e.currentTarget)}
-              endIcon={<ExpandMoreIcon sx={{ fontSize: '1.1rem' }} />}
+              endIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}
               sx={{
                 px: 1.5,
                 py: 0.6,
                 borderRadius: '8px',
                 textTransform: 'none',
                 fontWeight: 400,
-                fontSize: '0.8rem',
+                fontSize: '13px',
                 border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
                 color: 'text.secondary',
                 backgroundColor: 'transparent',
@@ -1233,7 +1233,7 @@ const NFTGrid = React.memo(({ collection }) => {
               }}
             >
               <Stack direction="row" alignItems="center" spacing={2}>
-                <Typography sx={{ fontSize: '1.2rem' }}>{option.icon}</Typography>
+                <Typography sx={{ fontSize: '19px' }}>{option.icon}</Typography>
                 <Box sx={{ flex: 1 }}>
                   <Typography
                     variant="body2"
@@ -1245,14 +1245,14 @@ const NFTGrid = React.memo(({ collection }) => {
                   >
                     {option.label}
                   </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
                     {option.desc}
                   </Typography>
                 </Box>
                 {subFilter === option.value && (
                   <CheckCircleIcon
                     sx={{
-                      fontSize: '1.2rem',
+                      fontSize: '19px',
                       color: theme.palette.primary.main
                     }}
                   />
@@ -1372,7 +1372,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
       {/* Action Buttons */}
       <Box sx={{ mb: 3 }}>
         <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '14px' }}>
             {activeFiltersCount > 0 ? `${activeFiltersCount} trait${activeFiltersCount > 1 ? 's' : ''} selected` : 'Select traits to filter'}
           </Typography>
           <Stack direction="row" spacing={1}>
@@ -1384,7 +1384,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                 sx={{
                   textTransform: 'none',
                   borderRadius: '8px',
-                  fontSize: '0.8rem'
+                  fontSize: '13px'
                 }}
               >
                 Clear
@@ -1419,7 +1419,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                     />
                     <Typography
                       variant="subtitle1"
-                      sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1rem' }}
+                      sx={{ fontWeight: 600, color: 'text.primary', fontSize: '16px' }}
                     >
                       {attr.title}
                     </Typography>
@@ -1434,7 +1434,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                         border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
                         color: 'info.main',
                         fontWeight: 600,
-                        fontSize: '0.75rem'
+                        fontSize: '12px'
                       }}
                     >
                       {itemCount}
@@ -1471,7 +1471,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                             onChange={handleAttrChange}
                             value={checkValue}
                             color="primary"
-                            sx={{ '& .MuiSvgIcon-root': { fontSize: '1.3rem' } }}
+                            sx={{ '& .MuiSvgIcon-root': { fontSize: '21px' } }}
                           />
                           <Box sx={{ flex: 1 }}>
                             <Stack
@@ -1482,7 +1482,7 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                             >
                               <Typography
                                 variant="body2"
-                                sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.9rem' }}
+                                sx={{ fontWeight: 600, color: 'text.primary', fontSize: '14px' }}
                               >
                                 {key}
                               </Typography>
@@ -1495,8 +1495,8 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                                   border: (theme) =>
                                     `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
                                   color: 'success.main',
-                                  fontWeight: 700,
-                                  fontSize: '0.7rem'
+                                  fontWeight: 600,
+                                  fontSize: '11px'
                                 }}
                               >
                                 {fIntNumber(value)}
@@ -1511,8 +1511,8 @@ function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
                                   position: 'absolute',
                                   right: 0,
                                   top: -20,
-                                  fontSize: '0.7rem',
-                                  fontWeight: 500
+                                  fontSize: '11px',
+                                  fontWeight: 400
                                 }}
                               >
                                 {percentage.toFixed(1)}%
@@ -1612,7 +1612,7 @@ function FilterDetail({
         <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
           <Typography
             variant="h6"
-            sx={{ color: 'text.primary', fontWeight: 700, fontSize: '1.1rem' }}
+            sx={{ color: 'text.primary', fontWeight: 600, fontSize: '18px' }}
           >
             Filters
           </Typography>
@@ -1622,7 +1622,7 @@ function FilterDetail({
               size="small"
               sx={{
                 height: '22px',
-                fontSize: '0.7rem',
+                fontSize: '11px',
                 fontWeight: 600,
                 backgroundColor: alpha(theme.palette.primary.main, 0.1),
                 color: theme.palette.primary.main,
@@ -1634,7 +1634,7 @@ function FilterDetail({
         <Typography
           variant="body2"
           color="text.secondary"
-          sx={{ fontWeight: 500, fontSize: '0.8rem' }}
+          sx={{ fontWeight: 400, fontSize: '13px' }}
         >
           Refine your search results
         </Typography>
@@ -1660,7 +1660,7 @@ function FilterDetail({
             expandIcon={
               <ExpandMoreIcon
                 sx={{
-                  fontSize: '1.2rem',
+                  fontSize: '19px',
                   transition: 'transform 0.2s ease, border-color 0.2s ease',
                   color: theme.palette.primary.main
                 }}
@@ -1691,11 +1691,11 @@ function FilterDetail({
                   justifyContent: 'center'
                 }}
               >
-                <FactCheckIcon sx={{ color: 'primary.main', fontSize: '1.1rem' }} />
+                <FactCheckIcon sx={{ color: 'primary.main', fontSize: '18px' }} />
               </Box>
               <Typography
                 variant="subtitle1"
-                sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}
+                sx={{ color: 'text.primary', fontWeight: 600, fontSize: '15px', flex: 1 }}
               >
                 Status
               </Typography>
@@ -1712,7 +1712,7 @@ function FilterDetail({
                   size="small"
                   sx={{
                     height: '20px',
-                    fontSize: '0.65rem',
+                    fontSize: '13px',
                     fontWeight: 600,
                     backgroundColor: alpha(theme.palette.primary.main, 0.1),
                     color: theme.palette.primary.main,
@@ -1764,7 +1764,7 @@ function FilterDetail({
                         sx={{
                           padding: 0,
                           '& .MuiSvgIcon-root': {
-                            fontSize: '1.2rem',
+                            fontSize: '19px',
                             color: filter & 1 ? 'white' : theme.palette.primary.main
                           }
                         }}
@@ -1774,7 +1774,7 @@ function FilterDetail({
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
                         <Typography
                           variant="subtitle1"
-                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}
+                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '15px' }}
                         >
                           Buy with Mints
                         </Typography>
@@ -1783,8 +1783,8 @@ function FilterDetail({
                           size="small"
                           sx={{
                             height: '24px',
-                            fontSize: '0.7rem',
-                            fontWeight: 700,
+                            fontSize: '11px',
+                            fontWeight: 600,
                             backgroundColor:
                               filter & 1
                                 ? theme.palette.primary.main
@@ -1798,7 +1798,7 @@ function FilterDetail({
                         <Typography
                           variant="body2"
                           color="text.secondary"
-                          sx={{ fontWeight: 500, fontSize: '0.8rem' }}
+                          sx={{ fontWeight: 400, fontSize: '13px' }}
                         >
                           Available for bulk minting purchases
                         </Typography>
@@ -1866,14 +1866,14 @@ function FilterDetail({
                         onChange={handleFlagChange}
                         value={2}
                         color="success"
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }}
+                        sx={{ '& .MuiSvgIcon-root': { fontSize: '24px' } }}
                       />
                     </Box>
                     <Box sx={{ flex: 1 }}>
                       <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
                         <Typography
                           variant="h6"
-                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}
+                          sx={{ fontWeight: 600, color: 'text.primary', fontSize: '18px' }}
                         >
                           Recently Minted
                         </Typography>
@@ -1884,15 +1884,15 @@ function FilterDetail({
                             borderRadius: '20px',
                             background: (theme) => theme.palette.success.main,
                             color: 'white',
-                            fontWeight: 700,
-                            fontSize: '0.75rem'
+                            fontWeight: 600,
+                            fontSize: '12px'
                           }}
                         >
                           {extra?.boughtWithMints || 0}
                         </Box>
                       </Stack>
                       <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
                           Fresh NFTs pending transfer or acceptance
                         </Typography>
                         <Tooltip
@@ -1968,7 +1968,7 @@ function FilterDetail({
                           color: 'white'
                         },
                         '& .MuiSvgIcon-root': {
-                          fontSize: '1.2rem'
+                          fontSize: '19px'
                         }
                       }}
                     />
@@ -1977,7 +1977,7 @@ function FilterDetail({
                     <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
                       <Typography
                         variant="subtitle1"
-                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '0.95rem' }}
+                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '15px' }}
                       >
                         Buy Now
                       </Typography>
@@ -1986,8 +1986,8 @@ function FilterDetail({
                         size="small"
                         sx={{
                           height: '24px',
-                          fontSize: '0.7rem',
-                          fontWeight: 700,
+                          fontSize: '11px',
+                          fontWeight: 600,
                           backgroundColor:
                             filter & 4
                               ? theme.palette.warning.main
@@ -2000,7 +2000,7 @@ function FilterDetail({
                     <Typography
                       variant="body2"
                       color="text.secondary"
-                      sx={{ fontWeight: 500, fontSize: '0.8rem' }}
+                      sx={{ fontWeight: 400, fontSize: '13px' }}
                     >
                       NFTs available for immediate purchase
                     </Typography>
@@ -2027,10 +2027,10 @@ function FilterDetail({
                           display: 'flex',
                           alignItems: 'center',
                           gap: 1,
-                          fontSize: '0.85rem'
+                          fontSize: '14px'
                         }}
                       >
-                        <TuneIcon sx={{ fontSize: '1rem', color: theme.palette.warning.main }} />
+                        <TuneIcon sx={{ fontSize: '16px', color: theme.palette.warning.main }} />
                         Sort by Price
                       </Typography>
                       <RadioGroup value={subFilter} onChange={handleOnSaleFlagChange}>
@@ -2097,14 +2097,14 @@ function FilterDetail({
                                     spacing={1}
                                     sx={{ ml: 0.5 }}
                                   >
-                                    <Typography sx={{ fontSize: '1rem' }}>{option.icon}</Typography>
+                                    <Typography sx={{ fontSize: '16px' }}>{option.icon}</Typography>
                                     <Box>
                                       <Typography
                                         variant="body2"
                                         sx={{
                                           fontWeight: 600,
                                           color: 'text.primary',
-                                          fontSize: '0.85rem'
+                                          fontSize: '14px'
                                         }}
                                       >
                                         {option.label}
@@ -2112,7 +2112,7 @@ function FilterDetail({
                                       <Typography
                                         variant="caption"
                                         color="text.secondary"
-                                        sx={{ fontSize: '0.7rem' }}
+                                        sx={{ fontSize: '11px' }}
                                       >
                                         {option.desc}
                                       </Typography>
@@ -2165,20 +2165,20 @@ function FilterDetail({
                       onChange={handleFlagChange}
                       value={16}
                       color="info"
-                      sx={{ '& .MuiSvgIcon-root': { fontSize: '1.5rem' } }}
+                      sx={{ '& .MuiSvgIcon-root': { fontSize: '24px' } }}
                     />
                   </Box>
                   <Box sx={{ flex: 1 }}>
                     <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
                       <Typography
                         variant="h6"
-                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '1.1rem' }}
+                        sx={{ fontWeight: 600, color: 'text.primary', fontSize: '18px' }}
                       >
                         Rarity Sorting
                       </Typography>
                     </Stack>
                     <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
                         Sort NFTs by their rarity ranking
                       </Typography>
                       <Tooltip title="Sort NFTs with rarity" placement="top" arrow>
@@ -2230,7 +2230,7 @@ function FilterDetail({
             expandIcon={
               <ExpandMoreIcon
                 sx={{
-                  fontSize: '1.2rem',
+                  fontSize: '19px',
                   transition: 'transform 0.2s ease, border-color 0.2s ease',
                   color: theme.palette.success.main
                 }}
@@ -2261,11 +2261,11 @@ function FilterDetail({
                   justifyContent: 'center'
                 }}
               >
-                <CategoryIcon sx={{ color: 'success.main', fontSize: '1.1rem' }} />
+                <CategoryIcon sx={{ color: 'success.main', fontSize: '18px' }} />
               </Box>
               <Typography
                 variant="subtitle1"
-                sx={{ color: 'text.primary', fontWeight: 600, fontSize: '0.95rem', flex: 1 }}
+                sx={{ color: 'text.primary', fontWeight: 600, fontSize: '15px', flex: 1 }}
               >
                 Attributes
               </Typography>
@@ -2275,7 +2275,7 @@ function FilterDetail({
                   size="small"
                   sx={{
                     height: '20px',
-                    fontSize: '0.65rem',
+                    fontSize: '13px',
                     fontWeight: 600,
                     backgroundColor: alpha(theme.palette.success.main, 0.1),
                     color: theme.palette.success.main,
@@ -2296,7 +2296,7 @@ function FilterDetail({
                   border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
                 }}
               >
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
                   No Attributes Available
                 </Typography>
               </Box>
@@ -2626,10 +2626,10 @@ export default function CollectionView({ collection }) {
 
           <Stack spacing={0.5} sx={{ minWidth: 0 }}>
             <Stack direction="row" spacing={0.8} alignItems="center">
-              <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 600 }}>
+              <Typography variant="h5" sx={{ fontSize: '20px', fontWeight: 600 }}>
                 {name}
               </Typography>
-              {verified === 'yes' && <VerifiedIcon sx={{ fontSize: '1rem', color: 'primary.main' }} />}
+              {verified === 'yes' && <VerifiedIcon sx={{ fontSize: '16px', color: 'primary.main' }} />}
               <Stack direction="row" spacing={0.8} sx={{ ml: 2 }}>
                 {accountLogin === collection.account && (
                   <Button
@@ -2637,10 +2637,10 @@ export default function CollectionView({ collection }) {
                     href={`/collection/${slug}/edit`}
                     variant="outlined"
                     size="small"
-                    startIcon={<EditIcon sx={{ fontSize: '0.8rem' }} />}
+                    startIcon={<EditIcon sx={{ fontSize: '13px' }} />}
                     sx={{
                       textTransform: 'none',
-                      fontSize: '0.75rem',
+                      fontSize: '12px',
                       py: 0.4,
                       px: 1,
                       borderRadius: '6px',
@@ -2656,11 +2656,11 @@ export default function CollectionView({ collection }) {
                 <Button
                   variant="outlined"
                   size="small"
-                  startIcon={<ShareIcon sx={{ fontSize: '0.8rem' }} />}
+                  startIcon={<ShareIcon sx={{ fontSize: '13px' }} />}
                   onClick={() => setOpenShare(true)}
                   sx={{
                     textTransform: 'none',
-                    fontSize: '0.75rem',
+                    fontSize: '12px',
                     py: 0.4,
                     px: 1,
                     borderRadius: '6px',
@@ -2674,16 +2674,16 @@ export default function CollectionView({ collection }) {
               </Stack>
             </Stack>
             <Stack direction="row" spacing={0.8} alignItems="center">
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                 {accountName || account?.slice(0, 6) + '...' + account?.slice(-4)}
               </Typography>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.disabled' }}>•</Typography>
-              <Typography variant="caption" sx={{ fontSize: '0.7rem', color: 'text.secondary' }}>
+              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.disabled' }}>•</Typography>
+              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                 {formatMonthYear(created)}
               </Typography>
             </Stack>
             {description && (
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: 'text.secondary', fontStyle: 'italic' }}>
+              <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.secondary', fontStyle: 'italic' }}>
                 {truncate(description, 80)}
               </Typography>
             )}
@@ -2694,10 +2694,10 @@ export default function CollectionView({ collection }) {
           <Stack direction="row" spacing={3}>
             {statsData.filter((item, index) => index < 4).map((item) => (
               <Box key={item.label} sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 600, mb: 0.2 }}>
+                <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 600, mb: 0.2 }}>
                   {item.icon}{item.value}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '0.65rem', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
                   {item.label}
                 </Typography>
               </Box>
@@ -2730,7 +2730,7 @@ export default function CollectionView({ collection }) {
                   borderBottom: `2px solid transparent`,
                   borderRadius: 0,
                   color: 'text.secondary',
-                  fontSize: '0.85rem',
+                  fontSize: '14px',
                   fontWeight: 400,
                   textTransform: 'none',
                   px: 2,
@@ -2738,7 +2738,7 @@ export default function CollectionView({ collection }) {
                   '&.Mui-selected': {
                     bgcolor: 'transparent',
                     color: 'text.primary',
-                    fontWeight: 500,
+                    fontWeight: 400,
                     borderBottom: `2px solid ${theme.palette.primary.main}`
                   },
                   '&:hover': {

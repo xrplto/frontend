@@ -338,13 +338,13 @@ function SearchModal({ open, onClose }) {
               fullWidth
               autoComplete="off"
               sx={{
-                fontSize: '0.95rem',
+                fontSize: '15px',
                 fontWeight: 400,
                 '& input': {
                   padding: 0,
                   '&::placeholder': {
                     opacity: 0.45,
-                    fontSize: '0.95rem'
+                    fontSize: '15px'
                   }
                 }
               }}
@@ -372,7 +372,7 @@ function SearchModal({ open, onClose }) {
                 <>
                   <Typography
                     variant="subtitle2"
-                    sx={{ px: 2, pt: 2, pb: 0.75, fontSize: '0.75rem', fontWeight: 500, opacity: 0.6 }}
+                    sx={{ px: 2, pt: 2, pb: 0.75, fontSize: '12px', fontWeight: 400, opacity: 0.6 }}
                     color="text.secondary"
                   >
                     Recent
@@ -426,9 +426,9 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={item.user || item.name}
                             secondary={item.name}
-                            primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 400 }}
+                            primaryTypographyProps={{ fontSize: '15px', fontWeight: 400 }}
                             secondaryTypographyProps={{
-                              fontSize: '0.8rem',
+                              fontSize: '13px',
                               sx: { color: alpha(theme.palette.text.secondary, 0.6) }
                             }}
                           />
@@ -438,7 +438,7 @@ function SearchModal({ open, onClose }) {
                             variant="outlined"
                             sx={{
                               height: 22,
-                              fontSize: '0.7rem',
+                              fontSize: '11px',
                               fontWeight: 400,
                               borderColor: alpha(theme.palette.divider, 0.2)
                             }}
@@ -461,7 +461,7 @@ function SearchModal({ open, onClose }) {
                     spacing={1}
                   >
                     <TrendingUpIcon sx={{ fontSize: 16, color: alpha(theme.palette.primary.main, 0.7) }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.6 }}>
+                    <Typography variant="subtitle2" sx={{ fontSize: '12px', fontWeight: 400, opacity: 0.6 }}>
                       Trending
                     </Typography>
                   </Stack>
@@ -498,9 +498,9 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={token.user}
                             secondary={token.name}
-                            primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 400, noWrap: true }}
+                            primaryTypographyProps={{ fontSize: '15px', fontWeight: 400, noWrap: true }}
                             secondaryTypographyProps={{
-                              fontSize: '0.8rem',
+                              fontSize: '13px',
                               noWrap: true,
                               sx: { color: alpha(theme.palette.text.secondary, 0.6) }
                             }}
@@ -542,7 +542,7 @@ function SearchModal({ open, onClose }) {
                     spacing={1}
                   >
                     <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.7) }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '0.75rem', fontWeight: 500, opacity: 0.6 }}>
+                    <Typography variant="subtitle2" sx={{ fontSize: '12px', fontWeight: 400, opacity: 0.6 }}>
                       Trending Collections
                     </Typography>
                   </Stack>
@@ -581,9 +581,9 @@ function SearchModal({ open, onClose }) {
                             secondary={
                               collection.type ? `${collection.type} collection` : 'Collection'
                             }
-                            primaryTypographyProps={{ fontSize: '0.95rem', fontWeight: 400, noWrap: true }}
+                            primaryTypographyProps={{ fontSize: '15px', fontWeight: 400, noWrap: true }}
                             secondaryTypographyProps={{
-                              fontSize: '0.8rem',
+                              fontSize: '13px',
                               noWrap: true,
                               sx: { color: alpha(theme.palette.text.secondary, 0.6) }
                             }}
@@ -697,14 +697,14 @@ function SearchModal({ open, onClose }) {
                                   label="Verified"
                                   size="small"
                                   color="primary"
-                                  sx={{ height: 18, fontSize: '0.65rem', fontWeight: 400 }}
+                                  sx={{ height: 18, fontSize: '13px', fontWeight: 400 }}
                                 />
                               )}
                             </Stack>
                           }
                           secondary={token.name}
                           secondaryTypographyProps={{
-                            fontSize: '0.8rem',
+                            fontSize: '13px',
                             noWrap: true,
                             sx: { color: alpha(theme.palette.text.secondary, 0.6) }
                           }}
