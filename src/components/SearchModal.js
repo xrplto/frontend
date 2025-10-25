@@ -508,14 +508,14 @@ function SearchModal({ open, onClose }) {
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {token.exch !== undefined && token.exch !== null && (
-                              <Typography variant="body2" fontSize="0.9rem" fontWeight={400}>
+                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
                                 ${formatPrice(token.exch)}
                               </Typography>
                             )}
                             {token.pro24h !== undefined && token.pro24h !== null && (
                               <Typography
                                 variant="caption"
-                                fontSize="0.75rem"
+                                fontSize="12px"
                                 color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
                                 fontWeight={400}
                               >
@@ -591,7 +591,7 @@ function SearchModal({ open, onClose }) {
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {collection.floor && collection.floor.amount && (
-                              <Typography variant="body2" fontSize="0.85rem" fontWeight={400}>
+                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
                                 Floor: {collection.floor.amount}{' '}
                                 {collection.floor.currency || 'XRP'}
                               </Typography>
@@ -599,7 +599,7 @@ function SearchModal({ open, onClose }) {
                             {collection.totalVolume !== undefined && collection.totalVolume > 0 && (
                               <Typography
                                 variant="caption"
-                                fontSize="0.75rem"
+                                fontSize="12px"
                                 sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
                               >
                                 Vol: {collection.totalVolume.toLocaleString()} XRP
@@ -631,7 +631,7 @@ function SearchModal({ open, onClose }) {
                 sx={{ px: 2, pt: 2, pb: 0.75 }}
                 spacing={1}
               >
-                <Typography variant="subtitle2" fontSize="0.75rem" fontWeight={500} sx={{ opacity: 0.6 }} color="text.secondary">
+                <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
                   Results
                 </Typography>
               </Stack>
@@ -681,7 +681,7 @@ function SearchModal({ open, onClose }) {
                           primary={
                             <Stack direction="row" alignItems="center" spacing={0.75}>
                               <Typography
-                                fontSize="0.95rem"
+                                fontSize="15px"
                                 fontWeight={400}
                                 noWrap
                                 sx={{
@@ -712,14 +712,14 @@ function SearchModal({ open, onClose }) {
                         />
                         <Stack alignItems="flex-end" spacing={0.25}>
                           {token.exch !== undefined && token.exch !== null && (
-                            <Typography variant="body2" fontSize="0.9rem" fontWeight={400}>
+                            <Typography variant="body2" fontSize="14px" fontWeight={400}>
                               ${formatPrice(token.exch)}
                             </Typography>
                           )}
                           {token.pro24h !== undefined && token.pro24h !== null && (
                             <Typography
                               variant="caption"
-                              fontSize="0.75rem"
+                              fontSize="12px"
                               color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
                               fontWeight={400}
                             >
@@ -739,7 +739,7 @@ function SearchModal({ open, onClose }) {
           {/* No results */}
           {searchQuery && !loading && searchResults.tokens.length === 0 && (
             <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography fontSize="0.9rem" sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}>
+              <Typography fontSize="14px" sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}>
                 No results found for "{searchQuery}"
               </Typography>
             </Box>

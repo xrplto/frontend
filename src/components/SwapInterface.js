@@ -3204,7 +3204,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 <Typography
                                   variant="caption"
                                   color="text.secondary"
-                                  fontSize="0.7rem"
+                                  fontSize="11px"
                                 >
                                   Slippage Tolerance
                                 </Typography>
@@ -3260,11 +3260,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 <Typography
                                   variant="caption"
                                   color="text.secondary"
-                                  fontSize="0.65rem"
+                                  fontSize="13px"
                                 >
                                   Minimum Received
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="0.7rem">
+                                <Typography variant="caption" fontWeight={600} fontSize="11px">
                                   {new Decimal(amount2).mul(1 - slippage / 100).toFixed(4)}{' '}
                                   {token2.name}
                                 </Typography>
@@ -3509,7 +3509,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     }
                                   }}
                                 />
-                                <Typography variant="caption" fontSize="0.7rem">
+                                <Typography variant="caption" fontSize="11px">
                                   hours
                                 </Typography>
                               </Box>
@@ -3681,11 +3681,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 <Typography
                                   variant="caption"
                                   color="text.secondary"
-                                  fontSize="0.7rem"
+                                  fontSize="11px"
                                 >
                                   {orderType === 'limit' ? 'Sell Order' : 'You Pay'}
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                <Typography variant="caption" fontWeight={600} fontSize="12px">
                                   {amount1} {token1.name || token1.currency}
                                 </Typography>
                               </Stack>
@@ -3699,14 +3699,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 <Typography
                                   variant="caption"
                                   color="text.secondary"
-                                  fontSize="0.7rem"
+                                  fontSize="11px"
                                 >
                                   {orderType === 'limit' ? 'To Buy' : 'You Receive'}
                                 </Typography>
                                 <Typography
                                   variant="caption"
                                   fontWeight={600}
-                                  fontSize="0.75rem"
+                                  fontSize="12px"
                                   color="primary.main"
                                 >
                                   {orderType === 'limit' && limitPrice
@@ -3741,13 +3741,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 <Typography
                                   variant="caption"
                                   color="text.secondary"
-                                  fontSize="0.7rem"
+                                  fontSize="11px"
                                 >
                                   {orderType === 'limit'
                                     ? `${token1.name} at Rate`
                                     : 'Exchange Rate'}
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                <Typography variant="caption" fontWeight={600} fontSize="12px">
                                   {orderType === 'limit' && limitPrice
                                     ? `${limitPrice} ${token2.name || token2.currency}`
                                     : (() => {
@@ -3782,14 +3782,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     <Typography
                                       variant="caption"
                                       color="text.secondary"
-                                      fontSize="0.7rem"
+                                      fontSize="11px"
                                     >
                                       Order Type
                                     </Typography>
                                     <Typography
                                       variant="caption"
                                       fontWeight={600}
-                                      fontSize="0.75rem"
+                                      fontSize="12px"
                                     >
                                       Limit Order
                                     </Typography>
@@ -3802,14 +3802,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     <Typography
                                       variant="caption"
                                       color="text.secondary"
-                                      fontSize="0.7rem"
+                                      fontSize="11px"
                                     >
                                       Expiry
                                     </Typography>
                                     <Typography
                                       variant="caption"
                                       fontWeight={600}
-                                      fontSize="0.75rem"
+                                      fontSize="12px"
                                     >
                                       {orderExpiry === 'never'
                                         ? 'Never'
@@ -3839,11 +3839,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   <Typography
                                     variant="caption"
                                     color="text.secondary"
-                                    fontSize="0.7rem"
+                                    fontSize="11px"
                                   >
                                     Max Slippage
                                   </Typography>
-                                  <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                  <Typography variant="caption" fontWeight={600} fontSize="12px">
                                     {slippage}%
                                   </Typography>
                                 </Stack>
@@ -3861,11 +3861,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 <Typography
                                   variant="caption"
                                   color="text.secondary"
-                                  fontSize="0.7rem"
+                                  fontSize="11px"
                                 >
                                   Network Fee
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="0.75rem">
+                                <Typography variant="caption" fontWeight={600} fontSize="12px">
                                   ~0.000012 XRP
                                 </Typography>
                               </Stack>
@@ -3907,7 +3907,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               border: `1px solid ${alpha(theme.palette.divider, 0.05)}`
                             }}
                           >
-                            <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
+                            <Typography variant="caption" color="text.secondary" fontSize="11px">
                               Price Impact
                             </Typography>
                             <Stack direction="row" alignItems="center" spacing={0.5}>

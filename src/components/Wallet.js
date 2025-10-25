@@ -802,7 +802,7 @@ export const ConnectWallet = () => {
         color: '#4285f4',
         backgroundColor: 'transparent',
         textTransform: 'none',
-        fontSize: { xs: '0.9rem', sm: '0.875rem' },
+        fontSize: { xs: '14px', sm: '14px' },
         '&:hover': {
           borderColor: '#4285f4',
           backgroundColor: alpha('#4285f4', 0.04),

@@ -838,7 +838,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   minHeight: { xs: '40px', sm: '44px' }
                 }}
               >
-                <SearchIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+                <SearchIcon sx={{ fontSize: { xs: '19px', sm: '24px' } }} />
               </IconButton>
             )}
 
@@ -1057,7 +1057,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ml: { xs: 0.5, sm: 1 }
                 }}
               >
-                <MenuIcon sx={{ fontSize: { xs: '1.2rem', sm: '1.5rem' } }} />
+                <MenuIcon sx={{ fontSize: { xs: '19px', sm: '24px' } }} />
               </IconButton>
             )}
 

@@ -23,7 +23,7 @@ const FooterLink = ({ href, children }) => {
       rel={external ? 'noreferrer noopener' : undefined}
       sx={{
         color: 'text.secondary',
-        fontSize: { xs: '0.85rem', md: '0.9rem' },
+        fontSize: { xs: '14px', md: '14px' },
         px: { xs: 0.5, md: 0.8 },
         py: 0.3,
         borderRadius: '8px',
