@@ -136,15 +136,15 @@ function SearchModal({ open, onClose }) {
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
 
-  // Convert USD price to selected currency
-  const convertPrice = useCallback((usdPrice) => {
+  // Convert XRP price to selected currency (exch is in XRP)
+  const convertPrice = useCallback((xrpPrice) => {
     if (activeFiatCurrency === 'XRP') {
-      // Convert USD to XRP (divide by XRP price in USD)
-      return usdPrice / (metrics.XRP || 1);
+      return xrpPrice;
     }
-    // For other currencies, multiply by the exchange rate
-    return usdPrice * exchRate;
-  }, [activeFiatCurrency, exchRate, metrics]);
+    // For fiat currencies, divide by exchange rate
+    // exchRate is how much 1 USD = X XRP, so XRP / exchRate = fiat value
+    return xrpPrice / exchRate;
+  }, [activeFiatCurrency, exchRate]);
 
   const currencySymbol = currencySymbols[activeFiatCurrency] || '$';
 
