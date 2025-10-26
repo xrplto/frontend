@@ -791,15 +791,15 @@ export const ConnectWallet = () => {
       sx={{
         mt: 0,
         mb: 0,
-        height: { xs: '40px', sm: '36px' },
+        py: 1.5,
         fontWeight: 400,
-        borderRadius: '8px',
+        borderRadius: '12px',
         borderWidth: '1.5px',
-        borderColor: alpha(theme.palette.divider, 0.2),
+        borderColor: '#4285f4',
         color: '#4285f4',
         backgroundColor: 'transparent',
         textTransform: 'none',
-        fontSize: { xs: '14px', sm: '14px' },
+        fontSize: '0.95rem',
         '&:hover': {
           borderColor: '#4285f4',
           backgroundColor: alpha('#4285f4', 0.04),
@@ -807,7 +807,7 @@ export const ConnectWallet = () => {
         }
       }}
     >
-      Connect Wallet
+      Connect
     </Button>
   );
 };
@@ -2741,13 +2741,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         }
         style={{
           background: 'transparent',
-          border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+          border: `1.5px solid ${accountProfile ? alpha(theme.palette.divider, 0.2) : '#4285f4'}`,
           borderRadius: '12px',
-          height: '36px',
+          height: accountProfile ? '36px' : '42px',
           padding: accountProfile ? '0 14px' : '0 16px',
-          minWidth: accountProfile ? '110px' : '90px',
+          minWidth: accountProfile ? '110px' : '100%',
           color: '#4285f4',
-          fontSize: '14px',
+          fontSize: '0.95rem',
           fontWeight: '400',
           fontFamily: 'inherit',
           cursor: 'pointer',
@@ -2762,7 +2762,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           e.target.style.background = alpha('#4285f4', 0.04);
         }}
         onMouseLeave={(e) => {
-          e.target.style.borderColor = alpha(theme.palette.divider, 0.2);
+          e.target.style.borderColor = accountProfile ? alpha(theme.palette.divider, 0.2) : '#4285f4';
           e.target.style.background = 'transparent';
         }}
         title={accountProfile ? 'Account Details' : 'Connect Wallet'}
@@ -2786,7 +2786,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             </span>
           </div>
         ) : (
-          <span>{'Connect'}</span>
+          <span style={{ fontSize: '0.95rem', fontWeight: 400 }}>Connect</span>
         )}
       </button>
 
