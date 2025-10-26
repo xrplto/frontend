@@ -13,6 +13,14 @@ import MenuItem from '@mui/material/MenuItem';
 import Divider from '@mui/material/Divider';
 import SvgIcon from '@mui/material/SvgIcon';
 import Typography from '@mui/material/Typography';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemText from '@mui/material/ListItemText';
+import Collapse from '@mui/material/Collapse';
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
 import { styled } from '@mui/material/styles';
 import Image from 'next/image';
 import SearchIcon from '@mui/icons-material/Search';
@@ -348,6 +356,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [tokensExpanded, setTokensExpanded] = useState(false);
 
 
   // Check if metrics are properly loaded
@@ -1073,6 +1082,115 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       <Suspense fallback={null}>
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </Suspense>
+
+      <Drawer
+        anchor="right"
+        open={openDrawer}
+        onClose={() => toggleDrawer(false)}
+        PaperProps={{
+          sx: {
+            width: { xs: '100%', sm: 260 },
+            background: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
+            border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+            boxShadow: 'none'
+          }
+        }}
+      >
+        <Box sx={{ p: 2.5 }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Typography variant="h6" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>Menu</Typography>
+            <IconButton onClick={() => toggleDrawer(false)} size="small">
+              <CloseIcon sx={{ fontSize: 20 }} />
+            </IconButton>
+          </Box>
+
+          <List sx={{ p: 0 }}>
+            <ListItem disablePadding>
+              <ListItemButton onClick={() => setTokensExpanded(!tokensExpanded)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
+                <ListItemText primary="Tokens" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
+                {tokensExpanded ? <ExpandLess /> : <ExpandMore />}
+              </ListItemButton>
+            </ListItem>
+            <Collapse in={tokensExpanded} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 2 }}>
+                <Typography variant="overline" sx={{ px: 0, pb: 0.5, pt: 1, fontSize: '9px', fontWeight: 600, color: alpha(theme.palette.text.secondary, 0.5), display: 'block', letterSpacing: '0.5px' }}>
+                  LAUNCHPADS
+                </Typography>
+                {[
+                  { path: '/view/firstledger', name: 'FirstLedger' },
+                  { path: '/view/magnetic-x', name: 'Magnetic X' },
+                  { path: '/view/xpmarket', name: 'XPmarket' },
+                  { path: '/view/aigentrun', name: 'aigent.run' },
+                  { path: '/view/ledgermeme', name: 'LedgerMeme' },
+                  { path: '/view/horizon', name: 'Horizon' },
+                  { path: '/view/moonvalve', name: 'Moonvalve' }
+                ].map((item) => (
+                  <ListItem key={item.path} disablePadding>
+                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36 }}>
+                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+
+                <Typography variant="overline" sx={{ px: 0, pb: 0.5, mt: 1.5, fontSize: '9px', fontWeight: 600, color: alpha(theme.palette.text.secondary, 0.5), display: 'block', letterSpacing: '0.5px' }}>
+                  ANALYTICS
+                </Typography>
+                {[
+                  { path: '/market-metrics', name: 'Market Metrics' },
+                  { path: '/rsi-analysis', name: 'RSI Analysis' },
+                  { path: '/amm-pools', name: 'AMM Pools' },
+                  { path: '/top-traders', name: 'Top Traders' },
+                  ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist' }] : [])
+                ].map((item) => (
+                  <ListItem key={item.path} disablePadding>
+                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36 }}>
+                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+
+                <Typography variant="overline" sx={{ px: 0, pb: 0.5, mt: 1.5, fontSize: '9px', fontWeight: 600, color: alpha(theme.palette.text.secondary, 0.5), display: 'block', letterSpacing: '0.5px' }}>
+                  DISCOVER
+                </Typography>
+                {discoverMenuItems.map((item) => (
+                  <ListItem key={item.path} disablePadding>
+                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36 }}>
+                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+
+            <ListItem disablePadding>
+              <ListItemButton component="a" href="/collections" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
+                <ListItemText primary="NFTs" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component="a" href="/swap" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
+                <ListItemText primary="Swap" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component="a" href="/news" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
+                <ListItemText primary="News" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton component="a" href="/launch" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
+                <ListItemText primary="Launch" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+
+          <Divider sx={{ my: 2 }} />
+
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Wallet buttonOnly={true} />
+          </Box>
+        </Box>
+      </Drawer>
 
     </HeaderWrapper>
   );
