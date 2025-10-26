@@ -14,6 +14,7 @@
 /* Prevent layout shifts */
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
@@ -21,6 +22,7 @@ body {
   font-display: swap;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 /* When the order book is open on desktop, allow content to occupy full width

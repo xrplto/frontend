@@ -213,6 +213,7 @@ const MediaContainer = styled(Box)(({ theme }) => ({
 // NFT Preview Component (embedded)
 const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails = false }) {
   const { darkMode } = useContext(AppContext);
+  const theme = useTheme();
   const noImg = '/static/nft_no_image.webp';
 
   // Slider state
@@ -336,7 +337,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
     return (
       <Box
-        onClick={() => handleOpenImage(fullSizeUrl)}
+        onClick={() => !errored && handleOpenImage(fullSizeUrl)}
         sx={{
           width: '100%',
           height: '100%',
@@ -344,7 +345,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
-          cursor: 'pointer'
+          cursor: errored ? 'default' : 'pointer'
         }}
       >
         {loadingImage()}
@@ -625,7 +626,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           <Stack direction="row" spacing={2}>
             <Box sx={{ flex: 1 }}>
               <Label sx={{ mb: 0.2 }}>Owner</Label>
-              <Link href={`/account/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Link href={`/profile/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
                 <Value sx={{ fontSize: '13px', wordBreak: 'break-all' }}>{account}</Value>
               </Link>
             </Box>
@@ -637,7 +638,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
           <Box>
             <Label sx={{ mb: 0.2 }}>Issuer</Label>
-            <Link href={`/account/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+            <Link href={`/profile/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
               <Value sx={{ fontSize: '13px', wordBreak: 'break-all' }}>{issuer}</Value>
             </Link>
           </Box>
@@ -645,7 +646,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           <Box>
             <Label sx={{ mb: 0.2 }}>Token ID</Label>
             <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '12px', wordBreak: 'break-all' }}>{NFTokenID}</Value>
+              <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all', lineHeight: 1.2 }}>{NFTokenID}</Value>
             </Link>
           </Box>
         </Stack>

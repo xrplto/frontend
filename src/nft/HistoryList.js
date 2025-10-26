@@ -74,7 +74,7 @@ const TypeChip = styled(Chip, {
   fontSize: '0.75rem',
   fontWeight: 400,
   backgroundColor: 'transparent',
-  color: transactionType === 'SALE' ? theme.palette.success.main : alpha(theme.palette.text.secondary, 0.6),
+  color: alpha(theme.palette.text.secondary, 0.7),
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   '& .MuiChip-label': {
     padding: '0 8px'
@@ -82,12 +82,12 @@ const TypeChip = styled(Chip, {
 }));
 
 const AddressLink = styled(Link)(({ theme }) => ({
-  color: theme.palette.text.primary,
+  color: alpha(theme.palette.text.primary, 0.8),
   textDecoration: 'none',
   fontFamily: 'monospace',
   fontSize: '0.85rem',
   '&:hover': {
-    color: theme.palette.primary.main
+    color: theme.palette.text.primary
   }
 }));
 

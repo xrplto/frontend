@@ -27,6 +27,8 @@ const OverviewWrapper = styled(Box)(
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
 `
 );
 

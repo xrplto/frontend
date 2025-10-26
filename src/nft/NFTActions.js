@@ -24,14 +24,7 @@ import {
   Tooltip,
   Chip
 } from '@mui/material';
-import ListIcon from '@mui/icons-material/List';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import TimelineIcon from '@mui/icons-material/Timeline';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import PanToolIcon from '@mui/icons-material/PanTool';
-import SendIcon from '@mui/icons-material/Send';
-import HistoryIcon from '@mui/icons-material/History';
 import ShareIcon from '@mui/icons-material/Share';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
@@ -222,23 +215,25 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
 
 // Add this styled component for the badge
 const OffersBadge = styled('span')(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  color: theme.palette.primary.main,
-  borderRadius: theme.shape.borderRadius,
+  backgroundColor: 'transparent',
+  color: alpha(theme.palette.text.secondary, 0.5),
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  borderRadius: '4px',
   padding: '2px 6px',
-  fontSize: '11px',
-  fontWeight: 600,
+  fontSize: '0.7rem',
+  fontWeight: 400,
   marginLeft: theme.spacing(0.5)
 }));
 
 // Add this styled component for the offer count badge
 const OfferCountBadge = styled('span')(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  color: theme.palette.primary.main,
-  borderRadius: theme.shape.borderRadius,
+  backgroundColor: 'transparent',
+  color: alpha(theme.palette.text.secondary, 0.5),
+  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+  borderRadius: '4px',
   padding: '2px 6px',
-  fontSize: '11px',
-  fontWeight: 600,
+  fontSize: '0.7rem',
+  fontWeight: 400,
   marginLeft: theme.spacing(0.5)
 }));
 
@@ -1014,11 +1009,11 @@ export default function NFTActions({ nft }) {
                 {loading ? (
                   <PulseLoader color={theme.palette.primary.main} size={10} />
                 ) : lowestSellOffer ? (
-                  <Box sx={{ p: 1.2, backgroundColor: alpha(theme.palette.background.default, 0.4), borderRadius: '8px' }}>
+                  <Box sx={{ p: 1.2, backgroundColor: 'transparent', borderRadius: '8px', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
                     <Stack spacing={0.5}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary' }}>Price</Typography>
-                        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 500 }}>
+                        <Typography variant="caption" sx={{ fontSize: '0.8rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Price</Typography>
+                        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 500, color: theme.palette.text.primary }}>
                           ✕{formatXRPAmount(lowestSellOffer.totalAmount, false)}
                         </Typography>
                       </Stack>
@@ -1121,11 +1116,10 @@ export default function NFTActions({ nft }) {
           <Stack spacing={1.5}>
             {isOwner && (
               <StyledAccordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.5) }} />}>
                   <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                    <Stack direction="row" alignItems="center" spacing={1.5}>
-                      <LocalOfferIcon color="primary" sx={{ fontSize: 20 }} />
-                      <Typography variant="h6" color="primary.main" sx={{ fontSize: '14px', fontWeight: 400 }}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
+                      <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
                         Sell Offers
                       </Typography>
                     </Stack>
@@ -1217,11 +1211,10 @@ export default function NFTActions({ nft }) {
             )}
 
             <StyledAccordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.5) }} />}>
                 <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <PanToolIcon color="primary" sx={{ fontSize: 20 }} />
-                    <Typography variant="h6" color="primary.main" sx={{ fontSize: '14px', fontWeight: 400 }}>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
                       Buy Offers
                     </Typography>
                   </Stack>
@@ -1340,10 +1333,9 @@ export default function NFTActions({ nft }) {
             </StyledAccordion>
 
             <StyledAccordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon color="primary" sx={{ fontSize: 20 }} />}>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <HistoryIcon color="primary" sx={{ fontSize: 20 }} />
-                  <Typography variant="h6" color="primary.main" sx={{ fontSize: '14px', fontWeight: 400 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.5) }} />}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
                     History
                   </Typography>
                 </Stack>
