@@ -48,7 +48,6 @@ import ShareIcon from '@mui/icons-material/Share';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ToggleOnIcon from '@mui/icons-material/ToggleOn';
 import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import ListIcon from '@mui/icons-material/List';
@@ -63,9 +62,12 @@ import { selectMetrics } from 'src/redux/statusSlice';
 
 // Utils
 import { fNumber } from 'src/utils/formatters';
+import { processOrderbookOffers } from 'src/utils/parseUtils';
+import useWebSocket from 'react-use-websocket';
 
 // Components
 import Wallet from 'src/components/Wallet';
+import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Constants
 const currencySymbols = {
@@ -76,6 +78,7 @@ const currencySymbols = {
   XRP: '✕ '
 };
 const BASE_URL = 'https://api.xrpl.to/api';
+const WSS_URL = 'wss://xrplcluster.com';
 import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parseUtils';
@@ -385,7 +388,7 @@ const TokenCard = styled(Box)(({ theme }) => ({
 const CategoryChip = styled(Chip)(({ theme }) => ({
   borderRadius: '12px',
   fontWeight: 400,
-  fontSize: '11px',
+  fontSize: '10px',
   height: 24,
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
   '&:hover': {
@@ -399,8 +402,8 @@ const CategoryChip = styled(Chip)(({ theme }) => ({
 }));
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontWeight: 500,
-  fontSize: '13px',
+  fontWeight: 400,
+  fontSize: '10px',
   textTransform: 'uppercase',
   letterSpacing: '0.06em',
   color: theme.palette.text.secondary,
@@ -453,21 +456,116 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [hasTrustline2, setHasTrustline2] = useState(true);
   const [transactionType, setTransactionType] = useState('');
 
-  // Add slippage state
-  const [slippage, setSlippage] = useState(3); // Default 3% slippage
+  // Add slippage state (persist in localStorage)
+  const [slippage, setSlippage] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('swap_slippage');
+      return saved ? parseFloat(saved) : 3;
+    }
+    return 3;
+  });
   const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
   const [limitPrice, setLimitPrice] = useState('');
   const [orderExpiry, setOrderExpiry] = useState('never'); // 'never', '1h', '24h', '7d', '30d', 'custom'
   const [customExpiry, setCustomExpiry] = useState(24); // hours for custom expiry
+  const [showOrders, setShowOrders] = useState(false);
+  const [showOrderbook, setShowOrderbook] = useState(false);
+  const [showOrderSummary, setShowOrderSummary] = useState(false);
+  const amount1Ref = useRef(null);
+
+  // Persist slippage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('swap_slippage', slippage.toString());
+    }
+  }, [slippage]);
 
   // Add state for latest sparkline prices
   const [latestPrice1, setLatestPrice1] = useState(null);
   const [latestPrice2, setLatestPrice2] = useState(null);
 
 
-  // Use orderbook data from props
-  const bids = propsBids || [];
-  const asks = propsAsks || [];
+  // Orderbook state
+  const [bids, setBids] = useState(propsBids || []);
+  const [asks, setAsks] = useState(propsAsks || []);
+  const [wsReady, setWsReady] = useState(false);
+  const reqIDRef = useRef(1000);
+
+  // WebSocket for orderbook
+  const { sendJsonMessage, lastJsonMessage } = useWebSocket(WSS_URL, {
+    onOpen: () => {
+      setWsReady(true);
+    },
+    onClose: () => {
+      setWsReady(false);
+    },
+    shouldReconnect: () => true,
+    reconnectInterval: 3000
+  });
+
+  // Fetch orderbook data via WebSocket
+  useEffect(() => {
+    if (!wsReady || !curr1 || !curr2) {
+      return;
+    }
+
+    const sendRequest = () => {
+
+      // Build taker_gets/taker_pays (use API currency as-is, omit issuer for XRP)
+      const buildAmount = (token) => {
+        if (token.currency === 'XRP') {
+          return { currency: 'XRP' };
+        }
+        return {
+          currency: token.currency,  // Use as-is from API (already hex if needed)
+          issuer: token.issuer
+        };
+      };
+
+      const cmdAsk = {
+        id: reqIDRef.current,
+        command: 'book_offers',
+        taker_gets: buildAmount(curr1),
+        taker_pays: buildAmount(curr2),
+        ledger_index: 'validated',
+        limit: 60
+      };
+      const cmdBid = {
+        id: reqIDRef.current + 1,
+        command: 'book_offers',
+        taker_gets: buildAmount(curr2),
+        taker_pays: buildAmount(curr1),
+        ledger_index: 'validated',
+        limit: 60
+      };
+      sendJsonMessage(cmdAsk);
+      sendJsonMessage(cmdBid);
+      reqIDRef.current += 2;
+    };
+
+    sendRequest();
+    const timer = setInterval(sendRequest, 4000);
+    return () => clearInterval(timer);
+  }, [wsReady, curr1, curr2, sendJsonMessage]);
+
+  // Process orderbook responses
+  useEffect(() => {
+    if (!lastJsonMessage) return;
+    const msg = lastJsonMessage;
+    if (msg.type === 'response' && msg.result?.offers) {
+      const req = msg.id % 2;
+      const processed = processOrderbookOffers(msg.result.offers, req === 1 ? 'asks' : 'bids');
+      if (req === 1) {
+        setAsks(processed);
+      } else if (req === 0) {
+        setBids(processed);
+      }
+    }
+  }, [lastJsonMessage]);
+
+  // Debug orderbook state
+  useEffect(() => {
+  }, [bids, asks]);
 
   // Token Selector Panel states
   const [panel1Open, setPanel1Open] = useState(false);
@@ -501,7 +599,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       try {
         const tokenIsXRP = token?.currency === 'XRP';
         const otherTokenIsXRP = otherToken?.currency === 'XRP';
-        const tokenIsRLUSD = token?.currency === 'RLUSD' || token?.name === 'RLUSD';
+        const tokenIsRLUSD = token?.currency === '524C555344000000000000000000000000000000' || token?.name === 'RLUSD';
 
         if (activeFiatCurrency === 'XRP') {
           // When display currency is XRP, show XRP value
@@ -571,7 +669,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       }
 
       // Special handling for RLUSD when paired with XRP
-      if ((token.currency === 'RLUSD' || token.name === 'RLUSD') && otherToken.currency === 'XRP') {
+      if ((token.currency === '524C555344000000000000000000000000000000' || token.name === 'RLUSD') && otherToken.currency === 'XRP') {
         let price = Number(tokenExch);
         if (isNaN(price) || price === 0) {
           // Try calculating from other token exchange rate
@@ -1306,6 +1404,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     let value = e.target.value;
 
     if (value === '.') value = '0.';
+    if (value === '0' && amount1 === '') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
@@ -1337,6 +1436,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     let value = e.target.value;
 
     if (value === '.') value = '0.';
+    if (value === '0' && amount2 === '') value = '0.';
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
@@ -2030,7 +2130,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             height: 30,
             backgroundColor: alpha(theme.palette.text.primary, 0.04),
             fontSize: '13px',
-            fontWeight: 500
+            fontWeight: 400
           }}
           imgProps={{
             onError: (e) => {
@@ -2063,7 +2163,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           fontWeight={400}
           noWrap
           sx={{
-            fontSize: '14px',
+            fontSize: '13px',
             lineHeight: 1.2,
             color: theme.palette.text.primary
           }}
@@ -2074,10 +2174,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           variant="caption"
           color="text.secondary"
           sx={{
-            fontSize: '11px',
+            fontSize: '10px',
             display: 'block',
             opacity: 0.6,
-            mt: 0.25
+            mt: 0
           }}
           noWrap
         >
@@ -2086,14 +2186,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       </Box>
 
       {/* Price */}
-      <Box sx={{ width: '100px', textAlign: 'right', flexShrink: 0 }}>
+      <Box sx={{ width: '110px', textAlign: 'right', flexShrink: 0, mr: 1.5 }}>
         <Typography
           sx={{
-            fontSize: '13px',
+            fontSize: '11px',
             fontWeight: 400,
             color: theme.palette.text.primary,
             fontVariantNumeric: 'tabular-nums',
-            display: 'block'
+            whiteSpace: 'nowrap'
           }}
         >
           {(() => {
@@ -2126,14 +2226,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       </Box>
 
       {/* Volume */}
-      <Box sx={{ width: '70px', textAlign: 'right', flexShrink: 0 }}>
+      <Box sx={{ width: '65px', textAlign: 'right', flexShrink: 0, mr: 1.5 }}>
         <Typography
           sx={{
-            fontSize: '13px',
+            fontSize: '10px',
             fontWeight: 400,
             color: theme.palette.text.secondary,
             fontVariantNumeric: 'tabular-nums',
-            display: 'block'
+            whiteSpace: 'nowrap'
           }}
         >
           {(() => {
@@ -2211,7 +2311,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 boxShadow: 'none'
               }}
             >
-              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 500 }}>
+              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 400 }}>
                 ✓
               </Typography>
             </Box>
@@ -2223,8 +2323,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             color={isOMCF !== 'yes' ? 'text.primary' : darkMode ? '#00AB55' : '#4E8DF4'}
             sx={{
               lineHeight: 1.2,
-              fontWeight: 500,
-              fontSize: '14px',
+              fontWeight: 400,
+              fontSize: '13px',
               letterSpacing: '-0.01em'
             }}
             noWrap
@@ -2236,7 +2336,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             color="text.secondary"
             sx={{
               lineHeight: 1,
-              fontSize: '11px',
+              fontSize: '10px',
               opacity: 0.8,
               letterSpacing: '0.02em'
             }}
@@ -2294,8 +2394,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '90%',
-          maxWidth: '520px',
+          width: '95%',
+          maxWidth: '720px',
           height: '90vh',
           maxHeight: '750px',
           backgroundColor: theme.palette.background.paper,
@@ -2308,28 +2408,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         }}
       >
         {/* Header */}
-        <Box sx={{ padding: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
+        <Box sx={{ p: 1, borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}` }}>
           <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="body1" fontWeight={400}>
+            <Typography variant="body1" sx={{ fontSize: '13px', fontWeight: 400 }}>
               {title}
             </Typography>
-            <Box
-              onClick={onClose}
-              sx={{
-                cursor: 'pointer',
-                fontSize: '24px',
-                lineHeight: 1,
-                color: theme.palette.text.secondary,
-                '&:hover': { color: theme.palette.text.primary }
-              }}
-            >
-              ×
-            </Box>
+            <IconButton onClick={onClose} size="small" sx={{ p: 0.5 }}>
+              <CloseIcon sx={{ fontSize: 18 }} />
+            </IconButton>
           </Stack>
         </Box>
 
         {/* Search and Filters */}
-        <Box sx={{ padding: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
+        <Box sx={{ p: 1, borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}` }}>
         <TextField
           inputRef={searchInputRef}
           fullWidth
@@ -2342,7 +2433,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             '& .MuiOutlinedInput-root': {
               borderRadius: '12px',
               backgroundColor: 'transparent',
-              fontSize: '14px',
+              fontSize: '13px',
               '& fieldset': {
                 borderColor: alpha(theme.palette.divider, 0.12),
                 borderWidth: '1.5px'
@@ -2371,7 +2462,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   sx={{
                     cursor: 'pointer',
                     color: theme.palette.text.secondary,
-                    fontSize: '14px',
+                    fontSize: '13px',
                     padding: '4px',
                     '&:hover': {
                       color: theme.palette.text.primary
@@ -2386,32 +2477,31 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         />
 
         {/* Category Filters */}
-        <Box
-          sx={{
-            mt: 1.5,
-            display: 'flex',
-            flexWrap: 'wrap',
-            gap: 0.5
-          }}
-        >
+        <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap' }}>
           {categories.slice(0, 6).map((cat) => (
             <CategoryChip
               key={cat.value}
               label={cat.label}
               onClick={() => setSelectedCategory(cat.value)}
               sx={{
+                height: 24,
+                fontSize: '10px',
+                fontWeight: 400,
+                borderRadius: '8px',
+                borderWidth: '1.5px',
                 backgroundColor: selectedCategory === cat.value ? alpha('#4285f4', 0.08) : 'transparent',
-                color: selectedCategory === cat.value ? '#4285f4' : theme.palette.text.secondary,
-                borderColor: selectedCategory === cat.value ? '#4285f4' : alpha(theme.palette.divider, 0.12),
+                color: selectedCategory === cat.value ? '#4285f4' : alpha(theme.palette.text.secondary, 0.7),
+                borderColor: selectedCategory === cat.value ? alpha('#4285f4', 0.3) : alpha(theme.palette.divider, 0.15),
+                '& .MuiChip-label': { px: 1 },
                 '&:hover': {
-                  borderColor: selectedCategory === cat.value ? '#4285f4' : alpha(theme.palette.primary.main, 0.4),
-                  backgroundColor: selectedCategory === cat.value ? alpha('#4285f4', 0.12) : alpha(theme.palette.primary.main, 0.04)
+                  borderColor: alpha('#4285f4', 0.3),
+                  backgroundColor: alpha('#4285f4', 0.04)
                 }
               }}
               variant="outlined"
             />
           ))}
-        </Box>
+        </Stack>
         </Box>
 
         {/* Scrollable Content Area */}
@@ -2420,28 +2510,29 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             flex: 1,
             overflowY: 'auto',
             overflowX: 'hidden',
-            padding: 2
+            p: 1,
+            '&::-webkit-scrollbar': { display: 'none' },
+            scrollbarWidth: 'none'
           }}
         >
           {/* Recent Tokens */}
           {!searchQuery && recentTokens.length > 0 && (
-            <Box mb={2}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={1}>
+            <Box mb={0.5}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
                 <SectionTitle>
-                  <AccessTimeIcon sx={{ width: 14, height: 14 }} />
-                  Recent Selections
+                  Recent
                 </SectionTitle>
                 <Typography
                   variant="caption"
                   sx={{
                     cursor: 'pointer',
                     color: theme.palette.error.main,
-                    fontSize: '11px',
+                    fontSize: '10px',
                     '&:hover': { textDecoration: 'underline' }
                   }}
                   onClick={handleClearRecent}
                 >
-                  Clear All
+                  Clear
                 </Typography>
               </Stack>
               <Box
@@ -2449,7 +2540,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               >
                 {recentTokens.map((token) => renderTokenItem(token, isToken1))}
               </Box>
-              <Divider sx={{ mt: 2, mb: 1 }} />
+              
             </Box>
           )}
 
@@ -2466,24 +2557,103 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </SectionTitle>
 
             {loadingTokens ? (
-              <Grid container spacing={1}>
-                {[...Array(8)].map((_, i) => (
-                  <Grid size={{ xs: 6, sm: 4, md: 3 }} key={`swap-skeleton-${i}`}>
-                    <Paper sx={{ p: 1, borderRadius: 1 }}>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Skeleton variant="circular" width={32} height={32} />
-                        <Box flex={1}>
-                          <Skeleton variant="text" width="60%" height={14} />
-                          <Skeleton variant="text" width="40%" height={12} />
-                        </Box>
-                      </Stack>
-                    </Paper>
-                  </Grid>
+              <Box>
+                {[...Array(12)].map((_, i) => (
+                  <Box
+                    key={`skeleton-${i}`}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      px: 1,
+                      py: 0.5,
+                      mb: 0.5,
+                      borderRadius: '8px',
+                      opacity: 0.6
+                    }}
+                  >
+                    <Skeleton variant="circular" width={28} height={28} sx={{ mr: 1 }} />
+                    <Box flex={1}>
+                      <Skeleton variant="text" width="40%" height={10} />
+                      <Skeleton variant="text" width="25%" height={8} />
+                    </Box>
+                    <Skeleton variant="text" width={90} height={10} sx={{ mr: 1.5 }} />
+                    <Skeleton variant="text" width={55} height={8} sx={{ mr: 1.5 }} />
+                    <Skeleton variant="text" width={45} height={8} />
+                  </Box>
                 ))}
-              </Grid>
+              </Box>
             ) : filteredTokens.length > 0 ? (
               <Box>
-                {/* Simple token list without nested scrolling */}
+                {/* Column Headers */}
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    px: 1,
+                    py: 0.5,
+                    mb: 0.5,
+                    borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`
+                  }}
+                >
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      color: alpha(theme.palette.text.secondary, 0.5),
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      flex: 1
+                    }}
+                  >
+                    Token
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      color: alpha(theme.palette.text.secondary, 0.5),
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      width: '110px',
+                      textAlign: 'right',
+                      mr: 1.5
+                    }}
+                  >
+                    Price
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      color: alpha(theme.palette.text.secondary, 0.5),
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      width: '65px',
+                      textAlign: 'right',
+                      mr: 1.5
+                    }}
+                  >
+                    Volume
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      color: alpha(theme.palette.text.secondary, 0.5),
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      width: '55px',
+                      textAlign: 'right'
+                    }}
+                  >
+                    MCap
+                  </Typography>
+                </Box>
+                {/* Token list */}
                 {filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))}
               </Box>
             ) : (
@@ -2517,14 +2687,21 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const selectorTitle = panel1Open ? 'Select token to swap from' : 'Select token to receive';
   const isToken1Selector = panel1Open;
 
+  // Auto-focus first input when modal closes
+  useEffect(() => {
+    if (amount1Ref.current && !showTokenSelector) {
+      setTimeout(() => amount1Ref.current?.focus(), 100);
+    }
+  }, [showTokenSelector]);
+
   return (
     <Box sx={{ width: '100%' }}>
-      {/* Swap Interface Container */}
-      <Box
-        sx={{
-          width: '100%',
-          maxWidth: '680px',
-          margin: '0 auto',
+      <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ maxWidth: showOrderbook && orderType === 'limit' ? '1200px' : '680px', margin: '0 auto', width: '100%' }}>
+        {/* Swap Interface Container */}
+        <Box
+          sx={{
+            flex: showOrderbook && orderType === 'limit' ? '0 0 680px' : '1 1 auto',
+            maxWidth: '680px',
           px: { xs: 0.5, sm: 2, md: 3 },
         }}
       >
@@ -2613,10 +2790,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           }}
                           sx={{
                             px: 2,
-                            py: 1,
+                            py: 0.75,
                             borderRadius: '12px',
                             fontSize: '13px',
-                            fontWeight: 500,
+                            fontWeight: 400,
                             textTransform: 'none',
                             backgroundColor:
                               orderType === 'market' ? theme.palette.primary.main : 'transparent',
@@ -2640,10 +2817,10 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           }}
                           sx={{
                             px: 2,
-                            py: 1,
+                            py: 0.75,
                             borderRadius: '12px',
                             fontSize: '13px',
-                            fontWeight: 500,
+                            fontWeight: 400,
                             textTransform: 'none',
                             backgroundColor:
                               orderType === 'limit' ? theme.palette.primary.main : 'transparent',
@@ -2670,7 +2847,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                     {accountProfile && (
                       <Paper sx={{
                         mb: 2,
-                        p: 1.5,
+                        p: 1,
                         background: alpha(theme.palette.warning.main, 0.08),
                         border: `1px solid ${alpha(theme.palette.warning.main, 0.4)}`,
                         borderRadius: '12px'
@@ -2678,7 +2855,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         <Stack spacing={1}>
                           <Stack direction="row" alignItems="center" spacing={1}>
                             <AccountBalanceWalletIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />
-                            <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '11px' }}>
+                            <Typography variant="caption" color="warning.main" fontWeight={400} sx={{ fontSize: '10px' }}>
                               DEBUG (Remove in Production)
                             </Typography>
                           </Stack>
@@ -2756,16 +2933,16 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           direction="row"
                           justifyContent="space-between"
                           alignItems="flex-start"
-                          mb={2}
+                          mb={0.5}
                         >
                           <Box sx={{ flex: 1 }}>
                             <Typography
                               variant="caption"
                               sx={{
                                 mb: 1,
-                                display: 'block',
-                                fontSize: '11px',
-                                fontWeight: 500,
+                                whiteSpace: 'nowrap',
+                                fontSize: '10px',
+                                fontWeight: 400,
                                 letterSpacing: '0.05em',
                                 textTransform: 'uppercase',
                                 color: theme.palette.text.primary,
@@ -2796,17 +2973,23 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           </Box>
                           <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
                             <Input
+                              inputRef={amount1Ref}
                               placeholder="0.00"
                               disableUnderline
                               value={amount1}
                               onChange={handleChangeAmount1}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && amount1 && amount2) {
+                                  handleButtonClick();
+                                }
+                              }}
                               inputMode="decimal"
                               sx={{
                                 width: '100%',
                                 input: {
                                   textAlign: 'right',
-                                  fontSize: { xs: '24px', sm: '32px' },
-                                  fontWeight: 500,
+                                  fontSize: { xs: '20px', sm: '28px' },
+                                  fontWeight: 400,
                                   padding: '8px 0',
                                   background: 'transparent',
                                   color: theme.palette.text.primary,
@@ -2828,21 +3011,32 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               onFocus={() => setFocusTop(true)}
                               onBlur={() => setFocusTop(false)}
                             />
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{
-                                mt: 1,
-                                display: 'block',
-                                fontSize: '13px',
-                                fontWeight: 400,
-                                opacity: focusTop ? 1 : 0.7,
-                              }}
-                            >
-                              {tokenPrice1 > 0
-                                ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}`
-                                : ' '}
-                            </Typography>
+                            <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} sx={{ mt: 0.5 }}>
+                              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.6) }}>
+                                {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : ' '}
+                              </Typography>
+                              {accountPairBalance?.curr1?.value && (
+                                <Chip
+                                  label="MAX"
+                                  size="small"
+                                  onClick={() => {
+                                    const maxVal = accountPairBalance.curr1.value;
+                                    setAmount1(maxVal);
+                                    handleChangeAmount1({ target: { value: maxVal } });
+                                  }}
+                                  sx={{
+                                    height: 18,
+                                    fontSize: '9px',
+                                    fontWeight: 400,
+                                    cursor: 'pointer',
+                                    borderRadius: '6px',
+                                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
+                                    color: theme.palette.primary.main,
+                                    '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.15) }
+                                  }}
+                                />
+                              )}
+                            </Stack>
                           </Box>
                         </Stack>
                         {isLoggedIn && accountPairBalance && (
@@ -2856,7 +3050,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               variant="caption"
                               color="text.secondary"
                               sx={{
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 fontWeight: 400,
                                 letterSpacing: '0.01em'
                               }}
@@ -2886,11 +3080,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                       handleChangeAmount1({ target: { value: newAmount } });
                                     }}
                                     sx={{
-                                      px: 1.5,
+                                      px: 1,
                                       py: 0.5,
                                       borderRadius: '12px',
-                                      fontSize: '11px',
-                                      fontWeight: 500,
+                                      fontSize: '10px',
+                                      fontWeight: 400,
                                       cursor: 'pointer',
                                       backgroundColor: alpha(theme.palette.primary.main, 0.08),
                                       color: theme.palette.primary.main,
@@ -2931,8 +3125,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       sx={{
                         position: 'relative',
                         borderRadius: '12px',
-                        border: `2px dashed ${focusBottom ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.12)}`,
-                        backgroundColor: alpha(theme.palette.background.default, 0.4),
+                        border: `1.5px solid ${focusBottom ? alpha(theme.palette.primary.main, 0.2) : 'transparent'}`,
+                        backgroundColor: 'transparent',
                         backdropFilter: 'blur(8px)',
                         overflow: 'hidden',
                         background: 'transparent',
@@ -2975,7 +3169,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           direction="row"
                           justifyContent="space-between"
                           alignItems="flex-start"
-                          mb={2}
+                          mb={0.5}
                         >
                           <Box sx={{ flex: 1 }}>
                             <Typography
@@ -2983,8 +3177,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               sx={{
                                 mb: 1,
                                 display: 'block',
-                                fontSize: '11px',
-                                fontWeight: 500,
+                                fontSize: '10px',
+                                fontWeight: 400,
                                 letterSpacing: '0.05em',
                                 textTransform: 'uppercase',
                                 color: theme.palette.text.secondary,
@@ -3024,8 +3218,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 width: '100%',
                                 input: {
                                   textAlign: 'right',
-                                  fontSize: { xs: '24px', sm: '32px' },
-                                  fontWeight: 500,
+                                  fontSize: { xs: '20px', sm: '28px' },
+                                  fontWeight: 400,
                                   padding: '8px 0',
                                   background: 'transparent',
                                   color: theme.palette.text.primary,
@@ -3085,7 +3279,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             fullWidth
                             size="small"
                             variant="outlined"
-                            onClick={() => setShowOrderbook(!showOrderbook)}
+                            onClick={() => {
+                              setShowOrderbook(!showOrderbook);
+                            }}
                             startIcon={
                               showOrderbook ? (
                                 <ToggleOnIcon sx={{ width: 14, height: 14 }} />
@@ -3095,7 +3291,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             }
                             sx={{
                               py: 0.5,
-                              fontSize: '11px',
+                              fontSize: '10px',
                               textTransform: 'none',
                               borderColor: showOrderbook
                                 ? theme.palette.primary.main
@@ -3123,7 +3319,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               startIcon={<ListIcon sx={{ width: 14, height: 14 }} />}
                               sx={{
                                 py: 0.5,
-                                fontSize: '11px',
+                                fontSize: '10px',
                                 textTransform: 'none',
                                 borderColor: showOrders
                                   ? theme.palette.primary.main
@@ -3152,89 +3348,49 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <Box sx={{ mb: 2 }}>
                         <Stack spacing={1}>
                           {/* Slippage Setting */}
-                          <Box
-                            sx={{
-                              p: 1.5,
-                              borderRadius: '12px',
-                              backgroundColor: alpha(theme.palette.background.paper, 0.04),
-                              border: `1px solid ${alpha(theme.palette.divider, 0.04)}`
-                            }}
-                          >
-                            <Stack
-                              direction="row"
-                              alignItems="center"
-                              justifyContent="space-between"
-                            >
-                              <Stack direction="row" alignItems="center" spacing={0.5}>
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  fontSize="11px"
-                                >
-                                  Slippage Tolerance
-                                </Typography>
-                                <Tooltip title="Maximum price change you accept" arrow>
-                                  <InfoIcon sx={{ width: 12, height: 12, opacity: 0.5 }} />
-                                </Tooltip>
-                              </Stack>
-                              <Stack direction="row" spacing={0.5}>
-                                {[0.5, 1, 3].map((val) => (
-                                  <Chip
-                                    key={val}
-                                    label={`${val}%`}
-                                    size="small"
-                                    onClick={() => setSlippage(val)}
-                                    sx={{
-                                      height: '18px',
-                                      fontSize: '11px',
-                                      cursor: 'pointer',
-                                      backgroundColor:
-                                        slippage === val
-                                          ? theme.palette.primary.main
-                                          : alpha(theme.palette.action.selected, 0.08),
-                                      color:
-                                        slippage === val ? 'white' : theme.palette.text.secondary,
-                                      '&:hover': {
-                                        backgroundColor:
-                                          slippage === val
-                                            ? theme.palette.primary.dark
-                                            : alpha(theme.palette.action.selected, 0.2)
-                                      }
-                                    }}
-                                  />
-                                ))}
-                              </Stack>
+                          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 0.5 }}>
+                            <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.6) }}>
+                              Slippage
+                            </Typography>
+                            <Stack direction="row" spacing={0.5}>
+                              {[0.5, 1, 3].map((val) => (
+                                <Chip
+                                  key={val}
+                                  label={`${val}%`}
+                                  size="small"
+                                  onClick={() => setSlippage(val)}
+                                  variant={slippage === val ? 'filled' : 'outlined'}
+                                  sx={{
+                                    height: 20,
+                                    fontSize: '10px',
+                                    fontWeight: 400,
+                                    cursor: 'pointer',
+                                    borderRadius: '6px',
+                                    borderWidth: '1.5px',
+                                    borderColor: slippage === val ? 'transparent' : alpha(theme.palette.divider, 0.15),
+                                    backgroundColor: slippage === val ? theme.palette.primary.main : 'transparent',
+                                    color: slippage === val ? 'white' : theme.palette.text.secondary,
+                                    '& .MuiChip-label': { px: 0.75 },
+                                    '&:hover': {
+                                      backgroundColor: slippage === val ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.04),
+                                      borderColor: slippage === val ? 'transparent' : alpha(theme.palette.primary.main, 0.2)
+                                    }
+                                  }}
+                                />
+                              ))}
                             </Stack>
-                          </Box>
+                          </Stack>
 
                           {/* Min Received */}
                           {amount2 && (
-                            <Box
-                              sx={{
-                                p: 1,
-                                borderRadius: '12px',
-                                backgroundColor: alpha(theme.palette.info.main, 0.04),
-                                border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`
-                              }}
-                            >
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  fontSize="13px"
-                                >
-                                  Minimum Received
-                                </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="11px">
-                                  {new Decimal(amount2).mul(1 - slippage / 100).toFixed(4)}{' '}
-                                  {token2.name}
-                                </Typography>
-                              </Stack>
-                            </Box>
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 0.5 }}>
+                              <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.6) }}>
+                                Min Received
+                              </Typography>
+                              <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 400 }}>
+                                {new Decimal(amount2).mul(1 - slippage / 100).toFixed(4)} {token2.name}
+                              </Typography>
+                            </Stack>
                           )}
                         </Stack>
                       </Box>
@@ -3246,7 +3402,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         sx={{
                           mt: 1.5,
                           mb: 1.5,
-                          p: 1.5,
+                          p: 1,
                           borderRadius: '12px',
                           backgroundColor: alpha(theme.palette.background.paper, 0.2),
                           border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
@@ -3265,7 +3421,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 variant="caption"
                                 sx={{
                                   fontSize: '13px',
-                                  fontWeight: 500,
+                                  fontWeight: 400,
                                   color: theme.palette.text.secondary,
                                   textTransform: 'uppercase',
                                   letterSpacing: '0.03em'
@@ -3276,7 +3432,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               <Typography
                                 variant="caption"
                                 sx={{
-                                  fontSize: '11px',
+                                  fontSize: '10px',
                                   color: theme.palette.text.secondary,
                                   opacity: 0.7
                                 }}
@@ -3306,8 +3462,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 padding: '8px 12px',
                                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                                 input: {
-                                  fontSize: '14px',
-                                  fontWeight: 500,
+                                  fontSize: '13px',
+                                  fontWeight: 400,
                                   fontFamily:
                                     'inherit'
                                 },
@@ -3345,8 +3501,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '11px',
-                                      fontWeight: 500,
+                                      fontSize: '10px',
+                                      fontWeight: 400,
                                       color: theme.palette.success.main
                                     }}
                                   >
@@ -3374,8 +3530,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '11px',
-                                      fontWeight: 500,
+                                      fontSize: '10px',
+                                      fontWeight: 400,
                                       color: theme.palette.error.main
                                     }}
                                   >
@@ -3392,7 +3548,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               variant="caption"
                               sx={{
                                 fontSize: '13px',
-                                fontWeight: 500,
+                                fontWeight: 400,
                                 color: theme.palette.text.secondary,
                                 textTransform: 'uppercase',
                                 letterSpacing: '0.03em',
@@ -3442,7 +3598,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 >
                                   <Typography
                                     variant="caption"
-                                    sx={{ fontSize: '11px', fontWeight: 500 }}
+                                    sx={{ fontSize: '10px', fontWeight: 400 }}
                                   >
                                     {exp.label}
                                   </Typography>
@@ -3459,13 +3615,13 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   }
                                   disableUnderline
                                   sx={{
-                                    width: '60px',
+                                    width: '55px',
                                     padding: '4px 8px',
                                     borderRadius: '6px',
                                     backgroundColor: alpha(theme.palette.background.paper, 0.04),
                                     border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                                     input: {
-                                      fontSize: '11px',
+                                      fontSize: '10px',
                                       textAlign: 'center'
                                     }
                                   }}
@@ -3521,7 +3677,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                       <Typography
                                         variant="caption"
                                         sx={{
-                                          fontWeight: 500,
+                                          fontWeight: 400,
                                           color: isAbove
                                             ? theme.palette.error.main
                                             : theme.palette.success.main
@@ -3546,7 +3702,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                         <Typography
                                           variant="caption"
                                           color="warning.main"
-                                          sx={{ fontWeight: 500 }}
+                                          sx={{ fontWeight: 400 }}
                                         >
                                           ⚠️ Order will execute immediately at market price
                                         </Typography>
@@ -3605,7 +3761,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       <Box sx={{ mt: 2, mb: 1 }}>
                         <Box
                           sx={{
-                            p: 1.5,
+                            p: 1,
                             borderRadius: '12px',
                             backgroundColor: alpha(theme.palette.background.paper, 0.04),
                             border: `1px solid ${alpha(theme.palette.divider, 0.04)}`
@@ -3646,7 +3802,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 >
                                   {orderType === 'limit' ? 'Sell Order' : 'You Pay'}
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="12px">
+                                <Typography variant="caption" fontWeight={400} fontSize="12px">
                                   {amount1} {token1.name || token1.currency}
                                 </Typography>
                               </Stack>
@@ -3666,7 +3822,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 </Typography>
                                 <Typography
                                   variant="caption"
-                                  fontWeight={600}
+                                  fontWeight={400}
                                   fontSize="12px"
                                   color="primary.main"
                                 >
@@ -3708,7 +3864,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     ? `${token1.name} at Rate`
                                     : 'Exchange Rate'}
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="12px">
+                                <Typography variant="caption" fontWeight={400} fontSize="12px">
                                   {orderType === 'limit' && limitPrice
                                     ? `${limitPrice} ${token2.name || token2.currency}`
                                     : (() => {
@@ -3749,7 +3905,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     </Typography>
                                     <Typography
                                       variant="caption"
-                                      fontWeight={600}
+                                      fontWeight={400}
                                       fontSize="12px"
                                     >
                                       Limit Order
@@ -3769,7 +3925,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     </Typography>
                                     <Typography
                                       variant="caption"
-                                      fontWeight={600}
+                                      fontWeight={400}
                                       fontSize="12px"
                                     >
                                       {orderExpiry === 'never'
@@ -3804,7 +3960,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   >
                                     Max Slippage
                                   </Typography>
-                                  <Typography variant="caption" fontWeight={600} fontSize="12px">
+                                  <Typography variant="caption" fontWeight={400} fontSize="12px">
                                     {slippage}%
                                   </Typography>
                                 </Stack>
@@ -3826,7 +3982,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 >
                                   Network Fee
                                 </Typography>
-                                <Typography variant="caption" fontWeight={600} fontSize="12px">
+                                <Typography variant="caption" fontWeight={400} fontSize="12px">
                                   ~0.000012 XRP
                                 </Typography>
                               </Stack>
@@ -3876,8 +4032,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                 variant="caption"
                                 sx={{
                                   color: getPriceImpactColor(Math.abs(priceImpact)),
-                                  fontWeight: 500,
-                                  fontSize: '11px'
+                                  fontWeight: 400,
+                                  fontSize: '10px'
                                 }}
                               >
                                 {priceImpact > 0 ? '+' : ''}
@@ -3920,7 +4076,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           sx={{
                             minHeight: '52px',
                             fontSize: '16px',
-                            fontWeight: 500,
+                            fontWeight: 400,
                             borderRadius: '12px',
                             textTransform: 'none',
                             boxShadow: 'none',
@@ -3942,40 +4098,51 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 </Box>
               </Stack>
 
-              {/* Orderbook Drawer (embedded) using TransactionDetailsPanel) */}
-              {/* Commented out TransactionDetailsPanel - file doesn't exist */}
-              {/* <TransactionDetailsPanel
-                open={showOrderbook && orderType === 'limit'}
-                onClose={() => setShowOrderbook(false)}
-                mode="orderbook"
-                pair={{
-                  curr1: { ...curr1, name: curr1.name || curr1.currency },
-                  curr2: { ...curr2, name: curr2.name || curr2.currency }
-                }}
-                asks={asks}
-                bids={bids}
-                limitPrice={orderType === 'limit' && limitPrice ? parseFloat(limitPrice) : null}
-                isBuyOrder={!!revert}
-                onAskClick={(e, idx) => {
-                  if (asks && asks[idx]) {
-                    setLimitPrice(asks[idx].price.toString());
-                    setOrderType('limit');
-                  }
-                }}
-                onBidClick={(e, idx) => {
-                  if (bids && bids[idx]) {
-                    setLimitPrice(bids[idx].price.toString());
-                    setOrderType('limit');
-                  }
-                }}
-              /> */}
             </Stack>
           </Box>
         </Box>
       </Box>
 
-      {/* Chart Display - Full width sparklines matching swap container */}
-      {(token1 || token2) && !showTokenSelector && (
+        {/* Inline Orderbook */}
+        {showOrderbook && orderType === 'limit' && (
+          <Box
+            sx={{
+              width: '320px',
+              height: '745px',
+              flexShrink: 0,
+              display: { xs: 'none', md: 'block' }
+            }}
+          >
+            <TransactionDetailsPanel
+              open={true}
+              onClose={() => setShowOrderbook(false)}
+              mode="orderbook"
+              pair={{
+                curr1: { ...curr1, name: curr1?.name || curr1?.currency },
+                curr2: { ...curr2, name: curr2?.name || curr2?.currency }
+              }}
+              asks={asks}
+              bids={bids}
+              limitPrice={limitPrice ? parseFloat(limitPrice) : null}
+              isBuyOrder={!!revert}
+              onAskClick={(e, idx) => {
+                if (asks && asks[idx]) {
+                  setLimitPrice(asks[idx].price.toString());
+                }
+              }}
+              onBidClick={(e, idx) => {
+                if (bids && bids[idx]) {
+                  setLimitPrice(bids[idx].price.toString());
+                }
+              }}
+              embedded={true}
+            />
+          </Box>
+        )}
+      </Stack>
+
+      {/* Chart Display - Hidden, sparklines moved inline to token selectors */}
+      {false && (token1 || token2) && !showTokenSelector && !(showOrderbook && orderType === 'limit') && (
         <Box
           sx={{
             mt: 4,
@@ -3997,7 +4164,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 sx={{
                   flex: '1 1 50%',
                   minWidth: 0,
-                  p: 1.5,
+                  p: 1,
                   borderRadius: '12px',
                   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   backgroundColor: alpha(theme.palette.background.paper, 0.6),
@@ -4017,17 +4184,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={600}
-                    sx={{ fontSize: '11px' }}
+                    fontWeight={400}
+                    sx={{ fontSize: '10px' }}
                   >
                     {token1.name}
                   </Typography>
                   {(token1.exch || tokenExch1 || latestPrice1) && (
                     <Typography
                       variant="caption"
-                      fontWeight={600}
+                      fontWeight={400}
                       color="text.primary"
-                      sx={{ fontSize: '11px' }}
+                      sx={{ fontSize: '10px' }}
                     >
                       {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
                     </Typography>
@@ -4050,7 +4217,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 sx={{
                   flex: '1 1 50%',
                   minWidth: 0,
-                  p: 1.5,
+                  p: 1,
                   borderRadius: '12px',
                   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                   backgroundColor: alpha(theme.palette.background.paper, 0.6),
@@ -4070,17 +4237,17 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   <Typography
                     variant="caption"
                     color="text.secondary"
-                    fontWeight={600}
-                    sx={{ fontSize: '11px' }}
+                    fontWeight={400}
+                    sx={{ fontSize: '10px' }}
                   >
                     {token2.name}
                   </Typography>
                   {(token2.exch || tokenExch2 || latestPrice2) && (
                     <Typography
                       variant="caption"
-                      fontWeight={600}
+                      fontWeight={400}
                       color="text.primary"
-                      sx={{ fontSize: '11px' }}
+                      sx={{ fontSize: '10px' }}
                     >
                       {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
                     </Typography>

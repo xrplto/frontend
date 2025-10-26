@@ -7,9 +7,9 @@ import Logo from 'src/components/Logo';
 
 const Root = styled('footer')(({ theme }) => ({
   width: '100%',
-  borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+  borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
   backgroundColor: 'transparent',
-  marginTop: theme.spacing(2)
+  marginTop: theme.spacing(1.5)
 }));
 
 const FooterLink = ({ href, children }) => {
@@ -23,10 +23,11 @@ const FooterLink = ({ href, children }) => {
       rel={external ? 'noreferrer noopener' : undefined}
       sx={{
         color: 'text.secondary',
-        fontSize: { xs: '14px', md: '14px' },
-        px: { xs: 0.5, md: 0.8 },
-        py: 0.3,
-        borderRadius: '12px',
+        fontSize: { xs: '0.8rem', md: '0.95rem' },
+        fontWeight: 400,
+        px: { xs: 0.6, md: 1 },
+        py: { xs: 0.3, md: 0.5 },
+        borderRadius: '8px',
         '&:hover': {
           color: '#4285f4',
           backgroundColor: alpha('#4285f4', 0.04)
@@ -53,9 +54,8 @@ const SOCIALS = [
   { href: 'https://xrpl.to/discord/', label: 'Discord', Icon: Forum }
 ];
 
-// Extract nested component to top level and memoize
 const Group = React.memo(({ items }) => (
-  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 0.8, md: 1.2 } }}>
+  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 0.2, md: 0.5 } }}>
     {items.map((it) => (
       <FooterLink key={it.label} href={it.href}>{it.label}</FooterLink>
     ))}
@@ -76,14 +76,14 @@ const SocialIcons = React.memo(() => (
             size="small"
             sx={{
               color: 'text.secondary',
-              padding: { xs: 0.6, md: 0.8 },
+              padding: { xs: 0.5, md: 0.8 },
               '&:hover': {
                 color: '#4285f4',
                 backgroundColor: alpha('#4285f4', 0.04)
               }
             }}
           >
-            <Icon fontSize="small" />
+            <Icon sx={{ fontSize: { xs: 16, md: 20 } }} />
           </IconButton>
         </Tooltip>
       );
@@ -96,46 +96,22 @@ function Footer() {
 
   return (
     <Root>
-      <Container
-        maxWidth={false}
-        sx={{ px: { xs: 2, md: 4, xl: 8 }, py: 2, pb: { xs: 8, md: 3 } }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: 1,
-            flexWrap: 'wrap'
-          }}
-        >
-          <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 1 }}>
+      <Container maxWidth={false} sx={{ px: { xs: 1.5, md: 4, xl: 8 }, py: { xs: 1.2, md: 1.8 }, pb: { xs: 8, md: 2.5 } }}>
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'center', md: 'center' }, justifyContent: { xs: 'center', md: 'space-between' }, gap: { xs: 1.2, md: 2 } }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.8, md: 1.2 } }}>
             <Link href="/" underline="none" sx={{ display: 'inline-flex' }}>
-              <Logo alt="XRPL.to" style={{ width: '110px', height: 'auto' }} />
+              <Logo alt="XRPL.to" style={{ width: '70px', height: 'auto' }} />
             </Link>
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{
-                display: { xs: 'none', md: 'inline' },
-                fontSize: '14px',
-                opacity: 0.6
-              }}
+              sx={{ display: { xs: 'none', md: 'inline' }, fontSize: '0.9rem', opacity: 0.5 }}
             >
               © {year}
             </Typography>
           </Box>
 
-          <Box
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: { xs: 2, md: 3 },
-              flex: 1,
-              justifyContent: 'flex-end',
-              flexWrap: 'wrap'
-            }}
-          >
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2.5 }, flexWrap: 'wrap', justifyContent: 'center' }}>
             <Group items={PRODUCTS} />
             <SocialIcons />
           </Box>

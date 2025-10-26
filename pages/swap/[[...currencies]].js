@@ -36,9 +36,15 @@ const Swap = dynamic(() => import('src/components/SwapInterface'), {
 });
 
 const Root = styled('div')(({ theme }) => ({
-  overflowX: 'hidden',
-  flex: 1,
-  minHeight: '100vh'
+  display: 'flex',
+  flexDirection: 'column',
+  height: '100vh',
+  overflow: 'hidden',
+  position: 'fixed',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0
 }));
 
 // Default tokens with correct md5 hashes
@@ -49,8 +55,8 @@ const XRP_TOKEN = {
   name: 'XRP'
 };
 const RLUSD_TOKEN = {
-  currency: 'RLUSD',
-  issuer: 'rMxCAmhYd3xnE55fCrZKaPZS7rZwqX7LJD',
+  currency: '524C555344000000000000000000000000000000',
+  issuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
   md5: '0dd550278b74cb6690fdae351e8e0df3',
   name: 'RLUSD'
 };
@@ -62,6 +68,14 @@ const DEFAULT_PAIR = {
 function SwapPage({ data }) {
   const WSS_URL = 'wss://xrplcluster.com';
   const { accountProfile } = useContext(AppContext);
+
+  // Prevent body scroll
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   const [revert, setRevert] = useState(false);
   const [pair, setPair] = useState(DEFAULT_PAIR);
@@ -163,16 +177,16 @@ function SwapPage({ data }) {
         Swap XRPL Tokens
       </h1>
 
-      <Container maxWidth={notificationPanelOpen ? false : "lg"} sx={{ py: { xs: 0.5, sm: 1, md: 2 }, px: { xs: 1, sm: 2 } }}>
+      <Container maxWidth={notificationPanelOpen ? false : "lg"} sx={{ flex: 1, display: 'flex', overflow: 'hidden', py: 0, px: { xs: 1, sm: 2 } }}>
         <Box
           sx={{
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            justifyContent: 'flex-start',
-            gap: { xs: 1, sm: 2, md: 3 },
-            minHeight: 'calc(100vh - 160px)',
-            pt: { xs: 0.5, sm: 1, md: 2 }
+            justifyContent: 'center',
+            flex: 1,
+            overflow: 'hidden',
+            width: '100%'
           }}
         >
           <Box sx={{ width: '100%', maxWidth: '1200px' }}>

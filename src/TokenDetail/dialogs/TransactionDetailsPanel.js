@@ -44,10 +44,12 @@ const TransactionDetailsPanel = memo(
     limitPrice,
     isBuyOrder,
     onAskClick,
-    onBidClick
+    onBidClick,
+    embedded = false
   }) => {
     const theme = useTheme();
     const panelIdRef = useRef(Math.random().toString(36).slice(2));
+    const asksScrollRef = useRef(null);
     const [transaction, setTransaction] = useState(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -67,6 +69,13 @@ const TransactionDetailsPanel = memo(
       () => (mode === 'orderbook' && bids && bids[0] ? Number(bids[0].price) : null),
       [mode, bids]
     );
+
+    // Scroll asks to bottom on open/update
+    useEffect(() => {
+      if (mode === 'orderbook' && open && asksScrollRef.current && asks.length > 0) {
+        asksScrollRef.current.scrollTop = asksScrollRef.current.scrollHeight;
+      }
+    }, [mode, open, asks]);
 
     // Fetch transaction details
     const fetchTransactionDetails = useCallback(async () => {
@@ -267,46 +276,19 @@ const TransactionDetailsPanel = memo(
       return (progress * 100).toFixed(0);
     };
 
-    return (
-      <Drawer
-        anchor="right"
-        variant="persistent"
-        open={open}
-        hideBackdrop
-        PaperProps={{
-          sx: {
-            width:
-              mode === 'orderbook' ? { md: 280, lg: 320, xl: 360 } : { md: 240, lg: 256, xl: 272 },
-            minWidth: { md: 236 },
-            top: { xs: 56, sm: 56, md: 56 },
-            height: {
-              xs: 'calc(100vh - 56px)',
-              sm: 'calc(100vh - 56px)',
-              md: 'calc(100vh - 56px)'
-            },
-            borderLeft: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.08)}, 0 1px 2px ${alpha(
-              theme.palette.common.black,
-              0.04
-            )}`,
-            overflow: 'hidden'
-          }
-        }}
-        ModalProps={{ keepMounted: true }}
-      >
+    const content = (
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box
             sx={{
-              p: 1.5,
-              pb: 1,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              p: 1,
+              pb: 0.75,
+              borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
               flexShrink: 0
             }}
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '16px' }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '13px' }}>
                   {mode === 'orderbook' ? 'Order Book' : 'Transaction Details'}
                 </Typography>
               </Stack>
@@ -379,7 +361,7 @@ const TransactionDetailsPanel = memo(
                 variant="caption"
                 sx={{
                   color: alpha(theme.palette.text.secondary, 0.7),
-                  fontSize: '11px',
+                  fontSize: '9px',
                   display: 'block',
                   mt: 0.25,
                   fontFamily: 'monospace',
@@ -398,7 +380,7 @@ const TransactionDetailsPanel = memo(
                   variant="caption"
                   sx={{
                     color: alpha(theme.palette.text.secondary, 0.7),
-                    fontSize: '11px',
+                    fontSize: '9px',
                     display: 'block',
                     mt: 0.25
                   }}
@@ -406,31 +388,39 @@ const TransactionDetailsPanel = memo(
                   {pair.curr1?.name || pair.curr1?.currency}/
                   {pair.curr2?.name || pair.curr2?.currency}
                 </Typography>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                  <Tooltip title="Highest price buyers are willing to pay">
-                    <Chip
-                      size="small"
-                      color="success"
-                      variant="outlined"
-                      label={bestBid != null ? `Best Bid ${fNumber(bestBid)}` : 'No bids'}
-                      sx={{ height: 22, fontSize: '11px' }}
-                    />
-                  </Tooltip>
-                  <Tooltip title="Lowest price sellers are willing to accept">
-                    <Chip
-                      size="small"
-                      color="error"
-                      variant="outlined"
-                      label={bestAsk != null ? `Best Ask ${fNumber(bestAsk)}` : 'No asks'}
-                      sx={{ height: 22, fontSize: '11px' }}
-                    />
-                  </Tooltip>
-                  <Typography
-                    variant="caption"
-                    sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px' }}
-                  >
-                    Tip: Click a row to set price
-                  </Typography>
+                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={bestBid != null ? `${fNumber(bestBid)}` : 'No bids'}
+                    sx={{
+                      height: 18,
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      borderRadius: '6px',
+                      borderWidth: '1.5px',
+                      borderColor: alpha(theme.palette.success.main, 0.25),
+                      color: theme.palette.success.main,
+                      backgroundColor: 'transparent',
+                      '& .MuiChip-label': { px: 0.5, py: 0 }
+                    }}
+                  />
+                  <Chip
+                    size="small"
+                    variant="outlined"
+                    label={bestAsk != null ? `${fNumber(bestAsk)}` : 'No asks'}
+                    sx={{
+                      height: 18,
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      borderRadius: '6px',
+                      borderWidth: '1.5px',
+                      borderColor: alpha(theme.palette.error.main, 0.25),
+                      color: theme.palette.error.main,
+                      backgroundColor: 'transparent',
+                      '& .MuiChip-label': { px: 0.5, py: 0 }
+                    }}
+                  />
                 </Stack>
               </>
             )}
@@ -519,13 +509,13 @@ const TransactionDetailsPanel = memo(
                     color={transaction.meta?.TransactionResult === 'tesSUCCESS' ? 'success' : 'error'}
                     variant="outlined"
                     size="small"
-                    sx={{ fontSize: '12px' }}
+                    sx={{ fontSize: '9px' }}
                   />
                   <Chip
                     label={transaction.TransactionType}
                     variant="outlined"
                     size="small"
-                    sx={{ fontSize: '12px' }}
+                    sx={{ fontSize: '9px' }}
                   />
                 </Stack>
 
@@ -593,7 +583,7 @@ const TransactionDetailsPanel = memo(
                           label={getPlatformFromSourceTag(transaction.SourceTag)}
                           size="small"
                           sx={{
-                            fontSize: '12px',
+                            fontSize: '9px',
                             height: '22px',
                             background: alpha(theme.palette.primary.main, 0.1),
                             border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
@@ -798,7 +788,7 @@ const TransactionDetailsPanel = memo(
                       </Typography>
                       <Typography
                         variant="caption"
-                        sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}
+                        sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '9px' }}
                       >
                         {new Decimal(transaction.LimitAmount.value).eq(0) ? 'Removed' : 'Active'}
                       </Typography>
@@ -826,7 +816,7 @@ const TransactionDetailsPanel = memo(
                         sx={{
                           fontFamily: 'monospace',
                           wordBreak: 'break-all',
-                          fontSize: '11px'
+                          fontSize: '9px'
                         }}
                       >
                         {transaction.NFTokenID}
@@ -882,7 +872,7 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       ml: 0.5,
-                                      fontSize: '11px',
+                                      fontSize: '9px',
                                       fontWeight: 400
                                     }}
                                   >
@@ -905,7 +895,7 @@ const TransactionDetailsPanel = memo(
                                     variant="caption"
                                     sx={{
                                       ml: 0.5,
-                                      fontSize: '11px',
+                                      fontSize: '9px',
                                       fontWeight: 400
                                     }}
                                   >
@@ -929,7 +919,7 @@ const TransactionDetailsPanel = memo(
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      fontSize: '11px',
+                                      fontSize: '9px',
                                       wordBreak: 'break-word',
                                       fontFamily: 'monospace',
                                       display: 'block'
@@ -985,29 +975,25 @@ const TransactionDetailsPanel = memo(
                 >
                   <Box
                     sx={{
-                      p: 1,
-                      mx: 0.5,
-                      borderRadius: '12px',
-                      background: alpha(theme.palette.error.main, 0.06)
+                      px: 1,
+                      py: 0.25,
+                      background: 'transparent'
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <TrendingDownIcon
-                        sx={{ fontSize: '14px', color: theme.palette.error.main }}
-                      />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: theme.palette.error.main,
-                          fontWeight: 400,
-                          fontSize: '12px'
-                        }}
-                      >
-                        Sell Orders ({asks.length})
-                      </Typography>
-                    </Stack>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha(theme.palette.text.secondary, 0.5),
+                        fontWeight: 400,
+                        fontSize: '9px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      Sell ({asks.length})
+                    </Typography>
                   </Box>
-                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <Box ref={asksScrollRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                     {asks.length > 0 ? (
                       <>
                         <Box
@@ -1016,21 +1002,21 @@ const TransactionDetailsPanel = memo(
                             top: 0,
                             zIndex: 2,
                             px: 1,
-                            py: 0.5,
+                            py: 0.25,
                             background: theme.palette.background.paper,
-                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
                           }}
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography
                               variant="caption"
-                              sx={{ color: theme.palette.error.main, fontWeight: 400 }}
+                              sx={{ color: theme.palette.error.main, fontWeight: 400, fontSize: '9px' }}
                             >
                               Price
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}
+                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '9px' }}
                             >
                               Amount
                             </Typography>
@@ -1103,16 +1089,15 @@ const TransactionDetailsPanel = memo(
                                       position: 'relative',
                                       display: 'flex',
                                       justifyContent: 'space-between',
-                                      fontSize: '12px',
+                                      fontSize: '9px',
                                       cursor: 'pointer',
-                                      px: 0.5,
-                                      py: 0.25,
-                                      borderRadius: '4px',
+                                      px: 0.75,
+                                      py: 0.2,
                                       background: showMarker
                                         ? alpha(theme.palette.primary.main, 0.06)
-                                        : 'transparent',
+                                        : origIdx % 2 === 0 ? alpha(theme.palette.background.default, 0.02) : 'transparent',
                                       '&:hover': {
-                                        background: alpha(theme.palette.error.main, 0.06)
+                                        background: alpha(theme.palette.error.main, 0.04)
                                       }
                                     }}
                                   >
@@ -1125,7 +1110,7 @@ const TransactionDetailsPanel = memo(
                                         height: '70%',
                                         width: `${getIndicatorProgress(level.amount)}%`,
                                         background: alpha(theme.palette.error.main, 0.08),
-                                        borderRadius: '4px',
+                                        borderRadius: '6px',
                                         pointerEvents: 'none'
                                       }}
                                     />
@@ -1199,7 +1184,7 @@ const TransactionDetailsPanel = memo(
                         sx={{
                           fontWeight: 400,
                           color: theme.palette.text.secondary,
-                          fontSize: '11px'
+                          fontSize: '9px'
                         }}
                       >
                         Spread
@@ -1209,7 +1194,7 @@ const TransactionDetailsPanel = memo(
                           variant="caption"
                           sx={{
                             color: theme.palette.text.secondary,
-                            fontSize: '11px',
+                            fontSize: '9px',
                             fontWeight: 400
                           }}
                         >
@@ -1219,7 +1204,7 @@ const TransactionDetailsPanel = memo(
                           variant="caption"
                           sx={{
                             color: theme.palette.warning.main,
-                            fontSize: '11px',
+                            fontSize: '9px',
                             fontWeight: 400
                           }}
                         >
@@ -1231,11 +1216,22 @@ const TransactionDetailsPanel = memo(
                 ) : (
                   <Box
                     sx={{
-                      height: '1px',
-                      background: `linear-gradient(90deg, transparent 0%, ${alpha(theme.palette.divider, 0.3)} 50%, transparent 100%)`,
-                      m: 1
+                      px: 1,
+                      py: 0.5,
+                      background: alpha(theme.palette.background.default, 0.02),
+                      borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`
                     }}
-                  />
+                  >
+                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                      <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.5) }}>
+                        Spread
+                      </Typography>
+                      <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 400, color: theme.palette.warning.main }}>
+                        {fNumber(spread.spreadAmount)} ({Number(spread.spreadPercentage).toFixed(2)}%)
+                      </Typography>
+                    </Stack>
+                  </Box>
                 )}
 
                 {/* Bottom half: Bids */}
@@ -1250,27 +1246,23 @@ const TransactionDetailsPanel = memo(
                 >
                   <Box
                     sx={{
-                      p: 1,
-                      mx: 0.5,
-                      borderRadius: '12px',
-                      background: alpha(theme.palette.success.main, 0.06)
+                      px: 1,
+                      py: 0.25,
+                      background: 'transparent'
                     }}
                   >
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <TrendingUpIcon
-                        sx={{ fontSize: '14px', color: theme.palette.success.main }}
-                      />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: theme.palette.success.main,
-                          fontWeight: 400,
-                          fontSize: '12px'
-                        }}
-                      >
-                        Buy Orders ({bids.length})
-                      </Typography>
-                    </Stack>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha(theme.palette.text.secondary, 0.5),
+                        fontWeight: 400,
+                        fontSize: '9px',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em'
+                      }}
+                    >
+                      Buy ({bids.length})
+                    </Typography>
                   </Box>
                   <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
                     {bids.length > 0 ? (
@@ -1281,21 +1273,21 @@ const TransactionDetailsPanel = memo(
                             top: 0,
                             zIndex: 2,
                             px: 1,
-                            py: 0.5,
+                            py: 0.25,
                             background: theme.palette.background.paper,
-                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
                           }}
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography
                               variant="caption"
-                              sx={{ color: theme.palette.success.main, fontWeight: 400 }}
+                              sx={{ color: theme.palette.success.main, fontWeight: 400, fontSize: '9px' }}
                             >
                               Price
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}
+                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '9px' }}
                             >
                               Amount
                             </Typography>
@@ -1364,16 +1356,15 @@ const TransactionDetailsPanel = memo(
                                       position: 'relative',
                                       display: 'flex',
                                       justifyContent: 'space-between',
-                                      fontSize: '12px',
+                                      fontSize: '9px',
                                       cursor: 'pointer',
-                                      px: 0.5,
-                                      py: 0.25,
-                                      borderRadius: '4px',
+                                      px: 0.75,
+                                      py: 0.2,
                                       background: showMarker
                                         ? alpha(theme.palette.primary.main, 0.06)
-                                        : 'transparent',
+                                        : idx % 2 === 0 ? alpha(theme.palette.background.default, 0.02) : 'transparent',
                                       '&:hover': {
-                                        background: alpha(theme.palette.success.main, 0.06)
+                                        background: alpha(theme.palette.success.main, 0.04)
                                       }
                                     }}
                                   >
@@ -1386,7 +1377,7 @@ const TransactionDetailsPanel = memo(
                                         height: '70%',
                                         width: `${getIndicatorProgress(level.amount)}%`,
                                         background: alpha(theme.palette.success.main, 0.08),
-                                        borderRadius: '4px',
+                                        borderRadius: '6px',
                                         pointerEvents: 'none'
                                       }}
                                     />
@@ -1465,6 +1456,51 @@ const TransactionDetailsPanel = memo(
             )}
           </Box>
         </Box>
+    );
+
+    if (embedded) {
+      return (
+        <Box
+          sx={{
+            height: '100%',
+            border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+            borderRadius: '12px',
+            backgroundColor: theme.palette.background.paper,
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column'
+          }}
+        >
+          {content}
+        </Box>
+      );
+    }
+
+    return (
+      <Drawer
+        anchor="right"
+        variant="persistent"
+        open={open}
+        hideBackdrop
+        PaperProps={{
+          sx: {
+            width: mode === 'orderbook' ? { md: 260, lg: 280, xl: 300 } : { md: 240, lg: 256, xl: 272 },
+            minWidth: { md: 220 },
+            top: { xs: 56, sm: 56, md: 56 },
+            height: {
+              xs: 'calc(100vh - 56px)',
+              sm: 'calc(100vh - 56px)',
+              md: 'calc(100vh - 56px)'
+            },
+            borderLeft: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+            backgroundColor: theme.palette.background.paper,
+            boxShadow: 'none',
+            overflow: 'hidden'
+          }
+        }}
+        ModalProps={{ keepMounted: true }}
+      >
+        {content}
       </Drawer>
     );
   }

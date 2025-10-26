@@ -256,12 +256,12 @@ const HeaderWrapper = styled(Box)(
     right: 0;
     z-index: 1100;
     background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
-    border-bottom: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    border-bottom: 1.5px solid ${alpha(theme.palette.divider, 0.15)};
     box-shadow: none;
     overflow: hidden;
 
     ${theme.breakpoints.down('sm')} {
-      height: ${theme.spacing(5)};
+      height: 52px;
       background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
     }
 
@@ -281,19 +281,19 @@ const StyledLink = styled(Link, {
   ({ darkMode, theme }) => `
     color: ${theme.palette.text.primary} !important;
     font-weight: 400;
-    margin-right: 8px;
-    padding: 8px 16px;
+    margin-right: 4px;
+    padding: 8px 14px;
     border-radius: 8px;
     display: inline-flex;
     align-items: center;
     background: transparent;
     border: none;
-    font-size: 0.875rem;
-    letter-spacing: 0.01em;
+    font-size: 0.9rem;
+    letter-spacing: 0;
 
     &:hover {
-      color: ${theme.palette.primary.main} !important;
-      background: ${alpha(theme.palette.primary.main, 0.04)};
+      color: #4285f4 !important;
+      background: ${alpha('#4285f4', 0.04)};
       cursor: pointer;
     }
 `
@@ -305,9 +305,9 @@ const StyledMenuItem = styled(MenuItem, {
   ({ darkMode, theme }) => `
     color: ${darkMode ? 'white' : theme.palette.text.primary};
     margin: 4px 8px;
-    border-radius: 8px;
+    border-radius: 6px;
     background: transparent;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.15)};
     box-shadow: none;
     position: relative;
     overflow: hidden;
@@ -317,9 +317,9 @@ const StyledMenuItem = styled(MenuItem, {
     }
 
     &:hover {
-      color: ${theme.palette.primary.main};
-      background: ${alpha(theme.palette.primary.main, 0.04)};
-      border: 1.5px solid ${alpha(theme.palette.primary.main, 0.3)};
+      color: #4285f4;
+      background: ${alpha('#4285f4', 0.04)};
+      border: 1.5px solid ${alpha('#4285f4', 0.25)};
       box-shadow: none;
     }
 `
@@ -479,25 +479,25 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   return (
     <HeaderWrapper>
-      <Container maxWidth={false} sx={{ px: { xs: 0, sm: 2, md: 3 } }}>
+      <Container maxWidth={false} sx={{ px: { xs: 1.5, sm: 2, md: 3 } }}>
         <Box
           display="flex"
           alignItems="center"
           justifyContent="space-between"
           flex={2}
-          sx={{ pl: 0, pr: { xs: 1, sm: 0 } }}
+          sx={{ pl: 0, pr: 0 }}
         >
           <Box
             id="logo-container-laptop"
             sx={{
-              mr: { sm: 2, md: 3 },
+              mr: { sm: 1.5, md: 2.5 },
               display: { xs: 'none', sm: 'flex' },
               alignItems: 'center'
             }}
           >
             <Logo
               alt="xrpl.to Logo"
-              style={{ marginRight: '16px', width: 'auto', height: '32px' }}
+              style={{ marginRight: '12px', width: 'auto', height: '30px' }}
             />
           </Box>
 
@@ -532,8 +532,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       left: tokensAnchorEl ? tokensAnchorEl.offsetLeft : 0,
                       mt: 0,
                       minWidth: 600,
-                      borderRadius: '12px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderRadius: '8px',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
                       boxShadow: 'none',
                       bgcolor:
                         theme.header?.background ||
@@ -796,12 +796,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 pl: 0,
                 display: { xs: 'flex', sm: 'none' },
                 '& img': {
-                  maxHeight: '28px',
+                  maxHeight: '26px',
                   width: 'auto'
                 }
               }}
             >
-              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '28px', paddingLeft: 0 }} />
+              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '26px', paddingLeft: 0 }} />
             </Box>
           )}
 
@@ -830,12 +830,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 aria-label="Open search"
                 onClick={handleFullSearch}
                 sx={{
-                  padding: { xs: '8px', sm: '10px' },
-                  minWidth: { xs: '40px', sm: '44px' },
-                  minHeight: { xs: '40px', sm: '44px' }
+                  padding: { xs: '6px', sm: '8px' },
+                  minWidth: { xs: '36px', sm: '40px' },
+                  minHeight: { xs: '36px', sm: '40px' }
                 }}
               >
-                <SearchIcon sx={{ fontSize: { xs: '19px', sm: '24px' } }} />
+                <SearchIcon sx={{ fontSize: { xs: '20px', sm: '22px' } }} />
               </IconButton>
             )}
 
@@ -853,20 +853,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   aria-label="Settings"
                   sx={{
                     padding: '6px',
-                    minWidth: '34px',
-                    width: '34px',
-                    height: '34px',
+                    minWidth: '32px',
+                    width: '32px',
+                    height: '32px',
                     backgroundColor: 'transparent',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                    borderRadius: '12px',
+                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                    borderRadius: '8px',
                     '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                      borderColor: alpha(theme.palette.primary.main, 0.3)
+                      backgroundColor: alpha('#4285f4', 0.04),
+                      borderColor: alpha('#4285f4', 0.3)
                     }
                   }}
                   title="Settings"
                 >
-                  <SettingsIcon sx={{ fontSize: 17 }} />
+                  <SettingsIcon sx={{ fontSize: 16 }} />
                 </IconButton>
 
                 {/* Launch Button */}
@@ -876,17 +876,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   sx={{
                     display: 'flex',
                     alignItems: 'center',
-                    height: '34px',
-                    px: 2.5,
-                    fontSize: '0.875rem',
+                    height: '32px',
+                    px: 2,
+                    fontSize: '0.9rem',
                     fontWeight: 400,
-                    letterSpacing: '0.01em',
+                    letterSpacing: 0,
                     color: '#4285f4',
-                    border: `1px solid ${alpha('#4285f4', 0.2)}`,
-                    borderRadius: '12px',
+                    border: `1.5px solid ${alpha('#4285f4', 0.2)}`,
+                    borderRadius: '8px',
                     backgroundColor: 'transparent',
                     '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.06),
+                      backgroundColor: alpha('#4285f4', 0.04),
                       borderColor: '#4285f4'
                     }
                   }}
@@ -911,8 +911,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     sx: {
                       mt: 1,
                       minWidth: 240,
-                      borderRadius: '12px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderRadius: '8px',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
                       background: theme.palette.mode === 'dark'
                         ? alpha('#000000', 0.98)
                         : alpha('#ffffff', 0.98),
@@ -1048,13 +1048,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 aria-label="Open menu"
                 onClick={() => toggleDrawer(true)}
                 sx={{
-                  padding: { xs: '8px', sm: '10px' },
-                  minWidth: { xs: '40px', sm: '44px' },
-                  minHeight: { xs: '40px', sm: '44px' },
-                  ml: { xs: 0.5, sm: 1 }
+                  padding: { xs: '6px', sm: '8px' },
+                  minWidth: { xs: '36px', sm: '40px' },
+                  minHeight: { xs: '36px', sm: '40px' },
+                  ml: { xs: 0.5, sm: 0.8 }
                 }}
               >
-                <MenuIcon sx={{ fontSize: { xs: '19px', sm: '24px' } }} />
+                <MenuIcon sx={{ fontSize: { xs: '20px', sm: '22px' } }} />
               </IconButton>
             )}
 
