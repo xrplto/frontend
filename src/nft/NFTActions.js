@@ -434,6 +434,7 @@ export default function NFTActions({ nft }) {
   const isBurnable = (flag & 0x00000001) > 0;
 
   const [openShare, setOpenShare] = useState(false);
+  const [showPriceBreakdown, setShowPriceBreakdown] = useState(false);
 
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
@@ -957,22 +958,52 @@ export default function NFTActions({ nft }) {
                 This NFT is burnt.
               </Typography>
             ) : isOwner ? (
-              <Stack direction="row" spacing={2}>
+              <Stack direction="row" spacing={1.5}>
                 <Button
                   fullWidth
-                  variant="contained"
-                  startIcon={<LocalOfferIcon />}
+                  variant="outlined"
                   onClick={handleCreateSellOffer}
                   disabled={!accountLogin || burnt}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '0.95rem',
+                    fontWeight: 400,
+                    textTransform: 'none',
+                    borderRadius: '12px',
+                    borderWidth: '1.5px',
+                    borderColor: '#4285f4',
+                    color: '#4285f4',
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                      borderColor: '#4285f4',
+                      backgroundColor: alpha('#4285f4', 0.04),
+                      borderWidth: '1.5px'
+                    }
+                  }}
                 >
                   Sell
                 </Button>
                 <Button
                   fullWidth
                   variant="outlined"
-                  startIcon={<SendIcon />}
                   onClick={handleTransfer}
                   disabled={!accountLogin || burnt}
+                  sx={{
+                    py: 1.5,
+                    fontSize: '0.95rem',
+                    fontWeight: 400,
+                    textTransform: 'none',
+                    borderRadius: '12px',
+                    borderWidth: '1.5px',
+                    borderColor: alpha(theme.palette.divider, 0.2),
+                    color: theme.palette.text.primary,
+                    backgroundColor: 'transparent',
+                    '&:hover': {
+                      borderColor: alpha(theme.palette.divider, 0.4),
+                      backgroundColor: alpha(theme.palette.divider, 0.04),
+                      borderWidth: '1.5px'
+                    }
+                  }}
                 >
                   Transfer
                 </Button>
@@ -987,20 +1018,38 @@ export default function NFTActions({ nft }) {
                     <Stack spacing={0.5}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary' }}>Price</Typography>
-                        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 600 }}>
+                        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 500 }}>
                           ✕{formatXRPAmount(lowestSellOffer.totalAmount, false)}
                         </Typography>
                       </Stack>
                       {lowestSellOffer.hasBroker && (
                         <>
-                          <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.disabled' }}>Base</Typography>
-                            <Typography variant="caption" sx={{ fontSize: '13px' }}>✕{lowestSellOffer.baseAmount}</Typography>
-                          </Stack>
-                          <Stack direction="row" justifyContent="space-between">
-                            <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.disabled' }}>{lowestSellOffer.brokerName} Fee</Typography>
-                            <Typography variant="caption" sx={{ fontSize: '13px' }}>✕{lowestSellOffer.brokerFee}</Typography>
-                          </Stack>
+                          {showPriceBreakdown && (
+                            <>
+                              <Stack direction="row" justifyContent="space-between">
+                                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Base</Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.8rem' }}>✕{lowestSellOffer.baseAmount}</Typography>
+                              </Stack>
+                              <Stack direction="row" justifyContent="space-between">
+                                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.6) }}>{lowestSellOffer.brokerName} Fee</Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.8rem' }}>✕{lowestSellOffer.brokerFee}</Typography>
+                              </Stack>
+                            </>
+                          )}
+                          <Typography
+                            variant="caption"
+                            onClick={() => setShowPriceBreakdown(!showPriceBreakdown)}
+                            sx={{
+                              fontSize: '0.65rem',
+                              color: alpha(theme.palette.text.secondary, 0.5),
+                              cursor: 'pointer',
+                              textAlign: 'right',
+                              mt: 0.3,
+                              '&:hover': { color: alpha(theme.palette.text.secondary, 0.8) }
+                            }}
+                          >
+                            {showPriceBreakdown ? '−' : '+'} breakdown
+                          </Typography>
                         </>
                       )}
                     </Stack>
@@ -1011,9 +1060,54 @@ export default function NFTActions({ nft }) {
                 {accountLogin ? (
                   <>
                     {lowestSellOffer && !burnt && (
-                      <Button fullWidth variant="contained" onClick={handleBuyNow}>Buy Now</Button>
+                      <Button
+                        fullWidth
+                        variant="outlined"
+                        onClick={handleBuyNow}
+                        sx={{
+                          py: 1.5,
+                          fontSize: '0.95rem',
+                          fontWeight: 400,
+                          textTransform: 'none',
+                          borderRadius: '12px',
+                          borderWidth: '1.5px',
+                          borderColor: '#4285f4',
+                          color: '#4285f4',
+                          backgroundColor: 'transparent',
+                          '&:hover': {
+                            borderColor: '#4285f4',
+                            backgroundColor: alpha('#4285f4', 0.04),
+                            borderWidth: '1.5px'
+                          }
+                        }}
+                      >
+                        Buy Now
+                      </Button>
                     )}
-                    <Button fullWidth disabled={burnt} variant="outlined" onClick={handleCreateBuyOffer}>Make Offer</Button>
+                    <Button
+                      fullWidth
+                      disabled={burnt}
+                      variant="outlined"
+                      onClick={handleCreateBuyOffer}
+                      sx={{
+                        py: 1.5,
+                        fontSize: '0.95rem',
+                        fontWeight: 400,
+                        textTransform: 'none',
+                        borderRadius: '12px',
+                        borderWidth: '1.5px',
+                        borderColor: alpha(theme.palette.divider, 0.2),
+                        color: theme.palette.text.primary,
+                        backgroundColor: 'transparent',
+                        '&:hover': {
+                          borderColor: alpha(theme.palette.divider, 0.4),
+                          backgroundColor: alpha(theme.palette.divider, 0.04),
+                          borderWidth: '1.5px'
+                        }
+                      }}
+                    >
+                      Make Offer
+                    </Button>
                   </>
                 ) : (
                   <Wallet />

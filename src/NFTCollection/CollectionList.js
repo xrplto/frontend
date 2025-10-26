@@ -2,7 +2,6 @@ import axios from 'axios';
 import React, { useState, useEffect, useContext, useMemo, useCallback, memo, useRef } from 'react';
 import styled from '@emotion/styled';
 import { useTheme } from '@mui/material/styles';
-import Image from 'next/image';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
@@ -658,6 +657,8 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true },
   { id: 'owners', label: 'OWNERS', align: 'right', width: '8%', order: true },
   { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true },
+  { id: 'origin', label: 'ORIGIN', align: 'right', width: '8%', order: true },
+  { id: 'created', label: 'CREATED', align: 'right', width: '8%', order: true },
   { id: 'sparkline', label: '30D CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' } }
 ];
 
@@ -716,16 +717,13 @@ const OptimizedImage = memo(
 
     return (
       <div style={{ width: size, height: size, borderRadius: '50%', overflow: 'hidden' }}>
-        <Image
+        <img
           src={imgSrc}
           alt={alt}
-          width={size}
-          height={size}
-          unoptimized={true}
           onError={handleError}
           style={{
-            width: '100%',
-            height: '100%',
+            width: size,
+            height: size,
             objectFit: 'cover',
             display: 'block'
           }}
@@ -807,7 +805,8 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     listedCount,
     owners,
     created,
-    graphData30d
+    graphData30d,
+    origin
   } = collection;
 
   // Handle name being an object or string
@@ -883,7 +882,6 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
           </CollectionImage>
           <div style={{ minWidth: 0, flex: 1 }}>
             <CollectionName title={collectionName}>{collectionName}</CollectionName>
-            <CollectionSubtext>{strDateTime}</CollectionSubtext>
           </div>
         </div>
       </StyledCell>
@@ -918,6 +916,14 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
         {fIntNumber(items)}
+      </StyledCell>
+
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+        {origin || 'XRPL'}
+      </StyledCell>
+
+      <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
+        <span style={{ fontSize: '11px' }}>{strDateTime}</span>
       </StyledCell>
 
       <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', paddingLeft: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>

@@ -309,18 +309,34 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   };
 
   const renderImageLink = (file) => {
-    const cdn = 'https://s2.xrpnft.com/d1/';
-    const imageUrl = typeof file === 'string'
+    const cdn = 'https://s1.xrpl.to/nft/';
+
+    // Full size image for modal (IPFS or cachedUrl)
+    const fullSizeUrl = typeof file === 'string'
       ? file
-      : file.thumbnail?.big
-        ? cdn + file.thumbnail.big
-        : file.thumbnail?.small
-          ? cdn + file.thumbnail.small
-          : file.cachedUrl;
+      : file.cachedUrl
+        || (file.IPFSPath ? (() => {
+            const pathParts = file.IPFSPath.split('/');
+            const encodedPath = pathParts.map(encodeURIComponent).join('/');
+            return `https://ipfs.io/ipfs/${encodedPath}`;
+          })() : null)
+        || file.dfile
+        || file.convertedFile;
+
+    // Thumbnail for display (medium preferred, fallback to full size)
+    const thumbnailUrl = typeof file === 'string'
+      ? file
+      : file.thumbnail?.medium
+        ? cdn + file.thumbnail.medium
+        : file.thumbnail?.large
+          ? cdn + file.thumbnail.large
+          : file.thumbnail?.small
+            ? cdn + file.thumbnail.small
+            : fullSizeUrl;
 
     return (
       <Box
-        onClick={() => handleOpenImage(imageUrl)}
+        onClick={() => handleOpenImage(fullSizeUrl)}
         sx={{
           width: '100%',
           height: '100%',
@@ -349,7 +365,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
             setErrored(false);
           }}
           onError={() => setErrored(true)}
-          src={imageUrl}
+          src={thumbnailUrl}
           alt={NFTName}
         />
       </Box>

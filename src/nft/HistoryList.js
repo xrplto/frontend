@@ -20,15 +20,6 @@ import {
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 
-// Icons
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-
-// Loader
-import { PulseLoader } from '../components/Spinners';
-
 // Context
 import { AppContext } from 'src/AppContext';
 
@@ -38,29 +29,25 @@ import { fNumber } from 'src/utils/formatters';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  borderRadius: theme.spacing(1.5),
+  borderRadius: '8px',
   overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  background: theme.palette.background.paper,
-  boxShadow: `0 2px 8px ${alpha(theme.palette.common.black, 0.04)}`
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  background: 'transparent'
 }));
 
 const StyledTableHead = styled(TableHead)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.grey[100], theme.palette.mode === 'dark' ? 0.05 : 0.5),
   '& .MuiTableCell-head': {
-    color: theme.palette.text.secondary,
-    fontWeight: 600,
-    fontSize: '13px',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    padding: theme.spacing(1, 1.5),
-    borderBottom: 'none'
+    color: alpha(theme.palette.text.secondary, 0.7),
+    fontWeight: 400,
+    fontSize: '0.8rem',
+    padding: theme.spacing(1.2, 1.5),
+    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
   }
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   '&:hover': {
-    backgroundColor: alpha(theme.palette.primary.main, 0.02)
+    backgroundColor: alpha(theme.palette.divider, 0.02)
   },
   '&:last-child td': {
     borderBottom: 'none'
@@ -69,37 +56,26 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   padding: theme.spacing(1.2, 1.5),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-  fontSize: '13px'
+  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
+  fontSize: '0.9rem'
 }));
 
 const TransactionCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderRadius: theme.spacing(1),
-  backgroundColor: theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+  padding: theme.spacing(1.5),
+  borderRadius: '8px',
+  backgroundColor: 'transparent',
+  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
 }));
 
 const TypeChip = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'transactionType'
 })(({ theme, transactionType }) => ({
-  height: 22,
-  fontSize: '11px',
+  height: 20,
+  fontSize: '0.75rem',
   fontWeight: 400,
-  backgroundColor:
-    transactionType === 'SALE'
-      ? alpha(theme.palette.success.main, 0.1)
-      : alpha(theme.palette.info.main, 0.1),
-  color: transactionType === 'SALE' ? theme.palette.success.dark : theme.palette.info.dark,
-  border: `1px solid ${
-    transactionType === 'SALE'
-      ? alpha(theme.palette.success.main, 0.2)
-      : alpha(theme.palette.info.main, 0.2)
-  }`,
-  '& .MuiChip-icon': {
-    fontSize: '14px',
-    marginLeft: '4px'
-  },
+  backgroundColor: 'transparent',
+  color: transactionType === 'SALE' ? theme.palette.success.main : alpha(theme.palette.text.secondary, 0.6),
+  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   '& .MuiChip-label': {
     padding: '0 8px'
   }
@@ -109,15 +85,15 @@ const AddressLink = styled(Link)(({ theme }) => ({
   color: theme.palette.text.primary,
   textDecoration: 'none',
   fontFamily: 'monospace',
-  fontSize: '14px',
+  fontSize: '0.85rem',
   '&:hover': {
     color: theme.palette.primary.main
   }
 }));
 
 const PriceText = styled(Typography)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: '13px',
+  fontWeight: 500,
+  fontSize: '0.9rem',
   color: theme.palette.text.primary,
   fontFamily: 'monospace'
 }));
@@ -160,10 +136,9 @@ const LoadingSkeleton = () => (
 );
 
 const EmptyState = () => (
-  <Stack alignItems="center" justifyContent="center" sx={{ py: 8 }}>
-    <SwapHorizIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2, opacity: 0.5 }} />
-    <Typography variant="body2" color="text.secondary">
-      No transaction history yet
+  <Stack alignItems="center" justifyContent="center" sx={{ py: 6 }}>
+    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+      No transaction history
     </Typography>
   </Stack>
 );
@@ -218,50 +193,37 @@ export default function HistoryList({ nft }) {
     <StyledPaper elevation={0}>
       {isMobile ? (
         // Mobile view - Cards
-        <Stack spacing={1.5} sx={{ p: 2 }}>
+        <Stack spacing={1} sx={{ p: 1.5 }}>
           {sortedHists.map((row, index) => (
             <TransactionCard key={row.uuid} elevation={0}>
-                <Stack spacing={1.5}>
-                  {/* Header */}
+                <Stack spacing={1.2}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <TypeChip
                       label={row.type}
                       size="small"
                       transactionType={row.type}
-                      icon={row.type === 'SALE' ? <TrendingUpIcon /> : <SwapHorizIcon />}
                     />
-                    <Stack direction="row" alignItems="center" spacing={0.5}>
-                      <AccessTimeIcon sx={{ fontSize: 14, color: 'text.secondary' }} />
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(row.time)}
-                      </Typography>
-                    </Stack>
+                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
+                      {formatDate(row.time)}
+                    </Typography>
                   </Stack>
 
-                  {/* Content */}
-                  <Stack spacing={1}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <AccountCircleIcon sx={{ fontSize: 16, color: 'text.secondary' }} />
-                      <AddressLink href={`/profile/${row.account}`}>
-                        {formatAddress(row.account)}
-                      </AddressLink>
-                    </Stack>
+                  <Stack spacing={0.8}>
+                    <AddressLink href={`/profile/${row.account}`}>
+                      {formatAddress(row.account)}
+                    </AddressLink>
 
-                    {row.type === 'SALE' && (
-                      <Box
-                        sx={{
-                          bgcolor: alpha(theme.palette.success.main, 0.05),
-                          borderRadius: 0.5,
-                          px: 1.5,
-                          py: 0.75,
-                          border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`
-                        }}
-                      >
-                        <PriceText variant="body2">
-                          {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
-                          {normalizeCurrencyCode(row.cost.currency)}
-                        </PriceText>
-                      </Box>
+                    {row.type === 'SALE' && (row.cost || row.costXRP) && (
+                      <PriceText variant="body2">
+                        {row.costXRP ? (
+                          <>✕ {fNumber(row.costXRP)} XRP</>
+                        ) : (
+                          <>
+                            {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
+                            {normalizeCurrencyCode(row.cost.currency)}
+                          </>
+                        )}
+                      </PriceText>
                     )}
                   </Stack>
                 </Stack>
@@ -288,26 +250,31 @@ export default function HistoryList({ nft }) {
                         label={row.type}
                         size="small"
                         transactionType={row.type}
-                        icon={row.type === 'SALE' ? <TrendingUpIcon /> : <SwapHorizIcon />}
                       />
                     </StyledTableCell>
                     <StyledTableCell>
                       <AddressLink href={`/profile/${row.account}`}>{formatAddress(row.account)}</AddressLink>
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      {row.type === 'SALE' && row.cost ? (
+                      {row.type === 'SALE' && (row.cost || row.costXRP) ? (
                         <PriceText>
-                          {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
-                          {normalizeCurrencyCode(row.cost.currency)}
+                          {row.costXRP ? (
+                            <>✕ {fNumber(row.costXRP)} XRP</>
+                          ) : (
+                            <>
+                              {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
+                              {normalizeCurrencyCode(row.cost.currency)}
+                            </>
+                          )}
                         </PriceText>
                       ) : (
-                        <Typography variant="body2" color="text.secondary">
+                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
                           —
                         </Typography>
                       )}
                     </StyledTableCell>
                     <StyledTableCell align="right">
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '12px' }}>
+                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
                         {formatDate(row.time)}
                       </Typography>
                     </StyledTableCell>

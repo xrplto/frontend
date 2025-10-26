@@ -617,7 +617,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
   } = nft;
 
   const isSold = cost?.amount || costb?.amount || amount; // Show SALE badge only if there's a price
-  const imgUrl = getNftCoverUrl(nft, 'big');
+  const imgUrl = getNftCoverUrl(nft, 'large');
   const name = nft.meta?.name || meta?.Name || 'No Name';
 
   const handleImageLoad = () => setLoadingImg(false);
