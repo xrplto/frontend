@@ -156,14 +156,20 @@ export const XrplToLightTheme = createTheme({
   typography: {
     fontFamily: 'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     fontSize: 14,
-    h1: { fontWeight: 700, letterSpacing: '-0.02em' },
-    h2: { fontWeight: 700, letterSpacing: '-0.01em' },
-    h3: { fontWeight: 700, letterSpacing: '-0.01em' },
-    h4: { fontWeight: 600, letterSpacing: '-0.01em' },
-    h5: { fontWeight: 700 },
-    h6: {},
+    fontVariantNumeric: 'tabular-nums',
+    h1: { fontWeight: 700, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
+    h2: { fontWeight: 700, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h3: { fontWeight: 700, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h4: { fontWeight: 600, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h5: { fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+    h6: { fontVariantNumeric: 'tabular-nums' },
     body1: { fontVariantNumeric: 'tabular-nums' },
-    body2: { fontVariantNumeric: 'tabular-nums' }
+    body2: { fontVariantNumeric: 'tabular-nums' },
+    subtitle1: { fontVariantNumeric: 'tabular-nums' },
+    subtitle2: { fontVariantNumeric: 'tabular-nums' },
+    caption: { fontVariantNumeric: 'tabular-nums' },
+    button: { fontVariantNumeric: 'tabular-nums' },
+    overline: { fontVariantNumeric: 'tabular-nums' }
   },
   colors: {
     gradients: {

@@ -141,8 +141,9 @@ function getProperties(meta) {
 // Styled components
 const Container = styled(Box)(({ theme }) => ({
   width: '100%',
-  maxWidth: '480px',
+  maxWidth: '768px',
   padding: 0,
+  boxSizing: 'border-box',
   [theme.breakpoints.down('sm')]: {
     maxWidth: '100%'
   }
@@ -289,13 +290,17 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           sx={{
             width: '100%',
             height: '100%',
+            aspectRatio: '1 / 1',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: (theme) => alpha(theme.palette.common.black, 0.7)
+            bgcolor: (theme) => alpha(theme.palette.common.black, 0.7),
+            position: 'absolute',
+            top: 0,
+            left: 0
           }}
         >
-          <Typography variant="caption" color="text.secondary">
+          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
             Image unavailable
           </Typography>
         </Box>
@@ -324,13 +329,13 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
         || file.dfile
         || file.convertedFile;
 
-    // Thumbnail for display (medium preferred, fallback to full size)
+    // Thumbnail for display (large 768x768 preferred)
     const thumbnailUrl = typeof file === 'string'
       ? file
-      : file.thumbnail?.medium
-        ? cdn + file.thumbnail.medium
-        : file.thumbnail?.large
-          ? cdn + file.thumbnail.large
+      : file.thumbnail?.large
+        ? cdn + file.thumbnail.large
+        : file.thumbnail?.medium
+          ? cdn + file.thumbnail.medium
           : file.thumbnail?.small
             ? cdn + file.thumbnail.small
             : fullSizeUrl;
@@ -468,6 +473,31 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   const { openSnackbar } = useContext(AppContext);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
+  const handleCopy = (text, label) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(() => {
+        openSnackbar(`${label} copied`, 'success');
+      }).catch(() => {
+        openSnackbar('Failed to copy', 'error');
+      });
+    } else {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.opacity = '0';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        openSnackbar(`${label} copied`, 'success');
+      } catch (err) {
+        openSnackbar('Failed to copy', 'error');
+      }
+      document.body.removeChild(textArea);
+    }
+  };
 
   const {
     collection,
@@ -625,9 +655,14 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         <Stack spacing={0.6}>
           <Stack direction="row" spacing={2}>
             <Box sx={{ flex: 1 }}>
-              <Label sx={{ mb: 0.2 }}>Owner</Label>
+              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.2 }}>
+                <Label>Owner</Label>
+                <IconButton onClick={() => handleCopy(account, 'Owner')} size="small" sx={{ p: 0.3 }}>
+                  <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
+                </IconButton>
+              </Stack>
               <Link href={`/profile/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-                <Value sx={{ fontSize: '13px', wordBreak: 'break-all' }}>{account}</Value>
+                <Value sx={{ fontSize: '13px', wordBreak: 'break-all', maxWidth: '100%', overflowWrap: 'break-word' }}>{account}</Value>
               </Link>
             </Box>
             <Box>
@@ -637,16 +672,26 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
           </Stack>
 
           <Box>
-            <Label sx={{ mb: 0.2 }}>Issuer</Label>
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.2 }}>
+              <Label>Issuer</Label>
+              <IconButton onClick={() => handleCopy(issuer, 'Issuer')} size="small" sx={{ p: 0.3 }}>
+                <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
+              </IconButton>
+            </Stack>
             <Link href={`/profile/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '13px', wordBreak: 'break-all' }}>{issuer}</Value>
+              <Value sx={{ fontSize: '13px', wordBreak: 'break-all', maxWidth: '100%', overflowWrap: 'break-word' }}>{issuer}</Value>
             </Link>
           </Box>
 
           <Box>
-            <Label sx={{ mb: 0.2 }}>Token ID</Label>
+            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.2 }}>
+              <Label>Token ID</Label>
+              <IconButton onClick={() => handleCopy(NFTokenID, 'Token ID')} size="small" sx={{ p: 0.3 }}>
+                <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
+              </IconButton>
+            </Stack>
             <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
-              <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all', lineHeight: 1.2 }}>{NFTokenID}</Value>
+              <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all', lineHeight: 1.2, maxWidth: '100%', overflowWrap: 'break-word' }}>{NFTokenID}</Value>
             </Link>
           </Box>
         </Stack>

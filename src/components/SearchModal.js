@@ -326,7 +326,7 @@ function SearchModal({ open, onClose }) {
       overflow: 'hidden',
       borderRadius: '12px',
       background: theme.palette.background.paper,
-      border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
       boxShadow: 'none'
     }),
     [theme]
@@ -345,7 +345,7 @@ function SearchModal({ open, onClose }) {
         <Box
           sx={{
             p: 2,
-            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`,
+            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
             backgroundColor: 'transparent'
           }}
         >
@@ -436,7 +436,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -461,7 +461,7 @@ function SearchModal({ open, onClose }) {
                               height: 22,
                               fontSize: '11px',
                               fontWeight: 400,
-                              borderColor: alpha(theme.palette.divider, 0.2)
+                              borderColor: alpha(theme.palette.divider, 0.15)
                             }}
                           />
                         </ListItemButton>
@@ -508,7 +508,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -529,7 +529,7 @@ function SearchModal({ open, onClose }) {
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {token.exch !== undefined && token.exch !== null && (
-                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
+                              <Typography variant="body2" fontSize="14px" fontWeight={400} sx={{ fontVariantNumeric: 'tabular-nums' }}>
                                 {activeFiatCurrency === 'XRP'
                                   ? `${formatPrice(convertPrice(token.exch))} XRP`
                                   : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
@@ -541,6 +541,7 @@ function SearchModal({ open, onClose }) {
                                 fontSize="12px"
                                 color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
                                 fontWeight={400}
+                                sx={{ fontVariantNumeric: 'tabular-nums' }}
                               >
                                 {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                                 {parseFloat(token.pro24h).toFixed(2)}%
@@ -591,7 +592,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -614,7 +615,7 @@ function SearchModal({ open, onClose }) {
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {collection.floor && collection.floor.amount && (
-                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
+                              <Typography variant="body2" fontSize="14px" fontWeight={400} sx={{ fontVariantNumeric: 'tabular-nums' }}>
                                 Floor: {collection.floor.amount}{' '}
                                 {collection.floor.currency || 'XRP'}
                               </Typography>
@@ -623,7 +624,7 @@ function SearchModal({ open, onClose }) {
                               <Typography
                                 variant="caption"
                                 fontSize="12px"
-                                sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
+                                sx={{ color: alpha(theme.palette.text.secondary, 0.6), fontVariantNumeric: 'tabular-nums' }}
                               >
                                 Vol: {collection.totalVolume.toLocaleString()} XRP
                               </Typography>
@@ -678,11 +679,11 @@ function SearchModal({ open, onClose }) {
                             ? alpha(theme.palette.primary.main, 0.04)
                             : 'transparent',
                           border: shouldHighlight
-                            ? `1.5px solid ${alpha(theme.palette.primary.main, 0.2)}`
+                            ? `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`
                             : '1.5px solid transparent',
                           '&:hover': {
                             backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                            borderColor: alpha(theme.palette.primary.main, 0.2)
+                            borderColor: alpha(theme.palette.primary.main, 0.3)
                           }
                         }}
                       >
@@ -735,7 +736,7 @@ function SearchModal({ open, onClose }) {
                         />
                         <Stack alignItems="flex-end" spacing={0.25}>
                           {token.exch !== undefined && token.exch !== null && (
-                            <Typography variant="body2" fontSize="14px" fontWeight={400}>
+                            <Typography variant="body2" fontSize="14px" fontWeight={400} sx={{ fontVariantNumeric: 'tabular-nums' }}>
                               {activeFiatCurrency === 'XRP'
                                 ? `${formatPrice(convertPrice(token.exch))} XRP`
                                 : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
@@ -747,6 +748,7 @@ function SearchModal({ open, onClose }) {
                               fontSize="12px"
                               color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
                               fontWeight={400}
+                              sx={{ fontVariantNumeric: 'tabular-nums' }}
                             >
                               {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                               {parseFloat(token.pro24h).toFixed(2)}%

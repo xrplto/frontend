@@ -24,11 +24,8 @@ import { AppContext } from 'src/AppContext';
 
 const OverviewWrapper = styled(Box)(
   ({ theme }) => `
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    overflow-x: hidden;
-    width: 100%;
+    overflow: hidden;
+    flex: 1;
 `
 );
 
@@ -67,35 +64,33 @@ export default function Overview({ nft }) {
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
       <Header />
-      <Box sx={{ flex: 1 }}>
-        <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-          {nftName} NFT on XRPL
-        </h1>
+      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
+        {nftName} NFT on XRPL
+      </h1>
 
-        <Container maxWidth="xl">
-          {collectionData && (
-            <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
-          )}
-          <Suspense
-            fallback={
-              <Box
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  minHeight: 400
-                }}
-              >
-                <CircularProgress />
-              </Box>
-            }
-          >
-            <TokenDetail nft={nft.nft} />
-          </Suspense>
-        </Container>
+      <Container maxWidth="xl">
+        {collectionData && (
+          <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
+        )}
+        <Suspense
+          fallback={
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                minHeight: 400
+              }}
+            >
+              <CircularProgress />
+            </Box>
+          }
+        >
+          <TokenDetail nft={nft.nft} />
+        </Suspense>
+      </Container>
 
-        <ScrollToTop />
-      </Box>
+      <ScrollToTop />
 
       <Footer />
     </OverviewWrapper>

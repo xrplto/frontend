@@ -108,7 +108,8 @@ const GlassPanel = styled(Glass)(({ theme }) => ({
   padding: theme.spacing(2),
   boxShadow: `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.1)}`,
   border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-  width: '100%'
+  width: '100%',
+  boxSizing: 'border-box'
 }));
 
 // Add this new styled component for the verification badge

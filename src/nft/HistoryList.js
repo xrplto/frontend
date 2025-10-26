@@ -209,9 +209,21 @@ export default function HistoryList({ nft }) {
                   </Stack>
 
                   <Stack spacing={0.8}>
-                    <AddressLink href={`/profile/${row.account}`}>
-                      {formatAddress(row.account)}
-                    </AddressLink>
+                    {row.seller && row.buyer ? (
+                      <Box sx={{ fontSize: '0.8rem' }}>
+                        <AddressLink href={`/profile/${row.seller}`}>
+                          {formatAddress(row.seller)}
+                        </AddressLink>
+                        <Typography component="span" sx={{ mx: 0.5, color: alpha(theme.palette.text.secondary, 0.5) }}>→</Typography>
+                        <AddressLink href={`/profile/${row.buyer}`}>
+                          {formatAddress(row.buyer)}
+                        </AddressLink>
+                      </Box>
+                    ) : (
+                      <AddressLink href={`/profile/${row.account}`}>
+                        {formatAddress(row.account)}
+                      </AddressLink>
+                    )}
 
                     {row.type === 'SALE' && (row.cost || row.costXRP) && (
                       <PriceText variant="body2">
@@ -232,14 +244,14 @@ export default function HistoryList({ nft }) {
         </Stack>
       ) : (
         // Desktop view - Table
-        <Box>
-          <Table size="small">
+        <Box sx={{ overflowX: 'auto', width: '100%' }}>
+          <Table size="small" sx={{ width: '100%' }}>
             <StyledTableHead>
               <TableRow>
-                <StyledTableCell>Type</StyledTableCell>
-                <StyledTableCell>From / To</StyledTableCell>
-                <StyledTableCell align="right">Price</StyledTableCell>
-                <StyledTableCell align="right">Date</StyledTableCell>
+                <StyledTableCell sx={{ width: '100px' }}>Type</StyledTableCell>
+                <StyledTableCell sx={{ width: 'auto', minWidth: '280px' }}>From / To</StyledTableCell>
+                <StyledTableCell align="right" sx={{ width: '140px' }}>Price</StyledTableCell>
+                <StyledTableCell align="right" sx={{ width: '90px' }}>Date</StyledTableCell>
               </TableRow>
             </StyledTableHead>
             <TableBody>
@@ -253,7 +265,15 @@ export default function HistoryList({ nft }) {
                       />
                     </StyledTableCell>
                     <StyledTableCell>
-                      <AddressLink href={`/profile/${row.account}`}>{formatAddress(row.account)}</AddressLink>
+                      {row.seller && row.buyer ? (
+                        <Box>
+                          <AddressLink href={`/profile/${row.seller}`}>{formatAddress(row.seller)}</AddressLink>
+                          <Typography component="span" sx={{ mx: 0.5, color: alpha(theme.palette.text.secondary, 0.5), fontSize: '0.75rem' }}>→</Typography>
+                          <AddressLink href={`/profile/${row.buyer}`}>{formatAddress(row.buyer)}</AddressLink>
+                        </Box>
+                      ) : (
+                        <AddressLink href={`/profile/${row.account}`}>{formatAddress(row.account)}</AddressLink>
+                      )}
                     </StyledTableCell>
                     <StyledTableCell align="right">
                       {row.type === 'SALE' && (row.cost || row.costXRP) ? (

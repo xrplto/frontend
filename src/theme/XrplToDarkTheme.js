@@ -161,19 +161,20 @@ export const XrplToDarkTheme = createTheme({
   typography: {
     fontFamily:
       'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
-    h1: { fontWeight: 700, fontSize: '19px', letterSpacing: '-0.02em' },
-    h2: { fontWeight: 700, fontSize: '16px', letterSpacing: '-0.01em' },
-    h3: { fontWeight: 700, fontSize: '14px', letterSpacing: '-0.01em' },
-    h4: { fontWeight: 600, fontSize: 16, letterSpacing: '-0.01em' },
-    h5: { fontWeight: 700, fontSize: 14 },
-    h6: { fontSize: 15 },
+    fontVariantNumeric: 'tabular-nums',
+    h1: { fontWeight: 700, fontSize: '19px', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
+    h2: { fontWeight: 700, fontSize: '16px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h3: { fontWeight: 700, fontSize: '14px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h4: { fontWeight: 600, fontSize: 16, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h5: { fontWeight: 700, fontSize: 14, fontVariantNumeric: 'tabular-nums' },
+    h6: { fontSize: 15, fontVariantNumeric: 'tabular-nums' },
     body1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
     body2: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
-    button: { fontWeight: 600, textTransform: 'none' },
-    caption: { fontSize: 13 },
-    subtitle1: { fontSize: 14 },
-    subtitle2: { fontWeight: 400, fontSize: 15 },
-    overline: { fontSize: 13, fontWeight: 700 }
+    button: { fontWeight: 600, textTransform: 'none', fontVariantNumeric: 'tabular-nums' },
+    caption: { fontSize: 13, fontVariantNumeric: 'tabular-nums' },
+    subtitle1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
+    subtitle2: { fontWeight: 400, fontSize: 15, fontVariantNumeric: 'tabular-nums' },
+    overline: { fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }
   },
 
   shadows: [

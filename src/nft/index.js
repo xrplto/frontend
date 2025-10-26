@@ -1,5 +1,5 @@
 // Material
-import { useMediaQuery, Grid, useTheme } from '@mui/material';
+import { useMediaQuery, Grid, useTheme, Box } from '@mui/material';
 
 // Constants
 const NFToken = {
@@ -19,11 +19,11 @@ export default function Detail({ nft }) {
   const { status, costs } = nft;
 
   return (
-    <Grid container spacing={2} sx={{ maxWidth: '1200px', mx: 'auto' }} alignItems="flex-start">
-      <Grid size={{ xs: 12, md: 5 }}>
+    <Grid container columnSpacing={2} rowSpacing={2} sx={{ mb: 0, maxWidth: '1300px', mx: 'auto' }} alignItems="flex-start">
+      <Grid size={{ xs: 12, md: 4 }}>
         <NFTDetails nft={nft} />
       </Grid>
-      <Grid size={{ xs: 12, md: 7 }}>
+      <Grid size={{ xs: 12, md: 8 }}>
         {status === NFToken.SELL_WITH_MINT_BULK ? (
           <NFTActionsBulk nft={nft} />
         ) : (
