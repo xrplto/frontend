@@ -492,7 +492,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     fontSize: '12px',
                     color:
                       meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS'
@@ -550,7 +550,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                       height: '14px',
                       fontSize: '12px',
                       px: 0.5,
-                      fontWeight: 600,
+                      fontWeight: 400,
                       background: theme.palette.primary.main,
                       color: 'white'
                     }}
@@ -589,7 +589,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
             <Typography
               variant="body2"
               sx={{
-                fontWeight: 600,
+                fontWeight: 400,
                 color: getTxColor,
                 fontSize: '12px',
                 lineHeight: 1.2,
@@ -913,7 +913,7 @@ const CreatorTransactionsDialog = memo(
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '16px' }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '16px' }}>
                   Creator Activity
                 </Typography>
                 {isSubscribed && (
@@ -1010,7 +1010,7 @@ const CreatorTransactionsDialog = memo(
               <Alert
                 severity="error"
                 sx={{
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   background: alpha(theme.palette.error.main, 0.1)
                 }}
               >
@@ -1021,7 +1021,7 @@ const CreatorTransactionsDialog = memo(
                 sx={{
                   py: 4,
                   textAlign: 'center',
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   background: alpha(theme.palette.background.default, 0.5)
                 }}
               >

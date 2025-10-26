@@ -418,7 +418,7 @@ function SearchModal({ open, onClose }) {
                           sx={{
                           py: 1,
                           px: 2,
-                          borderRadius: '8px',
+                          borderRadius: '12px',
                           mx: 0.5,
                           mb: 0.5,
                           '&:hover': {
@@ -494,7 +494,7 @@ function SearchModal({ open, onClose }) {
                           sx={{
                             py: 1,
                             px: 2,
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             mx: 0.5,
                             mb: 0.5,
                             '&:hover': {
@@ -578,7 +578,7 @@ function SearchModal({ open, onClose }) {
                           sx={{
                             py: 1,
                             px: 2,
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             mx: 0.5,
                             mb: 0.5,
                             '&:hover': {
@@ -672,7 +672,7 @@ function SearchModal({ open, onClose }) {
                         sx={{
                           py: 1,
                           px: 2,
-                          borderRadius: '8px',
+                          borderRadius: '12px',
                           mx: 0.5,
                           mb: 0.5,
                           backgroundColor: shouldHighlight

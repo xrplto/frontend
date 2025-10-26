@@ -100,14 +100,14 @@ const StyledPopoverPaper = styled(Box)(({ theme }) => ({
 const BalanceCard = styled(Card)(({ theme }) => ({
   background: 'transparent',
   border: 'none',
-  borderRadius: 8,
+  borderRadius: 12,
   boxShadow: 'none'
 }));
 
 const ReserveCard = styled(Box)(({ theme }) => ({
   background: 'transparent',
   border: 'none',
-  borderRadius: 8,
+  borderRadius: 12,
   padding: theme.spacing(2)
 }));
 
@@ -442,7 +442,7 @@ const WalletContent = ({
           <Box sx={{
             mt: 1,
             p: 1,
-            borderRadius: '8px',
+            borderRadius: '12px',
             background: 'white',
             display: 'inline-block'
           }}>
@@ -2946,7 +2946,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             py: 1,
                             fontSize: '14px',
                             textTransform: 'none',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontWeight: 400
                           }}
                         >
@@ -2961,7 +2961,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             py: 1,
                             fontSize: '14px',
                             textTransform: 'none',
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontWeight: 400
                           }}
                         >
@@ -3006,7 +3006,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 p: 2,
                                 textAlign: 'left',
                                 justifyContent: 'flex-start',
-                                borderRadius: '8px'
+                                borderRadius: '12px'
                               }}
                             >
                               <Stack>
@@ -3028,7 +3028,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 p: 2,
                                 textAlign: 'left',
                                 justifyContent: 'flex-start',
-                                borderRadius: '8px'
+                                borderRadius: '12px'
                               }}
                             >
                               <Stack>
@@ -3267,7 +3267,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         color: theme.palette.text.secondary,
                         '&:hover': {
                           color: theme.palette.text.primary,
@@ -3455,7 +3455,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     py: 1,
                                     fontSize: '14px',
                                     textTransform: 'none',
-                                    borderRadius: '8px'
+                                    borderRadius: '12px'
                                   }}
                                 >
                                   Continue
@@ -3467,7 +3467,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     py: 1,
                                     fontSize: '14px',
                                     textTransform: 'none',
-                                    borderRadius: '8px'
+                                    borderRadius: '12px'
                                   }}
                                 >
                                   Cancel
@@ -3499,7 +3499,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     py: 1,
                                     fontSize: '14px',
                                     textTransform: 'none',
-                                    borderRadius: '8px'
+                                    borderRadius: '12px'
                                   }}
                                 >
                                   Verify
@@ -3511,7 +3511,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     py: 1,
                                     fontSize: '14px',
                                     textTransform: 'none',
-                                    borderRadius: '8px'
+                                    borderRadius: '12px'
                                   }}
                                 >
                                   Back
@@ -3543,7 +3543,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     py: 1,
                                     fontSize: '14px',
                                     textTransform: 'none',
-                                    borderRadius: '8px'
+                                    borderRadius: '12px'
                                   }}
                                 >
                                   Login
@@ -3555,7 +3555,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                     py: 1,
                                     fontSize: '14px',
                                     textTransform: 'none',
-                                    borderRadius: '8px'
+                                    borderRadius: '12px'
                                   }}
                                 >
                                   Back
@@ -3614,7 +3614,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             flexShrink: 0,
                             backgroundColor: alpha(theme.palette.background.paper, 0.6),
                             border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             '&:hover': {
                               backgroundColor: alpha(theme.palette.background.paper, 0.8),
                               transform: 'scale(1.05)'

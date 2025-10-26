@@ -102,7 +102,7 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
       <StyledDialogContent>
         <Stack spacing={3} alignItems="center">
           <WarningIcon />
-          <Typography variant="h5" fontWeight="bold" textAlign="center">
+          <Typography variant="h5" fontWeight={500} textAlign="center">
             Confirm NFT Burn
           </Typography>
           <Typography variant="body1" textAlign="center">

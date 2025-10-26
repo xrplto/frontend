@@ -307,7 +307,7 @@ const StyledMenuItem = styled(MenuItem, {
     margin: 4px 8px;
     border-radius: 8px;
     background: transparent;
-    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
     box-shadow: none;
     position: relative;
     overflow: hidden;
@@ -319,7 +319,7 @@ const StyledMenuItem = styled(MenuItem, {
     &:hover {
       color: ${theme.palette.primary.main};
       background: ${alpha(theme.palette.primary.main, 0.04)};
-      border: 1px solid ${alpha(theme.palette.primary.main, 0.3)};
+      border: 1.5px solid ${alpha(theme.palette.primary.main, 0.3)};
       box-shadow: none;
     }
 `
@@ -858,7 +858,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     height: '34px',
                     backgroundColor: 'transparent',
                     border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     '&:hover': {
                       backgroundColor: alpha(theme.palette.primary.main, 0.04),
                       borderColor: alpha(theme.palette.primary.main, 0.3)
@@ -883,7 +883,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     letterSpacing: '0.01em',
                     color: '#4285f4',
                     border: `1px solid ${alpha('#4285f4', 0.2)}`,
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     backgroundColor: 'transparent',
                     '&:hover': {
                       backgroundColor: alpha('#4285f4', 0.06),

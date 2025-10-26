@@ -132,7 +132,7 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
                 bgcolor: alpha(theme.palette.background.paper, 0.5)
               }}
             >
-              <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 400 }}>
                 {token?.name || 'XRP'}
               </Typography>
             </Box>

@@ -502,7 +502,7 @@ const MobileTokenRow = ({
       const val = columnId === 'pro30d' ? pro24h * 30 : token[columnId];
       const color = getPercentColor(val);
       return (
-        <span style={{ color, fontWeight: '600' }}>
+        <span style={{ color, fontWeight: '400' }}>
           {val !== undefined && val !== null && !isNaN(val)
             ? `${val > 0 ? '+' : ''}${val.toFixed(1)}%`
             : '0.0%'}
@@ -527,7 +527,7 @@ const MobileTokenRow = ({
         const mcap =
           marketcap && exchRate ? new Decimal(marketcap || 0).div(exchRate).toNumber() : 0;
         return (
-          <span style={{ color: getMarketCapColor(mcap), fontWeight: '600' }}>
+          <span style={{ color: getMarketCapColor(mcap), fontWeight: '400' }}>
             {`${currencySymbols[activeFiatCurrency]}${mcap >= 1e9 ? `${(mcap / 1e9).toFixed(1)}B` : mcap >= 1e6 ? `${(mcap / 1e6).toFixed(1)}M` : mcap >= 1e3 ? `${(mcap / 1e3).toFixed(1)}K` : formatNumber(mcap)}`}
           </span>
         );
@@ -777,7 +777,7 @@ const DesktopTokenRow = ({
             {tokenCell}
             {priceCell}
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
+              <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
@@ -906,7 +906,7 @@ const DesktopTokenRow = ({
                 {formatValue(convertedValues.volume)}
               </StyledCell>
               <StyledCell align="right" darkMode={darkMode}>
-                <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
+                <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
                   {currencySymbols[activeFiatCurrency]}
                   {formatValue(convertedValues.marketCap)}
                 </span>
@@ -1028,7 +1028,7 @@ const DesktopTokenRow = ({
             case 'marketCap':
               columnElements.push(
                 <StyledCell key="marketCap" align="right" darkMode={darkMode} style={extraStyle}>
-                  <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
+                  <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(convertedValues.marketCap)}
                   </span>
@@ -1166,7 +1166,7 @@ const DesktopTokenRow = ({
               {formatValue(convertedValues.tvl)}
             </StyledCell>
             <StyledCell align="right" darkMode={darkMode}>
-              <span style={{ fontWeight: '600', color: getMarketCapColor(convertedValues.marketCap) }}>
+              <span style={{ fontWeight: '400', color: getMarketCapColor(convertedValues.marketCap) }}>
                 {currencySymbols[activeFiatCurrency]}
                 {formatValue(convertedValues.marketCap)}
               </span>
@@ -1228,7 +1228,7 @@ const DesktopTokenRow = ({
           maxWidth: '40px'
         }}
       >
-        <span style={{ fontWeight: '600', color: theme.palette.text.secondary }}>{idx + 1}</span>
+        <span style={{ fontWeight: '400', color: theme.palette.text.secondary }}>{idx + 1}</span>
       </StyledCell>
 
       {renderColumns()}

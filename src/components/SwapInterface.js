@@ -148,7 +148,7 @@ const AllowButton = memo(
     text-transform: none;
     background: ${alpha(theme.palette.primary.main, 0.08)};
     color: ${theme.palette.primary.main};
-    border: 1px solid ${alpha(theme.palette.primary.main, 0.2)};
+    border: 1.5px solid ${alpha(theme.palette.primary.main, 0.2)};
     
     &:hover {
       background: ${alpha(theme.palette.primary.main, 0.12)};
@@ -163,7 +163,7 @@ const ToggleButton = memo(
   styled(IconButton)(
     ({ theme }) => `
     background: ${theme.palette.background.paper};
-    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
     width: 28px;
     height: 28px;
     position: absolute;
@@ -213,7 +213,7 @@ const WalletDisplay = memo(
     margin-bottom: 8px;
     border-radius: 8px;
     background: ${alpha(theme.palette.success.main, 0.04)};
-    border: 1px solid ${alpha(theme.palette.success.main, 0.12)};
+    border: 1.5px solid ${alpha(theme.palette.success.main, 0.12)};
     
     &:hover {
       background: ${alpha(theme.palette.success.main, 0.08)};
@@ -318,7 +318,7 @@ const TokenImage = styled(Image)(({ theme }) => ({
 
 const SelectTokenButton = styled(Stack)(({ theme }) => ({
   padding: '6px 10px',
-  borderRadius: '8px',
+  borderRadius: '12px',
   cursor: 'pointer',
   backgroundColor: alpha(theme.palette.background.paper, 0.4),
   border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
@@ -373,7 +373,7 @@ const ScrollableContent = styled(Box)(({ theme }) => ({
 
 const TokenCard = styled(Box)(({ theme }) => ({
   padding: '12px',
-  borderRadius: '8px',
+  borderRadius: '12px',
   cursor: 'pointer',
   border: `1px solid transparent`,
   '&:hover': {
@@ -383,7 +383,7 @@ const TokenCard = styled(Box)(({ theme }) => ({
 }));
 
 const CategoryChip = styled(Chip)(({ theme }) => ({
-  borderRadius: '8px',
+  borderRadius: '12px',
   fontWeight: 400,
   fontSize: '11px',
   height: 24,
@@ -2211,7 +2211,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                 boxShadow: 'none'
               }}
             >
-              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 'bold' }}>
+              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 500 }}>
                 ✓
               </Typography>
             </Box>
@@ -2614,7 +2614,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           sx={{
                             px: 2,
                             py: 1,
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontSize: '13px',
                             fontWeight: 500,
                             textTransform: 'none',
@@ -2641,7 +2641,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           sx={{
                             px: 2,
                             py: 1,
-                            borderRadius: '8px',
+                            borderRadius: '12px',
                             fontSize: '13px',
                             fontWeight: 500,
                             textTransform: 'none',
@@ -2673,7 +2673,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                         p: 1.5,
                         background: alpha(theme.palette.warning.main, 0.08),
                         border: `1px solid ${alpha(theme.palette.warning.main, 0.4)}`,
-                        borderRadius: '8px'
+                        borderRadius: '12px'
                       }}>
                         <Stack spacing={1}>
                           <Stack direction="row" alignItems="center" spacing={1}>
@@ -2813,7 +2813,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   border: 'none',
                                   outline: 'none',
                                   fontFamily:
-                                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                                    'inherit',
                                   letterSpacing: '-0.02em',
                                   '&::placeholder': {
                                     color: alpha(theme.palette.text.primary, 0.4),
@@ -2888,7 +2888,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                     sx={{
                                       px: 1.5,
                                       py: 0.5,
-                                      borderRadius: '8px',
+                                      borderRadius: '12px',
                                       fontSize: '11px',
                                       fontWeight: 500,
                                       cursor: 'pointer',
@@ -3032,7 +3032,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                                   border: 'none',
                                   outline: 'none',
                                   fontFamily:
-                                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif',
+                                    'inherit',
                                   letterSpacing: '-0.02em',
                                   '&::placeholder': {
                                     color: alpha(theme.palette.text.primary, 0.4),
@@ -3212,7 +3212,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             <Box
                               sx={{
                                 p: 1,
-                                borderRadius: '8px',
+                                borderRadius: '12px',
                                 backgroundColor: alpha(theme.palette.info.main, 0.04),
                                 border: `1px solid ${alpha(theme.palette.info.main, 0.12)}`
                               }}
@@ -3302,14 +3302,14 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               }}
                               sx={{
                                 backgroundColor: alpha(theme.palette.background.default, 0.4),
-                                borderRadius: '8px',
+                                borderRadius: '12px',
                                 padding: '8px 12px',
                                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
                                 input: {
                                   fontSize: '14px',
                                   fontWeight: 500,
                                   fontFamily:
-                                    '"Inter", -apple-system, BlinkMacSystemFont, sans-serif'
+                                    'inherit'
                                 },
                                 '&:hover': {
                                   borderColor: alpha(theme.palette.primary.main, 0.2)
@@ -3863,7 +3863,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             sx={{
                               mt: 1,
                               p: 1,
-                              borderRadius: '8px',
+                              borderRadius: '12px',
                               backgroundColor: alpha(theme.palette.background.paper, 0.04),
                               border: `1px solid ${alpha(theme.palette.divider, 0.04)}`
                             }}

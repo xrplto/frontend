@@ -157,11 +157,11 @@ export const XrplToLightTheme = createTheme({
     fontFamily: 'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     fontSize: 14,
     fontVariantNumeric: 'tabular-nums',
-    h1: { fontWeight: 700, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
-    h2: { fontWeight: 700, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h3: { fontWeight: 700, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h4: { fontWeight: 600, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h5: { fontWeight: 700, fontVariantNumeric: 'tabular-nums' },
+    h1: { fontWeight: 500, letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
+    h2: { fontWeight: 500, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h3: { fontWeight: 500, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h4: { fontWeight: 400, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h5: { fontWeight: 500, fontVariantNumeric: 'tabular-nums' },
     h6: { fontVariantNumeric: 'tabular-nums' },
     body1: { fontVariantNumeric: 'tabular-nums' },
     body2: { fontVariantNumeric: 'tabular-nums' },
@@ -300,7 +300,7 @@ export const XrplToLightTheme = createTheme({
   currency: {
     background1: '#E9ECEF',
     background2: '#F8F9FA',
-    border: '1px solid #E0E7EC'
+    border: '1.5px solid #E0E7EC'
   },
 
   chart: {
@@ -425,7 +425,7 @@ export const XrplToLightTheme = createTheme({
           textTransform: 'none',
           marginLeft: 8,
           marginRight: 8,
-          fontWeight: 'bold'
+          fontWeight: 500
         }
       }
     },
@@ -551,7 +551,7 @@ export const XrplToLightTheme = createTheme({
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
-          borderRadius: 8,
+          borderRadius: 12,
           transition: 'all 0.2s ease-in-out',
           '& .MuiInputAdornment-positionEnd.MuiInputAdornment-outlined': {
             paddingRight: 6
@@ -580,7 +580,7 @@ export const XrplToLightTheme = createTheme({
     MuiListSubheader: {
       styleOverrides: {
         colorPrimary: {
-          fontWeight: 'bold',
+          fontWeight: 500,
           lineHeight: '40px',
           fontSize: 13,
           background: colors.alpha.black[5],
@@ -669,7 +669,7 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         root: {
           fontSize: 14,
-          fontWeight: 'bold'
+          fontWeight: 500
         },
         colorDefault: {
           background: colors.alpha.black[30],
@@ -686,7 +686,7 @@ export const XrplToLightTheme = createTheme({
           background: colors.alpha.black[10],
           fontSize: 13,
           color: colors.alpha.black[70],
-          fontWeight: 'bold',
+          fontWeight: 500,
 
           '&:first-of-type': {
             border: 0,
@@ -706,7 +706,7 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         page: {
           fontSize: 13,
-          fontWeight: 'bold',
+          fontWeight: 500,
           transition: 'all .2s'
         },
         textPrimary: {
@@ -728,9 +728,9 @@ export const XrplToLightTheme = createTheme({
       },
       styleOverrides: {
         root: {
-          fontWeight: 600,
+          fontWeight: 400,
           textTransform: 'none',
-          borderRadius: 8,
+          borderRadius: 12,
           transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
           willChange: 'transform',
           '&:active': {
@@ -852,7 +852,7 @@ export const XrplToLightTheme = createTheme({
         },
         wrapper: {
           background: colors.alpha.white[100],
-          fontWeight: 'bold',
+          fontWeight: 500,
           height: 24,
           lineHeight: '24px',
           marginTop: -12,
@@ -866,7 +866,7 @@ export const XrplToLightTheme = createTheme({
         root: {
           background: colors.alpha.white[100],
           padding: 0,
-          border: '1px solid #E2E8F0',
+          border: '1.5px solid #E2E8F0',
           borderRadius: 12,
           transition: 'border-color 0.15s ease, transform 0.15s ease',
           willChange: 'transform',
@@ -877,7 +877,7 @@ export const XrplToLightTheme = createTheme({
         },
         elevation0: {
           boxShadow: 'none',
-          border: '1px solid #F1F5F9'
+          border: '1.5px solid #F1F5F9'
         },
         elevation1: {
           boxShadow: colors.shadows.cardSm
@@ -895,7 +895,7 @@ export const XrplToLightTheme = createTheme({
           boxShadow: colors.shadows.cardXl
         },
         outlined: {
-          border: '1px solid #E2E8F0',
+          border: '1.5px solid #E2E8F0',
           boxShadow: 'none'
         }
       }
@@ -970,7 +970,7 @@ export const XrplToLightTheme = createTheme({
           minHeight: 42,
           overflow: 'hidden',
           backgroundColor: themeColors.neutral[50],
-          borderRadius: 8,
+          borderRadius: 12,
           padding: '4px',
           '& .MuiTabs-scroller': {
             overflow: 'auto !important'
@@ -1233,13 +1233,13 @@ export const XrplToLightTheme = createTheme({
           }
         },
         thumb: {
-          border: '1px solid ' + colors.alpha.black[30],
+          border: '1.5px solid ' + colors.alpha.black[30],
           boxShadow:
             '0px 9px 14px ' + colors.alpha.black[10] + ', 0px 2px 2px ' + colors.alpha.black[10]
         },
         track: {
           backgroundColor: colors.alpha.black[5],
-          border: '1px solid ' + colors.alpha.black[10],
+          border: '1.5px solid ' + colors.alpha.black[10],
           boxShadow: 'inset 0px 1px 1px ' + colors.alpha.black[10],
           opacity: 1
         },
@@ -1333,7 +1333,7 @@ export const XrplToLightTheme = createTheme({
         {
           props: { variant: 'h1a' },
           style: ({ theme }) => ({
-            fontWeight: 600,
+            fontWeight: 400,
             fontSize: 28,
             [theme.breakpoints.up('md')]: {
               fontSize: 32
@@ -1346,7 +1346,7 @@ export const XrplToLightTheme = createTheme({
         {
           props: { variant: 'h2a' },
           style: ({ theme }) => ({
-            fontWeight: 600,
+            fontWeight: 400,
             fontSize: 18,
             [theme.breakpoints.up('md')]: {
               fontSize: 24
@@ -1379,7 +1379,7 @@ export const XrplToLightTheme = createTheme({
         {
           props: { variant: 'd5' },
           style: ({ theme }) => ({
-            fontWeight: 600,
+            fontWeight: 400,
             fontSize: 14,
             color: colors.alpha.black[100],
             [theme.breakpoints.up('sm')]: {
@@ -1408,12 +1408,12 @@ export const XrplToLightTheme = createTheme({
     fontFamily:
       '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji"',
     wallet_h3: {
-      fontWeight: 'bold',
+      fontWeight: 500,
       fontSize: 24,
       color: colors.alpha.black[100]
     },
     wallet_h2: {
-      fontWeight: 600,
+      fontWeight: 400,
       fontSize: 14,
       lineHeight: 1.4,
       marginTop: 14,
@@ -1436,7 +1436,7 @@ export const XrplToLightTheme = createTheme({
       paddingBottom: 0
     },
     wallet_name: {
-      fontWeight: 600,
+      fontWeight: 400,
       fontSize: 16,
       color: colors.alpha.black[100],
       margin: 0
@@ -1472,33 +1472,33 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[50]
     },
     h1: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '19px' // 35
     },
     h1_trustline: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '19px' // 35
     },
     h2: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '16px' // 30
     },
     h2a: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '24' // 30
     },
     h3: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '14px' // 30
     },
     // h3: {
-    //   fontWeight: 700,
+    //   fontWeight: 500,
     //   fontSize: 25,
     //   lineHeight: 1.4,
     //   color: colors.alpha.black[100]
     // },
     h4: {
-      fontWeight: 600,
+      fontWeight: 400,
       fontSize: 16
     },
     h4a: {
@@ -1507,7 +1507,7 @@ export const XrplToLightTheme = createTheme({
       textTransform: 'uppercase'
     },
     h5: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: 14
     },
     h6: {
@@ -1520,7 +1520,7 @@ export const XrplToLightTheme = createTheme({
       fontSize: 14
     },
     button: {
-      fontWeight: 600
+      fontWeight: 400
     },
     caption: {
       fontSize: 13
@@ -1541,7 +1541,7 @@ export const XrplToLightTheme = createTheme({
     kyc2: {
       fontSize: 11,
       color: '#34B60C',
-      borderRadius: '8px',
+      borderRadius: '12px',
       border: '0.05em solid #34B60C',
       paddingLeft: '2px',
       paddingRight: '2px'
@@ -1555,17 +1555,17 @@ export const XrplToLightTheme = createTheme({
       paddingRight: '2px'
     },
     token: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: 16,
       color: '#3366FF'
     },
     desc: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '20px',
       lineHeight: 1.5
     },
     price: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: '32px',
       lineHeight: 1.5
     },
@@ -1581,7 +1581,7 @@ export const XrplToLightTheme = createTheme({
     },
     overline: {
       fontSize: 13,
-      fontWeight: 700
+      fontWeight: 500
     },
     s2: {
       fontWeight: 400,
@@ -1589,7 +1589,7 @@ export const XrplToLightTheme = createTheme({
       color: '#EB5757'
     },
     s3: {
-      fontWeight: 600,
+      fontWeight: 400,
       fontSize: 16,
       color: colors.alpha.black[100]
     },
@@ -1618,7 +1618,7 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[100]
     },
     s9: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: 25,
       lineHeight: 1.4,
       color: colors.alpha.black[100]
@@ -1643,7 +1643,7 @@ export const XrplToLightTheme = createTheme({
       color: colors.alpha.black[90]
     },
     s15: {
-      fontWeight: 700,
+      fontWeight: 500,
       fontSize: 18,
       color: '#000000'
     },

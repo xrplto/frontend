@@ -29,7 +29,7 @@ import { fNumber } from 'src/utils/formatters';
 
 // Styled components
 const StyledPaper = styled(Paper)(({ theme }) => ({
-  borderRadius: '8px',
+  borderRadius: '12px',
   overflow: 'hidden',
   border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
   background: 'transparent'
@@ -62,7 +62,7 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
 
 const TransactionCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(1.5),
-  borderRadius: '8px',
+  borderRadius: '12px',
   backgroundColor: 'transparent',
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
 }));

@@ -120,7 +120,7 @@ function OGPTestPage({ imageUrls }) {
                       mb: 2
                     }}
                   />
-                  <Typography variant="subtitle1" fontWeight="bold">
+                  <Typography variant="subtitle1" fontWeight={500}>
                     OGP Test Page | xrpl.to
                   </Typography>
                   <Typography variant="body2" color="text.secondary">

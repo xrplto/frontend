@@ -21,7 +21,7 @@ const PinField = styled(TextField)(({ theme }) => ({
   '& input': {
     textAlign: 'center',
     fontSize: '24px',
-    fontWeight: 'bold',
+    fontWeight: 500,
     padding: '12px 0',
     width: '48px',
     height: '48px',

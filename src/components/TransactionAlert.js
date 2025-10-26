@@ -87,7 +87,7 @@ const AlertBox = styled.div`
     }
   }};
   box-shadow: none;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
   color: white;
   position: relative;
   overflow: hidden;

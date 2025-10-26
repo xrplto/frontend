@@ -68,7 +68,7 @@ const RankBadge = styled(Box)(({ theme, rank }) => ({
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '8px',
+    borderRadius: '12px',
     margin: '0 3px',
     fontWeight: 400,
     minWidth: '32px',
@@ -81,7 +81,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     backgroundColor: `${theme.palette.primary.main} !important`,
     color: '#fff !important',
     fontWeight: 500,
-    borderRadius: '8px',
+    borderRadius: '12px',
     '&:hover': {
       backgroundColor: `${theme.palette.primary.dark} !important`
     }
@@ -213,27 +213,27 @@ const RichList = ({ token, amm }) => {
           <TableHead>
             <TableRow>
               <TableCell>
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight={500}>
                   Rank
                 </Typography>
               </TableCell>
               <TableCell>
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight={500}>
                   Address
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight={500}>
                   Balance
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight={500}>
                   % of Supply
                 </Typography>
               </TableCell>
               <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight="bold">
+                <Typography variant="subtitle2" fontWeight={500}>
                   24h Change
                 </Typography>
               </TableCell>

@@ -26,7 +26,7 @@ const ConfirmDialog = styled(Dialog)(({ theme }) => ({
     boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
     backdropFilter: 'blur(8px)',
     WebkitBackdropFilter: 'blur(8px)',
-    border: '1px solid rgba(255, 255, 255, 0.18)'
+    border: '1.5px solid rgba(255, 255, 255, 0.18)'
   },
   '& .MuiDialogContent-root': {
     padding: theme.spacing(2)
@@ -110,7 +110,7 @@ export default function ConfirmAcceptOfferDialog({ open, setOpen, offer, onConti
           <Typography variant="body1" align="center">
             Are you sure you want to accept the offer of
           </Typography>
-          <Typography variant="h4" color="primary.main" align="center" fontWeight="bold">
+          <Typography variant="h4" color="primary.main" align="center" fontWeight={500}>
             {price.amount} {price.name}
           </Typography>
           <Stack direction="row" spacing={2} justifyContent="center">

@@ -111,7 +111,7 @@ const CurrencyContent = styled('div')(
     width: 100%;
     justify-content: space-between;
     transition: none;
-    border: 1px solid ${alpha(theme.palette.divider, 0.08)};
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.08)};
     @media (max-width: 600px) {
       padding: 12px 14px;
       margin: 3px 0;
@@ -144,7 +144,7 @@ const OverviewWrapper = styled('div')(
     background: transparent;
     backdrop-filter: none;
     box-shadow: none;
-    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
     @media (max-width: 600px) {
         border-radius: 12px;
         padding: 10px;
@@ -183,7 +183,7 @@ const ToggleContent = styled('div')(
     z-index: 1;
     transition: none;
     box-shadow: none;
-    border: 1px solid ${alpha(theme.palette.divider, 0.12)};
+    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
 
     &:hover {
       background: ${alpha(theme.palette.primary.main, 0.04)};
@@ -1604,7 +1604,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             p: 1.5,
             background: alpha(theme.palette.warning.main, 0.08),
             border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-            borderRadius: '8px'
+            borderRadius: '12px'
           }}>
             <Stack spacing={0.75}>
               <Stack direction="row" alignItems="center" spacing={0.75}>
@@ -1738,7 +1738,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       fontSize: { xs: '14px', sm: '16px' },
                       textAlign: 'end',
                       appearance: 'none',
-                      fontWeight: 600
+                      fontWeight: 400
                     }
                   }}
                 />
@@ -1826,7 +1826,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       fontSize: { xs: '14px', sm: '16px' },
                       textAlign: 'end',
                       appearance: 'none',
-                      fontWeight: 600
+                      fontWeight: 400
                     }
                   }}
                 />
@@ -2067,7 +2067,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     padding: '4px 8px',
                     input: {
                       fontSize: '14px',
-                      fontWeight: 600
+                      fontWeight: 400
                     }
                   }}
                 />
@@ -2124,7 +2124,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
                           <Typography
                             variant="caption"
-                            sx={{ fontSize: '11px', fontWeight: 600, color: 'error.main' }}
+                            sx={{ fontSize: '11px', fontWeight: 400, color: 'error.main' }}
                           >
                             Immediate execution! {baseMsg} This order will fill instantly at market.
                             Review price and amount carefully.
@@ -2194,7 +2194,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           input: {
                             fontSize: '11px',
                             padding: '2px 4px',
-                            border: '1px solid rgba(0,0,0,0.2)',
+                            border: '1.5px solid rgba(0,0,0,0.2)',
                             borderRadius: '3px'
                           }
                         }}
@@ -2272,7 +2272,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {/* Transaction Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox>
-              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 600, mb: 0.5 }}>
+              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 400, mb: 0.5 }}>
                 Order Summary
               </Typography>
               <Stack spacing={0.25}>

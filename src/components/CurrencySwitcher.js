@@ -67,7 +67,7 @@ const StyledButton = styled('button')(({ theme, open }) => ({
 const StyledMenu = styled(Menu)(({ theme }) => ({
   '& .MuiPaper-root': {
     marginTop: '4px',
-    borderRadius: '8px',
+    borderRadius: '12px',
     minWidth: '120px',
     maxWidth: '140px',
     border: `1px solid ${theme.palette.mode === 'dark'

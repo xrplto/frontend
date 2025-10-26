@@ -15,7 +15,7 @@ const WatchButton = styled(IconButton)(({ theme }) => {
 
   return {
     position: 'relative',
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
     background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
       theme.palette.background.paper,

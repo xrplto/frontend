@@ -306,7 +306,7 @@ const TransactionDetailsPanel = memo(
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 600, fontSize: '16px' }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '16px' }}>
                   {mode === 'orderbook' ? 'Order Book' : 'Transaction Details'}
                 </Typography>
               </Stack>
@@ -453,7 +453,7 @@ const TransactionDetailsPanel = memo(
               <Alert
                 severity="error"
                 sx={{
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   background: alpha(theme.palette.error.main, 0.1)
                 }}
               >
@@ -465,7 +465,7 @@ const TransactionDetailsPanel = memo(
                 <Box
                   sx={{
                     p: 1.5,
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     background: 'transparent',
                     border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`
                   }}
@@ -697,7 +697,7 @@ const TransactionDetailsPanel = memo(
                       >
                         Amount
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 400 }}>
                         {formatAmount(
                           transaction.meta?.delivered_amount ||
                             transaction.meta?.DeliveredAmount ||
@@ -731,7 +731,7 @@ const TransactionDetailsPanel = memo(
                       >
                         {transaction.Flags & 0x00080000 ? 'Selling' : 'Buying'}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600, mb: 1.5 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 400, mb: 1.5 }}>
                         {formatAmount(transaction.TakerGets)}
                       </Typography>
                       <Typography
@@ -744,7 +744,7 @@ const TransactionDetailsPanel = memo(
                       >
                         For
                       </Typography>
-                      <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                      <Typography variant="body2" sx={{ fontWeight: 400 }}>
                         {formatAmount(transaction.TakerPays)}
                       </Typography>
                       {(() => {
@@ -862,7 +862,7 @@ const TransactionDetailsPanel = memo(
                               key={idx}
                               sx={{
                                 p: 1,
-                                borderRadius: '8px',
+                                borderRadius: '12px',
                                 background: alpha(theme.palette.info.main, 0.05),
                                 border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`
                               }}
@@ -987,7 +987,7 @@ const TransactionDetailsPanel = memo(
                     sx={{
                       p: 1,
                       mx: 0.5,
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       background: alpha(theme.palette.error.main, 0.06)
                     }}
                   >
@@ -999,7 +999,7 @@ const TransactionDetailsPanel = memo(
                         variant="caption"
                         sx={{
                           color: theme.palette.error.main,
-                          fontWeight: 600,
+                          fontWeight: 400,
                           fontSize: '12px'
                         }}
                       >
@@ -1024,7 +1024,7 @@ const TransactionDetailsPanel = memo(
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography
                               variant="caption"
-                              sx={{ color: theme.palette.error.main, fontWeight: 600 }}
+                              sx={{ color: theme.palette.error.main, fontWeight: 400 }}
                             >
                               Price
                             </Typography>
@@ -1082,7 +1082,7 @@ const TransactionDetailsPanel = memo(
                                       />
                                       <Typography
                                         variant="caption"
-                                        sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                                        sx={{ color: theme.palette.primary.main, fontWeight: 400 }}
                                       >
                                         Your buy limit
                                       </Typography>
@@ -1197,7 +1197,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          fontWeight: 600,
+                          fontWeight: 400,
                           color: theme.palette.text.secondary,
                           fontSize: '11px'
                         }}
@@ -1220,7 +1220,7 @@ const TransactionDetailsPanel = memo(
                           sx={{
                             color: theme.palette.warning.main,
                             fontSize: '11px',
-                            fontWeight: 600
+                            fontWeight: 400
                           }}
                         >
                           ({Number(spread.spreadPercentage).toFixed(2)}%)
@@ -1252,7 +1252,7 @@ const TransactionDetailsPanel = memo(
                     sx={{
                       p: 1,
                       mx: 0.5,
-                      borderRadius: '8px',
+                      borderRadius: '12px',
                       background: alpha(theme.palette.success.main, 0.06)
                     }}
                   >
@@ -1264,7 +1264,7 @@ const TransactionDetailsPanel = memo(
                         variant="caption"
                         sx={{
                           color: theme.palette.success.main,
-                          fontWeight: 600,
+                          fontWeight: 400,
                           fontSize: '12px'
                         }}
                       >
@@ -1289,7 +1289,7 @@ const TransactionDetailsPanel = memo(
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography
                               variant="caption"
-                              sx={{ color: theme.palette.success.main, fontWeight: 600 }}
+                              sx={{ color: theme.palette.success.main, fontWeight: 400 }}
                             >
                               Price
                             </Typography>
@@ -1343,7 +1343,7 @@ const TransactionDetailsPanel = memo(
                                       />
                                       <Typography
                                         variant="caption"
-                                        sx={{ color: theme.palette.primary.main, fontWeight: 600 }}
+                                        sx={{ color: theme.palette.primary.main, fontWeight: 400 }}
                                       >
                                         Your sell limit
                                       </Typography>

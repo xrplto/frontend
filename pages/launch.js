@@ -1768,7 +1768,7 @@ function CreatePage() {
                           [{new Date(log.timestamp).toLocaleTimeString()}]
                         </span>
                         {' '}
-                        <span style={{ fontWeight: 600 }}>
+                        <span style={{ fontWeight: 400 }}>
                           [{log.level?.toUpperCase() || 'LOG'}]
                         </span>
                         {' '}

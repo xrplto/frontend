@@ -40,7 +40,7 @@ const Controls = styled.div`
   padding: 20px;
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   width: 100%;
 `;
 
@@ -86,7 +86,7 @@ const MobileButtonGrid = styled.div`
 
 const Button = styled.button`
   padding: 10px 18px;
-  border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : 'rgba(145,158,171,0.15)'};
+  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : 'rgba(145,158,171,0.15)'};
   border-radius: 12px;
   background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
@@ -108,7 +108,7 @@ const Button = styled.button`
 const Select = styled.select`
   padding: 10px 16px;
   padding-right: 32px;
-  border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
+  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
   border-radius: 12px;
   background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
@@ -150,7 +150,7 @@ const SummaryCard = styled.div`
   padding: 16px;
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
 `;
 
 const SummaryLabel = styled.div`
@@ -170,7 +170,7 @@ const SummaryValue = styled.div`
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
   width: 100%;
 `;
@@ -272,7 +272,7 @@ const APYBadge = styled.span`
   min-width: 50px;
   background: ${p => p.bg};
   color: ${p => p.color};
-  border: 1px solid ${p => p.border};
+  border: 1.5px solid ${p => p.border};
 `;
 
 const StatusBadge = styled.span`
@@ -286,7 +286,7 @@ const StatusBadge = styled.span`
   text-transform: uppercase;
   background: ${p => p.active ? 'rgba(76,175,80,0.1)' : 'rgba(158,158,158,0.1)'};
   color: ${p => p.active ? '#4caf50' : '#9e9e9e'};
-  border: 1px solid ${p => p.active ? 'rgba(76,175,80,0.3)' : 'rgba(158,158,158,0.3)'};
+  border: 1.5px solid ${p => p.active ? 'rgba(76,175,80,0.3)' : 'rgba(158,158,158,0.3)'};
 `;
 
 function AMMPoolsPage({ data }) {

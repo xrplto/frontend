@@ -100,7 +100,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   borderRadius: 25,
   padding: theme.spacing(1.5, 4),
   textTransform: 'none',
-  fontWeight: 600
+  fontWeight: 400
 }));
 
 const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
@@ -128,7 +128,7 @@ const NFTPreview = styled('div')(({ theme }) => ({
 
 const NFTName = styled(Typography)(({ theme }) => ({
   textAlign: 'center',
-  fontWeight: 600,
+  fontWeight: 400,
   color: theme.palette.text.primary,
   marginBottom: theme.spacing(3),
   marginTop: theme.spacing(-1)
@@ -339,7 +339,7 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
                 />
               )}
               <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                <Typography variant="subtitle1" sx={{ fontWeight: 400 }}>
                   {nft?.name}
                 </Typography>
                 {nft?.collection && (

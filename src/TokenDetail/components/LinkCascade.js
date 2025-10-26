@@ -16,7 +16,7 @@ export default function LinkCascade({ token, tabID, tabLabels }) {
         px: 0,
         py: 0.25,
         backgroundColor: 'transparent',
-        borderRadius: '8px'
+        borderRadius: '12px'
       }}
       alignItems="center"
       color={'text.secondary'}

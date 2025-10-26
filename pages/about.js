@@ -95,7 +95,7 @@ const StatCard = styled.div`
     ? 'rgba(255, 255, 255, 0.02)'
     : 'rgba(0, 0, 0, 0.02)'};
   border-radius: 12px;
-  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+  border: 1.5px solid ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.05)'
     : 'rgba(0, 0, 0, 0.05)'};
   backdrop-filter: blur(10px);
@@ -141,7 +141,7 @@ const FeatureCard = styled.div`
   background: ${props => props.theme?.palette?.mode === 'dark'
     ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
     : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.01) 100%)'};
-  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+  border: 1.5px solid ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.06)'
     : 'rgba(0, 0, 0, 0.06)'};
   border-radius: 0;
@@ -263,7 +263,7 @@ const TimelineContent = styled.div`
   background: ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.03)'
     : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid ${props => props.theme?.palette?.mode === 'dark'
+  border: 1.5px solid ${props => props.theme?.palette?.mode === 'dark'
     ? 'rgba(255, 255, 255, 0.06)'
     : 'rgba(0, 0, 0, 0.06)'};
   border-radius: 12px;
@@ -336,7 +336,7 @@ const AccordionItem = styled.div`
     props.theme?.palette?.mode === 'dark'
       ? 'rgba(255, 255, 255, 0.02)'
       : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid ${(props) =>
+  border: 1.5px solid ${(props) =>
     props.theme?.palette?.mode === 'dark'
       ? 'rgba(255, 255, 255, 0.05)'
       : 'rgba(0, 0, 0, 0.05)'};

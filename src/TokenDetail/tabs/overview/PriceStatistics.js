@@ -222,7 +222,7 @@ export default function PriceStatistics({ token }) {
   return (
     <Box
       sx={{
-        borderRadius: '8px',
+        borderRadius: '12px',
         background: 'transparent',
         border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
         width: '100%',
@@ -257,7 +257,7 @@ export default function PriceStatistics({ token }) {
             variant="h6"
             sx={{
               color: theme.palette.error.main,
-              fontWeight: 600,
+              fontWeight: 400,
               mb: 1,
               letterSpacing: '-0.02em'
             }}
@@ -282,7 +282,7 @@ export default function PriceStatistics({ token }) {
               px: 3,
               py: 0.75,
               borderRadius: '12px',
-              fontWeight: 600
+              fontWeight: 400
             }}
           >
             I Understand
@@ -414,7 +414,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -527,7 +527,7 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 400,
                   color: theme.palette.warning.main,
                   fontSize: isMobile ? '12px' : '14px'
                 }}
@@ -556,7 +556,7 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 400,
                   color: '#2E7D32',
                   fontSize: isMobile ? '12px' : '14px'
                 }}
@@ -585,7 +585,7 @@ export default function PriceStatistics({ token }) {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 400,
                   color: theme.palette.info.main,
                   fontSize: isMobile ? '12px' : '14px'
                 }}
@@ -603,7 +603,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -616,7 +616,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.warning.main,
                     fontSize: isMobile ? '12px' : '14px'
                   }}
@@ -634,7 +634,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -647,7 +647,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.info.main,
                     fontSize: isMobile ? '12px' : '14px'
                   }}
@@ -665,7 +665,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.text.primary,
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -678,7 +678,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: '#1976D2',
                     fontSize: isMobile ? '12px' : '14px'
                   }}
@@ -696,7 +696,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -709,7 +709,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.warning.main,
                     fontSize: isMobile ? '12px' : '14px'
                   }}
@@ -727,7 +727,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.text.primary,
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -740,7 +740,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: '#F57C00',
                     fontSize: isMobile ? '12px' : '14px'
                   }}
@@ -758,7 +758,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -771,7 +771,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.secondary, 0.8),
                     fontSize: isMobile ? '11px' : '14px'
                   }}
@@ -789,7 +789,7 @@ export default function PriceStatistics({ token }) {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: alpha(theme.palette.text.primary, 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
@@ -939,7 +939,7 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
               }
             }}
           >
-            <Typography sx={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 600 }}>
+            <Typography sx={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 400 }}>
               +{socialEntries.length - (isMobile ? 2 : 4)}
             </Typography>
           </IconButton>

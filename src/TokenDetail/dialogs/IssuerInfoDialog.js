@@ -182,7 +182,7 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
                   variant="body2"
                   noWrap
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: 'primary.main',
                     bgcolor: (theme) => alpha(theme.palette.action.selected, 0.08),
                     p: 0.5,

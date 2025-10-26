@@ -26,7 +26,7 @@ const FooterLink = ({ href, children }) => {
         fontSize: { xs: '14px', md: '14px' },
         px: { xs: 0.5, md: 0.8 },
         py: 0.3,
-        borderRadius: '8px',
+        borderRadius: '12px',
         '&:hover': {
           color: '#4285f4',
           backgroundColor: alpha('#4285f4', 0.04)

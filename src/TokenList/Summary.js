@@ -95,10 +95,10 @@ const MetricBox = styled.div`
   flex-direction: column;
   justify-content: center;
   align-items: flex-start;
-  border-radius: 8px;
+  border-radius: 12px;
   background: ${(props) =>
     props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1px solid
+  border: 1.5px solid
     ${(props) =>
       props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
@@ -107,7 +107,7 @@ const MetricBox = styled.div`
     min-height: 62px;
     flex: 1;
     min-width: 0;
-    border-radius: 6px;
+    border-radius: 12px;
   }
 
   @media (max-width: 480px) {
@@ -115,7 +115,7 @@ const MetricBox = styled.div`
     min-height: 62px;
     flex: 1;
     min-width: 0;
-    border-radius: 6px;
+    border-radius: 12px;
   }
 `;
 
@@ -143,7 +143,7 @@ const MetricTitle = styled.span`
 
 const MetricValue = styled.span`
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 500;
   color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
   line-height: 1.1;
   margin-bottom: 4px;
@@ -167,16 +167,12 @@ const PercentageChange = styled.span`
   font-size: 0.85rem;
   color: ${(props) =>
     props.isPositive
-      ? props.theme?.palette?.mode === 'dark'
-        ? '#4ade80'
-        : '#059669'
-      : props.theme?.palette?.mode === 'dark'
-        ? '#f87171'
-        : '#dc2626'};
+      ? props.theme?.palette?.success?.main || '#4caf50'
+      : props.theme?.palette?.error?.main || '#f44336'};
   display: inline-flex;
   align-items: flex-start;
   gap: 3px;
-  font-weight: 600;
+  font-weight: 400;
   font-family: inherit;
 
   @media (max-width: 600px) {
@@ -237,7 +233,7 @@ const ChartContainer = styled.div`
 const TooltipContainer = styled.div`
   background: ${(props) => (props.darkMode ? '#1c1c1c' : 'white')};
   color: ${(props) => (props.darkMode ? '#fff' : '#000')};
-  border: 1px solid
+  border: 1.5px solid
     ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   border-radius: 8px;
   padding: 12px;
@@ -449,7 +445,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           background: darkMode ? '#1c1c1c' : 'white',
           color: darkMode ? '#fff' : '#000',
           border: `1px solid ${theme.palette.primary.main}`,
-          borderRadius: '8px',
+          borderRadius: '12px',
           padding: '12px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
           minWidth: '200px',
@@ -461,7 +457,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
         <div
           style={{
             fontSize: '14px',
-            fontWeight: 600,
+            fontWeight: 400,
             marginBottom: '8px',
             color: theme.palette.primary.main
           }}
@@ -748,7 +744,7 @@ export default function Summary() {
           .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0));
 
         let html = `
-          <div style="background: ${darkMode ? '#1c1c1c' : 'white'}; color: ${darkMode ? '#fff' : '#000'}; border: 1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; border-radius: 8px; padding: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px;">
+          <div style="background: ${darkMode ? '#1c1c1c' : 'white'}; color: ${darkMode ? '#fff' : '#000'}; border: 1.5px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; border-radius: 8px; padding: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); min-width: 200px;">
             <div style="font-size: 0.875rem; font-weight: 600; margin-bottom: 8px;">
               ${format(new Date(data.originalDate), 'MMM dd, yyyy')}
             </div>
@@ -812,7 +808,7 @@ export default function Summary() {
       backgroundColor: darkMode ? '#1c1c1c' : 'white',
       borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)',
       borderWidth: 1,
-      borderRadius: 8,
+      borderRadius: 12,
       textStyle: {
         color: darkMode ? '#fff' : '#000'
       },

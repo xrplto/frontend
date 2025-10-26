@@ -162,19 +162,19 @@ export const XrplToDarkTheme = createTheme({
     fontFamily:
       'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
     fontVariantNumeric: 'tabular-nums',
-    h1: { fontWeight: 700, fontSize: '19px', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
-    h2: { fontWeight: 700, fontSize: '16px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h3: { fontWeight: 700, fontSize: '14px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h4: { fontWeight: 600, fontSize: 16, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h5: { fontWeight: 700, fontSize: 14, fontVariantNumeric: 'tabular-nums' },
+    h1: { fontWeight: 500, fontSize: '19px', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
+    h2: { fontWeight: 500, fontSize: '16px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h3: { fontWeight: 500, fontSize: '14px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h4: { fontWeight: 400, fontSize: 16, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
+    h5: { fontWeight: 500, fontSize: 14, fontVariantNumeric: 'tabular-nums' },
     h6: { fontSize: 15, fontVariantNumeric: 'tabular-nums' },
     body1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
     body2: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
-    button: { fontWeight: 600, textTransform: 'none', fontVariantNumeric: 'tabular-nums' },
+    button: { fontWeight: 400, textTransform: 'none', fontVariantNumeric: 'tabular-nums' },
     caption: { fontSize: 13, fontVariantNumeric: 'tabular-nums' },
     subtitle1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
     subtitle2: { fontWeight: 400, fontSize: 15, fontVariantNumeric: 'tabular-nums' },
-    overline: { fontSize: 13, fontWeight: 700, fontVariantNumeric: 'tabular-nums' }
+    overline: { fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }
   },
 
   shadows: [
@@ -219,7 +219,7 @@ export const XrplToDarkTheme = createTheme({
       defaultProps: { disableRipple: true },
       styleOverrides: {
         root: {
-          fontWeight: 'bold',
+          fontWeight: 500,
           textTransform: 'none',
           paddingLeft: 16,
           paddingRight: 16,
@@ -301,7 +301,7 @@ export const XrplToDarkTheme = createTheme({
           backdropFilter: 'blur(20px) saturate(180%)',
           padding: '12px 16px',
           fontSize: 13,
-          borderRadius: '8px'
+          borderRadius: '12px'
         },
         arrow: { color: alpha('#000000', 0.95) }
       }
@@ -363,7 +363,7 @@ export const XrplToDarkTheme = createTheme({
             color: themeColors.white,
             border: `1px solid ${alpha('#ffffff', 0.1)}`,
             backdropFilter: 'blur(20px) saturate(180%)',
-            borderRadius: '8px',
+            borderRadius: '12px',
             '&:hover': {
               backgroundColor: alpha(themeColors.primary, 0.2),
               borderColor: alpha(themeColors.primary, 0.6),

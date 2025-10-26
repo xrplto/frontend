@@ -32,7 +32,7 @@ const Container = styled.div`
   flex-direction: column;
   gap: 8px;
   border-radius: 12px;
-  border: 1px solid
+  border: 1.5px solid
     ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)')};
   background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)')};
   backdrop-filter: blur(10px);
@@ -110,7 +110,7 @@ const RowContent = styled.div`
 
 const RowsSelector = styled.select`
   padding: 4px 8px;
-  border: 1px solid rgba(145, 158, 171, 0.15);
+  border: 1.5px solid rgba(145, 158, 171, 0.15);
   border-radius: 8px;
   background: ${(props) =>
     props.darkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.95)'};
@@ -614,7 +614,7 @@ const SearchToolbar = memo(function SearchToolbar({
             font-size: ${isMobile ? '0.55rem' : '0.7rem'};
             font-weight: 400;
             white-space: nowrap;
-            border: 1px solid transparent;
+            border: 1.5px solid transparent;
           `;
 
           // Just measure text width without icons since icons have consistent width
@@ -1053,7 +1053,7 @@ const SearchToolbar = memo(function SearchToolbar({
           sx: {
             mt: 0.5,
             minWidth: '120px',
-            borderRadius: '8px',
+            borderRadius: '12px',
             border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
             backgroundColor: darkMode ? '#1a1a1a' : '#ffffff',
             boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
@@ -1156,7 +1156,7 @@ const SearchToolbar = memo(function SearchToolbar({
               height: 32,
               border: '1.5px solid',
               borderColor: 'divider',
-              borderRadius: '8px',
+              borderRadius: '12px',
               background: 'transparent',
               cursor: 'pointer',
               display: 'flex',

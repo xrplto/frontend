@@ -244,7 +244,7 @@ const OverView = ({ account }) => {
         {holdings && (
           <Box sx={{ mb: 1.5 }}>
             <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.8 }}>
-              <Typography variant="caption" sx={{ fontSize: '12px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ fontSize: '12px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400 }}>
                 Holdings ({holdings.total})
               </Typography>
               {holdings.accountActive === false ? (
@@ -329,7 +329,7 @@ const OverView = ({ account }) => {
               fontSize: '12px',
               color: (theme) => alpha(theme.palette.text.secondary, 0.4),
               textTransform: 'uppercase',
-              fontWeight: 600,
+              fontWeight: 400,
               mb: 0.8,
               display: 'block'
             }}>
@@ -349,25 +349,25 @@ const OverView = ({ account }) => {
                 borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
                 backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.1)
               }}>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400 }}>
                   Token
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400 }}>
                   Buy/Sell Vol
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400 }}>
                   Tokens
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400 }}>
                   Avg Buy
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400 }}>
                   Avg Sell
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400 }}>
                   Balance
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 600 }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400 }}>
                   Real/Unreal
                 </Typography>
               </Box>
@@ -450,7 +450,7 @@ const OverView = ({ account }) => {
         {txHistory.length > 0 && (
           <Box sx={{ mt: 1.5 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 0.8 }}>
-              <Typography variant="caption" sx={{ fontSize: '12px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 600 }}>
+              <Typography variant="caption" sx={{ fontSize: '12px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400 }}>
                 Transactions ({filteredTxHistory.length})
               </Typography>
               <Stack direction="row" spacing={1}>
@@ -486,11 +486,11 @@ const OverView = ({ account }) => {
                 borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
                 backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.1)
               }}>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>Type</Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>Hash</Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>Action</Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600, textAlign: 'right' }}>Amount</Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 600 }}>Date</Typography>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 400 }}>Type</Typography>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 400 }}>Hash</Typography>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 400 }}>Action</Typography>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 400, textAlign: 'right' }}>Amount</Typography>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), fontWeight: 400 }}>Date</Typography>
               </Box>
               {filteredTxHistory.slice(0, 20).map((tx, idx) => {
                 const txData = tx.tx_json || tx.tx;

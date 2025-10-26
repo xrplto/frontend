@@ -112,7 +112,7 @@ const SearchContainer = styled.div`
 const CustomColumnsPanel = styled.div`
   width: 100%;
   background: ${(props) => (props.darkMode ? 'rgba(18, 18, 18, 0.95)' : 'rgba(255, 255, 255, 0.98)')};
-  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
   border-radius: 12px;
   padding: 24px;
   margin: 20px 0;
@@ -133,7 +133,7 @@ const ColumnItem = styled.label`
   background: transparent;
   border-radius: 8px;
   cursor: pointer;
-  border: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
+  border: 1.5px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
 
   &:hover {
     background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.02)')};
@@ -761,7 +761,7 @@ function TokenListComponent({
                     display: 'block',
                     marginBottom: '8px',
                     fontSize: '12px',
-                    fontWeight: '600',
+                    fontWeight: '400',
                     color: darkMode ? '#999' : '#666',
                     textTransform: 'uppercase'
                   }}
@@ -778,7 +778,7 @@ function TokenListComponent({
                   style={{
                     width: '100%',
                     padding: '10px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
                     background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
                     color: darkMode ? '#fff' : '#000',
@@ -815,7 +815,7 @@ function TokenListComponent({
                     display: 'block',
                     marginBottom: '8px',
                     fontSize: '12px',
-                    fontWeight: '600',
+                    fontWeight: '400',
                     color: darkMode ? '#999' : '#666',
                     textTransform: 'uppercase'
                   }}
@@ -832,7 +832,7 @@ function TokenListComponent({
                   style={{
                     width: '100%',
                     padding: '10px',
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
                     background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
                     color: darkMode ? '#fff' : '#000',
@@ -914,7 +914,7 @@ function TokenListComponent({
               }}
               style={{
                 padding: '10px 20px',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
                 background: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
                 color: darkMode ? '#fff' : '#000',
@@ -935,7 +935,7 @@ function TokenListComponent({
               }}
               style={{
                 padding: '10px 20px',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 border: 'none',
                 background: '#2196f3',
                 color: 'white',
@@ -953,7 +953,7 @@ function TokenListComponent({
               }}
               style={{
                 padding: '10px 20px',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 border: `1px solid ${darkMode ? 'rgba(255, 100, 100, 0.2)' : 'rgba(255, 50, 50, 0.2)'}`,
                 background: darkMode ? 'rgba(255, 100, 100, 0.1)' : 'rgba(255, 50, 50, 0.1)',
                 color: darkMode ? '#ff6666' : '#cc0000',

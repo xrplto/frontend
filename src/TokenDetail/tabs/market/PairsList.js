@@ -66,7 +66,7 @@ const PairCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isNew'
 })(({ theme, isNew }) => ({
   marginBottom: theme.spacing(0.5),
-  borderRadius: '8px',
+  borderRadius: '12px',
   backgroundColor: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
@@ -107,7 +107,7 @@ const VolumeIndicator = styled('div')(({ theme, volume }) => ({
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '8px',
+    borderRadius: '12px',
     margin: '0 3px',
     fontWeight: 400,
     minWidth: '32px',
@@ -120,7 +120,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     backgroundColor: `${theme.palette.primary.main} !important`,
     color: '#fff !important',
     fontWeight: 500,
-    borderRadius: '8px',
+    borderRadius: '12px',
     '&:hover': {
       backgroundColor: `${theme.palette.primary.dark} !important`
     }
@@ -130,7 +130,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
 const PairChip = styled(Chip)(({ theme }) => ({
   fontSize: '11px',
   height: '24px',
-  fontWeight: 'bold',
+  fontWeight: 500,
   borderRadius: '12px',
   backgroundColor: 'transparent',
   color: theme.palette.primary.main,
@@ -161,14 +161,14 @@ const badge24hStyle = {
   marginRight: '4px',
   color: '#fff',
   fontSize: '9px',
-  fontWeight: '600',
+  fontWeight: '400',
   lineHeight: '14px',
   backgroundColor: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
   borderRadius: '4px',
   padding: '1px 4px',
-  border: '1px solid rgba(145, 158, 171, 0.2)'
+  border: '1.5px solid rgba(145, 158, 171, 0.2)'
 };
 
 const badgeDEXStyle = {
@@ -177,14 +177,14 @@ const badgeDEXStyle = {
   marginRight: '4px',
   color: '#fff',
   fontSize: '9px',
-  fontWeight: '600',
+  fontWeight: '400',
   lineHeight: '14px',
   backgroundColor: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
   borderRadius: '4px',
   padding: '1px 4px',
-  border: '1px solid rgba(183, 129, 3, 0.3)'
+  border: '1.5px solid rgba(183, 129, 3, 0.3)'
 };
 
 const StyledTableHead = styled(TableHead, {
@@ -257,7 +257,7 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
             sx={{
               width: isMobile ? '80px' : '180px',
               height: isMobile ? '30px' : '60px',
-              borderRadius: '8px',
+              borderRadius: '12px',
               overflow: 'hidden',
               border: `1px solid ${darkMode ? 'rgba(145, 158, 171, 0.06)' : 'rgba(145, 158, 171, 0.12)'}`,
               backgroundColor: 'transparent',
@@ -291,7 +291,7 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
             sx={{
               width: isMobile ? '80px' : '180px',
               height: isMobile ? '30px' : '60px',
-              borderRadius: '8px',
+              borderRadius: '12px',
               border: `1px solid ${darkMode ? 'rgba(145, 158, 171, 0.06)' : 'rgba(145, 158, 171, 0.12)'}`,
               backgroundColor: 'transparent',
               display: 'flex',
@@ -317,7 +317,7 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
           sx={{
             width: isMobile ? '80px' : '180px',
             height: isMobile ? '30px' : '60px',
-            borderRadius: '8px',
+            borderRadius: '12px',
             backgroundColor: 'transparent',
             display: 'flex',
             alignItems: 'center',
@@ -415,7 +415,7 @@ export default function PairsList({ token, pairs }) {
 
   const headerCellStyles = {
     fontSize: isMobile ? '11px' : '13px',
-    fontWeight: '600',
+    fontWeight: '400',
     padding: isMobile ? '8px 4px' : '20px 12px',
     height: 'auto',
     whiteSpace: 'nowrap',
@@ -457,7 +457,7 @@ export default function PairsList({ token, pairs }) {
             0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
             inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
           '& > *': {
-            fontWeight: 'bold',
+            fontWeight: 500,
             color: theme.palette.text.secondary,
             fontSize: '12px',
             textTransform: 'uppercase',

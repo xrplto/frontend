@@ -152,7 +152,7 @@ const ContactForm = styled(Box)(({ theme }) => ({
       : '#f5f5f5',
   border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#1F2937', 0.15) : 'transparent'}`,
   backdropFilter: theme.palette.mode === 'dark' ? 'blur(60px) saturate(180%)' : 'none',
-  borderRadius: 8,
+  borderRadius: 12,
   padding: 32,
   marginTop: 48
 }));
@@ -455,7 +455,7 @@ export default function Advertise() {
                   label="Token Advertising Platform"
                   color="primary"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,
                     color: 'white'
                   }}
@@ -684,7 +684,7 @@ export default function Advertise() {
                                   variant="caption"
                                   sx={{
                                     color: option.change24h >= 0 ? '#4caf50' : '#f44336',
-                                    fontWeight: 600
+                                    fontWeight: 400
                                   }}
                                 >
                                   {option.change24h >= 0 ? '+' : ''}
@@ -839,7 +839,7 @@ export default function Advertise() {
                             label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
                             color="primary"
                             variant="outlined"
-                            sx={{ fontWeight: 600 }}
+                            sx={{ fontWeight: 400 }}
                           />
                         </Stack>
                         <Button
@@ -900,7 +900,7 @@ export default function Advertise() {
                       label="Best Value"
                       size="small"
                       color="success"
-                      sx={{ fontWeight: 600 }}
+                      sx={{ fontWeight: 400 }}
                     />
                   </Stack>
                   <Grid container spacing={1}>
@@ -1101,7 +1101,7 @@ export default function Advertise() {
                           label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
                           color="primary"
                           size="large"
-                          sx={{ fontWeight: 600, fontSize: '18px' }}
+                          sx={{ fontWeight: 400, fontSize: '18px' }}
                         />
                         <Typography variant="caption" color="text.secondary">
                           @ ${xrpRate.toFixed(2)}/XRP
@@ -1149,7 +1149,7 @@ export default function Advertise() {
                                 sx={{
                                   fontFamily: 'monospace',
                                   fontSize: '18px',
-                                  fontWeight: 600,
+                                  fontWeight: 400,
                                   wordBreak: 'break-all'
                                 }}
                               >
@@ -1190,7 +1190,7 @@ export default function Advertise() {
                             variant="h5"
                             sx={{
                               fontFamily: 'monospace',
-                              fontWeight: 600,
+                              fontWeight: 400,
                               color: 'primary.main'
                             }}
                           >
@@ -1227,7 +1227,7 @@ export default function Advertise() {
                             startIcon={<WalletIcon />}
                             sx={{
                               py: 1.5,
-                              fontWeight: 600,
+                              fontWeight: 400,
                               boxShadow: 3,
                               '&:hover': {
                                 boxShadow: 5
@@ -1248,7 +1248,7 @@ export default function Advertise() {
                               setCustomImpressions('');
                               setImpressionInput('');
                             }}
-                            sx={{ py: 1.5, fontWeight: 600 }}
+                            sx={{ py: 1.5, fontWeight: 400 }}
                           >
                             Change Amount
                           </Button>

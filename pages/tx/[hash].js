@@ -161,7 +161,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
           <Avatar src={imageUrl} sx={{ mr: 2, width: 48, height: 48 }} />
           <Box>
-            <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 'bold', mb: 0.5 }}>
+            <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 500, mb: 0.5 }}>
               XRP
             </Typography>
             <Typography variant="body2" color="text.secondary">
@@ -174,7 +174,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
         {/* Price Information */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Price
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -202,7 +202,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
         {/* Performance */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Performance
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -213,7 +213,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 'bold',
+                  fontWeight: 500,
                   color: token.pro24h >= 0 ? 'success.main' : 'error.main'
                 }}
               >
@@ -228,7 +228,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
               <Typography
                 variant="body2"
                 sx={{
-                  fontWeight: 'bold',
+                  fontWeight: 500,
                   color: token.pro7d >= 0 ? 'success.main' : 'error.main'
                 }}
               >
@@ -241,7 +241,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
         {/* Market Data */}
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Market Data
           </Typography>
           <Stack spacing={0.5}>
@@ -274,7 +274,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
         {/* Additional Info */}
         <Box>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Info
           </Typography>
           <Stack spacing={0.5}>
@@ -326,7 +326,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
         {imageUrl && <Avatar src={imageUrl} sx={{ mr: 2, width: 48, height: 48 }} />}
         <Box>
-          <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 'bold', mb: 0.5 }}>
+          <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 500, mb: 0.5 }}>
             {token.name || token.user || 'Unknown Token'}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -345,7 +345,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       {/* Price Information */}
       {(token.usd || exch) && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Price
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
@@ -370,7 +370,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       {/* Performance */}
       {(token.pro24h || token.pro7d) && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Performance
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
@@ -382,7 +382,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 'bold',
+                    fontWeight: 500,
                     color: token.pro24h >= 0 ? 'success.main' : 'error.main'
                   }}
                 >
@@ -399,7 +399,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 <Typography
                   variant="body2"
                   sx={{
-                    fontWeight: 'bold',
+                    fontWeight: 500,
                     color: token.pro7d >= 0 ? 'success.main' : 'error.main'
                   }}
                 >
@@ -414,7 +414,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
       {/* Market Data */}
       <Box sx={{ mb: 2 }}>
-        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
           Market Data
         </Typography>
         <Stack spacing={0.5}>
@@ -474,7 +474,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
       {/* Verification & Features */}
       {(token.kyc || token.verified || token.AMM) && (
         <Box sx={{ mb: 2 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+          <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
             Features
           </Typography>
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
@@ -511,7 +511,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
 
       {/* Additional Info */}
       <Box>
-        <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>
+        <Typography variant="subtitle2" sx={{ fontWeight: 500, mb: 1 }}>
           Info
         </Typography>
         <Stack spacing={0.5}>

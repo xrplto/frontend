@@ -558,7 +558,7 @@ const SelectMenu = styled.div`
   right: 0;
   margin-top: 4px;
   background: ${({ theme }) => theme.palette.background.paper};
-  border: 1px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
   border-radius: 4px;
   box-shadow: ${({ theme }) => theme.shadows?.[4] || '0 4px 12px rgba(0, 0, 0, 0.15)'};
   z-index: 1000;
@@ -867,7 +867,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   return (
     <StyledRow onClick={handleRowClick}>
       <StyledCell align="center" darkMode={darkMode} style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
-        <span style={{ fontWeight: '600', color: theme.palette.text.secondary }}>{idx + 1}</span>
+        <span style={{ fontWeight: '400', color: theme.palette.text.secondary }}>{idx + 1}</span>
       </StyledCell>
 
       <StyledCell

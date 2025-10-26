@@ -82,7 +82,7 @@ const StyledTypography = styled(Typography)(({ theme }) => ({
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '8px',
+    borderRadius: '12px',
     margin: '0 3px',
     fontWeight: 400,
     minWidth: '32px',
@@ -391,7 +391,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                     fontSize: '11px',
                     height: '26px',
                     fontWeight: 400,
-                    borderRadius: '8px',
+                    borderRadius: '12px',
                     textTransform: 'capitalize',
                     borderColor: (type === 'ALL' && !filterType) || filterType === type
                       ? alpha(theme.palette.primary.main, 0.5)

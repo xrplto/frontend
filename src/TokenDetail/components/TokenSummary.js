@@ -847,7 +847,7 @@ const TokenSummary = memo(
                               if (isXrpToToken) return '#4169e1';
                               return theme.palette.text.primary;
                             })(),
-                            fontWeight: 600,
+                            fontWeight: 400,
                             display: { xs: 'none', sm: 'block' },
                             textShadow: (() => {
                               const tx = latestCreatorTx.tx;
@@ -1156,7 +1156,7 @@ const TokenSummary = memo(
                             flexShrink: 0
                           }}
                         >
-                          <Typography sx={{ fontSize: { xs: 13, sm: 14 }, color: '#000', fontWeight: 600, lineHeight: 1, mt: '-1px' }}>
+                          <Typography sx={{ fontSize: { xs: 13, sm: 14 }, color: '#000', fontWeight: 400, lineHeight: 1, mt: '-1px' }}>
                             ✓
                           </Typography>
                         </Box>
@@ -1182,7 +1182,7 @@ const TokenSummary = memo(
                           <Typography
                             variant="body2"
                             sx={{
-                              fontWeight: 600,
+                              fontWeight: 400,
                               color: theme.palette.primary.main,
                               fontSize: { xs: '12px', sm: '11px' },
                               lineHeight: 1
@@ -1212,7 +1212,7 @@ const TokenSummary = memo(
                       sx={{
                         display: { xs: 'inline', md: 'none' },
                         fontSize: '14px',
-                        fontWeight: 600,
+                        fontWeight: 400,
                         color: priceColor || theme.palette.text.primary,
                         lineHeight: 1,
                         letterSpacing: '-0.01em',
@@ -1220,7 +1220,7 @@ const TokenSummary = memo(
                         background: alpha(theme.palette.primary.main, 0.04),
                         px: 0.75,
                         py: 0.25,
-                        borderRadius: '8px',
+                        borderRadius: '12px',
                         border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
                       }}
                     >
@@ -1258,7 +1258,7 @@ const TokenSummary = memo(
                       sx={{
                         fontSize: { xs: '12px', sm: '11px', md: '14px' },
                         color: theme.palette.mode === 'dark' ? theme.palette.grey[400] : theme.palette.grey[700],
-                        fontWeight: 600,
+                        fontWeight: 400,
                         letterSpacing: '-0.01em',
                         lineHeight: 1,
                         overflow: 'hidden',
@@ -1291,7 +1291,7 @@ const TokenSummary = memo(
                         <Typography
                           variant="body2"
                           sx={{
-                            fontWeight: 600,
+                            fontWeight: 400,
                             color: origin ? theme.palette.text.primary : '#1976d2',
                             fontSize: { xs: '9px', sm: '12px' }
                           }}
@@ -1388,7 +1388,7 @@ const TokenSummary = memo(
                             sx={{
                               width: 32,
                               height: 32,
-                              borderRadius: '8px',
+                              borderRadius: '12px',
                               border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
                               background: 'transparent',
                                       padding: '6px',
@@ -1559,7 +1559,7 @@ const TokenSummary = memo(
                                       if (isXrpToToken) return '#4169e1';
                                       return theme.palette.text.primary;
                                     })(),
-                                    fontWeight: 600,
+                                    fontWeight: 400,
                                     textShadow: (() => {
                                       const tx = latestCreatorTx.tx;
                                       const deliveredAmount =
@@ -1829,7 +1829,7 @@ const TokenSummary = memo(
                             sx={{
                               fontSize: '11px',
                               color: theme.palette.text.secondary,
-                              fontWeight: 600,
+                              fontWeight: 400,
                               textTransform: 'uppercase'
                             }}
                           >
@@ -1840,7 +1840,7 @@ const TokenSummary = memo(
                             sx={{
                               fontSize: '11px',
                               color: theme.palette.success.main,
-                              fontWeight: 600
+                              fontWeight: 400
                             }}
                           >
                             {currencySymbols[activeFiatCurrency]}
@@ -1892,7 +1892,7 @@ const TokenSummary = memo(
                             sx={{
                               fontSize: '11px',
                               color: theme.palette.error.main,
-                              fontWeight: 600
+                              fontWeight: 400
                             }}
                           >
                             {currencySymbols[activeFiatCurrency]}
@@ -1905,7 +1905,7 @@ const TokenSummary = memo(
                             sx={{
                               fontSize: '11px',
                               color: theme.palette.text.secondary,
-                              fontWeight: 600,
+                              fontWeight: 400,
                               textTransform: 'uppercase'
                             }}
                           >
@@ -1940,7 +1940,7 @@ const TokenSummary = memo(
                           variant="caption"
                           sx={{
                             fontSize: '12px',
-                            fontWeight: 600,
+                            fontWeight: 400,
                             color: alpha(theme.palette.text.secondary, 0.8)
                           }}
                         >
@@ -1994,7 +1994,7 @@ const TokenSummary = memo(
                   </Typography>
                   <Typography
                     variant="caption"
-                    sx={{ fontSize: '12px', fontWeight: 600, color: theme.palette.success.main }}
+                    sx={{ fontSize: '12px', fontWeight: 400, color: theme.palette.success.main }}
                   >
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(activeFiatCurrency === 'XRP' ? range24h.min : range24h.min * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
@@ -2002,7 +2002,7 @@ const TokenSummary = memo(
 
                   <Typography
                     variant="caption"
-                    sx={{ fontSize: '12px', fontWeight: 600, color: theme.palette.text.primary }}
+                    sx={{ fontSize: '12px', fontWeight: 400, color: theme.palette.text.primary }}
                   >
                     {Math.round(range24h.percent)}%
                   </Typography>
@@ -2019,7 +2019,7 @@ const TokenSummary = memo(
                   </Typography>
                   <Typography
                     variant="caption"
-                    sx={{ fontSize: '12px', fontWeight: 600, color: theme.palette.error.main }}
+                    sx={{ fontSize: '12px', fontWeight: 400, color: theme.palette.error.main }}
                   >
                     {currencySymbols[activeFiatCurrency]}
                     {formatValue(activeFiatCurrency === 'XRP' ? range24h.max : range24h.max * (metrics.USD && metrics[activeFiatCurrency] ? metrics.USD / metrics[activeFiatCurrency] : 1))}
@@ -2088,7 +2088,7 @@ const TokenSummary = memo(
                     variant="caption"
                     sx={{
                       fontSize: '12px',
-                      fontWeight: 600,
+                      fontWeight: 400,
                       color: alpha(theme.palette.text.secondary, 0.7),
                       lineHeight: 1
                     }}
@@ -2099,7 +2099,7 @@ const TokenSummary = memo(
                     variant="caption"
                     sx={{
                       fontSize: '13px',
-                      fontWeight: 600,
+                      fontWeight: 400,
                       color: item.color,
                       display: 'flex',
                       alignItems: 'center',
@@ -2165,7 +2165,7 @@ const TokenSummary = memo(
                   variant="subtitle2"
                   sx={{
                     fontSize: { xs: '13px', sm: '14px' },
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: metric.color,
                     lineHeight: 1,
                     whiteSpace: 'nowrap'

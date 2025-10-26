@@ -349,7 +349,7 @@ const FloorPriceValue = styled('div')(({ theme }) => ({
     height: 20
   },
   '& .amount': {
-    fontWeight: 600,
+    fontWeight: 400,
     fontSize: '18px',
     color: theme.palette.primary.main,
     letterSpacing: '0.02em'
@@ -376,7 +376,7 @@ const NFTTitle = styled(Typography)(({ theme }) => ({
   gap: theme.spacing(1),
   marginTop: theme.spacing(0.5),
   color: theme.palette.text.primary,
-  fontWeight: 'bold'
+  fontWeight: 500
 }));
 
 export default function NFTActions({ nft }) {
@@ -930,7 +930,7 @@ export default function NFTActions({ nft }) {
                 sx={{
                   backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
                   border: (theme) => `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   color: 'primary.main',
                   '&:hover': {
                     backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.15),
@@ -1010,7 +1010,7 @@ export default function NFTActions({ nft }) {
                 {loading ? (
                   <PulseLoader color={theme.palette.primary.main} size={10} />
                 ) : lowestSellOffer ? (
-                  <Box sx={{ p: 1.2, backgroundColor: 'transparent', borderRadius: '8px', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
+                  <Box sx={{ p: 1.2, backgroundColor: 'transparent', borderRadius: '12px', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
                     <Stack spacing={0.5}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Typography variant="caption" sx={{ fontSize: '0.8rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Price</Typography>
@@ -1161,7 +1161,7 @@ export default function NFTActions({ nft }) {
                                 justifyContent="space-between"
                                 alignItems="center"
                               >
-                                <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '15px' }}>
+                                <Typography variant="h6" fontWeight={500} sx={{ fontSize: '15px' }}>
                                   ✕{formatXRPAmount(amount.amount, false, 'sell_offer')}
                                 </Typography>
                                 <Button
@@ -1261,7 +1261,7 @@ export default function NFTActions({ nft }) {
                               justifyContent="space-between"
                               alignItems="center"
                             >
-                              <Typography variant="h6" fontWeight="bold" sx={{ fontSize: '15px' }}>
+                              <Typography variant="h6" fontWeight={500} sx={{ fontSize: '15px' }}>
                                 ✕{formatXRPAmount(amount.amount, false, offer.destination)}
                               </Typography>
                               <Stack direction="row" spacing={1}>

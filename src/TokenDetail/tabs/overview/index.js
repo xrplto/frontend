@@ -217,7 +217,7 @@ const Overview = memo(
                       height: '300px',
                       padding: '8px',
                       borderRadius: '4px',
-                      border: '1px solid #ccc',
+                      border: '1.5px solid #ccc',
                       fontFamily: 'monospace',
                       fontSize: '12px'
                     }}

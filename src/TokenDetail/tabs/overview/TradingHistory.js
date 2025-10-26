@@ -163,7 +163,7 @@ const TradeCard = styled(Card, {
 const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
   fontSize: '13px',
   height: '20px',
-  fontWeight: 600,
+  fontWeight: 400,
   borderRadius: '4px',
   background: 'transparent',
   color: tradetype === 'BUY' ? '#4caf50' : '#f44336',
@@ -191,7 +191,7 @@ const VolumeIndicator = styled('div')(({ theme, volume }) => ({
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '8px',
+    borderRadius: '12px',
     margin: '0 3px',
     fontWeight: 400,
     minWidth: '32px',
@@ -204,7 +204,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     backgroundColor: `${theme.palette.primary.main} !important`,
     color: '#fff !important',
     fontWeight: 500,
-    borderRadius: '8px',
+    borderRadius: '12px',
     '&:hover': {
       backgroundColor: `${theme.palette.primary.dark} !important`
     }
@@ -769,7 +769,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <img
                   src={getTokenImageUrl(amountData.issuer, amountData.currency)}
                   alt={decodeCurrency(amountData.currency)}
-                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
                 />
                 <Box>
                   <Typography
@@ -796,7 +796,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <img
                   src={getTokenImageUrl(totalData.issuer, totalData.currency)}
                   alt={decodeCurrency(totalData.currency)}
-                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
                 />
                 <Box>
                   <Typography

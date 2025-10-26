@@ -151,7 +151,7 @@ const Container = styled(Box)(({ theme }) => ({
 
 const SectionTitle = styled(Typography)(({ theme }) => ({
   fontSize: '11px',
-  fontWeight: 600,
+  fontWeight: 400,
   color: theme.palette.text.secondary,
   marginBottom: theme.spacing(0.5),
   textTransform: 'uppercase',
@@ -546,7 +546,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Title and Collection */}
       <Box sx={{ mb: 1, px: 1, py: 0.8 }}>
-        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 600, mb: 0.3 }}>
+        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 400, mb: 0.3 }}>
           {nft.name || meta?.name || 'Untitled'}
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center">
@@ -593,7 +593,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                         fontSize: '12px',
                         color: 'text.secondary',
                         textTransform: 'uppercase',
-                        fontWeight: 600
+                        fontWeight: 400
                       }}
                     >
                       {type}

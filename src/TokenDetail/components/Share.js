@@ -63,7 +63,7 @@ const ShareButton = styled(IconButton)(({ theme }) => {
 
   return {
     position: 'relative',
-    borderRadius: '8px',
+    borderRadius: '12px',
     border: `2px solid ${alpha(theme.palette.divider, 0.1)}`,
     background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)} 0%, ${alpha(
       theme.palette.background.paper,
@@ -191,7 +191,7 @@ const ShareDialogTitle = styled(DialogTitle)(({ theme }) => ({
   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
   position: 'relative',
   '& .MuiTypography-root': {
-    fontWeight: 600,
+    fontWeight: 400,
     fontSize: '20px',
     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
     WebkitBackgroundClip: 'text',
@@ -301,7 +301,7 @@ const UrlCopyBox = styled(Box)(({ theme }) => ({
 
 const CopyButton = styled(IconButton)(({ theme }) => ({
   backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  borderRadius: '8px',
+  borderRadius: '12px',
   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
   transition: 'all 0.2s ease',
   '&:hover': {
@@ -441,7 +441,7 @@ export default function Share({ token }) {
                 <Typography
                   variant="h5"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.success.main} 100%)`,
                     WebkitBackgroundClip: 'text',
                     WebkitTextFillColor: 'transparent',
@@ -480,7 +480,7 @@ export default function Share({ token }) {
                   variant="h6"
                   sx={{
                     textAlign: 'center',
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.primary.main
                   }}
                 >
@@ -508,7 +508,7 @@ export default function Share({ token }) {
                     textAlign: 'center',
                     color: 'text.secondary',
                     mb: 2,
-                    fontWeight: 600
+                    fontWeight: 400
                   }}
                 >
                   Choose Platform
@@ -550,7 +550,7 @@ export default function Share({ token }) {
                     textAlign: 'center',
                     color: 'text.secondary',
                     mb: 2,
-                    fontWeight: 600
+                    fontWeight: 400
                   }}
                 >
                   Or Copy Link

@@ -104,7 +104,7 @@ const OfferDialogTitle = (props) => {
         variant="h6"
         component="span"
         sx={{
-          fontWeight: 600,
+          fontWeight: 400,
           color: theme.palette.primary.main,
           fontSize: '19px'
         }}
@@ -444,7 +444,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   <Typography
                     variant="subtitle1"
                     sx={{
-                      fontWeight: 600,
+                      fontWeight: 400,
                       color: theme.palette.text.primary,
                       fontSize: '18px'
                     }}
@@ -467,7 +467,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                       variant="body2"
                       sx={{
                         color: theme.palette.warning.main,
-                        fontWeight: 600
+                        fontWeight: 400
                       }}
                     >
                       Rank: {nft.rarity_rank} / {nft.total}
@@ -512,7 +512,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   bgcolor: alpha(theme.palette.background.paper, 0.5)
                 }}
               >
-                <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 400 }}>
                   {token?.name || 'XRP'}
                 </Typography>
               </Box>
@@ -536,7 +536,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                 variant="subtitle1"
                 gutterBottom
                 sx={{
-                  fontWeight: 600,
+                  fontWeight: 400,
                   color: theme.palette.text.primary,
                   mb: 2
                 }}
@@ -546,7 +546,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   component="span"
                   sx={{
                     color: theme.palette.error.main,
-                    fontWeight: 600
+                    fontWeight: 400
                   }}
                 >
                   *
@@ -590,7 +590,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                 <Typography
                   variant="body1"
                   sx={{
-                    fontWeight: 600,
+                    fontWeight: 400,
                     color: theme.palette.primary.main,
                     minWidth: 'fit-content'
                   }}
@@ -615,7 +615,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                 sx={{
                   minWidth: 200,
                   height: '52px',
-                  fontWeight: 600,
+                  fontWeight: 400,
                   textTransform: 'none',
                   borderRadius: '12px',
                   background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,

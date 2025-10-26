@@ -74,7 +74,7 @@ const TraderCard = styled(Card, {
   shouldForwardProp: (prop) => prop !== 'isNew'
 })(({ theme, isNew }) => ({
   marginBottom: theme.spacing(0.5),
-  borderRadius: '8px',
+  borderRadius: '12px',
   backgroundColor: 'transparent',
   backdropFilter: 'none',
   WebkitBackdropFilter: 'none',
@@ -100,7 +100,7 @@ const TraderCard = styled(Card, {
 const ProfitChip = styled(Chip)(({ theme, profittype }) => ({
   fontSize: '11px',
   height: '24px',
-  fontWeight: 'bold',
+  fontWeight: 500,
   borderRadius: '12px',
   backgroundColor: 'transparent',
   color: profittype === 'positive' ? theme.palette.primary.main : '#F44336',
@@ -131,7 +131,7 @@ const VolumeIndicator = styled('div')(({ theme, volume }) => ({
 const StyledPagination = styled(Pagination)(({ theme }) => ({
   '& .MuiPaginationItem-root': {
     color: theme.palette.text.primary,
-    borderRadius: '8px',
+    borderRadius: '12px',
     margin: '0 3px',
     fontWeight: 400,
     minWidth: '32px',
@@ -144,7 +144,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
     backgroundColor: `${theme.palette.primary.main} !important`,
     color: '#fff !important',
     fontWeight: 500,
-    borderRadius: '8px',
+    borderRadius: '12px',
     '&:hover': {
       backgroundColor: `${theme.palette.primary.dark} !important`
     }
@@ -304,7 +304,7 @@ function ProfitCell({ value }) {
         variant="body2"
         sx={{
           color: isPositive ? theme.palette.primary.main : '#F44336',
-          fontWeight: 600,
+          fontWeight: 400,
           fontSize: '14px'
         }}
       >
@@ -554,7 +554,7 @@ export default function TopTraders({ token }) {
                 0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
                 inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
               '& > *': {
-                fontWeight: 'bold',
+                fontWeight: 500,
                 color: theme.palette.text.secondary,
                 fontSize: '12px',
                 textTransform: 'uppercase',
@@ -744,7 +744,7 @@ export default function TopTraders({ token }) {
                           variant="body2"
                           sx={{
                             color: trader.roi >= 0 ? theme.palette.primary.main : '#F44336',
-                            fontWeight: 600,
+                            fontWeight: 400,
                             fontSize: '14px'
                           }}
                         >

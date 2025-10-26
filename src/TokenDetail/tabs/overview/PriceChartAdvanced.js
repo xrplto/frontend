@@ -564,7 +564,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     // Create tooltip
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'}; color: ${theme.palette.text.primary}; border: 1px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: none`;
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'}; color: ${theme.palette.text.primary}; border: 1.5px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: none`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove((param) => {
@@ -1527,7 +1527,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         backdropFilter: 'none',
         boxShadow: 'none',
         border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-        borderRadius: '8px',
+        borderRadius: '12px',
         overflow: 'hidden',
         '&:hover': {
           borderColor: alpha(theme.palette.divider, 0.2),
@@ -1605,7 +1605,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                   content: '""',
                   position: 'absolute',
                   inset: 0,
-                  borderRadius: '8px',
+                  borderRadius: '12px',
                   background: athData.percentDown < 0
                     ? 'linear-gradient(45deg, transparent, rgba(239, 83, 80, 0.3), transparent)'
                     : 'linear-gradient(45deg, transparent, rgba(102, 187, 106, 0.3), transparent)',
@@ -1647,7 +1647,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Typography
                   variant="caption"
                   sx={{
-                    fontWeight: 700,
+                    fontWeight: 500,
                     fontSize: isMobile ? '11px' : '13px',
                     color: athData.percentDown < 0 ? '#ff5252' : '#66bb6a',
                     flexShrink: 0,
@@ -1666,7 +1666,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                     color: 'text.primary',
                     opacity: 0.9,
                     flexShrink: 0,
-                    fontWeight: 600,
+                    fontWeight: 400,
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}
@@ -1681,7 +1681,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                       color: athData.percentDown < 0 ? '#ff5252' : '#66bb6a',
                       opacity: 0.85,
                       fontFamily: 'monospace',
-                      fontWeight: 600,
+                      fontWeight: 400,
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       maxWidth: '90px',
@@ -1934,7 +1934,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Divider />
               </>
             )}
-            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 'bold' }}>
+            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 500 }}>
               Interval
             </MenuItem>
             {['1m', '5m', '15m', '30m', '1h', '4h', '1d'].map((int) => {
@@ -1992,7 +1992,7 @@ const PriceChartAdvanced = memo(({ token }) => {
               );
             })}
             <Divider />
-            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 'bold' }}>
+            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 500 }}>
               Indicators
             </MenuItem>
             {indicatorOptions.map((indicator) => (

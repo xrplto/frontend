@@ -174,7 +174,7 @@ const ApiDocsPage = () => {
                   Get paginated list of tokens with sorting and filtering
                 </Typography>
 
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 600 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 400 }}>
                   Parameters
                 </Typography>
                 <TableContainer component={Paper}>
@@ -216,7 +216,7 @@ const ApiDocsPage = () => {
                   </Table>
                 </TableContainer>
 
-                <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 600 }}>
+                <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 400 }}>
                   Example
                 </Typography>
                 <Paper
@@ -522,7 +522,7 @@ const ApiDocsPage = () => {
           <Box sx={{ flexGrow: 1, overflowY: 'auto' }}>
             <Container maxWidth="lg" sx={{ py: 4 }}>
               <Box sx={{ mb: 4, textAlign: 'center' }}>
-                <Typography variant="h3" sx={{ mb: 2, fontWeight: 700 }}>
+                <Typography variant="h3" sx={{ mb: 2, fontWeight: 500 }}>
                   XRPL.to API
                 </Typography>
                 <Typography variant="body1" color="text.secondary">

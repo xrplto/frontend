@@ -43,7 +43,7 @@ const Controls = styled.div`
   padding: 20px;
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   width: 100%;
 `;
 
@@ -145,7 +145,7 @@ const FilterChip = styled.div`
 
 const SearchInput = styled.input`
   padding: 10px 16px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
   border-radius: 12px;
   background: ${p => p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
   color: ${p => p.darkMode ? '#fff' : '#333'};
@@ -166,7 +166,7 @@ const SearchInput = styled.input`
 
 const Button = styled.button`
   padding: 10px 18px;
-  border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : 'rgba(145,158,171,0.15)'};
+  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : 'rgba(145,158,171,0.15)'};
   border-radius: 12px;
   background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
@@ -183,7 +183,7 @@ const Button = styled.button`
 const Select = styled.select`
   padding: 10px 16px;
   padding-right: 32px;
-  border: 1px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
+  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
   border-radius: 12px;
   background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
   color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
@@ -204,7 +204,7 @@ const Select = styled.select`
 
 const FilterInput = styled.input`
   padding: 8px 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
   border-radius: 8px;
   background: ${p => p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
   color: ${p => p.darkMode ? '#fff' : '#333'};
@@ -228,7 +228,7 @@ const HeatMap = styled.div`
   height: 350px;
   background: ${p => p.darkMode ? '#1a1a1a' : '#fff'};
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
@@ -244,7 +244,7 @@ const Canvas = styled.canvas`
 const CustomTooltip = styled.div`
   position: fixed;
   background: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 12px;
@@ -260,7 +260,7 @@ const CustomTooltip = styled.div`
 const TableWrapper = styled.div`
   overflow-x: auto;
   border-radius: 12px;
-  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
   width: 100%;
 `;
@@ -354,7 +354,7 @@ const RSIBadge = styled.span`
   min-width: 50px;
   background: ${p => p.bg};
   color: ${p => p.color};
-  border: 1px solid ${p => p.border};
+  border: 1.5px solid ${p => p.border};
 `;
 
 const PriceChange = styled.span`
