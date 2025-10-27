@@ -110,13 +110,13 @@ const RowContent = styled.div`
 
 const RowsSelector = styled.select`
   padding: 4px 8px;
-  border: 1.5px solid rgba(145, 158, 171, 0.15);
+  border: 1.5px solid rgba(145, 158, 171, 0.24);
   border-radius: 8px;
   background: ${(props) =>
-    props.darkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.95)'};
-  color: ${(props) => (props.darkMode ? '#fff' : '#333')};
+    props.darkMode ? 'rgba(17, 24, 39, 0.9)' : 'rgba(255, 255, 255, 1)'};
+  color: ${(props) => (props.darkMode ? '#fff' : '#1a1a1a')};
   font-size: 0.75rem;
-  font-weight: 400;
+  font-weight: 500;
   cursor: pointer;
   height: 32px;
   min-width: 80px;

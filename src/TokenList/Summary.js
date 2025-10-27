@@ -103,8 +103,8 @@ const MetricBox = styled.div`
       props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
   @media (max-width: 600px) {
-    padding: 6px 6px;
-    min-height: 62px;
+    padding: 8px 8px;
+    min-height: 66px;
     flex: 1;
     min-width: 0;
     border-radius: 12px;
@@ -112,8 +112,8 @@ const MetricBox = styled.div`
   }
 
   @media (max-width: 480px) {
-    padding: 6px 6px;
-    min-height: 62px;
+    padding: 8px 8px;
+    min-height: 66px;
     flex: 1;
     min-width: 0;
     border-radius: 12px;
@@ -131,14 +131,14 @@ const MetricTitle = styled.span`
   line-height: 1.2;
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     margin-bottom: 0;
     line-height: 1.1;
     flex-shrink: 0;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     margin-bottom: 0;
     line-height: 1.1;
     flex-shrink: 0;
@@ -156,14 +156,14 @@ const MetricValue = styled.span`
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
-    margin-bottom: 1px;
+    font-size: 0.75rem;
+    margin-bottom: 2px;
     line-height: 1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.7rem;
-    margin-bottom: 1px;
+    font-size: 0.75rem;
+    margin-bottom: 2px;
     line-height: 1;
   }
 `;
@@ -181,15 +181,15 @@ const PercentageChange = styled.span`
   font-family: inherit;
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    gap: 1px;
+    font-size: 0.65rem;
+    gap: 2px;
     flex-shrink: 0;
     margin-top: auto;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.6rem;
-    gap: 1px;
+    font-size: 0.65rem;
+    gap: 2px;
     flex-shrink: 0;
     margin-top: auto;
   }
@@ -1018,7 +1018,7 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>XRP Price</MetricTitle>
+                <MetricTitle>{isMobile ? 'XRP' : 'XRP Price'}</MetricTitle>
                 <MetricValue>
                   {xrpPriceSymbol}
                   {xrpPrice}
@@ -1033,12 +1033,12 @@ export default function Summary() {
 
               <MetricBox>
                 <MetricTitle>Market</MetricTitle>
-                <div style={{ display: 'flex', gap: '12px', width: '100%' }}>
+                <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <VolumePercentage style={{ display: 'block', marginBottom: '2px' }}>Sentiment</VolumePercentage>
                     <MetricValue
                       style={{
-                        fontSize: '16px',
+                        fontSize: isMobile ? '0.75rem' : '16px',
                         color:
                           metrics.global?.sentimentScore >= 60
                             ? '#10b981'
@@ -1054,7 +1054,7 @@ export default function Summary() {
                     <VolumePercentage style={{ display: 'block', marginBottom: '2px' }}>RSI</VolumePercentage>
                     <MetricValue
                       style={{
-                        fontSize: '16px',
+                        fontSize: isMobile ? '0.75rem' : '16px',
                         color:
                           (metrics.global?.avgRSI || 50) <= 30
                             ? '#ef4444'
