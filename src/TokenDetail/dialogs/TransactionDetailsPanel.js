@@ -73,7 +73,11 @@ const TransactionDetailsPanel = memo(
     // Scroll asks to bottom on open/update
     useEffect(() => {
       if (mode === 'orderbook' && open && asksScrollRef.current && asks.length > 0) {
-        asksScrollRef.current.scrollTop = asksScrollRef.current.scrollHeight;
+        requestAnimationFrame(() => {
+          if (asksScrollRef.current) {
+            asksScrollRef.current.scrollTop = asksScrollRef.current.scrollHeight;
+          }
+        });
       }
     }, [mode, open, asks]);
 
@@ -992,7 +996,7 @@ const TransactionDetailsPanel = memo(
                       Sell Orders ({asks.length})
                     </Typography>
                   </Box>
-                  <Box ref={asksScrollRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <Box ref={asksScrollRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
                     {asks.length > 0 ? (
                       <>
                         <Box
@@ -1233,7 +1237,7 @@ const TransactionDetailsPanel = memo(
                       Buy Orders ({bids.length})
                     </Typography>
                   </Box>
-                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+                  <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto', '&::-webkit-scrollbar': { display: 'none' }, scrollbarWidth: 'none' }}>
                     {bids.length > 0 ? (
                       <>
                         <Box
