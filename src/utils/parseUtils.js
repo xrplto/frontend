@@ -806,7 +806,8 @@ export const processOrderbookOffers = (offers, orderType = 'bids') => {
         sumAmount: sumAmount,
         sumValue: sumValue,
         avgPrice: sumAmount > 0 ? sumValue / sumAmount : 0,
-        isNew: false
+        isNew: false,
+        Account: offer.Account
       });
     }
   });

@@ -1577,7 +1577,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               setOrderType(newValue);
               if (newValue === 'market') {
                 setShowOrderbook(false);
-                setShowDepth(false);
               }
             }}
             variant="fullWidth"

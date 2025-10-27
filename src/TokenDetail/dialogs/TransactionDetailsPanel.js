@@ -54,6 +54,8 @@ const TransactionDetailsPanel = memo(
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [showDepth, setShowDepth] = useState(false);
+    const [tooltip, setTooltip] = useState(null);
     const spread = useMemo(
       () =>
         mode === 'orderbook'
@@ -380,18 +382,36 @@ const TransactionDetailsPanel = memo(
 
             {mode === 'orderbook' && pair && (
               <>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    color: alpha(theme.palette.text.secondary, 0.7),
-                    fontSize: '9px',
-                    display: 'block',
-                    mt: 0.25
-                  }}
-                >
-                  {pair.curr1?.name || pair.curr1?.currency}/
-                  {pair.curr2?.name || pair.curr2?.currency}
-                </Typography>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      color: alpha(theme.palette.text.secondary, 0.7),
+                      fontSize: '9px'
+                    }}
+                  >
+                    {pair.curr1?.name || pair.curr1?.currency}/
+                    {pair.curr2?.name || pair.curr2?.currency}
+                  </Typography>
+                  <Chip
+                    size="small"
+                    label={showDepth ? 'Book' : 'Depth'}
+                    onClick={() => setShowDepth(!showDepth)}
+                    sx={{
+                      height: 18,
+                      fontSize: '9px',
+                      fontWeight: 400,
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      backgroundColor: 'transparent',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      '&:hover': {
+                        backgroundColor: alpha(theme.palette.primary.main, 0.04),
+                        borderColor: theme.palette.primary.main
+                      }
+                    }}
+                  />
+                </Stack>
                 <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mt: 0.5, flexWrap: 'wrap' }}>
                   <Chip
                     size="small"
@@ -965,7 +985,7 @@ const TransactionDetailsPanel = memo(
               </Stack>
             ) : null}
 
-            {mode === 'orderbook' && (
+            {mode === 'orderbook' && !showDepth && (
               <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' }}>
                 {/* Top half: Asks */}
                 <Box
@@ -1435,6 +1455,281 @@ const TransactionDetailsPanel = memo(
                     </Typography>
                   </Box>
                 )}
+              </Box>
+            )}
+
+            {mode === 'orderbook' && showDepth && (
+              <Box sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                <Typography variant="caption" sx={{ mb: 0.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+                  Market Depth
+                </Typography>
+                {(() => {
+                  const bidData = bids.slice(0, 60);
+                  const askData = asks.slice(0, 60);
+                  const totalOrders = bidData.length + askData.length;
+                  const buyDepth = bidData.reduce((sum, bid) => sum + Number(bid.amount || 0), 0);
+                  const sellDepth = askData.reduce((sum, ask) => sum + Number(ask.amount || 0), 0);
+
+                  return (
+                    <Box sx={{ mb: 1.5, p: 1.5, background: alpha(theme.palette.background.paper, 0.05), borderRadius: '8px', border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}` }}>
+                      <Stack spacing={1}>
+                        <Stack direction="row" spacing={2.5} sx={{ justifyContent: 'space-between' }}>
+                          <Box>
+                            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary', display: 'block', mb: 0.25 }}>
+                              Total Orders
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: 'text.primary' }}>
+                              {totalOrders}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary', display: 'block', mb: 0.25 }}>
+                              Depth Ratio
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: 'text.primary' }}>
+                              {buyDepth > 0 && sellDepth > 0 ? (buyDepth / sellDepth).toFixed(2) : '-'}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                        <Stack direction="row" spacing={2.5} sx={{ justifyContent: 'space-between' }}>
+                          <Box>
+                            <Typography variant="caption" sx={{ fontSize: '10px', color: theme.palette.success.main, display: 'block', mb: 0.25 }}>
+                              Buy Depth ({pair?.curr1?.name || pair?.curr1?.currency})
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: theme.palette.success.main }}>
+                              {buyDepth >= 1000 ? `${(buyDepth / 1000).toFixed(1)}k` : fNumber(buyDepth)}
+                            </Typography>
+                          </Box>
+                          <Box>
+                            <Typography variant="caption" sx={{ fontSize: '10px', color: theme.palette.error.main, display: 'block', mb: 0.25 }}>
+                              Sell Depth ({pair?.curr2?.name || pair?.curr2?.currency})
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: theme.palette.error.main }}>
+                              {sellDepth >= 1000 ? `${(sellDepth / 1000).toFixed(1)}k` : fNumber(sellDepth)}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </Stack>
+                    </Box>
+                  );
+                })()}
+                {(() => {
+                  const bidsByAccount = {};
+                  const asksByAccount = {};
+
+                  bids.slice(0, 60).forEach(bid => {
+                    if (bid.Account) {
+                      bidsByAccount[bid.Account] = (bidsByAccount[bid.Account] || 0) + Number(bid.amount || 0);
+                    }
+                  });
+
+                  asks.slice(0, 60).forEach(ask => {
+                    if (ask.Account) {
+                      asksByAccount[ask.Account] = (asksByAccount[ask.Account] || 0) + Number(ask.amount || 0);
+                    }
+                  });
+
+                  const topBuyers = Object.entries(bidsByAccount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                  const topSellers = Object.entries(asksByAccount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+
+                  if (topBuyers.length === 0 && topSellers.length === 0) return null;
+
+                  return (
+                    <Stack spacing={1.5} sx={{ mb: 2 }}>
+                      {topBuyers.length > 0 && (
+                        <Box sx={{ p: 1.5, background: alpha(theme.palette.success.main, 0.05), borderRadius: '8px', border: `1.5px solid ${alpha(theme.palette.success.main, 0.2)}` }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: theme.palette.success.main, mb: 1, display: 'block', fontWeight: 500 }}>
+                            Top Buyers
+                          </Typography>
+                          <Stack spacing={0.75}>
+                            {topBuyers.map(([account, amount], i) => (
+                              <Box key={account} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '10px',
+                                    fontFamily: 'monospace',
+                                    color: 'text.secondary',
+                                    cursor: 'pointer',
+                                    '&:hover': { color: theme.palette.primary.main }
+                                  }}
+                                  onClick={() => window.open(`https://xrpl.to/profile/${account}`, '_blank')}
+                                >
+                                  {i + 1}. {account.slice(0, 10)}...{account.slice(-6)}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 500, color: 'text.primary' }}>
+                                  {fNumber(amount)}
+                                </Typography>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+                      {topSellers.length > 0 && (
+                        <Box sx={{ p: 1.5, background: alpha(theme.palette.error.main, 0.05), borderRadius: '8px', border: `1.5px solid ${alpha(theme.palette.error.main, 0.2)}` }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: theme.palette.error.main, mb: 1, display: 'block', fontWeight: 500 }}>
+                            Top Sellers
+                          </Typography>
+                          <Stack spacing={0.75}>
+                            {topSellers.map(([account, amount], i) => (
+                              <Box key={account} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <Typography
+                                  variant="caption"
+                                  sx={{
+                                    fontSize: '10px',
+                                    fontFamily: 'monospace',
+                                    color: 'text.secondary',
+                                    cursor: 'pointer',
+                                    '&:hover': { color: theme.palette.primary.main }
+                                  }}
+                                  onClick={() => window.open(`https://xrpl.to/profile/${account}`, '_blank')}
+                                >
+                                  {i + 1}. {account.slice(0, 10)}...{account.slice(-6)}
+                                </Typography>
+                                <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 500, color: 'text.primary' }}>
+                                  {fNumber(amount)}
+                                </Typography>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+                    </Stack>
+                  );
+                })()}
+                <Box sx={{ flex: 1, position: 'relative' }}>
+                  {tooltip && (
+                    <Box sx={{
+                      position: 'absolute',
+                      left: tooltip.x,
+                      top: tooltip.y,
+                      background: alpha(theme.palette.background.paper, 0.98),
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      borderRadius: '8px',
+                      p: 1.25,
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.15)}`,
+                      minWidth: 140
+                    }}>
+                      <Stack spacing={0.5}>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                            Price
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: 'text.primary' }}>
+                            {fNumber(tooltip.price)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                            Depth
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: 'text.primary' }}>
+                            {fNumber(tooltip.depth)}
+                          </Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                            Orders
+                          </Typography>
+                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: 'text.primary' }}>
+                            {tooltip.orders}
+                          </Typography>
+                        </Box>
+                      </Stack>
+                    </Box>
+                  )}
+                  <svg
+                    width="100%"
+                    height="100%"
+                    viewBox="0 0 300 700"
+                    preserveAspectRatio="xMidYMid meet"
+                    style={{ display: 'block' }}
+                    onMouseMove={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = ((e.clientX - rect.left) / rect.width) * 300;
+
+                      const bidData = bids.slice(0, 60).map(b => ({ price: Number(b.price), sum: Number(b.sumAmount), amount: Number(b.amount) }));
+                      const askData = asks.slice(0, 60).map(a => ({ price: Number(a.price), sum: Number(a.sumAmount), amount: Number(a.amount) }));
+                      const allPrices = [...bidData.map(d => d.price), ...askData.map(d => d.price)];
+                      const minPrice = Math.min(...allPrices);
+                      const maxPrice = Math.max(...allPrices);
+
+                      const padding = { top: 20, right: 15, bottom: 40, left: 15 };
+                      const price = minPrice + ((x - padding.left) / (300 - padding.left - padding.right)) * (maxPrice - minPrice);
+
+                      const bidsAtPrice = bidData.filter(b => b.price >= price);
+                      const asksAtPrice = askData.filter(a => a.price <= price);
+                      const totalOrders = bidsAtPrice.length + asksAtPrice.length;
+                      const depth = bidsAtPrice.reduce((sum, b) => sum + b.amount, 0) + asksAtPrice.reduce((sum, a) => sum + a.amount, 0);
+
+                      setTooltip({ x: e.clientX - rect.left + 10, y: e.clientY - rect.top - 40, price, depth, orders: totalOrders });
+                    }}
+                    onMouseLeave={() => setTooltip(null)}
+                  >
+                    {(() => {
+                      const width = 300;
+                      const height = 700;
+                      const padding = { top: 20, right: 15, bottom: 40, left: 15 };
+
+                      const bidData = bids.slice(0, 60).map(b => ({ price: Number(b.price), sum: Number(b.sumAmount) }));
+                      const askData = asks.slice(0, 60).map(a => ({ price: Number(a.price), sum: Number(a.sumAmount) }));
+
+                      if (!bidData.length && !askData.length) return null;
+
+                      const allPrices = [...bidData.map(d => d.price), ...askData.map(d => d.price)];
+                      const allSums = [...bidData.map(d => d.sum), ...askData.map(d => d.sum)];
+                      const minPrice = Math.min(...allPrices);
+                      const maxPrice = Math.max(...allPrices);
+                      const maxSum = Math.max(...allSums);
+
+                      const scaleX = (price) => padding.left + ((price - minPrice) / (maxPrice - minPrice)) * (width - padding.left - padding.right);
+                      const scaleY = (sum) => height - padding.bottom - (sum / maxSum) * (height - padding.top - padding.bottom);
+
+                      const bidPath = bidData.map((d, i) => `${i === 0 ? 'M' : 'L'}${scaleX(d.price)},${scaleY(d.sum)}`).join(' ');
+                      const askPath = askData.map((d, i) => `${i === 0 ? 'M' : 'L'}${scaleX(d.price)},${scaleY(d.sum)}`).join(' ');
+
+                      const bidFillPath = bidPath + ` L${scaleX(bidData[bidData.length - 1].price)},${height - padding.bottom} L${scaleX(bidData[0].price)},${height - padding.bottom} Z`;
+                      const askFillPath = askPath + ` L${scaleX(askData[askData.length - 1].price)},${height - padding.bottom} L${scaleX(askData[0].price)},${height - padding.bottom} Z`;
+
+                      const midPrice = (minPrice + maxPrice) / 2;
+
+                      return (
+                        <>
+                          {/* Grid lines */}
+                          {[0.25, 0.5, 0.75].map(pct => (
+                            <line
+                              key={pct}
+                              x1={padding.left}
+                              y1={scaleY(maxSum * pct)}
+                              x2={width - padding.right}
+                              y2={scaleY(maxSum * pct)}
+                              stroke={alpha(theme.palette.divider, 0.08)}
+                              strokeWidth="1"
+                            />
+                          ))}
+                          {/* Filled areas */}
+                          <path d={bidFillPath} fill={alpha(theme.palette.success.main, 0.2)} stroke="none" />
+                          <path d={askFillPath} fill={alpha(theme.palette.error.main, 0.2)} stroke="none" />
+                          {/* Lines */}
+                          <path d={bidPath} fill="none" stroke={theme.palette.success.main} strokeWidth="2" />
+                          <path d={askPath} fill="none" stroke={theme.palette.error.main} strokeWidth="2" />
+                          {/* Mid price line */}
+                          <line
+                            x1={scaleX(midPrice)}
+                            y1={padding.top}
+                            x2={scaleX(midPrice)}
+                            y2={height - padding.bottom}
+                            stroke={alpha(theme.palette.text.secondary, 0.4)}
+                            strokeWidth="1.5"
+                            strokeDasharray="3 3"
+                          />
+                        </>
+                      );
+                    })()}
+                  </svg>
+                </Box>
               </Box>
             )}
           </Box>
