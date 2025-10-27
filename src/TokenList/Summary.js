@@ -93,7 +93,7 @@ const MetricBox = styled.div`
   min-height: 85px;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   border-radius: 12px;
   background: ${(props) =>
@@ -108,6 +108,7 @@ const MetricBox = styled.div`
     flex: 1;
     min-width: 0;
     border-radius: 12px;
+    justify-content: space-between;
   }
 
   @media (max-width: 480px) {
@@ -116,6 +117,7 @@ const MetricBox = styled.div`
     flex: 1;
     min-width: 0;
     border-radius: 12px;
+    justify-content: space-between;
   }
 `;
 
@@ -130,14 +132,16 @@ const MetricTitle = styled.span`
 
   @media (max-width: 600px) {
     font-size: 0.55rem;
-    margin-bottom: 2px;
+    margin-bottom: 0;
     line-height: 1.1;
+    flex-shrink: 0;
   }
 
   @media (max-width: 480px) {
     font-size: 0.55rem;
-    margin-bottom: 2px;
+    margin-bottom: 0;
     line-height: 1.1;
+    flex-shrink: 0;
   }
 `;
 
@@ -149,6 +153,7 @@ const MetricValue = styled.span`
   margin-bottom: 4px;
   font-family: inherit;
   letter-spacing: -0.02em;
+  white-space: nowrap;
 
   @media (max-width: 600px) {
     font-size: 0.7rem;
@@ -178,11 +183,15 @@ const PercentageChange = styled.span`
   @media (max-width: 600px) {
     font-size: 0.6rem;
     gap: 1px;
+    flex-shrink: 0;
+    margin-top: auto;
   }
 
   @media (max-width: 480px) {
     font-size: 0.6rem;
     gap: 1px;
+    flex-shrink: 0;
+    margin-top: auto;
   }
 `;
 
@@ -701,6 +710,7 @@ export default function Summary() {
   const { activeFiatCurrency, darkMode } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
   const theme = useTheme();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   const fiatRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
 
@@ -960,7 +970,7 @@ export default function Summary() {
               </MetricBox>
 
               <MetricBox>
-                <MetricTitle>24h Volume</MetricTitle>
+                <MetricTitle>{isMobile ? '24h Vol' : '24h Volume'}</MetricTitle>
                 {(() => {
                   const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
@@ -974,26 +984,30 @@ export default function Summary() {
                             .toNumber()
                         )}
                       </MetricValue>
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: 400,
-                        padding: '2px 5px',
-                        borderRadius: '3px',
-                        background: theme?.palette?.mode === 'dark' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
-                        color: '#10b981'
-                      }}>
-                        Stable {stablePercent.toFixed(1)}%
-                      </span>
-                      <span style={{
-                        fontSize: '11px',
-                        fontWeight: 400,
-                        padding: '2px 5px',
-                        borderRadius: '3px',
-                        background: theme?.palette?.mode === 'dark' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
-                        color: '#f59e0b'
-                      }}>
-                        Meme {memePercent.toFixed(1)}%
-                      </span>
+                      {!isMobile && (
+                        <>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 400,
+                            padding: '2px 5px',
+                            borderRadius: '3px',
+                            background: theme?.palette?.mode === 'dark' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                            color: '#10b981'
+                          }}>
+                            Stable {stablePercent.toFixed(1)}%
+                          </span>
+                          <span style={{
+                            fontSize: '11px',
+                            fontWeight: 400,
+                            padding: '2px 5px',
+                            borderRadius: '3px',
+                            background: theme?.palette?.mode === 'dark' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
+                            color: '#f59e0b'
+                          }}>
+                            Meme {memePercent.toFixed(1)}%
+                          </span>
+                        </>
+                      )}
                     </div>
                   );
                 })()}

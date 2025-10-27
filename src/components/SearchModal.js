@@ -312,7 +312,7 @@ function SearchModal({ open, onClose }) {
       display: 'flex',
       alignItems: 'flex-start',
       justifyContent: 'center',
-      pt: '12vh',
+      pt: { xs: 0, sm: '12vh' },
       backgroundColor: alpha(theme.palette.background.default, 0.8)
     }),
     [theme]
@@ -320,13 +320,14 @@ function SearchModal({ open, onClose }) {
 
   const paperStyles = useMemo(
     () => ({
-      width: '90%',
-      maxWidth: 650,
-      maxHeight: '65vh',
+      width: { xs: '100%', sm: '90%' },
+      maxWidth: { xs: '100%', sm: 650 },
+      height: { xs: '100vh', sm: 'auto' },
+      maxHeight: { xs: '100vh', sm: '65vh' },
       overflow: 'hidden',
-      borderRadius: '12px',
+      borderRadius: { xs: 0, sm: '12px' },
       background: theme.palette.background.paper,
-      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+      border: { xs: 'none', sm: `1.5px solid ${alpha(theme.palette.divider, 0.2)}` },
       boxShadow: 'none'
     }),
     [theme]
@@ -380,7 +381,7 @@ function SearchModal({ open, onClose }) {
         {/* Search Results */}
         <Box
           sx={{
-            maxHeight: 'calc(65vh - 80px)',
+            maxHeight: { xs: 'calc(100vh - 80px)', sm: 'calc(65vh - 80px)' },
             overflowY: 'auto',
             backgroundColor: 'transparent'
           }}
