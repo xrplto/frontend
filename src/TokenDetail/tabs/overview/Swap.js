@@ -325,7 +325,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   // Add state for orderbook visibility
   const [showOrderbook, setShowOrderbook] = useState(false); // used only when not integrated
-  const [showDepth, setShowDepth] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -637,8 +636,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         lg = 1200,
         xl = 1536
       } = (theme.breakpoints && theme.breakpoints.values) || {};
-      if (w >= xl) return 360;
-      if (w >= lg) return 320;
+      if (w >= xl) return 320;
+      if (w >= lg) return 300;
       if (w >= md) return 280;
       return 0;
     };
@@ -650,8 +649,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const prev = root.style.paddingRight;
       if (!root.hasAttribute('data-prev-pr-ob') && (!prev || prev === '')) {
         root.setAttribute('data-prev-pr-ob', prev);
-        // Add a slightly larger gutter (32px) so content doesn't touch the panel
-        root.style.paddingRight = `${width + 32}px`;
+        // No gap - panel sits directly against content
+        root.style.paddingRight = `${width}px`;
       }
       root.classList.add('orderbook-shift');
     };
@@ -2102,7 +2101,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     Tip: Click an order book row to fill price
                   </Typography>
                 </Stack>
-                {orderType === 'limit' && (!limitPrice || Number(limitPrice) <= 0) && (
+                {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
                   <Typography variant="caption" color="error" sx={{ fontSize: '11px' }}>
                     Enter a valid limit price greater than 0.
                   </Typography>
@@ -2211,61 +2210,28 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </Box>
           )}
 
-          {/* Show/Hide Buttons - Only show in limit mode */}
+          {/* Show/Hide Order Book - Only show in limit mode */}
           {orderType === 'limit' && (
-            <Box sx={{ px: 1, py: 0.5 }}>
-              <Stack direction="row" spacing={0.5} justifyContent="center">
-                <Button
-                  size="small"
-                  variant="text"
-                  onClick={() => {
-                    if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
-                    else setShowOrderbook(!showOrderbook);
-                  }}
-                  sx={{
-                    fontSize: '13px',
-                    textTransform: 'none',
-                    py: 0,
-                    minHeight: '24px'
-                  }}
-                >
-                  {(onOrderBookToggle ? orderBookOpen : showOrderbook) ? 'Hide' : 'Show'} Book
-                </Button>
-                <Button
-                  size="small"
-                  variant="text"
-                  onClick={() => setShowDepth(!showDepth)}
-                  sx={{
-                    fontSize: '13px',
-                    textTransform: 'none',
-                    py: 0,
-                    minHeight: '24px'
-                  }}
-                >
-                  {showDepth ? 'Hide' : 'Show'} Depth
-                </Button>
-                <Button
-                  size="small"
-                  variant="text"
-                  onClick={() => {}}
-                  sx={{
-                    fontSize: '13px',
-                    textTransform: 'none',
-                    py: 0,
-                    minHeight: '24px'
-                  }}
-                >
-                  View Orders
-                </Button>
-              </Stack>
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                sx={{ textAlign: 'center', mt: 0.5, fontSize: '13px' }}
+            <Stack direction="row" justifyContent="center" sx={{ px: 1, py: 0.75 }}>
+              <Button
+                size="small"
+                variant="text"
+                onClick={() => {
+                  if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
+                  else setShowOrderbook(!showOrderbook);
+                }}
+                sx={{
+                  fontSize: '0.8rem',
+                  textTransform: 'none',
+                  py: 0.5,
+                  px: 1,
+                  minWidth: 0,
+                  color: 'text.secondary'
+                }}
               >
-                Tip: Use the order book to quickly pick a fair price.
-              </Typography>
-            </Box>
+                {(onOrderBookToggle ? orderBookOpen : showOrderbook) ? 'Hide' : 'Show'} Order Book
+              </Button>
+            </Stack>
           )}
 
 

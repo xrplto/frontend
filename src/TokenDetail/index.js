@@ -157,13 +157,13 @@ const TokenDetail = memo(
             minWidth: 0, // Prevent content overflow
             pr: {
               md: txDetailsOpen
-                ? (panelMode === 'orderbook' ? '288px' : '256px')
+                ? (panelMode === 'orderbook' ? '280px' : '256px')
                 : notificationPanelOpen ? '320px' : 0,
               lg: txDetailsOpen
-                ? (panelMode === 'orderbook' ? '328px' : '272px')
+                ? (panelMode === 'orderbook' ? '300px' : '272px')
                 : notificationPanelOpen ? '360px' : 0,
               xl: txDetailsOpen
-                ? (panelMode === 'orderbook' ? '368px' : '288px')
+                ? (panelMode === 'orderbook' ? '320px' : '288px')
                 : notificationPanelOpen ? '380px' : 0
             },
             pl: {

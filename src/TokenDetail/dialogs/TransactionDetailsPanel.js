@@ -280,15 +280,15 @@ const TransactionDetailsPanel = memo(
         <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box
             sx={{
-              p: 1,
-              pb: 0.75,
-              borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
+              p: 1.5,
+              pb: 1,
+              borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
               flexShrink: 0
             }}
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '13px' }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '0.875rem' }}>
                   {mode === 'orderbook' ? 'Order Book' : 'Transaction Details'}
                 </Typography>
               </Stack>
@@ -975,22 +975,21 @@ const TransactionDetailsPanel = memo(
                 >
                   <Box
                     sx={{
-                      px: 1,
-                      py: 0.25,
+                      px: 1.5,
+                      py: 0.75,
                       background: 'transparent'
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        color: alpha(theme.palette.text.secondary, 0.5),
+                        color: alpha(theme.palette.text.secondary, 0.6),
                         fontWeight: 400,
-                        fontSize: '9px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
+                        fontSize: '0.75rem',
+                        textTransform: 'none'
                       }}
                     >
-                      Sell ({asks.length})
+                      Sell Orders ({asks.length})
                     </Typography>
                   </Box>
                   <Box ref={asksScrollRef} sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
@@ -1001,22 +1000,22 @@ const TransactionDetailsPanel = memo(
                             position: 'sticky',
                             top: 0,
                             zIndex: 2,
-                            px: 1,
-                            py: 0.25,
+                            px: 1.5,
+                            py: 0.5,
                             background: theme.palette.background.paper,
-                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
+                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
                           }}
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography
                               variant="caption"
-                              sx={{ color: theme.palette.error.main, fontWeight: 400, fontSize: '9px' }}
+                              sx={{ color: theme.palette.error.main, fontWeight: 400, fontSize: '0.75rem' }}
                             >
                               Price
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '9px' }}
+                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}
                             >
                               Amount
                             </Typography>
@@ -1024,14 +1023,15 @@ const TransactionDetailsPanel = memo(
                               variant="caption"
                               sx={{
                                 color: alpha(theme.palette.text.secondary, 0.7),
+                                fontSize: '0.75rem',
                                 display: { xs: 'none', sm: 'inline' }
                               }}
                             >
-                              Cum
+                              Total
                             </Typography>
                           </Box>
                         </Box>
-                        <Stack spacing={0.5} sx={{ p: 1 }}>
+                        <Stack spacing={0.25} sx={{ px: 1.5, py: 1 }}>
                           {(() => {
                             const askSlice = asks.slice(0, 30);
                             const displayAsks = askSlice.slice().reverse();
@@ -1089,13 +1089,13 @@ const TransactionDetailsPanel = memo(
                                       position: 'relative',
                                       display: 'flex',
                                       justifyContent: 'space-between',
-                                      fontSize: '9px',
                                       cursor: 'pointer',
-                                      px: 0.75,
-                                      py: 0.2,
+                                      px: 1,
+                                      py: 0.5,
+                                      borderRadius: '4px',
                                       background: showMarker
                                         ? alpha(theme.palette.primary.main, 0.06)
-                                        : origIdx % 2 === 0 ? alpha(theme.palette.background.default, 0.02) : 'transparent',
+                                        : 'transparent',
                                       '&:hover': {
                                         background: alpha(theme.palette.error.main, 0.04)
                                       }
@@ -1117,6 +1117,8 @@ const TransactionDetailsPanel = memo(
                                     <Typography
                                       variant="caption"
                                       sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 400,
                                         color: theme.palette.error.main,
                                         position: 'relative',
                                         zIndex: 1
@@ -1126,15 +1128,22 @@ const TransactionDetailsPanel = memo(
                                     </Typography>
                                     <Typography
                                       variant="caption"
-                                      sx={{ position: 'relative', zIndex: 1 }}
+                                      sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 400,
+                                        position: 'relative',
+                                        zIndex: 1
+                                      }}
                                     >
                                       {fNumber(level.amount)}
                                     </Typography>
                                     <Typography
                                       variant="caption"
                                       sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 400,
                                         display: { xs: 'none', sm: 'inline' },
-                                        color: alpha(theme.palette.text.secondary, 0.8),
+                                        color: alpha(theme.palette.text.secondary, 0.7),
                                         position: 'relative',
                                         zIndex: 1
                                       }}
@@ -1162,77 +1171,38 @@ const TransactionDetailsPanel = memo(
                 </Box>
 
                 {/* Middle spread bar */}
-                {spread.spreadAmount > 0 ? (
-                  <Box
-                    sx={{
-                      px: 1,
-                      py: 0.75,
-                      mx: 0.5,
-                      background: alpha(theme.palette.warning.main, 0.06),
-                      borderTop: `1px dashed ${alpha(theme.palette.warning.main, 0.3)}`,
-                      borderBottom: `1px dashed ${alpha(theme.palette.warning.main, 0.3)}`
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      justifyContent="space-between"
-                      alignItems="center"
+                <Box
+                  sx={{
+                    px: 1.5,
+                    py: 0.75,
+                    background: 'transparent',
+                    borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+                    borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
+                  }}
+                >
+                  <Stack direction="row" justifyContent="space-between" alignItems="center">
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontWeight: 400,
+                        color: alpha(theme.palette.text.secondary, 0.7),
+                        fontSize: '0.75rem'
+                      }}
                     >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          fontWeight: 400,
-                          color: theme.palette.text.secondary,
-                          fontSize: '9px'
-                        }}
-                      >
-                        Spread
-                      </Typography>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: theme.palette.text.secondary,
-                            fontSize: '9px',
-                            fontWeight: 400
-                          }}
-                        >
-                          {fNumber(spread.spreadAmount)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          sx={{
-                            color: theme.palette.warning.main,
-                            fontSize: '9px',
-                            fontWeight: 400
-                          }}
-                        >
-                          ({Number(spread.spreadPercentage).toFixed(2)}%)
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{
-                      px: 1,
-                      py: 0.5,
-                      background: alpha(theme.palette.background.default, 0.02),
-                      borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-                      borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`
-                    }}
-                  >
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.5) }}>
-                        Spread
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 400, color: theme.palette.warning.main }}>
-                        {fNumber(spread.spreadAmount)} ({Number(spread.spreadPercentage).toFixed(2)}%)
-                      </Typography>
-                    </Stack>
-                  </Box>
-                )}
+                      Spread
+                    </Typography>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        fontSize: '0.75rem',
+                        fontWeight: 400,
+                        color: theme.palette.text.primary
+                      }}
+                    >
+                      {fNumber(spread.spreadAmount)} ({Number(spread.spreadPercentage).toFixed(2)}%)
+                    </Typography>
+                  </Stack>
+                </Box>
 
                 {/* Bottom half: Bids */}
                 <Box
@@ -1246,22 +1216,21 @@ const TransactionDetailsPanel = memo(
                 >
                   <Box
                     sx={{
-                      px: 1,
-                      py: 0.25,
+                      px: 1.5,
+                      py: 0.75,
                       background: 'transparent'
                     }}
                   >
                     <Typography
                       variant="caption"
                       sx={{
-                        color: alpha(theme.palette.text.secondary, 0.5),
+                        color: alpha(theme.palette.text.secondary, 0.6),
                         fontWeight: 400,
-                        fontSize: '9px',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
+                        fontSize: '0.75rem',
+                        textTransform: 'none'
                       }}
                     >
-                      Buy ({bids.length})
+                      Buy Orders ({bids.length})
                     </Typography>
                   </Box>
                   <Box sx={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
@@ -1272,22 +1241,22 @@ const TransactionDetailsPanel = memo(
                             position: 'sticky',
                             top: 0,
                             zIndex: 2,
-                            px: 1,
-                            py: 0.25,
+                            px: 1.5,
+                            py: 0.5,
                             background: theme.palette.background.paper,
-                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
+                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
                           }}
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                             <Typography
                               variant="caption"
-                              sx={{ color: theme.palette.success.main, fontWeight: 400, fontSize: '9px' }}
+                              sx={{ color: theme.palette.success.main, fontWeight: 400, fontSize: '0.75rem' }}
                             >
                               Price
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '9px' }}
+                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}
                             >
                               Amount
                             </Typography>
@@ -1295,14 +1264,15 @@ const TransactionDetailsPanel = memo(
                               variant="caption"
                               sx={{
                                 color: alpha(theme.palette.text.secondary, 0.7),
+                                fontSize: '0.75rem',
                                 display: { xs: 'none', sm: 'inline' }
                               }}
                             >
-                              Cum
+                              Total
                             </Typography>
                           </Box>
                         </Box>
-                        <Stack spacing={0.5} sx={{ p: 1 }}>
+                        <Stack spacing={0.25} sx={{ px: 1.5, py: 1 }}>
                           {(() => {
                             const bidSlice = bids.slice(0, 30);
                             const lp = typeof limitPrice === 'number' ? limitPrice : null;
@@ -1356,13 +1326,13 @@ const TransactionDetailsPanel = memo(
                                       position: 'relative',
                                       display: 'flex',
                                       justifyContent: 'space-between',
-                                      fontSize: '9px',
                                       cursor: 'pointer',
-                                      px: 0.75,
-                                      py: 0.2,
+                                      px: 1,
+                                      py: 0.5,
+                                      borderRadius: '4px',
                                       background: showMarker
                                         ? alpha(theme.palette.primary.main, 0.06)
-                                        : idx % 2 === 0 ? alpha(theme.palette.background.default, 0.02) : 'transparent',
+                                        : 'transparent',
                                       '&:hover': {
                                         background: alpha(theme.palette.success.main, 0.04)
                                       }
@@ -1384,6 +1354,8 @@ const TransactionDetailsPanel = memo(
                                     <Typography
                                       variant="caption"
                                       sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 400,
                                         color: theme.palette.success.main,
                                         position: 'relative',
                                         zIndex: 1
@@ -1393,15 +1365,22 @@ const TransactionDetailsPanel = memo(
                                     </Typography>
                                     <Typography
                                       variant="caption"
-                                      sx={{ position: 'relative', zIndex: 1 }}
+                                      sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 400,
+                                        position: 'relative',
+                                        zIndex: 1
+                                      }}
                                     >
                                       {fNumber(level.amount)}
                                     </Typography>
                                     <Typography
                                       variant="caption"
                                       sx={{
+                                        fontSize: '0.75rem',
+                                        fontWeight: 400,
                                         display: { xs: 'none', sm: 'inline' },
-                                        color: alpha(theme.palette.text.secondary, 0.8),
+                                        color: alpha(theme.palette.text.secondary, 0.7),
                                         position: 'relative',
                                         zIndex: 1
                                       }}
@@ -1463,12 +1442,13 @@ const TransactionDetailsPanel = memo(
         <Box
           sx={{
             height: '100%',
-            border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-            borderRadius: '12px',
-            backgroundColor: theme.palette.background.paper,
+            border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+            borderRadius: '8px',
+            backgroundColor: 'transparent',
             overflow: 'hidden',
             display: 'flex',
-            flexDirection: 'column'
+            flexDirection: 'column',
+            boxShadow: 'none'
           }}
         >
           {content}
@@ -1484,7 +1464,7 @@ const TransactionDetailsPanel = memo(
         hideBackdrop
         PaperProps={{
           sx: {
-            width: mode === 'orderbook' ? { md: 260, lg: 280, xl: 300 } : { md: 240, lg: 256, xl: 272 },
+            width: mode === 'orderbook' ? { md: 280, lg: 300, xl: 320 } : { md: 240, lg: 256, xl: 272 },
             minWidth: { md: 220 },
             top: { xs: 56, sm: 56, md: 56 },
             height: {
@@ -1492,7 +1472,7 @@ const TransactionDetailsPanel = memo(
               sm: 'calc(100vh - 56px)',
               md: 'calc(100vh - 56px)'
             },
-            borderLeft: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+            borderLeft: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
             backgroundColor: theme.palette.background.paper,
             boxShadow: 'none',
             overflow: 'hidden'
