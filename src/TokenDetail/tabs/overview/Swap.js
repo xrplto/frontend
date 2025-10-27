@@ -917,13 +917,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     setPair(pair);
   }, [revert, token1, token2]);
 
-  // Debug useEffect to track amount1 changes
-  useEffect(() => {
-    if (amount1 === '' && amount1 !== undefined) {
-      console.trace('amount1 was cleared - stack trace:');
-    }
-  }, [amount1]);
-
   useEffect(() => {
     var timer = null;
     var isRunning = false;
@@ -1595,38 +1588,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           </Tabs>
         </Box>
 
-        {/* Debug Wallet Info */}
-        {accountProfile && (
-          <Paper sx={{
-            mb: 1.5,
-            p: 1.5,
-            background: alpha(theme.palette.warning.main, 0.08),
-            border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-            borderRadius: '12px'
-          }}>
-            <Stack spacing={0.75}>
-              <Stack direction="row" alignItems="center" spacing={0.75}>
-                <Typography variant="caption" color="warning.main" fontWeight={600} sx={{ fontSize: '11px' }}>
-                  DEBUG (Remove in Production)
-                </Typography>
-              </Stack>
-              <Box sx={{ pl: 0.5 }}>
-                <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.2 }}>
-                  <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
-                </Typography>
-                <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.2 }}>
-                  <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
-                    {accountProfile.seed || accountProfile.secret || 'N/A'}
-                  </code>
-                </Typography>
-                <Typography variant="caption" display="block" sx={{ fontSize: '13px' }}>
-                  <strong>Type:</strong> {accountProfile.wallet_type || 'Unknown'} | <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
-                </Typography>
-              </Box>
-            </Stack>
-          </Paper>
-        )}
-
         <ConverterFrame>
           <AmountRows>
             <CurrencyContent style={{ backgroundColor: color1 }}>
@@ -1867,15 +1828,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </ToggleContent>
           </AmountRows>
 
-          {/* Add slippage control */}
+          {/* Slippage control */}
           <Box sx={{ px: 1.5, py: 0.5 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography
-                variant="caption"
-                color="textSecondary"
-                sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
-              >
-                Slippage tolerance
+              <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
+                Slippage
               </Typography>
               <Stack direction="row" spacing={0.25} alignItems="center">
                 {[1, 3, 5].map((preset) => (
@@ -1885,17 +1842,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     variant={slippage === preset ? 'outlined' : 'text'}
                     onClick={() => setSlippage(preset)}
                     sx={{
-                      minWidth: '24px',
-                      height: '20px',
-                      fontSize: '13px',
-                      padding: '0 6px',
+                      minWidth: '22px',
+                      height: '18px',
+                      fontSize: '11px',
+                      px: 0.5,
+                      py: 0,
                       color: slippage === preset ? '#4285f4' : 'text.secondary',
                       borderColor: '#4285f4',
-                      backgroundColor: slippage === preset ? alpha('#4285f4', 0.04) : 'transparent',
-                      '&:hover': {
-                        backgroundColor: alpha('#4285f4', 0.08),
-                        borderColor: '#4285f4'
-                      }
+                      backgroundColor: slippage === preset ? alpha('#4285f4', 0.04) : 'transparent'
                     }}
                   >
                     {preset}%
@@ -1905,48 +1859,31 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   value={slippage}
                   onChange={(e) => {
                     const val = e.target.value;
-                    if (
-                      val === '' ||
-                      (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)
-                    ) {
+                    if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)) {
                       setSlippage(val === '' ? 0 : parseFloat(val));
                     }
                   }}
                   disableUnderline
                   sx={{
-                    width: '32px',
+                    width: '28px',
                     input: {
-                      fontSize: '13px',
+                      fontSize: '11px',
                       textAlign: 'center',
-                      padding: '2px',
-                      border: `1px solid ${alpha('#000', 0.1)}`,
+                      padding: '1px',
+                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                       borderRadius: '4px',
-                      height: '16px'
+                      height: '14px'
                     }
                   }}
                 />
-                <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary' }}>
-                  %
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: '13px',
-                    color: Number(priceImpact) > 2 ? 'warning.main' : 'text.secondary',
-                    ml: 1
-                  }}
-                >
-                  Impact {priceImpact}%
+                <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                  % · Impact {priceImpact}%
                 </Typography>
               </Stack>
             </Stack>
             {Number(slippage) > 5 && (
-              <Typography
-                variant="caption"
-                color="warning.main"
-                sx={{ display: 'block', mt: 0.5, fontSize: '11px' }}
-              >
-                High slippage increases the risk of a worse execution.
+              <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 0.25, fontSize: '10px' }}>
+                High slippage = higher risk
               </Typography>
             )}
           </Box>
@@ -1977,86 +1914,48 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
                   }}
                   endAdornment={
-                    <Stack direction="row" spacing={0.5} alignItems="center" sx={{ mr: 0.5 }}>
-                      <Tooltip title="Decrease price by 1%">
-                        <span>
-                          <Button
-                            size="small"
-                            variant="text"
-                            disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
-                            onClick={() => {
-                              const mid =
-                                bestBid != null && bestAsk != null
-                                  ? (Number(bestBid) + Number(bestAsk)) / 2
-                                  : null;
-                              const base = Number(limitPrice || mid || 0);
-                              if (!base) return;
-                              const next = new Decimal(base).mul(0.99).toFixed(6);
-                              setLimitPrice(next);
-                            }}
-                            sx={{
-                              textTransform: 'none',
-                              fontSize: '13px',
-                              minHeight: '22px',
-                              px: 0.75
-                            }}
-                          >
-                            -1%
-                          </Button>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title="Set to midpoint between best bid and ask">
-                        <span>
-                          <Button
-                            size="small"
-                            variant="text"
-                            disabled={!(bestBid != null && bestAsk != null)}
-                            onClick={() => {
-                              const mid =
-                                bestBid != null && bestAsk != null
-                                  ? (Number(bestBid) + Number(bestAsk)) / 2
-                                  : null;
-                              if (mid == null) return;
-                              setLimitPrice(String(new Decimal(mid).toFixed(6)));
-                            }}
-                            sx={{
-                              textTransform: 'none',
-                              fontSize: '13px',
-                              minHeight: '22px',
-                              px: 0.75
-                            }}
-                          >
-                            Mid
-                          </Button>
-                        </span>
-                      </Tooltip>
-                      <Tooltip title="Increase price by 1%">
-                        <span>
-                          <Button
-                            size="small"
-                            variant="text"
-                            disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
-                            onClick={() => {
-                              const mid =
-                                bestBid != null && bestAsk != null
-                                  ? (Number(bestBid) + Number(bestAsk)) / 2
-                                  : null;
-                              const base = Number(limitPrice || mid || 0);
-                              if (!base) return;
-                              const next = new Decimal(base).mul(1.01).toFixed(6);
-                              setLimitPrice(next);
-                            }}
-                            sx={{
-                              textTransform: 'none',
-                              fontSize: '13px',
-                              minHeight: '22px',
-                              px: 0.75
-                            }}
-                          >
-                            +1%
-                          </Button>
-                        </span>
-                      </Tooltip>
+                    <Stack direction="row" spacing={0.25} alignItems="center" sx={{ mr: 0.5 }}>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
+                        onClick={() => {
+                          const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                          const base = Number(limitPrice || mid || 0);
+                          if (!base) return;
+                          setLimitPrice(new Decimal(base).mul(0.99).toFixed(6));
+                        }}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                      >
+                        -1%
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!(bestBid != null && bestAsk != null)}
+                        onClick={() => {
+                          const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                          if (mid == null) return;
+                          setLimitPrice(String(new Decimal(mid).toFixed(6)));
+                        }}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                      >
+                        Mid
+                      </Button>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
+                        onClick={() => {
+                          const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                          const base = Number(limitPrice || mid || 0);
+                          if (!base) return;
+                          setLimitPrice(new Decimal(base).mul(1.01).toFixed(6));
+                        }}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                      >
+                        +1%
+                      </Button>
                     </Stack>
                   }
                   sx={{
@@ -2225,54 +2124,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           )}
 
 
-          {/* Transaction Summary */}
+          {/* Order Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox>
-              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 400, mb: 0.5 }}>
-                Order Summary
-              </Typography>
-              <Stack spacing={0.25}>
-                <Typography variant="caption" sx={{ fontSize: '13px' }}>
-                  Type: <strong>Limit {revert ? 'Buy' : 'Sell'}</strong>
+              <Stack direction="row" spacing={1} sx={{ fontSize: '11px', flexWrap: 'wrap' }}>
+                <Typography variant="caption" sx={{ fontSize: '11px' }}>
+                  <strong>{revert ? 'Buy' : 'Sell'}</strong> {amount1} {curr1.name}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '13px' }}>
-                  Amount:{' '}
-                  <strong>
-                    {amount1} {curr1.name}
-                  </strong>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                  @ {limitPrice}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '13px' }}>
-                  Price:{' '}
-                  <strong>
-                    {limitPrice} {curr2.name}/{curr1.name}
-                  </strong>
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '13px' }}>
-                  Total:{' '}
-                  <strong>
-                    {(() => {
-                      const limitPriceDecimal = new Decimal(limitPrice || 0);
-                      const amount1Decimal = new Decimal(amount1 || 0);
-                      let total;
-                      // Price is always curr2/curr1 (e.g., RLUSD per XRP)
-                      // So total curr2 = amount1 * price
-                      if (curr1.currency === 'XRP' && curr2.currency !== 'XRP') {
-                        // Selling XRP for Token: price is Token/XRP, so multiply
-                        total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                      } else if (curr1.currency !== 'XRP' && curr2.currency === 'XRP') {
-                        // Selling Token for XRP: price is XRP/Token, so multiply
-                        total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                      } else {
-                        // Token to Token: multiply
-                        total = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                      }
-                      return `${total} ${curr2.name}`;
-                    })()}
-                  </strong>
+                <Typography variant="caption" sx={{ fontSize: '11px' }}>
+                  = {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
                 </Typography>
                 {orderExpiry !== 'never' && (
-                  <Typography variant="caption" sx={{ fontSize: '13px' }}>
-                    Expires: <strong>In {expiryHours} hours</strong>
+                  <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                    · {expiryHours}h
                   </Typography>
                 )}
               </Stack>
@@ -2281,117 +2148,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </ConverterFrame>
       </OverviewWrapper>
 
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="flex-start"
-        spacing={0.5}
-        sx={{ mt: 0.5, mb: 0.5, width: '100%' }}
-      >
-        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={16} />
-        <Typography variant="caption" sx={{ fontSize: { xs: '0.75rem', sm: '0.8rem' } }}>
+      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5, mb: 0.5, width: '100%' }}>
+        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={14} />
+        <Typography variant="caption" sx={{ fontSize: '11px' }}>
           1 {curr1.name} ={' '}
           {(() => {
-            // Minimal debug logging
-
-            // Use amount-based calculation but verify it's correct
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
-              const amt1 = parseFloat(amount1);
-              const amt2 = parseFloat(amount2);
-
-              // The display shows "1 curr1.name = X curr2.name"
-              // So the rate should be amount2/amount1
-              const displayRate = amt2 / amt1;
-
-              // But let's verify this makes sense
-
-              // Verify the rate makes sense by checking against the expected rates
-              const expectedRate = (() => {
-                const token1IsXRP = token1?.currency === 'XRP';
-                const token2IsXRP = token2?.currency === 'XRP';
-
-                if (revert) {
-                  if (token1IsXRP && !token2IsXRP) {
-                    // Showing Token/XRP, rate should be tokenExch2
-                    return tokenExch2;
-                  } else if (!token1IsXRP && token2IsXRP) {
-                    // Showing XRP/Token, rate should be 1/tokenExch1
-                    return 1 / tokenExch1;
-                  }
-                } else {
-                  if (token1IsXRP && !token2IsXRP) {
-                    // Showing XRP/Token, rate should be 1/tokenExch2
-                    return 1 / tokenExch2;
-                  } else if (!token1IsXRP && token2IsXRP) {
-                    // Showing Token/XRP, rate should be tokenExch1
-                    return tokenExch1;
-                  }
-                }
-                // For non-XRP pairs
-                return revert ? tokenExch2 / tokenExch1 : tokenExch1 / tokenExch2;
-              })();
-
-              // Allow some tolerance for floating point differences (5%)
-              const tolerance = 0.05;
-              const ratioDiff = Math.abs(displayRate - expectedRate) / expectedRate;
-
-              if (ratioDiff > tolerance) {
-                // Fall through to use the correct calculation below
-              } else {
-                return displayRate.toFixed(6);
-              }
+              return (parseFloat(amount2) / parseFloat(amount1)).toFixed(6);
             }
-
-            // Fallback to default rate calculation
             const token1IsXRP = token1?.currency === 'XRP';
             const token2IsXRP = token2?.currency === 'XRP';
-
-
-            // The rates depend on the original token order (token1/token2), not the display order (curr1/curr2)
-            // When token1=XRP, token2=RLUSD: tokenExch1=1, tokenExch2=XRP per RLUSD
-            // When token1=RLUSD, token2=XRP: tokenExch1=XRP per RLUSD, tokenExch2=1
-
-            let calculatedRate;
-
+            let rate;
             if (revert) {
-
-              // When reverted:
-              // - If original was XRP/RLUSD, now it's RLUSD/XRP
-              // - curr1 = RLUSD (token2), curr2 = XRP (token1)
-
-              if (token1IsXRP && !token2IsXRP) {
-                // Original: token1=XRP, token2=RLUSD
-                // Now showing: RLUSD/XRP
-                // tokenExch2 is RLUSD-to-XRP rate (e.g., 0.311)
-                calculatedRate = tokenExch2;
-              } else if (!token1IsXRP && token2IsXRP) {
-                // Original: token1=RLUSD, token2=XRP
-                // Now showing: XRP/RLUSD
-                // tokenExch1 is RLUSD-to-XRP rate (e.g., 0.311)
-                // Need XRP-to-RLUSD rate, so invert it
-                calculatedRate = 1 / tokenExch1;
-              } else {
-                // Non-XRP pair
-                calculatedRate = tokenExch2 / tokenExch1;
-              }
+              rate = token1IsXRP && !token2IsXRP ? tokenExch2 : !token1IsXRP && token2IsXRP ? 1 / tokenExch1 : tokenExch2 / tokenExch1;
             } else {
-              // Normal order: curr1 = token1, curr2 = token2
-              if (token1IsXRP && !token2IsXRP) {
-                // curr1 is XRP, curr2 is Token
-                // Need XRP to Token rate, which is 1/tokenExch2
-                calculatedRate = 1 / tokenExch2;
-              } else if (!token1IsXRP && token2IsXRP) {
-                // curr1 is Token, curr2 is XRP
-                // Need Token to XRP rate, which is tokenExch1
-                calculatedRate = tokenExch1;
-              } else {
-                // Non-XRP pair
-                calculatedRate = tokenExch1 / tokenExch2;
-              }
+              rate = token1IsXRP && !token2IsXRP ? 1 / tokenExch2 : !token1IsXRP && token2IsXRP ? tokenExch1 : tokenExch1 / tokenExch2;
             }
-
-
-            return calculatedRate.toFixed(6);
+            return rate.toFixed(6);
           })()}{' '}
           {curr2.name}
         </Typography>
@@ -2416,7 +2189,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             {handleMsg()}
           </ExchangeButton>
         ) : (
-          <ConnectWallet pair={pair} />
+          <ConnectWallet
+            text="Connect Wallet"
+            py={{ xs: 0.8, sm: 0.6 }}
+            fontSize={{ xs: '0.9rem', sm: '0.85rem' }}
+          />
         )}
         {/* Inline guidance for trustlines and balance */}
         {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (

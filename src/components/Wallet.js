@@ -779,19 +779,25 @@ const WalletContent = ({
 };
 
 // ConnectWallet button component for wallet connection
-export const ConnectWallet = () => {
+export const ConnectWallet = ({
+  text = 'Connect',
+  fullWidth = true,
+  py = 1.5,
+  fontSize = '0.95rem',
+  sx = {},
+  ...otherProps
+}) => {
   const { setOpenWalletModal } = useContext(AppContext);
-  const theme = useTheme();
 
   return (
     <Button
       variant="outlined"
       onClick={() => setOpenWalletModal(true)}
-      fullWidth
+      fullWidth={fullWidth}
       sx={{
         mt: 0,
         mb: 0,
-        py: 1.5,
+        py: py,
         fontWeight: 400,
         borderRadius: '12px',
         borderWidth: '1.5px',
@@ -799,15 +805,17 @@ export const ConnectWallet = () => {
         color: '#4285f4',
         backgroundColor: 'transparent',
         textTransform: 'none',
-        fontSize: '0.95rem',
+        fontSize: fontSize,
         '&:hover': {
           borderColor: '#4285f4',
           backgroundColor: alpha('#4285f4', 0.04),
           borderWidth: '1.5px'
-        }
+        },
+        ...sx // Allow custom overrides
       }}
+      {...otherProps}
     >
-      Connect
+      {text}
     </Button>
   );
 };
