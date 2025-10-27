@@ -471,6 +471,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [showOrders, setShowOrders] = useState(false);
   const [showOrderbook, setShowOrderbook] = useState(false);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
+  const [showDepthPanel, setShowDepthPanel] = useState(false);
   const amount1Ref = useRef(null);
 
   // Persist slippage
@@ -3713,6 +3714,25 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                               }
                               return null;
                             })()}
+
+                          {/* Show Order Book Button */}
+                          <Button
+                            fullWidth
+                            size="small"
+                            variant="text"
+                            onClick={() => setShowOrderbook(!showOrderbook)}
+                            sx={{
+                              fontSize: '0.8rem',
+                              textTransform: 'none',
+                              py: 0.75,
+                              color: 'text.secondary',
+                              '&:hover': {
+                                backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                              }
+                            }}
+                          >
+                            {showOrderbook ? 'Hide' : 'Show'} Order Book
+                          </Button>
                         </Stack>
                       </Box>
                     )}
@@ -4108,7 +4128,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           <Box
             sx={{
               width: '320px',
-              height: '745px',
+              height: '770px',
               flexShrink: 0,
               display: { xs: 'none', md: 'block' }
             }}

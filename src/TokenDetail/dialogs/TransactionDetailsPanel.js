@@ -1471,40 +1471,40 @@ const TransactionDetailsPanel = memo(
                   const sellDepth = askData.reduce((sum, ask) => sum + Number(ask.amount || 0), 0);
 
                   return (
-                    <Box sx={{ mb: 1.5, p: 1.5, background: alpha(theme.palette.background.paper, 0.05), borderRadius: '8px', border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}` }}>
-                      <Stack spacing={1}>
-                        <Stack direction="row" spacing={2.5} sx={{ justifyContent: 'space-between' }}>
+                    <Box sx={{ mb: 1, p: 1, background: alpha(theme.palette.background.paper, 0.05), borderRadius: '6px', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
+                      <Stack spacing={0.75}>
+                        <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
                           <Box>
-                            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary', display: 'block', mb: 0.25 }}>
-                              Total Orders
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary', display: 'block', mb: 0.15 }}>
+                              Orders
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: 'text.primary' }}>
+                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: 'text.primary' }}>
                               {totalOrders}
                             </Typography>
                           </Box>
                           <Box>
-                            <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary', display: 'block', mb: 0.25 }}>
-                              Depth Ratio
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary', display: 'block', mb: 0.15 }}>
+                              Ratio
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: 'text.primary' }}>
+                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: 'text.primary' }}>
                               {buyDepth > 0 && sellDepth > 0 ? (buyDepth / sellDepth).toFixed(2) : '-'}
                             </Typography>
                           </Box>
                         </Stack>
-                        <Stack direction="row" spacing={2.5} sx={{ justifyContent: 'space-between' }}>
+                        <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
                           <Box>
-                            <Typography variant="caption" sx={{ fontSize: '10px', color: theme.palette.success.main, display: 'block', mb: 0.25 }}>
-                              Buy Depth ({pair?.curr1?.name || pair?.curr1?.currency})
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: theme.palette.success.main, display: 'block', mb: 0.15 }}>
+                              Buy ({pair?.curr1?.name || pair?.curr1?.currency})
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: theme.palette.success.main }}>
+                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: theme.palette.success.main }}>
                               {buyDepth >= 1000 ? `${(buyDepth / 1000).toFixed(1)}k` : fNumber(buyDepth)}
                             </Typography>
                           </Box>
                           <Box>
-                            <Typography variant="caption" sx={{ fontSize: '10px', color: theme.palette.error.main, display: 'block', mb: 0.25 }}>
-                              Sell Depth ({pair?.curr2?.name || pair?.curr2?.currency})
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: theme.palette.error.main, display: 'block', mb: 0.15 }}>
+                              Sell ({pair?.curr2?.name || pair?.curr2?.currency})
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '13px', fontWeight: 500, color: theme.palette.error.main }}>
+                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: theme.palette.error.main }}>
                               {sellDepth >= 1000 ? `${(sellDepth / 1000).toFixed(1)}k` : fNumber(sellDepth)}
                             </Typography>
                           </Box>
@@ -1529,25 +1529,25 @@ const TransactionDetailsPanel = memo(
                     }
                   });
 
-                  const topBuyers = Object.entries(bidsByAccount).sort((a, b) => b[1] - a[1]).slice(0, 5);
-                  const topSellers = Object.entries(asksByAccount).sort((a, b) => b[1] - a[1]).slice(0, 5);
+                  const topBuyers = Object.entries(bidsByAccount).sort((a, b) => b[1] - a[1]).slice(0, 3);
+                  const topSellers = Object.entries(asksByAccount).sort((a, b) => b[1] - a[1]).slice(0, 3);
 
                   if (topBuyers.length === 0 && topSellers.length === 0) return null;
 
                   return (
-                    <Stack spacing={1.5} sx={{ mb: 2 }}>
+                    <Stack spacing={0.75} sx={{ mb: 1 }}>
                       {topBuyers.length > 0 && (
-                        <Box sx={{ p: 1.5, background: alpha(theme.palette.success.main, 0.05), borderRadius: '8px', border: `1.5px solid ${alpha(theme.palette.success.main, 0.2)}` }}>
-                          <Typography variant="caption" sx={{ fontSize: '11px', color: theme.palette.success.main, mb: 1, display: 'block', fontWeight: 500 }}>
+                        <Box sx={{ p: 1, background: alpha(theme.palette.success.main, 0.05), borderRadius: '6px', border: `1px solid ${alpha(theme.palette.success.main, 0.15)}` }}>
+                          <Typography variant="caption" sx={{ fontSize: '9px', color: theme.palette.success.main, mb: 0.5, display: 'block', fontWeight: 500 }}>
                             Top Buyers
                           </Typography>
-                          <Stack spacing={0.75}>
+                          <Stack spacing={0.4}>
                             {topBuyers.map(([account, amount], i) => (
                               <Box key={account} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '10px',
+                                    fontSize: '9px',
                                     fontFamily: 'monospace',
                                     color: 'text.secondary',
                                     cursor: 'pointer',
@@ -1557,7 +1557,7 @@ const TransactionDetailsPanel = memo(
                                 >
                                   {i + 1}. {account.slice(0, 10)}...{account.slice(-6)}
                                 </Typography>
-                                <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 500, color: 'text.primary' }}>
+                                <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 500, color: 'text.primary' }}>
                                   {fNumber(amount)}
                                 </Typography>
                               </Box>
@@ -1566,17 +1566,17 @@ const TransactionDetailsPanel = memo(
                         </Box>
                       )}
                       {topSellers.length > 0 && (
-                        <Box sx={{ p: 1.5, background: alpha(theme.palette.error.main, 0.05), borderRadius: '8px', border: `1.5px solid ${alpha(theme.palette.error.main, 0.2)}` }}>
-                          <Typography variant="caption" sx={{ fontSize: '11px', color: theme.palette.error.main, mb: 1, display: 'block', fontWeight: 500 }}>
+                        <Box sx={{ p: 1, background: alpha(theme.palette.error.main, 0.05), borderRadius: '6px', border: `1px solid ${alpha(theme.palette.error.main, 0.15)}` }}>
+                          <Typography variant="caption" sx={{ fontSize: '9px', color: theme.palette.error.main, mb: 0.5, display: 'block', fontWeight: 500 }}>
                             Top Sellers
                           </Typography>
-                          <Stack spacing={0.75}>
+                          <Stack spacing={0.4}>
                             {topSellers.map(([account, amount], i) => (
                               <Box key={account} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <Typography
                                   variant="caption"
                                   sx={{
-                                    fontSize: '10px',
+                                    fontSize: '9px',
                                     fontFamily: 'monospace',
                                     color: 'text.secondary',
                                     cursor: 'pointer',
@@ -1586,7 +1586,7 @@ const TransactionDetailsPanel = memo(
                                 >
                                   {i + 1}. {account.slice(0, 10)}...{account.slice(-6)}
                                 </Typography>
-                                <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 500, color: 'text.primary' }}>
+                                <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 500, color: 'text.primary' }}>
                                   {fNumber(amount)}
                                 </Typography>
                               </Box>
@@ -1643,7 +1643,7 @@ const TransactionDetailsPanel = memo(
                   <svg
                     width="100%"
                     height="100%"
-                    viewBox="0 0 300 700"
+                    viewBox="0 0 300 400"
                     preserveAspectRatio="xMidYMid meet"
                     style={{ display: 'block' }}
                     onMouseMove={(e) => {
@@ -1656,7 +1656,7 @@ const TransactionDetailsPanel = memo(
                       const minPrice = Math.min(...allPrices);
                       const maxPrice = Math.max(...allPrices);
 
-                      const padding = { top: 20, right: 15, bottom: 40, left: 15 };
+                      const padding = { top: 15, right: 15, bottom: 25, left: 15 };
                       const price = minPrice + ((x - padding.left) / (300 - padding.left - padding.right)) * (maxPrice - minPrice);
 
                       const bidsAtPrice = bidData.filter(b => b.price >= price);
@@ -1664,14 +1664,17 @@ const TransactionDetailsPanel = memo(
                       const totalOrders = bidsAtPrice.length + asksAtPrice.length;
                       const depth = bidsAtPrice.reduce((sum, b) => sum + b.amount, 0) + asksAtPrice.reduce((sum, a) => sum + a.amount, 0);
 
-                      setTooltip({ x: e.clientX - rect.left + 10, y: e.clientY - rect.top - 40, price, depth, orders: totalOrders });
+                      const tooltipX = Math.min(e.clientX - rect.left + 10, rect.width - 160);
+                      const tooltipY = Math.min(Math.max(e.clientY - rect.top - 80, 10), rect.height - 110);
+
+                      setTooltip({ x: tooltipX, y: tooltipY, price, depth, orders: totalOrders });
                     }}
                     onMouseLeave={() => setTooltip(null)}
                   >
                     {(() => {
                       const width = 300;
-                      const height = 700;
-                      const padding = { top: 20, right: 15, bottom: 40, left: 15 };
+                      const height = 400;
+                      const padding = { top: 15, right: 15, bottom: 25, left: 15 };
 
                       const bidData = bids.slice(0, 60).map(b => ({ price: Number(b.price), sum: Number(b.sumAmount) }));
                       const askData = asks.slice(0, 60).map(a => ({ price: Number(a.price), sum: Number(a.sumAmount) }));
