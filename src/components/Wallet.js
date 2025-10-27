@@ -2743,7 +2743,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           background: 'transparent',
           border: `1.5px solid ${accountProfile ? alpha(theme.palette.divider, 0.2) : '#4285f4'}`,
           borderRadius: '12px',
-          height: accountProfile ? '36px' : '42px',
+          height: accountProfile ? '36px' : '32px',
           padding: accountProfile ? '0 14px' : '0 16px',
           minWidth: accountProfile ? '110px' : '100%',
           color: '#4285f4',
