@@ -1560,153 +1560,71 @@ const PriceChartAdvanced = memo(({ token }) => {
           {athData.price && chartType !== 'holders' && (
             <Box
               onClick={() => {
-                const hasATH = indicators.find(i => i.id === 'ath');
                 handleIndicatorToggle(indicatorOptions.find(i => i.id === 'ath'));
               }}
               sx={{
-                position: 'relative',
-                minWidth: isMobile ? 110 : 160,
-                maxWidth: isMobile ? 160 : 260,
-                width: 'auto',
-                height: isMobile ? 24 : 28,
-                borderRadius: '6px',
-                overflow: 'hidden',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.75,
+                px: 1.5,
+                py: 0.75,
+                borderRadius: '12px',
                 cursor: 'pointer',
-                background: athData.percentDown < 0
-                  ? 'linear-gradient(135deg, rgba(239, 83, 80, 0.15) 0%, rgba(244, 67, 54, 0.25) 50%, rgba(239, 83, 80, 0.15) 100%)'
-                  : 'linear-gradient(135deg, rgba(102, 187, 106, 0.15) 0%, rgba(76, 175, 80, 0.25) 50%, rgba(102, 187, 106, 0.15) 100%)',
-                border: athData.percentDown < 0
-                  ? '2px solid #ef5350'
-                  : '2px solid #66bb6a',
-                boxShadow: athData.percentDown < 0
-                  ? '0 0 15px rgba(239, 83, 80, 0.3), inset 0 0 15px rgba(239, 83, 80, 0.1)'
-                  : '0 0 15px rgba(102, 187, 106, 0.3), inset 0 0 15px rgba(102, 187, 106, 0.1)',
-                animation: 'athPulse 1.5s ease-in-out infinite',
-                '@keyframes athPulse': {
-                  '0%, 100%': {
-                    borderColor: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                    boxShadow: athData.percentDown < 0
-                      ? '0 0 15px rgba(239, 83, 80, 0.3), inset 0 0 15px rgba(239, 83, 80, 0.1)'
-                      : '0 0 15px rgba(102, 187, 106, 0.3), inset 0 0 15px rgba(102, 187, 106, 0.1)'
-                  },
-                  '50%': {
-                    borderColor: athData.percentDown < 0 ? '#ff5252' : '#4caf50',
-                    boxShadow: athData.percentDown < 0
-                      ? '0 0 25px rgba(255, 82, 82, 0.5), inset 0 0 25px rgba(255, 82, 82, 0.2)'
-                      : '0 0 25px rgba(76, 175, 80, 0.5), inset 0 0 25px rgba(76, 175, 80, 0.2)'
-                  }
-                },
+                border: `1.5px solid ${alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.3)}`,
+                backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.06),
                 '&:hover': {
-                  boxShadow: athData.percentDown < 0
-                    ? '0 0 25px rgba(239, 83, 80, 0.5), inset 0 0 20px rgba(239, 83, 80, 0.15)'
-                    : '0 0 25px rgba(102, 187, 106, 0.5), inset 0 0 20px rgba(102, 187, 106, 0.15)'
-                },
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  inset: 0,
-                  borderRadius: '12px',
-                  background: athData.percentDown < 0
-                    ? 'linear-gradient(45deg, transparent, rgba(239, 83, 80, 0.3), transparent)'
-                    : 'linear-gradient(45deg, transparent, rgba(102, 187, 106, 0.3), transparent)',
-                  animation: 'athShine 3s linear infinite',
-                  pointerEvents: 'none'
-                },
-                '@keyframes athShine': {
-                  '0%': { transform: 'translateX(-100%)' },
-                  '100%': { transform: 'translateX(100%)' }
+                  borderColor: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
+                  backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.1)
                 }
               }}
             >
-              <Box
+              <Typography
+                variant="caption"
                 sx={{
-                  position: 'absolute',
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${Math.min(Math.abs(parseFloat(athData.percentDown)), 100)}%`,
-                  background: athData.percentDown < 0
-                    ? 'linear-gradient(90deg, rgba(239, 83, 80, 0.3) 0%, rgba(244, 67, 54, 0.4) 100%)'
-                    : 'linear-gradient(90deg, rgba(102, 187, 106, 0.3) 0%, rgba(76, 175, 80, 0.4) 100%)',
-                  transition: 'width 0.5s ease',
-                  borderRadius: '6px'
-                }}
-              />
-              <Box
-                sx={{
-                  position: 'relative',
-                  height: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'flex-start',
-                  px: 1,
-                  gap: 0.75,
-                  whiteSpace: 'nowrap'
+                  fontSize: isMobile ? '12px' : '13px',
+                  fontWeight: 500,
+                  color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a'
                 }}
               >
+                {athData.percentDown}%
+              </Typography>
+              <Typography
+                variant="caption"
+                sx={{
+                  fontSize: isMobile ? '11px' : '12px',
+                  fontWeight: 400,
+                  color: 'text.secondary',
+                  opacity: 0.7
+                }}
+              >
+                {isMobile ? 'ATH' : 'from ATH'}
+              </Typography>
+              {!isMobile && (
                 <Typography
                   variant="caption"
                   sx={{
-                    fontWeight: 500,
-                    fontSize: isMobile ? '11px' : '13px',
-                    color: athData.percentDown < 0 ? '#ff5252' : '#66bb6a',
-                    flexShrink: 0,
-                    textShadow: athData.percentDown < 0
-                      ? '0 0 10px rgba(255, 82, 82, 0.8), 0 0 20px rgba(255, 82, 82, 0.4)'
-                      : '0 0 10px rgba(102, 187, 106, 0.8), 0 0 20px rgba(102, 187, 106, 0.4)',
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  {athData.percentDown}%
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: isMobile ? '10px' : '11px',
-                    color: 'text.primary',
-                    opacity: 0.9,
-                    flexShrink: 0,
+                    fontSize: '12px',
                     fontWeight: 400,
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
+                    color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
+                    fontFamily: 'monospace'
                   }}
                 >
-                  {isMobile ? 'ATH' : 'from ATH'}
-                </Typography>
-                {!isMobile && (
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '11px',
-                      color: athData.percentDown < 0 ? '#ff5252' : '#66bb6a',
-                      opacity: 0.85,
-                      fontFamily: 'monospace',
-                      fontWeight: 400,
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      maxWidth: '90px',
-                      textShadow: athData.percentDown < 0
-                        ? '0 0 8px rgba(255, 82, 82, 0.6)'
-                        : '0 0 8px rgba(102, 187, 106, 0.6)'
-                    }}
-                  >
-                    {currencySymbols[activeFiatCurrency] || ''}
-                    {(() => {
-                      if (athData.price && athData.price < 0.001) {
-                        const str = athData.price.toFixed(15);
-                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                        if (zeros >= 4) {
-                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                          return `0.0(${zeros})${significant.slice(0, 3)}`;
-                        }
+                  {currencySymbols[activeFiatCurrency] || ''}
+                  {(() => {
+                    if (athData.price && athData.price < 0.001) {
+                      const str = athData.price.toFixed(15);
+                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                      if (zeros >= 4) {
+                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                        return `0.0(${zeros})${significant.slice(0, 3)}`;
                       }
-                      return athData.price < 0.01
-                        ? athData.price.toFixed(6)
-                        : athData.price.toFixed(3);
-                    })()}
-                  </Typography>
-                )}
-              </Box>
+                    }
+                    return athData.price < 0.01
+                      ? athData.price.toFixed(6)
+                      : athData.price.toFixed(3);
+                  })()}
+                </Typography>
+              )}
             </Box>
           )}
           <Box

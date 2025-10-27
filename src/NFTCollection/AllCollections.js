@@ -76,7 +76,7 @@ function Collections() {
             backdropFilter: 'none',
             border: 'none',
             boxShadow: 'none',
-            overflow: 'hidden',
+            overflow: 'visible',
             position: 'relative'
           }}
         >

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect, useContext, useMemo, useCallback, memo, useRef } from 'react';
+import ReactDOM from 'react-dom';
 import styled from '@emotion/styled';
 import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
@@ -143,7 +144,11 @@ const OptimizedChart = memo(
       const closest = pointsRef.current.reduce((prev, curr) =>
         Math.abs(curr.x - x) < Math.abs(prev.x - x) ? curr : prev
       );
-      setTooltip({ x: e.clientX - rect.left, y: e.clientY - rect.top, ...closest });
+      setTooltip({
+        ...closest,
+        screenX: e.clientX,
+        screenY: e.clientY
+      });
     };
 
     const handleMouseLeave = () => setTooltip(null);
@@ -185,18 +190,16 @@ const OptimizedChart = memo(
             display: 'block'
           }}
         />
-        {tooltip && (
-          <Box
-            sx={{
-              position: 'absolute',
-              left: Math.min(Math.max(tooltip.x, 40), 160),
-              top: -65,
-              transform: 'translateX(-50%)',
-              bgcolor: 'rgba(0,0,0,0.9)',
+        {tooltip && typeof window !== 'undefined' && ReactDOM.createPortal(
+          <div
+            style={{
+              position: 'fixed',
+              left: tooltip.screenX + 10,
+              top: tooltip.screenY - 50,
+              background: 'rgba(0,0,0,0.9)',
               color: '#fff',
-              px: 1.5,
-              py: 1,
-              borderRadius: 1,
+              padding: '8px 12px',
+              borderRadius: '4px',
               fontSize: '11px',
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
@@ -206,7 +209,8 @@ const OptimizedChart = memo(
             <div>{tooltip.date}</div>
             <div>Vol: ✕{tooltip.value.toFixed(2)}</div>
             <div>Sales: {tooltip.sales}</div>
-          </Box>
+          </div>,
+          document.body
         )}
       </div>
     );
@@ -256,7 +260,7 @@ const StyledTable = styled.table`
   table-layout: fixed;
   width: 100%;
   border-collapse: collapse;
-  contain: layout style paint;
+  contain: layout style;
   margin: 0;
   padding: 0;
 `;
