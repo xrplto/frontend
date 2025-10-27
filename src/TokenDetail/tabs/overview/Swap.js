@@ -2069,37 +2069,39 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
                   }}
                 />
-                <Stack direction="row" spacing={0.5} alignItems="center" sx={{ flexWrap: 'wrap' }}>
-                  <Tooltip title="Set to best available sell price (ask)">
-                    <span>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!asks || asks.length === 0}
-                        onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '22px' }}
-                      >
-                        Best Ask
-                      </Button>
-                    </span>
-                  </Tooltip>
-                  <Tooltip title="Set to best available buy price (bid)">
-                    <span>
+                {bestBid != null && bestAsk != null && (
+                  <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="space-between" sx={{ flexWrap: 'wrap', mt: 0.5 }}>
+                    <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
+                      {(() => {
+                        const bb = Number(bestBid);
+                        const ba = Number(bestAsk);
+                        const mid = (bb + ba) / 2;
+                        const spread = mid ? ((ba - bb) / mid) * 100 : null;
+                        return `Bid ${new Decimal(bb).toFixed(6)} · Ask ${new Decimal(ba).toFixed(6)}${spread != null ? ` · Spread ${new Decimal(spread).toFixed(2)}%` : ''}`;
+                      })()}
+                    </Typography>
+                    <Stack direction="row" spacing={0.25}>
                       <Button
                         size="small"
                         variant="text"
                         disabled={!bids || bids.length === 0}
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '22px' }}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '20px', px: 0.75, py: 0 }}
                       >
-                        Best Bid
+                        Bid
                       </Button>
-                    </span>
-                  </Tooltip>
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '13px' }}>
-                    Tip: Click an order book row to fill price
-                  </Typography>
-                </Stack>
+                      <Button
+                        size="small"
+                        variant="text"
+                        disabled={!asks || asks.length === 0}
+                        onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
+                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '20px', px: 0.75, py: 0 }}
+                      >
+                        Ask
+                      </Button>
+                    </Stack>
+                  </Stack>
+                )}
                 {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
                   <Typography variant="caption" color="error" sx={{ fontSize: '11px' }}>
                     Enter a valid limit price greater than 0.
@@ -2139,17 +2141,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       </Typography>
                     );
                   })()}
-                {bestBid != null && bestAsk != null && (
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '13px' }}>
-                    {(() => {
-                      const bb = Number(bestBid);
-                      const ba = Number(bestAsk);
-                      const mid = (bb + ba) / 2;
-                      const spread = mid ? ((ba - bb) / mid) * 100 : null;
-                      return `Bid ${new Decimal(bb).toFixed(6)} · Ask ${new Decimal(ba).toFixed(6)}${spread != null ? ` · Spread ${new Decimal(spread).toFixed(2)}%` : ''}`;
-                    })()}
-                  </Typography>
-                )}
 
                 {/* Order Expiration */}
                 <Stack direction="row" alignItems="center" justifyContent="space-between">

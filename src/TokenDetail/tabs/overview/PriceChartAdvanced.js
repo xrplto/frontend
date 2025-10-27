@@ -1565,25 +1565,26 @@ const PriceChartAdvanced = memo(({ token }) => {
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 0.75,
-                px: 1.5,
-                py: 0.75,
-                borderRadius: '12px',
+                gap: 0.5,
+                px: 1,
+                py: 0.4,
+                borderRadius: '8px',
                 cursor: 'pointer',
-                border: `1.5px solid ${alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.3)}`,
-                backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.06),
+                border: `1px solid ${alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.25)}`,
+                backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.04),
                 '&:hover': {
                   borderColor: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                  backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.1)
+                  backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.08)
                 }
               }}
             >
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: isMobile ? '12px' : '13px',
+                  fontSize: isMobile ? '11px' : '12px',
                   fontWeight: 500,
-                  color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a'
+                  color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
+                  lineHeight: 1
                 }}
               >
                 {athData.percentDown}%
@@ -1591,10 +1592,11 @@ const PriceChartAdvanced = memo(({ token }) => {
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: isMobile ? '11px' : '12px',
+                  fontSize: isMobile ? '10px' : '11px',
                   fontWeight: 400,
                   color: 'text.secondary',
-                  opacity: 0.7
+                  opacity: 0.65,
+                  lineHeight: 1
                 }}
               >
                 {isMobile ? 'ATH' : 'from ATH'}
@@ -1603,10 +1605,12 @@ const PriceChartAdvanced = memo(({ token }) => {
                 <Typography
                   variant="caption"
                   sx={{
-                    fontSize: '12px',
+                    fontSize: '11px',
                     fontWeight: 400,
                     color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                    fontFamily: 'monospace'
+                    fontFamily: 'monospace',
+                    lineHeight: 1,
+                    opacity: 0.85
                   }}
                 >
                   {currencySymbols[activeFiatCurrency] || ''}
