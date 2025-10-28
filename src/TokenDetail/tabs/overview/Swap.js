@@ -687,25 +687,29 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   useEffect(() => {
-    function getAccountInfo() {
+    const controller = new AbortController();
+
+    async function getAccountInfo() {
       if (!accountProfile || !accountProfile.account) return;
       if (!curr1 || !curr2) return;
 
       const account = accountProfile.account;
 
-      // Get account balance info
-      axios
-        .get(
-          `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`
-        )
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setAccountPairBalance(ret.pair);
-          }
-        })
-        .catch((err) => {
-        });
+      try {
+        // Get account balance info
+        const balanceRes = await axios.get(
+          `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`,
+          { signal: controller.signal }
+        );
+
+        if (balanceRes.status === 200 && balanceRes.data) {
+          setAccountPairBalance(balanceRes.data.pair);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          console.error('Balance fetch error:', err);
+        }
+      }
 
       // Check trustlines - implement pagination to fetch all trustlines
       const fetchAllTrustlines = async () => {
@@ -716,7 +720,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           // First request to get initial data and total count
           const firstResponse = await axios.get(
-            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`
+            `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`,
+            { signal: controller.signal }
           );
 
           if (firstResponse.status === 200 && firstResponse.data) {
@@ -731,7 +736,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               // Create requests for pages 1 through totalPages-1 (since we already have page 0)
               for (let page = 1; page < totalPages; page++) {
                 additionalRequests.push(
-                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`)
+                  axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`, {
+                    signal: controller.signal
+                  })
                 );
               }
 
@@ -875,35 +882,46 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           setHasTrustline2(hasCurr2Trustline);
         })
         .catch((err) => {
+          if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+            console.error('Trustline fetch error:', err);
+          }
         });
     }
 
     getAccountInfo();
+
+    return () => controller.abort();
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
   useEffect(() => {
-    function getTokenPrice() {
+    const controller = new AbortController();
+
+    async function getTokenPrice() {
       setLoadingPrice(true);
       const md51 = token1.md5;
       const md52 = token2.md5;
-      // https://api.xrpl.to/api/pair_rates?md51=84e5efeb89c4eae8f68188982dc290d8&md52=c9ac9a6c44763c1bd9ccc6e47572fd26
-      axios
-        .get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`)
-        .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setTokenExch1(ret.rate1 || 0);
-            setTokenExch2(ret.rate2 || 0);
-          }
-        })
-        .catch((err) => {
-        })
-        .then(function () {
-          // always executed
-          setLoadingPrice(false);
+
+      try {
+        const res = await axios.get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`, {
+          signal: controller.signal
         });
+
+        if (res.status === 200 && res.data) {
+          setTokenExch1(res.data.rate1 || 0);
+          setTokenExch2(res.data.rate2 || 0);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          console.error('Token price fetch error:', err);
+        }
+      } finally {
+        setLoadingPrice(false);
+      }
     }
+
     getTokenPrice();
+
+    return () => controller.abort();
   }, [token1, token2]);
 
   // Removed auto-calculation useEffect to prevent unwanted value changes

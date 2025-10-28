@@ -73,7 +73,7 @@ const Overview = memo(
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
-    const BASE_URL = process.env.API_URL;
+    const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
 
     const [showEditor, setShowEditor] = useState(false);

@@ -32,38 +32,30 @@ function Detail({ data }) {
   const [transactionPanelOpen, setTransactionPanelOpen] = useState(false);
   const [orderBookOpen, setOrderBookOpen] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
-  const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${token.md5}`;
+  const WSS_FEED_URL = `wss://api.xrpl.to/ws/token/${data.token.md5}`;
   const tokenName = token.name || 'Token';
 
-  useWebSocket(WSS_FEED_URL, {
+  const { lastMessage } = useWebSocket(WSS_FEED_URL, {
     onOpen: () => {},
     onClose: () => {},
     shouldReconnect: () => true,
-    onMessage: (event) => processMessages(event)
-    // reconnectAttempts: 10,
-    // reconnectInterval: 3000,
+    reconnectAttempts: 10,
+    reconnectInterval: 3000
   });
 
+  useEffect(() => {
+    if (!lastMessage?.data) return;
 
-
-  const processMessages = (event) => {
     try {
-      var t1 = Date.now();
-
-      const json = JSON.parse(event.data);
-
+      const json = JSON.parse(lastMessage.data);
       dispatch(update_metrics(json));
 
-      setToken({ ...token, ...json.token });
-
-      var t2 = Date.now();
-      var dt = (t2 - t1).toFixed(2);
-
-      // console.log(`${dt} ms`);
+      // Use functional update to avoid stale closure
+      setToken(prev => ({ ...prev, ...json.token }));
     } catch (err) {
       console.error(err);
     }
-  };
+  }, [lastMessage, dispatch]);
 
   return (
     <OverviewWrapper>

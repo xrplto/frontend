@@ -86,7 +86,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const chartCreatedRef = useRef(false);
   const scaleFactorRef = useRef(1);
 
-  const BASE_URL = process.env.API_URL || process.env.NEXT_PUBLIC_API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const isDark = theme.palette.mode === 'dark';
 
   const chartTypeIcons = {

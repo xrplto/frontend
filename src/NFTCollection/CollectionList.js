@@ -20,7 +20,7 @@ const Sparkline = dynamic(() => import('src/components/Sparkline'), {
   loading: () => (
     <div
       style={{
-        width: '200px',
+        width: '190px',
         height: '45px',
         background: 'rgba(128, 128, 128, 0.05)',
         borderRadius: '4px'
@@ -98,10 +98,12 @@ const OptimizedChart = memo(
 
       // Scale points to canvas with padding
       const padding = height * 0.1;
+      const sidePadding = 4;
       const chartHeight = height - padding * 2;
+      const chartWidth = width - sidePadding * 2;
 
       const points = salesData.map((item, index) => {
-        const x = (index / (salesData.length - 1)) * width;
+        const x = sidePadding + (index / Math.max(salesData.length - 1, 1)) * chartWidth;
         const y =
           range === 0
             ? height / 2
@@ -159,7 +161,7 @@ const OptimizedChart = memo(
         <div
           ref={chartRef}
           style={{
-            width: '200px',
+            width: '190px',
             height: '45px',
             background: 'rgba(128, 128, 128, 0.05)',
             borderRadius: '4px',
@@ -175,7 +177,7 @@ const OptimizedChart = memo(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{
-          width: '200px',
+          width: '190px',
           height: '45px',
           display: 'inline-block',
           contain: 'layout size style',
@@ -862,7 +864,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         value: item.volume || 0,
         sales: item.sales || 0
       }))
-      .slice(-50);
+      .slice(-30);
 
     if (processedData.length === 0) return null;
     return processedData;
@@ -930,9 +932,11 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         <span style={{ fontSize: '11px' }}>{strDateTime}</span>
       </StyledCell>
 
-      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', paddingLeft: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
+      <StyledCell align="center" darkMode={darkMode} style={{ minWidth: '220px', width: '220px', paddingLeft: '16px', paddingRight: '16px', overflow: 'visible', position: 'relative', zIndex: 101 }}>
         {salesData ? (
-          <OptimizedChart salesData={salesData} darkMode={darkMode} />
+          <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+            <OptimizedChart salesData={salesData} darkMode={darkMode} />
+          </div>
         ) : (
           <span style={{ color: theme.palette.text.disabled, fontSize: '12px' }}>No data</span>
         )}
@@ -1115,7 +1119,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 });
 
 // Main CollectionList Component
-export default function CollectionList({ type, category }) {
+export default function CollectionList({ type, category, onGlobalMetrics }) {
   const BASE_URL = 'https://api.xrpl.to/api';
   const { darkMode } = useContext(AppContext);
 
@@ -1126,6 +1130,7 @@ export default function CollectionList({ type, category }) {
 
   const [total, setTotal] = useState(0);
   const [collections, setCollections] = useState([]);
+  const [globalMetrics, setGlobalMetrics] = useState(null);
 
   const [sync, setSync] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -1146,7 +1151,8 @@ export default function CollectionList({ type, category }) {
         page: page.toString(),
         limit: rows.toString(),
         sortBy: orderBy,
-        order: order
+        order: order,
+        includeGlobalMetrics: 'true'
       });
 
       axios
@@ -1157,6 +1163,12 @@ export default function CollectionList({ type, category }) {
               const ret = res.data;
               setTotal(ret.pagination?.total || ret.count || 0);
               setCollections(ret.collections || []);
+              if (ret.globalMetrics) {
+                setGlobalMetrics(ret.globalMetrics);
+                if (onGlobalMetrics) {
+                  onGlobalMetrics(ret.globalMetrics);
+                }
+              }
             }
           } catch (error) {
           }
