@@ -142,40 +142,89 @@ function Collections() {
       <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, mb: 2 }}>
         {globalMetrics && (
           <Box sx={{ width: '100%' }}>
-            <Grid cols={9} mdCols={3} spacing="10px">
+            <Grid cols={6} mdCols={3} spacing="10px">
               <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>{isMobile ? '24h Vol' : '24h Volume'}</MetricTitle>
-                <MetricValue theme={theme}>
-                  ✕ {formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
-                </MetricValue>
+                <MetricTitle theme={theme}>Volume</MetricTitle>
+                <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      fontSize: '0.6rem',
+                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      display: 'block',
+                      marginBottom: '2px'
+                    }}>24h</span>
+                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                      ✕ {formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
+                    </MetricValue>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      fontSize: '0.6rem',
+                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      display: 'block',
+                      marginBottom: '2px'
+                    }}>Total</span>
+                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                      ✕ {formatNumberWithDecimals(globalMetrics.totalVolume || 0)}
+                    </MetricValue>
+                  </div>
+                </div>
               </MetricBox>
 
               <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>{isMobile ? 'Trader Bal' : 'Trader Balance'}</MetricTitle>
-                <MetricValue theme={theme}>
-                  ✕ {formatNumberWithDecimals(globalMetrics.totalLiquidity24h || 0)}
-                </MetricValue>
+                <MetricTitle theme={theme}>Activity</MetricTitle>
+                <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      fontSize: '0.6rem',
+                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      display: 'block',
+                      marginBottom: '2px'
+                    }}>Sales</span>
+                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                      {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
+                    </MetricValue>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      fontSize: '0.6rem',
+                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      display: 'block',
+                      marginBottom: '2px'
+                    }}>Transfers</span>
+                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                      {formatNumberWithDecimals(globalMetrics.total24hTransfers || 0)}
+                    </MetricValue>
+                  </div>
+                </div>
               </MetricBox>
 
               <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>{isMobile ? 'Sales' : '24h Sales'}</MetricTitle>
-                <MetricValue theme={theme}>
-                  {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
-                </MetricValue>
-              </MetricBox>
-
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>{isMobile ? 'Traders' : 'Active Traders'}</MetricTitle>
-                <MetricValue theme={theme}>
-                  {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
-                </MetricValue>
-              </MetricBox>
-
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Total Volume</MetricTitle>
-                <MetricValue theme={theme}>
-                  ✕ {formatNumberWithDecimals(globalMetrics.totalVolume || 0)}
-                </MetricValue>
+                <MetricTitle theme={theme}>Traders</MetricTitle>
+                <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      fontSize: '0.6rem',
+                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      display: 'block',
+                      marginBottom: '2px'
+                    }}>Active</span>
+                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                      {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
+                    </MetricValue>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <span style={{
+                      fontSize: '0.6rem',
+                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      display: 'block',
+                      marginBottom: '2px'
+                    }}>Balance</span>
+                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                      ✕ {formatNumberWithDecimals(globalMetrics.totalLiquidity24h || 0)}
+                    </MetricValue>
+                  </div>
+                </div>
               </MetricBox>
 
               <MetricBox theme={theme}>
@@ -207,7 +256,7 @@ function Collections() {
               </MetricBox>
 
               <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Activity</MetricTitle>
+                <MetricTitle theme={theme}>Mints & Burns</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
@@ -260,13 +309,6 @@ function Collections() {
                     </MetricValue>
                   </div>
                 </div>
-              </MetricBox>
-
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>{isMobile ? 'Transfers' : '24h Transfers'}</MetricTitle>
-                <MetricValue theme={theme}>
-                  {formatNumberWithDecimals(globalMetrics.total24hTransfers || 0)}
-                </MetricValue>
               </MetricBox>
             </Grid>
           </Box>
