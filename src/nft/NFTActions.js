@@ -39,6 +39,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import WarningIcon from '@mui/icons-material/Warning';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import LaunchIcon from '@mui/icons-material/Launch';
+import PanToolIcon from '@mui/icons-material/PanTool';
 
 // Loader
 import { PuffLoader, PulseLoader } from '../components/Spinners';
@@ -585,6 +586,11 @@ export default function NFTActions({ nft }) {
         if (response.result.offers && response.result.offers.length > 0) {
           lowestOffer = response.result.offers.reduce(
             (min, offer) => {
+              // Skip non-XRP amounts (issued currencies are objects)
+              if (typeof offer.amount !== 'string') {
+                return min;
+              }
+
               const amount = BigInt(offer.amount);
               const isValidAmount = amount > BigInt(0);
               const isValidOwner = offer.owner === nft.account;

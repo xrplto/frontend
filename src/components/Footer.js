@@ -43,7 +43,7 @@ const FooterLink = ({ href, children }) => {
 const PRODUCTS = [
   { href: '/swap', label: 'Swap' },
   { href: '/market-metrics', label: 'Metrics' },
-  { href: '/top-traders', label: 'Traders' },
+  { href: '/nft-traders', label: 'NFT Traders' },
   { href: '/api-docs', label: 'API' },
   { href: '/about', label: 'About' }
 ];
