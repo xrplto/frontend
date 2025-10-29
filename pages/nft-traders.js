@@ -72,7 +72,7 @@ const StyledPagination = styled(Pagination)(({ theme }) => ({
   }
 }));
 
-export default function TradersPage({ traders = [], sortBy = 'balance' }) {
+export default function TradersPage({ traders = [], sortBy = 'balance', globalMetrics = null }) {
   const theme = useTheme();
   const router = useRouter();
   const [page, setPage] = useState(0);
@@ -87,6 +87,9 @@ export default function TradersPage({ traders = [], sortBy = 'balance' }) {
   const paginatedTraders = traders.slice(page * rowsPerPage, (page + 1) * rowsPerPage);
   const totalPages = Math.ceil(traders.length / rowsPerPage);
   const loading = false;
+
+  const total24hBuyVolume = traders.reduce((sum, t) => sum + (t.buyVolume || 0), 0);
+  const total24hSellVolume = traders.reduce((sum, t) => sum + (t.sellVolume || 0), 0);
 
   return (
     <OverviewWrapper>
@@ -111,13 +114,120 @@ export default function TradersPage({ traders = [], sortBy = 'balance' }) {
         <Typography
           variant="body2"
           sx={{
-            mb: 4,
+            mb: 2,
             color: alpha(theme.palette.text.secondary, 0.7),
             fontSize: '0.95rem'
           }}
         >
           Active NFT traders (24h) - Click column headers to sort
         </Typography>
+
+        {globalMetrics && (
+          <Box
+            sx={{
+              display: 'grid',
+              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' },
+              gap: 2,
+              mb: 4
+            }}
+          >
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                24h Volume
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.total24hVolume)} XRP
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                24h Sales
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.total24hSales)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                Active Traders
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.activeTraders24h)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                Active Collections
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.activeCollections24h)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                24h Buy Volume
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5, color: theme.palette.primary.main }}>
+                {fNumber(total24hBuyVolume)} XRP
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                24h Sell Volume
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5, color: '#F44336' }}>
+                {fNumber(total24hSellVolume)} XRP
+              </Typography>
+            </Box>
+          </Box>
+        )}
 
         {loading ? (
           <Box display="flex" justifyContent="center" py={8}>
@@ -427,13 +537,15 @@ export async function getServerSideProps(context) {
   const { sortBy = 'balance' } = context.query;
 
   try {
-    const response = await axios.get(`${BASE_URL}/nft/traders/active?sortBy=${sortBy}&limit=100`);
+    const response = await axios.get(`${BASE_URL}/nft/traders/active?sortBy=${sortBy}&limit=100&includeGlobalMetrics=true`);
     const traders = response.data.traders || response.data || [];
+    const globalMetrics = response.data.globalMetrics || null;
 
     return {
       props: {
         traders,
-        sortBy
+        sortBy,
+        globalMetrics
       }
     };
   } catch (error) {
@@ -441,7 +553,8 @@ export async function getServerSideProps(context) {
     return {
       props: {
         traders: [],
-        sortBy
+        sortBy,
+        globalMetrics: null
       }
     };
   }

@@ -12,9 +12,6 @@ import {
   Grid,
   useTheme,
   alpha,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
   Avatar,
   Chip,
   IconButton,
@@ -28,7 +25,6 @@ import {
   Badge
 } from '@mui/material';
 import FileCopyOutlinedIcon from '@mui/icons-material/FileCopyOutlined';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
@@ -121,28 +117,109 @@ const KNOWN_SOURCE_TAGS = {
   80008000: { name: 'Orchestra', url: 'https://orchestra.com' }
 };
 
-// Helper to render key-value pairs and make certain values clickable
+// Helper to render JSON with syntax highlighting
 const JsonViewer = ({ data }) => {
   const theme = useTheme();
+  const [copied, setCopied] = useState(false);
+
+  const jsonString = JSON.stringify(data, null, 2);
+
+  const copyJson = () => {
+    navigator.clipboard.writeText(jsonString);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // Simple syntax highlighting
+  const highlightJson = (json) => {
+    return json
+      .replace(/(".*?"):/g, '<span style="color: #4285f4;">$1</span>:') // Keys in blue
+      .replace(/: (".*?")/g, ': <span style="color: #10b981;">$1</span>') // String values in green
+      .replace(/: (true|false)/g, ': <span style="color: #f59e0b;">$1</span>') // Booleans in orange
+      .replace(/: (null)/g, ': <span style="color: #ef4444;">$1</span>') // Null in red
+      .replace(/: (-?\d+\.?\d*)/g, ': <span style="color: #8b5cf6;">$1</span>'); // Numbers in purple
+  };
+
   return (
-    <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', color: theme.palette.text.primary }}>
-      {JSON.stringify(data, null, 2)}
-    </pre>
+    <Box sx={{ position: 'relative' }}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 8,
+          right: 8,
+          zIndex: 1
+        }}
+      >
+        <Tooltip title={copied ? 'Copied!' : 'Copy JSON'}>
+          <IconButton
+            onClick={copyJson}
+            size="small"
+            sx={{
+              backgroundColor: alpha(theme.palette.background.paper, 0.8),
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.background.paper, 0.95)
+              }
+            }}
+          >
+            <FileCopyOutlinedIcon sx={{ fontSize: '16px' }} />
+          </IconButton>
+        </Tooltip>
+      </Box>
+      <Box
+        sx={{
+          maxHeight: '600px',
+          overflowY: 'auto',
+          overflowX: 'auto',
+          fontFamily: 'monospace',
+          fontSize: '12px',
+          lineHeight: 1.6,
+          backgroundColor: alpha(theme.palette.divider, 0.03),
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          borderRadius: '6px',
+          p: 2,
+          '&::-webkit-scrollbar': {
+            width: '8px',
+            height: '8px'
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: alpha(theme.palette.divider, 0.05)
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: alpha(theme.palette.divider, 0.2),
+            borderRadius: '4px',
+            '&:hover': {
+              backgroundColor: alpha(theme.palette.divider, 0.3)
+            }
+          }
+        }}
+      >
+        <pre
+          style={{
+            margin: 0,
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word',
+            color: theme.palette.text.primary
+          }}
+          dangerouslySetInnerHTML={{ __html: highlightJson(jsonString) }}
+        />
+      </Box>
+    </Box>
   );
 };
 
-const DetailRow = ({ label, children, ...props }) => (
-  <Grid container item xs={12} sx={{ mb: 2, pb: 2, ...props }}>
-    <Grid size={{ xs: 12, md: 3 }}>
-      <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+const DetailRow = ({ label, children, ...props }) => {
+  const theme = useTheme();
+  return (
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, ...props }}>
+      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.5), minWidth: '100px', fontSize: '13px', pt: 0.3 }}>
         {label}
       </Typography>
-    </Grid>
-    <Grid size={{ xs: 12, md: 9 }}>
-      {children}
-    </Grid>
-  </Grid>
-);
+      <Box sx={{ flex: 1 }}>
+        {children}
+      </Box>
+    </Box>
+  );
+};
 
 const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   if (error) return <Typography sx={{ p: 1 }}>{error}</Typography>;
@@ -183,17 +260,41 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                 <Chip
                   label={`$${new Decimal(exch.USD).toFixed(4)}`}
                   size="small"
-                  sx={{ fontSize: '12px' }}
+                  sx={{
+                    fontSize: '10px',
+                    height: '18px',
+                    px: 0.5,
+                    backgroundColor: alpha('#4285f4', 0.06),
+                    color: '#4285f4',
+                    border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                    fontWeight: 400
+                  }}
                 />
                 <Chip
                   label={`€${new Decimal(exch.EUR).toFixed(4)}`}
                   size="small"
-                  sx={{ fontSize: '12px' }}
+                  sx={{
+                    fontSize: '10px',
+                    height: '18px',
+                    px: 0.5,
+                    backgroundColor: alpha('#4285f4', 0.06),
+                    color: '#4285f4',
+                    border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                    fontWeight: 400
+                  }}
                 />
                 <Chip
                   label={`¥${new Decimal(exch.JPY).toFixed(4)}`}
                   size="small"
-                  sx={{ fontSize: '12px' }}
+                  sx={{
+                    fontSize: '10px',
+                    height: '18px',
+                    px: 0.5,
+                    backgroundColor: alpha('#4285f4', 0.06),
+                    color: '#4285f4',
+                    border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                    fontWeight: 400
+                  }}
                 />
               </>
             )}
@@ -299,16 +400,30 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                       key={tag}
                       label={tag}
                       size="small"
-                      variant="outlined"
-                      sx={{ fontSize: '11px', height: 20 }}
+                      sx={{
+                        fontSize: '10px',
+                        height: '18px',
+                        px: 0.5,
+                        backgroundColor: alpha('#4285f4', 0.06),
+                        color: '#4285f4',
+                        border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                        fontWeight: 400
+                      }}
                     />
                   ))}
                   {token.tags.length > 3 && (
                     <Chip
                       label={`+${token.tags.length - 3}`}
                       size="small"
-                      variant="outlined"
-                      sx={{ fontSize: '11px', height: 20 }}
+                      sx={{
+                        fontSize: '10px',
+                        height: '18px',
+                        px: 0.5,
+                        backgroundColor: alpha('#4285f4', 0.06),
+                        color: '#4285f4',
+                        border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                        fontWeight: 400
+                      }}
                     />
                   )}
                 </Box>
@@ -353,14 +468,30 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
               <Chip
                 label={`$${new Decimal(token.usd).toFixed(6)}`}
                 size="small"
-                sx={{ fontSize: '12px' }}
+                sx={{
+                  fontSize: '10px',
+                  height: '18px',
+                  px: 0.5,
+                  backgroundColor: alpha('#4285f4', 0.06),
+                  color: '#4285f4',
+                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                  fontWeight: 400
+                }}
               />
             )}
             {token.exch && (
               <Chip
                 label={`${new Decimal(token.exch).toFixed(6)} XRP`}
                 size="small"
-                sx={{ fontSize: '12px' }}
+                sx={{
+                  fontSize: '10px',
+                  height: '18px',
+                  px: 0.5,
+                  backgroundColor: alpha('#4285f4', 0.06),
+                  color: '#4285f4',
+                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                  fontWeight: 400
+                }}
               />
             )}
           </Box>
@@ -482,27 +613,45 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
               <Chip
                 label="KYC"
                 size="small"
-                color="success"
-                variant="outlined"
-                sx={{ fontSize: '11px', height: 20 }}
+                sx={{
+                  fontSize: '10px',
+                  height: '18px',
+                  px: 0.5,
+                  backgroundColor: alpha('#10b981', 0.06),
+                  color: '#10b981',
+                  border: `1px solid ${alpha('#10b981', 0.15)}`,
+                  fontWeight: 400
+                }}
               />
             )}
             {token.verified && (
               <Chip
                 label="Verified"
                 size="small"
-                color="primary"
-                variant="outlined"
-                sx={{ fontSize: '11px', height: 20 }}
+                sx={{
+                  fontSize: '10px',
+                  height: '18px',
+                  px: 0.5,
+                  backgroundColor: alpha('#4285f4', 0.06),
+                  color: '#4285f4',
+                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                  fontWeight: 400
+                }}
               />
             )}
             {token.AMM && (
               <Chip
                 label="AMM"
                 size="small"
-                color="info"
-                variant="outlined"
-                sx={{ fontSize: '11px', height: 20 }}
+                sx={{
+                  fontSize: '10px',
+                  height: '18px',
+                  px: 0.5,
+                  backgroundColor: alpha('#4285f4', 0.06),
+                  color: '#4285f4',
+                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                  fontWeight: 400
+                }}
               />
             )}
           </Box>
@@ -535,16 +684,30 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                   <Chip
                     label="Twitter"
                     size="small"
-                    variant="outlined"
-                    sx={{ fontSize: '11px', height: 20 }}
+                    sx={{
+                      fontSize: '10px',
+                      height: '18px',
+                      px: 0.5,
+                      backgroundColor: alpha('#4285f4', 0.06),
+                      color: '#4285f4',
+                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                      fontWeight: 400
+                    }}
                   />
                 )}
                 {token.social.telegram && (
                   <Chip
                     label="Telegram"
                     size="small"
-                    variant="outlined"
-                    sx={{ fontSize: '11px', height: 20 }}
+                    sx={{
+                      fontSize: '10px',
+                      height: '18px',
+                      px: 0.5,
+                      backgroundColor: alpha('#4285f4', 0.06),
+                      color: '#4285f4',
+                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                      fontWeight: 400
+                    }}
                   />
                 )}
               </Box>
@@ -561,16 +724,30 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
                     key={tag}
                     label={tag}
                     size="small"
-                    variant="outlined"
-                    sx={{ fontSize: '11px', height: 20 }}
+                    sx={{
+                      fontSize: '10px',
+                      height: '18px',
+                      px: 0.5,
+                      backgroundColor: alpha('#4285f4', 0.06),
+                      color: '#4285f4',
+                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                      fontWeight: 400
+                    }}
                   />
                 ))}
                 {token.tags.length > 3 && (
                   <Chip
                     label={`+${token.tags.length - 3}`}
                     size="small"
-                    variant="outlined"
-                    sx={{ fontSize: '11px', height: 20 }}
+                    sx={{
+                      fontSize: '10px',
+                      height: '18px',
+                      px: 0.5,
+                      backgroundColor: alpha('#4285f4', 0.06),
+                      color: '#4285f4',
+                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                      fontWeight: 400
+                    }}
                   />
                 )}
               </Box>
@@ -889,7 +1066,7 @@ function TabPanel(props) {
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
+      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
     </div>
   );
 }
@@ -1661,77 +1838,62 @@ const TransactionSummaryCard = ({ txData }) => {
         borderRadius: '12px'
       }}
     >
-      <CardContent sx={{ p: 2.5 }}>
-        <Stack direction="row" spacing={1.5} alignItems="flex-start" mb={2}>
-          <Box flex={1}>
-            <Stack direction="row" spacing={1} alignItems="center" mb={1}>
-              <Typography variant="h6" component="h2" sx={{ fontWeight: 400 }}>
-                {description.title}
-              </Typography>
-              <Chip
-                label={isSuccess ? 'Success' : 'Failed'}
-                color={isSuccess ? 'success' : 'error'}
-                size="small"
-                variant="outlined"
-                sx={{ height: 22, fontSize: '12px' }}
-              />
-            </Stack>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 1.5, lineHeight: 1.5, fontSize: '15px' }}>
-              {description.description}
-            </Typography>
-
-            <Stack
-              direction={{ xs: 'column', sm: 'row' }}
-              spacing={2}
-              divider={<Divider orientation="vertical" flexItem />}
-            >
-              <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
-                  Hash
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{ fontFamily: 'monospace', wordBreak: 'break-all', fontSize: '14px' }}
-                >
-                  {hash.slice(0, 16)}...
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
-                  Ledger #{ledger_index}
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '14px' }}>
-                  {formatDistanceToNow(new Date(rippleTimeToISO8601(date)))} ago
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
-                  Network Fee
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '14px' }}>{dropsToXrp(Fee)} XRP</Typography>
-              </Box>
-            </Stack>
-          </Box>
+      <CardContent sx={{ p: 2 }}>
+        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
+          <Typography variant="h6" component="h2" sx={{ fontWeight: 400, fontSize: '18px' }}>
+            {description.title}
+          </Typography>
+          <Chip
+            label={isSuccess ? 'Success' : 'Failed'}
+            size="small"
+            sx={{
+              fontSize: '10px',
+              height: '18px',
+              px: 0.5,
+              backgroundColor: alpha(isSuccess ? '#10b981' : '#ef4444', 0.08),
+              color: isSuccess ? '#10b981' : '#ef4444',
+              border: `1px solid ${alpha(isSuccess ? '#10b981' : '#ef4444', 0.15)}`,
+              fontWeight: 400
+            }}
+          />
         </Stack>
 
-        {(Amount || deliveredAmount) && (
-          <Box
-            p={1.5}
-            sx={{
-              background: alpha(theme.palette.divider, 0.04),
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              borderRadius: '8px',
-              mt: 1.5
-            }}
-          >
-            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
-              Amount
-            </Typography>
-            <Box mt={0.5}>
-              <AmountDisplay amount={deliveredAmount || Amount} variant="h6" />
-            </Box>
-          </Box>
-        )}
+        <Box
+          sx={{
+            display: 'grid',
+            gridTemplateColumns: { xs: '1fr', sm: 'auto 1fr auto 1fr' },
+            gap: 1.5,
+            alignItems: 'center'
+          }}
+        >
+          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
+            Hash
+          </Typography>
+          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px', wordBreak: 'break-all' }}>
+            {hash}
+          </Typography>
+
+          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
+            Time
+          </Typography>
+          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+            {formatDistanceToNow(new Date(rippleTimeToISO8601(date)))} ago
+          </Typography>
+
+          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
+            Ledger
+          </Typography>
+          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+            #{ledger_index.toLocaleString()}
+          </Typography>
+
+          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
+            Fee
+          </Typography>
+          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+            {dropsToXrp(Fee)} XRP
+          </Typography>
+        </Box>
       </CardContent>
     </Card>
   );
@@ -1739,9 +1901,7 @@ const TransactionSummaryCard = ({ txData }) => {
 
 const TransactionDetails = ({ txData }) => {
   const theme = useTheme();
-  const [moreVisible, setMoreVisible] = useState(false);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [rawVisible, setRawVisible] = useState(false);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
 
@@ -1813,6 +1973,23 @@ const TransactionDetails = ({ txData }) => {
     navigator.clipboard.writeText(hash);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const copyForLLM = () => {
+    // Copy the complete raw transaction data from rippled
+    const rawTxData = {
+      ...txData,
+      // Add human-readable timestamp
+      date_human: rippleTimeToISO8601(date),
+      // Ensure meta is included
+      meta: meta
+    };
+
+    const jsonString = JSON.stringify(rawTxData, null, 2);
+
+    navigator.clipboard.writeText(jsonString);
+    setUrlCopied(true);
+    setTimeout(() => setUrlCopied(false), 2000);
   };
 
   const getCurrency = (amount) => {
@@ -2315,14 +2492,45 @@ const TransactionDetails = ({ txData }) => {
           border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Typography variant="h6" sx={{ wordBreak: 'break-all', mr: 1.5, fontWeight: 400 }}>
-            Transaction Details
-          </Typography>
-          <Tooltip title={copied ? 'Copied!' : 'Copy Hash'}>
-            <IconButton onClick={copyToClipboard} size="small" aria-label="Copy transaction hash">
-              <FileCopyOutlinedIcon fontSize="small" />
-            </IconButton>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Typography variant="h6" sx={{ wordBreak: 'break-all', mr: 1.5, fontWeight: 400 }}>
+              Transaction Details
+            </Typography>
+            <Tooltip title={copied ? 'Copied!' : 'Copy Hash'}>
+              <IconButton onClick={copyToClipboard} size="small" aria-label="Copy transaction hash">
+                <FileCopyOutlinedIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <Tooltip title={urlCopied ? 'Copied!' : 'Copy for LLM'}>
+            <Box
+              component="button"
+              onClick={copyForLLM}
+              aria-label="Copy transaction summary for LLM"
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 0.5,
+                px: 1.2,
+                py: 0.6,
+                fontSize: '11px',
+                fontWeight: 400,
+                color: '#4285f4',
+                backgroundColor: 'transparent',
+                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                borderRadius: '8px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                '&:hover': {
+                  backgroundColor: alpha('#4285f4', 0.04),
+                  borderColor: '#4285f4'
+                }
+              }}
+            >
+              <FileCopyOutlinedIcon sx={{ fontSize: '14px' }} />
+              Copy for LLM
+            </Box>
           </Tooltip>
         </Box>
 
@@ -2337,10 +2545,10 @@ const TransactionDetails = ({ txData }) => {
                 borderRadius: '8px'
               }}
             >
-              <Typography variant="subtitle2" gutterBottom sx={{ fontWeight: 400, fontSize: '14px' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
                 Key Information
               </Typography>
-              <Stack spacing={2}>
+              <Stack spacing={1.5}>
                 <DetailRow label="Type">
                   <Chip
                     label={
@@ -2354,58 +2562,21 @@ const TransactionDetails = ({ txData }) => {
                               ? 'Currency Conversion'
                               : TransactionType
                     }
-                    color="primary"
-                    variant="outlined"
+                    size="small"
+                    sx={{
+                      fontSize: '10px',
+                      height: '18px',
+                      px: 0.5,
+                      backgroundColor: alpha('#4285f4', 0.06),
+                      color: '#4285f4',
+                      border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                      fontWeight: 400
+                    }}
                   />
                 </DetailRow>
 
-                <DetailRow label="Accounts">
-                  <Stack spacing={1}>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <AccountAvatar account={Account} />
-                      <Link href={`/profile/${Account}`} passHref>
-                        <Typography
-                          component="a"
-                          variant="body2"
-                          sx={{
-                            color: theme.palette.primary.main,
-                            textDecoration: 'none',
-                            '&:hover': { textDecoration: 'underline' }
-                          }}
-                        >
-                          {Account}
-                        </Typography>
-                      </Link>
-                      <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                        (Initiator)
-                      </Typography>
-                    </Box>
-                    {Destination && Account !== Destination && (
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <AccountAvatar account={Destination} />
-                        <Link href={`/profile/${Destination}`} passHref>
-                          <Typography
-                            component="a"
-                            variant="body2"
-                            sx={{
-                              color: theme.palette.primary.main,
-                              textDecoration: 'none',
-                              '&:hover': { textDecoration: 'underline' }
-                            }}
-                          >
-                            {Destination}
-                          </Typography>
-                        </Link>
-                        <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                          (Destination)
-                        </Typography>
-                      </Box>
-                    )}
-                  </Stack>
-                </DetailRow>
-
-                <DetailRow label="Full Timestamp">
-                  <Typography variant="body2" color="text.secondary">
+                <DetailRow label="Timestamp">
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>
                     {new Date(rippleTimeToISO8601(date)).toLocaleString()}
                   </Typography>
                 </DetailRow>
@@ -2414,16 +2585,18 @@ const TransactionDetails = ({ txData }) => {
                 {TransactionType === 'Payment' && (
                   <>
                     {isConversion && Account === Destination ? (
-                      <DetailRow label="Address">
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <DetailRow label="Account">
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                           <AccountAvatar account={Account} />
                           <Link href={`/profile/${Account}`} passHref>
                             <Typography
                               component="a"
-                              variant="body1"
+                              variant="body2"
                               sx={{
                                 color: theme.palette.primary.main,
                                 textDecoration: 'none',
+                                fontFamily: 'monospace',
+                                fontSize: '13px',
                                 '&:hover': { textDecoration: 'underline' }
                               }}
                             >
@@ -2434,16 +2607,18 @@ const TransactionDetails = ({ txData }) => {
                       </DetailRow>
                     ) : (
                       <>
-                        <DetailRow label="Source">
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <DetailRow label="From">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <AccountAvatar account={Account} />
                             <Link href={`/profile/${Account}`} passHref>
                               <Typography
                                 component="a"
-                                variant="body1"
+                                variant="body2"
                                 sx={{
                                   color: theme.palette.primary.main,
                                   textDecoration: 'none',
+                                  fontFamily: 'monospace',
+                                  fontSize: '13px',
                                   '&:hover': { textDecoration: 'underline' }
                                 }}
                               >
@@ -2452,16 +2627,18 @@ const TransactionDetails = ({ txData }) => {
                             </Link>
                           </Box>
                         </DetailRow>
-                        <DetailRow label="Destination">
-                          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <DetailRow label="To">
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                             <AccountAvatar account={Destination} />
                             <Link href={`/profile/${Destination}`} passHref>
                               <Typography
                                 component="a"
-                                variant="body1"
+                                variant="body2"
                                 sx={{
                                   color: theme.palette.primary.main,
                                   textDecoration: 'none',
+                                  fontFamily: 'monospace',
+                                  fontSize: '13px',
                                   '&:hover': { textDecoration: 'underline' }
                                 }}
                               >
@@ -2474,7 +2651,7 @@ const TransactionDetails = ({ txData }) => {
                     )}
 
                     {!isConversion ? (
-                      <DetailRow label={deliveredAmount ? 'Delivered Amount' : 'Amount'}>
+                      <DetailRow label="Amount">
                         <AmountDisplay amount={deliveredAmount || Amount} />
                       </DetailRow>
                     ) : (
@@ -2486,13 +2663,8 @@ const TransactionDetails = ({ txData }) => {
                       )
                     )}
                     {SendMax && (
-                      <DetailRow label="Max amount">
-                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Typography variant="body2" sx={{ mr: 1 }}>
-                            It was instructed to spend up to
-                          </Typography>
-                          <AmountDisplay amount={SendMax} />
-                        </Box>
+                      <DetailRow label="Max Spend">
+                        <AmountDisplay amount={SendMax} />
                       </DetailRow>
                     )}
                   </>
@@ -3725,93 +3897,84 @@ const TransactionDetails = ({ txData }) => {
             <Grid size={{ xs: 12 }}>
               <Box
                 sx={{
-                  p: 3,
-                  background: 'transparent',
-                  backdropFilter: 'none',
-                  WebkitBackdropFilter: 'none',
+                  p: 2,
+                  background: alpha(theme.palette.divider, 0.04),
                   border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  borderRadius: 2
+                  borderRadius: '8px'
                 }}
               >
-                <Typography variant="h6" gutterBottom>
-                  Affected Accounts ({balanceChanges.length})
+                <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+                  Balance Changes ({balanceChanges.length})
                 </Typography>
-                <Stack spacing={2}>
-                  {balanceChanges.map(({ account, changes }, index) => (
-                    <Card
+                <Stack spacing={1.5}>
+                  {balanceChanges.map(({ account, changes }) => (
+                    <Box
                       key={account}
-                      elevation={0}
                       sx={{
-                        p: 2,
-                        background: 'transparent',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`
+                        display: 'flex',
+                        alignItems: 'flex-start',
+                        gap: 2,
+                        flexWrap: 'wrap'
                       }}
                     >
-                      <Stack
-                        direction={{ xs: 'column', sm: 'row' }}
-                        spacing={2}
-                        alignItems="flex-start"
-                      >
-                        <Box sx={{ display: 'flex', alignItems: 'center', minWidth: 200 }}>
-                          <AccountAvatar account={account} />
-                          <Box ml={1}>
-                            <Link href={`/profile/${account}`} passHref>
-                              <Typography
-                                component="a"
-                                variant="body2"
-                                fontWeight="medium"
-                                sx={{
-                                  color: theme.palette.primary.main,
-                                  textDecoration: 'none',
-                                  '&:hover': { textDecoration: 'underline' }
-                                }}
-                              >
-                                {account === Account ? 'Initiator' : `Account ${index + 1}`}
-                              </Typography>
-                            </Link>
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{ display: 'block', wordBreak: 'break-all' }}
-                            >
-                              {account}
-                            </Typography>
-                          </Box>
-                        </Box>
-                        <Box flex={1}>
-                          <Stack spacing={1}>
-                            {changes.map((change) => {
-                              const isPositive = new Decimal(change.value).isPositive();
-                              const sign = isPositive ? '+' : '';
-                              const color = isPositive ? 'success.main' : 'error.main';
-                              const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: '300px', flex: 1 }}>
+                        <AccountAvatar account={account} />
+                        <Link href={`/profile/${account}`} passHref>
+                          <Typography
+                            component="a"
+                            variant="body2"
+                            sx={{
+                              color: theme.palette.primary.main,
+                              textDecoration: 'none',
+                              fontFamily: 'monospace',
+                              fontSize: '13px',
+                              wordBreak: 'break-all',
+                              '&:hover': { textDecoration: 'underline' }
+                            }}
+                          >
+                            {account}
+                          </Typography>
+                        </Link>
+                      </Box>
+                      <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
+                        {changes.map((change) => {
+                          const isPositive = new Decimal(change.value).isPositive();
+                          const sign = isPositive ? '+' : '';
+                          const color = isPositive ? '#10b981' : '#ef4444';
+                          const changeKey = `${change.currency}-${change.issuer || 'XRP'}-${change.value}`;
 
-                              return (
-                                <Box
-                                  key={changeKey}
-                                  sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                                >
-                                  <Typography variant="body2" color={color} fontWeight="medium">
-                                    {sign}
-                                    {formatDecimal(new Decimal(change.value))}
-                                  </Typography>
-                                  {change.currency === 'XRP' ? (
-                                    <XrpDisplay variant="body2" />
-                                  ) : (
-                                    <TokenDisplay
-                                      slug={`${change.issuer}-${change.rawCurrency}`}
-                                      currency={change.currency}
-                                      rawCurrency={change.rawCurrency}
-                                      variant="body2"
-                                    />
-                                  )}
-                                </Box>
-                              );
-                            })}
-                          </Stack>
-                        </Box>
-                      </Stack>
-                    </Card>
+                          return (
+                            <Box
+                              key={changeKey}
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 0.5,
+                                px: 1,
+                                py: 0.5,
+                                backgroundColor: alpha(color, 0.08),
+                                border: `1px solid ${alpha(color, 0.15)}`,
+                                borderRadius: '6px'
+                              }}
+                            >
+                              <Typography variant="body2" sx={{ color, fontWeight: 500, fontSize: '13px' }}>
+                                {sign}{formatDecimal(new Decimal(change.value))}
+                              </Typography>
+                              {change.currency === 'XRP' ? (
+                                <XrpDisplay variant="body2" showText={true} />
+                              ) : (
+                                <TokenDisplay
+                                  slug={`${change.issuer}-${change.rawCurrency}`}
+                                  currency={change.currency}
+                                  rawCurrency={change.rawCurrency}
+                                  variant="body2"
+                                />
+                              )}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </Box>
                   ))}
                 </Stack>
               </Box>
@@ -3965,91 +4128,81 @@ const TransactionDetails = ({ txData }) => {
           </Grid>
         </Grid>
 
-        {/* Advanced Details Accordion */}
-        <Accordion
-          expanded={moreVisible}
-          onChange={() => setMoreVisible(!moreVisible)}
+        {/* Advanced Details */}
+        <Box
           sx={{
-            background: 'transparent',
-            boxShadow: 'none',
-            '&:before': { display: 'none' },
-            mt: 3
+            mt: 2,
+            p: 2,
+            background: alpha(theme.palette.divider, 0.04),
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            borderRadius: '8px'
           }}
         >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon />}
-            sx={{
-              backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              borderRadius: 2,
-              '&:hover': {
-                backgroundColor: 'transparent'
-              }
-            }}
-          >
-            <Typography fontWeight="medium">Advanced Details</Typography>
-          </AccordionSummary>
-          <AccordionDetails sx={{ p: 0, pt: 2 }}>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-              <Tabs value={selectedTab} onChange={handleTabChange}>
-                <Tab label="Additional Data" />
-                <Tab label="Raw Data" />
-                <Tab label="Metadata" />
-              </Tabs>
-            </Box>
-            <TabPanel value={selectedTab} index={0}>
-              <Stack spacing={2}>
-                <DetailRow label="Flags value">
-                  <Chip label={Flags} variant="outlined" size="small" />
-                </DetailRow>
-                <DetailRow label="Sequence">
-                  <Typography variant="body1">#{Sequence}</Typography>
-                </DetailRow>
-                {TransactionType === 'OfferCreate' && (
-                  <DetailRow label="Compact Tx ID">
-                    <Typography variant="body1" sx={{ fontFamily: 'monospace' }}>
-                      {ctid}
-                    </Typography>
-                  </DetailRow>
-                )}
-                <DetailRow label="Last ledger">
-                  <Typography variant="body1">
-                    #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
+          <Box sx={{ borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+            <Tabs
+              value={selectedTab}
+              onChange={handleTabChange}
+              sx={{
+                minHeight: '40px',
+                '& .MuiTab-root': {
+                  minHeight: '40px',
+                  fontSize: '13px',
+                  fontWeight: 400,
+                  textTransform: 'none'
+                }
+              }}
+            >
+              <Tab label="Additional Data" />
+              <Tab label="Raw Data" />
+              <Tab label="Metadata" />
+            </Tabs>
+          </Box>
+          <TabPanel value={selectedTab} index={0}>
+            <Stack spacing={1.5}>
+              <DetailRow label="Flags">
+                <Chip
+                  label={Flags}
+                  size="small"
+                  sx={{
+                    fontSize: '10px',
+                    height: '18px',
+                    px: 0.5,
+                    backgroundColor: alpha('#4285f4', 0.06),
+                    color: '#4285f4',
+                    border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                    fontWeight: 400
+                  }}
+                />
+              </DetailRow>
+              <DetailRow label="Sequence">
+                <Typography variant="body2" sx={{ fontSize: '13px' }}>#{Sequence}</Typography>
+              </DetailRow>
+              {TransactionType === 'OfferCreate' && (
+                <DetailRow label="CTID">
+                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>
+                    {ctid}
                   </Typography>
                 </DetailRow>
-                {SourceTag && (
-                  <DetailRow label="Source Tag">
-                    <Typography variant="body1">{SourceTag}</Typography>
-                  </DetailRow>
-                )}
-              </Stack>
-            </TabPanel>
-            <TabPanel value={selectedTab} index={1}>
-              <Box
-                sx={{
-                  p: 2,
-                  background: 'transparent',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  borderRadius: 2
-                }}
-              >
-                <JsonViewer data={rawData} />
-              </Box>
-            </TabPanel>
-            <TabPanel value={selectedTab} index={2}>
-              <Box
-                sx={{
-                  p: 2,
-                  background: 'transparent',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  borderRadius: 2
-                }}
-              >
-                <JsonViewer data={meta} />
-              </Box>
-            </TabPanel>
-          </AccordionDetails>
-        </Accordion>
+              )}
+              <DetailRow label="Last Ledger">
+                <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                  #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
+                </Typography>
+              </DetailRow>
+              {SourceTag && (
+                <DetailRow label="Source Tag">
+                  <Typography variant="body2" sx={{ fontSize: '13px' }}>{SourceTag}</Typography>
+                </DetailRow>
+              )}
+            </Stack>
+          </TabPanel>
+          <TabPanel value={selectedTab} index={1}>
+            <JsonViewer data={rawData} />
+          </TabPanel>
+          <TabPanel value={selectedTab} index={2}>
+            <JsonViewer data={meta} />
+          </TabPanel>
+        </Box>
       </Box>
     </Box>
   );

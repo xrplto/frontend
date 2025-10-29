@@ -597,24 +597,38 @@ const OverView = ({ account }) => {
                   actionColor = '#ef4444';
                 } else if (txData.TransactionType === 'Payment') {
                   const isSender = txData.Account === account;
-                  if (txData.SendMax && meta?.delivered_amount) {
-                    const sendIsXRP = typeof txData.SendMax === 'string';
-                    const deliveredIsXRP = typeof meta.delivered_amount === 'string';
-                    if (sendIsXRP && !deliveredIsXRP) {
-                      const curr = decodeCurrency(meta.delivered_amount.currency);
-                      const amt = parseFloat(meta.delivered_amount.value);
-                      actionDesc = `Swapped XRP for ${fCurrency5(amt)} ${curr}`;
-                      actionColor = '#10b981';
-                    } else if (!sendIsXRP && deliveredIsXRP) {
-                      const curr = decodeCurrency(txData.SendMax.currency);
-                      const amt = parseInt(meta.delivered_amount) / 1000000;
-                      actionDesc = `Swapped ${curr} for ${fCurrency5(amt)} XRP`;
-                      actionColor = '#10b981';
-                    } else {
-                      actionDesc = isSender ? `Sent to ${txData.Destination.substring(0, 8)}...` : `Received from ${txData.Account.substring(0, 8)}...`;
+
+                  // Check for dusting attack (incoming XRP < 0.001)
+                  if (!isSender && typeof txData.Amount === 'string') {
+                    const drops = parseInt(txData.Amount);
+                    if (drops < 1000) {
+                      actionDesc = `Dusting attack from ${txData.Account.substring(0, 8)}...`;
+                      actionColor = '#ef4444';
                     }
-                  } else {
-                    actionDesc = isSender ? `Sent to ${txData.Destination?.substring(0, 8)}...` : `Received from ${txData.Account?.substring(0, 8)}...`;
+                  }
+
+                  if (!actionDesc) {
+                    if (txData.SendMax && meta?.delivered_amount) {
+                      const sendIsXRP = typeof txData.SendMax === 'string';
+                      const deliveredIsXRP = typeof meta.delivered_amount === 'string';
+                      if (sendIsXRP && !deliveredIsXRP) {
+                        const xrpAmt = parseInt(txData.SendMax) / 1000000;
+                        const curr = decodeCurrency(meta.delivered_amount.currency);
+                        const tokenAmt = parseFloat(meta.delivered_amount.value);
+                        actionDesc = `Swapped ${fCurrency5(xrpAmt)} XRP → ${fCurrency5(tokenAmt)} ${curr}`;
+                        actionColor = '#10b981';
+                      } else if (!sendIsXRP && deliveredIsXRP) {
+                        const curr = decodeCurrency(txData.SendMax.currency);
+                        const tokenAmt = parseFloat(txData.SendMax.value);
+                        const xrpAmt = parseInt(meta.delivered_amount) / 1000000;
+                        actionDesc = `Swapped ${fCurrency5(tokenAmt)} ${curr} → ${fCurrency5(xrpAmt)} XRP`;
+                        actionColor = '#10b981';
+                      } else {
+                        actionDesc = isSender ? `Sent to ${txData.Destination.substring(0, 8)}...` : `Received from ${txData.Account.substring(0, 8)}...`;
+                      }
+                    } else {
+                      actionDesc = isSender ? `Sent to ${txData.Destination?.substring(0, 8)}...` : `Received from ${txData.Account?.substring(0, 8)}...`;
+                    }
                   }
                 } else if (txData.TransactionType === 'TrustSet') {
                   const curr = decodeCurrency(txData.LimitAmount?.currency);
@@ -622,20 +636,43 @@ const OverView = ({ account }) => {
                   actionDesc = limit === 0 ? `Removed trust line for ${curr}` : `Set trust line for ${curr}`;
                   actionColor = limit === 0 ? '#ef4444' : '#10b981';
                 } else if (txData.TransactionType === 'NFTokenMint') {
-                  actionDesc = 'Minted NFT';
+                  const nftId = txData.NFTokenID || (meta?.nftoken_id);
+                  const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
+                  actionDesc = shortId ? `Minted NFT ${shortId}` : 'Minted NFT';
                   actionColor = '#10b981';
                 } else if (txData.TransactionType === 'NFTokenBurn') {
-                  actionDesc = 'Burned NFT';
+                  const nftId = txData.NFTokenID;
+                  const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
+                  actionDesc = shortId ? `Burned NFT ${shortId}` : 'Burned NFT';
                   actionColor = '#ef4444';
                 } else if (txData.TransactionType === 'NFTokenCreateOffer') {
                   const isSellOffer = txData.Flags & 1;
-                  actionDesc = isSellOffer ? 'Created sell offer for NFT' : 'Created buy offer for NFT';
+                  const nftId = txData.NFTokenID;
+                  const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
+                  const amt = txData.Amount ? (typeof txData.Amount === 'string' ? parseInt(txData.Amount) / 1000000 : parseFloat(txData.Amount.value)) : null;
+                  if (isSellOffer && amt && shortId) {
+                    actionDesc = `Listed NFT ${shortId} for ${fCurrency5(amt)} XRP`;
+                  } else if (isSellOffer) {
+                    actionDesc = shortId ? `Listed NFT ${shortId}` : 'Created sell offer';
+                  } else {
+                    actionDesc = shortId ? `Offered to buy NFT ${shortId}` : 'Created buy offer';
+                  }
                   actionColor = '#4285f4';
                 } else if (txData.TransactionType === 'NFTokenAcceptOffer') {
-                  actionDesc = 'Accepted NFT offer';
+                  const nftId = txData.NFTokenID || (meta?.nftoken_id);
+                  const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
+                  actionDesc = shortId ? `Accepted offer for NFT ${shortId}` : 'Accepted NFT offer';
                   actionColor = '#10b981';
                 } else if (txData.TransactionType === 'NFTokenCancelOffer') {
-                  actionDesc = 'Cancelled NFT offer';
+                  const offers = txData.NFTokenOffers || [];
+                  if (offers.length === 1) {
+                    const shortId = `${offers[0].substring(0, 8)}...${offers[0].substring(offers[0].length - 4)}`;
+                    actionDesc = `Cancelled offer ${shortId}`;
+                  } else if (offers.length > 1) {
+                    actionDesc = `Cancelled ${offers.length} NFT offers`;
+                  } else {
+                    actionDesc = 'Cancelled NFT offer';
+                  }
                   actionColor = '#ef4444';
                 } else {
                   actionDesc = txData.TransactionType.replace(/([A-Z])/g, ' $1').trim();
