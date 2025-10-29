@@ -136,6 +136,9 @@ function SearchModal({ open, onClose }) {
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
 
+  // Consistent border style (memoized to prevent flicker)
+  const borderColor = useMemo(() => alpha(theme.palette.divider, 0.15), [theme]);
+
   // Convert XRP price to selected currency (exch is in XRP)
   const convertPrice = useCallback((xrpPrice) => {
     if (activeFiatCurrency === 'XRP') {
@@ -327,10 +330,10 @@ function SearchModal({ open, onClose }) {
       overflow: 'hidden',
       borderRadius: { xs: 0, sm: '12px' },
       background: theme.palette.background.paper,
-      border: { xs: 'none', sm: `1.5px solid ${alpha(theme.palette.divider, 0.2)}` },
+      border: { xs: 'none', sm: `1.5px solid ${borderColor}` },
       boxShadow: 'none'
     }),
-    [theme]
+    [theme, borderColor]
   );
 
   return (
@@ -346,7 +349,7 @@ function SearchModal({ open, onClose }) {
         <Box
           sx={{
             p: 2,
-            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+            borderBottom: `1.5px solid ${borderColor}`,
             backgroundColor: 'transparent'
           }}
         >
@@ -437,7 +440,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                border: `1.5px solid ${borderColor}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -462,7 +465,7 @@ function SearchModal({ open, onClose }) {
                               height: 22,
                               fontSize: '11px',
                               fontWeight: 400,
-                              borderColor: alpha(theme.palette.divider, 0.15)
+                              borderColor
                             }}
                           />
                         </ListItemButton>
@@ -509,7 +512,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                border: `1.5px solid ${borderColor}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -593,7 +596,7 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                                border: `1.5px solid ${borderColor}`,
                                 backgroundColor: 'transparent'
                               }}
                               imgProps={{ loading: 'lazy', decoding: 'async' }}
@@ -694,7 +697,7 @@ function SearchModal({ open, onClose }) {
                             sx={{
                               width: 36,
                               height: 36,
-                              border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+                              border: `1.5px solid ${borderColor}`,
                               backgroundColor: 'transparent'
                             }}
                             imgProps={{ loading: 'lazy', decoding: 'async' }}
