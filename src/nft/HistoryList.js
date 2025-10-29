@@ -16,7 +16,8 @@ import {
   Typography,
   Paper,
   Chip,
-  Skeleton
+  Skeleton,
+  Button
 } from '@mui/material';
 import { styled, alpha } from '@mui/material/styles';
 
@@ -67,17 +68,43 @@ const TransactionCard = styled(Paper)(({ theme }) => ({
   border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
 }));
 
+const getTypeColor = (type, theme) => {
+  const colors = {
+    SALE: '#10b981',
+    MINT: '#8b5cf6',
+    TRANSFER: '#3b82f6',
+    CREATE_BUY_OFFER: alpha(theme.palette.text.secondary, 0.4),
+    CREATE_SELL_OFFER: alpha(theme.palette.text.secondary, 0.4),
+    CANCEL_BUY_OFFER: alpha(theme.palette.text.secondary, 0.3),
+    CANCEL_SELL_OFFER: alpha(theme.palette.text.secondary, 0.3)
+  };
+  return colors[type] || alpha(theme.palette.text.secondary, 0.5);
+};
+
+const getTypeLabel = (type) => {
+  const labels = {
+    SALE: 'Sale',
+    MINT: 'Mint',
+    TRANSFER: 'Transfer',
+    CREATE_BUY_OFFER: 'Buy Offer',
+    CREATE_SELL_OFFER: 'Sell Offer',
+    CANCEL_BUY_OFFER: 'Cancel Buy',
+    CANCEL_SELL_OFFER: 'Cancel Sell'
+  };
+  return labels[type] || type;
+};
+
 const TypeChip = styled(Chip, {
   shouldForwardProp: (prop) => prop !== 'transactionType'
 })(({ theme, transactionType }) => ({
-  height: 20,
+  height: 22,
   fontSize: '0.75rem',
   fontWeight: 400,
-  backgroundColor: 'transparent',
-  color: alpha(theme.palette.text.secondary, 0.7),
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  backgroundColor: alpha(getTypeColor(transactionType, theme), 0.08),
+  color: getTypeColor(transactionType, theme),
+  border: 'none',
   '& .MuiChip-label': {
-    padding: '0 8px'
+    padding: '0 10px'
   }
 }));
 
@@ -92,7 +119,7 @@ const AddressLink = styled(Link)(({ theme }) => ({
 }));
 
 const PriceText = styled(Typography)(({ theme }) => ({
-  fontWeight: 500,
+  fontWeight: 400,
   fontSize: '0.9rem',
   color: theme.palette.text.primary,
   fontFamily: 'monospace'
@@ -149,6 +176,7 @@ export default function HistoryList({ nft }) {
   const { sync } = useContext(AppContext);
   const [hists, setHists] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showAll, setShowAll] = useState(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
   useEffect(() => {
@@ -171,6 +199,20 @@ export default function HistoryList({ nft }) {
     getHistories();
   }, [sync, nft.NFTokenID]);
 
+  // Filter out noisy transactions unless showAll is true
+  const importantTypes = ['SALE', 'MINT', 'TRANSFER'];
+  const filteredHists = showAll
+    ? hists
+    : hists.filter(h => importantTypes.includes(h.type));
+
+  // Deduplicate by creating unique key from type + time + account/seller/buyer
+  const uniqueHists = filteredHists.filter((hist, index, self) => {
+    const key = `${hist.type}_${hist.time}_${hist.seller || hist.buyer || hist.account}`;
+    return index === self.findIndex(h =>
+      `${h.type}_${h.time}_${h.seller || h.buyer || h.account}` === key
+    );
+  });
+
   if (loading) {
     return (
       <StyledPaper elevation={0}>
@@ -187,10 +229,38 @@ export default function HistoryList({ nft }) {
     );
   }
 
-  const sortedHists = hists.slice().reverse();
+  const sortedHists = uniqueHists.slice().reverse();
+  const hasMoreTransactions = hists.length > filteredHists.length;
 
   return (
-    <StyledPaper elevation={0}>
+    <Stack spacing={1.5}>
+      {hasMoreTransactions && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => setShowAll(!showAll)}
+            sx={{
+              py: 0.5,
+              px: 1.5,
+              fontSize: '0.8rem',
+              fontWeight: 400,
+              textTransform: 'none',
+              borderColor: alpha(theme.palette.divider, 0.2),
+              borderRadius: '8px',
+              color: alpha(theme.palette.text.secondary, 0.7),
+              backgroundColor: 'transparent',
+              '&:hover': {
+                borderColor: alpha(theme.palette.divider, 0.4),
+                backgroundColor: alpha(theme.palette.divider, 0.04)
+              }
+            }}
+          >
+            {showAll ? 'Show Key Events' : 'Show All'}
+          </Button>
+        </Box>
+      )}
+      <StyledPaper elevation={0}>
       {isMobile ? (
         // Mobile view - Cards
         <Stack spacing={1} sx={{ p: 1.5 }}>
@@ -199,7 +269,7 @@ export default function HistoryList({ nft }) {
                 <Stack spacing={1.2}>
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
                     <TypeChip
-                      label={row.type}
+                      label={getTypeLabel(row.type)}
                       size="small"
                       transactionType={row.type}
                     />
@@ -228,11 +298,10 @@ export default function HistoryList({ nft }) {
                     {row.type === 'SALE' && (row.cost || row.costXRP) && (
                       <PriceText variant="body2">
                         {row.costXRP ? (
-                          <>✕ {fNumber(row.costXRP)} XRP</>
+                          <>{fNumber(row.costXRP)} XRP</>
                         ) : (
                           <>
-                            {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
-                            {normalizeCurrencyCode(row.cost.currency)}
+                            {fNumber(row.cost.amount)} {normalizeCurrencyCode(row.cost.currency)}
                           </>
                         )}
                       </PriceText>
@@ -259,7 +328,7 @@ export default function HistoryList({ nft }) {
                   <StyledTableRow key={row.uuid}>
                     <StyledTableCell>
                       <TypeChip
-                        label={row.type}
+                        label={getTypeLabel(row.type)}
                         size="small"
                         transactionType={row.type}
                       />
@@ -279,11 +348,10 @@ export default function HistoryList({ nft }) {
                       {row.type === 'SALE' && (row.cost || row.costXRP) ? (
                         <PriceText>
                           {row.costXRP ? (
-                            <>✕ {fNumber(row.costXRP)} XRP</>
+                            <>{fNumber(row.costXRP)} XRP</>
                           ) : (
                             <>
-                              {row.cost.currency === 'XRP' ? '✕' : ''} {fNumber(row.cost.amount)}{' '}
-                              {normalizeCurrencyCode(row.cost.currency)}
+                              {fNumber(row.cost.amount)} {normalizeCurrencyCode(row.cost.currency)}
                             </>
                           )}
                         </PriceText>
@@ -304,6 +372,7 @@ export default function HistoryList({ nft }) {
           </Table>
         </Box>
       )}
-    </StyledPaper>
+      </StyledPaper>
+    </Stack>
   );
 }

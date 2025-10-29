@@ -40,6 +40,7 @@ import WarningIcon from '@mui/icons-material/Warning';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import LaunchIcon from '@mui/icons-material/Launch';
 import PanToolIcon from '@mui/icons-material/PanTool';
+import LocalOfferIcon from '@mui/icons-material/LocalOffer';
 
 // Loader
 import { PuffLoader, PulseLoader } from '../components/Spinners';
@@ -1339,18 +1340,21 @@ export default function NFTActions({ nft }) {
               </AccordionDetails>
             </StyledAccordion>
 
-            <StyledAccordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.5) }} />}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
-                    History
-                  </Typography>
-                </Stack>
-              </AccordionSummary>
-              <AccordionDetails>
-                <HistoryList nft={nft} />
-              </AccordionDetails>
-            </StyledAccordion>
+            <Box>
+              <Typography
+                variant="h6"
+                sx={{
+                  fontSize: '0.9rem',
+                  fontWeight: 400,
+                  color: theme.palette.text.primary,
+                  mb: 1.2,
+                  px: 1
+                }}
+              >
+                History
+              </Typography>
+              <HistoryList nft={nft} />
+            </Box>
           </Stack>
         </Stack>
         <CreateOfferDialog
