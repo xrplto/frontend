@@ -497,44 +497,6 @@ export const XrplToLightTheme = createTheme({
           color: colors.info.dark,
           borderRadius: 4,
           padding: 4
-        },
-        '@keyframes pulse': {
-          '0%': {
-            transform: 'scale(.75)'
-          },
-          '20%': {
-            transform: 'scale(1.1)'
-          },
-          '40%': {
-            transform: 'scale(.75)'
-          },
-          '60%': {
-            transform: 'scale(1.05)'
-          },
-          '80%': {
-            transform: 'scale(.75)'
-          },
-          '100%': {
-            transform: 'scale(.75)'
-          }
-        },
-        '@keyframes ripple': {
-          '0%': {
-            transform: 'scale(.8)',
-            opacity: 1
-          },
-          '100%': {
-            transform: 'scale(2.8)',
-            opacity: 0
-          }
-        },
-        '@keyframes float': {
-          '0%': {
-            transform: 'translate(0%, 0%)'
-          },
-          '100%': {
-            transform: 'translate(3%, 3%)'
-          }
         }
       }
     },
@@ -552,7 +514,6 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 12,
-          transition: 'all 0.2s ease-in-out',
           '& .MuiInputAdornment-positionEnd.MuiInputAdornment-outlined': {
             paddingRight: 6
           },
@@ -706,8 +667,7 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         page: {
           fontSize: 13,
-          fontWeight: 500,
-          transition: 'all .2s'
+          fontWeight: 500
         },
         textPrimary: {
           '&.Mui-selected': {
@@ -730,20 +690,14 @@ export const XrplToLightTheme = createTheme({
         root: {
           fontWeight: 400,
           textTransform: 'none',
-          borderRadius: 12,
-          transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
-          willChange: 'transform',
-          '&:active': {
-            transform: 'scale(0.98)'
-          }
+          borderRadius: 12
         },
         contained: {
           backgroundColor: colors.primary.main,
           boxShadow: colors.shadows.cardSm,
           '&:hover': {
             backgroundColor: colors.primary.dark,
-            boxShadow: colors.shadows.card,
-            transform: 'translateY(-1px)'
+            boxShadow: colors.shadows.card
           },
           '&:focus': {
             boxShadow: `0 0 0 3px ${alpha(colors.primary.main, 0.3)}`
@@ -867,13 +821,7 @@ export const XrplToLightTheme = createTheme({
           background: colors.alpha.white[100],
           padding: 0,
           border: '1.5px solid #E2E8F0',
-          borderRadius: 12,
-          transition: 'border-color 0.15s ease, transform 0.15s ease',
-          willChange: 'transform',
-          '&:hover': {
-            borderColor: alpha('#147DFE', 0.3),
-            transform: 'translateY(-1px)'
-          }
+          borderRadius: 12
         },
         elevation0: {
           boxShadow: 'none',
@@ -934,8 +882,6 @@ export const XrplToLightTheme = createTheme({
           padding: 0,
 
           '& .MuiListItem-button': {
-            transition: 'all .2s',
-
             '& > .MuiSvgIcon-root': {
               minWidth: 34
             },
@@ -994,7 +940,6 @@ export const XrplToLightTheme = createTheme({
           fontWeight: 400,
           fontSize: '14px',
           color: themeColors.neutral[600],
-          transition: 'all 0.2s ease-in-out',
           marginRight: 2,
           minWidth: 'auto',
           '&.Mui-selected': {
@@ -1022,7 +967,6 @@ export const XrplToLightTheme = createTheme({
             fontSize: 14,
             marginTop: 1,
             marginBottom: 1,
-            transition: 'all .2s',
             color: colors.alpha.black[70],
 
             '& .MuiTouchRipple-root': {
@@ -1041,7 +985,6 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         root: {
           background: 'transparent',
-          transition: 'all .2s',
 
           '&:hover, &:active, &.active, &.Mui-selected': {
             color: colors.alpha.black[100],
@@ -1116,8 +1059,6 @@ export const XrplToLightTheme = createTheme({
       styleOverrides: {
         head: {},
         root: {
-          transition: 'background-color .2s',
-
           '&.MuiTableRow-hover:hover': {
             backgroundColor: colors.alpha.black[5]
           }
@@ -1221,9 +1162,7 @@ export const XrplToLightTheme = createTheme({
 
           '& .MuiButtonBase-root': {
             position: 'absolute',
-            padding: 6,
-            transition:
-              'left 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms,transform 150ms cubic-bezier(0.4, 0, 0.2, 1) 0ms'
+            padding: 6
           },
           '& .MuiIconButton-root': {
             borderRadius: 100

@@ -222,9 +222,7 @@ export const XrplToDarkTheme = createTheme({
           fontWeight: 500,
           textTransform: 'none',
           paddingLeft: 16,
-          paddingRight: 16,
-          transition: 'background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease',
-          willChange: 'transform'
+          paddingRight: 16
         },
         contained: {
           backgroundColor: themeColors.primary,
@@ -256,10 +254,7 @@ export const XrplToDarkTheme = createTheme({
           border: `1px solid ${alpha('#ffffff', 0.08)}`,
           backdropFilter: 'blur(40px) saturate(200%)',
           boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-          willChange: 'transform',
           '&:hover': {
-            transform: 'translateY(-4px)',
             boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
             borderColor: alpha('#ffffff', 0.12)
           }
@@ -277,10 +272,7 @@ export const XrplToDarkTheme = createTheme({
             ${alpha('#000000', 0.95)} 100%)`,
           backdropFilter: 'blur(40px) saturate(200%)',
           boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
-          transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
-          willChange: 'transform',
           '&:hover': {
-            transform: 'translateY(-4px)',
             boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
             borderColor: alpha(themeColors.primary, 0.5)
           }
@@ -366,8 +358,7 @@ export const XrplToDarkTheme = createTheme({
             borderRadius: '12px',
             '&:hover': {
               backgroundColor: alpha(themeColors.primary, 0.2),
-              borderColor: alpha(themeColors.primary, 0.6),
-              transform: 'scale(1.05)'
+              borderColor: alpha(themeColors.primary, 0.6)
             },
             '&.Mui-selected': {
               backgroundColor: themeColors.primary,
