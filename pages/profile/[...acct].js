@@ -507,21 +507,23 @@ const OverView = ({ account }) => {
                 const meta = tx.meta;
                 const date = new Date((txData.date + 946684800) * 1000);
                 const sourceTagMap = {
-                  101102979: 'xrp.cafe',
                   10011010: 'Magnetic',
+                  101102979: 'xrp.cafe',
                   74920348: 'First Ledger',
                   20221212: 'XPMarket',
                   69420589: 'Bidds',
                   110100111: 'Sologenic',
                   11782013: 'ANODEX',
                   20102305: 'Opulence',
+                  42697468: 'Bithomp',
                   13888813: 'Zerpmon',
                   100010010: 'StaticBit',
                   80085: 'Zerpaay',
                   4152544945: 'ArtDept.fun',
+                  510162502: 'Sonar Muse',
+                  80008000: 'Orchestra',
                   123321: 'BearBull Scalper',
                   411555: 'N/A',
-                  80008000: 'Orchestra',
                   19089388: 'Bot'
                 };
                 const sourceLabel = txData.SourceTag ? sourceTagMap[txData.SourceTag] || `Tag ${txData.SourceTag}` : '';
@@ -654,13 +656,25 @@ const OverView = ({ account }) => {
                     >
                       {tx.hash?.substring(0, 10)}...
                     </Typography>
-                    <Typography variant="caption" sx={{
-                      fontSize: '0.8rem',
-                      color: actionColor,
-                      fontWeight: 400
-                    }}>
-                      {actionDesc}
-                    </Typography>
+                    <Box>
+                      <Typography variant="caption" sx={{
+                        fontSize: '0.8rem',
+                        color: actionColor,
+                        fontWeight: 400,
+                        display: 'block'
+                      }}>
+                        {actionDesc}
+                      </Typography>
+                      {sourceLabel && (
+                        <Typography variant="caption" sx={{
+                          fontSize: '0.7rem',
+                          color: (theme) => alpha(theme.palette.text.secondary, 0.4),
+                          fontWeight: 400
+                        }}>
+                          via {sourceLabel}
+                        </Typography>
+                      )}
+                    </Box>
                     <Typography variant="caption" sx={{ fontSize: '0.8rem', textAlign: 'right', fontWeight: 400 }}>
                       {(() => {
                         if (txData.TransactionType === 'OfferCreate' || txData.TransactionType === 'OfferCancel') return '—';
