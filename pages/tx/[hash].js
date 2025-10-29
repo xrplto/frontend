@@ -16,8 +16,6 @@ import {
   Chip,
   IconButton,
   Tooltip,
-  Tabs,
-  Tab,
   Card,
   CardContent,
   Stack,
@@ -1055,22 +1053,6 @@ function getPaymentFlagExplanation(flags) {
   return explanations;
 }
 
-function TabPanel(props) {
-  const { children, value, index, ...other } = props;
-
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ pt: 2 }}>{children}</Box>}
-    </div>
-  );
-}
-
 const getTransactionDescription = (txData) => {
   const {
     TransactionType,
@@ -1901,7 +1883,6 @@ const TransactionSummaryCard = ({ txData }) => {
 
 const TransactionDetails = ({ txData }) => {
   const theme = useTheme();
-  const [selectedTab, setSelectedTab] = useState(0);
   const [copied, setCopied] = useState(false);
   const [urlCopied, setUrlCopied] = useState(false);
 
@@ -2452,10 +2433,6 @@ const TransactionDetails = ({ txData }) => {
     }
   }
 
-  const handleTabChange = (event, newValue) => {
-    setSelectedTab(newValue);
-  };
-
   const isSuccess = txResult === 'tesSUCCESS';
 
   let failureReason = {};
@@ -2559,7 +2536,7 @@ const TransactionDetails = ({ txData }) => {
                           : TransactionType === 'OfferCancel' && cancelledOffer
                             ? `Cancel ${cancelledOffer.Flags & 0x00080000 ? 'Sell' : 'Buy'} Order`
                             : isConversion
-                              ? 'Currency Conversion'
+                              ? 'Swap'
                               : TransactionType
                     }
                     size="small"
@@ -3757,135 +3734,168 @@ const TransactionDetails = ({ txData }) => {
 
                 {displayExchange && isSuccess && (
                   <>
-                    <DetailRow label="Exchanged">
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="body1" color="error.main">
-                          -{formatDecimal(new Decimal(displayExchange.paid.value))}
+                    <DetailRow label="Sold">
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          px: 1,
+                          py: 0.5,
+                          backgroundColor: alpha('#ef4444', 0.08),
+                          border: `1px solid ${alpha('#ef4444', 0.15)}`,
+                          borderRadius: '6px',
+                          width: 'fit-content'
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ color: '#ef4444', fontWeight: 500, fontSize: '13px' }}>
+                          {formatDecimal(new Decimal(displayExchange.paid.value))}
                         </Typography>
                         {displayExchange.paid.rawCurrency ? (
                           <TokenDisplay
                             slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
                             currency={displayExchange.paid.currency}
                             rawCurrency={displayExchange.paid.rawCurrency}
+                            variant="body2"
                           />
                         ) : (
-                          <AmountDisplay amount={displayExchange.paid.value} variant="body1" />
+                          <XrpDisplay variant="body2" showText={true} />
                         )}
                       </Box>
-                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Typography variant="body1" color="success.main">
-                          +{formatDecimal(new Decimal(displayExchange.got.value))}
+                    </DetailRow>
+                    <DetailRow label="Received">
+                      <Box
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.5,
+                          px: 1,
+                          py: 0.5,
+                          backgroundColor: alpha('#10b981', 0.08),
+                          border: `1px solid ${alpha('#10b981', 0.15)}`,
+                          borderRadius: '6px',
+                          width: 'fit-content'
+                        }}
+                      >
+                        <Typography variant="body2" sx={{ color: '#10b981', fontWeight: 500, fontSize: '13px' }}>
+                          {formatDecimal(new Decimal(displayExchange.got.value))}
                         </Typography>
                         {displayExchange.got.rawCurrency ? (
                           <TokenDisplay
                             slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
                             currency={displayExchange.got.currency}
                             rawCurrency={displayExchange.got.rawCurrency}
+                            variant="body2"
                           />
                         ) : (
-                          <Box sx={{ display: 'flex', alignItems: 'center', ml: 0.5 }}>
-                            <Avatar
-                              src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8"
-                              sx={{ width: 20, height: 20, mr: 0.5 }}
-                            />
-                            <Typography variant="body1" component="span">
-                              {displayExchange.got.currency}
-                            </Typography>
-                          </Box>
+                          <XrpDisplay variant="body2" showText={true} />
                         )}
                       </Box>
                     </DetailRow>
                     <DetailRow label="Rate">
-                      <Stack spacing={0.5}>
-                        {(() => {
-                          try {
-                            const paidValue = new Decimal(displayExchange.paid.value);
-                            const gotValue = new Decimal(displayExchange.got.value);
+                      {(() => {
+                        try {
+                          const paidValue = new Decimal(displayExchange.paid.value);
+                          const gotValue = new Decimal(displayExchange.got.value);
 
-                            if (paidValue.isZero() || gotValue.isZero()) {
-                              return (
-                                <Typography variant="body2" color="text.secondary">
-                                  Rate not available
-                                </Typography>
-                              );
-                            }
-
+                          if (paidValue.isZero() || gotValue.isZero()) {
                             return (
-                              <>
-                                <Typography variant="body2">
-                                  1 {displayExchange.got.currency} ={' '}
-                                  {(() => {
-                                    const rate = paidValue.div(gotValue);
-                                    return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
-                                  })()}{' '}
-                                  {displayExchange.paid.currency}
-                                </Typography>
-                                <Typography variant="body2">
-                                  1 {displayExchange.paid.currency} ={' '}
-                                  {(() => {
-                                    const rate = gotValue.div(paidValue);
-                                    return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
-                                  })()}{' '}
-                                  {displayExchange.got.currency}
-                                </Typography>
-                              </>
-                            );
-                          } catch (error) {
-                            return (
-                              <Typography variant="body2" color="text.secondary">
-                                Rate not available
+                              <Typography variant="body2" sx={{ fontSize: '13px', color: alpha(theme.palette.text.primary, 0.6) }}>
+                                N/A
                               </Typography>
                             );
                           }
-                        })()}
-                      </Stack>
+
+                          const rate = paidValue.div(gotValue);
+                          return (
+                            <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                              1 {displayExchange.got.currency} = {rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6)} {displayExchange.paid.currency}
+                            </Typography>
+                          );
+                        } catch (error) {
+                          return (
+                            <Typography variant="body2" sx={{ fontSize: '13px', color: alpha(theme.palette.text.primary, 0.6) }}>
+                              N/A
+                            </Typography>
+                          );
+                        }
+                      })()}
                     </DetailRow>
                   </>
                 )}
 
-                {flagExplanations.length > 0 && TransactionType === 'Payment' ? (
-                  flagExplanations.map((flag) => (
-                    <DetailRow key={flag.title} label={flag.title}>
-                      <Typography variant="body2">{flag.description}</Typography>
-                    </DetailRow>
-                  ))
-                ) : flagExplanations.length > 0 ? (
-                  <DetailRow label={TransactionType + ' Flags'}>
-                    {flagExplanations.map((text) => (
-                      <Typography key={text} variant="body2">
-                        {text}
-                      </Typography>
-                    ))}
+                {flagExplanations.length > 0 && (
+                  <DetailRow label="Flags">
+                    <Stack spacing={0.5}>
+                      {TransactionType === 'Payment' ? (
+                        flagExplanations.map((flag) => (
+                          <Chip
+                            key={flag.title}
+                            label={flag.title}
+                            size="small"
+                            sx={{
+                              fontSize: '10px',
+                              height: '18px',
+                              px: 0.5,
+                              backgroundColor: alpha('#f59e0b', 0.08),
+                              color: '#f59e0b',
+                              border: `1px solid ${alpha('#f59e0b', 0.15)}`,
+                              fontWeight: 400,
+                              width: 'fit-content'
+                            }}
+                          />
+                        ))
+                      ) : (
+                        flagExplanations.map((text) => (
+                          <Chip
+                            key={text}
+                            label={text}
+                            size="small"
+                            sx={{
+                              fontSize: '10px',
+                              height: '18px',
+                              px: 0.5,
+                              backgroundColor: alpha('#f59e0b', 0.08),
+                              color: '#f59e0b',
+                              border: `1px solid ${alpha('#f59e0b', 0.15)}`,
+                              fontWeight: 400,
+                              width: 'fit-content'
+                            }}
+                          />
+                        ))
+                      )}
+                    </Stack>
                   </DetailRow>
-                ) : null}
+                )}
 
                 {Memos && Memos.length > 0 && (
                   <DetailRow label="Memo">
-                    {Memos.map((memo) => {
-                      const decodeMemoHex = (hexString) => {
-                        if (!hexString) return null;
-                        try {
-                          // Convert hex to bytes, then decode as UTF-8
-                          const bytes = [];
-                          for (let i = 0; i < hexString.length; i += 2) {
-                            bytes.push(parseInt(hexString.substr(i, 2), 16));
+                    <Stack spacing={0.5}>
+                      {Memos.map((memo) => {
+                        const decodeMemoHex = (hexString) => {
+                          if (!hexString) return null;
+                          try {
+                            const bytes = [];
+                            for (let i = 0; i < hexString.length; i += 2) {
+                              bytes.push(parseInt(hexString.substr(i, 2), 16));
+                            }
+                            return new TextDecoder('utf-8').decode(new Uint8Array(bytes));
+                          } catch (err) {
+                            return hexString;
                           }
-                          return new TextDecoder('utf-8').decode(new Uint8Array(bytes));
-                        } catch (err) {
-                          return hexString;
-                        }
-                      };
+                        };
 
-                      const memoType = memo.Memo.MemoType && decodeMemoHex(memo.Memo.MemoType);
-                      const memoData = memo.Memo.MemoData && decodeMemoHex(memo.Memo.MemoData);
-                      const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
+                        const memoType = memo.Memo.MemoType && decodeMemoHex(memo.Memo.MemoType);
+                        const memoData = memo.Memo.MemoData && decodeMemoHex(memo.Memo.MemoData);
+                        const memoKey = `${memo.Memo.MemoType || ''}-${memo.Memo.MemoData || ''}`;
 
-                      return (
-                        <Typography key={memoKey} variant="body1" sx={{ wordBreak: 'break-all' }}>
-                          {[memoType, memoData].filter(Boolean).join(' ')}
-                        </Typography>
-                      );
-                    })}
+                        return (
+                          <Typography key={memoKey} variant="body2" sx={{ fontSize: '13px', wordBreak: 'break-all' }}>
+                            {[memoType, memoData].filter(Boolean).join(': ')}
+                          </Typography>
+                        );
+                      })}
+                    </Stack>
                   </DetailRow>
                 )}
               </Stack>
@@ -3981,111 +3991,6 @@ const TransactionDetails = ({ txData }) => {
             </Grid>
           )}
 
-          {/* Exchange Information */}
-          {displayExchange && isSuccess && (
-            <Grid size={{ xs: 12 }}>
-              <Box
-                sx={{
-                  p: 3,
-                  background: 'transparent',
-                  backdropFilter: 'none',
-                  WebkitBackdropFilter: 'none',
-                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                  borderRadius: 2
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Exchange Details
-                </Typography>
-                <Stack spacing={2}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Exchanged
-                    </Typography>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="body1" color="error.main" fontWeight="medium">
-                          -{formatDecimal(new Decimal(displayExchange.paid.value))}
-                        </Typography>
-                        {displayExchange.paid.rawCurrency ? (
-                          <TokenDisplay
-                            slug={`${displayExchange.paid.issuer}-${displayExchange.paid.rawCurrency}`}
-                            currency={displayExchange.paid.currency}
-                            rawCurrency={displayExchange.paid.rawCurrency}
-                          />
-                        ) : (
-                          <XrpDisplay variant="body1" />
-                        )}
-                      </Box>
-                      <SwapHorizIcon color="action" />
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <Typography variant="body1" color="success.main" fontWeight="medium">
-                          +{formatDecimal(new Decimal(displayExchange.got.value))}
-                        </Typography>
-                        {displayExchange.got.rawCurrency ? (
-                          <TokenDisplay
-                            slug={`${displayExchange.got.issuer}-${displayExchange.got.rawCurrency}`}
-                            currency={displayExchange.got.currency}
-                            rawCurrency={displayExchange.got.rawCurrency}
-                          />
-                        ) : (
-                          <XrpDisplay variant="body1" />
-                        )}
-                      </Box>
-                    </Stack>
-                  </Box>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Exchange Rate
-                    </Typography>
-                    <Stack spacing={0.5}>
-                      {(() => {
-                        try {
-                          const paidValue = new Decimal(displayExchange.paid.value);
-                          const gotValue = new Decimal(displayExchange.got.value);
-
-                          if (paidValue.isZero() || gotValue.isZero()) {
-                            return (
-                              <Typography variant="body2" color="text.secondary">
-                                Rate not available
-                              </Typography>
-                            );
-                          }
-
-                          return (
-                            <>
-                              <Typography variant="body2">
-                                1 {displayExchange.got.currency} ={' '}
-                                {(() => {
-                                  const rate = paidValue.div(gotValue);
-                                  return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
-                                })()}{' '}
-                                {displayExchange.paid.currency}
-                              </Typography>
-                              <Typography variant="body2">
-                                1 {displayExchange.paid.currency} ={' '}
-                                {(() => {
-                                  const rate = gotValue.div(paidValue);
-                                  return rate.toFixed(rate.lt(0.000001) ? 15 : rate.lt(0.01) ? 10 : 6);
-                                })()}{' '}
-                                {displayExchange.got.currency}
-                              </Typography>
-                            </>
-                          );
-                        } catch (error) {
-                          return (
-                            <Typography variant="body2" color="text.secondary">
-                              Rate not available
-                            </Typography>
-                          );
-                        }
-                      })()}
-                    </Stack>
-                  </Box>
-                </Stack>
-              </Box>
-            </Grid>
-          )}
 
           {/* Transaction Link */}
           <Grid size={{ xs: 12 }}>
@@ -4128,7 +4033,7 @@ const TransactionDetails = ({ txData }) => {
           </Grid>
         </Grid>
 
-        {/* Advanced Details */}
+        {/* Technical Details */}
         <Box
           sx={{
             mt: 2,
@@ -4138,70 +4043,82 @@ const TransactionDetails = ({ txData }) => {
             borderRadius: '8px'
           }}
         >
-          <Box sx={{ borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-            <Tabs
-              value={selectedTab}
-              onChange={handleTabChange}
-              sx={{
-                minHeight: '40px',
-                '& .MuiTab-root': {
-                  minHeight: '40px',
-                  fontSize: '13px',
-                  fontWeight: 400,
-                  textTransform: 'none'
-                }
-              }}
-            >
-              <Tab label="Additional Data" />
-              <Tab label="Raw Data" />
-              <Tab label="Metadata" />
-            </Tabs>
-          </Box>
-          <TabPanel value={selectedTab} index={0}>
-            <Stack spacing={1.5}>
-              <DetailRow label="Flags">
-                <Chip
-                  label={Flags}
-                  size="small"
-                  sx={{
-                    fontSize: '10px',
-                    height: '18px',
-                    px: 0.5,
-                    backgroundColor: alpha('#4285f4', 0.06),
-                    color: '#4285f4',
-                    border: `1px solid ${alpha('#4285f4', 0.15)}`,
-                    fontWeight: 400
-                  }}
-                />
-              </DetailRow>
-              <DetailRow label="Sequence">
-                <Typography variant="body2" sx={{ fontSize: '13px' }}>#{Sequence}</Typography>
-              </DetailRow>
-              {TransactionType === 'OfferCreate' && (
-                <DetailRow label="CTID">
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>
-                    {ctid}
-                  </Typography>
-                </DetailRow>
-              )}
-              <DetailRow label="Last Ledger">
-                <Typography variant="body2" sx={{ fontSize: '13px' }}>
-                  #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
+          <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+            Technical Details
+          </Typography>
+          <Stack spacing={1.5}>
+            <DetailRow label="Flags">
+              <Chip
+                label={Flags}
+                size="small"
+                sx={{
+                  fontSize: '10px',
+                  height: '18px',
+                  px: 0.5,
+                  backgroundColor: alpha('#4285f4', 0.06),
+                  color: '#4285f4',
+                  border: `1px solid ${alpha('#4285f4', 0.15)}`,
+                  fontWeight: 400
+                }}
+              />
+            </DetailRow>
+            <DetailRow label="Sequence">
+              <Typography variant="body2" sx={{ fontSize: '13px' }}>#{Sequence}</Typography>
+            </DetailRow>
+            {TransactionType === 'OfferCreate' && (
+              <DetailRow label="CTID">
+                <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px' }}>
+                  {ctid}
                 </Typography>
               </DetailRow>
-              {SourceTag && (
-                <DetailRow label="Source Tag">
-                  <Typography variant="body2" sx={{ fontSize: '13px' }}>{SourceTag}</Typography>
-                </DetailRow>
-              )}
-            </Stack>
-          </TabPanel>
-          <TabPanel value={selectedTab} index={1}>
+            )}
+            <DetailRow label="Last Ledger">
+              <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                #{LastLedgerSequence} ({LastLedgerSequence - ledger_index} ledgers)
+              </Typography>
+            </DetailRow>
+            {SourceTag && (
+              <DetailRow label="Source Tag">
+                <Typography variant="body2" sx={{ fontSize: '13px' }}>{SourceTag}</Typography>
+              </DetailRow>
+            )}
+          </Stack>
+        </Box>
+
+        {/* Raw Transaction Data */}
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            background: alpha(theme.palette.divider, 0.04),
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            borderRadius: '8px'
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+            Raw Transaction Data
+          </Typography>
+          <Box sx={{ mt: 1.5 }}>
             <JsonViewer data={rawData} />
-          </TabPanel>
-          <TabPanel value={selectedTab} index={2}>
+          </Box>
+        </Box>
+
+        {/* Transaction Metadata */}
+        <Box
+          sx={{
+            mt: 2,
+            p: 2,
+            background: alpha(theme.palette.divider, 0.04),
+            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            borderRadius: '8px'
+          }}
+        >
+          <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+            Transaction Metadata
+          </Typography>
+          <Box sx={{ mt: 1.5 }}>
             <JsonViewer data={meta} />
-          </TabPanel>
+          </Box>
         </Box>
       </Box>
     </Box>
