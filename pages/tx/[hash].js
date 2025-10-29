@@ -234,7 +234,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
     return (
       <Box sx={{ p: 2, minWidth: 320, maxWidth: 400 }}>
         <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-          <Avatar src={imageUrl} sx={{ mr: 2, width: 48, height: 48 }} />
+          <Avatar src={imageUrl} sx={{ mr: 1.5, width: 32, height: 32 }} />
           <Box>
             <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 500, mb: 0.5 }}>
               XRP
@@ -437,7 +437,7 @@ const TokenTooltipContent = ({ md5, tokenInfo, loading, error }) => {
   return (
     <Box sx={{ p: 2, minWidth: 320, maxWidth: 400 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-        {imageUrl && <Avatar src={imageUrl} sx={{ mr: 2, width: 48, height: 48 }} />}
+        {imageUrl && <Avatar src={imageUrl} sx={{ mr: 1.5, width: 32, height: 32 }} />}
         <Box>
           <Typography variant="h6" sx={{ fontSize: '18px', fontWeight: 500, mb: 0.5 }}>
             {token.name || token.user || 'Unknown Token'}
@@ -863,7 +863,7 @@ const AccountAvatar = ({ account }) => {
     setImgSrc(getHashIcon(account));
   };
 
-  return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 32, height: 32, mr: 1 }} />;
+  return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 20, height: 20, mr: 0.5 }} />;
 };
 
 const TokenDisplay = ({ slug, currency, rawCurrency, variant = 'body1' }) => {
