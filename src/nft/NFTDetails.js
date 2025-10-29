@@ -86,8 +86,7 @@ function Arrow(props) {
         transform: 'translateY(-50%)',
         [props.left ? 'left' : 'right']: 8,
         color: 'white',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        '&:hover': { backgroundColor: 'rgba(0, 0, 0, 0.7)' }
+        backgroundColor: 'rgba(0, 0, 0, 0.5)'
       }}
     >
       {props.left ? <ArrowBackIosNewIcon /> : <ArrowForwardIosIcon />}
@@ -551,7 +550,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         </Typography>
         <Stack direction="row" spacing={1} alignItems="center">
           {cslug && (
-            <Link href={`/collection/${cslug}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+            <Link href={`/collection/${cslug}`} underline="none" color="inherit">
               <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
                 {collectionName}
               </Typography>
@@ -661,7 +660,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
                 </IconButton>
               </Stack>
-              <Link href={`/profile/${account}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+              <Link href={`/profile/${account}`} underline="none" color="inherit">
                 <Value sx={{ fontSize: '13px', wordBreak: 'break-all', maxWidth: '100%', overflowWrap: 'break-word' }}>{account}</Value>
               </Link>
             </Box>
@@ -678,7 +677,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
               </IconButton>
             </Stack>
-            <Link href={`/profile/${issuer}`} underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+            <Link href={`/profile/${issuer}`} underline="none" color="inherit">
               <Value sx={{ fontSize: '13px', wordBreak: 'break-all', maxWidth: '100%', overflowWrap: 'break-word' }}>{issuer}</Value>
             </Link>
           </Box>
@@ -690,7 +689,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                 <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
               </IconButton>
             </Stack>
-            <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit" sx={{ '&:hover': { color: 'primary.main' } }}>
+            <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit">
               <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all', lineHeight: 1.2, maxWidth: '100%', overflowWrap: 'break-word' }}>{NFTokenID}</Value>
             </Link>
           </Box>

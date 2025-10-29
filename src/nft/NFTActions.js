@@ -325,10 +325,7 @@ const OwnerAddress = styled(Link)(({ theme }) => ({
   alignItems: 'center',
   gap: theme.spacing(1),
   color: theme.palette.text.primary,
-  textDecoration: 'none',
-  '&:hover': {
-    color: theme.palette.primary.main
-  }
+  textDecoration: 'none'
 }));
 
 // Update the FloorPriceCard styling for a more prominent look
@@ -938,11 +935,7 @@ export default function NFTActions({ nft }) {
                   backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
                   border: (theme) => `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
                   borderRadius: '12px',
-                  color: 'primary.main',
-                  '&:hover': {
-                    backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.15),
-                    borderColor: (theme) => alpha(theme.palette.primary.main, 0.3)
-                  }
+                  color: 'primary.main'
                 }}
                 onClick={handleShareClick}
                 ref={anchorRef}
@@ -976,12 +969,7 @@ export default function NFTActions({ nft }) {
                     borderWidth: '1.5px',
                     borderColor: '#4285f4',
                     color: '#4285f4',
-                    backgroundColor: 'transparent',
-                    '&:hover': {
-                      borderColor: '#4285f4',
-                      backgroundColor: alpha('#4285f4', 0.04),
-                      borderWidth: '1.5px'
-                    }
+                    backgroundColor: 'transparent'
                   }}
                 >
                   Sell
@@ -1000,12 +988,7 @@ export default function NFTActions({ nft }) {
                     borderWidth: '1.5px',
                     borderColor: alpha(theme.palette.divider, 0.2),
                     color: theme.palette.text.primary,
-                    backgroundColor: 'transparent',
-                    '&:hover': {
-                      borderColor: alpha(theme.palette.divider, 0.4),
-                      backgroundColor: alpha(theme.palette.divider, 0.04),
-                      borderWidth: '1.5px'
-                    }
+                    backgroundColor: 'transparent'
                   }}
                 >
                   Transfer
@@ -1021,8 +1004,8 @@ export default function NFTActions({ nft }) {
                     <Stack spacing={0.5}>
                       <Stack direction="row" justifyContent="space-between" alignItems="center">
                         <Typography variant="caption" sx={{ fontSize: '0.8rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Price</Typography>
-                        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 500, color: theme.palette.text.primary }}>
-                          ✕{formatXRPAmount(lowestSellOffer.totalAmount, false)}
+                        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 400, color: theme.palette.text.primary, fontFamily: 'monospace' }}>
+                          {formatXRPAmount(lowestSellOffer.totalAmount, false)} XRP
                         </Typography>
                       </Stack>
                       {lowestSellOffer.hasBroker && (
@@ -1031,11 +1014,11 @@ export default function NFTActions({ nft }) {
                             <>
                               <Stack direction="row" justifyContent="space-between">
                                 <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Base</Typography>
-                                <Typography variant="caption" sx={{ fontSize: '0.8rem' }}>✕{lowestSellOffer.baseAmount}</Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>{lowestSellOffer.baseAmount} XRP</Typography>
                               </Stack>
                               <Stack direction="row" justifyContent="space-between">
                                 <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.6) }}>{lowestSellOffer.brokerName} Fee</Typography>
-                                <Typography variant="caption" sx={{ fontSize: '0.8rem' }}>✕{lowestSellOffer.brokerFee}</Typography>
+                                <Typography variant="caption" sx={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>{lowestSellOffer.brokerFee} XRP</Typography>
                               </Stack>
                             </>
                           )}
@@ -1047,8 +1030,7 @@ export default function NFTActions({ nft }) {
                               color: alpha(theme.palette.text.secondary, 0.5),
                               cursor: 'pointer',
                               textAlign: 'right',
-                              mt: 0.3,
-                              '&:hover': { color: alpha(theme.palette.text.secondary, 0.8) }
+                              mt: 0.3
                             }}
                           >
                             {showPriceBreakdown ? '−' : '+'} breakdown
@@ -1076,12 +1058,7 @@ export default function NFTActions({ nft }) {
                           borderWidth: '1.5px',
                           borderColor: '#4285f4',
                           color: '#4285f4',
-                          backgroundColor: 'transparent',
-                          '&:hover': {
-                            borderColor: '#4285f4',
-                            backgroundColor: alpha('#4285f4', 0.04),
-                            borderWidth: '1.5px'
-                          }
+                          backgroundColor: 'transparent'
                         }}
                       >
                         Buy Now
@@ -1101,12 +1078,7 @@ export default function NFTActions({ nft }) {
                         borderWidth: '1.5px',
                         borderColor: alpha(theme.palette.divider, 0.2),
                         color: theme.palette.text.primary,
-                        backgroundColor: 'transparent',
-                        '&:hover': {
-                          borderColor: alpha(theme.palette.divider, 0.4),
-                          backgroundColor: alpha(theme.palette.divider, 0.04),
-                          borderWidth: '1.5px'
-                        }
+                        backgroundColor: 'transparent'
                       }}
                     >
                       Make Offer
@@ -1123,22 +1095,17 @@ export default function NFTActions({ nft }) {
           {/* Offers and History sections */}
           <Stack spacing={1.5}>
             {isOwner && (
-              <StyledAccordion defaultExpanded>
-                <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.5) }} />}>
-                  <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
-                        Sell Offers
-                      </Typography>
-                    </Stack>
-                    {sellOffers.length > 0 && (
-                      <OffersBadge>
-                        {sellOffers.length}
-                      </OffersBadge>
-                    )}
-                  </Stack>
-                </AccordionSummary>
-                <AccordionDetails>
+              <Box>
+                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.2, px: 1 }}>
+                  <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
+                    Sell Offers
+                  </Typography>
+                  {sellOffers.length > 0 && (
+                    <OffersBadge>
+                      {sellOffers.length}
+                    </OffersBadge>
+                  )}
+                </Stack>
                   {loading ? (
                     <Box
                       sx={{
@@ -1150,47 +1117,55 @@ export default function NFTActions({ nft }) {
                       <PulseLoader color={theme.palette.primary.main} size={10} />
                     </Box>
                   ) : sellOffers.length > 0 ? (
-                    <Stack spacing={1}>
+                    <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.12)}`, borderRadius: '8px', overflow: 'hidden' }}>
                       {sellOffers.map((offer, index) => {
                         const amount = normalizeAmount(offer.amount);
+                        const isLast = index === sellOffers.length - 1;
+
                         return (
-                          <Paper
+                          <Box
                             key={index}
                             sx={{
-                              p: 1.5,
-                              backgroundColor: (theme) =>
-                                alpha(theme.palette.background.default, 0.6)
+                              p: 1,
+                              borderBottom: isLast ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.08)}`
                             }}
                           >
-                            <Stack spacing={1}>
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Typography variant="h6" fontWeight={500} sx={{ fontSize: '15px' }}>
-                                  ✕{formatXRPAmount(amount.amount, false, 'sell_offer')}
+                            <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
+                              <Stack spacing={0.2} sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 400, fontFamily: 'monospace', color: theme.palette.text.primary }}>
+                                  {formatXRPAmount(amount.amount, false, 'sell_offer')} XRP
                                 </Typography>
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  color="error"
-                                  onClick={() => handleCancelOffer(offer)}
-                                  sx={{ py: 0.5, fontSize: '12px' }}
-                                >
-                                  Cancel
-                                </Button>
+                                {offer.destination && (
+                                  <Typography sx={{ color: alpha(theme.palette.text.secondary, 0.5), fontSize: '0.7rem' }}>
+                                    {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 10)}
+                                  </Typography>
+                                )}
                               </Stack>
-                              {offer.destination && (
-                                <Typography variant="caption" color="text.secondary">
-                                  Broker: {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 12)}
-                                </Typography>
-                              )}
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleCancelOffer(offer)}
+                                sx={{
+                                  py: 0.4,
+                                  px: 1,
+                                  fontSize: '0.7rem',
+                                  fontWeight: 400,
+                                  textTransform: 'none',
+                                  borderRadius: '6px',
+                                  borderWidth: '1px',
+                                  borderColor: alpha(theme.palette.error.main, 0.5),
+                                  color: theme.palette.error.main,
+                                  minWidth: 'auto',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                Cancel
+                              </Button>
                             </Stack>
-                          </Paper>
+                          </Box>
                         );
                       })}
-                    </Stack>
+                    </Box>
                   ) : (
                     <Box
                       sx={{
@@ -1214,26 +1189,20 @@ export default function NFTActions({ nft }) {
                       </Button>
                     </Box>
                   )}
-                </AccordionDetails>
-              </StyledAccordion>
+              </Box>
             )}
 
-            <StyledAccordion defaultExpanded>
-              <AccordionSummary expandIcon={<ExpandMoreIcon sx={{ fontSize: 18, color: alpha(theme.palette.text.secondary, 0.5) }} />}>
-                <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                  <Stack direction="row" alignItems="center" spacing={1}>
-                    <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
-                      Buy Offers
-                    </Typography>
-                  </Stack>
-                  {buyOffers.length > 0 && (
-                    <OfferCountBadge>
-                      {buyOffers.length}
-                    </OfferCountBadge>
-                  )}
-                </Stack>
-              </AccordionSummary>
-              <AccordionDetails>
+            <Box>
+              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.2, px: 1 }}>
+                <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
+                  Buy Offers
+                </Typography>
+                {buyOffers.length > 0 && (
+                  <OfferCountBadge>
+                    {buyOffers.length}
+                  </OfferCountBadge>
+                )}
+              </Stack>
                 {loading ? (
                   <Box
                     sx={{
@@ -1245,73 +1214,96 @@ export default function NFTActions({ nft }) {
                     <PulseLoader color={theme.palette.primary.main} size={10} />
                   </Box>
                 ) : buyOffers.length > 0 ? (
-                  <Stack spacing={1}>
+                  <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.12)}`, borderRadius: '8px', overflow: 'hidden' }}>
                     {buyOffers.map((offer, index) => {
                       const amount = normalizeAmount(offer.amount);
-                      const offerPrice = parseFloat(amount.amount);
-                      const discrepancy =
-                        parsedFloorPrice > 0
-                          ? (parsedFloorPrice - offerPrice) / parsedFloorPrice
-                          : 0;
+                      const isLast = index === buyOffers.length - 1;
 
                       return (
-                        <Paper
+                        <Box
                           key={index}
                           sx={{
-                            p: 1.5,
-                            backgroundColor: (theme) => alpha(theme.palette.background.default, 0.6)
+                            p: 1,
+                            borderBottom: isLast ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.08)}`
                           }}
                         >
-                          <Stack spacing={1}>
-                            <Stack
-                              direction="row"
-                              justifyContent="space-between"
-                              alignItems="center"
-                            >
-                              <Typography variant="h6" fontWeight={500} sx={{ fontSize: '15px' }}>
-                                ✕{formatXRPAmount(amount.amount, false, offer.destination)}
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
+                            <Stack spacing={0.2} sx={{ flex: 1, minWidth: 0 }}>
+                              <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 400, fontFamily: 'monospace', color: theme.palette.text.primary }}>
+                                {formatXRPAmount(amount.amount, false, offer.destination)} XRP
                               </Typography>
-                              <Stack direction="row" spacing={1}>
-                                {isOwner ? (
-                                  <Button
-                                    variant="contained"
-                                    size="small"
-                                    color="primary"
-                                    onClick={() => handleAcceptOffer(offer)}
-                                    sx={{ py: 0.5, fontSize: '12px' }}
-                                  >
-                                    Accept
-                                  </Button>
-                                ) : (
-                                  accountLogin === offer.owner && (
-                                    <Button
-                                      variant="outlined"
-                                      size="small"
-                                      color="error"
-                                      onClick={() => handleCancelOffer(offer)}
-                                      sx={{ py: 0.5, fontSize: '12px' }}
-                                    >
-                                      Cancel
-                                    </Button>
-                                  )
+                              <Stack direction="row" spacing={0.8} alignItems="center">
+                                <Link
+                                  href={`/profile/${offer.owner}`}
+                                  underline="none"
+                                  sx={{
+                                    color: alpha(theme.palette.text.secondary, 0.6),
+                                    fontFamily: 'monospace',
+                                    fontSize: '0.7rem'
+                                  }}
+                                >
+                                  {truncate(offer.owner, 10)}
+                                </Link>
+                                {offer.destination && (
+                                  <>
+                                    <Typography sx={{ color: alpha(theme.palette.text.secondary, 0.3), fontSize: '0.7rem' }}>•</Typography>
+                                    <Typography sx={{ color: alpha(theme.palette.text.secondary, 0.5), fontSize: '0.7rem' }}>
+                                      {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 10)}
+                                    </Typography>
+                                  </>
                                 )}
                               </Stack>
                             </Stack>
-                            <Stack direction="row" spacing={2} sx={{ fontSize: '12px' }}>
-                              <Typography variant="caption" color="text.secondary">
-                                From: <Link href={`/profile/${offer.owner}`} underline="none" sx={{ color: 'text.primary', '&:hover': { color: 'primary.main' } }}>{truncate(offer.owner, 12)}</Link>
-                              </Typography>
-                              {offer.destination && (
-                                <Typography variant="caption" color="text.secondary">
-                                  Broker: {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 12)}
-                                </Typography>
-                              )}
-                            </Stack>
+                            {isOwner ? (
+                              <Button
+                                variant="outlined"
+                                size="small"
+                                onClick={() => handleAcceptOffer(offer)}
+                                sx={{
+                                  py: 0.4,
+                                  px: 1,
+                                  fontSize: '0.7rem',
+                                  fontWeight: 400,
+                                  textTransform: 'none',
+                                  borderRadius: '6px',
+                                  borderWidth: '1px',
+                                  borderColor: '#4285f4',
+                                  color: '#4285f4',
+                                  minWidth: 'auto',
+                                  whiteSpace: 'nowrap'
+                                }}
+                              >
+                                Accept
+                              </Button>
+                            ) : (
+                              accountLogin === offer.owner && (
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  onClick={() => handleCancelOffer(offer)}
+                                  sx={{
+                                    py: 0.4,
+                                    px: 1,
+                                    fontSize: '0.7rem',
+                                    fontWeight: 400,
+                                    textTransform: 'none',
+                                    borderRadius: '6px',
+                                    borderWidth: '1px',
+                                    borderColor: alpha(theme.palette.error.main, 0.5),
+                                    color: theme.palette.error.main,
+                                    minWidth: 'auto',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                >
+                                  Cancel
+                                </Button>
+                              )
+                            )}
                           </Stack>
-                        </Paper>
+                        </Box>
                       );
                     })}
-                  </Stack>
+                  </Box>
                 ) : (
                   <Box
                     sx={{
@@ -1337,8 +1329,7 @@ export default function NFTActions({ nft }) {
                     )}
                   </Box>
                 )}
-              </AccordionDetails>
-            </StyledAccordion>
+            </Box>
 
             <Box>
               <Typography

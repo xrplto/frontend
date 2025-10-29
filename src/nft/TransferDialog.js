@@ -108,8 +108,7 @@ const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
   backgroundColor: 'rgba(0, 0, 0, 0.6)',
   backdropFilter: 'blur(4px)',
-  WebkitBackdropFilter: 'blur(4px)',
-  transition: 'opacity 0.3s ease-in-out'
+  WebkitBackdropFilter: 'blur(4px)'
 }));
 
 const NFTPreview = styled('div')(({ theme }) => ({

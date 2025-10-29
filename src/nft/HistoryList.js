@@ -47,9 +47,6 @@ const StyledTableHead = styled(TableHead)(({ theme }) => ({
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:hover': {
-    backgroundColor: alpha(theme.palette.divider, 0.02)
-  },
   '&:last-child td': {
     borderBottom: 'none'
   }
@@ -112,10 +109,7 @@ const AddressLink = styled(Link)(({ theme }) => ({
   color: alpha(theme.palette.text.primary, 0.8),
   textDecoration: 'none',
   fontFamily: 'monospace',
-  fontSize: '0.85rem',
-  '&:hover': {
-    color: theme.palette.text.primary
-  }
+  fontSize: '0.85rem'
 }));
 
 const PriceText = styled(Typography)(({ theme }) => ({
@@ -249,11 +243,7 @@ export default function HistoryList({ nft }) {
               borderColor: alpha(theme.palette.divider, 0.2),
               borderRadius: '8px',
               color: alpha(theme.palette.text.secondary, 0.7),
-              backgroundColor: 'transparent',
-              '&:hover': {
-                borderColor: alpha(theme.palette.divider, 0.4),
-                backgroundColor: alpha(theme.palette.divider, 0.04)
-              }
+              backgroundColor: 'transparent'
             }}
           >
             {showAll ? 'Show Key Events' : 'Show All'}

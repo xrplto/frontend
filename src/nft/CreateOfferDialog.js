@@ -49,33 +49,14 @@ const OfferDialog = styled(Dialog)(({ theme }) => ({
     width: '100%',
     maxWidth: 'sm',
     borderRadius: '0',
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.95)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.8
-    )} 100%)`,
-    backdropFilter: 'blur(20px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    boxShadow: `0 12px 40px ${alpha(theme.palette.common.black, 0.15)}`,
+    backgroundColor: theme.palette.background.paper,
+    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
     position: 'relative',
-    overflow: 'hidden',
-    '&::before': {
-      content: '""',
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      height: '3px',
-      background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.success.main}, ${theme.palette.info.main})`,
-      opacity: 0.8
-    }
+    overflow: 'hidden'
   },
   '& .MuiDialogContent-root': {
     padding: theme.spacing(3),
-    background: `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.6)} 0%, ${alpha(
-      theme.palette.background.paper,
-      0.3
-    )} 100%)`,
-    backdropFilter: 'blur(10px)'
+    backgroundColor: theme.palette.background.default
   },
   '& .MuiDialogActions-root': {
     padding: theme.spacing(2)
@@ -91,10 +72,6 @@ const OfferDialogTitle = (props) => {
       sx={{
         m: 0,
         p: 3,
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-          theme.palette.primary.main,
-          0.03
-        )} 100%)`,
         border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
         borderRadius: '24px 24px 0 0'
       }}
@@ -119,24 +96,10 @@ const OfferDialogTitle = (props) => {
             position: 'absolute',
             right: 12,
             top: 12,
-            background: `linear-gradient(135deg, ${alpha(
-              theme.palette.background.paper,
-              0.95
-            )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-            backdropFilter: 'blur(12px)',
+            backgroundColor: alpha(theme.palette.background.paper, 0.9),
             border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             borderRadius: '12px',
-            color: theme.palette.text.secondary,
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            '&:hover': {
-              background: `linear-gradient(135deg, ${alpha(
-                theme.palette.error.main,
-                0.12
-              )} 0%, ${alpha(theme.palette.background.paper, 0.95)} 100%)`,
-              border: `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
-              color: theme.palette.error.main,
-              transform: 'scale(1.05)'
-            }
+            color: theme.palette.text.secondary
           }}
         >
           <CloseIcon />
@@ -384,7 +347,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
           color: theme.palette.text.primary,
           zIndex: (theme) => theme.zIndex.drawer + 1,
           backgroundColor: alpha(theme.palette.common.black, 0.7),
-          backdropFilter: 'blur(8px)',
           WebkitBackdropFilter: 'blur(8px)'
         }}
         open={loading}
@@ -416,13 +378,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
               sx={{
                 p: 3,
                 borderRadius: '12px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.8
-                )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                backdropFilter: 'blur(10px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
                 mb: 3
               }}
             >
@@ -435,8 +391,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                       width: 64,
                       height: 64,
                       borderRadius: '12px',
-                      border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.common.black, 0.1)}`
+                      border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
                     }}
                   />
                 )}
@@ -481,13 +436,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
               sx={{
                 p: 3,
                 borderRadius: '12px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.8
-                )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                backdropFilter: 'blur(10px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
                 mb: 3,
                 position: 'relative',
                 zIndex: 9999,
@@ -522,13 +471,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
               sx={{
                 p: 3,
                 borderRadius: '12px',
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.8
-                )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                backdropFilter: 'blur(10px)',
                 border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                boxShadow: `0 4px 16px ${alpha(theme.palette.common.black, 0.04)}`,
                 mb: 3
               }}
             >
@@ -569,20 +512,10 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   sx={{
                     '& .MuiOutlinedInput-root': {
                       borderRadius: '12px',
-                      background: `linear-gradient(135deg, ${alpha(
-                        theme.palette.background.paper,
-                        0.95
-                      )} 0%, ${alpha(theme.palette.background.paper, 0.8)} 100%)`,
-                      backdropFilter: 'blur(10px)',
+                      backgroundColor: theme.palette.background.paper,
                       border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      '&:hover': {
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                        boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.1)}`
-                      },
                       '&.Mui-focused': {
-                        border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-                        boxShadow: `0 4px 16px ${alpha(theme.palette.primary.main, 0.2)}`
+                        borderColor: theme.palette.primary.main
                       }
                     }
                   }}
@@ -618,19 +551,11 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   fontWeight: 400,
                   textTransform: 'none',
                   borderRadius: '12px',
-                  background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-                  boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    background: `linear-gradient(135deg, ${theme.palette.primary.dark} 0%, ${theme.palette.primary.main} 100%)`,
-                    transform: 'translateY(-2px)',
-                    boxShadow: `0 6px 20px ${alpha(theme.palette.primary.main, 0.4)}`
-                  },
+                  backgroundColor: theme.palette.primary.main,
+                  color: theme.palette.primary.contrastText,
                   '&:disabled': {
-                    background: alpha(theme.palette.action.disabled, 0.12),
-                    color: theme.palette.action.disabled,
-                    transform: 'none',
-                    boxShadow: 'none'
+                    backgroundColor: alpha(theme.palette.action.disabled, 0.12),
+                    color: theme.palette.action.disabled
                   }
                 }}
               >
