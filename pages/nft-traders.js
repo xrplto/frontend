@@ -156,6 +156,22 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
               }}
             >
               <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                Total Balance
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.totalLiquidity24h)} XRP
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
                 24h Volume
               </Typography>
               <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
@@ -353,23 +369,37 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
 
                       {/* Address */}
                       <Box>
-                        <Stack direction="row" spacing={0.5} alignItems="center">
-                          <Link
-                            href={`/profile/${trader._id || trader.address}`}
-                            sx={{
-                              textDecoration: 'none',
-                              color: '#4285f4',
-                              fontWeight: 400,
-                              fontSize: '0.95rem',
-                              '&:hover': {
-                                textDecoration: 'underline'
-                              }
-                            }}
-                          >
-                            {(trader._id || trader.address)
-                              ? `${(trader._id || trader.address).slice(0, 6)}...${(trader._id || trader.address).slice(-4)}`
-                              : 'Unknown'}
-                          </Link>
+                        <Link
+                          href={`/profile/${trader._id || trader.address}`}
+                          sx={{
+                            textDecoration: 'none',
+                            color: '#4285f4',
+                            fontWeight: 400,
+                            fontSize: '0.95rem',
+                            '&:hover': {
+                              textDecoration: 'underline'
+                            }
+                          }}
+                        >
+                          {(trader._id || trader.address)
+                            ? `${(trader._id || trader.address).slice(0, 6)}...${(trader._id || trader.address).slice(-4)}`
+                            : 'Unknown'}
+                        </Link>
+                      </Box>
+
+                      {/* XRP Balance */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
+                        >
+                          XRP Balance
+                        </Typography>
+                        <Stack direction="row" spacing={0.5} alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
+                          <Typography variant="body2" fontWeight="400" color="text.primary">
+                            {fNumber(trader.balance || 0)}
+                          </Typography>
                           {trader.traderType && (
                             <Chip
                               label={trader.traderType}
@@ -398,20 +428,6 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
                             />
                           )}
                         </Stack>
-                      </Box>
-
-                      {/* XRP Balance */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          XRP Balance
-                        </Typography>
-                        <Typography variant="body2" fontWeight="400" color="text.primary">
-                          {fNumber(trader.balance || 0)}
-                        </Typography>
                       </Box>
 
                       {/* Buy Volume */}
