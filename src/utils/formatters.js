@@ -1,4 +1,4 @@
-import { format, formatDistanceToNow } from 'date-fns';
+import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
 import axios from 'axios';
 import hashicon from 'hashicon';
 
@@ -87,6 +87,8 @@ export function fToNow(date) {
     addSuffix: true
   });
 }
+
+export { formatDistanceToNowStrict };
 
 const pad = (n) => String(n).padStart(2, '0');
 const shortMonths = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

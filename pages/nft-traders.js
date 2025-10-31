@@ -24,7 +24,10 @@ import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
-import { fNumber } from 'src/utils/formatters';
+import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
+import Avatar from '@mui/material/Avatar';
+import AvatarGroup from '@mui/material/AvatarGroup';
+import Tooltip from '@mui/material/Tooltip';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
@@ -88,9 +91,6 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
   const totalPages = Math.ceil(traders.length / rowsPerPage);
   const loading = false;
 
-  const total24hBuyVolume = traders.reduce((sum, t) => sum + (t.buyVolume || 0), 0);
-  const total24hSellVolume = traders.reduce((sum, t) => sum + (t.sellVolume || 0), 0);
-
   return (
     <OverviewWrapper>
       <Toolbar id="back-to-top-anchor" />
@@ -140,38 +140,6 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
               }}
             >
               <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
-                24h Volume
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.total24hVolume)} XRP
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
-                24h Sales
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.total24hSales)}
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
                 Active Traders
               </Typography>
               <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
@@ -188,10 +156,10 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
               }}
             >
               <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
-                Active Collections
+                24h Volume
               </Typography>
               <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.activeCollections24h)}
+                {fNumber(globalMetrics.total24hVolume)} XRP
               </Typography>
             </Box>
 
@@ -204,10 +172,10 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
               }}
             >
               <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
-                24h Buy Volume
+                24h Trades
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5, color: theme.palette.primary.main }}>
-                {fNumber(total24hBuyVolume)} XRP
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.total24hSales)}
               </Typography>
             </Box>
 
@@ -220,10 +188,26 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
               }}
             >
               <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
-                24h Sell Volume
+                24h Mints
               </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5, color: '#F44336' }}>
-                {fNumber(total24hSellVolume)} XRP
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.total24hMints)}
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                p: 2,
+                borderRadius: '12px',
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
+                backgroundColor: 'transparent'
+              }}
+            >
+              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+                24h Burns
+              </Typography>
+              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
+                {fNumber(globalMetrics.total24hBurns)}
               </Typography>
             </Box>
           </Box>
@@ -258,7 +242,7 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
                 display: 'grid',
                 gridTemplateColumns: {
                   xs: '1fr',
-                  md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 2fr'
+                  md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 1.2fr 2fr'
                 },
                 gap: 2,
                 p: 2,
@@ -340,6 +324,7 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
               </Box>
 
               <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Collections</Typography>
+              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Last Active</Typography>
               <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Marketplaces</Typography>
             </Box>
 
@@ -353,7 +338,7 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
                         display: 'grid',
                         gridTemplateColumns: {
                           xs: '1fr',
-                          md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 2fr'
+                          md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 1.2fr 2fr'
                         },
                         gap: 2,
                         alignItems: 'center'
@@ -368,22 +353,51 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
 
                       {/* Address */}
                       <Box>
-                        <Link
-                          href={`/profile/${trader._id || trader.address}`}
-                          sx={{
-                            textDecoration: 'none',
-                            color: '#4285f4',
-                            fontWeight: 400,
-                            fontSize: '0.95rem',
-                            '&:hover': {
-                              textDecoration: 'underline'
-                            }
-                          }}
-                        >
-                          {(trader._id || trader.address)
-                            ? `${(trader._id || trader.address).slice(0, 6)}...${(trader._id || trader.address).slice(-4)}`
-                            : 'Unknown'}
-                        </Link>
+                        <Stack direction="row" spacing={0.5} alignItems="center">
+                          <Link
+                            href={`/profile/${trader._id || trader.address}`}
+                            sx={{
+                              textDecoration: 'none',
+                              color: '#4285f4',
+                              fontWeight: 400,
+                              fontSize: '0.95rem',
+                              '&:hover': {
+                                textDecoration: 'underline'
+                              }
+                            }}
+                          >
+                            {(trader._id || trader.address)
+                              ? `${(trader._id || trader.address).slice(0, 6)}...${(trader._id || trader.address).slice(-4)}`
+                              : 'Unknown'}
+                          </Link>
+                          {trader.traderType && (
+                            <Chip
+                              label={trader.traderType}
+                              size="small"
+                              sx={{
+                                height: '18px',
+                                fontSize: '0.65rem',
+                                fontWeight: 400,
+                                borderRadius: '4px',
+                                backgroundColor: trader.traderType === 'buyer'
+                                  ? alpha(theme.palette.primary.main, 0.1)
+                                  : trader.traderType === 'seller'
+                                  ? alpha('#F44336', 0.1)
+                                  : alpha(theme.palette.warning.main, 0.1),
+                                color: trader.traderType === 'buyer'
+                                  ? theme.palette.primary.main
+                                  : trader.traderType === 'seller'
+                                  ? '#F44336'
+                                  : theme.palette.warning.main,
+                                border: `1px solid ${trader.traderType === 'buyer'
+                                  ? alpha(theme.palette.primary.main, 0.3)
+                                  : trader.traderType === 'seller'
+                                  ? alpha('#F44336', 0.3)
+                                  : alpha(theme.palette.warning.main, 0.3)}`
+                              }}
+                            />
+                          )}
+                        </Stack>
                       </Box>
 
                       {/* XRP Balance */}
@@ -450,7 +464,7 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
                           Total Volume
                         </Typography>
                         <Typography variant="body2" fontWeight="400" color="text.primary">
-                          {fNumber((trader.buyVolume || 0) + (trader.sellVolume || 0))}
+                          {fNumber(trader.totalVolume || 0)}
                         </Typography>
                       </Box>
 
@@ -463,10 +477,40 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
                         >
                           Collections
                         </Typography>
-                        <Typography variant="body2" fontWeight="400" color="text.primary">
-                          {trader.collectionsCount || (Array.isArray(trader.collectionsTraded)
-                            ? trader.collectionsTraded.length
-                            : trader.collectionsTraded || 0)}
+                        {Array.isArray(trader.collectionsInfo) && trader.collectionsInfo.length > 0 ? (
+                          <Box sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' }, alignItems: 'center', gap: 0.5 }}>
+                            <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 24, height: 24, fontSize: '0.7rem', border: '1.5px solid' } }}>
+                              {trader.collectionsInfo.map((col) => (
+                                <Tooltip key={col._id} title={col.name} arrow>
+                                  <Avatar
+                                    src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                                    sx={{ width: 24, height: 24 }}
+                                  />
+                                </Tooltip>
+                              ))}
+                            </AvatarGroup>
+                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
+                              {trader.collectionsInfo.length}
+                            </Typography>
+                          </Box>
+                        ) : (
+                          <Typography variant="body2" fontWeight="400" color="text.primary">
+                            {trader.collectionsTraded || 0}
+                          </Typography>
+                        )}
+                      </Box>
+
+                      {/* Last Active */}
+                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
+                        >
+                          Last Active
+                        </Typography>
+                        <Typography variant="body2" fontWeight="400" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+                          {trader.lastActive ? formatDistanceToNowStrict(new Date(trader.lastActive), { addSuffix: true }) : '-'}
                         </Typography>
                       </Box>
 
@@ -534,7 +578,7 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
 }
 
 export async function getServerSideProps(context) {
-  const { sortBy = 'balance' } = context.query;
+  const { sortBy = 'totalVolume' } = context.query;
 
   try {
     const response = await axios.get(`${BASE_URL}/nft/traders/active?sortBy=${sortBy}&limit=100&includeGlobalMetrics=true`);
