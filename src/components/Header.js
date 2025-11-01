@@ -357,6 +357,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
   const [tokensExpanded, setTokensExpanded] = useState(false);
+  const [nftsAnchorEl, setNftsAnchorEl] = useState(null);
+  const [nftsMenuOpen, setNftsMenuOpen] = useState(false);
+  const nftsCloseTimeoutRef = useRef(null);
+  const [nftsExpanded, setNftsExpanded] = useState(false);
 
 
   // Check if metrics are properly loaded
@@ -463,6 +467,22 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     },
     [handleTokensClose]
   );
+
+  const handleNftsOpen = useCallback((event) => {
+    if (nftsCloseTimeoutRef.current) {
+      clearTimeout(nftsCloseTimeoutRef.current);
+      nftsCloseTimeoutRef.current = null;
+    }
+    setNftsAnchorEl(event.currentTarget);
+    setNftsMenuOpen(true);
+  }, []);
+
+  const handleNftsClose = useCallback(() => {
+    nftsCloseTimeoutRef.current = setTimeout(() => {
+      setNftsAnchorEl(null);
+      setNftsMenuOpen(false);
+    }, 150);
+  }, []);
 
   const handleSettingsOpen = useCallback((event) => {
     setSettingsAnchorEl(event.currentTarget);
@@ -692,11 +712,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             name: 'AMM Pools',
                             icon: <WavesIcon sx={{ fontSize: 16, color: '#00bcd4' }} />
                           },
-                          {
-                            path: '/nft-traders',
-                            name: 'NFT Traders',
-                            icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
-                          },
                           ...(accountProfile ? [{
                             path: '/watchlist',
                             name: 'Watchlist',
@@ -773,9 +788,93 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 )}
               </Box>
 
-              <StyledLink underline="none" darkMode={darkMode} href="/collections">
-                {'NFTs'}
-              </StyledLink>
+              <Box
+                onMouseEnter={(e) => handleNftsOpen(e)}
+                onMouseLeave={handleNftsClose}
+                sx={{ position: 'relative', display: 'inline-block' }}
+              >
+                <StyledLink underline="none" darkMode={darkMode} href="/collections">
+                  {'NFTs'}
+                </StyledLink>
+
+                {nftsMenuOpen && nftsAnchorEl && (
+                  <Box
+                    onMouseEnter={() => {
+                      if (nftsCloseTimeoutRef.current) {
+                        clearTimeout(nftsCloseTimeoutRef.current);
+                        nftsCloseTimeoutRef.current = null;
+                      }
+                    }}
+                    onMouseLeave={handleNftsClose}
+                    sx={{
+                      position: 'fixed',
+                      top: '48px',
+                      left: nftsAnchorEl ? nftsAnchorEl.offsetLeft : 0,
+                      mt: 0,
+                      minWidth: 200,
+                      borderRadius: '8px',
+                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                      boxShadow: 'none',
+                      bgcolor:
+                        theme.header?.background ||
+                        (theme.palette.mode === 'dark'
+                          ? alpha('#000000', 0.98)
+                          : alpha('#ffffff', 0.98)),
+                      overflow: 'hidden',
+                      zIndex: 2147483647,
+                      '&::before': {
+                        display: 'none'
+                      }
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        p: 2,
+                        gap: 0
+                      }}
+                    >
+                      {[
+                        {
+                          path: '/collections',
+                          name: 'Collections',
+                          icon: <PetsIcon sx={{ fontSize: 16, color: '#9c27b0' }} />
+                        },
+                        {
+                          path: '/nft-traders',
+                          name: 'NFT Traders',
+                          icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
+                        }
+                      ].map((item) => (
+                        <Box
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          sx={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 1.5,
+                            py: 1,
+                            px: 1.5,
+                            borderRadius: 0,
+                            cursor: 'pointer',
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.08),
+                              color: theme.palette.primary.main
+                            }
+                          }}
+                        >
+                          {item.icon}
+                          <Typography variant="body2" fontSize={14}>
+                            {item.name}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+
               <StyledLink underline="none" darkMode={darkMode} href="/swap">
                 {'Swap'}
               </StyledLink>
@@ -1139,7 +1238,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   { path: '/market-metrics', name: 'Market Metrics' },
                   { path: '/rsi-analysis', name: 'RSI Analysis' },
                   { path: '/amm-pools', name: 'AMM Pools' },
-                  { path: '/nft-traders', name: 'NFT Traders' },
                   ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist' }] : [])
                 ].map((item) => (
                   <ListItem key={item.path} disablePadding>
@@ -1163,10 +1261,35 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             </Collapse>
 
             <ListItem disablePadding>
-              <ListItemButton component="a" href="/collections" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
+              <ListItemButton onClick={() => setNftsExpanded(!nftsExpanded)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
                 <ListItemText primary="NFTs" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
+                {nftsExpanded ? <ExpandLess /> : <ExpandMore />}
               </ListItemButton>
             </ListItem>
+            <Collapse in={nftsExpanded} timeout="auto" unmountOnExit>
+              <List component="div" disablePadding sx={{ pl: 2 }}>
+                {[
+                  {
+                    path: '/collections',
+                    name: 'Collections',
+                    icon: <PetsIcon sx={{ fontSize: 16, color: '#9c27b0', mr: 1.5 }} />
+                  },
+                  {
+                    path: '/nft-traders',
+                    name: 'NFT Traders',
+                    icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63', mr: 1.5 }} />
+                  }
+                ].map((item) => (
+                  <ListItem key={item.path} disablePadding>
+                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36, display: 'flex', alignItems: 'center' }}>
+                      {item.icon}
+                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
+                    </ListItemButton>
+                  </ListItem>
+                ))}
+              </List>
+            </Collapse>
+
             <ListItem disablePadding>
               <ListItemButton component="a" href="/swap" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
                 <ListItemText primary="Swap" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
