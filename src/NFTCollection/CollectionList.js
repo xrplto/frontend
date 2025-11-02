@@ -665,7 +665,7 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true },
   { id: 'origin', label: 'ORIGIN', align: 'right', width: '8%', order: true },
   { id: 'created', label: 'CREATED', align: 'right', width: '8%', order: true },
-  { id: 'sparkline', label: '30D CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' } }
+  { id: 'sparkline', label: '30D SALES', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' } }
 ];
 
 // ListHead Component

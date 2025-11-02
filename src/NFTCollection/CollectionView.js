@@ -718,6 +718,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 alt={name}
                 loading="lazy"
                 decoding="async"
+                fetchpriority={isIPFS ? 'low' : 'auto'}
                 className="card-media"
                 onLoad={handleImageLoad}
                 onError={handleImageError}

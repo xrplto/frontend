@@ -377,6 +377,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           onError={() => setErrored(true)}
           src={thumbnailUrl}
           alt={NFTName}
+          fetchpriority={thumbnailUrl?.includes('ipfs.io') ? 'low' : 'auto'}
         />
       </Box>
     );
@@ -437,6 +438,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
                   src={selectedImageUrl}
                   alt={NFTName}
                   style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
+                  fetchpriority={selectedImageUrl?.includes('ipfs.io') ? 'low' : 'auto'}
                 />
                 <IconButton
                   onClick={() => setOpenImage(false)}

@@ -434,11 +434,8 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
           (!file.isIPFS && file.dfile ? file.dfile : '');
         if (thumbnail) {
           return `https://s1.xrpl.to/nft/${thumbnail}`;
-        } else if (file.isIPFS && file.IPFSPath) {
-          const pathParts = file.IPFSPath.split('/');
-          const encodedPath = pathParts.map(encodeURIComponent).join('/');
-          return `https://ipfs.io/ipfs/${encodedPath}`;
         }
+        // Skip IPFS - only use cached/converted files
       }
     }
   }
@@ -455,12 +452,9 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
     }
 
     if (metaUrl) {
-      // Convert IPFS URLs to gateway URLs
+      // Skip IPFS URLs
       if (metaUrl.startsWith('ipfs://')) {
-        const ipfsPath = metaUrl.replace('ipfs://', '');
-        const pathParts = ipfsPath.split('/');
-        const encodedPath = pathParts.map(encodeURIComponent).join('/');
-        return `https://ipfs.io/ipfs/${encodedPath}`;
+        return '';
       }
       return metaUrl;
     }
@@ -483,15 +477,10 @@ export const getNftFilesUrls = (nft, type = 'image') => {
       if (!file.isIPFS && file.dfile) {
         const fileName = file.convertedFile ?? file.dfile;
         file.cachedUrl = `https://s1.xrpl.to/nft/${fileName}`;
-      } else if (file.isIPFS && file.IPFSPath) {
-        if (file.convertedFile) {
-          file.cachedUrl = `https://s1.xrpl.to/nft/${file.convertedFile}`;
-        } else {
-          const pathParts = file.IPFSPath.split('/');
-          const encodedPath = pathParts.map(encodeURIComponent).join('/');
-          file.cachedUrl = `https://ipfs.io/ipfs/${encodedPath}`;
-        }
+      } else if (file.isIPFS && file.convertedFile) {
+        file.cachedUrl = `https://s1.xrpl.to/nft/${file.convertedFile}`;
       } else {
+        // Skip IPFS - only use converted files
         file.cachedUrl = null;
       }
     }
