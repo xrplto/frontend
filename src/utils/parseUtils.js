@@ -497,6 +497,29 @@ export const getNftFilesUrls = (nft, type = 'image') => {
     }
     return files;
   }
+
+  // Fallback to meta fields for unparsed NFTs
+  if (!files?.length && nft.meta) {
+    let metaUrl = '';
+    if (type === 'video' && nft.meta.video) {
+      metaUrl = nft.meta.video;
+    } else if (type === 'animation' && nft.meta.animation) {
+      metaUrl = nft.meta.animation;
+    } else if (type === 'image' && nft.meta.image) {
+      metaUrl = nft.meta.image;
+    }
+
+    if (metaUrl) {
+      // Convert IPFS URLs to gateway URLs
+      if (metaUrl.startsWith('ipfs://')) {
+        const ipfsPath = metaUrl.replace('ipfs://', '');
+        const pathParts = ipfsPath.split('/');
+        const encodedPath = pathParts.map(encodeURIComponent).join('/');
+        metaUrl = `https://ipfs.io/ipfs/${encodedPath}`;
+      }
+      return [{ cachedUrl: metaUrl, type }];
+    }
+  }
 };
 
 export function cipheredTaxon(tokenSeq, taxon) {

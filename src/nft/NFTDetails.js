@@ -258,6 +258,11 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const imgOrAnimUrl =
     contentTab === 'image' ? imageUrl : contentTab === 'animation' ? animationUrl : '';
 
+  // Check if loading from IPFS
+  const isIPFS =
+    clUrl[contentTab]?.includes('ipfs.io') ||
+    (typeof imgOrAnimUrl === 'string' && imgOrAnimUrl?.includes('ipfs.io'));
+
   const handleOpenImage = (imageUrl) => {
     setSelectedImageUrl(imageUrl);
     setOpenImage(true);
@@ -389,6 +394,27 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
       {/* Media */}
       <MediaContainer>
+        {/* IPFS Debug Badge */}
+        {isIPFS && (
+          <Box
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              zIndex: 10,
+              px: 1,
+              py: 0.5,
+              borderRadius: '4px',
+              backgroundColor: alpha('#ff9800', 0.9),
+              color: '#fff',
+              fontSize: '0.75rem',
+              fontWeight: 500
+            }}
+          >
+            IPFS
+          </Box>
+        )}
+
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
             {renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
