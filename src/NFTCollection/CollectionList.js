@@ -658,6 +658,7 @@ const TABLE_HEAD_DESKTOP = [
   { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true },
   { id: 'floor1dPercent', label: 'FLOOR 24H %', align: 'right', width: '10%', order: true },
   { id: 'totalVol24h', label: 'VOLUME (24H)', align: 'right', width: '12%', order: true },
+  { id: 'totalVolume', label: 'TOTAL VOLUME', align: 'right', width: '12%', order: true },
   { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: '10%', order: true },
   { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: '12%', order: true },
   { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true },
@@ -806,6 +807,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
     floor,
     floor1dPercent,
     totalVol24h,
+    totalVolume,
     sales24h,
     marketcap,
     listedCount,
@@ -902,6 +904,10 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
 
       <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={500}>
         ✕ {volume24h}
+      </StyledCell>
+
+      <StyledCell align="right" darkMode={darkMode} color="#00AB55" fontWeight={500}>
+        ✕ {fVolume(totalVolume || 0)}
       </StyledCell>
 
       <StyledCell align="right" darkMode={darkMode} fontWeight={500}>
