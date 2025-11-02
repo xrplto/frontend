@@ -2549,48 +2549,70 @@ export default function CollectionView({ collection }) {
     volume,
     totalVolume,
     floor,
+    floor7dPercent,
     totalVol24h,
-    extra
+    owners,
+    listedCount,
+    totalSales,
+    marketcap,
+    topOffer,
+    offers,
+    category,
+    burnedItems
   } = collection?.collection || collection || {};
-
-  const floorPrice = floor?.amount || 0;
-  const volume1 = fVolume(volume || 0);
-  const volume2 = fVolume(totalVolume || 0);
 
   const shareUrl = `https://xrpl.to/collection/${slug}`;
   const shareTitle = name;
 
+  const totalVol = totalVolume || volume || 0;
+
   const statsData = [
     {
       label: 'Floor',
-      value: fNumber(floorPrice),
-      icon: '✕',
-      color: 'primary'
+      value: fNumber(floor?.amount || 0),
+      prefix: '✕'
     },
-    {
+    floor7dPercent !== undefined && floor7dPercent !== 0 && {
+      label: '7d %',
+      value: `${floor7dPercent > 0 ? '+' : ''}${floor7dPercent.toFixed(1)}%`,
+      color: floor7dPercent > 0 ? 'success.main' : 'error.main'
+    },
+    totalVol24h > 0 && {
       label: '24h Vol',
-      value: fNumber(totalVol24h),
-      icon: '✕',
-      color: 'success'
+      value: fVolume(totalVol24h),
+      prefix: '✕'
     },
-    {
+    totalVol > 0 && {
       label: 'Total Vol',
-      value: volume2,
-      icon: '✕',
-      tooltip: true,
-      color: 'info'
+      value: fVolume(totalVol),
+      prefix: '✕'
+    },
+    topOffer?.amount > 0 && {
+      label: 'Top Offer',
+      value: fVolume(topOffer.amount),
+      prefix: '✕'
     },
     {
       label: 'Supply',
-      value: items,
-      color: 'warning'
+      value: fIntNumber(items || 0)
     },
-    {
+    owners > 0 && {
       label: 'Owners',
-      value: extra?.owners || 0,
-      color: 'secondary'
+      value: fIntNumber(owners)
+    },
+    listedCount > 0 && {
+      label: 'Listed',
+      value: fIntNumber(listedCount)
+    },
+    totalSales > 0 && {
+      label: 'Sales',
+      value: fIntNumber(totalSales)
+    },
+    burnedItems > 0 && {
+      label: 'Burned',
+      value: fIntNumber(burnedItems)
     }
-  ];
+  ].filter(Boolean);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -2699,6 +2721,20 @@ export default function CollectionView({ collection }) {
                 {name}
               </Typography>
               {verified === 'yes' && <VerifiedIcon sx={{ fontSize: '16px', color: 'primary.main' }} />}
+              {category && (
+                <Chip
+                  label={category}
+                  size="small"
+                  sx={{
+                    height: '20px',
+                    fontSize: '11px',
+                    fontWeight: 400,
+                    backgroundColor: alpha(theme.palette.info.main, 0.1),
+                    color: theme.palette.info.main,
+                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
+                  }}
+                />
+              )}
               <Stack direction="row" spacing={0.8} sx={{ ml: 2 }}>
                 {accountLogin === collection.account && (
                   <Button
@@ -2760,13 +2796,14 @@ export default function CollectionView({ collection }) {
 
           <Box sx={{ flex: 1 }} />
 
-          <Stack direction="row" spacing={3}>
-            {statsData.filter((item, index) => index < 4).map((item) => (
-              <Box key={item.label} sx={{ textAlign: 'center' }}>
-                <Typography variant="h6" sx={{ fontSize: '16px', fontWeight: 400, mb: 0.2 }}>
-                  {item.icon}{item.value}
+          <Stack direction="row" spacing={2} divider={<Box sx={{ width: '1px', bgcolor: alpha(theme.palette.divider, 0.1), height: '32px' }} />}>
+            {statsData.map((item) => (
+              <Box key={item.label} sx={{ minWidth: '70px' }}>
+                <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 400, color: item.color || 'text.primary', mb: 0.3 }}>
+                  {item.prefix && <Box component="span" sx={{ color: 'text.secondary', mr: 0.3 }}>{item.prefix}</Box>}
+                  {item.value}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.secondary', textTransform: 'uppercase', letterSpacing: '0.3px' }}>
+                <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 400 }}>
                   {item.label}
                 </Typography>
               </Box>
