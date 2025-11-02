@@ -1119,7 +1119,7 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 });
 
 // Main CollectionList Component
-export default function CollectionList({ type, category, onGlobalMetrics }) {
+export default function CollectionList({ type, category, onGlobalMetrics, initialCollections = [], initialTotal = 0 }) {
   const BASE_URL = 'https://api.xrpl.to/api';
   const { darkMode } = useContext(AppContext);
 
@@ -1128,9 +1128,11 @@ export default function CollectionList({ type, category, onGlobalMetrics }) {
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('totalVol24h');
 
-  const [total, setTotal] = useState(0);
-  const [collections, setCollections] = useState([]);
+  const [total, setTotal] = useState(initialTotal);
+  const [collections, setCollections] = useState(initialCollections);
   const [globalMetrics, setGlobalMetrics] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const [sync, setSync] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
@@ -1146,7 +1148,15 @@ export default function CollectionList({ type, category, onGlobalMetrics }) {
   }, []);
 
   useEffect(() => {
+    // Only fetch if not initial load (page change, sort change, etc)
+    if (page === 0 && order === 'desc' && orderBy === 'totalVol24h' && rows === 50 && initialCollections.length > 0) {
+      return; // Use server-side data
+    }
+
     const loadCollections = () => {
+      setLoading(true);
+      setError(null);
+
       const params = new URLSearchParams({
         page: page.toString(),
         limit: rows.toString(),
@@ -1158,22 +1168,23 @@ export default function CollectionList({ type, category, onGlobalMetrics }) {
       axios
         .get(`${BASE_URL}/nft/collections?${params.toString()}`)
         .then((res) => {
-          try {
-            if (res.status === 200 && res.data) {
-              const ret = res.data;
-              setTotal(ret.pagination?.total || ret.count || 0);
-              setCollections(ret.collections || []);
-              if (ret.globalMetrics) {
-                setGlobalMetrics(ret.globalMetrics);
-                if (onGlobalMetrics) {
-                  onGlobalMetrics(ret.globalMetrics);
-                }
+          if (res.status === 200 && res.data) {
+            const ret = res.data;
+            setTotal(ret.pagination?.total || ret.count || 0);
+            setCollections(ret.collections || []);
+            if (ret.globalMetrics) {
+              setGlobalMetrics(ret.globalMetrics);
+              if (onGlobalMetrics) {
+                onGlobalMetrics(ret.globalMetrics);
               }
             }
-          } catch (error) {
+            setLoading(false);
           }
         })
         .catch((err) => {
+          console.error('Failed to load collections:', err);
+          setError('Failed to load collections. Please try again.');
+          setLoading(false);
         });
     };
     loadCollections();
@@ -1189,6 +1200,26 @@ export default function CollectionList({ type, category, onGlobalMetrics }) {
     },
     [orderBy, order, sync]
   );
+
+  if (error) {
+    return (
+      <Container>
+        <div style={{ padding: '40px', textAlign: 'center', color: '#f44336' }}>
+          {error}
+        </div>
+      </Container>
+    );
+  }
+
+  if (collections.length === 0) {
+    return (
+      <Container>
+        <div style={{ padding: '40px', textAlign: 'center', color: darkMode ? '#fff' : '#000' }}>
+          No collections found.
+        </div>
+      </Container>
+    );
+  }
 
   return (
     <Container>

@@ -123,9 +123,9 @@ const formatNumberWithDecimals = (num) => {
   return Math.round(num).toLocaleString();
 };
 
-function Collections() {
+function Collections({ initialCollections, initialTotal, initialGlobalMetrics }) {
   const theme = useTheme();
-  const [globalMetrics, setGlobalMetrics] = useState(null);
+  const [globalMetrics, setGlobalMetrics] = useState(initialGlobalMetrics);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   return (
@@ -320,18 +320,7 @@ function Collections() {
           minHeight: '50vh',
           px: { xs: 1, sm: 3, md: 4 },
           position: 'relative',
-          zIndex: 1,
-          animation: 'fadeInUp 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
-          '@keyframes fadeInUp': {
-            '0%': {
-              opacity: 0,
-              transform: 'translateY(30px)'
-            },
-            '100%': {
-              opacity: 1,
-              transform: 'translateY(0)'
-            }
-          }
+          zIndex: 1
         }}
       >
         <Box
@@ -345,7 +334,12 @@ function Collections() {
             position: 'relative'
           }}
         >
-          <CollectionList type={CollectionListType.ALL} onGlobalMetrics={setGlobalMetrics} />
+          <CollectionList
+            type={CollectionListType.ALL}
+            onGlobalMetrics={setGlobalMetrics}
+            initialCollections={initialCollections}
+            initialTotal={initialTotal}
+          />
         </Box>
       </Stack>
     </Box>

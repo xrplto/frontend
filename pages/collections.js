@@ -21,7 +21,7 @@ const OverviewWrapper = styled(Box)(
 `
 );
 
-export default function Overview() {
+export default function Overview({ collections, total, globalMetrics }) {
   const dispatch = useDispatch();
 
   // Add WebSocket connection
@@ -47,7 +47,11 @@ export default function Overview() {
       </h1>
 
       <Container maxWidth="xl">
-        <AllCollections />
+        <AllCollections
+          initialCollections={collections}
+          initialTotal={total}
+          initialGlobalMetrics={globalMetrics}
+        />
       </Container>
 
       <ScrollToTop />
@@ -57,24 +61,41 @@ export default function Overview() {
   );
 }
 
-// This function gets called at build time on server-side.
-// It may be called again, on a serverless function, if
-// revalidation is enabled and a new request comes in
 export async function getStaticProps() {
-  let ret = {};
+  const BASE_URL = 'https://api.xrpl.to/api';
 
-  const ogp = {};
-  ogp.canonical = 'https://xrpl.to/collections';
-  ogp.title = 'NFT Collections | XRPL.to';
-  ogp.url = 'https://xrpl.to/collections';
-  ogp.imgUrl = 'https://xrpl.to/static/ogp.webp';
-  ogp.desc =
-    'Browse NFT collections on the XRP Ledger. Discover, trade, and collect digital art and collectibles. Community-centered marketplace for XRPL NFTs.';
+  let collections = [];
+  let total = 0;
+  let globalMetrics = null;
 
-  ret = { ogp };
+  try {
+    const response = await fetch(
+      `${BASE_URL}/nft/collections?page=0&limit=50&sortBy=totalVol24h&order=desc&includeGlobalMetrics=true`
+    );
+    const data = await response.json();
+
+    collections = data.collections || [];
+    total = data.pagination?.total || data.count || 0;
+    globalMetrics = data.globalMetrics || null;
+  } catch (error) {
+    console.error('Failed to fetch collections:', error);
+  }
+
+  const ogp = {
+    canonical: 'https://xrpl.to/collections',
+    title: 'NFT Collections | XRPL.to',
+    url: 'https://xrpl.to/collections',
+    imgUrl: 'https://xrpl.to/static/ogp.webp',
+    desc: 'Browse NFT collections on the XRP Ledger. Discover, trade, and collect digital art and collectibles. Community-centered marketplace for XRPL NFTs.'
+  };
 
   return {
-    props: ret, // will be passed to the page component as props
-    revalidate: 3600 // ISR: Regenerate page every hour
+    props: {
+      ogp,
+      collections,
+      total,
+      globalMetrics
+    },
+    revalidate: 300 // Regenerate every 5 minutes
   };
 }
