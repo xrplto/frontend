@@ -443,6 +443,29 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
     }
   }
 
+  // Fallback to meta fields for unparsed NFTs
+  if (!files?.length && nft.meta) {
+    let metaUrl = '';
+    if (type === 'video' && nft.meta.video) {
+      metaUrl = nft.meta.video;
+    } else if (type === 'animation' && nft.meta.animation) {
+      metaUrl = nft.meta.animation;
+    } else if ((type === 'image' || !type) && nft.meta.image) {
+      metaUrl = nft.meta.image;
+    }
+
+    if (metaUrl) {
+      // Convert IPFS URLs to gateway URLs
+      if (metaUrl.startsWith('ipfs://')) {
+        const ipfsPath = metaUrl.replace('ipfs://', '');
+        const pathParts = ipfsPath.split('/');
+        const encodedPath = pathParts.map(encodeURIComponent).join('/');
+        return `https://ipfs.io/ipfs/${encodedPath}`;
+      }
+      return metaUrl;
+    }
+  }
+
   // type is usually requested at page for og:*, so if no type requested showing no image
   if (!type) {
     return '/static/nft_no_image.webp';

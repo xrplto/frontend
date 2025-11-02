@@ -428,6 +428,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
             <video
               playsInline
               muted
+              autoPlay
               loop
               controls
               style={{ width: '100%', height: '100%', maxHeight: '100%', objectFit: 'contain' }}

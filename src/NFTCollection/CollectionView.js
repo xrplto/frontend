@@ -628,6 +628,9 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
     videoUrl = videoFiles?.[0]?.cachedUrl || null;
   }
 
+  // Debug: Check if loading from IPFS
+  const isIPFS = imgUrl?.includes('ipfs.io') || videoUrl?.includes('ipfs.io');
+
   const handleImageLoad = () => setLoadingImg(false);
   const handleImageError = () => {
     setLoadingImg(false);
@@ -648,7 +651,11 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
       underline="none"
       sx={{
         display: 'block',
+        width: '100%',
+        maxWidth: '100%',
+        minWidth: 0,
         position: 'relative',
+        overflow: 'hidden',
         '&:hover .nft-card': {
           borderColor: alpha(theme.palette.primary.main, 0.25)
         }
@@ -658,6 +665,8 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
         className="nft-card"
         sx={{
           width: '100%',
+          maxWidth: '100%',
+          minWidth: 0,
           aspectRatio: '1 / 1.4',
           borderRadius: '12px',
           background: 'transparent',
@@ -666,11 +675,12 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
           display: 'flex',
           flexDirection: 'column',
           position: 'relative',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          boxSizing: 'border-box'
         }}
       >
         {/* Image Section with lazy loading */}
-        <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden' }}>
+        <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden', flexShrink: 0 }}>
           {loadingImg && !imageError && (
             <Skeleton
               variant="rectangular"
@@ -693,9 +703,12 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 sx={{
                   width: '100%',
                   height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
                   objectFit: 'cover',
                   objectPosition: 'center',
-                  opacity: loadingImg ? 0 : 1
+                  opacity: loadingImg ? 0 : 1,
+                  display: 'block'
                 }}
               />
             ) : (
@@ -711,9 +724,12 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
                 sx={{
                   width: '100%',
                   height: '100%',
+                  maxWidth: '100%',
+                  maxHeight: '100%',
                   objectFit: 'cover',
                   objectPosition: 'center',
-                  opacity: loadingImg ? 0 : 1
+                  opacity: loadingImg ? 0 : 1,
+                  display: 'block'
                 }}
               />
             )
@@ -759,8 +775,28 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
             </IconButton>
           )}
 
-          {/* Sale Badge - top left */}
-          {/* Last Event Badge - Top Right */}
+          {/* IPFS Debug Badge - top left */}
+          {isIPFS && (
+            <Box
+              sx={{
+                position: 'absolute',
+                top: 6,
+                left: 6,
+                zIndex: 9,
+                px: 0.8,
+                py: 0.25,
+                borderRadius: '4px',
+                backgroundColor: alpha('#ff9800', 0.9),
+                color: '#fff',
+                fontSize: '0.7rem',
+                fontWeight: 500
+              }}
+            >
+              IPFS
+            </Box>
+          )}
+
+          {/* Sale Badge - top right */}
           {isSold && !isAdmin && (
             <Box
               sx={{
@@ -1344,6 +1380,10 @@ const NFTGrid = React.memo(({ collection }) => {
               md: 'repeat(4, 1fr)',
               lg: 'repeat(6, 1fr)',
               xl: 'repeat(8, 1fr)'
+            },
+            '& > *': {
+              minWidth: 0,
+              minHeight: 0
             }
           }}
         >
