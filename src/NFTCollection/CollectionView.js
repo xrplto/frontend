@@ -144,7 +144,7 @@ const getMinterName = (account) => {
 };
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
 import { formatMonthYear } from 'src/utils/formatters';
-import { getNftCoverUrl } from 'src/utils/parseUtils';
+import { getNftCoverUrl, getNftFilesUrls } from 'src/utils/parseUtils';
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
 // Styled Components with optimized styles
@@ -619,6 +619,14 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
   const isSold = cost?.amount || costb?.amount || amount; // Show SALE badge only if there's a price
   const imgUrl = getNftCoverUrl(nft, 'large');
   const name = nft.meta?.name || meta?.Name || 'No Name';
+  const isVideo = nft?.meta?.video;
+
+  // Get video URL
+  let videoUrl = null;
+  if (isVideo) {
+    const videoFiles = getNftFilesUrls(nft, 'video');
+    videoUrl = videoFiles?.[0]?.cachedUrl || null;
+  }
 
   const handleImageLoad = () => setLoadingImg(false);
   const handleImageError = () => {
@@ -670,25 +678,45 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
             />
           )}
           {!imageError ? (
-            <Box
-              component="img"
-              src={imgUrl}
-              alt={name}
-              loading="lazy"
-              decoding="async"
-              className="card-media"
-              onLoad={handleImageLoad}
-              onError={handleImageError}
-              sx={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover',
-                objectPosition: 'center',
-                transition: 'transform 0.3s ease',
-                opacity: loadingImg ? 0 : 1,
-                willChange: 'transform'
-              }}
-            />
+            isVideo && videoUrl ? (
+              <Box
+                component="video"
+                src={videoUrl}
+                poster={imgUrl}
+                muted
+                autoPlay
+                loop
+                playsInline
+                className="card-media"
+                onLoadedData={handleImageLoad}
+                onError={handleImageError}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  opacity: loadingImg ? 0 : 1
+                }}
+              />
+            ) : (
+              <Box
+                component="img"
+                src={imgUrl}
+                alt={name}
+                loading="lazy"
+                decoding="async"
+                className="card-media"
+                onLoad={handleImageLoad}
+                onError={handleImageError}
+                sx={{
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  objectPosition: 'center',
+                  opacity: loadingImg ? 0 : 1
+                }}
+              />
+            )
           ) : (
             <Box
               sx={{
