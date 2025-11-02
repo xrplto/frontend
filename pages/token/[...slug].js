@@ -296,7 +296,7 @@ export async function getStaticProps({ params }) {
     ret = { data, ogp };
     return {
       props: ret, // will be passed to the page component as props
-      revalidate: 60 // ISR: Regenerate page every 60 seconds if requested
+      revalidate: 5 // ISR: Regenerate page every 5 seconds if requested (matches trending/gainers/new pages)
     };
   } else {
     return {

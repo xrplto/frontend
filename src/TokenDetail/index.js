@@ -1,4 +1,3 @@
-import dynamic from 'next/dynamic';
 import { useContext, useState, useEffect, useCallback, memo } from 'react';
 
 // Material
@@ -6,35 +5,11 @@ import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
 
 // Components
 import { AppContext } from 'src/AppContext';
-
-
-// Lazy load all heavy components
-const Overview = dynamic(() => import('./tabs/overview'), {
-  loading: () => <div style={{ height: '400px' }} />,
-  ssr: false
-});
-
-const Market = dynamic(() => import('./tabs/market/PairsList'), {
-  ssr: false
-});
-
-
-const LinkCascade = dynamic(() => import('./components/LinkCascade'), {
-  ssr: false
-});
-
-const TokenSummary = dynamic(() => import('./components/TokenSummary'), {
-  loading: () => <div style={{ height: '200px' }} />,
-  ssr: false
-});
-
-const CreatorTransactionsDialog = dynamic(() => import('./dialogs/CreatorTransactionsDialog'), {
-  ssr: false
-});
-
-const TransactionDetailsPanel = dynamic(() => import('./dialogs/TransactionDetailsPanel'), {
-  ssr: false
-});
+import Overview from './tabs/overview';
+import LinkCascade from './components/LinkCascade';
+import TokenSummary from './components/TokenSummary';
+import CreatorTransactionsDialog from './dialogs/CreatorTransactionsDialog';
+import TransactionDetailsPanel from './dialogs/TransactionDetailsPanel';
 
 const TokenDetail = memo(
   ({

@@ -14,27 +14,12 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-import dynamic from 'next/dynamic';
-
-// Lazy load chart component
-const Sparkline = dynamic(() => import('src/components/Sparkline'), {
-  ssr: false,
-  loading: () => (
-    <div
-      style={{
-        width: '260px',
-        height: '60px',
-        background: 'rgba(128, 128, 128, 0.05)',
-        borderRadius: '4px'
-      }}
-    />
-  )
-});
+import Sparkline from 'src/components/Sparkline';
 
 // Optimized chart wrapper with intersection observer
 const OptimizedChart = memo(
   ({ url, darkMode }) => {
-    const [isVisible, setIsVisible] = useState(false);
+    const [isVisible, setIsVisible] = useState(typeof window === 'undefined');
     const chartRef = useRef(null);
     const observerRef = useRef(null);
 
@@ -327,7 +312,7 @@ const formatTimeAgo = (dateValue, fallbackValue) => {
 const OptimizedImage = memo(
   ({ src, alt, size, onError, priority = false, md5 }) => {
     const [imgSrc, setImgSrc] = useState(src);
-    const [isInView, setIsInView] = useState(priority);
+    const [isInView, setIsInView] = useState(priority || typeof window === 'undefined');
     const imgRef = useRef(null);
     const observerRef = useRef(null);
 

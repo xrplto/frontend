@@ -1,6 +1,5 @@
 import axios from 'axios';
 import React, { memo, useCallback, useMemo, useRef } from 'react';
-import dynamic from 'next/dynamic';
 import { useState, useEffect, useContext } from 'react';
 
 // Material
@@ -8,65 +7,12 @@ import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Box } from '@m
 
 // Context
 import { AppContext } from 'src/AppContext';
-
-
-// Markdown editor removed for build simplicity
-
-const PriceChart = dynamic(() => import('./PriceChartAdvanced'), {
-  loading: () => <div style={{ height: '400px' }} />,
-  ssr: false
-});
-
-const TradingHistory = dynamic(() => import('./TradingHistory'), {
-  loading: () => <div style={{ height: '400px' }} />,
-  ssr: false
-});
-
-const PriceStatistics = dynamic(() => import('./PriceStatistics'), {
-  ssr: false
-});
-
-const Description = dynamic(() => import('./Description'), {
-  ssr: false
-});
-
-const TrendingTokens = dynamic(() => import('./TrendingTokens'), {
-  ssr: false
-});
-
-const Swap = dynamic(() => import('./Swap'), {
-  ssr: false
-});
-
-// Markdown parser removed for build simplicity
-
-// Performance: Intersection Observer for lazy loading
-const useIntersectionObserver = (ref, options = {}) => {
-  const [isVisible, setIsVisible] = useState(false);
-
-  useEffect(() => {
-    const element = ref?.current;
-    if (!element) return;
-
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: '100px', threshold: 0.1, ...options }
-    );
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [ref, options]);
-
-  return isVisible;
-};
-
-// ----------------------------------------------------------------------
+import PriceChart from './PriceChartAdvanced';
+import TradingHistory from './TradingHistory';
+import PriceStatistics from './PriceStatistics';
+import Description from './Description';
+import TrendingTokens from './TrendingTokens';
+import Swap from './Swap';
 
 const Overview = memo(
   ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
