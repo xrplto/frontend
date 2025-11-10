@@ -74,15 +74,9 @@ const currencyConfig = {
   activeFiatCurrency: 'XRP'
 };
 
-// Dynamic imports for switchers
-const CurrencySwitcher = dynamic(() => import('./CurrencySwitcher'), {
-  loading: () => <Box sx={{ width: '100px', height: '32px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }} />,
-  ssr: false
-});
-const ThemeSwitcher = dynamic(() => import('./ThemeSwitcher'), {
-  loading: () => <Box sx={{ width: '32px', height: '32px', borderRadius: '50%', background: 'rgba(255,255,255,0.1)' }} />,
-  ssr: false
-});
+// Server-rendered switchers
+import CurrencySwitcher from './CurrencySwitcher';
+import ThemeSwitcher from './ThemeSwitcher';
 
 // Iconify
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';

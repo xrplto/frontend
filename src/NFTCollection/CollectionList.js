@@ -6,28 +6,13 @@ import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
-import dynamic from 'next/dynamic';
 import FirstPageIcon from '@mui/icons-material/FirstPage';
 import LastPageIcon from '@mui/icons-material/LastPage';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 import { alpha, Box } from '@mui/material';
 import { MobileHeader, HeaderCell } from 'src/TokenList/TokenRow';
-
-// Lazy load chart component
-const Sparkline = dynamic(() => import('src/components/Sparkline'), {
-  ssr: false,
-  loading: () => (
-    <div
-      style={{
-        width: '190px',
-        height: '45px',
-        background: 'rgba(128, 128, 128, 0.05)',
-        borderRadius: '4px'
-      }}
-    />
-  )
-});
+import Sparkline from 'src/components/Sparkline';
 
 // Optimized chart wrapper with direct canvas rendering
 const OptimizedChart = memo(

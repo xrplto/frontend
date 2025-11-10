@@ -1,17 +1,11 @@
 import axios from 'axios';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
-import dynamic from 'next/dynamic';
 import Decimal from 'decimal.js-light';
 
 // Set Decimal precision immediately after import
 Decimal.set({ precision: 50 });
 
-// Lazy load heavy components
-const Sparkline = dynamic(() => import('src/components/Sparkline'), {
-  loading: () => <div style={{ height: 300 }}>Loading chart...</div>,
-  ssr: false
-});
-
+import Sparkline from 'src/components/Sparkline';
 import { ClipLoader } from './Spinners';
 
 // Material UI components (to be gradually replaced with Tailwind)

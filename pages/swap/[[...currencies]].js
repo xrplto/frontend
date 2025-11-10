@@ -2,15 +2,13 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
-import dynamic from 'next/dynamic';
 
 // Material UI imports
 import {
   styled,
   Container,
   Box,
-  Toolbar,
-  CircularProgress
+  Toolbar
 } from '@mui/material';
 
 // Context
@@ -24,16 +22,7 @@ import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-
-// Lazy load the heavy swap component
-const Swap = dynamic(() => import('src/components/SwapInterface'), {
-  loading: () => (
-    <Box display="flex" justifyContent="center" p={4}>
-      <CircularProgress />
-    </Box>
-  ),
-  ssr: false
-});
+import Swap from 'src/components/SwapInterface';
 
 const Root = styled('div')(({ theme }) => ({
   display: 'flex',
