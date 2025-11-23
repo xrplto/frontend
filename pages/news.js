@@ -1,177 +1,14 @@
-import { useState, useEffect, useMemo, useCallback, memo } from 'react';
+import { useState, useEffect, useMemo, useCallback, memo, useContext } from 'react';
 import { useRouter } from 'next/router';
 import dynamic from 'next/dynamic';
 import formatDistanceToNow from 'date-fns/formatDistanceToNow';
-import { useSelector } from 'react-redux';
-import { useTheme } from '@mui/material/styles';
-import styled from '@emotion/styled';
-import {
-  alpha,
-  Container,
-  Box,
-  IconButton,
-  Typography,
-  Paper,
-  Chip,
-  Button,
-  CircularProgress,
-  Stack,
-  Divider
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import ClearIcon from '@mui/icons-material/Clear';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
 
 const Header = dynamic(() => import('../src/components/Header'), { ssr: true });
 const Footer = dynamic(() => import('../src/components/Footer'), { ssr: true });
 
-// Styled Components for Pagination (matching TokenList)
-const PaginationContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  border-radius: 12px;
-  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
-  box-shadow: none;
-
-  @media (max-width: 900px) {
-    width: 100%;
-    justify-content: center;
-    padding: 4px 8px;
-    gap: 4px;
-  }
-`;
-
-const NavButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
-  padding: 0;
-
-  &:hover:not(:disabled) {
-    background: ${({ theme }) =>
-      theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
-  }
-
-  &:disabled {
-    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.3)};
-    cursor: not-allowed;
-  }
-`;
-
-const PageButton = styled.button`
-  min-width: 24px;
-  height: 24px;
-  border-radius: 8px;
-  border: none;
-  background: ${(props) =>
-    props.selected
-      ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main
-      : 'transparent'};
-  color: ${(props) =>
-    props.selected
-      ? props.theme.pagination?.selectedTextColor || 'white'
-      : props.theme.palette.text.primary || 'inherit'};
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6px;
-  margin: 0;
-  font-size: 13px;
-  font-weight: ${(props) => (props.selected ? 500 : 400)};
-  font-variant-numeric: tabular-nums;
-
-  &:hover:not(:disabled) {
-    background: ${(props) =>
-      props.selected
-        ? props.theme.palette.primary.dark || '#1976D2'
-        : props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08)};
-  }
-
-  &:disabled {
-    cursor: not-allowed;
-    opacity: 0.3;
-  }
-`;
-
-const PageEllipsis = styled.span`
-  padding: 0 4px;
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: ${({ theme }) => theme.palette.text.secondary};
-`;
-
-const InfoBox = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
-  border-radius: 12px;
-  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  box-shadow: none;
-  padding: 8px 14px;
-
-  @media (max-width: 900px) {
-    flex: 1;
-    min-width: calc(50% - 8px);
-    justify-content: flex-start;
-    gap: 4px;
-    padding: 6px 10px;
-  }
-`;
-
-const StyledChip = styled.span`
-  font-size: 13px;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
-  padding: 2px 6px;
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
-  border-radius: 6px;
-  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.primary};
-`;
-
-const Text = styled.span`
-  font-size: 13px;
-  font-variant-numeric: tabular-nums;
-  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
-  font-weight: ${(props) => props.fontWeight || 400};
-`;
-
-const PaginationWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
-  gap: 1rem;
-  flex-wrap: wrap;
-
-  @media (max-width: 900px) {
-    flex-direction: column;
-    align-items: stretch;
-  }
-`;
-
-const CenterBox = styled.div`
-  flex-grow: 1;
-  display: flex;
-  justify-content: center;
-`;
-
-const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile }) => {
-  const theme = useTheme();
+const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile, isDark }) => {
   const [showAll, setShowAll] = useState(false);
 
   const sortedSources = useMemo(
@@ -189,126 +26,63 @@ const SourcesMenu = memo(({ sources, selectedSource, onSourceSelect, isMobile })
   const hiddenCount = totalSources - displayLimit;
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: { xs: 1.5, sm: 2 },
-        mb: 2,
-        background: 'transparent',
-        border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-        borderRadius: '12px'
-      }}
-    >
-      <Stack direction="row" alignItems="center" justifyContent="space-between" mb={1.5}>
-        <Typography
-          variant="caption"
-          sx={{
-            fontWeight: 500,
-            textTransform: 'uppercase',
-            letterSpacing: 0.5,
-            fontSize: '11px',
-            color: theme.palette.text.secondary
-          }}
-        >
+    <div className={cn("mb-4 rounded-xl border-[1.5px] bg-transparent p-4", isDark ? "border-white/10" : "border-gray-200")}>
+      <div className="mb-3 flex items-center justify-between">
+        <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
           {isMobile ? `Sources (${totalSources})` : `News Sources (${totalSources})`}
-        </Typography>
+        </p>
         {totalSources > displayLimit && (
-          <Button
-            size="small"
+          <button
             onClick={() => setShowAll(!showAll)}
-            variant="outlined"
-            sx={{
-              fontSize: '13px',
-              fontWeight: 400,
-              px: 1.5,
-              py: 0.5,
-              minHeight: 'auto',
-              textTransform: 'none',
-              borderRadius: '8px',
-              borderWidth: '1.5px',
-              '&:hover': {
-                borderWidth: '1.5px'
-              }
-            }}
+            className={cn("rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal hover:border-primary hover:bg-primary/5", isDark ? "border-gray-700" : "border-gray-300")}
           >
             {showAll ? 'Show Less' : `Show All (+${hiddenCount})`}
-          </Button>
+          </button>
         )}
-      </Stack>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-        <Chip
-          label="All Sources"
+      </div>
+      <div className="flex flex-wrap gap-2">
+        <button
           onClick={() => onSourceSelect(null)}
-          variant={!selectedSource ? "filled" : "outlined"}
-          size="small"
-          sx={{
-            fontSize: '13px',
-            fontWeight: 400,
-            height: 28,
-            borderWidth: '1.5px',
-            borderRadius: '8px',
-            '& .MuiChip-label': { px: 1.5 },
-            '&:hover': {
-              borderWidth: '1.5px',
-              bgcolor: !selectedSource ? undefined : alpha(theme.palette.primary.main, 0.08)
-            }
-          }}
-        />
+          className={cn(
+            'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
+            !selectedSource
+              ? 'border-primary bg-primary text-white'
+              : isDark ? 'border-gray-700 hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
+          )}
+        >
+          All Sources
+        </button>
         {displayedSources.map(([source, data]) => {
           const sentiment = data.sentiment;
           const hasSentiment = sentiment && (sentiment.Bullish || sentiment.Bearish || sentiment.Neutral);
           const isSelected = selectedSource === source;
 
           return (
-            <Box key={source} sx={{ position: 'relative' }}>
-              <Chip
-                label={
-                  <Stack direction="row" spacing={0.75} alignItems="center">
-                    <span>{source}</span>
-                    <span style={{ opacity: 0.5, fontSize: '12px' }}>({data.count})</span>
-                  </Stack>
-                }
+            <div key={source} className="relative">
+              <button
                 onClick={() => onSourceSelect(source)}
-                variant={isSelected ? "filled" : "outlined"}
-                size="small"
-                sx={{
-                  fontSize: '13px',
-                  fontWeight: 400,
-                  height: 28,
-                  borderWidth: '1.5px',
-                  borderRadius: '8px',
-                  '& .MuiChip-label': { px: 1.5 },
-                  position: 'relative',
-                  overflow: 'hidden',
-                  '&:hover': {
-                    borderWidth: '1.5px',
-                    bgcolor: isSelected ? undefined : alpha(theme.palette.primary.main, 0.08)
-                  }
-                }}
-              />
+                className={cn(
+                  'rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal',
+                  isSelected
+                    ? 'border-primary bg-primary text-white'
+                    : isDark ? 'border-gray-700 hover:border-primary hover:bg-primary/5' : 'border-gray-300 hover:border-primary hover:bg-gray-100'
+                )}
+              >
+                <span>{source}</span>
+                <span className="ml-1.5 text-xs opacity-50">({data.count})</span>
+              </button>
               {hasSentiment && !isSelected && (
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 2.5,
-                    display: 'flex',
-                    borderRadius: '0 0 7px 7px',
-                    overflow: 'hidden'
-                  }}
-                >
-                  <Box sx={{ width: `${sentiment.Bullish}%`, bgcolor: '#10B981', opacity: 0.9 }} />
-                  <Box sx={{ width: `${sentiment.Bearish}%`, bgcolor: '#EF4444', opacity: 0.9 }} />
-                  <Box sx={{ width: `${sentiment.Neutral}%`, bgcolor: '#F59E0B', opacity: 0.9 }} />
-                </Box>
+                <div className="absolute bottom-0 left-0 right-0 flex h-[2.5px] overflow-hidden rounded-b-lg">
+                  <div style={{ width: `${sentiment.Bullish}%` }} className="bg-green-500 opacity-90" />
+                  <div style={{ width: `${sentiment.Bearish}%` }} className="bg-red-500 opacity-90" />
+                  <div style={{ width: `${sentiment.Neutral}%` }} className="bg-yellow-500 opacity-90" />
+                </div>
               )}
-            </Box>
+            </div>
           );
         })}
-      </Box>
-    </Paper>
+      </div>
+    </div>
   );
 });
 
@@ -316,9 +90,8 @@ SourcesMenu.displayName = 'SourcesMenu';
 
 function NewsPage() {
   const router = useRouter();
-  const theme = useTheme();
-  const themeMode = useSelector((state) => state.status.theme);
-  const isDark = themeMode === 'dark';
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
 
@@ -396,7 +169,6 @@ function NewsPage() {
     [searchInput, itemsPerPage, selectedSource, router]
   );
 
-  // Parse URL parameters on mount and router changes
   useEffect(() => {
     const { page, limit, source, q } = router.query;
     if (page) {
@@ -430,13 +202,11 @@ function NewsPage() {
       try {
         setLoading(true);
 
-        // Build query string from state
         const params = new URLSearchParams();
         params.append('page', currentPage);
         params.append('limit', itemsPerPage);
         if (selectedSource) params.append('source', selectedSource);
 
-        // Use search endpoint if there's a search query
         const endpoint = searchQuery
           ? `https://api.xrpl.to/api/news/search?q=${encodeURIComponent(searchQuery)}&${params.toString()}`
           : `https://api.xrpl.to/api/news?${params.toString()}`;
@@ -447,22 +217,18 @@ function NewsPage() {
         }
         const data = await response.json();
 
-        // Check if response has data array (both regular and search endpoints have this)
         if (data.data && Array.isArray(data.data)) {
           setNews(data.data);
-          // Set total count from pagination info
           if (data.pagination && data.pagination.total) {
             setTotalCount(data.pagination.total);
           }
 
-          // Set search sentiment score if available (from search endpoint)
           if (searchQuery && data.sentiment_score !== undefined) {
             setSearchSentimentScore(data.sentiment_score);
           } else {
             setSearchSentimentScore(null);
           }
 
-          // Only process sources if they exist (not present in search endpoint)
           if (data.sources) {
             const sourcesObj = data.sources.reduce((acc, source) => {
               acc[source.name] = {
@@ -474,7 +240,6 @@ function NewsPage() {
             setSourcesStats(sourcesObj);
           }
 
-          // Use sentiment data from API if available (not present in search endpoint)
           if (data.sentiment) {
             setSentimentStats({
               last24h: {
@@ -500,7 +265,6 @@ function NewsPage() {
             });
           }
         } else if (Array.isArray(data)) {
-          // Fallback for old API format (array of articles)
           setNews(data);
           setTotalCount(data.length);
           setSearchSentimentScore(null);
@@ -511,7 +275,6 @@ function NewsPage() {
           }, {});
           setSourcesStats(sourceCount);
         } else {
-          // Handle unexpected format
           setNews([]);
           setSourcesStats({});
           setTotalCount(0);
@@ -541,116 +304,59 @@ function NewsPage() {
   };
 
   const extractTitle = useCallback((htmlContent) => {
-    const titleMatch = htmlContent.match(/>([^<]+)</);
+    const titleMatch = htmlContent.match(/>([^<]+)</);;
     return titleMatch ? titleMatch[1] : htmlContent;
   }, []);
 
   return (
-    <Box
-      sx={{
-        bgcolor: theme.palette.background.default,
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
+    <div className={cn("flex min-h-screen flex-col", isDark ? "bg-black" : "bg-white")}>
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-        XRPL News & Updates
-      </h1>
-      <Container maxWidth={notificationPanelOpen ? false : "xl"} sx={{ flex: 1, py: { xs: 2, sm: 3 } }}>
+      <h1 className="sr-only">XRPL News & Updates</h1>
+      <div className={cn('flex-1 py-4 sm:py-6', notificationPanelOpen ? 'px-4' : 'container mx-auto max-w-[1600px] px-4')}>
         {loading ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-            <CircularProgress />
-          </Box>
+          <div className="flex justify-center py-16">
+            <svg className="h-8 w-8 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+            </svg>
+          </div>
         ) : error ? (
-          <Typography color="error" align="center" sx={{ py: 4 }}>
-            Error: {error}
-          </Typography>
+          <p className="py-8 text-center text-red-500">Error: {error}</p>
         ) : (
           <>
             {/* Header with Search */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2 },
-                mb: 2,
-                background: alpha(theme.palette.background.paper, 0.02),
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                borderRadius: '12px'
-              }}
-            >
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={2}
-                alignItems={{ xs: 'stretch', sm: 'center' }}
-                justifyContent="space-between"
-              >
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                    XRP News
-                  </Typography>
+            <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-center gap-2">
+                  <h2 className={cn("text-lg font-medium", isDark ? "text-white" : "text-gray-900")}>XRP News</h2>
                   {totalCount > 0 && (
-                    <Chip
-                      label={totalCount.toLocaleString()}
-                      size="small"
-                      sx={{
-                        height: 24,
-                        fontSize: '13px',
-                        fontWeight: 400,
-                        bgcolor: 'transparent',
-                        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`
-                      }}
-                    />
+                    <span className={cn("rounded-lg border-[1.5px] bg-transparent px-2 py-0.5 text-[13px] font-normal", isDark ? "border-white/15 text-white" : "border-gray-300 text-gray-700")}>
+                      {totalCount.toLocaleString()}
+                    </span>
                   )}
-                </Stack>
+                </div>
 
-                <Box
-                  component="form"
+                <form
                   onSubmit={handleSearch}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    borderRadius: '12px',
-                    px: 2,
-                    py: 1,
-                    height: '40px',
-                    minWidth: { xs: '100%', sm: 320 },
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    bgcolor: alpha(theme.palette.background.paper, 0.02),
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                      borderColor: alpha(theme.palette.primary.main, 0.3)
-                    },
-                    '&:focus-within': {
-                      borderColor: alpha(theme.palette.primary.main, 0.5)
-                    }
-                  }}
+                  className={cn("flex h-10 min-w-full items-center gap-3 rounded-xl border-[1.5px] px-4 hover:border-primary/30 hover:bg-primary/5 focus-within:border-primary/50 sm:min-w-[320px]", isDark ? "border-white/15 bg-white/[0.02]" : "border-gray-300 bg-white")}
                 >
-                  <SearchIcon sx={{ mr: 1.5, color: alpha(theme.palette.text.secondary, 0.6), fontSize: 18 }} />
+                  <svg className={cn("h-4 w-4", isDark ? "text-gray-400/60" : "text-gray-500")} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
                   <input
                     type="text"
                     placeholder="Search news..."
                     value={searchInput}
                     onChange={(e) => setSearchInput(e.target.value)}
-                    style={{
-                      flex: 1,
-                      border: 'none',
-                      outline: 'none',
-                      background: 'transparent',
-                      fontSize: '14px',
-                      color: theme.palette.text.primary
-                    }}
+                    className={cn("flex-1 bg-transparent text-sm focus:outline-none", isDark ? "text-white placeholder:text-white/50" : "text-gray-900 placeholder:text-gray-400")}
                   />
                   {searchInput && (
                     <>
-                      <IconButton
-                        size="small"
-                        aria-label="Clear search"
-                        sx={{ p: 0.5 }}
+                      <button
+                        type="button"
                         onClick={() => {
                           setSearchInput('');
                           setSearchQuery('');
@@ -661,265 +367,172 @@ function NewsPage() {
                           if (selectedSource) query.source = selectedSource;
                           router.push({ pathname: '/news', query }, undefined, { shallow: true });
                         }}
+                        className="p-1"
                       >
-                        <ClearIcon sx={{ fontSize: 18 }} />
-                      </IconButton>
-                      <Button
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <button
                         type="submit"
-                        variant="outlined"
-                        size="small"
-                        sx={{
-                          ml: 1,
-                          minWidth: 'auto',
-                          px: 2,
-                          py: 0.5,
-                          fontSize: '0.95rem',
-                          fontWeight: 400,
-                          borderRadius: '8px',
-                          borderWidth: '1.5px',
-                          '&:hover': {
-                            borderWidth: '1.5px'
-                          }
-                        }}
+                        className={cn("rounded-lg border-[1.5px] px-4 py-1 text-[0.95rem] font-normal hover:border-primary hover:bg-primary/5", isDark ? "border-gray-700" : "border-gray-300")}
                       >
                         Search
-                      </Button>
+                      </button>
                     </>
                   )}
-                </Box>
-              </Stack>
-            </Paper>
+                </form>
+              </div>
+            </div>
 
             {/* Sentiment Summary */}
-            <Paper
-              elevation={0}
-              sx={{
-                p: { xs: 1.5, sm: 2 },
-                mb: 2,
-                background: 'transparent',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                borderRadius: '12px'
-              }}
-            >
+            <div className={cn("mb-4 rounded-xl border-[1.5px] bg-transparent p-4", isDark ? "border-white/10" : "border-gray-200")}>
               {searchQuery && searchSentimentScore !== null ? (
-                <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-                  <Typography variant="caption" sx={{ fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '11px', color: theme.palette.text.secondary }}>
+                <div className="mb-4 flex items-center gap-2">
+                  <p className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
                     {isMobile ? 'Sentiment' : 'Market Sentiment'}
-                  </Typography>
-                  <Chip
-                    label={searchSentimentScore}
-                    size="small"
-                    sx={{
-                      height: 20,
-                      fontSize: '11px',
-                      fontWeight: 400,
-                      bgcolor: 'transparent',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      borderRadius: '6px'
-                    }}
-                  />
-                </Stack>
+                  </p>
+                  <span className={cn("rounded-md border-[1.5px] px-2 py-0.5 text-[11px] font-normal", isDark ? "border-white/15 text-white" : "border-gray-300 text-gray-700")}>
+                    {searchSentimentScore}
+                  </span>
+                </div>
               ) : (
-                <Typography variant="caption" sx={{ fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.5px', fontSize: '11px', color: theme.palette.text.secondary, mb: 2, display: 'block' }}>
+                <p className={cn("mb-4 block text-[11px] font-medium uppercase tracking-wide", isDark ? "text-gray-400" : "text-gray-600")}>
                   {isMobile ? 'Sentiment' : 'Market Sentiment'}
-                </Typography>
+                </p>
               )}
 
-              <Box
-                sx={{
-                  display: 'grid',
-                  gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' },
-                  gap: { xs: 1.5, sm: 2 }
-                }}
-              >
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 sm:gap-4">
                 {[
                   { period: '24H', stats: sentimentStats.last24h },
                   { period: '7D', stats: sentimentStats.last7d },
                   { period: '30D', stats: sentimentStats.last30d },
                   { period: 'ALL', stats: sentimentStats.all }
                 ].map((item) => (
-                  <Paper
+                  <div
                     key={item.period}
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      textAlign: 'center',
-                      bgcolor: alpha(theme.palette.background.paper, 0.02),
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      borderRadius: '12px'
-                    }}
+                    className={cn("rounded-xl border-[1.5px] p-4 text-center", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}
                   >
-                    <Typography variant="caption" sx={{ fontWeight: 500, color: theme.palette.text.secondary, fontSize: '11px', mb: 1 }}>
-                      {item.period}
-                    </Typography>
-                    <Stack
-                      direction="row"
-                      justifyContent="center"
-                      spacing={1.5}
-                    >
-                      <Stack spacing={0.5} alignItems="center">
-                        <Typography sx={{ color: '#10B981', fontSize: '15px', fontWeight: 500 }}>
+                    <p className={cn("mb-2 text-[11px] font-medium", isDark ? "text-gray-400" : "text-gray-600")}>{item.period}</p>
+                    <div className="flex justify-center gap-3">
+                      <div className="flex flex-col items-center gap-1">
+                        <p className="text-[15px] font-medium text-green-500">
                           {item.stats?.bullish || 0}%
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.7), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Bull
-                        </Typography>
-                      </Stack>
-                      <Stack spacing={0.5} alignItems="center">
-                        <Typography sx={{ color: '#EF4444', fontSize: '15px', fontWeight: 500 }}>
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400/70">Bull</p>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <p className="text-[15px] font-medium text-red-500">
                           {item.stats?.bearish || 0}%
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.7), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Bear
-                        </Typography>
-                      </Stack>
-                      <Stack spacing={0.5} alignItems="center">
-                        <Typography sx={{ color: '#F59E0B', fontSize: '15px', fontWeight: 500 }}>
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400/70">Bear</p>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <p className="text-[15px] font-medium text-yellow-500">
                           {item.stats?.neutral || 0}%
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.7), textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Neutral
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Paper>
+                        </p>
+                        <p className="text-[10px] uppercase tracking-wide text-gray-400/70">Neutral</p>
+                      </div>
+                    </div>
+                  </div>
                 ))}
-              </Box>
-            </Paper>
+              </div>
+            </div>
 
             <SourcesMenu
               sources={sourcesStats}
               selectedSource={selectedSource}
               onSourceSelect={handleSourceSelect}
               isMobile={isMobile}
+              isDark={isDark}
             />
 
             {/* News Grid */}
-            <Stack spacing={2}>
+            <div className="space-y-4">
               {currentItems.length === 0 ? (
-                <Typography
-                  align="center"
-                  sx={{
-                    py: 8,
-                    color: alpha(theme.palette.text.secondary, 0.7),
-                    fontSize: '14px',
-                    fontWeight: 400
-                  }}
-                >
+                <p className={cn("py-16 text-center text-sm font-normal", isDark ? "text-gray-400/70" : "text-gray-500")}>
                   No news found at the moment
-                </Typography>
+                </p>
               ) : (
                 currentItems.map((article) => (
-                  <Paper
+                  <div
                     key={article._id}
-                    elevation={0}
-                    sx={{
-                      p: { xs: 2, sm: 2.5 },
-                      background: 'transparent',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        bgcolor: alpha(theme.palette.action.hover, 0.02),
-                        borderColor: alpha(theme.palette.divider, 0.25)
-                      }
-                    }}
+                    className={cn("cursor-pointer rounded-xl border-[1.5px] bg-transparent p-4 sm:p-5", isDark ? "border-white/10 hover:border-white/20 hover:bg-white/[0.02]" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
                   >
-                    <Stack direction="row" justifyContent="space-between" alignItems="flex-start" mb={1.5}>
-                      <Typography variant="body1" sx={{ fontWeight: 500, fontSize: '15px', pr: 2 }}>
-                        {extractTitle(article.title)}
-                      </Typography>
-                      <Chip
-                        label={article.sentiment || 'Unknown'}
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          fontSize: '10px',
-                          height: '22px',
-                          fontWeight: 400,
-                          borderRadius: '6px',
-                          borderColor: alpha(getSentimentColor(article.sentiment), 0.3),
-                          color: alpha(getSentimentColor(article.sentiment), 0.9),
-                          backgroundColor: alpha(getSentimentColor(article.sentiment), 0.08),
-                          borderWidth: '1px',
-                          textTransform: 'capitalize'
+                    <div className="mb-3 flex items-start justify-between">
+                      <p className={cn("pr-4 text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{extractTitle(article.title)}</p>
+                      <span
+                        className="rounded-md border px-2 py-1 text-[10px] font-normal capitalize"
+                        style={{
+                          borderColor: `${getSentimentColor(article.sentiment)}4D`,
+                          color: `${getSentimentColor(article.sentiment)}E6`,
+                          backgroundColor: `${getSentimentColor(article.sentiment)}14`
                         }}
-                      />
-                    </Stack>
+                      >
+                        {article.sentiment || 'Unknown'}
+                      </span>
+                    </div>
 
-                    <Typography variant="body2" color="text.secondary" paragraph sx={{ mb: 1.5 }}>
-                      {article.summary}
-                    </Typography>
+                    <p className={cn("mb-3 text-sm", isDark ? "text-gray-400" : "text-gray-600")}>{article.summary}</p>
 
-                    <Divider sx={{ my: 1.5, opacity: 0.6 }} />
+                    <div className={cn("my-3 h-px", isDark ? "bg-white/10" : "bg-gray-200")} />
 
-                    <Stack
-                      direction={{ xs: 'column', sm: 'row' }}
-                      justifyContent="space-between"
-                      alignItems={{ xs: 'flex-start', sm: 'center' }}
-                      spacing={1}
-                    >
-                      <Typography variant="caption" color="text.secondary">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>
                         {article.sourceName} •{' '}
                         <time dateTime={article.pubDate}>
                           {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
                         </time>
-                      </Typography>
-                      <Typography
-                        component="a"
+                      </p>
+                      <a
                         href={article.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        sx={{
-                          color: theme.palette.primary.main,
-                          textDecoration: 'none',
-                          fontSize: '14px',
-                          fontWeight: 400,
-                          display: 'flex',
-                          alignItems: 'center',
-                          '&:hover': {
-                            textDecoration: 'underline'
-                          }
-                        }}
+                        className="flex items-center text-sm font-normal text-primary hover:underline"
                       >
                         Read full article →
-                      </Typography>
-                    </Stack>
-                  </Paper>
+                      </a>
+                    </div>
+                  </div>
                 ))
               )}
-            </Stack>
+            </div>
 
             {/* Pagination */}
             {totalCount > 0 && (
-              <PaginationWrapper>
-                <InfoBox>
-                  <StyledChip>{`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}</StyledChip>
-                  <Text>articles</Text>
+              <div className="mt-4 flex flex-col flex-wrap items-center justify-between gap-4 sm:flex-row">
+                <div className={cn("flex flex-wrap items-center gap-2 rounded-xl border-[1.5px] px-4 py-2", isDark ? "border-white/15 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                  <span className={cn("rounded-md border-[1.5px] px-2 py-0.5 text-[13px] font-medium tabular-nums", isDark ? "border-white/15 text-white" : "border-gray-300 text-gray-700")}>
+                    {`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}
+                  </span>
+                  <span className={cn("text-[13px] tabular-nums", isDark ? "text-gray-400" : "text-gray-600")}>articles</span>
                   {searchQuery && (
                     <>
-                      <Text fontWeight={400}>for</Text>
-                      <Text fontWeight={600}>"{searchQuery}"</Text>
+                      <span className={cn("text-[13px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>for</span>
+                      <span className={cn("text-[13px] font-semibold", isDark ? "text-white" : "text-gray-900")}>"{searchQuery}"</span>
                     </>
                   )}
                   {selectedSource && !searchQuery && (
                     <>
-                      <Text fontWeight={400}>from</Text>
-                      <Text fontWeight={600}>{selectedSource}</Text>
+                      <span className={cn("text-[13px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>from</span>
+                      <span className={cn("text-[13px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{selectedSource}</span>
                     </>
                   )}
-                </InfoBox>
+                </div>
 
                 {totalPages > 1 && (
-                  <CenterBox>
-                    <PaginationContainer>
-                      <NavButton
+                  <div className="flex flex-1 justify-center">
+                    <div className={cn("flex items-center gap-1.5 rounded-xl border-[1.5px] px-3 py-1.5", isDark ? "border-white/15 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                      <button
                         onClick={() => handlePageChange(null, 1)}
                         disabled={currentPage === 1}
                         title="First page"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
                       >
-                        <ArrowBackIcon sx={{ fontSize: 14 }} />
-                      </NavButton>
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
 
                       {(() => {
                         const pages = [];
@@ -946,37 +559,45 @@ function NewsPage() {
                         }
                         return pages.map((pageNum, idx) => {
                           if (pageNum === '...') {
-                            return <PageEllipsis key={`ellipsis-${idx}`}>...</PageEllipsis>;
+                            return <span key={`ellipsis-${idx}`} className={cn("px-1 text-[13px] tabular-nums", isDark ? "text-gray-400" : "text-gray-500")}>...</span>;
                           }
                           return (
-                            <PageButton
+                            <button
                               key={pageNum}
-                              selected={pageNum === currentPage}
                               onClick={() => handlePageChange(null, pageNum)}
+                              className={cn(
+                                'inline-flex min-w-[24px] items-center justify-center rounded-lg px-1.5 py-0 text-[13px] tabular-nums',
+                                pageNum === currentPage
+                                  ? 'bg-primary font-medium text-white hover:bg-primary-600'
+                                  : isDark ? 'font-normal hover:bg-primary/8' : 'font-normal text-gray-700 hover:bg-gray-200'
+                              )}
                             >
                               {pageNum}
-                            </PageButton>
+                            </button>
                           );
                         });
                       })()}
 
-                      <NavButton
+                      <button
                         onClick={() => handlePageChange(null, totalPages)}
                         disabled={currentPage === totalPages}
                         title="Last page"
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
                       >
-                        <ArrowForwardIcon sx={{ fontSize: 14 }} />
-                      </NavButton>
-                    </PaginationContainer>
-                  </CenterBox>
+                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 )}
-              </PaginationWrapper>
+              </div>
             )}
           </>
         )}
-      </Container>
+      </div>
       <Footer />
-    </Box>
+    </div>
   );
 }
 
@@ -999,6 +620,6 @@ export async function getStaticProps() {
     props: {
       ogp
     },
-    revalidate: 60 // Revalidate every minute for better caching
+    revalidate: 60
   };
 }

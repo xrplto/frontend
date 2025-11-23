@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* Critical CSS - loaded immediately */
 .visually-hidden {
   position: absolute !important;

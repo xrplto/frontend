@@ -1,35 +1,26 @@
-import {
-  Box,
-  IconButton,
-  InputBase,
-  Modal,
-  Stack,
-  Typography,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemAvatar,
-  ListItemText,
-  Avatar,
-  Chip,
-  Divider,
-  CircularProgress,
-  useTheme,
-  alpha
-} from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import CloseIcon from '@mui/icons-material/Close';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import CollectionsIcon from '@mui/icons-material/Collections';
+import * as Dialog from '@radix-ui/react-dialog';
+import * as Avatar from '@radix-ui/react-avatar';
 import { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
+import { cn } from 'src/utils/cn';
 
 const API_URL = 'https://api.xrpl.to/api';
 
-// Currency symbols
+const getThemeClasses = (isDark) => ({
+  overlay: isDark ? 'bg-black/40' : 'bg-black/20',
+  modal: isDark
+    ? 'border-white/5 bg-gradient-to-br from-black/90 via-black/60 to-black/95'
+    : 'border-gray-200 bg-white',
+  text: isDark ? 'text-white' : 'text-gray-900',
+  textSecondary: isDark ? 'text-gray-400' : 'text-gray-600',
+  border: isDark ? 'border-gray-700' : 'border-gray-300',
+  hover: isDark ? 'hover:bg-primary/5' : 'hover:bg-gray-100',
+  bg: isDark ? 'bg-gray-800' : 'bg-gray-100'
+});
+
 const currencySymbols = {
   USD: '$',
   EUR: '€',
@@ -38,7 +29,6 @@ const currencySymbols = {
   XRP: ''
 };
 
-// Price formatter
 const formatPrice = (price) => {
   if (price === 0) return '0.00';
   if (price < 0.00000001) return parseFloat(price).toFixed(12);
@@ -49,7 +39,6 @@ const formatPrice = (price) => {
   return parseFloat(price).toFixed(2);
 };
 
-// Debounce hook
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
@@ -62,11 +51,12 @@ function useDebounce(value, delay) {
 }
 
 function SearchModal({ open, onClose }) {
-  const theme = useTheme();
   const inputRef = useRef(null);
-  const { activeFiatCurrency } = useContext(AppContext);
+  const { activeFiatCurrency, themeName } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
+  const isDark = themeName === 'XrplToDarkTheme';
+  const theme = getThemeClasses(isDark);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ tokens: [], collections: [] });
@@ -78,14 +68,16 @@ function SearchModal({ open, onClose }) {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
 
-  const convertPrice = useCallback((xrpPrice) => {
-    if (activeFiatCurrency === 'XRP') return xrpPrice;
-    return xrpPrice / exchRate;
-  }, [activeFiatCurrency, exchRate]);
+  const convertPrice = useCallback(
+    (xrpPrice) => {
+      if (activeFiatCurrency === 'XRP') return xrpPrice;
+      return xrpPrice / exchRate;
+    },
+    [activeFiatCurrency, exchRate]
+  );
 
   const currencySymbol = currencySymbols[activeFiatCurrency] || '$';
 
-  // Load recent searches
   useEffect(() => {
     if (!open) return;
     const stored = localStorage.getItem('recentSearches');
@@ -98,14 +90,12 @@ function SearchModal({ open, onClose }) {
     }
   }, [open]);
 
-  // Focus input
   useEffect(() => {
     if (open && inputRef.current) {
       setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
 
-  // Load trending data
   useEffect(() => {
     if (!open) return;
 
@@ -129,7 +119,6 @@ function SearchModal({ open, onClose }) {
     loadTrending();
   }, [open]);
 
-  // Search tokens
   useEffect(() => {
     if (!debouncedSearchQuery || !open) {
       setSearchResults({ tokens: [], collections: [] });
@@ -142,16 +131,8 @@ function SearchModal({ open, onClose }) {
       setLoading(true);
       try {
         const [tokensRes, collectionsRes] = await Promise.all([
-          axios.post(
-            `${API_URL}/search`,
-            { search: debouncedSearchQuery },
-            { signal: controller.signal }
-          ),
-          axios.post(
-            `${API_URL}/nft/search`,
-            { search: debouncedSearchQuery },
-            { signal: controller.signal }
-          )
+          axios.post(`${API_URL}/search`, { search: debouncedSearchQuery }, { signal: controller.signal }),
+          axios.post(`${API_URL}/nft/search`, { search: debouncedSearchQuery }, { signal: controller.signal })
         ]);
 
         setSearchResults({
@@ -190,10 +171,7 @@ function SearchModal({ open, onClose }) {
         logoImage: item.logoImage
       };
 
-      const updated = [
-        newRecent,
-        ...recentSearches.filter((r) => r.slug !== item.slug || r.type !== type)
-      ].slice(0, 5);
+      const updated = [newRecent, ...recentSearches.filter((r) => r.slug !== item.slug || r.type !== type)].slice(0, 5);
 
       setRecentSearches(updated);
       localStorage.setItem('recentSearches', JSON.stringify(updated));
@@ -211,103 +189,58 @@ function SearchModal({ open, onClose }) {
     [recentSearches, handleClose]
   );
 
-  const handleKeyDown = useCallback(
-    (e) => {
-      if (e.key === 'Escape') {
-        handleClose();
-      }
-    },
-    [handleClose]
-  );
-
   if (!open) return null;
 
   return (
-    <Modal
-      open={open}
-      onClose={handleClose}
-      sx={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        justifyContent: 'center',
-        pt: { xs: 0, sm: '12vh' }
-      }}
-    >
-      <Box
-        onKeyDown={handleKeyDown}
-        sx={{
-          width: '100%',
-          maxWidth: '650px',
-          height: 'auto',
-          maxHeight: '65vh',
-          overflow: 'hidden',
-          borderRadius: '12px',
-          background: theme.palette.mode === 'dark'
-            ? `linear-gradient(145deg, ${alpha('#000000', 0.9)} 0%, ${alpha('#111111', 0.6)} 50%, ${alpha('#000000', 0.95)} 100%)`
-            : '#ffffff',
-          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-          backdropFilter: 'blur(40px) saturate(200%)',
-          boxShadow: theme.palette.mode === 'dark'
-            ? `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`
-            : '0 8px 32px rgba(0, 0, 0, 0.1)'
-        }}
-      >
-        {/* Search Header */}
-        <Box sx={{ p: 2 }}>
-          <Stack direction="row" alignItems="center" spacing={1.5}>
-            <SearchIcon sx={{ color: 'text.secondary', fontSize: 20, opacity: 0.5 }} />
-            <InputBase
-              ref={inputRef}
-              placeholder="Search tokens and collections..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              fullWidth
-              autoComplete="off"
-              sx={{
-                fontSize: '14px',
-                fontWeight: 400,
-                '& input::placeholder': {
-                  opacity: 0.5
-                }
-              }}
-            />
-            {loading && <CircularProgress size={18} thickness={3} />}
-            <IconButton onClick={handleClose} size="small">
-              <CloseIcon sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Stack>
-        </Box>
-
-        {/* Content */}
-        <Box
-          sx={{
-            maxHeight: { xs: 'calc(100vh - 80px)', sm: 'calc(65vh - 80px)' },
-            overflowY: 'auto'
-          }}
+    <Dialog.Root open={open} onOpenChange={onClose}>
+      <Dialog.Portal>
+        <Dialog.Overlay className={cn("fixed inset-0 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", theme.overlay)} />
+        <Dialog.Content
+          onKeyDown={(e) => e.key === 'Escape' && handleClose()}
+          className={cn("fixed left-1/2 top-[12vh] max-h-[65vh] w-full max-w-[650px] -translate-x-1/2 overflow-hidden rounded-xl border shadow-2xl backdrop-blur-[40px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95", theme.modal)}
         >
-          {!searchQuery && (
-            <>
-              {/* Recent Searches */}
-              {recentSearches.length > 0 && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    sx={{
-                      px: 2,
-                      pt: 1,
-                      pb: 0.25,
-                      fontSize: '10px',
-                      fontWeight: 400,
-                      opacity: 0.5,
-                      color: 'text.secondary'
-                    }}
-                  >
-                    Recent
-                  </Typography>
-                  <List disablePadding dense>
-                    {recentSearches.slice(0, 3).map((item, index) => (
-                      <ListItem key={index} disablePadding>
-                        <ListItemButton
+          {/* Search Header */}
+          <div className="p-4">
+            <div className="flex items-center gap-3">
+              <svg className={cn("h-5 w-5", theme.textSecondary)} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <input
+                ref={inputRef}
+                placeholder="Search tokens and collections..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                autoComplete="off"
+                className={cn("flex-1 bg-transparent text-sm font-normal focus:outline-none", theme.text, isDark ? "placeholder:text-white/50" : "placeholder:text-gray-400")}
+              />
+              {loading && (
+                <svg className="h-4 w-4 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+              )}
+              <button onClick={handleClose} className={theme.textSecondary}>
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="max-h-[calc(65vh-80px)] overflow-y-auto">
+            {!searchQuery && (
+              <>
+                {/* Recent Searches */}
+                {recentSearches.length > 0 && (
+                  <>
+                    <div className="px-4 pb-1 pt-2">
+                      <p className="text-[10px] font-normal text-gray-400/50">Recent</p>
+                    </div>
+                    <div className="space-y-1">
+                      {recentSearches.slice(0, 3).map((item, index) => (
+                        <button
+                          key={index}
                           onClick={() => {
                             handleClose();
                             setTimeout(() => {
@@ -318,437 +251,237 @@ function SearchModal({ open, onClose }) {
                               }
                             }, 0);
                           }}
-                          sx={{
-                            py: 0.5,
-                            px: 1.5,
-                            borderRadius: '8px',
-                            mx: 0.5,
-                            mb: 0.25,
-                            '&:hover': {
-                              bgcolor: alpha(theme.palette.primary.main, 0.04)
-                            }
-                          }}
+                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-2 rounded-lg px-3 py-2 hover:bg-primary/5"
                         >
-                          <ListItemAvatar sx={{ minWidth: 32 }}>
-                            <Avatar
+                          <Avatar.Root className="h-6 w-6">
+                            <Avatar.Image
                               src={
                                 item.type === 'collection'
                                   ? `https://s1.xrpl.to/nft-collection/${item.logoImage}`
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
-                              sx={{
-                                width: 24,
-                                height: 24,
-                                bgcolor: 'transparent'
-                              }}
-                            >
+                              className="h-full w-full rounded-full object-cover"
+                            />
+                            <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-xs">
                               {item.user?.[0] || item.name?.[0]}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={item.user || item.name}
-                            secondary={item.name}
-                            primaryTypographyProps={{ fontSize: '12px', fontWeight: 400 }}
-                            secondaryTypographyProps={{
-                              fontSize: '11px',
-                              sx: { color: alpha(theme.palette.text.secondary, 0.5) }
-                            }}
-                          />
-                          <Chip
-                            label={item.type}
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                              height: 18,
-                              fontSize: '9px',
-                              fontWeight: 400
-                            }}
-                          />
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                  <Divider sx={{ my: 0.5 }} />
-                </>
-              )}
+                            </Avatar.Fallback>
+                          </Avatar.Root>
+                          <div className="flex-1 text-left">
+                            <p className="text-xs font-normal text-white">{item.user || item.name}</p>
+                            <p className="text-[11px] text-gray-400/50">{item.name}</p>
+                          </div>
+                          <span className="rounded border border-gray-700 px-2 py-0.5 text-[9px] font-normal text-gray-400">{item.type}</span>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="my-2 h-px bg-gray-800" />
+                  </>
+                )}
 
-              {/* Trending Tokens */}
-              {!loadingTrending && trendingTokens.length > 0 && (
-                <>
-                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 1.5, pb: 0.75 }} spacing={1}>
-                    <TrendingUpIcon sx={{ fontSize: 16, color: alpha(theme.palette.primary.main, 0.6) }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
-                      Trending
-                    </Typography>
-                  </Stack>
-                  <List disablePadding dense>
-                    {trendingTokens.map((token, index) => (
-                      <ListItem key={index} disablePadding>
-                        <ListItemButton
+                {/* Trending Tokens */}
+                {!loadingTrending && trendingTokens.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 px-4 pb-3 pt-4">
+                      <svg className="h-4 w-4 text-primary/60" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-[11px] font-normal text-gray-400/60">Trending</p>
+                    </div>
+                    <div className="space-y-2">
+                      {trendingTokens.map((token, index) => (
+                        <button
+                          key={index}
                           onClick={() => handleResultClick(token, 'token')}
-                          sx={{
-                            py: 1,
-                            px: 2,
-                            borderRadius: '12px',
-                            mx: 0.5,
-                            mb: 0.5,
-                            '&:hover': {
-                              bgcolor: alpha(theme.palette.primary.main, 0.04)
-                            }
-                          }}
+                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl px-4 py-3 hover:bg-primary/5"
                         >
-                          <ListItemAvatar sx={{ minWidth: 44 }}>
-                            <Avatar
-                              src={`https://s1.xrpl.to/token/${token.md5}`}
-                              sx={{
-                                width: 36,
-                                height: 36,
-                                bgcolor: 'transparent'
-                              }}
-                            >
-                              {token.user?.[0]}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={token.user}
-                            secondary={token.name}
-                            primaryTypographyProps={{ fontSize: '14px', fontWeight: 400, noWrap: true }}
-                            secondaryTypographyProps={{
-                              fontSize: '13px',
-                              noWrap: true,
-                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
-                            }}
-                            sx={{ pr: 1 }}
-                          />
-                          <Stack alignItems="flex-end" spacing={0.25}>
+                          <Avatar.Root className="h-9 w-9">
+                            <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-full w-full rounded-full object-cover" />
+                            <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-sm">{token.user?.[0]}</Avatar.Fallback>
+                          </Avatar.Root>
+                          <div className="flex-1 text-left">
+                            <p className="truncate text-sm font-normal text-white">{token.user}</p>
+                            <p className="truncate text-[13px] text-gray-400/60">{token.name}</p>
+                          </div>
+                          <div className="text-right">
                             {token.exch !== undefined && token.exch !== null && (
-                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
-                                {activeFiatCurrency === 'XRP'
-                                  ? `${formatPrice(convertPrice(token.exch))} XRP`
-                                  : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
-                              </Typography>
+                              <p className="text-sm font-normal text-white">
+                                {activeFiatCurrency === 'XRP' ? `${formatPrice(convertPrice(token.exch))} XRP` : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
+                              </p>
                             )}
                             {token.pro24h !== undefined && token.pro24h !== null && (
-                              <Typography
-                                variant="caption"
-                                fontSize="12px"
-                                color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
-                                fontWeight={400}
-                              >
+                              <p className={cn('text-xs font-normal', parseFloat(token.pro24h) >= 0 ? 'text-green-500' : 'text-red-500')}>
                                 {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                                 {parseFloat(token.pro24h).toFixed(2)}%
-                              </Typography>
+                              </p>
                             )}
-                          </Stack>
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </>
-              )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
 
-              {/* Trending Collections */}
-              {!loadingTrending && trendingCollections.length > 0 && (
-                <>
-                  <Divider sx={{ my: 0.5 }} />
-                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 1.5, pb: 0.5 }} spacing={1}>
-                    <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.6) }} />
-                    <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
-                      Trending Collections
-                    </Typography>
-                  </Stack>
-                  <List disablePadding dense>
-                    {trendingCollections.map((collection, index) => (
-                      <ListItem key={index} disablePadding>
-                        <ListItemButton
+                {/* Trending Collections */}
+                {!loadingTrending && trendingCollections.length > 0 && (
+                  <>
+                    <div className="my-2 h-px bg-gray-800" />
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-4">
+                      <svg className="h-4 w-4 text-green-500/60" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                      </svg>
+                      <p className="text-[11px] font-normal text-gray-400/60">Trending Collections</p>
+                    </div>
+                    <div className="space-y-2">
+                      {trendingCollections.map((collection, index) => (
+                        <button
+                          key={index}
                           onClick={() => handleResultClick(collection, 'collection')}
-                          sx={{
-                            py: 0.75,
-                            px: 2,
-                            borderRadius: '12px',
-                            mx: 0.5,
-                            mb: 0.5,
-                            '&:hover': {
-                              bgcolor: alpha(theme.palette.primary.main, 0.04)
-                            }
-                          }}
+                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl px-4 py-2.5 hover:bg-primary/5"
                         >
-                          <ListItemAvatar sx={{ minWidth: 40 }}>
-                            <Avatar
-                              src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`}
-                              sx={{
-                                width: 32,
-                                height: 32,
-                                bgcolor: 'transparent'
-                              }}
-                            >
-                              {collection.name?.[0]}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={
-                              <Stack direction="row" alignItems="center" spacing={0.75}>
-                                <Typography fontSize="13px" fontWeight={400} noWrap>
-                                  {collection.name}
-                                </Typography>
-                                {collection.verified === 'yes' && (
-                                  <Chip
-                                    label="Verified"
-                                    size="small"
-                                    color="primary"
-                                    sx={{ height: 18, fontSize: '10px', fontWeight: 400 }}
-                                  />
-                                )}
-                              </Stack>
-                            }
-                            secondary={collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}
-                            primaryTypographyProps={{ component: 'div' }}
-                            secondaryTypographyProps={{
-                              fontSize: '12px',
-                              noWrap: true,
-                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
-                            }}
-                            sx={{ pr: 1 }}
-                          />
-                          <Stack alignItems="flex-end" spacing={0.25}>
+                          <Avatar.Root className="h-8 w-8">
+                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-full w-full rounded-full object-cover" />
+                            <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-sm">{collection.name?.[0]}</Avatar.Fallback>
+                          </Avatar.Root>
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-[13px] font-normal text-white">{collection.name}</p>
+                              {collection.verified === 'yes' && <span className="rounded bg-primary px-2 py-0.5 text-[10px] font-normal text-white">Verified</span>}
+                            </div>
+                            <p className="truncate text-xs text-gray-400/60">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
+                          </div>
+                          <div className="text-right">
                             {collection.floor?.amount && (
-                              <Typography variant="body2" fontSize="13px" fontWeight={400}>
-                                {Number(collection.floor.amount) >= 1
-                                  ? Math.round(collection.floor.amount)
-                                  : collection.floor.amount}{' '}
-                                XRP
-                              </Typography>
+                              <p className="text-[13px] font-normal text-white">
+                                {Number(collection.floor.amount) >= 1 ? Math.round(collection.floor.amount) : collection.floor.amount} XRP
+                              </p>
                             )}
                             {collection.sales24h > 0 && (
-                              <Typography
-                                variant="caption"
-                                fontSize="11px"
-                                sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
-                              >
+                              <p className="text-[11px] text-gray-400/60">
                                 {collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today
-                              </Typography>
+                              </p>
                             )}
-                          </Stack>
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </>
-              )}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
 
-              {loadingTrending && (
-                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
-                  <CircularProgress size={24} />
-                </Box>
-              )}
-            </>
-          )}
+                {loadingTrending && (
+                  <div className="flex justify-center p-4">
+                    <svg className="h-6 w-6 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                    </svg>
+                  </div>
+                )}
+              </>
+            )}
 
-          {/* Search Results */}
-          {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && (
-            <>
-              {searchResults.tokens.length > 0 && (
-                <>
-                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 2, pb: 0.5 }} spacing={1}>
-                    <TrendingUpIcon sx={{ fontSize: 14, color: alpha(theme.palette.primary.main, 0.5) }} />
-                    <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
-                      Tokens
-                    </Typography>
-                  </Stack>
-                  <List disablePadding dense>
-                    {searchResults.tokens.map((token, index) => {
-                  const shouldHighlight = index === 0 && searchResults.tokens.length > 1;
-
-                  return (
-                    <ListItem key={index} disablePadding>
-                      <ListItemButton
-                        onClick={() => handleResultClick(token, 'token')}
-                        sx={{
-                          py: 1,
-                          px: 2,
-                          borderRadius: '12px',
-                          mx: 0.5,
-                          mb: 0.5,
-                          bgcolor: shouldHighlight ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
-                          '&:hover': {
-                            bgcolor: alpha(theme.palette.primary.main, 0.08)
-                          }
-                        }}
-                      >
-                        <ListItemAvatar sx={{ minWidth: 44 }}>
-                          <Avatar
-                            src={`https://s1.xrpl.to/token/${token.md5}`}
-                            sx={{
-                              width: 36,
-                              height: 36,
-                              bgcolor: 'transparent'
-                            }}
+            {/* Search Results */}
+            {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && (
+              <>
+                {searchResults.tokens.length > 0 && (
+                  <>
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-4">
+                      <svg className="h-3.5 w-3.5 text-primary/50" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
+                      </svg>
+                      <p className="text-xs font-normal text-gray-400/60">Tokens</p>
+                    </div>
+                    <div className="space-y-2">
+                      {searchResults.tokens.map((token, index) => {
+                        const shouldHighlight = index === 0 && searchResults.tokens.length > 1;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleResultClick(token, 'token')}
+                            className={cn('mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl px-4 py-3 hover:bg-primary/8', shouldHighlight && 'bg-primary/5')}
                           >
-                            {token.user?.[0]}
-                          </Avatar>
-                        </ListItemAvatar>
-                        <ListItemText
-                          primary={
-                            <Stack direction="row" alignItems="center" spacing={0.75}>
-                              <Typography
-                                fontSize="15px"
-                                fontWeight={400}
-                                noWrap
-                                sx={{
-                                  ...(shouldHighlight && {
-                                    color: theme.palette.primary.main
-                                  })
-                                }}
-                              >
-                                {token.user}
-                              </Typography>
-                              {token.verified && (
-                                <Chip
-                                  label="Verified"
-                                  size="small"
-                                  color="primary"
-                                  sx={{ height: 18, fontSize: '13px', fontWeight: 400 }}
-                                />
+                            <Avatar.Root className="h-9 w-9">
+                              <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-full w-full rounded-full object-cover" />
+                              <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-sm">{token.user?.[0]}</Avatar.Fallback>
+                            </Avatar.Root>
+                            <div className="flex-1 text-left">
+                              <div className="flex items-center gap-2">
+                                <p className={cn('truncate text-[15px] font-normal', shouldHighlight ? 'text-primary' : 'text-white')}>{token.user}</p>
+                                {token.verified && <span className="rounded bg-primary px-2 py-0.5 text-[13px] font-normal text-white">Verified</span>}
+                              </div>
+                              <p className="truncate text-[13px] text-gray-400/60">{token.name}</p>
+                            </div>
+                            <div className="text-right">
+                              {token.exch !== undefined && token.exch !== null && (
+                                <p className="text-sm font-normal text-white">
+                                  {activeFiatCurrency === 'XRP' ? `${formatPrice(convertPrice(token.exch))} XRP` : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
+                                </p>
                               )}
-                            </Stack>
-                          }
-                          secondary={token.name}
-                          secondaryTypographyProps={{
-                            fontSize: '13px',
-                            noWrap: true,
-                            sx: { color: alpha(theme.palette.text.secondary, 0.6) }
-                          }}
-                          sx={{ pr: 1 }}
-                        />
-                        <Stack alignItems="flex-end" spacing={0.25}>
-                          {token.exch !== undefined && token.exch !== null && (
-                            <Typography variant="body2" fontSize="14px" fontWeight={400}>
-                              {activeFiatCurrency === 'XRP'
-                                ? `${formatPrice(convertPrice(token.exch))} XRP`
-                                : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
-                            </Typography>
-                          )}
-                          {token.pro24h !== undefined && token.pro24h !== null && (
-                            <Typography
-                              variant="caption"
-                              fontSize="12px"
-                              color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
-                              fontWeight={400}
-                            >
-                              {parseFloat(token.pro24h) >= 0 ? '+' : ''}
-                              {parseFloat(token.pro24h).toFixed(2)}%
-                            </Typography>
-                          )}
-                        </Stack>
-                      </ListItemButton>
-                    </ListItem>
-                      );
-                    })}
-                  </List>
-                </>
-              )}
+                              {token.pro24h !== undefined && token.pro24h !== null && (
+                                <p className={cn('text-xs font-normal', parseFloat(token.pro24h) >= 0 ? 'text-green-500' : 'text-red-500')}>
+                                  {parseFloat(token.pro24h) >= 0 ? '+' : ''}
+                                  {parseFloat(token.pro24h).toFixed(2)}%
+                                </p>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
 
-              {searchResults.collections.length > 0 && (
-                <>
-                  {searchResults.tokens.length > 0 && <Divider sx={{ my: 0.5 }} />}
-                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: searchResults.tokens.length > 0 ? 1.5 : 2, pb: 0.5 }} spacing={1}>
-                    <CollectionsIcon sx={{ fontSize: 14, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                    <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
-                      Collections
-                    </Typography>
-                  </Stack>
-                  <List disablePadding dense>
-                    {searchResults.collections.map((collection, index) => (
-                      <ListItem key={index} disablePadding>
-                        <ListItemButton
+                {searchResults.collections.length > 0 && (
+                  <>
+                    {searchResults.tokens.length > 0 && <div className="my-2 h-px bg-gray-800" />}
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-4">
+                      <svg className="h-3.5 w-3.5 text-gray-400/50" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
+                      </svg>
+                      <p className="text-xs font-normal text-gray-400/60">Collections</p>
+                    </div>
+                    <div className="space-y-2">
+                      {searchResults.collections.map((collection, index) => (
+                        <button
+                          key={index}
                           onClick={() => handleResultClick(collection, 'collection')}
-                          sx={{
-                            py: 0.75,
-                            px: 2,
-                            borderRadius: '12px',
-                            mx: 0.5,
-                            mb: 0.5,
-                            '&:hover': {
-                              bgcolor: alpha(theme.palette.primary.main, 0.04)
-                            }
-                          }}
+                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl px-4 py-2.5 hover:bg-primary/5"
                         >
-                          <ListItemAvatar sx={{ minWidth: 40 }}>
-                            <Avatar
-                              src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`}
-                              sx={{
-                                width: 32,
-                                height: 32,
-                                bgcolor: 'transparent'
-                              }}
-                            >
-                              {collection.name?.[0]}
-                            </Avatar>
-                          </ListItemAvatar>
-                          <ListItemText
-                            primary={
-                              <Stack direction="row" alignItems="center" spacing={0.75}>
-                                <Typography fontSize="13px" fontWeight={400} noWrap>
-                                  {collection.name}
-                                </Typography>
-                                {collection.verified === 'yes' && (
-                                  <Chip
-                                    label="Verified"
-                                    size="small"
-                                    color="primary"
-                                    sx={{ height: 18, fontSize: '10px', fontWeight: 400 }}
-                                  />
-                                )}
-                              </Stack>
-                            }
-                            secondary={collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}
-                            primaryTypographyProps={{ component: 'div' }}
-                            secondaryTypographyProps={{
-                              fontSize: '12px',
-                              noWrap: true,
-                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
-                            }}
-                            sx={{ pr: 1 }}
-                          />
-                          <Stack alignItems="flex-end" spacing={0.25}>
+                          <Avatar.Root className="h-8 w-8">
+                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-full w-full rounded-full object-cover" />
+                            <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-sm">{collection.name?.[0]}</Avatar.Fallback>
+                          </Avatar.Root>
+                          <div className="flex-1 text-left">
+                            <div className="flex items-center gap-2">
+                              <p className="truncate text-[13px] font-normal text-white">{collection.name}</p>
+                              {collection.verified === 'yes' && <span className="rounded bg-primary px-2 py-0.5 text-[10px] font-normal text-white">Verified</span>}
+                            </div>
+                            <p className="truncate text-xs text-gray-400/60">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
+                          </div>
+                          <div className="text-right">
                             {collection.floor?.amount && (
-                              <Typography variant="body2" fontSize="13px" fontWeight={400}>
-                                {Number(collection.floor.amount) >= 1
-                                  ? Math.round(collection.floor.amount)
-                                  : collection.floor.amount}{' '}
-                                XRP
-                              </Typography>
+                              <p className="text-[13px] font-normal text-white">
+                                {Number(collection.floor.amount) >= 1 ? Math.round(collection.floor.amount) : collection.floor.amount} XRP
+                              </p>
                             )}
-                            {collection.sales24h > 0 && (
-                              <Typography
-                                variant="caption"
-                                fontSize="11px"
-                                sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
-                              >
-                                {collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today
-                              </Typography>
-                            )}
-                          </Stack>
-                        </ListItemButton>
-                      </ListItem>
-                    ))}
-                  </List>
-                </>
-              )}
-            </>
-          )}
+                            {collection.sales24h > 0 && <p className="text-[11px] text-gray-400/60">{collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today</p>}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </>
+            )}
 
-          {/* No Results */}
-          {searchQuery && !loading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
-            <Box sx={{ p: 4, textAlign: 'center' }}>
-              <Typography fontSize="14px" sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}>
-                No results found for "{searchQuery}"
-              </Typography>
-            </Box>
-          )}
-        </Box>
-      </Box>
-    </Modal>
+            {/* No Results */}
+            {searchQuery && !loading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+              <div className="p-8 text-center">
+                <p className="text-sm text-gray-400/60">No results found for "{searchQuery}"</p>
+              </div>
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
 
