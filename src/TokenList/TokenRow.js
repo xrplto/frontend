@@ -2,10 +2,27 @@ import Decimal from 'decimal.js-light';
 import { useState, useEffect, useContext, memo, useMemo, useCallback, useRef } from 'react';
 import React from 'react';
 import styled from '@emotion/styled';
-import { useTheme } from '@mui/material/styles';
 import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
+
+const getTheme = (isDark) => ({
+  palette: {
+    mode: isDark ? 'dark' : 'light',
+    text: {
+      primary: isDark ? '#FFFFFF' : '#000000',
+      secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+      disabled: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
+    },
+    action: {
+      disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'
+    },
+    background: {
+      default: isDark ? '#000000' : '#FFFFFF',
+      paper: isDark ? '#000000' : '#FFFFFF'
+    }
+  }
+});
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -417,7 +434,7 @@ const MobileTokenRow = ({
   viewMode = 'classic',
   customColumns = []
 }) => {
-  const theme = useTheme();
+  const theme = getTheme(darkMode);
   const {
     name,
     user,
@@ -585,7 +602,7 @@ const DesktopTokenRow = ({
   viewMode = 'classic',
   customColumns = []
 }) => {
-  const theme = useTheme();
+  const theme = getTheme(darkMode);
   const {
     name,
     user,
