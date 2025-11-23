@@ -279,56 +279,53 @@ const WalletContent = ({
 
   return (
     <>
-      {/* Compact Header */}
+      {/* Header */}
       <Box sx={{
-        p: 1.4,
-        background: 'transparent',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        p: 1.2,
+        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
       }}>
         <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={0.8} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center">
             <Box sx={{
-              width: 5,
-              height: 5,
+              width: 4,
+              height: 4,
               borderRadius: '50%',
-              // Always green for instant display
               background: theme.palette.success.main
             }} />
             <Typography sx={{
               fontFamily: 'monospace',
               fontSize: '11px',
               fontWeight: 400,
-              opacity: 0.9
+              opacity: 0.7
             }}>
               {truncateAccount(accountLogin, 6)}
             </Typography>
           </Stack>
-          <Stack direction="row" spacing={0.5} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center">
             {needsBackup && (
               <Typography
                 onClick={onBackupSeed}
                 sx={{
-                  fontSize: '13px',
+                  fontSize: '11px',
                   color: theme.palette.warning.main,
                   cursor: 'pointer',
-                  '&:hover': {
-                    textDecoration: 'underline'
-                  }
+                  opacity: 0.8,
+                  '&:hover': { opacity: 1 }
                 }}
               >
-                needs backup
+                backup
               </Typography>
             )}
             <IconButton
               size="small"
               onClick={onClose}
               sx={{
-                p: 0.25,
-                opacity: 0.4,
-                '&:hover': { opacity: 1 }
+                p: 0.3,
+                opacity: 0.5,
+                '&:hover': { opacity: 0.8 }
               }}
             >
-              <Box component="svg" sx={{ width: 14, height: 14 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </Box>
             </IconButton>
@@ -336,187 +333,144 @@ const WalletContent = ({
         </Stack>
       </Box>
 
-      {/* Streamlined Balance */}
+      {/* Balance */}
       <Box sx={{
-        py: 1.5,
+        py: 2,
         px: 2,
-        textAlign: 'center',
-        background: 'transparent'
+        textAlign: 'center'
       }}>
         <Typography sx={{
-          fontSize: '32px',
-          fontWeight: 300,
-          lineHeight: 1.2,
-          fontFamily: 'system-ui',
-          color: theme.palette.text.primary
+          fontSize: '28px',
+          fontWeight: 400,
+          lineHeight: 1,
+          fontFamily: 'monospace'
         }}>
           {accountTotalXrp || accountBalance?.curr1?.value || '0'}
         </Typography>
         <Typography sx={{
           fontSize: '11px',
-          letterSpacing: '0.5px',
           opacity: 0.5,
           fontWeight: 400,
-          mt: 0.2
+          mt: 0.5
         }}>
-          XRP BALANCE
+          XRP
         </Typography>
 
-        {/* Backup Warning */}
-        {needsBackup && (
-          <Chip
-            label="⚠ Backup needed"
-            size="small"
-            onClick={onBackupSeed}
-            sx={{
-              mt: 1,
-              height: 20,
-              fontSize: '11px',
-              backgroundColor: alpha(theme.palette.warning.main, 0.08),
-              color: theme.palette.warning.main,
-              border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-              cursor: 'pointer',
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.warning.main, 0.12)
-              }
-            }}
-          />
-        )}
-
-        {/* Action Buttons */}
-        <Stack direction="row" spacing={0.8} justifyContent="center" sx={{ mt: 1.2 }}>
-          <IconButton
+        {/* Actions */}
+        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1.5 }}>
+          <Button
             size="small"
             onClick={() => {
               navigator.clipboard.writeText(accountLogin);
               openSnackbar('Address copied', 'success');
             }}
-            title="Copy address"
             sx={{
-              p: 0.7,
-              opacity: 0.7,
-              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+              fontSize: '11px',
+              fontWeight: 400,
+              textTransform: 'none',
+              color: 'text.secondary',
+              minWidth: 'auto',
+              px: 1.5,
+              py: 0.5,
+              '&:hover': { backgroundColor: alpha(theme.palette.text.primary, 0.04) }
             }}
           >
-            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-            </Box>
-          </IconButton>
-          <IconButton
+            Copy
+          </Button>
+          <Button
             size="small"
             onClick={() => setShowQR(!showQR)}
-            title="Show QR code"
             sx={{
-              p: 0.7,
-              opacity: 0.7,
-              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+              fontSize: '11px',
+              fontWeight: 400,
+              textTransform: 'none',
+              color: 'text.secondary',
+              minWidth: 'auto',
+              px: 1.5,
+              py: 0.5,
+              '&:hover': { backgroundColor: alpha(theme.palette.text.primary, 0.04) }
             }}
           >
-            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="3" width="7" height="7"/>
-              <rect x="14" y="3" width="7" height="7"/>
-              <rect x="3" y="14" width="7" height="7"/>
-              <rect x="15" y="15" width="5" height="5"/>
-              <rect x="11" y="11" width="2" height="2"/>
-            </Box>
-          </IconButton>
-          <IconButton
+            QR
+          </Button>
+          <Button
             size="small"
             onClick={onBackupSeed}
-            title="Backup options"
             sx={{
-              p: 0.7,
-              opacity: 0.7,
-              '&:hover': { opacity: 1, backgroundColor: alpha(theme.palette.text.primary, 0.04) }
+              fontSize: '11px',
+              fontWeight: 400,
+              textTransform: 'none',
+              color: 'text.secondary',
+              minWidth: 'auto',
+              px: 1.5,
+              py: 0.5,
+              '&:hover': { backgroundColor: alpha(theme.palette.text.primary, 0.04) }
             }}
           >
-            <Box component="svg" sx={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
-            </Box>
-          </IconButton>
+            Backup
+          </Button>
         </Stack>
 
-        {/* QR Code Display */}
         {showQR && (
           <Box sx={{
-            mt: 1,
+            mt: 1.5,
             p: 1,
-            borderRadius: '12px',
+            borderRadius: '8px',
             background: 'white',
             display: 'inline-block'
           }}>
             <Box
               component="img"
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${accountLogin}`}
+              src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${accountLogin}`}
               alt="QR Code"
-              sx={{ display: 'block', width: 120, height: 120 }}
+              sx={{ display: 'block', width: 100, height: 100 }}
             />
           </Box>
         )}
       </Box>
 
-      {/* Inline Stats */}
-      <Box sx={{ px: 2, pb: 1.2 }}>
-        <Stack direction="row" spacing={0.6} justifyContent="center">
-          <Chip
-            label={`${accountBalance?.curr1?.value || '0'} available`}
-            size="small"
-            sx={{
-              height: 24,
-              fontSize: '11px',
-              fontWeight: 400,
-              backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-              '& .MuiChip-label': { px: 1 }
-            }}
-          />
-          <Chip
-            label={`${accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved`}
-            size="small"
-            sx={{
-              height: 24,
-              fontSize: '11px',
-              fontWeight: 400,
-              backgroundColor: 'transparent',
-              border: `1px solid ${alpha(theme.palette.warning.main, 0.2)}`,
-              color: theme.palette.warning.main,
-              '& .MuiChip-label': { px: 1 }
-            }}
-          />
+      {/* Stats */}
+      <Box sx={{ px: 2, pb: 1.5 }}>
+        <Stack direction="row" spacing={1} justifyContent="center">
+          <Typography sx={{ fontSize: '11px', opacity: 0.5 }}>
+            {accountBalance?.curr1?.value || '0'} available
+          </Typography>
+          <Typography sx={{ fontSize: '11px', opacity: 0.3 }}>•</Typography>
+          <Typography sx={{ fontSize: '11px', opacity: 0.5, color: theme.palette.warning.main }}>
+            {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved
+          </Typography>
         </Stack>
       </Box>
 
-      {/* Accounts Section - Always show for better UX */}
+      {/* Accounts */}
       <Box sx={{
-        borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
       }}>
-          {/* Toggle Button */}
           <Button
             fullWidth
             onClick={() => setShowAllAccounts(!showAllAccounts)}
             sx={{
-              py: 1,
+              py: 0.8,
               px: 2,
               justifyContent: 'space-between',
               textTransform: 'none',
-              fontSize: '13px',
+              fontSize: '11px',
               fontWeight: 400,
-              color: theme.palette.text.secondary,
+              color: 'text.secondary',
               borderRadius: 0,
               '&:hover': {
                 backgroundColor: alpha(theme.palette.text.primary, 0.04)
               }
             }}
           >
-            <span style={{ letterSpacing: '0.3px' }}>All Accounts ({profiles.length})</span>
+            <span>Accounts ({profiles.length})</span>
             <Box
               component="svg"
               sx={{
-                width: 12,
-                height: 12,
+                width: 10,
+                height: 10,
                 transform: showAllAccounts ? 'rotate(180deg)' : 'rotate(0deg)',
-                opacity: 0.6
+                opacity: 0.5
               }}
               viewBox="0 0 24 24"
               fill="none"
@@ -527,11 +481,10 @@ const WalletContent = ({
             </Box>
           </Button>
 
-          {/* Expandable Accounts List */}
           {showAllAccounts && (
             <Box sx={{
-              backgroundColor: alpha(theme.palette.background.default, 0.4),
-              borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+              backgroundColor: alpha(theme.palette.background.default, 0.3),
+              borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
             }}>
               {/* Compact Pagination */}
               {(() => {
@@ -721,29 +674,27 @@ const WalletContent = ({
       </Box>
 
 
-      {/* Bottom Actions - Compact */}
+      {/* Actions */}
       <Box sx={{
-        p: 1.2,
-        borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
+        p: 1,
+        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
         display: 'flex',
         gap: 0.5
       }}>
-        {/* New Account Button */}
         {onCreateNewAccount && profiles.length < 25 && (
           <Button
             onClick={onCreateNewAccount}
-            variant="text"
             size="small"
             sx={{
               flex: 1,
               py: 0.5,
-              borderRadius: '6px',
+              borderRadius: '8px',
               color: '#4285f4',
               fontSize: '11px',
               textTransform: 'none',
               fontWeight: 400,
               '&:hover': {
-                background: alpha('#4285f4', 0.08)
+                background: alpha('#4285f4', 0.04)
               }
             }}
           >
@@ -751,23 +702,21 @@ const WalletContent = ({
           </Button>
         )}
 
-        {/* Logout */}
         <Button
           onClick={onLogout}
-          variant="text"
           size="small"
           sx={{
             flex: profiles.length >= 25 ? 1 : 'none',
-            px: profiles.length >= 25 ? 0 : 2,
+            px: profiles.length >= 25 ? 0 : 1.5,
             py: 0.5,
-            borderRadius: '6px',
-            color: theme.palette.text.secondary,
+            borderRadius: '8px',
+            color: 'text.secondary',
             fontSize: '11px',
             textTransform: 'none',
             fontWeight: 400,
             '&:hover': {
-              color: theme.palette.error.main,
-              background: alpha(theme.palette.error.main, 0.08)
+              color: 'error.main',
+              background: alpha(theme.palette.error.main, 0.04)
             }
           }}
         >

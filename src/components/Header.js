@@ -979,16 +979,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     display: 'flex',
                     alignItems: 'center',
                     height: '32px',
-                    px: 2,
-                    fontSize: '0.9rem',
-                    fontWeight: 400,
+                    px: 1.8,
+                    fontSize: '0.95rem',
+                    fontWeight: 500,
                     letterSpacing: 0,
                     color: '#4285f4',
-                    border: `1.5px solid ${alpha('#4285f4', 0.2)}`,
-                    borderRadius: '8px',
+                    border: `1.5px solid ${alpha('#4285f4', 0.25)}`,
+                    borderRadius: '12px',
                     backgroundColor: 'transparent',
+                    transition: 'none',
                     '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.04),
+                      backgroundColor: alpha('#4285f4', 0.08),
                       borderColor: '#4285f4'
                     }
                   }}
