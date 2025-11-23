@@ -294,11 +294,11 @@ function SearchModal({ open, onClose }) {
                     variant="subtitle2"
                     sx={{
                       px: 2,
-                      pt: 1.5,
-                      pb: 0.5,
-                      fontSize: '11px',
+                      pt: 1,
+                      pb: 0.25,
+                      fontSize: '10px',
                       fontWeight: 400,
-                      opacity: 0.6,
+                      opacity: 0.5,
                       color: 'text.secondary'
                     }}
                   >
@@ -319,9 +319,9 @@ function SearchModal({ open, onClose }) {
                             }, 0);
                           }}
                           sx={{
-                            py: 0.75,
-                            px: 2,
-                            borderRadius: '12px',
+                            py: 0.5,
+                            px: 1.5,
+                            borderRadius: '8px',
                             mx: 0.5,
                             mb: 0.25,
                             '&:hover': {
@@ -329,7 +329,7 @@ function SearchModal({ open, onClose }) {
                             }
                           }}
                         >
-                          <ListItemAvatar sx={{ minWidth: 40 }}>
+                          <ListItemAvatar sx={{ minWidth: 32 }}>
                             <Avatar
                               src={
                                 item.type === 'collection'
@@ -337,8 +337,8 @@ function SearchModal({ open, onClose }) {
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
                               sx={{
-                                width: 32,
-                                height: 32,
+                                width: 24,
+                                height: 24,
                                 bgcolor: 'transparent'
                               }}
                             >
@@ -348,10 +348,10 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={item.user || item.name}
                             secondary={item.name}
-                            primaryTypographyProps={{ fontSize: '13px', fontWeight: 400 }}
+                            primaryTypographyProps={{ fontSize: '12px', fontWeight: 400 }}
                             secondaryTypographyProps={{
-                              fontSize: '12px',
-                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
+                              fontSize: '11px',
+                              sx: { color: alpha(theme.palette.text.secondary, 0.5) }
                             }}
                           />
                           <Chip
@@ -359,8 +359,8 @@ function SearchModal({ open, onClose }) {
                             size="small"
                             variant="outlined"
                             sx={{
-                              height: 20,
-                              fontSize: '10px',
+                              height: 18,
+                              fontSize: '9px',
                               fontWeight: 400
                             }}
                           />
