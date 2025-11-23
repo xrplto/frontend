@@ -219,6 +219,8 @@ function SearchModal({ open, onClose }) {
     [handleClose]
   );
 
+  if (!open) return null;
+
   return (
     <Modal
       open={open}
@@ -230,19 +232,18 @@ function SearchModal({ open, onClose }) {
         pt: { xs: 0, sm: '12vh' }
       }}
     >
-      <Box
+      <div
         onKeyDown={handleKeyDown}
-        sx={{
-          width: { xs: '100%', sm: '90%' },
-          maxWidth: { xs: '100%', sm: 650 },
-          height: { xs: '100vh', sm: 'auto' },
-          maxHeight: { xs: '100vh', sm: '65vh' },
+        style={{
+          width: '100%',
+          maxWidth: '650px',
+          height: 'auto',
+          maxHeight: '65vh',
           overflow: 'hidden',
-          borderRadius: { xs: 0, sm: '12px' },
+          borderRadius: '12px',
           boxShadow: 'none',
-          border: 'none',
-          outline: 'none',
-          bgcolor: 'background.paper'
+          backgroundColor: theme.palette.background.paper,
+          border: '1px solid rgba(128, 128, 128, 0.15)'
         }}
       >
         {/* Search Header */}
@@ -630,7 +631,7 @@ function SearchModal({ open, onClose }) {
             </Box>
           )}
         </Box>
-      </Box>
+      </div>
     </Modal>
   );
 }
