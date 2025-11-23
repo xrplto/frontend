@@ -715,6 +715,32 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     setAddLiquidityDialog({ open: false, pool: null });
   };
 
+  const handleAmount1Change = (value) => {
+    setDepositAmount1(value);
+    if (depositMode === 'double') {
+      if (!value) {
+        setDepositAmount2('');
+      } else if (addLiquidityDialog.pool?.currentLiquidity) {
+        const pool = addLiquidityDialog.pool;
+        const ratio = pool.currentLiquidity.asset2Amount / pool.currentLiquidity.asset1Amount;
+        setDepositAmount2((parseFloat(value) * ratio).toFixed(6));
+      }
+    }
+  };
+
+  const handleAmount2Change = (value) => {
+    setDepositAmount2(value);
+    if (depositMode === 'double') {
+      if (!value) {
+        setDepositAmount1('');
+      } else if (addLiquidityDialog.pool?.currentLiquidity) {
+        const pool = addLiquidityDialog.pool;
+        const ratio = pool.currentLiquidity.asset1Amount / pool.currentLiquidity.asset2Amount;
+        setDepositAmount1((parseFloat(value) * ratio).toFixed(6));
+      }
+    }
+  };
+
   const handleSubmitDeposit = async () => {
     const { pool } = addLiquidityDialog;
     if (!pool) return;
@@ -1291,7 +1317,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <TextField
                   label={decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
                   value={depositAmount1}
-                  onChange={(e) => setDepositAmount1(e.target.value)}
+                  onChange={(e) => handleAmount1Change(e.target.value)}
                   type="number"
                   fullWidth
                   size="small"
@@ -1305,7 +1331,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                 <TextField
                   label={decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
                   value={depositAmount2}
-                  onChange={(e) => setDepositAmount2(e.target.value)}
+                  onChange={(e) => handleAmount2Change(e.target.value)}
                   type="number"
                   fullWidth
                   size="small"
