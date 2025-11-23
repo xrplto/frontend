@@ -269,19 +269,22 @@ const ButtonGroup = styled.div`
   flex-shrink: 0;
   background: rgba(0, 0, 0, 0.02);
   padding: 2px;
-  border-radius: 12px;
+  border-radius: 6px;
 
   & > button {
-    border-radius: 8px;
+    border-radius: 4px;
     border: none;
     min-width: 36px;
     height: 32px;
-    padding: 0 8px;
+    padding: 0 10px;
     font-size: 0.8rem;
     font-weight: 400;
     background: transparent;
     cursor: pointer;
-    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
 
     &:hover {
       background: rgba(33, 150, 243, 0.08);
@@ -289,12 +292,12 @@ const ButtonGroup = styled.div`
   }
 
   & > button.selected {
-    background: rgba(33, 150, 243, 0.15);
+    background: rgba(33, 150, 243, 0.12);
     color: #2196f3;
-    font-weight: 600;
+    font-weight: 500;
 
     &:hover {
-      background: rgba(33, 150, 243, 0.2);
+      background: rgba(33, 150, 243, 0.15);
     }
   }
 
@@ -304,8 +307,9 @@ const ButtonGroup = styled.div`
     & > button {
       min-width: 28px;
       height: 28px;
-      padding: 0 4px;
+      padding: 0 6px;
       font-size: 0.7rem;
+      gap: 2px;
     }
   }
 `;
@@ -328,27 +332,27 @@ const Chip = styled.button`
   align-items: center;
   gap: 4px;
   padding: 4px 12px;
-  border: ${(props) => props.border || 'none'};
-  border-radius: 12px;
-  background: ${(props) => props.background || 'rgba(145, 158, 171, 0.05)'};
+  border: ${(props) => props.border || '1.5px solid'};
+  border-color: ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.2)'};
+  border-radius: 6px;
+  background: ${(props) => props.background || 'transparent'};
   color: ${(props) => props.color || 'inherit'};
   font-size: 0.8rem;
-  font-weight: 600;
+  font-weight: 400;
   cursor: pointer;
-  transition: all 0.3s ease;
   white-space: nowrap;
   height: 32px;
   flex-shrink: 0;
 
   &:hover {
-    background: ${(props) => props.hoverBackground || 'rgba(145, 158, 171, 0.15)'};
-    transform: translateY(-1px);
+    background: ${(props) => props.hoverBackground || 'rgba(145, 158, 171, 0.08)'};
+    border-color: ${(props) => props.hoverBorderColor || props.borderColor || 'rgba(145, 158, 171, 0.3)'};
   }
 
   @media (max-width: 600px) {
-    padding: 2px 5px;
-    font-size: 0.65rem;
-    height: 24px;
+    padding: 2px 8px;
+    font-size: 0.7rem;
+    height: 28px;
     gap: 2px;
     display: ${(props) => (props.hideOnMobile ? 'none' : 'inline-flex')};
   }
@@ -360,7 +364,7 @@ const TagChip = styled.button`
   gap: 4px;
   padding: 4px 10px;
   border: 1.5px solid ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.15)'};
-  border-radius: 12px;
+  border-radius: 6px;
   background: transparent;
   color: ${(props) => props.color || 'inherit'};
   font-size: 0.75rem;
@@ -390,7 +394,7 @@ const AllTagsButton = styled.button`
   gap: 4px;
   padding: 4px 10px;
   border: 1.5px solid #4285f4;
-  border-radius: 12px;
+  border-radius: 6px;
   background: transparent;
   color: #4285f4;
   font-size: 0.75rem;
@@ -486,7 +490,7 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
                   px: 1.5,
                   border: '1.5px solid',
                   borderColor: 'rgba(145, 158, 171, 0.2)',
-                  borderRadius: '12px',
+                  borderRadius: '6px',
                   background: 'transparent',
                   color: 'text.primary',
                   fontSize: '13px',
@@ -781,41 +785,15 @@ const SearchToolbar = memo(function SearchToolbar({
             <button
               className={currentView === 'tokens' ? 'selected' : ''}
               onClick={() => (window.location.href = '/')}
-              style={{ minWidth: window.innerWidth <= 600 ? '55px' : '70px' }}
             >
-              <GridOnIcon
-                sx={{
-                  width: 14,
-                  height: 14,
-                  marginRight: window.innerWidth <= 600 ? '2px' : '4px'
-                }}
-              />
-              <span style={{ fontSize: window.innerWidth <= 600 ? '11px' : '12px' }}>Tokens</span>
+              <GridOnIcon sx={{ width: 14, height: 14 }} />
+              Tokens
             </button>
             <button
               className={router.pathname === '/view/firstledger' ? 'selected' : ''}
               onClick={() => (window.location.href = '/view/firstledger')}
-              style={{ minWidth: window.innerWidth <= 600 ? '70px' : '90px' }}
             >
-              <span
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: window.innerWidth <= 600 ? '2px' : '4px',
-                  fontSize: window.innerWidth <= 600 ? '11px' : '12px'
-                }}
-              >
-                <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>
-                  FirstLedger
-                </span>
-                <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>FL</span>
-                <FilterListIcon
-                  icon="material-symbols:open-in-new"
-                  width={window.innerWidth <= 600 ? '10' : '12'}
-                  height={window.innerWidth <= 600 ? '10' : '12'}
-                  style={{ opacity: 0.7 }}
-                />
-              </span>
+              FirstLedger
             </button>
           </ButtonGroup>
 
@@ -885,94 +863,62 @@ const SearchToolbar = memo(function SearchToolbar({
 
           <Chip
             onClick={() => (window.location.href = '/trending')}
-            background={
-              currentView === 'trending'
-                ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-                : 'rgba(255, 87, 34, 0.1)'
-            }
-            color={currentView === 'trending' ? '#fff' : '#ff5722'}
-            hoverBackground={
-              currentView === 'trending'
-                ? 'linear-gradient(135deg, #ff5722 0%, #ff7043 100%)'
-                : 'rgba(255, 87, 34, 0.25)'
-            }
+            background={currentView === 'trending' ? 'rgba(255, 87, 34, 0.12)' : 'transparent'}
+            borderColor={currentView === 'trending' ? '#ff5722' : 'rgba(255, 87, 34, 0.3)'}
+            color="#ff5722"
+            hoverBackground="rgba(255, 87, 34, 0.08)"
+            hoverBorderColor="#ff5722"
           >
-            <LocalFireDepartmentIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
+            <LocalFireDepartmentIcon sx={{ width: 15, height: 15 }} />
             Hot
           </Chip>
 
           <Chip
             onClick={() => (window.location.href = '/spotlight')}
-            background={
-              currentView === 'spotlight'
-                ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-                : 'rgba(33, 150, 243, 0.1)'
-            }
-            color={currentView === 'spotlight' ? '#fff' : '#2196f3'}
-            hoverBackground={
-              currentView === 'spotlight'
-                ? 'linear-gradient(135deg, #2196f3 0%, #42a5f5 100%)'
-                : 'rgba(33, 150, 243, 0.25)'
-            }
+            background={currentView === 'spotlight' ? 'rgba(33, 150, 243, 0.12)' : 'transparent'}
+            borderColor={currentView === 'spotlight' ? '#2196f3' : 'rgba(33, 150, 243, 0.3)'}
+            color="#2196f3"
+            hoverBackground="rgba(33, 150, 243, 0.08)"
+            hoverBorderColor="#2196f3"
           >
-            <DiamondIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
+            <DiamondIcon sx={{ width: 15, height: 15 }} />
             Gems
           </Chip>
 
           <Chip
             onClick={(e) => setGainersMenuAnchor(e.currentTarget)}
-            background={
-              currentView === 'gainers'
-                ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-                : 'rgba(76, 175, 80, 0.1)'
-            }
-            color={currentView === 'gainers' ? '#fff' : '#4caf50'}
-            hoverBackground={
-              currentView === 'gainers'
-                ? 'linear-gradient(135deg, #4caf50 0%, #66bb6a 100%)'
-                : 'rgba(76, 175, 80, 0.25)'
-            }
+            background={currentView === 'gainers' ? 'rgba(76, 175, 80, 0.12)' : 'transparent'}
+            borderColor={currentView === 'gainers' ? '#4caf50' : 'rgba(76, 175, 80, 0.3)'}
+            color="#4caf50"
+            hoverBackground="rgba(76, 175, 80, 0.08)"
+            hoverBorderColor="#4caf50"
           >
-            <TrendingUpIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
-            <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Gainers</span>
-            <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>📈</span>
+            <TrendingUpIcon sx={{ width: 15, height: 15 }} />
+            Gainers
           </Chip>
 
           <Chip
             onClick={() => (window.location.href = '/new')}
-            background={
-              currentView === 'new'
-                ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-                : 'rgba(255, 152, 0, 0.1)'
-            }
-            color={currentView === 'new' ? '#fff' : '#ff9800'}
-            hoverBackground={
-              currentView === 'new'
-                ? 'linear-gradient(135deg, #ff9800 0%, #ffa726 100%)'
-                : 'rgba(255, 152, 0, 0.25)'
-            }
+            background={currentView === 'new' ? 'rgba(255, 152, 0, 0.12)' : 'transparent'}
+            borderColor={currentView === 'new' ? '#ff9800' : 'rgba(255, 152, 0, 0.3)'}
+            color="#ff9800"
+            hoverBackground="rgba(255, 152, 0, 0.08)"
+            hoverBorderColor="#ff9800"
           >
-            <NewReleasesIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
+            <NewReleasesIcon sx={{ width: 15, height: 15 }} />
             New
           </Chip>
 
           <Chip
             onClick={() => (window.location.href = '/most-viewed')}
-            background={
-              currentView === 'most-viewed'
-                ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-                : 'rgba(156, 39, 176, 0.1)'
-            }
-            color={currentView === 'most-viewed' ? '#fff' : '#9c27b0'}
-            hoverBackground={
-              currentView === 'most-viewed'
-                ? 'linear-gradient(135deg, #9c27b0 0%, #ab47bc 100%)'
-                : 'rgba(156, 39, 176, 0.25)'
-            }
+            background={currentView === 'most-viewed' ? 'rgba(156, 39, 176, 0.12)' : 'transparent'}
+            borderColor={currentView === 'most-viewed' ? '#9c27b0' : 'rgba(156, 39, 176, 0.3)'}
+            color="#9c27b0"
+            hoverBackground="rgba(156, 39, 176, 0.08)"
+            hoverBorderColor="#9c27b0"
           >
-            <VisibilityIcon sx={{ width: 16, height: 16, marginRight: '4px' }} />
-            <span style={{ display: window.innerWidth <= 600 ? 'none' : 'inline' }}>Popular</span>
-            <span style={{ display: window.innerWidth <= 600 ? 'inline' : 'none' }}>👁️</span>
+            <VisibilityIcon sx={{ width: 15, height: 15 }} />
+            Popular
           </Chip>
         </RowContent>
 
