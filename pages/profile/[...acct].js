@@ -129,16 +129,16 @@ const OverView = ({ account }) => {
         {account} Profile on XRPL
       </h1>
 
-      <Container maxWidth="xl" sx={{ py: 2 }}>
+      <Container maxWidth="xl" sx={{ py: 3 }}>
         {/* Account Header */}
-        <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 3, pb: 2, borderBottom: `1px solid ${alpha('#fff', 0.08)}` }}>
-          <Typography variant="h6" sx={{ fontSize: '1.15rem', fontWeight: 500, letterSpacing: '-0.01em' }}>
-            {account.substring(0, 8)}...{account.substring(account.length - 6)}
+        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
+          <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 400 }}>
+            {account.substring(0, 10)}...{account.substring(account.length - 8)}
           </Typography>
-          {data?.isAMM && <Chip label="AMM" size="small" sx={{ fontSize: '10px', height: '18px', px: 0.5, backgroundColor: alpha('#4285f4', 0.06), color: '#4285f4', border: `1px solid ${alpha('#4285f4', 0.15)}`, fontWeight: 400 }} />}
+          {data?.isAMM && <Chip label="AMM" size="small" sx={{ fontSize: '11px', height: '20px', backgroundColor: alpha('#4285f4', 0.08), color: '#4285f4', border: 'none', fontWeight: 400 }} />}
           {data?.firstTradeDate && (
-            <Typography variant="caption" sx={{ fontSize: '11px', color: (theme) => alpha(theme.palette.text.secondary, 0.4) }}>
-              Active: {fDateTime(data.firstTradeDate)} → {fDateTime(data.lastTradeDate)}
+            <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), ml: 'auto' }}>
+              {fDateTime(data.firstTradeDate)} → {fDateTime(data.lastTradeDate)}
             </Typography>
           )}
         </Stack>
@@ -146,71 +146,62 @@ const OverView = ({ account }) => {
         {/* Key Metrics */}
         {data && (
         <>
-        <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.08em', mb: 1.5, display: 'block' }}>
-          Performance Overview
-        </Typography>
         <Box sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: 3,
-          mb: 3,
-          pb: 3,
-          borderBottom: `1px solid ${alpha('#fff', 0.08)}`
+          gridTemplateColumns: 'repeat(4, 1fr)',
+          gap: 4,
+          mb: 4,
+          pb: 4,
+          borderBottom: `1px solid ${alpha('#fff', 0.06)}`
         }}>
           <Box>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>XRP Balance</Typography>
-            <Typography variant="body2" sx={{ fontSize: '1.1rem', fontWeight: 500 }}>
-              {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'}
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Balance</Typography>
+            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, mb: 0.5 }}>
+              {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'} XRP
             </Typography>
             {holdings?.accountData && (
-              <Typography variant="caption" sx={{ fontSize: '0.75rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block' }}>
-                Avail: {fCurrency5((holdings.accountData.balanceDrops - holdings.accountData.reserveDrops) / 1000000)}
+              <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                {fCurrency5((holdings.accountData.balanceDrops - holdings.accountData.reserveDrops) / 1000000)} available
               </Typography>
             )}
           </Box>
           <Box>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>P&L</Typography>
-            <Typography variant="body2" sx={{ fontSize: '1.1rem', fontWeight: 500, color: totalPnL >= 0 ? '#10b981' : '#ef4444' }}>
-              {fCurrency5(totalPnL)}
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Total P&L</Typography>
+            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, color: totalPnL >= 0 ? '#10b981' : '#ef4444', mb: 0.5 }}>
+              {fCurrency5(totalPnL)} XRP
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.85rem', color: data.avgROI >= 0 ? alpha('#10b981', 0.7) : alpha('#ef4444', 0.7) }}>
+              {fCurrency5(data.avgROI)}% ROI
             </Typography>
           </Box>
           <Box>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>ROI</Typography>
-            <Typography variant="body2" sx={{ fontSize: '1.1rem', fontWeight: 500, color: data.avgROI >= 0 ? '#10b981' : '#ef4444' }}>
-              {fCurrency5(data.avgROI)}%
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Win Rate</Typography>
-            <Typography variant="body2" sx={{ fontSize: '1.1rem', fontWeight: 500 }}>
-              {fCurrency5(winRate)}%
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Trades</Typography>
-            <Typography variant="body2" sx={{ fontSize: '1.1rem', fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Trading</Typography>
+            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, mb: 0.5 }}>
               {data.totalTrades}
             </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+              {fCurrency5(winRate)}% win rate
+            </Typography>
           </Box>
           <Box>
-            <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Volume</Typography>
-            <Typography variant="body2" sx={{ fontSize: '1.1rem', fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Volume</Typography>
+            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, mb: 0.5 }}>
               {fCurrency5(data.totalVolume)}
+            </Typography>
+            <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+              {data.buyTrades} buys · {data.sellTrades} sells
             </Typography>
           </Box>
         </Box>
 
         {/* Period Performance */}
-        <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.08em', mb: 1.5, display: 'block' }}>
-          Time Period Analysis
-        </Typography>
         <Box sx={{
           display: 'grid',
           gridTemplateColumns: 'repeat(5, 1fr)',
           gap: 3,
-          mb: 3,
-          pb: 3,
-          borderBottom: `1px solid ${alpha('#fff', 0.08)}`
+          mb: 4,
+          pb: 4,
+          borderBottom: `1px solid ${alpha('#fff', 0.06)}`
         }}>
           {[
             { label: '24H', profit: data.profit24h, volume: data.volume24h },
@@ -220,43 +211,51 @@ const OverView = ({ account }) => {
             { label: '3M', profit: data.profit3m, volume: data.volume3m }
           ].map((period) => (
             <Box key={period.label}>
-              <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {period.label} P&L
+              <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>
+                {period.label}
               </Typography>
-              <Typography variant="body2" sx={{
-                fontSize: '0.95rem',
-                fontWeight: 500,
-                color: period.profit !== 0 ? (period.profit >= 0 ? '#10b981' : '#ef4444') : (theme) => alpha(theme.palette.text.secondary, 0.35),
-                display: 'block',
-                mb: 0.3
+              <Typography variant="body1" sx={{
+                fontSize: '1.1rem',
+                fontWeight: 400,
+                color: period.profit !== 0 ? (period.profit >= 0 ? '#10b981' : '#ef4444') : (theme) => alpha(theme.palette.text.secondary, 0.4),
+                mb: 0.5
               }}>
                 {period.profit !== 0 ? fCurrency5(period.profit) : '—'}
               </Typography>
-              <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), display: 'block', mb: 0.2 }}>
-                Vol: {period.volume !== 0 ? fCurrency5(period.volume) : '—'}
+              <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                {period.volume !== 0 ? fCurrency5(period.volume) : '—'} vol
               </Typography>
             </Box>
           ))}
         </Box>
 
         {/* Trading Details */}
-        <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.08em', mb: 1.5, display: 'block' }}>
-          Trade Breakdown
-        </Typography>
         <Box sx={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(6, 1fr)',
-          gap: 3,
-          mb: 3,
-          pb: 3,
-          borderBottom: `1px solid ${alpha('#fff', 0.08)}`
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 4,
+          mb: 4,
+          pb: 4,
+          borderBottom: `1px solid ${alpha('#fff', 0.06)}`
         }}>
-          <Box><Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Wins / Losses</Typography><Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400 }}>{data.profitableTrades} / {data.losingTrades}</Typography></Box>
-          <Box><Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Largest Win</Typography><Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400, color: '#10b981' }}>{fCurrency5(data.maxProfitTrade)}</Typography></Box>
-          <Box><Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Largest Loss</Typography><Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400, color: '#ef4444' }}>{fCurrency5(data.maxLossTrade)}</Typography></Box>
-          <Box><Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Buys / Sells</Typography><Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400 }}>{data.buyTrades} / {data.sellTrades}</Typography></Box>
-          <Box><Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Realized P&L</Typography><Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400, color: data.realizedProfit >= 0 ? '#10b981' : '#ef4444' }}>{fCurrency5(data.realizedProfit)}</Typography></Box>
-          <Box><Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block', mb: 0.5, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Unrealized P&L</Typography><Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400, color: data.unrealizedProfit >= 0 ? '#10b981' : '#ef4444' }}>{fCurrency5(data.unrealizedProfit)}</Typography></Box>
+          <Box>
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Win/Loss Record</Typography>
+            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 400 }}>
+              {data.profitableTrades}W · {data.losingTrades}L
+            </Typography>
+          </Box>
+          <Box>
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Best Trade</Typography>
+            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 400, color: '#10b981' }}>
+              {fCurrency5(data.maxProfitTrade)} XRP
+            </Typography>
+          </Box>
+          <Box>
+            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Worst Trade</Typography>
+            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 400, color: '#ef4444' }}>
+              {fCurrency5(data.maxLossTrade)} XRP
+            </Typography>
+          </Box>
         </Box>
         </>
         )}
@@ -264,72 +263,72 @@ const OverView = ({ account }) => {
         {/* Holdings */}
         {holdings && (
           <Box sx={{ mb: 4 }}>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1.5 }}>
-              <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.08em' }}>
-                Token Holdings · {holdings.total} Total
+            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6) }}>
+                Holdings ({holdings.total})
               </Typography>
               {holdings.accountActive === false && (
-                <Chip label="Account Deleted" size="small" sx={{ fontSize: '10px', height: '18px', px: 0.5, backgroundColor: alpha('#ef4444', 0.08), color: '#ef4444', border: `1px solid ${alpha('#ef4444', 0.15)}`, fontWeight: 400 }} />
+                <Chip label="Deleted" size="small" sx={{ fontSize: '11px', height: '20px', backgroundColor: alpha('#ef4444', 0.08), color: '#ef4444', border: 'none', fontWeight: 400 }} />
               )}
             </Stack>
             {holdings.lines?.length > 0 && (
               <>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(10, 1fr)', gap: 1, mb: 1.5 }}>
+                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 2, mb: 3 }}>
                   {holdings.lines.map((line, idx) => (
                   <Box key={idx} sx={{
-                    p: 1,
-                    backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.12),
-                    borderRadius: '6px',
+                    p: 2,
+                    backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06),
+                    borderRadius: '8px',
                     border: `1px solid ${alpha('#fff', 0.04)}`
                   }}>
-                      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.5 }}>
-                        <Box component="img" src={`https://s1.xrpl.to/token/${line.token?.md5}`} sx={{ width: 16, height: 16, borderRadius: '3px' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                        <Typography variant="body2" sx={{ fontSize: '0.8rem', fontWeight: 400 }}>{line.token?.name || line.currency}</Typography>
+                      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
+                        <Box component="img" src={`https://s1.xrpl.to/token/${line.token?.md5}`} sx={{ width: 18, height: 18, borderRadius: '4px' }} onError={(e) => { e.target.style.display = 'none'; }} />
+                        <Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400 }}>{line.token?.name || line.currency}</Typography>
                       </Stack>
-                      <Typography variant="caption" sx={{ fontSize: '0.85rem', fontWeight: 500, display: 'block', mb: 0.2 }}>
+                      <Typography variant="body1" sx={{ fontSize: '1rem', fontWeight: 400, mb: 0.5 }}>
                         {fCurrency5(line.value)} XRP
                       </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.75rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), display: 'block' }}>
-                        {fCurrency5(Math.abs(parseFloat(line.balance)))}
+                      <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                        {fCurrency5(Math.abs(parseFloat(line.balance)))} tokens
                       </Typography>
                   </Box>
                   ))}
                 </Box>
-                <Stack direction="row" spacing={2} justifyContent="center" alignItems="center" sx={{ mt: 1.5 }}>
+                <Stack direction="row" spacing={3} justifyContent="center" alignItems="center">
                   <Typography
                     component="button"
                     onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))}
                     disabled={holdingsPage === 0}
                     sx={{
-                      fontSize: '0.85rem',
+                      fontSize: '0.9rem',
                       fontWeight: 400,
-                      color: holdingsPage === 0 ? (theme) => alpha(theme.palette.text.secondary, 0.35) : '#4285f4',
+                      color: holdingsPage === 0 ? (theme) => alpha(theme.palette.text.secondary, 0.4) : '#4285f4',
                       cursor: holdingsPage === 0 ? 'default' : 'pointer',
                       background: 'none',
                       border: 'none',
                       p: 0
                     }}
                   >
-                    ← Prev
+                    Previous
                   </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
-                    {holdingsPage + 1}/{Math.ceil(holdings.total / 20)}
+                  <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6) }}>
+                    {holdingsPage + 1} / {Math.ceil(holdings.total / 20)}
                   </Typography>
                   <Typography
                     component="button"
                     onClick={() => setHoldingsPage(holdingsPage + 1)}
                     disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1}
                     sx={{
-                      fontSize: '0.85rem',
+                      fontSize: '0.9rem',
                       fontWeight: 400,
-                      color: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (theme) => alpha(theme.palette.text.secondary, 0.35) : '#4285f4',
+                      color: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (theme) => alpha(theme.palette.text.secondary, 0.4) : '#4285f4',
                       cursor: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? 'default' : 'pointer',
                       background: 'none',
                       border: 'none',
                       p: 0
                     }}
                   >
-                    Next →
+                    Next
                   </Typography>
                 </Stack>
               </>
@@ -340,131 +339,93 @@ const OverView = ({ account }) => {
         {/* Tokens Table */}
         {data?.tokensTraded?.length > 0 && (
           <Box sx={{ mb: 4 }}>
-            <Typography variant="caption" sx={{
-              fontSize: '10px',
-              color: (theme) => alpha(theme.palette.text.secondary, 0.4),
-              textTransform: 'uppercase',
-              fontWeight: 400,
-              letterSpacing: '0.08em',
-              mb: 1.5,
-              display: 'block'
+            <Typography variant="body2" sx={{
+              fontSize: '0.9rem',
+              color: (theme) => alpha(theme.palette.text.secondary, 0.6),
+              mb: 2
             }}>
-              Trading History by Token · {data.tokensTraded.length} Traded
+              Tokens Traded ({data.tokensTraded.length})
             </Typography>
             <Box sx={{
-              backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.15),
+              backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06),
               borderRadius: '8px',
               overflow: 'hidden',
-              border: `1px solid ${alpha('#fff', 0.06)}`
+              border: `1px solid ${alpha('#fff', 0.04)}`
             }}>
               {/* Table Header */}
               <Box sx={{
                 display: 'grid',
-                gridTemplateColumns: '120px repeat(7, 1fr)',
-                gap: 1.5,
-                px: 1.5,
-                py: 1.2,
-                borderBottom: `1px solid ${alpha('#fff', 0.06)}`,
-                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.08)
+                gridTemplateColumns: '140px repeat(4, 1fr)',
+                gap: 2,
+                px: 2,
+                py: 1.5,
+                borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
+                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.04)
               }}>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  Token Name
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>
+                  Token
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  Volume (XRP)
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                  Volume
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  Amount Traded
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                  Avg Price
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  Avg Buy Price
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                  Position
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  Avg Sell Price
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  Net Position
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), textTransform: 'uppercase', textAlign: 'right', fontWeight: 400, letterSpacing: '0.05em' }}>
-                  P&L (XRP)
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                  P&L
                 </Typography>
               </Box>
               {/* Table Rows */}
               {data.tokensTraded.map((token, idx) => {
-                // Calculate meaningful metrics
-                const hasActivity = token.buyVolume > 0 || token.sellVolume > 0;
                 const totalPnL = (token.realizedPnL || 0) + (token.unrealizedPnL || 0);
+                const totalVolume = (token.buyVolume || 0) + (token.sellVolume || 0);
+                const avgPrice = token.buyAvgPrice > 0 && token.sellAvgPrice > 0
+                  ? (token.buyAvgPrice + token.sellAvgPrice) / 2
+                  : token.buyAvgPrice || token.sellAvgPrice || 0;
 
                 return (
                   <Box key={idx} sx={{
                     display: 'grid',
-                    gridTemplateColumns: '120px repeat(7, 1fr)',
-                    gap: 1.5,
-                    px: 1.5,
-                    py: 1.2,
-                    borderBottom: idx < data.tokensTraded.length - 1 ? `1px solid ${alpha('#fff', 0.03)}` : 'none',
+                    gridTemplateColumns: '140px repeat(4, 1fr)',
+                    gap: 2,
+                    px: 2,
+                    py: 1.5,
+                    borderBottom: idx < data.tokensTraded.length - 1 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
                     '&:hover': {
-                      backgroundColor: alpha('#fff', 0.02)
+                      backgroundColor: alpha('#fff', 0.01)
                     }
                   }}>
-                    <Stack direction="row" alignItems="center" spacing={0.8}>
+                    <Stack direction="row" alignItems="center" spacing={1}>
                       <Box
                         component="img"
                         src={`https://s1.xrpl.to/token/${token.tokenId}`}
                         sx={{ width: 20, height: 20, borderRadius: '4px' }}
                         onError={(e) => { e.target.style.display = 'none'; }}
                       />
-                      <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 400 }}>
+                      <Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400 }}>
                         {token.tokenName}
                       </Typography>
                     </Stack>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.85rem', mb: 0.2 }}>
-                        <Box component="span" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), mr: 0.5 }}>B:</Box>
-                        {token.buyVolume > 0 ? fCurrency5(token.buyVolume) : '—'}
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.8rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
-                        <Box component="span" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), mr: 0.5 }}>S:</Box>
-                        {token.sellVolume > 0 ? fCurrency5(token.sellVolume) : '—'}
-                      </Typography>
-                    </Box>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body2" sx={{ fontSize: '0.85rem', mb: 0.2 }}>
-                        <Box component="span" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), mr: 0.5 }}>B:</Box>
-                        {token.buyTokenAmount > 0 ? fCurrency5(token.buyTokenAmount) : '—'}
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.8rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
-                        <Box component="span" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), mr: 0.5 }}>S:</Box>
-                        {token.sellTokenAmount > 0 ? fCurrency5(token.sellTokenAmount) : '—'}
-                      </Typography>
-                    </Box>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', textAlign: 'right' }}>
-                      {token.buyAvgPrice > 0 ? fCurrency5(token.buyAvgPrice) : '—'}
+                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
+                      {totalVolume > 0 ? fCurrency5(totalVolume) : '—'}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', textAlign: 'right' }}>
-                      {token.sellAvgPrice > 0 ? fCurrency5(token.sellAvgPrice) : '—'}
+                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
+                      {avgPrice > 0 ? fCurrency5(avgPrice) : '—'}
                     </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', textAlign: 'right', fontWeight: 400 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
                       {Math.abs(token.balanceChange) > 0.00001 ? fCurrency5(token.balanceChange) : '0'}
                     </Typography>
-                    <Box sx={{ textAlign: 'right' }}>
-                      <Typography variant="body2" sx={{
-                        fontSize: '0.85rem',
-                        mb: 0.2,
-                        fontWeight: 400,
-                        color: token.realizedPnL >= 0 ? '#10b981' : '#ef4444'
-                      }}>
-                        <Box component="span" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), mr: 0.5 }}>R:</Box>
-                        {Math.abs(token.realizedPnL) > 0.00001 ? fCurrency5(token.realizedPnL) : '0'}
-                      </Typography>
-                      <Typography variant="caption" sx={{
-                        fontSize: '0.8rem',
-                        color: token.unrealizedPnL >= 0 ? alpha('#10b981', 0.7) : alpha('#ef4444', 0.7)
-                      }}>
-                        <Box component="span" sx={{ fontSize: '0.7rem', color: (theme) => alpha(theme.palette.text.secondary, 0.4), mr: 0.5 }}>U:</Box>
-                        {Math.abs(token.unrealizedPnL) > 0.00001 ? fCurrency5(token.unrealizedPnL) : '0'}
-                      </Typography>
-                    </Box>
+                    <Typography variant="body2" sx={{
+                      fontSize: '0.9rem',
+                      textAlign: 'right',
+                      fontWeight: 400,
+                      color: totalPnL >= 0 ? '#10b981' : '#ef4444'
+                    }}>
+                      {Math.abs(totalPnL) > 0.00001 ? fCurrency5(totalPnL) : '0'}
+                    </Typography>
                   </Box>
                 );
               })}
@@ -475,24 +436,24 @@ const OverView = ({ account }) => {
         {/* Transaction History */}
         {txHistory.length > 0 && (
           <Box sx={{ mt: 4 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1.5 }}>
-              <Typography variant="caption" sx={{ fontSize: '10px', color: (theme) => alpha(theme.palette.text.secondary, 0.4), textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.08em' }}>
-                Recent Transactions · {filteredTxHistory.length} Shown
+            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+              <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6) }}>
+                Transactions ({filteredTxHistory.length})
               </Typography>
-              <Stack direction="row" spacing={0.8}>
+              <Stack direction="row" spacing={1}>
                 {getAvailableTxTypes().map(filter => (
                   <Typography
                     key={filter}
                     component="button"
                     onClick={() => setTxFilter(filter)}
                     sx={{
-                      fontSize: '0.75rem',
-                      px: 1,
-                      py: 0.4,
-                      borderRadius: '4px',
-                      border: `1px solid ${alpha('#fff', txFilter === filter ? 0.15 : 0.05)}`,
-                      backgroundColor: txFilter === filter ? alpha('#4285f4', 0.04) : 'transparent',
-                      color: txFilter === filter ? '#4285f4' : (theme) => alpha(theme.palette.text.secondary, 0.5),
+                      fontSize: '0.85rem',
+                      px: 1.5,
+                      py: 0.5,
+                      borderRadius: '6px',
+                      border: `1px solid ${alpha('#fff', txFilter === filter ? 0.15 : 0.04)}`,
+                      backgroundColor: txFilter === filter ? alpha('#4285f4', 0.06) : 'transparent',
+                      color: txFilter === filter ? '#4285f4' : (theme) => alpha(theme.palette.text.secondary, 0.6),
                       cursor: 'pointer',
                       textTransform: 'none',
                       fontWeight: 400
@@ -503,21 +464,20 @@ const OverView = ({ account }) => {
                 ))}
               </Stack>
             </Stack>
-            <Box sx={{ backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.12), borderRadius: '6px', overflow: 'hidden', border: `1px solid ${alpha('#fff', 0.04)}` }}>
+            <Box sx={{ backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06), borderRadius: '8px', overflow: 'hidden', border: `1px solid ${alpha('#fff', 0.04)}` }}>
               <Box sx={{
                 display: 'grid',
-                gridTemplateColumns: '110px 110px 2fr 1fr 100px',
-                gap: 2.5,
-                px: 1.2,
-                py: 1,
+                gridTemplateColumns: '120px 2fr 1fr 120px',
+                gap: 2,
+                px: 2,
+                py: 1.5,
                 borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
-                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06)
+                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.04)
               }}>
-                <Typography variant="caption" sx={{ fontSize: '9px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tx Type</Typography>
-                <Typography variant="caption" sx={{ fontSize: '9px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tx Hash</Typography>
-                <Typography variant="caption" sx={{ fontSize: '9px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Description</Typography>
-                <Typography variant="caption" sx={{ fontSize: '9px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400, textAlign: 'right', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Amount</Typography>
-                <Typography variant="caption" sx={{ fontSize: '9px', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Time</Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>Type</Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>Description</Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>Amount</Typography>
+                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>Time</Typography>
               </Box>
               {filteredTxHistory.slice(0, 20).map((tx, idx) => {
                 const txData = tx.tx_json || tx.tx;
@@ -681,59 +641,43 @@ const OverView = ({ account }) => {
                 return (
                   <Box key={idx} sx={{
                     display: 'grid',
-                    gridTemplateColumns: '110px 110px 2fr 1fr 100px',
-                    gap: 2.5,
-                    px: 1.2,
-                    py: 1,
+                    gridTemplateColumns: '120px 2fr 1fr 120px',
+                    gap: 2,
+                    px: 2,
+                    py: 1.5,
                     borderBottom: idx < 19 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
-                    '&:hover': { backgroundColor: alpha('#fff', 0.015) }
+                    '&:hover': { backgroundColor: alpha('#fff', 0.01) }
                   }}>
-                    <Typography variant="caption" sx={{
-                      fontSize: '0.75rem',
-                      color: txData.TransactionType === 'OfferCreate' ? '#4285f4' : txData.TransactionType === 'OfferCancel' ? '#ef4444' : (theme) => alpha(theme.palette.text.secondary, 0.6),
+                    <Typography variant="body2" sx={{
+                      fontSize: '0.85rem',
+                      color: txData.TransactionType === 'Payment' ? '#4285f4' : (theme) => alpha(theme.palette.text.secondary, 0.6),
                       fontWeight: 400
                     }}>
                       {txData.TransactionType}
                     </Typography>
-                    <Typography
-                      component="a"
-                      href={`/tx/${tx.hash}`}
-                      target="_blank"
-                      variant="caption"
-                      sx={{
-                        fontSize: '0.75rem',
-                        fontFamily: 'monospace',
-                        color: '#4285f4',
-                        textDecoration: 'none',
-                        '&:hover': { textDecoration: 'underline' }
-                      }}
-                    >
-                      {tx.hash?.substring(0, 10)}...
-                    </Typography>
                     <Box>
-                      <Typography variant="caption" sx={{
-                        fontSize: '0.8rem',
+                      <Typography variant="body2" sx={{
+                        fontSize: '0.9rem',
                         color: actionColor,
                         fontWeight: 400,
-                        display: 'block'
+                        mb: sourceLabel ? 0.3 : 0
                       }}>
                         {actionDesc}
                       </Typography>
                       {sourceLabel && (
                         <Typography variant="caption" sx={{
-                          fontSize: '0.7rem',
-                          color: (theme) => alpha(theme.palette.text.secondary, 0.4),
+                          fontSize: '0.8rem',
+                          color: (theme) => alpha(theme.palette.text.secondary, 0.5),
                           fontWeight: 400
                         }}>
-                          via {sourceLabel}
+                          {sourceLabel}
                         </Typography>
                       )}
                     </Box>
-                    <Typography variant="caption" sx={{ fontSize: '0.8rem', textAlign: 'right', fontWeight: 400 }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
                       {(() => {
                         if (txData.TransactionType === 'OfferCreate' || txData.TransactionType === 'OfferCancel') return '—';
 
-                        // Use delivered_amount from metadata if available
                         let amt = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
                         if (!amt) return '—';
 
@@ -749,7 +693,7 @@ const OverView = ({ account }) => {
                         return `${fCurrency5(val)} ${curr}`;
                       })()}
                     </Typography>
-                    <Typography variant="caption" sx={{ fontSize: '0.75rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                    <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400 }}>
                       {formatDistanceToNow(date, { addSuffix: true })}
                     </Typography>
                   </Box>

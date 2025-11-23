@@ -4195,7 +4195,6 @@ export async function getServerSideProps(context) {
   }
 
   const xrplNodes = [
-    'https://xrplcluster.com/',
     'https://s1.ripple.com:51234/',
     'https://s2.ripple.com:51234/',
     'https://xrpl.ws/'

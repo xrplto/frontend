@@ -57,12 +57,17 @@ const getTokenImageUrl = (issuer, currency) => {
   return `https://s1.xrpl.to/token/${md5Hash}`;
 };
 const decodeCurrency = (currency) => {
-  if (currency === 'XRP') return 'XRP';
-  try {
-    return Buffer.from(currency, 'hex').toString('utf8').replace(/\x00/g, '');
-  } catch {
-    return currency;
+  if (!currency || currency === 'XRP') return currency || 'XRP';
+  // Only decode if it's a 40-character hex string (standard currency code format)
+  if (currency.length === 40 && /^[0-9A-F]+$/i.test(currency)) {
+    try {
+      return Buffer.from(currency, 'hex').toString('utf8').replace(/\x00/g, '');
+    } catch {
+      return currency;
+    }
   }
+  // Already plain text (e.g., "DROP", "GDROP", "BTC")
+  return currency;
 };
 import PairsList from 'src/TokenDetail/tabs/market/PairsList';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
@@ -459,8 +464,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [bidId, setBidId] = useState(-1);
   const [askId, setAskId] = useState(-1);
   const [selectedPair, setSelectedPair] = useState(() => (token ? getInitPair(token) : null));
+  const [ammPools, setAmmPools] = useState([]);
+  const [ammLoading, setAmmLoading] = useState(false);
 
-  const WSS_URL = 'wss://xrplcluster.com';
+  const WSS_URL = 'wss://s1.ripple.com';
 
   // WebSocket for OrderBook - optimized handlers
   const { sendJsonMessage } = useWebSocket(WSS_URL, {
@@ -487,8 +494,22 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     }
   };
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = async (event, newValue) => {
     setTabValue(newValue);
+    if (newValue === 1 && token && ammPools.length === 0) {
+      setAmmLoading(true);
+      try {
+        const res = await fetch(
+          `https://api.xrpl.to/api/amm-pools?issuer=${token.issuer}&currency=${token.currency}&sortBy=fees`
+        );
+        const data = await res.json();
+        setAmmPools(data.pools || []);
+      } catch (error) {
+        console.error('Error fetching AMM pools:', error);
+      } finally {
+        setAmmLoading(false);
+      }
+    }
   };
 
   const fetchTradingHistory = useCallback(async () => {
@@ -951,7 +972,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           }}
         >
           <Tab label="Trading History" />
-          <Tab label="Trading Pairs" />
+          <Tab label="AMM Pools" />
           <Tab label="Top Traders" />
           <Tab label="Rich List" />
         </Tabs>
@@ -1044,7 +1065,103 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       )}
 
 
-      {tabValue === 1 && token && pairs && <PairsList token={token} pairs={pairs} />}
+      {tabValue === 1 && (
+        <Box sx={{ mt: 2 }}>
+          {ammLoading ? (
+            <Box display="flex" justifyContent="center" p={4}>
+              <CircularProgress size={40} />
+            </Box>
+          ) : ammPools.length === 0 ? (
+            <Box sx={{ textAlign: 'center', py: 3, border: `1.5px dashed ${alpha(theme.palette.divider, 0.2)}`, borderRadius: '12px' }}>
+              <Typography variant="body2" color="text.secondary">No AMM pools found</Typography>
+            </Box>
+          ) : (
+            <TableContainer component={Paper} sx={{ boxShadow: 'none', border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`, borderRadius: '12px' }}>
+              <Table size="small">
+                <TableHead>
+                  <TableRow sx={{ backgroundColor: alpha(theme.palette.background.default, 0.3) }}>
+                    <TableCell sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Pool Pair</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Trading Fee</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d APY</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d Fees Earned</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d Volume</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Liquidity (XRP)</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {ammPools.map((pool) => {
+                    const asset1 = pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
+                    const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
+                    const feePercent = pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-';
+                    return (
+                      <TableRow
+                        key={pool._id}
+                        sx={{
+                          '&:hover': { backgroundColor: alpha(theme.palette.action.hover, 0.02) },
+                          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
+                        }}
+                      >
+                        <TableCell sx={{ py: 1.5 }}>
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+                            <Box sx={{ display: 'flex', alignItems: 'center', mr: 0.5 }}>
+                              <img
+                                src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
+                                alt={asset1}
+                                style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
+                              />
+                              <img
+                                src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
+                                alt={asset2}
+                                style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)', marginLeft: -8 }}
+                              />
+                            </Box>
+                            <Typography variant="body2" fontWeight="500" sx={{ fontSize: '13px' }}>
+                              {asset1}/{asset2}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right" sx={{ py: 1.5 }}>
+                          <Typography variant="body2" sx={{ fontSize: '13px', opacity: 0.8 }}>
+                            {feePercent}%
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ py: 1.5 }}>
+                          <Typography
+                            variant="body2"
+                            color={pool.apy7d?.apy > 0 ? 'success.main' : 'text.secondary'}
+                            sx={{ fontSize: '13px', fontWeight: pool.apy7d?.apy > 0 ? 500 : 400 }}
+                          >
+                            {pool.apy7d?.apy ? `${pool.apy7d.apy.toFixed(2)}%` : '-'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ py: 1.5 }}>
+                          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                            {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ py: 1.5 }}>
+                          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                            {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right" sx={{ py: 1.5 }}>
+                          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                            {pool.apy7d?.liquidity > 0
+                              ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
+                              : pool.currentLiquidity
+                                ? `${abbreviateNumber(pool.currentLiquidity.asset1Amount)} ${asset1} / ${abbreviateNumber(pool.currentLiquidity.asset2Amount)} ${asset2}`
+                                : '-'}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
+        </Box>
+      )}
 
       {tabValue === 2 && token && <TopTraders token={token} />}
 

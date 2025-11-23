@@ -72,7 +72,7 @@ const currencySymbols = {
   XRP: '✕ '
 };
 const BASE_URL = 'https://api.xrpl.to/api';
-const WSS_URL = 'wss://xrplcluster.com';
+const WSS_URL = 'wss://s1.ripple.com';
 import Image from 'next/image';
 import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parseUtils';

@@ -207,7 +207,7 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    const response = await axios.post('https://xrplcluster.com/', {
+    const response = await axios.post('https://s1.ripple.com:51234/', {
       method: 'ledger',
       params: [
         {

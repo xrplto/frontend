@@ -260,7 +260,7 @@ const SummaryBox = styled(Paper)(({ theme }) => ({
 }));
 
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
-  const WSS_URL = 'wss://xrplcluster.com';
+  const WSS_URL = 'wss://s1.ripple.com';
 
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
@@ -1182,7 +1182,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
 
           // Connect to XRPL network
-          const client = new Client('wss://xrplcluster.com');
+          const client = new Client('wss://s1.ripple.com');
           await client.connect();
 
           try {
@@ -1532,7 +1532,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           };
 
           // Connect to XRPL network
-          const client = new Client('wss://xrplcluster.com');
+          const client = new Client('wss://s1.ripple.com');
           await client.connect();
 
           try {

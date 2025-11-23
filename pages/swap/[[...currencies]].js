@@ -55,7 +55,7 @@ const DEFAULT_PAIR = {
 };
 
 function SwapPage({ data }) {
-  const WSS_URL = 'wss://xrplcluster.com';
+  const WSS_URL = 'wss://s1.ripple.com';
   const { accountProfile } = useContext(AppContext);
 
   // Prevent body scroll
