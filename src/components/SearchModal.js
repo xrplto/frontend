@@ -3,7 +3,6 @@ import {
   IconButton,
   InputBase,
   Modal,
-  Paper,
   Stack,
   Typography,
   List,
@@ -22,18 +21,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import CloseIcon from '@mui/icons-material/Close';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import CollectionsIcon from '@mui/icons-material/Collections';
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useContext,
-  useMemo,
-  memo,
-  lazy,
-  Suspense
-} from 'react';
-import { useRouter } from 'next/router';
+import { useState, useEffect, useRef, useCallback, useContext } from 'react';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
@@ -42,73 +30,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 const API_URL = process.env.API_URL || '';
 const NFT_API_URL = 'https://api.xrpl.to/api';
 
-// Debounce hook with proper cleanup
-function useDebounce(value, delay) {
-  const [debouncedValue, setDebouncedValue] = useState(value);
-
-  useEffect(() => {
-    // Only set timer if delay is positive
-    if (delay <= 0) {
-      setDebouncedValue(value);
-      return;
-    }
-
-    const timer = setTimeout(() => setDebouncedValue(value), delay || 500);
-
-    return () => {
-      clearTimeout(timer);
-    };
-  }, [value, delay]);
-
-  return debouncedValue;
-}
-
-// Cache for preloaded data
-let cachedTrendingData = {
-  tokens: [],
-  collections: [],
-  lastFetch: 0
-};
-
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
-
-// Preload trending data
-const preloadTrendingData = async () => {
-  const now = Date.now();
-  if (now - cachedTrendingData.lastFetch < CACHE_DURATION) {
-    return cachedTrendingData;
-  }
-
-  try {
-    const [tokensRes, collectionsRes] = await Promise.all([
-      axios.post(`${API_URL}/search`, { search: '' }),
-      axios.post(`${NFT_API_URL}/search`, {
-        search: '',
-        type: 'SEARCH_ITEM_COLLECTION_ACCOUNT'
-      })
-    ]);
-
-    cachedTrendingData = {
-      tokens: tokensRes.data?.tokens?.slice(0, 4) || [],
-      collections: collectionsRes.data?.collections?.slice(0, 3) || [],
-      lastFetch: now
-    };
-  } catch (error) {
-    console.error('Error preloading trending data:', error);
-  }
-
-  return cachedTrendingData;
-};
-
-// Start preloading immediately
-preloadTrendingData();
-
-// Set up interval to refresh cache (only in browser)
-if (typeof window !== 'undefined') {
-  setInterval(preloadTrendingData, CACHE_DURATION);
-}
-
-// Currency symbols mapping
+// Currency symbols
 const currencySymbols = {
   USD: '$',
   EUR: '€',
@@ -117,7 +39,7 @@ const currencySymbols = {
   XRP: ''
 };
 
-// Memoized price formatter
+// Price formatter
 const formatPrice = (price) => {
   if (price === 0) return '0.00';
   if (price < 0.00000001) return parseFloat(price).toFixed(12);
@@ -128,28 +50,24 @@ const formatPrice = (price) => {
   return parseFloat(price).toFixed(2);
 };
 
+// Debounce hook
+function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 function SearchModal({ open, onClose }) {
   const theme = useTheme();
-  const router = useRouter();
   const inputRef = useRef(null);
   const { activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
-
-  // Consistent border style (memoized to prevent flicker)
-  const borderColor = useMemo(() => alpha(theme.palette.divider, 0.15), [theme]);
-
-  // Convert XRP price to selected currency (exch is in XRP)
-  const convertPrice = useCallback((xrpPrice) => {
-    if (activeFiatCurrency === 'XRP') {
-      return xrpPrice;
-    }
-    // For fiat currencies, divide by exchange rate
-    // exchRate is how much 1 USD = X XRP, so XRP / exchRate = fiat value
-    return xrpPrice / exchRate;
-  }, [activeFiatCurrency, exchRate]);
-
-  const currencySymbol = currencySymbols[activeFiatCurrency] || '$';
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState({ tokens: [], collections: [] });
@@ -161,7 +79,14 @@ function SearchModal({ open, onClose }) {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 200);
 
-  // Load recent searches from localStorage
+  const convertPrice = useCallback((xrpPrice) => {
+    if (activeFiatCurrency === 'XRP') return xrpPrice;
+    return xrpPrice / exchRate;
+  }, [activeFiatCurrency, exchRate]);
+
+  const currencySymbol = currencySymbols[activeFiatCurrency] || '$';
+
+  // Load recent searches
   useEffect(() => {
     if (!open) return;
     const stored = localStorage.getItem('recentSearches');
@@ -174,35 +99,41 @@ function SearchModal({ open, onClose }) {
     }
   }, [open]);
 
-  // Focus input when modal opens
+  // Focus input
   useEffect(() => {
     if (open && inputRef.current) {
-      // Use requestAnimationFrame for smoother focus
-      requestAnimationFrame(() => {
-        inputRef.current?.focus();
-      });
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
   }, [open]);
 
-  // Use preloaded trending data when modal opens
+  // Load trending data
   useEffect(() => {
     if (!open) return;
 
     const loadTrending = async () => {
       setLoadingTrending(true);
+      try {
+        const [tokensRes, collectionsRes] = await Promise.all([
+          axios.post(`${API_URL}/search`, { search: '' }),
+          axios.post(`${NFT_API_URL}/search`, {
+            search: '',
+            type: 'SEARCH_ITEM_COLLECTION_ACCOUNT'
+          })
+        ]);
 
-      // Use cached data if available
-      const cached = await preloadTrendingData();
-
-      setTrendingTokens(cached.tokens);
-      setTrendingCollections(cached.collections);
-      setLoadingTrending(false);
+        setTrendingTokens(tokensRes.data?.tokens?.slice(0, 4) || []);
+        setTrendingCollections(collectionsRes.data?.collections?.slice(0, 3) || []);
+      } catch (error) {
+        console.error('Error loading trending data:', error);
+      } finally {
+        setLoadingTrending(false);
+      }
     };
 
     loadTrending();
   }, [open]);
 
-  // Perform search
+  // Search tokens
   useEffect(() => {
     if (!debouncedSearchQuery || !open) {
       setSearchResults({ tokens: [], collections: [] });
@@ -216,9 +147,7 @@ function SearchModal({ open, onClose }) {
       try {
         const response = await axios.post(
           `${API_URL}/search`,
-          {
-            search: debouncedSearchQuery
-          },
+          { search: debouncedSearchQuery },
           { signal: controller.signal }
         );
 
@@ -238,7 +167,6 @@ function SearchModal({ open, onClose }) {
     };
 
     searchTokens();
-
     return () => controller.abort();
   }, [debouncedSearchQuery, open]);
 
@@ -250,48 +178,34 @@ function SearchModal({ open, onClose }) {
 
   const handleResultClick = useCallback(
     (item, type) => {
-      // Add to recent searches with all necessary data
       const newRecent = {
         ...item,
         type,
         timestamp: Date.now(),
-        // Ensure we have all required properties for display
         slug: item.slug,
         md5: item.md5,
         user: item.user,
         name: item.name,
-        logoImage: item.logoImage // for collections
+        logoImage: item.logoImage
       };
 
       const updated = [
         newRecent,
         ...recentSearches.filter((r) => r.slug !== item.slug || r.type !== type)
       ].slice(0, 5);
+
       setRecentSearches(updated);
+      localStorage.setItem('recentSearches', JSON.stringify(updated));
 
-      // Defer localStorage write
-      if (typeof requestIdleCallback !== 'undefined') {
-        requestIdleCallback(() => {
-          localStorage.setItem('recentSearches', JSON.stringify(updated));
-        });
-      } else {
-        // Fallback for environments without requestIdleCallback
-        setTimeout(() => {
-          localStorage.setItem('recentSearches', JSON.stringify(updated));
-        }, 0);
-      }
-
-      // Close modal first for better perceived performance
       handleClose();
 
-      // Navigate to result using full page reload
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         if (type === 'token') {
           window.location.href = `/token/${item.slug}`;
         } else if (type === 'collection') {
           window.location.href = `/collection/${item.slug}`;
         }
-      });
+      }, 0);
     },
     [recentSearches, handleClose]
   );
@@ -301,60 +215,40 @@ function SearchModal({ open, onClose }) {
       if (e.key === 'Escape') {
         handleClose();
       }
-      // Prevent modal from opening when typing in other inputs
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
-        e.stopPropagation();
-      }
     },
     [handleClose]
-  );
-
-  // Memoize styles to prevent recalculation
-  const modalStyles = useMemo(
-    () => ({
-      display: 'flex',
-      alignItems: 'flex-start',
-      justifyContent: 'center',
-      pt: { xs: 0, sm: '12vh' },
-      backgroundColor: alpha(theme.palette.background.default, 0.8)
-    }),
-    [theme]
-  );
-
-  const paperStyles = useMemo(
-    () => ({
-      width: { xs: '100%', sm: '90%' },
-      maxWidth: { xs: '100%', sm: 650 },
-      height: { xs: '100vh', sm: 'auto' },
-      maxHeight: { xs: '100vh', sm: '65vh' },
-      overflow: 'hidden',
-      borderRadius: { xs: 0, sm: '12px' },
-      background: theme.palette.background.paper,
-      border: { xs: 'none', sm: `1.5px solid ${borderColor}` },
-      boxShadow: 'none'
-    }),
-    [theme, borderColor]
   );
 
   return (
     <Modal
       open={open}
       onClose={handleClose}
-      sx={modalStyles}
-      keepMounted={false}
-      disablePortal={false}
+      sx={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        justifyContent: 'center',
+        pt: { xs: 0, sm: '12vh' }
+      }}
     >
-      <Paper sx={paperStyles} onKeyDown={handleKeyDown}>
+      <Box
+        onKeyDown={handleKeyDown}
+        sx={{
+          width: { xs: '100%', sm: '90%' },
+          maxWidth: { xs: '100%', sm: 650 },
+          height: { xs: '100vh', sm: 'auto' },
+          maxHeight: { xs: '100vh', sm: '65vh' },
+          overflow: 'hidden',
+          borderRadius: { xs: 0, sm: '12px' },
+          boxShadow: 'none',
+          border: 'none',
+          outline: 'none',
+          bgcolor: 'background.paper'
+        }}
+      >
         {/* Search Header */}
-        <Box
-          sx={{
-            p: 2,
-            borderBottom: `1.5px solid ${borderColor}`,
-            backgroundColor: 'transparent'
-          }}
-        >
+        <Box sx={{ p: 2 }}>
           <Stack direction="row" alignItems="center" spacing={1.5}>
-            <SearchIcon sx={{ color: alpha(theme.palette.text.primary, 0.4), fontSize: 20 }} />
+            <SearchIcon sx={{ color: 'text.secondary', fontSize: 20, opacity: 0.5 }} />
             <InputBase
               ref={inputRef}
               placeholder="Search tokens and collections..."
@@ -365,31 +259,25 @@ function SearchModal({ open, onClose }) {
               sx={{
                 fontSize: '14px',
                 fontWeight: 400,
-                '& input': {
-                  padding: 0,
-                  '&::placeholder': {
-                    opacity: 0.45,
-                    fontSize: '14px'
-                  }
+                '& input::placeholder': {
+                  opacity: 0.5
                 }
               }}
             />
             {loading && <CircularProgress size={18} thickness={3} />}
-            <IconButton onClick={handleClose} size="small" sx={{ p: 0.5 }}>
+            <IconButton onClick={handleClose} size="small">
               <CloseIcon sx={{ fontSize: 20 }} />
             </IconButton>
           </Stack>
         </Box>
 
-        {/* Search Results */}
+        {/* Content */}
         <Box
           sx={{
             maxHeight: { xs: 'calc(100vh - 80px)', sm: 'calc(65vh - 80px)' },
-            overflowY: 'auto',
-            backgroundColor: 'transparent'
+            overflowY: 'auto'
           }}
         >
-          {/* Show trending when no search query */}
           {!searchQuery && (
             <>
               {/* Recent Searches */}
@@ -397,8 +285,15 @@ function SearchModal({ open, onClose }) {
                 <>
                   <Typography
                     variant="subtitle2"
-                    sx={{ px: 2, pt: 2, pb: 0.75, fontSize: '11px', fontWeight: 400, opacity: 0.6 }}
-                    color="text.secondary"
+                    sx={{
+                      px: 2,
+                      pt: 2,
+                      pb: 0.75,
+                      fontSize: '11px',
+                      fontWeight: 400,
+                      opacity: 0.6,
+                      color: 'text.secondary'
+                    }}
                   >
                     Recent
                   </Typography>
@@ -407,28 +302,25 @@ function SearchModal({ open, onClose }) {
                       <ListItem key={index} disablePadding>
                         <ListItemButton
                           onClick={() => {
-                            // Close modal first for better perceived performance
                             handleClose();
-
-                            // Navigate directly for recent searches using full page reload
-                            requestAnimationFrame(() => {
+                            setTimeout(() => {
                               if (item.type === 'token') {
                                 window.location.href = `/token/${item.slug}`;
                               } else if (item.type === 'collection') {
                                 window.location.href = `/collection/${item.slug}`;
                               }
-                            });
+                            }, 0);
                           }}
                           sx={{
-                          py: 1,
-                          px: 2,
-                          borderRadius: '12px',
-                          mx: 0.5,
-                          mb: 0.5,
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                          }
-                        }}
+                            py: 1,
+                            px: 2,
+                            borderRadius: '12px',
+                            mx: 0.5,
+                            mb: 0.5,
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.04)
+                            }
+                          }}
                         >
                           <ListItemAvatar>
                             <Avatar
@@ -440,10 +332,8 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${borderColor}`,
-                                backgroundColor: 'transparent'
+                                bgcolor: 'transparent'
                               }}
-                              imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
                               {item.user?.[0] || item.name?.[0]}
                             </Avatar>
@@ -464,8 +354,7 @@ function SearchModal({ open, onClose }) {
                             sx={{
                               height: 22,
                               fontSize: '11px',
-                              fontWeight: 400,
-                              borderColor
+                              fontWeight: 400
                             }}
                           />
                         </ListItemButton>
@@ -479,12 +368,7 @@ function SearchModal({ open, onClose }) {
               {/* Trending Tokens */}
               {!loadingTrending && trendingTokens.length > 0 && (
                 <>
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    sx={{ px: 2, pt: 1.5, pb: 0.75 }}
-                    spacing={1}
-                  >
+                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 1.5, pb: 0.75 }} spacing={1}>
                     <TrendingUpIcon sx={{ fontSize: 16, color: alpha(theme.palette.primary.main, 0.6) }} />
                     <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
                       Trending
@@ -502,7 +386,7 @@ function SearchModal({ open, onClose }) {
                             mx: 0.5,
                             mb: 0.5,
                             '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                              bgcolor: alpha(theme.palette.primary.main, 0.04)
                             }
                           }}
                         >
@@ -512,10 +396,8 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${borderColor}`,
-                                backgroundColor: 'transparent'
+                                bgcolor: 'transparent'
                               }}
-                              imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
                               {token.user?.[0]}
                             </Avatar>
@@ -533,7 +415,7 @@ function SearchModal({ open, onClose }) {
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {token.exch !== undefined && token.exch !== null && (
-                              <Typography variant="body2" fontSize="14px" fontWeight={400} sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
                                 {activeFiatCurrency === 'XRP'
                                   ? `${formatPrice(convertPrice(token.exch))} XRP`
                                   : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
@@ -545,7 +427,6 @@ function SearchModal({ open, onClose }) {
                                 fontSize="12px"
                                 color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
                                 fontWeight={400}
-                                sx={{ fontVariantNumeric: 'tabular-nums' }}
                               >
                                 {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                                 {parseFloat(token.pro24h).toFixed(2)}%
@@ -559,16 +440,11 @@ function SearchModal({ open, onClose }) {
                 </>
               )}
 
-              {/* Trending NFT Collections */}
+              {/* Trending Collections */}
               {!loadingTrending && trendingCollections.length > 0 && (
                 <>
                   <Divider sx={{ my: 0.5 }} />
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    sx={{ px: 2, pt: 1.5, pb: 0.75 }}
-                    spacing={1}
-                  >
+                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 1.5, pb: 0.75 }} spacing={1}>
                     <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.6) }} />
                     <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
                       Trending Collections
@@ -586,7 +462,7 @@ function SearchModal({ open, onClose }) {
                             mx: 0.5,
                             mb: 0.5,
                             '&:hover': {
-                              backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                              bgcolor: alpha(theme.palette.primary.main, 0.04)
                             }
                           }}
                         >
@@ -596,19 +472,15 @@ function SearchModal({ open, onClose }) {
                               sx={{
                                 width: 36,
                                 height: 36,
-                                border: `1.5px solid ${borderColor}`,
-                                backgroundColor: 'transparent'
+                                bgcolor: 'transparent'
                               }}
-                              imgProps={{ loading: 'lazy', decoding: 'async' }}
                             >
                               {collection.name?.[0]}
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText
                             primary={collection.name}
-                            secondary={
-                              collection.type ? `${collection.type} collection` : 'Collection'
-                            }
+                            secondary={collection.type ? `${collection.type} collection` : 'Collection'}
                             primaryTypographyProps={{ fontSize: '14px', fontWeight: 400, noWrap: true }}
                             secondaryTypographyProps={{
                               fontSize: '13px',
@@ -619,16 +491,15 @@ function SearchModal({ open, onClose }) {
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
                             {collection.floor && collection.floor.amount && (
-                              <Typography variant="body2" fontSize="14px" fontWeight={400} sx={{ fontVariantNumeric: 'tabular-nums' }}>
-                                Floor: {collection.floor.amount}{' '}
-                                {collection.floor.currency || 'XRP'}
+                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
+                                Floor: {collection.floor.amount} {collection.floor.currency || 'XRP'}
                               </Typography>
                             )}
                             {collection.totalVolume !== undefined && collection.totalVolume > 0 && (
                               <Typography
                                 variant="caption"
                                 fontSize="12px"
-                                sx={{ color: alpha(theme.palette.text.secondary, 0.6), fontVariantNumeric: 'tabular-nums' }}
+                                sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
                               >
                                 Vol: {collection.totalVolume.toLocaleString()} XRP
                               </Typography>
@@ -641,7 +512,6 @@ function SearchModal({ open, onClose }) {
                 </>
               )}
 
-              {/* Loading state for trending */}
               {loadingTrending && (
                 <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
                   <CircularProgress size={24} />
@@ -650,23 +520,16 @@ function SearchModal({ open, onClose }) {
             </>
           )}
 
-          {/* Token Results */}
+          {/* Search Results */}
           {searchResults.tokens.length > 0 && (
             <>
-              <Stack
-                direction="row"
-                alignItems="center"
-                sx={{ px: 2, pt: 2, pb: 0.75 }}
-                spacing={1}
-              >
+              <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 2, pb: 0.75 }} spacing={1}>
                 <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
                   Results
                 </Typography>
               </Stack>
               <List disablePadding dense>
                 {searchResults.tokens.map((token, index) => {
-                  // Always highlight the first token if there are multiple results
-                  // The API returns the most relevant/authentic one first
                   const shouldHighlight = index === 0 && searchResults.tokens.length > 1;
 
                   return (
@@ -679,15 +542,9 @@ function SearchModal({ open, onClose }) {
                           borderRadius: '12px',
                           mx: 0.5,
                           mb: 0.5,
-                          backgroundColor: shouldHighlight
-                            ? alpha(theme.palette.primary.main, 0.04)
-                            : 'transparent',
-                          border: shouldHighlight
-                            ? `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                            : '1.5px solid transparent',
+                          bgcolor: shouldHighlight ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
                           '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                            borderColor: alpha(theme.palette.primary.main, 0.3)
+                            bgcolor: alpha(theme.palette.primary.main, 0.08)
                           }
                         }}
                       >
@@ -697,10 +554,8 @@ function SearchModal({ open, onClose }) {
                             sx={{
                               width: 36,
                               height: 36,
-                              border: `1.5px solid ${borderColor}`,
-                              backgroundColor: 'transparent'
+                              bgcolor: 'transparent'
                             }}
-                            imgProps={{ loading: 'lazy', decoding: 'async' }}
                           >
                             {token.user?.[0]}
                           </Avatar>
@@ -740,7 +595,7 @@ function SearchModal({ open, onClose }) {
                         />
                         <Stack alignItems="flex-end" spacing={0.25}>
                           {token.exch !== undefined && token.exch !== null && (
-                            <Typography variant="body2" fontSize="14px" fontWeight={400} sx={{ fontVariantNumeric: 'tabular-nums' }}>
+                            <Typography variant="body2" fontSize="14px" fontWeight={400}>
                               {activeFiatCurrency === 'XRP'
                                 ? `${formatPrice(convertPrice(token.exch))} XRP`
                                 : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
@@ -752,7 +607,6 @@ function SearchModal({ open, onClose }) {
                               fontSize="12px"
                               color={parseFloat(token.pro24h) >= 0 ? '#4caf50' : '#f44336'}
                               fontWeight={400}
-                              sx={{ fontVariantNumeric: 'tabular-nums' }}
                             >
                               {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                               {parseFloat(token.pro24h).toFixed(2)}%
@@ -767,7 +621,7 @@ function SearchModal({ open, onClose }) {
             </>
           )}
 
-          {/* No results */}
+          {/* No Results */}
           {searchQuery && !loading && searchResults.tokens.length === 0 && (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <Typography fontSize="14px" sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}>
@@ -776,9 +630,9 @@ function SearchModal({ open, onClose }) {
             </Box>
           )}
         </Box>
-      </Paper>
+      </Box>
     </Modal>
   );
 }
 
-export default memo(SearchModal);
+export default SearchModal;
