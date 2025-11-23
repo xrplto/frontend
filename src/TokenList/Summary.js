@@ -41,13 +41,13 @@ const Container = styled.div`
   overflow: visible;
 
   @media (max-width: 600px) {
-    margin: 0;
-    padding: 0 8px;
+    margin: 4px 0;
+    padding: 0 4px;
   }
 
   @media (max-width: 480px) {
-    margin: 0;
-    padding: 0 8px;
+    margin: 4px 0;
+    padding: 0 4px;
   }
 `;
 
@@ -74,7 +74,7 @@ const Grid = styled.div`
   @media (max-width: 600px) {
     display: flex;
     overflow-x: auto;
-    gap: 6px;
+    gap: 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -83,7 +83,7 @@ const Grid = styled.div`
   }
 
   @media (max-width: 480px) {
-    gap: 6px;
+    gap: 4px;
   }
 `;
 
@@ -103,20 +103,22 @@ const MetricBox = styled.div`
       props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
   @media (max-width: 600px) {
-    padding: 8px 8px;
-    min-height: 66px;
+    padding: 6px 6px;
+    min-height: 58px;
     flex: 1;
     min-width: 0;
-    border-radius: 12px;
+    border-radius: 10px;
+    border-width: 1px;
     justify-content: space-between;
   }
 
   @media (max-width: 480px) {
-    padding: 8px 8px;
-    min-height: 66px;
+    padding: 6px 6px;
+    min-height: 58px;
     flex: 1;
     min-width: 0;
-    border-radius: 12px;
+    border-radius: 10px;
+    border-width: 1px;
     justify-content: space-between;
   }
 `;
@@ -131,16 +133,16 @@ const MetricTitle = styled.span`
   line-height: 1.2;
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     margin-bottom: 0;
-    line-height: 1.1;
+    line-height: 1;
     flex-shrink: 0;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     margin-bottom: 0;
-    line-height: 1.1;
+    line-height: 1;
     flex-shrink: 0;
   }
 `;
@@ -156,14 +158,14 @@ const MetricValue = styled.span`
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.75rem;
-    margin-bottom: 2px;
+    font-size: 0.7rem;
+    margin-bottom: 1px;
     line-height: 1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.75rem;
-    margin-bottom: 2px;
+    font-size: 0.7rem;
+    margin-bottom: 1px;
     line-height: 1;
   }
 `;
@@ -181,15 +183,15 @@ const PercentageChange = styled.span`
   font-family: inherit;
 
   @media (max-width: 600px) {
-    font-size: 0.65rem;
-    gap: 2px;
+    font-size: 0.6rem;
+    gap: 1px;
     flex-shrink: 0;
     margin-top: auto;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.65rem;
-    gap: 2px;
+    font-size: 0.6rem;
+    gap: 1px;
     flex-shrink: 0;
     margin-top: auto;
   }
@@ -203,13 +205,13 @@ const VolumePercentage = styled.span`
   letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.5rem;
-    line-height: 1.1;
+    font-size: 0.48rem;
+    line-height: 1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.5rem;
-    line-height: 1.1;
+    font-size: 0.48rem;
+    line-height: 1;
   }
 `;
 
@@ -221,7 +223,7 @@ const ContentTypography = styled.span`
   letter-spacing: 0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.5rem;
+    font-size: 0.48rem;
   }
 
   @media (max-width: 480px) {
@@ -307,7 +309,7 @@ const MobileChartBox = styled(MetricBox)`
 
   @media (max-width: 600px) {
     display: flex;
-    margin-top: 6px;
+    margin-top: 4px;
   }
 `;
 
@@ -627,6 +629,10 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
 export const SummaryTag = ({ tagName }) => {
   const TagContainer = styled.div`
     margin-top: 16px;
+
+    @media (max-width: 600px) {
+      margin-top: 8px;
+    }
   `;
 
   const TagTitle = styled.h1`
@@ -668,6 +674,10 @@ export const SummaryWatchList = () => {
 
   const WatchContainer = styled.div`
     margin-top: 16px;
+
+    @media (max-width: 600px) {
+      margin-top: 8px;
+    }
   `;
 
   const WatchTitle = styled.h1`
@@ -921,7 +931,7 @@ export default function Summary() {
 
   return (
     <Container>
-      <Stack spacing="6px">
+      <Stack spacing="4px">
         {/* Main Metrics Section */}
         {isLoading ? (
           <div style={{ width: '100%', paddingBottom: '0' }}>

@@ -62,8 +62,6 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [chartInterval, setChartInterval] = useState('5m'); // New: interval parameter (renamed to avoid conflict)
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [indicators, setIndicators] = useState([]);
-  const indicatorSeriesRef = useRef({});
   const [anchorEl, setAnchorEl] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
@@ -94,17 +92,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     line: <ShowChartIcon fontSize="small" />,
     holders: <GroupIcon fontSize="small" />
   };
-
-  const indicatorOptions = [
-    { id: 'sma20', name: 'SMA 20', period: 20 },
-    { id: 'sma50', name: 'SMA 50', period: 50 },
-    { id: 'ema20', name: 'EMA 20', period: 20 },
-    { id: 'ema50', name: 'EMA 50', period: 50 },
-    { id: 'bb', name: 'Bollinger Bands', period: 20 },
-    { id: 'rsi', name: 'RSI (14)', period: 14 },
-    { id: 'fib', name: 'Fibonacci Extensions' },
-    { id: 'ath', name: 'All-Time High' }
-  ];
 
   // Update refs when values change
   useEffect(() => {
@@ -793,18 +780,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
 
-      // Clean up indicator series
-      Object.values(indicatorSeriesRef.current).forEach((series) => {
-        if (series && chartRef.current) {
-          try {
-            chartRef.current.removeSeries(series);
-          } catch (e) {
-            // Series already removed
-          }
-        }
-      });
-      indicatorSeriesRef.current = {};
-
       if (chartContainerRef.current) {
         const tooltips = chartContainerRef.current.querySelectorAll(
           'div[style*="position: absolute"]'
@@ -875,400 +850,6 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     return () => clearTimeout(timeoutId);
   }, [isFullscreen, isMobile]);
-
-  // Handle indicators
-  useEffect(() => {
-    if (!chartRef.current || !data || data.length === 0 || chartType === 'holders') return;
-
-    // Define calculation functions inside useEffect
-    const calculateSMA = (data, period) => {
-      const sma = [];
-      for (let i = period - 1; i < data.length; i++) {
-        let sum = 0;
-        for (let j = 0; j < period; j++) {
-          sum += data[i - j].value || data[i - j].close;
-        }
-        sma.push({
-          time: data[i].time,
-          value: sum / period
-        });
-      }
-      return sma;
-    };
-
-    const calculateEMA = (data, period) => {
-      const ema = [];
-      const multiplier = 2 / (period + 1);
-      let sum = 0;
-      for (let i = 0; i < period; i++) {
-        sum += data[i].value || data[i].close;
-      }
-      ema.push({
-        time: data[period - 1].time,
-        value: sum / period
-      });
-      for (let i = period; i < data.length; i++) {
-        const currentValue = data[i].value || data[i].close;
-        const previousEMA = ema[ema.length - 1].value;
-        const currentEMA = (currentValue - previousEMA) * multiplier + previousEMA;
-        ema.push({
-          time: data[i].time,
-          value: currentEMA
-        });
-      }
-      return ema;
-    };
-
-    const calculateBollingerBands = (data, period = 20, stdDev = 2) => {
-      const sma = calculateSMA(data, period);
-      const bands = [];
-      for (let i = 0; i < sma.length; i++) {
-        const dataIndex = i + period - 1;
-        let sum = 0;
-        for (let j = 0; j < period; j++) {
-          const value = data[dataIndex - j].value || data[dataIndex - j].close;
-          sum += Math.pow(value - sma[i].value, 2);
-        }
-        const variance = sum / period;
-        const standardDeviation = Math.sqrt(variance);
-        bands.push({
-          time: sma[i].time,
-          upper: sma[i].value + stdDev * standardDeviation,
-          middle: sma[i].value,
-          lower: sma[i].value - stdDev * standardDeviation
-        });
-      }
-      return bands;
-    };
-
-    const calculateRSI = (data, period = 14) => {
-      if (data.length < period + 1) return [];
-      const rsi = [];
-      let gains = 0;
-      let losses = 0;
-      for (let i = 1; i <= period; i++) {
-        const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
-        if (change > 0) {
-          gains += change;
-        } else {
-          losses += Math.abs(change);
-        }
-      }
-      let avgGain = gains / period;
-      let avgLoss = losses / period;
-      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-      rsi.push({
-        time: data[period].time,
-        value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
-      });
-      for (let i = period + 1; i < data.length; i++) {
-        const change = (data[i].close || data[i].value) - (data[i - 1].close || data[i - 1].value);
-        const gain = change > 0 ? change : 0;
-        const loss = change < 0 ? Math.abs(change) : 0;
-        avgGain = (avgGain * (period - 1) + gain) / period;
-        avgLoss = (avgLoss * (period - 1) + loss) / period;
-        const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-        rsi.push({
-          time: data[i].time,
-          value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
-        });
-      }
-      return rsi;
-    };
-
-    // Remove all existing indicator series
-    Object.values(indicatorSeriesRef.current).forEach((series) => {
-      if (series && chartRef.current) {
-        try {
-          chartRef.current.removeSeries(series);
-        } catch (e) {
-          console.error('Error removing series:', e);
-        }
-      }
-    });
-    indicatorSeriesRef.current = {};
-
-    // Add selected indicators
-    indicators.forEach((indicator) => {
-      try {
-        if (indicator.id === 'sma20') {
-          const smaData = calculateSMA(data, 20);
-          if (smaData.length > 0) {
-            const smaSeries = chartRef.current.addSeries(LineSeries, {
-              color: '#FF6B6B',
-              lineWidth: 2,
-              title: 'SMA 20',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            smaSeries.setData(
-              smaData.map((d) => ({
-                time: d.time,
-                value: d.value * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['sma20'] = smaSeries;
-          }
-        } else if (indicator.id === 'sma50') {
-          const smaData = calculateSMA(data, 50);
-          if (smaData.length > 0) {
-            const smaSeries = chartRef.current.addSeries(LineSeries, {
-              color: '#4ECDC4',
-              lineWidth: 2,
-              title: 'SMA 50',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            smaSeries.setData(
-              smaData.map((d) => ({
-                time: d.time,
-                value: d.value * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['sma50'] = smaSeries;
-          }
-        } else if (indicator.id === 'ema20') {
-          const emaData = calculateEMA(data, 20);
-          if (emaData.length > 0) {
-            const emaSeries = chartRef.current.addSeries(LineSeries, {
-              color: '#FFA07A',
-              lineWidth: 2,
-              title: 'EMA 20',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            emaSeries.setData(
-              emaData.map((d) => ({
-                time: d.time,
-                value: d.value * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['ema20'] = emaSeries;
-          }
-        } else if (indicator.id === 'ema50') {
-          const emaData = calculateEMA(data, 50);
-          if (emaData.length > 0) {
-            const emaSeries = chartRef.current.addSeries(LineSeries, {
-              color: '#98D8C8',
-              lineWidth: 2,
-              title: 'EMA 50',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            emaSeries.setData(
-              emaData.map((d) => ({
-                time: d.time,
-                value: d.value * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['ema50'] = emaSeries;
-          }
-        } else if (indicator.id === 'bb') {
-          const bbData = calculateBollingerBands(data, 20, 2);
-          if (bbData.length > 0) {
-            // Upper band
-            const upperSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(33, 150, 243, 0.6)',
-              lineWidth: 1,
-              lineStyle: 2, // Dashed
-              title: 'BB Upper',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            upperSeries.setData(
-              bbData.map((d) => ({
-                time: d.time,
-                value: d.upper * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['bb_upper'] = upperSeries;
-
-            // Middle band (SMA)
-            const middleSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(33, 150, 243, 0.8)',
-              lineWidth: 1,
-              title: 'BB Middle',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            middleSeries.setData(
-              bbData.map((d) => ({
-                time: d.time,
-                value: d.middle * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['bb_middle'] = middleSeries;
-
-            // Lower band
-            const lowerSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(33, 150, 243, 0.6)',
-              lineWidth: 1,
-              lineStyle: 2, // Dashed
-              title: 'BB Lower',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false
-            });
-            lowerSeries.setData(
-              bbData.map((d) => ({
-                time: d.time,
-                value: d.lower * scaleFactorRef.current
-              }))
-            );
-            indicatorSeriesRef.current['bb_lower'] = lowerSeries;
-          }
-        } else if (indicator.id === 'rsi') {
-          // RSI needs to be shown as an overlay with scaled values
-          const rsiData = calculateRSI(data, 14);
-          if (rsiData.length > 0) {
-            // Scale RSI values to fit on the price chart
-            const priceRange =
-              Math.max(...data.map((d) => d.high)) - Math.min(...data.map((d) => d.low));
-            const priceMin = Math.min(...data.map((d) => d.low));
-
-            // RSI oscillates between 0-100, map it to price range
-            const scaledRSI = rsiData.map((r) => ({
-              time: r.time,
-              value: (priceMin + (r.value / 100) * priceRange * 0.3) * scaleFactorRef.current // Use 30% of price range for RSI
-            }));
-
-            const rsiSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(156, 39, 176, 0.7)',
-              lineWidth: 2,
-              title: 'RSI (14)',
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false,
-              priceScaleId: 'rsi'
-            });
-            rsiSeries.setData(scaledRSI);
-            indicatorSeriesRef.current['rsi'] = rsiSeries;
-
-            // Add overbought line (70)
-            const overboughtLevel = priceMin + (70 / 100) * priceRange * 0.3;
-            const overboughtSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(255, 82, 82, 0.3)',
-              lineWidth: 1,
-              lineStyle: 2,
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false,
-              priceScaleId: 'rsi'
-            });
-            overboughtSeries.setData([
-              { time: data[0].time, value: overboughtLevel * scaleFactorRef.current },
-              { time: data[data.length - 1].time, value: overboughtLevel * scaleFactorRef.current }
-            ]);
-            indicatorSeriesRef.current['rsi_overbought'] = overboughtSeries;
-
-            // Add oversold line (30)
-            const oversoldLevel = priceMin + (30 / 100) * priceRange * 0.3;
-            const oversoldSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(0, 230, 118, 0.3)',
-              lineWidth: 1,
-              lineStyle: 2,
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false,
-              priceScaleId: 'rsi'
-            });
-            oversoldSeries.setData([
-              { time: data[0].time, value: oversoldLevel * scaleFactorRef.current },
-              { time: data[data.length - 1].time, value: oversoldLevel * scaleFactorRef.current }
-            ]);
-            indicatorSeriesRef.current['rsi_oversold'] = oversoldSeries;
-
-            // Add middle line (50)
-            const middleLevel = priceMin + (50 / 100) * priceRange * 0.3;
-            const middleSeries = chartRef.current.addSeries(LineSeries, {
-              color: 'rgba(158, 158, 158, 0.3)',
-              lineWidth: 1,
-              lineStyle: 3,
-              priceLineVisible: false,
-              lastValueVisible: false,
-              crosshairMarkerVisible: false,
-              priceScaleId: 'rsi'
-            });
-            middleSeries.setData([
-              { time: data[0].time, value: middleLevel * scaleFactorRef.current },
-              { time: data[data.length - 1].time, value: middleLevel * scaleFactorRef.current }
-            ]);
-            indicatorSeriesRef.current['rsi_middle'] = middleSeries;
-          }
-        } else if (indicator.id === 'fib') {
-          // Calculate Fibonacci levels based on the data range
-          if (data.length > 0) {
-            const minPrice = Math.min(...data.map((d) => d.low));
-            const maxPrice = Math.max(...data.map((d) => d.high));
-            const diff = maxPrice - minPrice;
-
-            const fibLevels = [
-              { level: 0, price: minPrice, color: 'rgba(255, 82, 82, 0.5)' },
-              { level: 0.236, price: minPrice + diff * 0.236, color: 'rgba(255, 152, 0, 0.5)' },
-              { level: 0.382, price: minPrice + diff * 0.382, color: 'rgba(255, 193, 7, 0.5)' },
-              { level: 0.5, price: minPrice + diff * 0.5, color: 'rgba(76, 175, 80, 0.5)' },
-              { level: 0.618, price: minPrice + diff * 0.618, color: 'rgba(33, 150, 243, 0.5)' },
-              { level: 0.786, price: minPrice + diff * 0.786, color: 'rgba(103, 58, 183, 0.5)' },
-              { level: 1, price: maxPrice, color: 'rgba(156, 39, 176, 0.5)' }
-            ];
-
-            fibLevels.forEach((fib, index) => {
-              const fibSeries = chartRef.current.addSeries(LineSeries, {
-                color: fib.color,
-                lineWidth: 1,
-                lineStyle: 3, // Dotted
-                title: `Fib ${fib.level}`,
-                priceLineVisible: false,
-                lastValueVisible: false,
-                crosshairMarkerVisible: false
-              });
-
-              // Create a horizontal line at the fib level
-              const lineData = [
-                { time: data[0].time, value: fib.price * scaleFactorRef.current },
-                { time: data[data.length - 1].time, value: fib.price * scaleFactorRef.current }
-              ];
-              fibSeries.setData(lineData);
-              indicatorSeriesRef.current[`fib_${index}`] = fibSeries;
-            });
-          }
-        } else if (indicator.id === 'ath' && athData.price) {
-          // All-Time High line
-          const athSeries = chartRef.current.addSeries(LineSeries, {
-            color: '#FFD700',
-            lineWidth: 2,
-            lineStyle: 2, // Dashed
-            title: 'ATH',
-            priceLineVisible: false,
-            lastValueVisible: true,
-            crosshairMarkerVisible: false
-          });
-
-          // Create a horizontal line at ATH level
-          const athLineData = [
-            { time: data[0].time, value: athData.price * scaleFactorRef.current },
-            { time: data[data.length - 1].time, value: athData.price * scaleFactorRef.current }
-          ];
-          athSeries.setData(athLineData);
-          indicatorSeriesRef.current['ath'] = athSeries;
-        }
-      } catch (error) {
-        console.error(`Error adding ${indicator.name}:`, error);
-      }
-    });
-  }, [
-    indicators,
-    data,
-    chartType,
-    athData,
-    isDark
-  ]);
 
   // Separate effect to update data on chart series - throttled for performance
   useEffect(() => {
@@ -1490,26 +1071,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     // The tooltip will maintain its position automatically since we're not recreating the chart
   }, [data, holderData, chartType, isDark, range, theme, isMobile]);
 
-  const handleIndicatorToggle = useCallback((indicator) => {
-    // Special handling for RSI
-    if (indicator.id === 'rsi') {
-      setShowRSI((prev) => {
-        const newValue = !prev;
-        showRSIRef.current = newValue;
-        return newValue;
-      });
-    }
-
-    setIndicators((prev) => {
-      const exists = prev.find((i) => i.id === indicator.id);
-      if (exists) {
-        return prev.filter((i) => i.id !== indicator.id);
-      } else {
-        return [...prev, indicator];
-      }
-    });
-  }, []);
-
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => !prev);
   }, []);
@@ -1559,32 +1120,25 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Typography>
           {athData.price && chartType !== 'holders' && (
             <Box
-              onClick={() => {
-                handleIndicatorToggle(indicatorOptions.find(i => i.id === 'ath'));
-              }}
               sx={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: 0.5,
-                px: 1,
-                py: 0.4,
+                gap: 0.75,
+                px: 1.2,
+                py: 0.5,
                 borderRadius: '8px',
-                cursor: 'pointer',
-                border: `1px solid ${alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.25)}`,
-                backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.04),
-                '&:hover': {
-                  borderColor: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                  backgroundColor: alpha(athData.percentDown < 0 ? '#ef5350' : '#66bb6a', 0.08)
-                }
+                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
+                backgroundColor: 'transparent'
               }}
             >
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: isMobile ? '11px' : '12px',
-                  fontWeight: 500,
+                  fontSize: '12px',
+                  fontWeight: 400,
                   color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                  lineHeight: 1
+                  lineHeight: 1,
+                  fontFamily: 'monospace'
                 }}
               >
                 {athData.percentDown}%
@@ -1592,42 +1146,43 @@ const PriceChartAdvanced = memo(({ token }) => {
               <Typography
                 variant="caption"
                 sx={{
-                  fontSize: isMobile ? '10px' : '11px',
+                  fontSize: '11px',
                   fontWeight: 400,
-                  color: 'text.secondary',
-                  opacity: 0.65,
+                  color: alpha(theme.palette.text.secondary, 0.5),
                   lineHeight: 1
                 }}
               >
-                {isMobile ? 'ATH' : 'from ATH'}
+                ATH
               </Typography>
               {!isMobile && (
-                <Typography
-                  variant="caption"
-                  sx={{
-                    fontSize: '11px',
-                    fontWeight: 400,
-                    color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                    fontFamily: 'monospace',
-                    lineHeight: 1,
-                    opacity: 0.85
-                  }}
-                >
-                  {currencySymbols[activeFiatCurrency] || ''}
-                  {(() => {
-                    if (athData.price && athData.price < 0.001) {
-                      const str = athData.price.toFixed(15);
-                      const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                      if (zeros >= 4) {
-                        const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                        return `0.0(${zeros})${significant.slice(0, 3)}`;
+                <>
+                  <Box sx={{ width: '1px', height: '12px', bgcolor: alpha(theme.palette.divider, 0.2) }} />
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '11px',
+                      fontWeight: 400,
+                      color: alpha(theme.palette.text.primary, 0.7),
+                      fontFamily: 'monospace',
+                      lineHeight: 1
+                    }}
+                  >
+                    {currencySymbols[activeFiatCurrency] || ''}
+                    {(() => {
+                      if (athData.price && athData.price < 0.001) {
+                        const str = athData.price.toFixed(15);
+                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
+                        if (zeros >= 4) {
+                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
+                          return `0.0(${zeros})${significant.slice(0, 3)}`;
+                        }
                       }
-                    }
-                    return athData.price < 0.01
-                      ? athData.price.toFixed(6)
-                      : athData.price.toFixed(3);
-                  })()}
-                </Typography>
+                      return athData.price < 0.01
+                        ? athData.price.toFixed(6)
+                        : athData.price.toFixed(3);
+                    })()}
+                  </Typography>
+                </>
               )}
             </Box>
           )}
@@ -1743,13 +1298,9 @@ const PriceChartAdvanced = memo(({ token }) => {
                 }}
                 startIcon={icon}
               >
-                {isMobile
-                  ? type === 'holders'
-                    ? 'Hold'
-                    : type.charAt(0).toUpperCase() + type.slice(1).substring(0, 3)
-                  : type === 'holders'
-                    ? 'Holders'
-                    : type.charAt(0).toUpperCase() + type.slice(1)}
+                {type === 'holders'
+                  ? 'Holders'
+                  : type.charAt(0).toUpperCase() + type.slice(1)}
               </Button>
             ))}
           </ButtonGroup>
@@ -1913,41 +1464,6 @@ const PriceChartAdvanced = memo(({ token }) => {
               </MenuItem>
               );
             })}
-            <Divider />
-            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 500 }}>
-              Indicators
-            </MenuItem>
-            {indicatorOptions.map((indicator) => (
-              <MenuItem
-                key={indicator.id}
-                onClick={() => handleIndicatorToggle(indicator)}
-                sx={{ fontSize: '14px' }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      border: '2px solid',
-                      borderColor: theme.palette.divider,
-                      borderRadius: '2px',
-                      mr: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor: indicators.find((i) => i.id === indicator.id)
-                        ? theme.palette.primary.main
-                        : 'transparent'
-                    }}
-                  >
-                    {indicators.find((i) => i.id === indicator.id) && (
-                      <Box sx={{ width: 8, height: 8, bgcolor: 'white', borderRadius: '1px' }} />
-                    )}
-                  </Box>
-                  {indicator.name}
-                </Box>
-              </MenuItem>
-            ))}
           </Menu>
         </Box>
       </Box>
