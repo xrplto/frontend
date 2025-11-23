@@ -655,7 +655,9 @@ const CreatorTransactionsDialog = memo(
       setError(null);
 
       try {
-        const client = new Client(XRPL_WEBSOCKET_URL);
+        const client = new Client(XRPL_WEBSOCKET_URL, {
+          connectionTimeout: 10000
+        });
         await client.connect();
         console.log('[CreatorTx] Connected to XRPL');
 
