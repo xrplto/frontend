@@ -45,6 +45,8 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import CloseIcon from '@mui/icons-material/Close';
+import AddIcon from '@mui/icons-material/Add';
+import { TextField, InputAdornment, RadioGroup, Radio } from '@mui/material';
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
   // XRP has a special MD5
@@ -466,6 +468,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [selectedPair, setSelectedPair] = useState(() => (token ? getInitPair(token) : null));
   const [ammPools, setAmmPools] = useState([]);
   const [ammLoading, setAmmLoading] = useState(false);
+  const [addLiquidityDialog, setAddLiquidityDialog] = useState({ open: false, pool: null });
+  const [depositAmount1, setDepositAmount1] = useState('');
+  const [depositAmount2, setDepositAmount2] = useState('');
+  const [depositMode, setDepositMode] = useState('double'); // 'double', 'single1', 'single2'
 
   const WSS_URL = 'wss://s1.ripple.com';
 
@@ -696,6 +702,64 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
 
   const handlePageChange = (event, newPage) => {
     setPage(newPage);
+  };
+
+  const handleAddLiquidity = (pool) => {
+    setAddLiquidityDialog({ open: true, pool });
+    setDepositAmount1('');
+    setDepositAmount2('');
+    setDepositMode('double');
+  };
+
+  const handleCloseDialog = () => {
+    setAddLiquidityDialog({ open: false, pool: null });
+  };
+
+  const handleSubmitDeposit = async () => {
+    const { pool } = addLiquidityDialog;
+    if (!pool) return;
+
+    try {
+      const xrpl = await import('xrpl');
+      const wallet = xrpl.Wallet.fromSeed(process.env.WALLET_SEED); // Replace with actual wallet
+      const client = new xrpl.Client('wss://s1.ripple.com');
+      await client.connect();
+
+      const tx = {
+        TransactionType: 'AMMDeposit',
+        Account: wallet.address,
+        Asset: pool.asset1.currency === 'XRP'
+          ? { currency: 'XRP' }
+          : { currency: pool.asset1.currency, issuer: pool.asset1.issuer },
+        Asset2: pool.asset2.currency === 'XRP'
+          ? { currency: 'XRP' }
+          : { currency: pool.asset2.currency, issuer: pool.asset2.issuer }
+      };
+
+      if (depositMode === 'double') {
+        tx.Amount = pool.asset1.currency === 'XRP'
+          ? xrpl.xrpToDrops(depositAmount1)
+          : { currency: pool.asset1.currency, issuer: pool.asset1.issuer, value: depositAmount1 };
+        tx.Amount2 = pool.asset2.currency === 'XRP'
+          ? xrpl.xrpToDrops(depositAmount2)
+          : { currency: pool.asset2.currency, issuer: pool.asset2.issuer, value: depositAmount2 };
+      } else if (depositMode === 'single1') {
+        tx.Amount = pool.asset1.currency === 'XRP'
+          ? xrpl.xrpToDrops(depositAmount1)
+          : { currency: pool.asset1.currency, issuer: pool.asset1.issuer, value: depositAmount1 };
+      } else {
+        tx.Amount = pool.asset2.currency === 'XRP'
+          ? xrpl.xrpToDrops(depositAmount2)
+          : { currency: pool.asset2.currency, issuer: pool.asset2.issuer, value: depositAmount2 };
+      }
+
+      const result = await client.submitAndWait(tx, { wallet });
+      console.log('Deposit successful:', result);
+      handleCloseDialog();
+      await client.disconnect();
+    } catch (error) {
+      console.error('Deposit failed:', error);
+    }
   };
 
   const calculatePrice = useCallback((trade) => {
@@ -1085,7 +1149,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d APY</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d Fees Earned</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d Volume</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Liquidity (XRP)</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Liquidity</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1153,6 +1218,31 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                                 : '-'}
                           </Typography>
                         </TableCell>
+                        <TableCell align="right" sx={{ py: 1.5 }}>
+                          <Button
+                            variant="outlined"
+                            size="small"
+                            startIcon={<AddIcon />}
+                            onClick={() => handleAddLiquidity(pool)}
+                            sx={{
+                              py: 0.5,
+                              px: 1.5,
+                              fontSize: '12px',
+                              fontWeight: 400,
+                              textTransform: 'none',
+                              borderRadius: '8px',
+                              borderWidth: '1.5px',
+                              borderColor: alpha(theme.palette.divider, 0.2),
+                              '&:hover': {
+                                borderWidth: '1.5px',
+                                borderColor: theme.palette.primary.main,
+                                backgroundColor: alpha(theme.palette.primary.main, 0.04)
+                              }
+                            }}
+                          >
+                            Add
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -1170,6 +1260,81 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
           <RichList token={token} amm={amm} />
         </Suspense>
       )}
+
+      {/* Add Liquidity Dialog */}
+      <Dialog open={addLiquidityDialog.open} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          Add Liquidity
+          <IconButton onClick={handleCloseDialog} size="small">
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent>
+          {addLiquidityDialog.pool && (
+            <Stack spacing={2.5} sx={{ mt: 1 }}>
+              <Box>
+                <Typography variant="body2" sx={{ mb: 1, fontSize: '13px', opacity: 0.7 }}>
+                  Pool: {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}/{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
+                </Typography>
+              </Box>
+
+              <FormControl component="fieldset">
+                <Typography variant="body2" sx={{ mb: 1, fontSize: '13px', fontWeight: 500 }}>Deposit Mode</Typography>
+                <RadioGroup value={depositMode} onChange={(e) => setDepositMode(e.target.value)}>
+                  <FormControlLabel value="double" control={<Radio size="small" />} label={<Typography sx={{ fontSize: '13px' }}>Double-asset (both tokens, no fee)</Typography>} />
+                  <FormControlLabel value="single1" control={<Radio size="small" />} label={<Typography sx={{ fontSize: '13px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</Typography>} />
+                  <FormControlLabel value="single2" control={<Radio size="small" />} label={<Typography sx={{ fontSize: '13px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</Typography>} />
+                </RadioGroup>
+              </FormControl>
+
+              {(depositMode === 'double' || depositMode === 'single1') && (
+                <TextField
+                  label={decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
+                  value={depositAmount1}
+                  onChange={(e) => setDepositAmount1(e.target.value)}
+                  type="number"
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">{decodeCurrency(addLiquidityDialog.pool.asset1.currency)}</InputAdornment>
+                  }}
+                />
+              )}
+
+              {(depositMode === 'double' || depositMode === 'single2') && (
+                <TextField
+                  label={decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
+                  value={depositAmount2}
+                  onChange={(e) => setDepositAmount2(e.target.value)}
+                  type="number"
+                  fullWidth
+                  size="small"
+                  InputProps={{
+                    endAdornment: <InputAdornment position="end">{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}</InputAdornment>
+                  }}
+                />
+              )}
+
+              <Button
+                variant="outlined"
+                onClick={handleSubmitDeposit}
+                fullWidth
+                sx={{
+                  py: 1.5,
+                  fontSize: '14px',
+                  fontWeight: 400,
+                  textTransform: 'none',
+                  borderRadius: '12px',
+                  borderWidth: '1.5px',
+                  '&:hover': { borderWidth: '1.5px' }
+                }}
+              >
+                Add Liquidity
+              </Button>
+            </Stack>
+          )}
+        </DialogContent>
+      </Dialog>
     </Stack>
   );
 };
