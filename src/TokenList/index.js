@@ -967,12 +967,12 @@ function TokenListComponent({
           </ButtonRow>
         </CustomColumnsPanel>
       ) : isMobile ? (
-        <MobileContainer darkMode={darkMode}>
-          <MobileHeader darkMode={darkMode}>
+        <MobileContainer isDark={darkMode}>
+          <MobileHeader isDark={darkMode}>
             <HeaderCell
               flex={2}
               align="left"
-              darkMode={darkMode}
+              isDark={darkMode}
               sortable
               onClick={() => handleRequestSort(null, 'name')}
               debugColor="cyan"
@@ -982,7 +982,7 @@ function TokenListComponent({
             <HeaderCell
               flex={1.2}
               align="right"
-              darkMode={darkMode}
+              isDark={darkMode}
               sortable
               onClick={() => {
                 const col = customColumns && customColumns[0] ? customColumns[0] : 'price';
@@ -1037,7 +1037,7 @@ function TokenListComponent({
             <HeaderCell
               flex={0.7}
               align="right"
-              darkMode={darkMode}
+              isDark={darkMode}
               sortable
               onClick={() => {
                 const col = customColumns && customColumns[1] ? customColumns[1] : 'pro24h';
