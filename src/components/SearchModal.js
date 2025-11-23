@@ -27,8 +27,7 @@ import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
-const API_URL = process.env.API_URL || '';
-const NFT_API_URL = 'https://api.xrpl.to/api';
+const API_URL = 'https://api.xrpl.to/api';
 
 // Currency symbols
 const currencySymbols = {
@@ -115,14 +114,11 @@ function SearchModal({ open, onClose }) {
       try {
         const [tokensRes, collectionsRes] = await Promise.all([
           axios.post(`${API_URL}/search`, { search: '' }),
-          axios.post(`${NFT_API_URL}/search`, {
-            search: '',
-            type: 'SEARCH_ITEM_COLLECTION_ACCOUNT'
-          })
+          axios.post(`${API_URL}/nft/search`, { search: '' })
         ]);
 
-        setTrendingTokens(tokensRes.data?.tokens?.slice(0, 4) || []);
-        setTrendingCollections(collectionsRes.data?.collections?.slice(0, 3) || []);
+        setTrendingTokens(tokensRes.data?.tokens?.slice(0, 3) || []);
+        setTrendingCollections(collectionsRes.data?.collections?.slice(0, 4) || []);
       } catch (error) {
         console.error('Error loading trending data:', error);
       } finally {
@@ -142,21 +138,26 @@ function SearchModal({ open, onClose }) {
 
     const controller = new AbortController();
 
-    const searchTokens = async () => {
+    const performSearch = async () => {
       setLoading(true);
       try {
-        const response = await axios.post(
-          `${API_URL}/search`,
-          { search: debouncedSearchQuery },
-          { signal: controller.signal }
-        );
+        const [tokensRes, collectionsRes] = await Promise.all([
+          axios.post(
+            `${API_URL}/search`,
+            { search: debouncedSearchQuery },
+            { signal: controller.signal }
+          ),
+          axios.post(
+            `${API_URL}/nft/search`,
+            { search: debouncedSearchQuery },
+            { signal: controller.signal }
+          )
+        ]);
 
-        if (response.data?.tokens) {
-          setSearchResults((prev) => ({
-            ...prev,
-            tokens: response.data.tokens.slice(0, 5)
-          }));
-        }
+        setSearchResults({
+          tokens: tokensRes.data?.tokens?.slice(0, 4) || [],
+          collections: collectionsRes.data?.collections?.slice(0, 4) || []
+        });
       } catch (error) {
         if (!axios.isCancel(error)) {
           console.error('Search error:', error);
@@ -166,7 +167,7 @@ function SearchModal({ open, onClose }) {
       }
     };
 
-    searchTokens();
+    performSearch();
     return () => controller.abort();
   }, [debouncedSearchQuery, open]);
 
@@ -288,8 +289,8 @@ function SearchModal({ open, onClose }) {
                     variant="subtitle2"
                     sx={{
                       px: 2,
-                      pt: 2,
-                      pb: 0.75,
+                      pt: 1.5,
+                      pb: 0.5,
                       fontSize: '11px',
                       fontWeight: 400,
                       opacity: 0.6,
@@ -313,17 +314,17 @@ function SearchModal({ open, onClose }) {
                             }, 0);
                           }}
                           sx={{
-                            py: 1,
+                            py: 0.75,
                             px: 2,
                             borderRadius: '12px',
                             mx: 0.5,
-                            mb: 0.5,
+                            mb: 0.25,
                             '&:hover': {
                               bgcolor: alpha(theme.palette.primary.main, 0.04)
                             }
                           }}
                         >
-                          <ListItemAvatar>
+                          <ListItemAvatar sx={{ minWidth: 40 }}>
                             <Avatar
                               src={
                                 item.type === 'collection'
@@ -331,8 +332,8 @@ function SearchModal({ open, onClose }) {
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
                               sx={{
-                                width: 36,
-                                height: 36,
+                                width: 32,
+                                height: 32,
                                 bgcolor: 'transparent'
                               }}
                             >
@@ -342,9 +343,9 @@ function SearchModal({ open, onClose }) {
                           <ListItemText
                             primary={item.user || item.name}
                             secondary={item.name}
-                            primaryTypographyProps={{ fontSize: '14px', fontWeight: 400 }}
+                            primaryTypographyProps={{ fontSize: '13px', fontWeight: 400 }}
                             secondaryTypographyProps={{
-                              fontSize: '13px',
+                              fontSize: '12px',
                               sx: { color: alpha(theme.palette.text.secondary, 0.6) }
                             }}
                           />
@@ -353,8 +354,8 @@ function SearchModal({ open, onClose }) {
                             size="small"
                             variant="outlined"
                             sx={{
-                              height: 22,
-                              fontSize: '11px',
+                              height: 20,
+                              fontSize: '10px',
                               fontWeight: 400
                             }}
                           />
@@ -445,7 +446,7 @@ function SearchModal({ open, onClose }) {
               {!loadingTrending && trendingCollections.length > 0 && (
                 <>
                   <Divider sx={{ my: 0.5 }} />
-                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 1.5, pb: 0.75 }} spacing={1}>
+                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 1.5, pb: 0.5 }} spacing={1}>
                     <CollectionsIcon sx={{ fontSize: 16, color: alpha('#4caf50', 0.6) }} />
                     <Typography variant="subtitle2" sx={{ fontSize: '11px', fontWeight: 400, opacity: 0.6 }}>
                       Trending Collections
@@ -457,7 +458,7 @@ function SearchModal({ open, onClose }) {
                         <ListItemButton
                           onClick={() => handleResultClick(collection, 'collection')}
                           sx={{
-                            py: 1,
+                            py: 0.75,
                             px: 2,
                             borderRadius: '12px',
                             mx: 0.5,
@@ -467,12 +468,12 @@ function SearchModal({ open, onClose }) {
                             }
                           }}
                         >
-                          <ListItemAvatar sx={{ minWidth: 44 }}>
+                          <ListItemAvatar sx={{ minWidth: 40 }}>
                             <Avatar
                               src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`}
                               sx={{
-                                width: 36,
-                                height: 36,
+                                width: 32,
+                                height: 32,
                                 bgcolor: 'transparent'
                               }}
                             >
@@ -480,29 +481,46 @@ function SearchModal({ open, onClose }) {
                             </Avatar>
                           </ListItemAvatar>
                           <ListItemText
-                            primary={collection.name}
-                            secondary={collection.type ? `${collection.type} collection` : 'Collection'}
-                            primaryTypographyProps={{ fontSize: '14px', fontWeight: 400, noWrap: true }}
+                            primary={
+                              <Stack direction="row" alignItems="center" spacing={0.75}>
+                                <Typography fontSize="13px" fontWeight={400} noWrap>
+                                  {collection.name}
+                                </Typography>
+                                {collection.verified === 'yes' && (
+                                  <Chip
+                                    label="Verified"
+                                    size="small"
+                                    color="primary"
+                                    sx={{ height: 18, fontSize: '10px', fontWeight: 400 }}
+                                  />
+                                )}
+                              </Stack>
+                            }
+                            secondary={collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}
+                            primaryTypographyProps={{ component: 'div' }}
                             secondaryTypographyProps={{
-                              fontSize: '13px',
+                              fontSize: '12px',
                               noWrap: true,
                               sx: { color: alpha(theme.palette.text.secondary, 0.6) }
                             }}
                             sx={{ pr: 1 }}
                           />
                           <Stack alignItems="flex-end" spacing={0.25}>
-                            {collection.floor && collection.floor.amount && (
-                              <Typography variant="body2" fontSize="14px" fontWeight={400}>
-                                Floor: {collection.floor.amount} {collection.floor.currency || 'XRP'}
+                            {collection.floor?.amount && (
+                              <Typography variant="body2" fontSize="13px" fontWeight={400}>
+                                {Number(collection.floor.amount) >= 1
+                                  ? Math.round(collection.floor.amount)
+                                  : collection.floor.amount}{' '}
+                                XRP
                               </Typography>
                             )}
-                            {collection.totalVolume !== undefined && collection.totalVolume > 0 && (
+                            {collection.sales24h > 0 && (
                               <Typography
                                 variant="caption"
-                                fontSize="12px"
+                                fontSize="11px"
                                 sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
                               >
-                                Vol: {collection.totalVolume.toLocaleString()} XRP
+                                {collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today
                               </Typography>
                             )}
                           </Stack>
@@ -522,15 +540,18 @@ function SearchModal({ open, onClose }) {
           )}
 
           {/* Search Results */}
-          {searchResults.tokens.length > 0 && (
+          {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && (
             <>
-              <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 2, pb: 0.75 }} spacing={1}>
-                <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
-                  Results
-                </Typography>
-              </Stack>
-              <List disablePadding dense>
-                {searchResults.tokens.map((token, index) => {
+              {searchResults.tokens.length > 0 && (
+                <>
+                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: 2, pb: 0.5 }} spacing={1}>
+                    <TrendingUpIcon sx={{ fontSize: 14, color: alpha(theme.palette.primary.main, 0.5) }} />
+                    <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
+                      Tokens
+                    </Typography>
+                  </Stack>
+                  <List disablePadding dense>
+                    {searchResults.tokens.map((token, index) => {
                   const shouldHighlight = index === 0 && searchResults.tokens.length > 1;
 
                   return (
@@ -616,14 +637,104 @@ function SearchModal({ open, onClose }) {
                         </Stack>
                       </ListItemButton>
                     </ListItem>
-                  );
-                })}
-              </List>
+                      );
+                    })}
+                  </List>
+                </>
+              )}
+
+              {searchResults.collections.length > 0 && (
+                <>
+                  {searchResults.tokens.length > 0 && <Divider sx={{ my: 0.5 }} />}
+                  <Stack direction="row" alignItems="center" sx={{ px: 2, pt: searchResults.tokens.length > 0 ? 1.5 : 2, pb: 0.5 }} spacing={1}>
+                    <CollectionsIcon sx={{ fontSize: 14, color: alpha(theme.palette.text.secondary, 0.5) }} />
+                    <Typography variant="subtitle2" fontSize="12px" fontWeight={400} sx={{ opacity: 0.6 }} color="text.secondary">
+                      Collections
+                    </Typography>
+                  </Stack>
+                  <List disablePadding dense>
+                    {searchResults.collections.map((collection, index) => (
+                      <ListItem key={index} disablePadding>
+                        <ListItemButton
+                          onClick={() => handleResultClick(collection, 'collection')}
+                          sx={{
+                            py: 0.75,
+                            px: 2,
+                            borderRadius: '12px',
+                            mx: 0.5,
+                            mb: 0.5,
+                            '&:hover': {
+                              bgcolor: alpha(theme.palette.primary.main, 0.04)
+                            }
+                          }}
+                        >
+                          <ListItemAvatar sx={{ minWidth: 40 }}>
+                            <Avatar
+                              src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`}
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                bgcolor: 'transparent'
+                              }}
+                            >
+                              {collection.name?.[0]}
+                            </Avatar>
+                          </ListItemAvatar>
+                          <ListItemText
+                            primary={
+                              <Stack direction="row" alignItems="center" spacing={0.75}>
+                                <Typography fontSize="13px" fontWeight={400} noWrap>
+                                  {collection.name}
+                                </Typography>
+                                {collection.verified === 'yes' && (
+                                  <Chip
+                                    label="Verified"
+                                    size="small"
+                                    color="primary"
+                                    sx={{ height: 18, fontSize: '10px', fontWeight: 400 }}
+                                  />
+                                )}
+                              </Stack>
+                            }
+                            secondary={collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}
+                            primaryTypographyProps={{ component: 'div' }}
+                            secondaryTypographyProps={{
+                              fontSize: '12px',
+                              noWrap: true,
+                              sx: { color: alpha(theme.palette.text.secondary, 0.6) }
+                            }}
+                            sx={{ pr: 1 }}
+                          />
+                          <Stack alignItems="flex-end" spacing={0.25}>
+                            {collection.floor?.amount && (
+                              <Typography variant="body2" fontSize="13px" fontWeight={400}>
+                                {Number(collection.floor.amount) >= 1
+                                  ? Math.round(collection.floor.amount)
+                                  : collection.floor.amount}{' '}
+                                XRP
+                              </Typography>
+                            )}
+                            {collection.sales24h > 0 && (
+                              <Typography
+                                variant="caption"
+                                fontSize="11px"
+                                sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}
+                              >
+                                {collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today
+                              </Typography>
+                            )}
+                          </Stack>
+                        </ListItemButton>
+                      </ListItem>
+                    ))}
+                  </List>
+                </>
+              )}
             </>
           )}
 
           {/* No Results */}
-          {searchQuery && !loading && searchResults.tokens.length === 0 && (
+          {searchQuery && !loading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <Typography fontSize="14px" sx={{ color: alpha(theme.palette.text.secondary, 0.6) }}>
                 No results found for "{searchQuery}"
