@@ -158,7 +158,7 @@ const Button = styled('button')(({ isDark }) => ({
   }
 }));
 
-const Typography = styled('span')(({ variant, color, sx = {} }) => {
+const Typography = styled('span')(({ variant, color, sx = {}, isDark }) => {
   const baseStyles = {};
 
   if (variant === 'h6') {
@@ -174,6 +174,8 @@ const Typography = styled('span')(({ variant, color, sx = {} }) => {
   if (color === 'text.secondary') {
     baseStyles.opacity = 0.7;
   }
+
+  baseStyles.color = isDark ? '#FFFFFF' : '#212B36';
 
   return { ...baseStyles, ...sx };
 });
@@ -370,7 +372,7 @@ const TrendingTokens = () => {
     return (
       <Container isDark={darkMode} style={{ padding: '24px', textAlign: 'center' }}>
         <div style={{ fontSize: 48, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', marginBottom: '8px' }}>📈</div>
-        <Typography variant="body2" style={{ fontSize: '0.9rem', opacity: 0.7 }}>
+        <Typography variant="body2" isDark={darkMode} style={{ fontSize: '0.9rem', opacity: 0.7 }}>
           No trending tokens available
         </Typography>
       </Container>
@@ -392,7 +394,7 @@ const TrendingTokens = () => {
         }}
       >
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography variant="h6" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
+          <Typography variant="h6" isDark={darkMode} style={{ fontWeight: 400, fontSize: '0.75rem' }}>
             Trending Tokens
           </Typography>
           <Chip isDark={darkMode}>LIVE</Chip>
@@ -417,7 +419,7 @@ const TrendingTokens = () => {
         <Box style={{ width: 22 }} />
         <Box style={{ width: 32 }} />
         <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '6px' }}>
-          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
             Token
           </Typography>
         </Box>
@@ -429,16 +431,16 @@ const TrendingTokens = () => {
             marginLeft: 'auto'
           }}
         >
-          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             Price
           </Typography>
-          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             24h %
           </Typography>
-          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             MCap
           </Typography>
-          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             Volume
           </Typography>
         </Box>
@@ -459,7 +461,7 @@ const TrendingTokens = () => {
           <Box style={{ width: 22 }} />
           <Box style={{ width: 32 }} />
           <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '4px' }}>
-            <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
+            <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
               Token
             </Typography>
           </Box>
@@ -471,10 +473,10 @@ const TrendingTokens = () => {
               marginLeft: 'auto'
             }}
           >
-            <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+            <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
               24h %
             </Typography>
-            <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+            <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
               Volume
             </Typography>
           </Box>
@@ -527,6 +529,7 @@ const TrendingTokens = () => {
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <Typography
                         variant="body2"
+                        isDark={darkMode}
                         style={{
                           fontSize: '13px',
                           overflow: 'hidden',
@@ -554,6 +557,7 @@ const TrendingTokens = () => {
                       <Typography
                         variant="caption"
                         color="text.secondary"
+                        isDark={darkMode}
                         style={{
                           fontSize: '10px',
                           overflow: 'hidden',

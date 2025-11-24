@@ -155,6 +155,7 @@ const Overview = memo(
               setShowEditor={setShowEditor}
               description={description}
               onApplyDescription={onApplyDescription}
+              isDark={isDark}
               mdEditor={
                 showEditor ? (
                   <textarea
@@ -165,7 +166,9 @@ const Overview = memo(
                       height: '300px',
                       padding: '8px',
                       borderRadius: '4px',
-                      border: '1.5px solid #ccc',
+                      border: isDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid #ccc',
+                      background: isDark ? 'rgba(255,255,255,0.05)' : '#fff',
+                      color: isDark ? '#fff' : '#000',
                       fontFamily: 'monospace',
                       fontSize: '12px'
                     }}
