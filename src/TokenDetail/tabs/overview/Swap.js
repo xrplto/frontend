@@ -1,33 +1,14 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
-import {
-  Button,
-  Stack,
-  Typography,
-  Input,
-  IconButton,
-  Box,
-  Alert,
-  AlertTitle,
-  Tabs,
-  Tab,
-  Chip,
-  Select,
-  MenuItem,
-  Paper,
-  Tooltip
-} from '@mui/material';
-import { styled, useTheme, keyframes, alpha, css } from '@mui/material/styles';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import SyncIcon from '@mui/icons-material/Sync';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import CloseIcon from '@mui/icons-material/Close';
+import styled from '@emotion/styled';
+import { keyframes, css } from '@emotion/react';
+import { ArrowUpDown, RefreshCw, EyeOff, X } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
 import { ConnectWallet } from 'src/components/Wallet';
-// QRDialog removed - Xaman no longer used
 import { selectMetrics } from 'src/redux/statusSlice';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
+
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -41,7 +22,6 @@ import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 import useWebSocket from 'react-use-websocket';
 
-
 import { configureMemos } from 'src/utils/parseUtils';
 import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Image from 'next/image';
@@ -52,7 +32,6 @@ import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsP
 // Lazy load XRPL dependencies for device authentication
 let Client, Wallet, CryptoJS;
 
-// Load dependencies dynamically
 const loadXRPLDependencies = async () => {
   if (!Client) {
     const xrpl = await import('xrpl');
@@ -82,6 +61,16 @@ const getDeviceWallet = (accountProfile) => {
   return null;
 };
 
+const alpha = (color, opacity) => {
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color.replace(')', `, ${opacity})`);
+};
+
 const pulse = keyframes`
   0% {
     transform: scale(0.95);
@@ -97,167 +86,496 @@ const pulse = keyframes`
   }
 `;
 
-const CurrencyContent = styled('div')(
-  ({ theme }) => `
-    box-sizing: border-box;
-    margin: 4px 0;
-    display: flex;
-    flex-direction: row;
-    padding: 14px 16px;
-    border-radius: 8px;
-    align-items: center;
-    background: ${alpha(theme.palette.background.paper, 0.03)};
-    backdrop-filter: none;
-    width: 100%;
-    justify-content: space-between;
-    transition: none;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.08)};
-    @media (max-width: 600px) {
-      padding: 12px 14px;
-      margin: 3px 0;
-    }
-`
-);
+const Stack = styled.div`
+  display: flex;
+  flex-direction: ${props => props.direction || 'column'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  justify-content: ${props => props.justifyContent || 'flex-start'};
+  gap: ${props => {
+    if (typeof props.spacing === 'number') return `${props.spacing * 8}px`;
+    return props.gap || '0';
+  }};
+  width: ${props => props.width || 'auto'};
+  flex-wrap: ${props => props.flexWrap || 'nowrap'};
+  ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
+    if (key === 'mb') return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+    if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
+    if (key === 'px') return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
+    if (key === 'py') return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+    return '';
+  }).join(' ')}
+`;
 
-const InputContent = styled('div')(
-  ({ theme }) => `
-    box-sizing: border-box;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-end;
-    color: ${theme.palette.text.primary};
-`
-);
-
-const OverviewWrapper = styled('div')(
-  ({ theme }) => `
-    flex-direction: column;
-    overflow: hidden;
-    box-sizing: border-box;
-    position: relative;
-    border-radius: 8px;
-    display: flex;
-    padding: 12px;
-    width: 100%;
-    background: transparent;
-    backdrop-filter: none;
-    box-shadow: none;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
-    @media (max-width: 600px) {
-        border-radius: 12px;
-        padding: 10px;
-    }
-`
-);
-
-const ConverterFrame = styled('div')(
-  ({ theme }) => `
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    display: flex;
-    width: 100%;
-`
-);
-
-// Wrap just the two amount rows so the swap icon stays centered between them
-const AmountRows = styled('div')(
-  () => `
-    position: relative;
-  `
-);
-
-const ToggleContent = styled('div')(
-  ({ theme }) => css`
-    cursor: pointer;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background: ${theme.palette.background.paper};
-    backdrop-filter: none;
-    border-radius: 50%;
-    padding: 6px;
-    z-index: 1;
-    transition: none;
-    box-shadow: none;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
-
-    &:hover {
-      background: ${alpha(theme.palette.primary.main, 0.04)};
-      border-color: ${theme.palette.primary.main};
-
-      svg {
-        color: ${theme.palette.primary.main} !important;
+const Box = styled.div`
+  display: ${props => props.display || 'block'};
+  flex-direction: ${props => props.flexDirection || 'row'};
+  flex: ${props => props.flex || 'initial'};
+  gap: ${props => props.gap || '0'};
+  width: ${props => props.width || 'auto'};
+  justify-content: ${props => props.justifyContent || 'flex-start'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
+    if (key === 'mb') return `margin-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+    if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
+    if (key === 'px') {
+      if (typeof value === 'object') {
+        return `
+          padding-left: ${value.xs * 8}px;
+          padding-right: ${value.xs * 8}px;
+          @media (min-width: 600px) {
+            padding-left: ${value.sm * 8}px;
+            padding-right: ${value.sm * 8}px;
+          }
+        `;
       }
+      return `padding-left: ${typeof value === 'number' ? value * 8 : value}px; padding-right: ${typeof value === 'number' ? value * 8 : value}px;`;
     }
-  `
-);
+    if (key === 'py') return `padding-top: ${typeof value === 'number' ? value * 8 : value}px; padding-bottom: ${typeof value === 'number' ? value * 8 : value}px;`;
+    return '';
+  }).join(' ')}
+`;
 
-const ExchangeButton = styled(Button)(
-  ({ theme }) => `
-    width: 100%;
-    max-width: 100%;
-    position: relative;
-    overflow: hidden;
-    border-radius: 8px;
-    background: transparent;
-    color: #4285f4;
-    font-weight: 400;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
-    box-shadow: none;
-    padding: 10px 16px;
-    font-size: 0.875rem;
-    text-transform: none;
-    margin-top: 8px;
-    margin-bottom: 8px;
-
-    &:hover {
-      background: ${alpha('#4285f4', 0.04)};
-      border-color: #4285f4;
-      box-shadow: none;
+const Typography = styled.span`
+  font-size: ${props => {
+    if (props.variant === 'h6') return '14px';
+    if (props.variant === 'subtitle1') return '16px';
+    if (props.variant === 'body2') return '14px';
+    if (props.variant === 'caption') return '12px';
+    return '14px';
+  }};
+  font-weight: ${props => props.fontWeight || 400};
+  line-height: ${props => props.lineHeight || 'normal'};
+  color: ${props => {
+    if (props.color === 'textSecondary') return props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+    if (props.color === 'primary') return '#4285f4';
+    if (props.color === 'error') return '#f44336';
+    if (props.color === 'warning.main') return '#ff9800';
+    if (props.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+    return props.isDark ? '#FFFFFF' : '#212B36';
+  }};
+  ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
+    if (key === 'fontSize') {
+      if (typeof value === 'object') {
+        return `
+          font-size: ${value.xs};
+          @media (min-width: 600px) {
+            font-size: ${value.sm};
+          }
+        `;
+      }
+      return `font-size: ${value};`;
     }
+    if (key === 'color') return `color: ${value};`;
+    if (key === 'display') return `display: ${value};`;
+    if (key === 'mt') return `margin-top: ${typeof value === 'number' ? value * 8 : value}px;`;
+    return '';
+  }).join(' ')}
+`;
 
-    &:active {
-      background: ${alpha('#4285f4', 0.08)};
+const Button = styled.button`
+  padding: ${props => {
+    if (props.size === 'small') return '4px 8px';
+    if (props.sx?.px || props.sx?.py) {
+      const px = props.sx.px;
+      const py = props.sx.py;
+      if (typeof px === 'object' && typeof py === 'object') {
+        return `${py.xs * 8}px ${px.xs * 8}px`;
+      }
+      return `${(py || 1) * 8}px ${(px || 2) * 8}px`;
     }
-
-    &.Mui-disabled {
-      background: transparent;
-      color: ${alpha(theme.palette.text.primary, 0.4)};
-      box-shadow: none;
-      border-color: ${alpha(theme.palette.divider, 0.15)};
+    return '8px 16px';
+  }};
+  font-size: ${props => {
+    if (props.sx?.fontSize) {
+      if (typeof props.sx.fontSize === 'object') {
+        return props.sx.fontSize.xs;
+      }
+      return props.sx.fontSize;
     }
-
-    @media (max-width: 600px) {
-      padding: 8px 14px;
-      font-size: 0.85rem;
+    if (props.size === 'small') return '12px';
+    return '14px';
+  }};
+  min-width: ${props => props.sx?.minWidth || 'auto'};
+  height: ${props => {
+    if (props.sx?.height) {
+      if (typeof props.sx.height === 'object') {
+        return props.sx.height.xs;
+      }
+      return props.sx.height;
     }
-`
-);
-
-const TokenImage = styled(Image)(({ theme }) => ({
-  width: '32px',
-  height: '32px',
-  borderRadius: '50%',
-  objectFit: 'cover',
-  [theme.breakpoints.down('sm')]: {
-    width: '28px',
-    height: '28px'
+    return 'auto';
+  }};
+  border-radius: 8px;
+  text-transform: ${props => props.sx?.textTransform || 'none'};
+  font-weight: 400;
+  border: 1.5px solid ${props => {
+    if (props.variant === 'outlined') return props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)');
+    return 'transparent';
+  }};
+  background: ${props => {
+    if (props.variant === 'outlined') return props.sx?.backgroundColor || 'transparent';
+    if (props.variant === 'text') return 'transparent';
+    return '#4285f4';
+  }};
+  color: ${props => {
+    if (props.variant === 'outlined' || props.variant === 'text') {
+      if (props.sx?.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
+      return props.sx?.color || '#4285f4';
+    }
+    return '#FFFFFF';
+  }};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  opacity: ${props => props.disabled ? 0.4 : 1};
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background: ${props => {
+      if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#4285f4';
+      if (props.variant === 'outlined' || props.variant === 'text') return props.isDark ? 'rgba(66,133,244,0.04)' : 'rgba(66,133,244,0.04)';
+      return '#357ae8';
+    }};
+    border-color: ${props => {
+      if (props.disabled) return props.variant === 'outlined' ? (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') : 'transparent';
+      if (props.variant === 'outlined' || props.variant === 'text') return '#4285f4';
+      return 'transparent';
+    }};
   }
-}));
+  @media (min-width: 600px) {
+    font-size: ${props => {
+      if (props.sx?.fontSize && typeof props.sx.fontSize === 'object') {
+        return props.sx.fontSize.sm;
+      }
+      return null;
+    }};
+    height: ${props => {
+      if (props.sx?.height && typeof props.sx.height === 'object') {
+        return props.sx.height.sm;
+      }
+      return null;
+    }};
+    padding: ${props => {
+      if (props.sx?.px && props.sx?.py && typeof props.sx.px === 'object') {
+        return `${props.sx.py.sm * 8}px ${props.sx.px.sm * 8}px`;
+      }
+      return null;
+    }};
+  }
+`;
 
-const SummaryBox = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1),
-  backgroundColor: 'transparent',
-  borderRadius: '6px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  marginTop: theme.spacing(0.5),
-  marginBottom: theme.spacing(0.5),
-  boxShadow: 'none'
-}));
+const Input = styled.input`
+  width: ${props => props.fullWidth ? '100%' : props.sx?.width || '100%'};
+  padding: ${props => props.sx?.input?.padding || '8px'};
+  border: ${props => props.sx?.input?.border || 'none'};
+  font-size: ${props => {
+    if (props.sx?.input?.fontSize) {
+      if (typeof props.sx.input.fontSize === 'object') {
+        return props.sx.input.fontSize.xs;
+      }
+      return props.sx.input.fontSize;
+    }
+    return '14px';
+  }};
+  text-align: ${props => props.sx?.input?.textAlign || 'left'};
+  appearance: ${props => props.sx?.input?.appearance || 'auto'};
+  font-weight: ${props => props.sx?.input?.fontWeight || 400};
+  background: ${props => props.sx?.backgroundColor || 'transparent'};
+  border-radius: ${props => props.sx?.borderRadius || '0'};
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  outline: none;
+  &::placeholder {
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  }
+  @media (min-width: 600px) {
+    font-size: ${props => {
+      if (props.sx?.input?.fontSize && typeof props.sx.input.fontSize === 'object') {
+        return props.sx.input.fontSize.sm;
+      }
+      return null;
+    }};
+  }
+`;
+
+const IconButton = styled.button`
+  padding: ${props => {
+    if (props.size === 'small') return '8px';
+    if (props.sx?.padding) {
+      if (typeof props.sx.padding === 'object') {
+        return `${props.sx.padding.xs}`;
+      }
+      return props.sx.padding;
+    }
+    return '12px';
+  }};
+  width: ${props => {
+    if (props.sx?.width && typeof props.sx.width === 'object') {
+      return props.sx.width.xs;
+    }
+    return props.sx?.width || 'auto';
+  }};
+  height: ${props => {
+    if (props.sx?.height && typeof props.sx.height === 'object') {
+      return props.sx.height.xs;
+    }
+    return props.sx?.height || 'auto';
+  }};
+  border: none;
+  border-radius: 50%;
+  background: ${props => props.sx?.backgroundColor || 'transparent'};
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  &:hover {
+    background: ${props => props.sx?.['&:hover']?.backgroundColor || 'transparent'};
+  }
+  @media (min-width: 600px) {
+    padding: ${props => {
+      if (props.sx?.padding && typeof props.sx.padding === 'object') {
+        return props.sx.padding.sm;
+      }
+      return null;
+    }};
+    width: ${props => {
+      if (props.sx?.width && typeof props.sx.width === 'object') {
+        return props.sx.width.sm;
+      }
+      return null;
+    }};
+    height: ${props => {
+      if (props.sx?.height && typeof props.sx.height === 'object') {
+        return props.sx.height.sm;
+      }
+      return null;
+    }};
+  }
+`;
+
+const Alert = styled.div`
+  padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 16px` : '8px 16px'};
+  border-radius: 6px;
+  border: 1.5px solid ${props => {
+    if (props.severity === 'error') return '#f44336';
+    if (props.severity === 'warning') return '#ff9800';
+    return '#4285f4';
+  }};
+  background: ${props => {
+    if (props.severity === 'error') return 'rgba(244, 67, 54, 0.1)';
+    if (props.severity === 'warning') return 'rgba(255, 152, 0, 0.1)';
+    return 'rgba(66, 133, 244, 0.1)';
+  }};
+  margin-top: ${props => props.sx?.mt ? `${props.sx.mt * 8}px` : '0'};
+`;
+
+const Tabs = styled.div`
+  display: flex;
+  width: 100%;
+  min-height: ${props => props.sx?.minHeight || '48px'};
+  border-bottom: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+`;
+
+const Tab = styled.button`
+  flex: 1;
+  padding: ${props => props.sx?.['& .MuiTab-root']?.py ? `${props.sx['& .MuiTab-root'].py * 8}px 16px` : '12px 16px'};
+  min-height: ${props => props.sx?.['& .MuiTab-root']?.minHeight || '48px'};
+  font-size: ${props => props.sx?.['& .MuiTab-root']?.fontSize || '14px'};
+  text-transform: ${props => props.sx?.['& .MuiTab-root']?.textTransform || 'none'};
+  border: none;
+  border-bottom: 2px solid ${props => props.isActive ? '#4285f4' : 'transparent'};
+  background: transparent;
+  color: ${props => props.isActive ? '#4285f4' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+  cursor: pointer;
+  font-weight: ${props => props.isActive ? 500 : 400};
+  &:hover {
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+  }
+`;
+
+const Select = styled.select`
+  padding: ${props => {
+    if (props.sx?.['& .MuiSelect-select']?.py === 0) return '2px 8px';
+    return '8px';
+  }};
+  font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '14px'};
+  height: ${props => props.sx?.height || 'auto'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  border-radius: 6px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : '#ffffff'};
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  cursor: pointer;
+  outline: none;
+`;
+
+const MenuItem = styled.option`
+  padding: 8px;
+  font-size: 14px;
+`;
+
+const Tooltip = ({ title, children }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.9)',
+          color: '#fff',
+          borderRadius: '4px',
+          fontSize: '12px',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          marginBottom: '4px'
+        }}>
+          {title}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const CurrencyContent = styled.div`
+  box-sizing: border-box;
+  margin: 4px 0;
+  display: flex;
+  flex-direction: row;
+  padding: 14px 16px;
+  border-radius: 8px;
+  align-items: center;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
+  width: 100%;
+  justify-content: space-between;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  @media (max-width: 600px) {
+    padding: 12px 14px;
+    margin: 3px 0;
+  }
+`;
+
+const InputContent = styled.div`
+  box-sizing: border-box;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+`;
+
+const OverviewWrapper = styled.div`
+  flex-direction: column;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 8px;
+  display: flex;
+  padding: 12px;
+  width: 100%;
+  background: transparent;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  @media (max-width: 600px) {
+    border-radius: 12px;
+    padding: 10px;
+  }
+`;
+
+const ConverterFrame = styled.div`
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  width: 100%;
+`;
+
+const AmountRows = styled.div`
+  position: relative;
+`;
+
+const ToggleContent = styled.div`
+  cursor: pointer;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: ${props => props.isDark ? '#000000' : '#ffffff'};
+  border-radius: 50%;
+  padding: 6px;
+  z-index: 1;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  &:hover {
+    background: ${props => props.isDark ? 'rgba(66,133,244,0.04)' : 'rgba(66,133,244,0.04)'};
+    border-color: #4285f4;
+    svg {
+      color: #4285f4 !important;
+    }
+  }
+`;
+
+const ExchangeButton = styled(Button)`
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+  background: transparent;
+  color: #4285f4;
+  font-weight: 400;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  padding: 10px 16px;
+  font-size: 0.875rem;
+  text-transform: none;
+  margin-top: 8px;
+  margin-bottom: 8px;
+
+  &:hover {
+    background: rgba(66,133,244,0.04);
+    border-color: #4285f4;
+  }
+
+  &:active {
+    background: rgba(66,133,244,0.08);
+  }
+
+  &:disabled {
+    background: transparent;
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  }
+
+  @media (max-width: 600px) {
+    padding: 8px 14px;
+    font-size: 0.85rem;
+  }
+`;
+
+const TokenImage = styled(Image)`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  @media (max-width: 600px) {
+    width: 28px;
+    height: 28px;
+  }
+`;
+
+const SummaryBox = styled.div`
+  padding: 8px;
+  background: transparent;
+  border-radius: 6px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  margin-top: 4px;
+  margin-bottom: 4px;
+`;
 
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const WSS_URL = 'wss://s1.ripple.com';
@@ -272,21 +590,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const curr1 = pair.curr1;
   const curr2 = pair.curr2;
 
-  const theme = useTheme();
-  const color1 = theme.palette.background.default;
-  const color2 = theme.palette.background.default;
-
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const QR_BLUR = '/static/blurqr.webp';
 
   const dispatch = useDispatch();
   const metrics = useSelector(selectMetrics);
   const isProcessing = useSelector(selectProcess);
 
-  const { accountProfile, darkMode, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
+  const { accountProfile, themeName, setLoading, sync, setSync, openSnackbar, activeFiatCurrency } =
     useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
-  // const [openScanQR, setOpenScanQR] = useState(false); // Removed - Xaman no longer used
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
   const [nextUrl, setNextUrl] = useState(null);
@@ -295,8 +609,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [token1, setToken1] = useState(curr1);
   const [token2, setToken2] = useState(curr2);
 
-  const [amount1, setAmount1] = useState(''); // XRP
-  const [amount2, setAmount2] = useState(''); // Token
+  const [amount1, setAmount1] = useState('');
+  const [amount2, setAmount2] = useState('');
 
   const [tokenExch1, setTokenExch1] = useState(0);
   const [tokenExch2, setTokenExch2] = useState(0);
@@ -310,28 +624,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [focusTop, setFocusTop] = useState(false);
   const [focusBottom, setFocusBottom] = useState(false);
 
-  // Add trustline states
   const [trustlines, setTrustlines] = useState([]);
   const [hasTrustline1, setHasTrustline1] = useState(true);
   const [hasTrustline2, setHasTrustline2] = useState(true);
   const [transactionType, setTransactionType] = useState('Payment');
 
-  // Add slippage state
-  const [slippage, setSlippage] = useState(5); // Default 5% slippage
-  const [orderType, setOrderType] = useState('market'); // 'market' or 'limit'
+  const [slippage, setSlippage] = useState(5);
+  const [orderType, setOrderType] = useState('market');
   const [limitPrice, setLimitPrice] = useState('');
   const [orderExpiry, setOrderExpiry] = useState('never');
   const [expiryHours, setExpiryHours] = useState(24);
 
-  // Add state for orderbook visibility
-  const [showOrderbook, setShowOrderbook] = useState(false); // used only when not integrated
+  const [showOrderbook, setShowOrderbook] = useState(false);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
   const setAmount = revert ? setAmount2 : setAmount1;
   const setValue = revert ? setAmount1 : setAmount2;
 
-  // Calculate prices - show appropriate values based on currency type
   let tokenPrice1, tokenPrice2;
 
   const curr1IsXRP = curr1?.currency === 'XRP';
@@ -339,69 +649,46 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const token1IsXRP = token1?.currency === 'XRP';
   const token2IsXRP = token2?.currency === 'XRP';
 
-  // For curr1 (top field)
   if (curr1IsXRP) {
-    // If curr1 is XRP, show the XRP amount
     tokenPrice1 = new Decimal(amount1 || 0).toNumber();
   } else {
-    // If curr1 is a token, show its USD value
-    // Need to determine which rate to use based on original token order
     let usdRate;
     if (revert) {
-      // curr1 is now token2
       if (token1IsXRP) {
-        // Original was XRP/Token, token2 has USD rate in tokenExch2
-        // But tokenExch2 is actually the token-to-XRP rate
-        // So we need to calculate USD value: token_amount * token_to_XRP_rate / XRP_to_USD_rate
         const xrpValue = new Decimal(amount1 || 0).mul(tokenExch2 || 0);
         tokenPrice1 = xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
       } else {
-        // Original was Token/XRP, token2 has its own USD rate
-        // Use usd property for USD value, not exch (which is XRP rate)
         usdRate = parseFloat(token2?.usd) || 1;
         tokenPrice1 = new Decimal(amount1 || 0).mul(usdRate).toNumber();
       }
     } else {
-      // curr1 is token1
       if (token2IsXRP) {
-        // Token1/XRP pair, token1 has USD rate in tokenExch1
-        // tokenExch1 is the token-to-XRP rate
         const xrpValue = new Decimal(amount1 || 0).mul(tokenExch1 || 0);
         tokenPrice1 = xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
       } else {
-        // Token1 has its own USD rate
         usdRate = parseFloat(token1?.usd) || 1;
         tokenPrice1 = new Decimal(amount1 || 0).mul(usdRate).toNumber();
       }
     }
   }
 
-  // For curr2 (bottom field)
   if (curr2IsXRP) {
-    // If curr2 is XRP, show the XRP amount
     tokenPrice2 = new Decimal(amount2 || 0).toNumber();
   } else {
-    // If curr2 is a token, show its USD value
     let usdRate;
     if (revert) {
-      // curr2 is now token1
       if (token2IsXRP) {
-        // Original was Token/XRP, token1 has USD rate in tokenExch1
         const xrpValue = new Decimal(amount2 || 0).mul(tokenExch1 || 0);
         tokenPrice2 = xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
       } else {
-        // Token1 has its own USD rate
         usdRate = parseFloat(token1?.usd) || 1;
         tokenPrice2 = new Decimal(amount2 || 0).mul(usdRate).toNumber();
       }
     } else {
-      // curr2 is token2
       if (token1IsXRP) {
-        // XRP/Token pair, token2 has USD rate in tokenExch2
         const xrpValue = new Decimal(amount2 || 0).mul(tokenExch2 || 0);
         tokenPrice2 = xrpValue.div(metrics[activeFiatCurrency] || 1).toNumber();
       } else {
-        // Token2 has its own USD rate
         usdRate = parseFloat(token2?.usd) || 1;
         tokenPrice2 = new Decimal(amount2 || 0).mul(usdRate).toNumber();
       }
@@ -415,7 +702,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       ? new Decimal(outputPrice).sub(inputPrice).mul(100).div(inputPrice).toFixed(2)
       : 0;
 
-  // Helper function to convert hex currency code to readable name
   const getCurrencyDisplayName = (currency, tokenName) => {
     if (currency === 'XRP') return 'XRP';
     if (currency === 'USD') return 'USD';
@@ -423,15 +709,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (currency === 'BTC') return 'BTC';
     if (currency === 'ETH') return 'ETH';
 
-    // If we have a token name, use it
     if (tokenName && tokenName !== currency) {
       return tokenName;
     }
 
-    // Try to convert hex to ASCII for display
     try {
       if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
-        const hex = currency.replace(/00+$/, ''); // Remove trailing zeros
+        const hex = currency.replace(/00+$/, '');
         let ascii = '';
         for (let i = 0; i < hex.length; i += 2) {
           const byte = parseInt(hex.substr(i, 2), 16);
@@ -439,9 +723,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         }
         return ascii.toUpperCase() || currency;
       }
-    } catch (e) {
-      // Fall back to original currency code
-    }
+    } catch (e) {}
 
     return currency;
   };
@@ -455,7 +737,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     errMsg = '';
     isSufficientBalance = false;
 
-    // Check trustlines first - prioritize curr1
     if (!hasTrustline1 && curr1.currency !== 'XRP') {
       const displayName = getCurrencyDisplayName(curr1.currency, token1?.name);
       errMsg = `No trustline for ${displayName}`;
@@ -463,7 +744,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const displayName = getCurrencyDisplayName(curr2.currency, token2?.name);
       errMsg = `No trustline for ${displayName}`;
     } else {
-      // Check balance if trustlines exist
       try {
         const accountAmount = new Decimal(accountPairBalance.curr1.value).toNumber();
         const accountValue = new Decimal(accountPairBalance.curr2.value).toNumber();
@@ -473,8 +753,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           const fAmount2 = new Decimal(amount2 || 0).toNumber();
 
           if (fAmount1 > 0 && fAmount2 > 0) {
-            // Always check against amount1 for curr1 balance (top field)
-            // The user is always selling what's in the top field (amount1)
             if (accountAmount >= fAmount1) {
               isSufficientBalance = true;
             } else {
@@ -495,11 +773,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const canPlaceOrder = isLoggedIn && isSufficientBalance;
 
-  const [bids, setBids] = useState([]); // Orderbook Bids
-  const [asks, setAsks] = useState([]); // Orderbook Asks
+  const [bids, setBids] = useState([]);
+  const [asks, setAsks] = useState([]);
 
   const [wsReady, setWsReady] = useState(false);
-  const { sendJsonMessage /*, getWebSocket*/ } = useWebSocket(WSS_URL, {
+  const { sendJsonMessage } = useWebSocket(WSS_URL, {
     onOpen: () => {
       setWsReady(true);
     },
@@ -510,7 +788,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     onMessage: (event) => processMessages(event)
   });
 
-  // Orderbook related useEffect - Start
   useEffect(() => {
     let reqID = 1;
     function sendRequest() {
@@ -560,9 +837,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       clearInterval(timer);
     };
   }, [wsReady, pair, revert, sendJsonMessage]);
-  // Orderbook related useEffect - END
 
-  // Provide order book data upward when integrated with global panel
   useEffect(() => {
     if (!onOrderBookData) return;
     const data = {
@@ -593,7 +868,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const isPanelOpen =
     (onOrderBookToggle ? !!orderBookOpen : !!showOrderbook) && orderType === 'limit';
 
-  // Derived pricing for Limit UI helpers
   const { bestBid, bestAsk, midPrice, spreadPct } = useMemo(() => {
     const bb = bids && bids.length ? Number(bids[0]?.price) : null;
     const ba = asks && asks.length ? Number(asks[0]?.price) : null;
@@ -602,12 +876,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     return { bestBid: bb, bestAsk: ba, midPrice: mid, spreadPct: spread };
   }, [asks, bids]);
 
-  // Warn if the user sets an outlier limit price vs best bid/ask
   const priceWarning = useMemo(() => {
-    const THRESHOLD = 5; // %
+    const THRESHOLD = 5;
     const lp = Number(limitPrice);
     if (!lp || !isFinite(lp)) return null;
-    // revert === true means Buy (from existing summary text)
     if (revert && bestAsk != null) {
       const pct = ((lp - Number(bestAsk)) / Number(bestAsk)) * 100;
       if (pct > THRESHOLD) return { kind: 'buy', pct, ref: Number(bestAsk) };
@@ -619,10 +891,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     return null;
   }, [limitPrice, bestAsk, bestBid, revert]);
 
-  // Directly shift layout from here when OrderBook is open (desktop only)
   useEffect(() => {
-    // If a global toggle is provided (TokenDetail manages layout),
-    // do not apply local root padding/class. Let the parent handle spacing.
     if (onOrderBookToggle) return;
     const root = typeof document !== 'undefined' ? document.getElementById('__next') : null;
     if (!root) return;
@@ -630,26 +899,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     const calcPanelWidth = () => {
       if (typeof window === 'undefined') return 0;
       const w = window.innerWidth || 0;
-      // Match TransactionDetailsPanel (orderbook mode) widths
-      const {
-        md = 900,
-        lg = 1200,
-        xl = 1536
-      } = (theme.breakpoints && theme.breakpoints.values) || {};
-      if (w >= xl) return 320;
-      if (w >= lg) return 300;
-      if (w >= md) return 280;
+      if (w >= 1536) return 320;
+      if (w >= 1200) return 300;
+      if (w >= 900) return 280;
       return 0;
     };
 
     const applyShift = () => {
       const width = calcPanelWidth();
       if (width <= 0) return removeShift();
-      // Only set padding-right if nothing else already set it (avoid double-shift)
       const prev = root.style.paddingRight;
       if (!root.hasAttribute('data-prev-pr-ob') && (!prev || prev === '')) {
         root.setAttribute('data-prev-pr-ob', prev);
-        // No gap - panel sits directly against content
         root.style.paddingRight = `${width}px`;
       }
       root.classList.add('orderbook-shift');
@@ -667,9 +928,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     else removeShift();
 
     return removeShift;
-  }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook, theme.breakpoints]);
+  }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook]);
 
-  // web socket process messages for orderbook
   const processMessages = (event) => {
     const orderBook = JSON.parse(event.data);
 
@@ -696,7 +956,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const account = accountProfile.account;
 
       try {
-        // Get account balance info
         const balanceRes = await axios.get(
           `${BASE_URL}/account/info/${account}?curr1=${curr1.currency}&issuer1=${curr1.issuer}&curr2=${curr2.currency}&issuer2=${curr2.issuer}`,
           { signal: controller.signal }
@@ -711,14 +970,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         }
       }
 
-      // Check trustlines - implement pagination to fetch all trustlines
       const fetchAllTrustlines = async () => {
         try {
           let allTrustlines = [];
           let currentPage = 0;
           let totalTrustlines = 0;
 
-          // First request to get initial data and total count
           const firstResponse = await axios.get(
             `${BASE_URL}/account/lines/${account}?page=${currentPage}&limit=50`,
             { signal: controller.signal }
@@ -728,12 +985,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             allTrustlines = firstResponse.data.lines || [];
             totalTrustlines = firstResponse.data.total || 0;
 
-            // If total is more than 50, fetch additional pages starting from page 1
             if (totalTrustlines > 50) {
               const totalPages = Math.ceil(totalTrustlines / 50);
               const additionalRequests = [];
 
-              // Create requests for pages 1 through totalPages-1 (since we already have page 0)
               for (let page = 1; page < totalPages; page++) {
                 additionalRequests.push(
                   axios.get(`${BASE_URL}/account/lines/${account}?page=${page}&limit=50`, {
@@ -742,10 +997,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 );
               }
 
-              // Execute all additional requests in parallel
               const additionalResponses = await Promise.all(additionalRequests);
 
-              // Combine all trustlines from additional pages
               additionalResponses.forEach((response, index) => {
                 if (response.status === 200 && response.data.lines) {
                   allTrustlines = allTrustlines.concat(response.data.lines);
@@ -766,29 +1019,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         .then((allTrustlines) => {
           setTrustlines(allTrustlines);
 
-          // Helper function to normalize currency codes for comparison
           const normalizeCurrency = (currency) => {
             if (!currency) return '';
-            // Remove trailing zeros from hex currency codes
             if (currency.length === 40 && /^[0-9A-Fa-f]+$/.test(currency)) {
               return currency.replace(/00+$/, '').toUpperCase();
             }
             return currency.toUpperCase();
           };
 
-          // Helper function to check if two currency codes match
           const currenciesMatch = (curr1, curr2) => {
             if (!curr1 || !curr2) return false;
 
-            // Direct match
             if (curr1 === curr2) return true;
 
-            // Normalized match (for hex codes)
             const norm1 = normalizeCurrency(curr1);
             const norm2 = normalizeCurrency(curr2);
             if (norm1 === norm2) return true;
 
-            // Try converting hex to ASCII and compare
             try {
               const convertHexToAscii = (hex) => {
                 if (hex.length === 40 && /^[0-9A-Fa-f]+$/.test(hex)) {
@@ -806,14 +1053,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               const ascii1 = convertHexToAscii(curr1);
               const ascii2 = convertHexToAscii(curr2);
               if (ascii1 === ascii2) return true;
-            } catch (e) {
-              // Ignore conversion errors
-            }
+            } catch (e) {}
 
             return false;
           };
 
-          // Helper function to check if issuers match
           const issuersMatch = (line, expectedIssuer) => {
             const lineIssuers = [
               line.account,
@@ -828,11 +1072,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             return lineIssuers.some((issuer) => issuer === expectedIssuer);
           };
 
-          // Check if trustlines exist for curr1 and curr2
           const hasCurr1Trustline =
             curr1.currency === 'XRP' ||
             allTrustlines.some((line) => {
-              // Check multiple currency fields
               const lineCurrencies = [
                 line.Balance?.currency,
                 line.currency,
@@ -847,7 +1089,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
               if (!currencyMatch) return false;
 
-              // For currency matches, check if we have a valid trustline
               const issuerMatch = issuersMatch(line, curr1.issuer);
               const isStandardCurrency = ['USD', 'EUR', 'BTC', 'ETH'].includes(curr1.currency);
 
@@ -857,7 +1098,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           const hasCurr2Trustline =
             curr2.currency === 'XRP' ||
             allTrustlines.some((line) => {
-              // Check multiple currency fields
               const lineCurrencies = [
                 line.Balance?.currency,
                 line.currency,
@@ -924,9 +1164,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     return () => controller.abort();
   }, [token1, token2]);
 
-  // Removed auto-calculation useEffect to prevent unwanted value changes
-  // Calculations now only happen when user types in the input handlers
-
   useEffect(() => {
     const pair = {
       curr1: revert ? token2 : token1,
@@ -943,10 +1180,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     async function getDispatchResult() {
       try {
-        return; // Xumm removed
-        // const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        return;
         const res = ret.data.data.response;
-        // const account = res.account;
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
@@ -962,7 +1197,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         if (dispatched_result && dispatched_result === 'tesSUCCESS') {
           setSync(sync + 1);
           openSnackbar('Successfully submitted the swap!', 'success');
-          stopInterval(true); // Clear amounts on successful transaction
+          stopInterval(true);
           return;
         }
 
@@ -970,16 +1205,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
         if (times >= 10) {
           openSnackbar('Transaction signing rejected!', 'error');
-          stopInterval(false); // Don't clear amounts on rejection
+          stopInterval(false);
           return;
         }
       }, 1000);
     };
 
-    // Stop the interval
     const stopInterval = (clearAmounts = false) => {
       clearInterval(dispatchTimer);
-      // setOpenScanQR(false); // Removed - Xaman no longer used
       if (clearAmounts) {
         setAmount1('');
         setAmount2('');
@@ -990,10 +1223,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       if (isRunning) return;
       isRunning = true;
       try {
-        return; // Xumm removed
-        // const ret = await axios.get(`${BASE_URL}/xumm/payload/${uuid}`);
+        return;
         const res = ret.data.data.response;
-        // const account = res.account;
         const resolved_at = res.resolved_at;
         if (resolved_at) {
           startInterval();
@@ -1003,10 +1234,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       isRunning = false;
       counter--;
       if (counter <= 0) {
-        // setOpenScanQR(false); // Removed - Xaman no longer used
       }
     }
-    if (false) { // Disabled - Xaman no longer used
+    if (false) {
       timer = setInterval(getPayload, 2000);
     }
     return () => {
@@ -1018,214 +1248,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const onOfferCreateXumm = async () => {
     openSnackbar('Xaman no longer supported', 'info');
-    return; // Function disabled
-    try {
-      const curr1 = pair.curr1;
-      const curr2 = pair.curr2;
-      const Account = accountProfile.account;
-      const user_token = accountProfile.user_token;
-      const wallet_type = accountProfile.wallet_type;
-
-      let transactionData;
-
-      if (orderType === 'limit') {
-        // Use OfferCreate for limit orders
-        const OfferFlags = {
-          tfSell: 524288,
-          tfImmediateOrCancel: 262144,
-          tfFillOrKill: 131072,
-          tfPassive: 65536
-        };
-
-        let TakerGets, TakerPays;
-
-        // Recalculate amount2 based on limit price for limit orders
-        let limitAmount2 = amount2;
-        if (limitPrice && amount1) {
-          const limitPriceDecimal = new Decimal(limitPrice);
-          const amount1Decimal = new Decimal(amount1);
-
-          // Price is always curr2/curr1 (e.g., RLUSD per XRP)
-          // So amount2 = amount1 * price
-          limitAmount2 = amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-        }
-
-        if (revert) {
-          // Selling curr2 to get curr1
-          TakerGets = {
-            currency: curr1.currency,
-            issuer: curr1.issuer,
-            value: new Decimal(amount1).toFixed(6)
-          };
-          TakerPays = {
-            currency: curr2.currency,
-            issuer: curr2.issuer,
-            value: new Decimal(limitAmount2).toFixed(6)
-          };
-        } else {
-          // Selling curr1 to get curr2
-          TakerGets = {
-            currency: curr2.currency,
-            issuer: curr2.issuer,
-            value: new Decimal(limitAmount2).toFixed(6)
-          };
-          TakerPays = {
-            currency: curr1.currency,
-            issuer: curr1.issuer,
-            value: new Decimal(amount1).toFixed(6)
-          };
-        }
-
-        // Convert XRP amounts to drops
-        if (TakerGets.currency === 'XRP') {
-          TakerGets = new Decimal(TakerGets.value).mul(1000000).toString();
-        }
-        if (TakerPays.currency === 'XRP') {
-          TakerPays = new Decimal(TakerPays.value).mul(1000000).toString();
-        }
-
-        transactionData = {
-          TransactionType: 'OfferCreate',
-          Account,
-          TakerGets,
-          TakerPays,
-          Flags: 0,
-          Fee: '12',
-          SourceTag: 20221212,
-          Memos: configureMemos('', '', 'Limit Order via XPmarket.com')
-        };
-
-        // Add expiration if specified
-        if (orderExpiry !== 'never') {
-          const RIPPLE_EPOCH = 946684800; // Jan 1, 2000 00:00 UTC
-          const now = Math.floor(Date.now() / 1000) - RIPPLE_EPOCH;
-          const expiration = now + expiryHours * 60 * 60;
-          transactionData.Expiration = expiration;
-        }
-      } else {
-        // Use Payment transaction for market orders
-        const PaymentFlags = {
-          tfPartialPayment: 131072,
-          tfLimitQuality: 65536,
-          tfNoDirectRipple: 1048576
-        };
-
-        const Flags = PaymentFlags.tfPartialPayment;
-
-        let Amount, SendMax, DeliverMin, DeliverMax;
-
-        // SendMax is what we're willing to send (curr1)
-        SendMax = {
-          currency: curr1.currency,
-          issuer: curr1.issuer,
-          value: new Decimal(amount1).toFixed(6)
-        };
-
-        // Amount is what we want to receive (curr2)
-        Amount = {
-          currency: curr2.currency,
-          issuer: curr2.issuer,
-          value: new Decimal(amount2).toFixed(6)
-        };
-
-        // Convert XRP amounts to drops
-        if (SendMax.currency === 'XRP') {
-          SendMax = new Decimal(SendMax.value).mul(1000000).toString();
-        }
-        if (Amount.currency === 'XRP') {
-          Amount = new Decimal(Amount.value).mul(1000000).toString();
-          DeliverMax = Amount; // For XRP, DeliverMax equals Amount
-        }
-
-        // Calculate slippage amounts
-        const slippageDecimal = new Decimal(slippage).div(100);
-
-        // DeliverMin is Amount minus slippage tolerance
-        if (typeof Amount === 'object') {
-          DeliverMin = {
-            currency: Amount.currency,
-            issuer: Amount.issuer,
-            value: new Decimal(Amount.value).mul(new Decimal(1).sub(slippageDecimal)).toString()
-          };
-        } else {
-          // For XRP amounts (strings)
-          DeliverMin = new Decimal(Amount).mul(new Decimal(1).sub(slippageDecimal)).toFixed(0);
-        }
-
-        transactionData = {
-          Fee: '12',
-          SourceTag: 20221212,
-          Memos: configureMemos('', '', 'SWAP Transaction initiated via XPmarket.com'),
-          Account,
-          Destination: Account,
-          Amount,
-          DeliverMax: DeliverMax || Amount,
-          DeliverMin,
-          SendMax,
-          TransactionType: 'Payment',
-          Flags
-        };
-      }
-
-      if (wallet_type === 'device') {
-        // Device authentication wallet
-        try {
-          await loadXRPLDependencies();
-          const deviceWallet = getDeviceWallet(accountProfile);
-
-          if (!deviceWallet) {
-            enqueueSnackbar('Device wallet not available', { variant: 'error' });
-            return;
-          }
-
-          dispatch(updateProcess(1));
-          setTransactionType(orderType === 'limit' ? 'OfferCreate' : 'Payment');
-
-          // Connect to XRPL network
-          const client = new Client('wss://s1.ripple.com');
-          await client.connect();
-
-          try {
-            // Autofill and submit transaction
-            const preparedTx = await client.autofill(transactionData);
-            const signedTx = deviceWallet.sign(preparedTx);
-            const result = await client.submitAndWait(signedTx.tx_blob);
-
-            if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(result.result?.hash));
-              setTimeout(() => {
-                setSync(sync + 1);
-                dispatch(updateProcess(0));
-              }, 1500);
-              setIsSwapped(!isSwapped);
-              setAmount1('');
-              setAmount2('');
-              enqueueSnackbar('Successfully Swapped!', { variant: 'success' });
-            } else {
-              enqueueSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, { variant: 'error' });
-              dispatch(updateProcess(0));
-            }
-          } finally {
-            await client.disconnect();
-          }
-        } catch (error) {
-          console.error('Device wallet transaction error:', error);
-          enqueueSnackbar('Transaction failed: ' + error.message, { variant: 'error' });
-          dispatch(updateProcess(0));
-        }
-      } else {
-        // Legacy wallet support message
-        enqueueSnackbar('Device authentication required', { variant: 'error' });
-      }
-    } catch (err) {
-      dispatch(updateProcess(0));
-    }
-    setLoading(false);
+    return;
+    // Function disabled
   };
 
   const onDisconnectXumm = async (uuid) => {
-    return; // Function disabled
+    return;
     setLoading(true);
     try {
       const res = await axios.delete(`${BASE_URL}/offer/logout/${uuid}`);
@@ -1241,98 +1269,70 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const amt = new Decimal(amount || 0).toNumber();
       if (amt === 0) return '';
 
-      // Log only when debugging is needed
       if (amt > 0) {
       }
 
-      // Use the original token order for rate calculations
       const token1IsXRP = token1?.currency === 'XRP';
       const token2IsXRP = token2?.currency === 'XRP';
 
-      // Use token exchange rates for calculation
       const rate1 = new Decimal(tokenExch1 || 0);
       const rate2 = new Decimal(tokenExch2 || 0);
 
-      // For XRP pairs, use direct conversion based on original token order
       if (token1IsXRP || token2IsXRP) {
 
-        // For XRP pairs, use simple rate calculation - no orderbook
         if (rate1.eq(0) && rate2.eq(0)) {
           return '';
         }
 
         let result = 0;
 
-        // When token1=XRP, token2=Token: rate1=1, rate2=Token-to-XRP rate
-        // When token1=Token, token2=XRP: rate1=Token-to-XRP rate, rate2=1
-
         if (token1IsXRP && !token2IsXRP) {
-          // Original order: XRP/Token
-          // rate2 is the Token-to-XRP rate (e.g., 0.311)
           const tokenToXrpRate = rate2.toNumber();
 
           if (!revert) {
-            // Normal display: XRP at top, Token at bottom
             if (active === 'AMOUNT') {
-              // User typed XRP amount, calculate Token
               result = new Decimal(amt).div(tokenToXrpRate).toNumber();
             } else {
-              // User typed Token amount, calculate XRP
               result = new Decimal(amt).mul(tokenToXrpRate).toNumber();
             }
           } else {
-            // Reverted display: Token at top, XRP at bottom
             if (active === 'VALUE') {
-              // User typed XRP amount (bottom), calculate Token (top)
               result = new Decimal(amt).div(tokenToXrpRate).toNumber();
             } else {
-              // User typed Token amount (top), calculate XRP (bottom)
               result = new Decimal(amt).mul(tokenToXrpRate).toNumber();
             }
           }
         } else if (!token1IsXRP && token2IsXRP) {
-          // Original order: Token/XRP
-          // rate1 is the Token-to-XRP rate (e.g., 0.311)
           const tokenToXrpRate = rate1.toNumber();
 
           if (!revert) {
-            // Normal display: Token at top, XRP at bottom
             if (active === 'AMOUNT') {
-              // User typed Token amount, calculate XRP
               result = new Decimal(amt).mul(tokenToXrpRate).toNumber();
             } else {
-              // User typed XRP amount, calculate Token
               result = new Decimal(amt).div(tokenToXrpRate).toNumber();
             }
           } else {
-            // Reverted display: XRP at top, Token at bottom
             if (active === 'VALUE') {
-              // User typed Token amount (bottom), calculate XRP (top)
               result = new Decimal(amt).mul(tokenToXrpRate).toNumber();
             } else {
-              // User typed XRP amount (top), calculate Token (bottom)
               result = new Decimal(amt).div(tokenToXrpRate).toNumber();
             }
           }
         } else {
-          // Both XRP (shouldn't happen)
           result = amt;
         }
 
 
         return new Decimal(result).toFixed(6, Decimal.ROUND_DOWN);
       } else {
-        // For non-XRP pairs, use simple rate calculation too
         if (rate1.eq(0) || rate2.eq(0)) {
           return '';
         }
 
         let result = 0;
         if (active === 'AMOUNT') {
-          // User typed in top field, calculate bottom field using rates
           result = new Decimal(amt).mul(rate1).div(rate2).toNumber();
         } else {
-          // User typed in bottom field, calculate top field using rates
           result = new Decimal(amt).mul(rate2).div(rate1).toNumber();
         }
 
@@ -1345,11 +1345,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const handleScanQRClose = () => {
     setOpenScanQR(false);
-    // onDisconnectXumm(uuid); // Xumm removed
   };
 
   const handlePlaceOrder = (e) => {
-    // Check if we need to create trustlines first - prioritize curr1
     if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
       onCreateTrustline(curr1);
       return;
@@ -1366,7 +1364,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         openSnackbar('Please enter a limit price!', 'error');
         return;
       }
-      // onOfferCreateXumm(); // Xumm removed
       openSnackbar('Device authentication required', 'info');
     } else {
       openSnackbar('Invalid values!', 'error');
@@ -1380,13 +1377,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (isNaN(Number(value))) return;
 
     setAmount1(value);
-    setActive('AMOUNT'); // Top field is always AMOUNT
+    setActive('AMOUNT');
 
-    // Calculate using token prices
     const curr1IsXRP = curr1?.currency === 'XRP';
     const curr2IsXRP = curr2?.currency === 'XRP';
 
-    // Check if we have valid rates for calculation
     const hasValidRates =
       curr1IsXRP || curr2IsXRP
         ? tokenExch1 > 0 || tokenExch2 > 0
@@ -1410,13 +1405,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     if (isNaN(Number(value))) return;
 
     setAmount2(value);
-    setActive('VALUE'); // Bottom field is always VALUE
+    setActive('VALUE');
 
-    // Calculate using token prices
     const curr1IsXRP = curr1?.currency === 'XRP';
     const curr2IsXRP = curr2?.currency === 'XRP';
 
-    // Check if we have valid rates for calculation
     const hasValidRates =
       curr1IsXRP || curr2IsXRP
         ? tokenExch1 > 0 || tokenExch2 > 0
@@ -1435,7 +1428,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const onRevertExchange = () => {
     setRevert(!revert);
-    // Clear input fields when tokens are flipped to allow fresh input
     setAmount1('');
     setAmount2('');
   };
@@ -1443,7 +1435,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const handleMsg = () => {
     if (isProcessing === 1) return 'Pending Exchanging';
 
-    // Check for missing trustlines - prioritize curr1 first
     if (isLoggedIn && !hasTrustline1 && curr1.currency !== 'XRP') {
       const missingToken = getCurrencyDisplayName(curr1.currency, token1?.name);
       return `Set Trustline for ${missingToken}`;
@@ -1460,11 +1451,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const onFillMax = () => {
-    // The MAX button is always for the top input (amount1) which shows curr1.value
     if (accountPairBalance?.curr1.value > 0) {
       const val = accountPairBalance.curr1.value;
       setAmount1(val);
-      // Trigger counterpart calculation similar to manual input
       const hasValidRates =
         curr1?.currency === 'XRP' || curr2?.currency === 'XRP'
           ? tokenExch1 > 0 || tokenExch2 > 0
@@ -1477,13 +1466,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   const onFillPercent = (pct) => {
-    // pct is 0.25, 0.5, 0.75
     if (!accountPairBalance?.curr1?.value) return;
     const bal = Number(accountPairBalance.curr1.value) || 0;
     if (bal <= 0) return;
     const val = new Decimal(bal).mul(pct).toFixed(6, Decimal.ROUND_DOWN);
     setAmount1(val);
-    // Trigger counterpart calculation similar to manual input
     const hasValidRates =
       curr1?.currency === 'XRP' || curr2?.currency === 'XRP'
         ? tokenExch1 > 0 || tokenExch2 > 0
@@ -1494,7 +1481,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     }
   };
 
-  // Add trustline creation function
   const onCreateTrustline = async (currency) => {
     if (!accountProfile || !accountProfile.account) return;
 
@@ -1503,14 +1489,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const user_token = accountProfile.user_token;
       const wallet_type = accountProfile.wallet_type;
 
-      const Flags = 0x00020000; // Standard trustline flag
+      const Flags = 0x00020000;
       let LimitAmount = {};
       LimitAmount.issuer = currency.issuer;
       LimitAmount.currency = currency.currency;
-      LimitAmount.value = '1000000000'; // Set a high trust limit
+      LimitAmount.value = '1000000000';
 
       if (wallet_type === 'device') {
-        // Device authentication wallet
         try {
           await loadXRPLDependencies();
           const deviceWallet = getDeviceWallet(accountProfile);
@@ -1523,7 +1508,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           dispatch(updateProcess(1));
           setTransactionType('TrustSet');
 
-          // Prepare TrustSet transaction
           const trustSetTransaction = {
             Account: accountProfile.account,
             TransactionType: 'TrustSet',
@@ -1531,12 +1515,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             Flags
           };
 
-          // Connect to XRPL network
           const client = new Client('wss://s1.ripple.com');
           await client.connect();
 
           try {
-            // Autofill and submit transaction
             const preparedTx = await client.autofill(trustSetTransaction);
             const signedTx = deviceWallet.sign(preparedTx);
             const result = await client.submitAndWait(signedTx.tx_blob);
@@ -1562,7 +1544,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           dispatch(updateProcess(0));
         }
       } else {
-        // Legacy wallet support message
         enqueueSnackbar('Device authentication required', { variant: 'error' });
       }
     } catch (err) {
@@ -1579,18 +1560,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   return (
     <Stack alignItems="center" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
-      <OverviewWrapper>
-        {/* Market/Limit Tabs */}
+      <OverviewWrapper isDark={isDark}>
         <Box sx={{ mb: 1 }}>
           <Tabs
-            value={orderType}
-            onChange={(e, newValue) => {
-              setOrderType(newValue);
-              if (newValue === 'market') {
-                setShowOrderbook(false);
-              }
-            }}
-            variant="fullWidth"
             sx={{
               minHeight: '32px',
               '& .MuiTab-root': {
@@ -1600,20 +1572,53 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 textTransform: 'none'
               }
             }}
+            isDark={isDark}
           >
-            <Tab value="market" label="Market" />
-            <Tab value="limit" label="Limit" />
+            <Tab
+              isActive={orderType === 'market'}
+              onClick={() => {
+                setOrderType('market');
+                setShowOrderbook(false);
+              }}
+              isDark={isDark}
+              sx={{
+                '& .MuiTab-root': {
+                  minHeight: '32px',
+                  fontSize: '14px',
+                  py: 0.5,
+                  textTransform: 'none'
+                }
+              }}
+            >
+              Market
+            </Tab>
+            <Tab
+              isActive={orderType === 'limit'}
+              onClick={() => setOrderType('limit')}
+              isDark={isDark}
+              sx={{
+                '& .MuiTab-root': {
+                  minHeight: '32px',
+                  fontSize: '14px',
+                  py: 0.5,
+                  textTransform: 'none'
+                }
+              }}
+            >
+              Limit
+            </Tab>
           </Tabs>
         </Box>
 
         <ConverterFrame>
           <AmountRows>
-            <CurrencyContent style={{ backgroundColor: color1 }}>
+            <CurrencyContent isDark={isDark}>
               <Box display="flex" flexDirection="column" flex="1" gap="3px">
                 <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
                   <Typography
                     lineHeight="1.2"
                     variant="body2"
+                    isDark={isDark}
                     sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}
                   >
                     You sell
@@ -1628,19 +1633,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     unoptimized={true}
                     onError={(event) => (event.target.src = '/static/alt.webp')}
                   />
-                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                  <Typography variant="subtitle1" isDark={isDark} sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                     {curr1.name}
                   </Typography>
                 </Stack>
                 <Typography
                   variant="caption"
                   color="textSecondary"
+                  isDark={isDark}
                   sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                 >
                   {curr1.user}
                 </Typography>
               </Box>
-              <InputContent>
+              <InputContent isDark={isDark}>
                 {isLoggedIn && (
                   <Stack
                     direction="row"
@@ -1651,15 +1657,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   >
                     <Typography
                       variant="caption"
+                      isDark={isDark}
                       sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                     >
                       Balance{' '}
                       <Typography
                         variant="caption"
                         color="primary"
+                        isDark={isDark}
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       >
-{accountPairBalance?.curr1.value
+                        {accountPairBalance?.curr1.value
                           ? new Decimal(accountPairBalance.curr1.value).toFixed(6).replace(/\.?0+$/, '')
                           : '0'}
                       </Typography>
@@ -1668,6 +1676,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       {[0.25, 0.5, 0.75].map((p) => (
                         <Button
                           key={p}
+                          isDark={isDark}
                           sx={{
                             px: { xs: 0.75, sm: 0.5 },
                             py: 0,
@@ -1682,6 +1691,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         </Button>
                       ))}
                       <Button
+                        isDark={isDark}
                         sx={{
                           px: { xs: 0.75, sm: 0.5 },
                           py: 0,
@@ -1700,10 +1710,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Input
                   placeholder="0"
                   autoComplete="new-password"
-                  disableUnderline
-                  inputProps={{
-                    'aria-label': `Amount of ${curr1?.name || curr1?.currency} to sell`
-                  }}
+                  isDark={isDark}
                   value={amount1}
                   onChange={handleChangeAmount1}
                   sx={{
@@ -1722,6 +1729,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Typography
                   variant="caption"
                   color="textSecondary"
+                  isDark={isDark}
                   sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                 >
                   {curr1IsXRP
@@ -1731,10 +1739,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </InputContent>
             </CurrencyContent>
 
-            <CurrencyContent style={{ backgroundColor: color2 }}>
+            <CurrencyContent isDark={isDark}>
               <Box display="flex" flexDirection="column" flex="1" gap="3px">
                 <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                  <Typography variant="body2" sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
+                  <Typography variant="body2" isDark={isDark} sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
                     You buy
                   </Typography>
                 </Box>
@@ -1747,19 +1755,20 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     unoptimized={true}
                     onError={(event) => (event.target.src = '/static/alt.webp')}
                   />
-                  <Typography variant="subtitle1" sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
+                  <Typography variant="subtitle1" isDark={isDark} sx={{ fontSize: { xs: '0.9rem', sm: '1rem' } }}>
                     {curr2.name}
                   </Typography>
                 </Stack>
                 <Typography
                   variant="caption"
                   color="textSecondary"
+                  isDark={isDark}
                   sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                 >
                   {curr2.user}
                 </Typography>
               </Box>
-              <InputContent>
+              <InputContent isDark={isDark}>
                 {isLoggedIn && (
                   <Stack
                     direction="row"
@@ -1770,15 +1779,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   >
                     <Typography
                       variant="caption"
+                      isDark={isDark}
                       sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                     >
                       Balance{' '}
                       <Typography
                         variant="caption"
                         color="primary"
+                        isDark={isDark}
                         sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                       >
-{accountPairBalance?.curr2.value
+                        {accountPairBalance?.curr2.value
                           ? new Decimal(accountPairBalance.curr2.value).toFixed(6).replace(/\.?0+$/, '')
                           : '0'}
                       </Typography>
@@ -1788,10 +1799,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Input
                   placeholder="0"
                   autoComplete="new-password"
-                  disableUnderline
-                  inputProps={{
-                    'aria-label': `Amount of ${curr2?.name || curr2?.currency} to buy`
-                  }}
+                  isDark={isDark}
                   value={amount2}
                   onChange={handleChangeAmount2}
                   sx={{
@@ -1810,6 +1818,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 <Typography
                   variant="caption"
                   color="textSecondary"
+                  isDark={isDark}
                   sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
                 >
                   {curr2IsXRP
@@ -1819,10 +1828,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </InputContent>
             </CurrencyContent>
 
-            <ToggleContent>
+            <ToggleContent isDark={isDark}>
               <IconButton
                 size="small"
                 onClick={onRevertExchange}
+                isDark={isDark}
                 sx={{
                   backgroundColor: 'transparent',
                   padding: { xs: '4px', sm: '3px' },
@@ -1833,12 +1843,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   }
                 }}
               >
-                <SwapHorizIcon
-                  sx={{
-                    width: '18px',
-                    height: '18px',
-                    color: theme.palette.text.primary,
-                    transform: 'rotate(90deg)',
+                <ArrowUpDown
+                  size={18}
+                  style={{
+                    color: isDark ? '#FFFFFF' : '#212B36',
                     transition: 'all 0.2s ease-in-out'
                   }}
                 />
@@ -1849,7 +1857,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {/* Slippage control */}
           <Box sx={{ px: 1.5, py: 0.5 }}>
             <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
+              <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
                 Slippage
               </Typography>
               <Stack direction="row" spacing={0.25} alignItems="center">
@@ -1859,6 +1867,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     size="small"
                     variant={slippage === preset ? 'outlined' : 'text'}
                     onClick={() => setSlippage(preset)}
+                    isDark={isDark}
                     sx={{
                       minWidth: '22px',
                       height: '18px',
@@ -1881,26 +1890,26 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       setSlippage(val === '' ? 0 : parseFloat(val));
                     }
                   }}
-                  disableUnderline
+                  isDark={isDark}
                   sx={{
                     width: '28px',
                     input: {
                       fontSize: '11px',
                       textAlign: 'center',
                       padding: '1px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
                       borderRadius: '4px',
                       height: '14px'
                     }
                   }}
                 />
-                <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: 'text.secondary' }}>
                   % · Impact {priceImpact}%
                 </Typography>
               </Stack>
             </Stack>
             {Number(slippage) > 5 && (
-              <Typography variant="caption" color="warning.main" sx={{ display: 'block', mt: 0.25, fontSize: '10px' }}>
+              <Typography variant="caption" color="warning.main" isDark={isDark} sx={{ display: 'block', mt: 0.25, fontSize: '10px' }}>
                 High slippage = higher risk
               </Typography>
             )}
@@ -1910,85 +1919,85 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           {orderType === 'limit' && (
             <Box sx={{ px: 1, py: 0.5 }}>
               <Stack spacing={0.5}>
-                <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
+                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
                   Limit Price ({curr2.name} per {curr1.name})
                 </Typography>
-                <Input
-                  placeholder="0.00"
-                  fullWidth
-                  disableUnderline
-                  inputProps={{
-                    'aria-label': `Limit price in ${curr2?.name || curr2?.currency} per ${curr1?.name || curr1?.currency}`
-                  }}
-                  value={limitPrice}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '.') {
-                      setLimitPrice('0.');
-                      return;
-                    }
-                    if (!isNaN(Number(val)) || val === '') {
-                      setLimitPrice(val);
-                    }
-                  }}
-                  endAdornment={
-                    <Stack direction="row" spacing={0.25} alignItems="center" sx={{ mr: 0.5 }}>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
-                        onClick={() => {
-                          const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
-                          const base = Number(limitPrice || mid || 0);
-                          if (!base) return;
-                          setLimitPrice(new Decimal(base).mul(0.99).toFixed(6));
-                        }}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
-                      >
-                        -1%
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!(bestBid != null && bestAsk != null)}
-                        onClick={() => {
-                          const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
-                          if (mid == null) return;
-                          setLimitPrice(String(new Decimal(mid).toFixed(6)));
-                        }}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
-                      >
-                        Mid
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
-                        onClick={() => {
-                          const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
-                          const base = Number(limitPrice || mid || 0);
-                          if (!base) return;
-                          setLimitPrice(new Decimal(base).mul(1.01).toFixed(6));
-                        }}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
-                      >
-                        +1%
-                      </Button>
-                    </Stack>
-                  }
-                  sx={{
-                    backgroundColor: alpha(theme.palette.background.paper, 0.05),
-                    borderRadius: '6px',
-                    padding: '4px 8px',
-                    input: {
-                      fontSize: '14px',
-                      fontWeight: 400
-                    }
-                  }}
-                />
+                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                  <Input
+                    placeholder="0.00"
+                    fullWidth
+                    isDark={isDark}
+                    value={limitPrice}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '.') {
+                        setLimitPrice('0.');
+                        return;
+                      }
+                      if (!isNaN(Number(val)) || val === '') {
+                        setLimitPrice(val);
+                      }
+                    }}
+                    sx={{
+                      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+                      borderRadius: '6px',
+                      padding: '4px 8px',
+                      input: {
+                        fontSize: '14px',
+                        fontWeight: 400
+                      }
+                    }}
+                  />
+                  <Stack direction="row" spacing={0.25} alignItems="center" style={{ position: 'absolute', right: '8px' }}>
+                    <Button
+                      size="small"
+                      variant="text"
+                      disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
+                      onClick={() => {
+                        const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                        const base = Number(limitPrice || mid || 0);
+                        if (!base) return;
+                        setLimitPrice(new Decimal(base).mul(0.99).toFixed(6));
+                      }}
+                      isDark={isDark}
+                      sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                    >
+                      -1%
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="text"
+                      disabled={!(bestBid != null && bestAsk != null)}
+                      onClick={() => {
+                        const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                        if (mid == null) return;
+                        setLimitPrice(String(new Decimal(mid).toFixed(6)));
+                      }}
+                      isDark={isDark}
+                      sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                    >
+                      Mid
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="text"
+                      disabled={!limitPrice && !(bestBid != null && bestAsk != null)}
+                      onClick={() => {
+                        const mid = bestBid != null && bestAsk != null ? (Number(bestBid) + Number(bestAsk)) / 2 : null;
+                        const base = Number(limitPrice || mid || 0);
+                        if (!base) return;
+                        setLimitPrice(new Decimal(base).mul(1.01).toFixed(6));
+                      }}
+                      isDark={isDark}
+                      sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                    >
+                      +1%
+                    </Button>
+                  </Stack>
+                </div>
                 {bestBid != null && bestAsk != null && (
                   <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="space-between" sx={{ flexWrap: 'wrap', mt: 0.5 }}>
-                    <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
+                    <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
                       {(() => {
                         const bb = Number(bestBid);
                         const ba = Number(bestAsk);
@@ -2003,6 +2012,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         variant="text"
                         disabled={!bids || bids.length === 0}
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
+                        isDark={isDark}
                         sx={{ textTransform: 'none', fontSize: '11px', minHeight: '20px', px: 0.75, py: 0 }}
                       >
                         Bid
@@ -2012,6 +2022,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         variant="text"
                         disabled={!asks || asks.length === 0}
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
+                        isDark={isDark}
                         sx={{ textTransform: 'none', fontSize: '11px', minHeight: '20px', px: 0.75, py: 0 }}
                       >
                         Ask
@@ -2020,7 +2031,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </Stack>
                 )}
                 {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
-                  <Typography variant="caption" color="error" sx={{ fontSize: '11px' }}>
+                  <Typography variant="caption" color="error" isDark={isDark} sx={{ fontSize: '11px' }}>
                     Enter a valid limit price greater than 0.
                   </Typography>
                 )}
@@ -2041,6 +2052,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
                           <Typography
                             variant="caption"
+                            isDark={isDark}
                             sx={{ fontSize: '11px', fontWeight: 400, color: 'error.main' }}
                           >
                             Immediate execution! {baseMsg} This order will fill instantly at market.
@@ -2052,7 +2064,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     return (
                       <Typography
                         variant="caption"
-                        sx={{ fontSize: '11px', color: theme.palette.warning.main }}
+                        isDark={isDark}
+                        sx={{ fontSize: '11px', color: '#ff9800' }}
                       >
                         {baseMsg}
                       </Typography>
@@ -2061,7 +2074,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
                 {/* Order Expiration */}
                 <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="textSecondary" sx={{ fontSize: '11px' }}>
+                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
                     Expiration
                   </Typography>
                   <Stack direction="row" spacing={0.5} alignItems="center">
@@ -2073,7 +2086,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         else if (e.target.value === '24h') setExpiryHours(24);
                         else if (e.target.value === '7d') setExpiryHours(168);
                       }}
-                      size="small"
+                      isDark={isDark}
                       sx={{
                         fontSize: '11px',
                         height: '22px',
@@ -2090,26 +2103,26 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <MenuItem value="custom">Custom</MenuItem>
                     </Select>
                     {orderExpiry === 'custom' && (
-                      <Input
-                        value={expiryHours}
-                        onChange={(e) => setExpiryHours(Number(e.target.value))}
-                        type="number"
-                        disableUnderline
-                        sx={{
-                          width: '50px',
-                          input: {
-                            fontSize: '11px',
-                            padding: '2px 4px',
-                            border: '1.5px solid rgba(0,0,0,0.2)',
-                            borderRadius: '3px'
-                          }
-                        }}
-                        endAdornment={
-                          <Typography variant="caption" sx={{ fontSize: '13px' }}>
-                            hrs
-                          </Typography>
-                        }
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Input
+                          value={expiryHours}
+                          onChange={(e) => setExpiryHours(Number(e.target.value))}
+                          type="number"
+                          isDark={isDark}
+                          sx={{
+                            width: '50px',
+                            input: {
+                              fontSize: '11px',
+                              padding: '2px 4px',
+                              border: '1.5px solid rgba(0,0,0,0.2)',
+                              borderRadius: '3px'
+                            }
+                          }}
+                        />
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '13px' }}>
+                          hrs
+                        </Typography>
+                      </div>
                     )}
                   </Stack>
                 </Stack>
@@ -2117,7 +2130,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </Box>
           )}
 
-          {/* Show/Hide Order Book - Only show in limit mode */}
+          {/* Show/Hide Order Book */}
           {orderType === 'limit' && (
             <Stack direction="row" justifyContent="center" sx={{ px: 1, py: 0.75 }}>
               <Button
@@ -2127,6 +2140,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
                   else setShowOrderbook(!showOrderbook);
                 }}
+                isDark={isDark}
                 sx={{
                   fontSize: '0.8rem',
                   textTransform: 'none',
@@ -2144,19 +2158,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Order Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
-            <SummaryBox>
+            <SummaryBox isDark={isDark}>
               <Stack direction="row" spacing={1} sx={{ fontSize: '11px', flexWrap: 'wrap' }}>
-                <Typography variant="caption" sx={{ fontSize: '11px' }}>
+                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
                   <strong>{revert ? 'Buy' : 'Sell'}</strong> {amount1} {curr1.name}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
                   @ {limitPrice}
                 </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px' }}>
+                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
                   = {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
                 </Typography>
                 {orderExpiry !== 'never' && (
-                  <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
                     · {expiryHours}h
                   </Typography>
                 )}
@@ -2167,8 +2181,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       </OverviewWrapper>
 
       <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5, mb: 0.5, width: '100%' }}>
-        <PuffLoader color={darkMode ? '#007B55' : '#5569ff'} size={14} />
-        <Typography variant="caption" sx={{ fontSize: '11px' }}>
+        <PuffLoader color={isDark ? '#007B55' : '#5569ff'} size={14} />
+        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
           1 {curr1.name} ={' '}
           {(() => {
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
@@ -2193,6 +2207,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           <ExchangeButton
             variant="outlined"
             onClick={handlePlaceOrder}
+            isDark={isDark}
             sx={{
               mt: 0,
               height: { xs: '36px', sm: '32px' },
@@ -2213,19 +2228,15 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             fontSize={{ xs: '0.9rem', sm: '0.85rem' }}
           />
         )}
-        {/* Inline guidance for trustlines and balance */}
         {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
           <Alert severity="error" sx={{ mt: 1 }}>
-            <Typography variant="caption" sx={{ fontSize: '12px' }}>
+            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px' }}>
               {errMsg}
             </Typography>
           </Alert>
         )}
       </Stack>
 
-      {/* QRDialog removed - Xaman no longer used */}
-
-      {/* Orderbook Drawer (embedded) using TransactionDetailsPanel when no global handler */}
       {!onOrderBookToggle && (
         <TransactionDetailsPanel
           open={showOrderbook && orderType === 'limit'}
@@ -2258,5 +2269,4 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   );
 };
 
-// Export the Swap component directly without the button wrapper
 export default Swap;

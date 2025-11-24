@@ -1,17 +1,7 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
-import Box from '@mui/material/Box';
-import ButtonGroup from '@mui/material/ButtonGroup';
-import Button from '@mui/material/Button';
-import Typography from '@mui/material/Typography';
-import { useTheme } from '@mui/material/styles';
-import Paper from '@mui/material/Paper';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import CircularProgress from '@mui/material/CircularProgress';
-import { alpha } from '@mui/material/styles';
-import Divider from '@mui/material/Divider';
+import styled from '@emotion/styled';
+import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, MoreVertical, Loader2 } from 'lucide-react';
 import {
   createChart,
   CandlestickSeries,
@@ -21,6 +11,8 @@ import {
 } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
+import { throttle } from 'src/utils/formatters';
+
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -29,26 +21,184 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-import { throttle } from 'src/utils/formatters';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import ShowChartIcon from '@mui/icons-material/ShowChart';
-import CandlestickChartIcon from '@mui/icons-material/CandlestickChart';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import GroupIcon from '@mui/icons-material/Group';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+
+const alpha = (color, opacity) => {
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color.replace(')', `, ${opacity})`);
+};
+
+const Card = styled.div`
+  width: 100%;
+  padding: ${props => props.isMobile ? '8px' : '12px'};
+  padding-right: ${props => props.isMobile ? '4px' : '12px'};
+  background: transparent;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border-radius: 12px;
+  overflow: hidden;
+  &:hover {
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  }
+  ${props => props.isFullscreen && `
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 99999;
+    border-radius: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+    max-height: 100vh;
+    background: ${props.isDark ? '#000000' : '#ffffff'};
+  `}
+`;
+
+const Box = styled.div``;
+
+const Typography = styled.span`
+  font-size: ${props => props.variant === 'h6' ? '14px' : props.variant === 'caption' ? '11px' : '13px'};
+  font-weight: ${props => props.fontWeight || 400};
+  color: ${props =>
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') :
+    props.color === 'text.primary' ? (props.isDark ? '#FFFFFF' : '#212B36') :
+    props.color === 'success.main' ? '#4caf50' :
+    props.color === 'warning.main' ? '#ff9800' :
+    props.color ? props.color :
+    (props.isDark ? '#FFFFFF' : '#212B36')
+  };
+  letter-spacing: ${props => props.letterSpacing || 'normal'};
+  text-transform: ${props => props.textTransform || 'none'};
+  opacity: ${props => props.opacity || 1};
+  user-select: ${props => props.userSelect || 'auto'};
+  font-family: ${props => props.fontFamily || 'inherit'};
+  line-height: ${props => props.lineHeight || 'normal'};
+`;
+
+const ButtonGroup = styled.div`
+  display: flex;
+  gap: 0px;
+  & > button {
+    border-radius: 0;
+  }
+  & > button:first-of-type {
+    border-radius: 6px 0 0 6px;
+  }
+  & > button:last-of-type {
+    border-radius: 0 6px 6px 0;
+  }
+  & > button:not(:first-of-type) {
+    margin-left: -1px;
+  }
+`;
+
+const Button = styled.button`
+  padding: ${props => props.isMobile ? '4px 6px' : '6px 10px'};
+  font-size: ${props => props.isMobile ? '11px' : '13px'};
+  min-width: ${props => props.minWidth || 'auto'};
+  height: ${props => props.isMobile ? '26px' : '30px'};
+  border-radius: 6px;
+  text-transform: none;
+  font-weight: ${props => props.isActive ? 600 : 400};
+  border: 1.5px solid ${props =>
+    props.isActive
+      ? '#147DFE'
+      : (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')
+  };
+  background: ${props => props.isActive ? '#147DFE' : 'transparent'};
+  color: ${props => props.isActive ? '#FFFFFF' : (props.isDark ? '#FFFFFF' : '#212B36')};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: ${props => props.isMobile ? '2px' : '6px'};
+  &:hover {
+    background: ${props => props.isActive ? '#147DFE' : (props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)')};
+    border-color: ${props => props.isActive ? '#147DFE' : 'rgba(20,125,254,0.3)'};
+  }
+  & svg {
+    width: ${props => props.isMobile ? '12px' : '16px'};
+    height: ${props => props.isMobile ? '12px' : '16px'};
+  }
+`;
+
+const IconButton = styled.button`
+  padding: ${props => props.size === 'small' ? '8px' : '8px'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'};
+  }
+  & svg {
+    width: ${props => props.isMobile ? '16px' : '20px'};
+    height: ${props => props.isMobile ? '16px' : '20px'};
+  }
+`;
+
+const Menu = styled.div`
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 4px;
+  min-width: 180px;
+  background: ${props => props.isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
+  box-shadow: 0 4px 12px ${props => props.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)'};
+  z-index: 1000;
+  padding: 4px 0;
+  display: ${props => props.open ? 'block' : 'none'};
+`;
+
+const MenuItem = styled.div`
+  padding: 8px 12px;
+  font-size: 14px;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+  opacity: ${props => props.disabled ? 0.4 : 1};
+  font-weight: ${props => props.disabled && props.isHeader ? 500 : 400};
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(20,125,254,0.08)' : 'rgba(20,125,254,0.08)') : 'transparent'};
+  &:hover {
+    background: ${props => props.disabled ? 'transparent' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)')};
+  }
+`;
+
+const Divider = styled.div`
+  height: 1px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  margin: 4px 0;
+`;
+
+const Spinner = styled(Loader2)`
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+`;
 
 const PriceChartAdvanced = memo(({ token }) => {
-  const theme = useTheme();
-  const { activeFiatCurrency, accountProfile } = useContext(AppContext);
+  const { activeFiatCurrency, accountProfile, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
   const candleSeriesRef = useRef(null);
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
   const lastChartTypeRef = useRef(null);
-  const isMobile = theme.breakpoints.values.sm > window.innerWidth;
-  const isTablet = theme.breakpoints.values.md > window.innerWidth;
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
+  const isTablet = typeof window !== 'undefined' && window.innerWidth < 900;
 
   // Performance: Reduce data points for mobile/tablet
   const maxDataPoints = useMemo(() => {
@@ -59,7 +209,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   const [chartType, setChartType] = useState('candles');
   const [range, setRange] = useState('1D');
-  const [chartInterval, setChartInterval] = useState('5m'); // New: interval parameter (renamed to avoid conflict)
+  const [chartInterval, setChartInterval] = useState('5m');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -85,12 +235,11 @@ const PriceChartAdvanced = memo(({ token }) => {
   const scaleFactorRef = useRef(1);
 
   const BASE_URL = 'https://api.xrpl.to/api';
-  const isDark = theme.palette.mode === 'dark';
 
   const chartTypeIcons = {
-    candles: <CandlestickChartIcon fontSize="small" />,
-    line: <ShowChartIcon fontSize="small" />,
-    holders: <GroupIcon fontSize="small" />
+    candles: <CandlestickChart />,
+    line: <TrendingUp />,
+    holders: <Users />
   };
 
   // Update refs when values change
@@ -113,7 +262,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     let currentRequest = null;
     let isRequestInProgress = false;
 
-    // Move helper functions inside to avoid dependency issues
     const convertScientific = (value) => {
       if (typeof value === 'string') {
         value = parseFloat(value);
@@ -172,12 +320,10 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
 
     const fetchData = async (isUpdate = false) => {
-      // Skip if unmounted or request already in progress
       if (!mounted || isRequestInProgress) {
         return;
       }
 
-      // Simple validation - only block extremely dangerous combinations
       const maxCandles = {
         '1D': { '1m': 1440, '5m': 288, '15m': 96, '30m': 48, '1h': 24 },
         '5D': { '5m': 1440, '15m': 480, '30m': 240, '1h': 120, '4h': 30 },
@@ -190,7 +336,6 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       const estimatedCandles = maxCandles[range]?.[chartInterval];
 
-      // Only warn if invalid, but still allow the request (backend will validate)
       if (!estimatedCandles) {
         console.warn(`Potentially invalid combination: ${range} @ ${chartInterval}, allowing anyway`);
       } else if (estimatedCandles > 10000) {
@@ -203,12 +348,10 @@ const PriceChartAdvanced = memo(({ token }) => {
         return;
       }
 
-      // Cancel any ongoing request only if it exists
       if (currentRequest && !currentRequest.signal.aborted) {
         currentRequest.abort();
       }
 
-      // Create new controller for this specific request
       const requestController = new AbortController();
       currentRequest = requestController;
       isRequestInProgress = true;
@@ -231,7 +374,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc
             .map((candle) => ({
-              time: Math.floor(candle[0] / 1000), // Convert ms to seconds
+              time: Math.floor(candle[0] / 1000),
               open: convertScientific(candle[1]),
               high: convertScientific(candle[2]),
               low: convertScientific(candle[3]),
@@ -239,13 +382,12 @@ const PriceChartAdvanced = memo(({ token }) => {
               value: convertScientific(candle[4]),
               volume: convertScientific(candle[5]) || 0
             }))
-            .sort((a, b) => a.time - b.time); // Ensure chronological order
+            .sort((a, b) => a.time - b.time);
 
           setData(processedData);
           dataRef.current = processedData;
           setLastUpdate(new Date());
 
-          // Calculate ATH from the data
           const allTimeHigh = Math.max(...processedData.map((d) => d.high));
           const currentPrice = processedData[processedData.length - 1].close;
           const percentFromATH = (((currentPrice - allTimeHigh) / allTimeHigh) * 100).toFixed(2);
@@ -255,7 +397,6 @@ const PriceChartAdvanced = memo(({ token }) => {
             percentDown: percentFromATH
           });
 
-          // Calculate RSI values for tooltip display
           const rsiData = calcRSI(processedData, 14);
           const rsiMap = {};
           rsiData.forEach((r) => {
@@ -291,7 +432,6 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     fetchData();
 
-    // Sync with ledger updates every 4 seconds - but only if user is not zoomed
     const updateInterval = setInterval(() => {
       if (!isUserZoomedRef.current && mounted) {
         fetchData(true);
@@ -364,29 +504,23 @@ const PriceChartAdvanced = memo(({ token }) => {
     };
   }, [token.md5, range, BASE_URL, chartType]);
 
-  // Create chart only when chart type changes AND relevant data is available - optimized
+  // Create chart only when chart type changes AND relevant data is available
   useEffect(() => {
-    // Determine which dataset is relevant for current chart type
     const hasChartData =
       chartType === 'holders' ? holderData && holderData.length > 0 : data && data.length > 0;
 
-    // Wait for container and the relevant data to be available
     if (!chartContainerRef.current || loading || !hasChartData) {
       return;
     }
 
-    // Only create chart once per chart type, prevent flickering
     if (chartCreatedRef.current && lastChartTypeRef.current === chartType) {
       return;
     }
 
-    // Clean up existing chart when chart type changes
     if (chartRef.current) {
       try {
         chartRef.current.remove();
-      } catch (e) {
-        // Error removing chart
-      }
+      } catch (e) {}
       chartRef.current = null;
       candleSeriesRef.current = null;
       lineSeriesRef.current = null;
@@ -396,7 +530,6 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     lastChartTypeRef.current = chartType;
 
-    // Create new chart with current container dimensions
     const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 380 : 550);
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
@@ -404,21 +537,19 @@ const PriceChartAdvanced = memo(({ token }) => {
       layout: {
         background: {
           type: 'solid',
-          color: theme.chart?.background || 'transparent'
+          color: 'transparent'
         },
-        textColor: theme.palette.text.primary,
+        textColor: isDark ? '#FFFFFF' : '#212B36',
         fontSize: 13,
         fontFamily: "'Segoe UI', Roboto, Arial, sans-serif"
       },
       grid: {
         vertLines: {
-          color:
-            theme.chart?.gridColor || (isDark ? 'rgba(56, 56, 56, 0.25)' : 'rgba(240, 240, 240, 0.8)'),
+          color: isDark ? 'rgba(56, 56, 56, 0.25)' : 'rgba(240, 240, 240, 0.8)',
           style: 1
         },
         horzLines: {
-          color:
-            theme.chart?.gridColor || (isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)'),
+          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
           style: 0
         }
       },
@@ -428,18 +559,17 @@ const PriceChartAdvanced = memo(({ token }) => {
           color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
           width: 1,
           style: 3,
-          labelBackgroundColor: theme.palette.primary.main
+          labelBackgroundColor: '#147DFE'
         },
         horzLine: {
           color: isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.3)',
           width: 1,
           style: 3,
-          labelBackgroundColor: theme.palette.primary.main
+          labelBackgroundColor: '#147DFE'
         }
       },
       rightPriceScale: {
-        borderColor:
-          theme.chart?.borderColor || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         scaleMargins: {
           top: 0.05,
           bottom: 0.2
@@ -448,7 +578,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         autoScale: true,
         borderVisible: false,
         visible: true,
-        entireTextOnly: false, // Show full precision even on mobile
+        entireTextOnly: false,
         drawTicks: true,
         ticksVisible: true,
         alignLabels: true,
@@ -466,12 +596,10 @@ const PriceChartAdvanced = memo(({ token }) => {
             }
           }
 
-          // Scale the price back down to original value
           const actualPrice = price / scaleFactorRef.current;
           const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
           const isXRP = activeFiatCurrencyRef.current === 'XRP';
 
-          // XRP uses different precision rules - simpler display
           if (isXRP) {
             if (actualPrice < 0.000001) {
               return symbol + actualPrice.toFixed(8);
@@ -488,7 +616,6 @@ const PriceChartAdvanced = memo(({ token }) => {
             }
           }
 
-          // USD/EUR/other fiat formatting with compact notation for very small values
           if (actualPrice < 0.001) {
             const str = actualPrice.toFixed(20);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
@@ -513,8 +640,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         }
       },
       timeScale: {
-        borderColor:
-          theme.chart?.borderColor || (isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'),
+        borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         timeVisible: true,
         secondsVisible: false,
         rightOffset: 5,
@@ -528,16 +654,13 @@ const PriceChartAdvanced = memo(({ token }) => {
     chartRef.current = chart;
     chartCreatedRef.current = true;
 
-    // Add zoom/scroll detection with debouncing
     let zoomCheckTimeout;
     chart.timeScale().subscribeVisibleLogicalRangeChange((range) => {
       if (range && dataRef.current && dataRef.current.length > 0) {
         clearTimeout(zoomCheckTimeout);
         zoomCheckTimeout = setTimeout(() => {
-          // Determine if user has scrolled away from the most recent bars.
-          // Only this condition will pause auto-updates to avoid false positives.
           const dataLength = dataRef.current.length;
-          const isScrolledAway = range.to < dataLength - 2; // not showing last ~2 bars
+          const isScrolledAway = range.to < dataLength - 2;
 
           const shouldPauseUpdates = isScrolledAway;
 
@@ -545,13 +668,12 @@ const PriceChartAdvanced = memo(({ token }) => {
             setIsUserZoomed(shouldPauseUpdates);
             isUserZoomedRef.current = shouldPauseUpdates;
           }
-        }, 100); // Debounce for 100ms
+        }, 100);
       }
     });
 
-    // Create tooltip
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'}; color: ${theme.palette.text.primary}; border: 1.5px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: none`;
+    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'}; color: ${isDark ? '#FFFFFF' : '#212B36'}; border: 1.5px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: none`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove((param) => {
@@ -567,7 +689,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         return;
       }
 
-      // Save the crosshair position
       crosshairPositionRef.current = { time: param.time, point: param.point };
 
       const dateStr = new Date(param.time * 1000).toLocaleDateString();
@@ -576,29 +697,24 @@ const PriceChartAdvanced = memo(({ token }) => {
 
       let ohlcData = '';
       const symbol = currencySymbols[activeFiatCurrencyRef.current] || '';
-      // Get data from correct source based on chart type using refs
       const currentData = chartType === 'holders' ? holderDataRef.current : dataRef.current;
       const candle = currentData ? currentData.find((d) => d.time === param.time) : null;
 
       if (candle) {
         const formatPrice = (p) => {
-          // The candle data is original unscaled data, so don't scale back
           const actualPrice = p;
           const isXRP = activeFiatCurrencyRef.current === 'XRP';
 
-          // Check if price has many leading zeros and use compact notation
           if (actualPrice && actualPrice < 0.001) {
             const str = actualPrice.toFixed(20);
             const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
             if (zeros >= 3) {
-              // Use compact notation for 3+ zeros for XRP, 4+ for others
               const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-              const sigDigits = isXRP ? 6 : 4; // More precision for XRP pairs
+              const sigDigits = isXRP ? 6 : 4;
               return '0.0(' + zeros + ')' + significant.slice(0, sigDigits);
             }
           }
 
-          // Regular formatting with enhanced precision for XRP
           if (actualPrice < 0.00001) return actualPrice.toFixed(isXRP ? 10 : 8);
           if (actualPrice < 0.001) return actualPrice.toFixed(isXRP ? 8 : 6);
           if (actualPrice < 0.01) return actualPrice.toFixed(isXRP ? 8 : 6);
@@ -691,8 +807,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     });
 
-    // Add series based on chart type (they'll get data in the update effect)
-
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
         upColor: isDark ? '#00E676' : '#4CAF50',
@@ -707,15 +821,15 @@ const PriceChartAdvanced = memo(({ token }) => {
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
-        lineColor: isDark ? '#2196F3' : theme.palette.primary.main,
-        topColor: isDark ? 'rgba(33, 150, 243, 0.4)' : theme.palette.primary.main + '60',
-        bottomColor: isDark ? 'rgba(33, 150, 243, 0.05)' : theme.palette.primary.main + '08',
+        lineColor: isDark ? '#2196F3' : '#147DFE',
+        topColor: isDark ? 'rgba(33, 150, 243, 0.4)' : 'rgba(20, 125, 254, 0.4)',
+        bottomColor: isDark ? 'rgba(33, 150, 243, 0.05)' : 'rgba(20, 125, 254, 0.05)',
         lineWidth: 2,
         lineStyle: 0,
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 4,
-        crosshairMarkerBorderColor: theme.palette.primary.main,
-        crosshairMarkerBackgroundColor: theme.palette.background.paper
+        crosshairMarkerBorderColor: '#147DFE',
+        crosshairMarkerBackgroundColor: isDark ? '#000000' : '#ffffff'
       });
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
@@ -728,12 +842,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         crosshairMarkerVisible: true,
         crosshairMarkerRadius: 4,
         crosshairMarkerBorderColor: '#9c27b0',
-        crosshairMarkerBackgroundColor: theme.palette.background.paper
+        crosshairMarkerBackgroundColor: isDark ? '#000000' : '#ffffff'
       });
       lineSeriesRef.current = holdersSeries;
     }
 
-    // Add volume series for non-holder charts
     if (chartType !== 'holders') {
       const volumeSeries = chart.addSeries(HistogramSeries, {
         color: isDark ? 'rgba(0, 230, 118, 0.6)' : 'rgba(76, 175, 80, 0.6)',
@@ -750,7 +863,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
       volumeSeriesRef.current = volumeSeries;
 
-      // Configure volume scale separately
       chart.priceScale('volume').applyOptions({
         scaleMargins: {
           top: 0.8,
@@ -762,7 +874,6 @@ const PriceChartAdvanced = memo(({ token }) => {
     const handleResize = () => {
       if (chartContainerRef.current && chart) {
         const container = chartContainerRef.current;
-        // Don't use isFullscreen here as it's in the dependency array
         const containerHeight = container.clientHeight || (isMobile ? 380 : 550);
 
         chart.applyOptions({
@@ -770,7 +881,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           height: containerHeight
         });
 
-        // Also call resize method for better compatibility
         chart.resize(container.clientWidth, containerHeight);
       }
     };
@@ -789,15 +899,13 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (chartRef.current) {
         try {
           chartRef.current.remove();
-        } catch (e) {
-          // Chart already disposed
-        }
+        } catch (e) {}
         chartRef.current = null;
       }
     };
-  }, [chartType, isDark, isMobile, data, holderData, theme]);
+  }, [chartType, isDark, isMobile, data, holderData]);
 
-  // Handle fullscreen resize - recreate chart if needed
+  // Handle fullscreen resize
   useEffect(() => {
     if (!chartContainerRef.current) return;
 
@@ -809,20 +917,15 @@ const PriceChartAdvanced = memo(({ token }) => {
       const rect = container.getBoundingClientRect();
       const newWidth = rect.width || container.clientWidth;
 
-
-      // Try to resize first
       if (chartRef.current) {
         try {
-          // Apply new size
           chartRef.current.resize(newWidth, newHeight);
 
-          // Also update options
           chartRef.current.applyOptions({
             width: newWidth,
             height: newHeight
           });
 
-          // Restore visible range
           const timeScale = chartRef.current.timeScale();
           if (zoomStateRef.current) {
             timeScale.setVisibleRange(zoomStateRef.current);
@@ -832,7 +935,6 @@ const PriceChartAdvanced = memo(({ token }) => {
 
         } catch (error) {
           console.error('Resize failed, forcing recreation:', error);
-          // Force chart recreation on next render
           if (chartRef.current) {
             try {
               chartRef.current.remove();
@@ -845,15 +947,13 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     };
 
-    // Wait for DOM to update, then resize
     const timeoutId = setTimeout(resizeOrRecreateChart, 100);
 
     return () => clearTimeout(timeoutId);
   }, [isFullscreen, isMobile]);
 
-  // Separate effect to update data on chart series - throttled for performance
+  // Update data on chart series
   useEffect(() => {
-    // Skip if chart isn't ready yet - the chart creation effect will handle initial data
     if (!chartRef.current) {
       return;
     }
@@ -863,7 +963,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       return;
     }
 
-    // Scale factor for very small prices to help with tick generation
     const getScaleFactor = (data) => {
       if (!data || data.length === 0) return 1;
       const maxPrice = Math.max(
@@ -873,39 +972,33 @@ const PriceChartAdvanced = memo(({ token }) => {
         ...data.map((d) => Math.min(d.low || d.close || d.value || d.open || Infinity))
       );
 
-      // Use the average of min and max for better scaling decision
       const avgPrice = (maxPrice + minPrice) / 2;
 
-      // More aggressive scaling for extremely small values (common with XRP pairs)
-      if (avgPrice < 0.000000000001) return 1000000000000000; // 1e15
-      if (avgPrice < 0.00000000001) return 100000000000000;   // 1e14
-      if (avgPrice < 0.0000000001) return 10000000000000;     // 1e13
-      if (avgPrice < 0.000000001) return 1000000000000;       // 1e12
-      if (avgPrice < 0.00000001) return 100000000000;         // 1e11
-      if (avgPrice < 0.0000001) return 10000000000;           // 1e10
-      if (avgPrice < 0.000001) return 1000000000;             // 1e9
-      if (avgPrice < 0.00001) return 100000000;               // 1e8
-      if (avgPrice < 0.0001) return 10000000;                 // 1e7
-      if (avgPrice < 0.001) return 1000000;                   // 1e6
-      if (avgPrice < 0.01) return 100000;                     // 1e5
-      if (avgPrice < 0.1) return 10000;                       // 1e4
-      if (avgPrice < 1) return 1000;                          // 1e3
+      if (avgPrice < 0.000000000001) return 1000000000000000;
+      if (avgPrice < 0.00000000001) return 100000000000000;
+      if (avgPrice < 0.0000000001) return 10000000000000;
+      if (avgPrice < 0.000000001) return 1000000000000;
+      if (avgPrice < 0.00000001) return 100000000000;
+      if (avgPrice < 0.0000001) return 10000000000;
+      if (avgPrice < 0.000001) return 1000000000;
+      if (avgPrice < 0.00001) return 100000000;
+      if (avgPrice < 0.0001) return 10000000;
+      if (avgPrice < 0.001) return 1000000;
+      if (avgPrice < 0.01) return 100000;
+      if (avgPrice < 0.1) return 10000;
+      if (avgPrice < 1) return 1000;
       return 1;
     };
 
-    // Save current zoom state before updating
     if (chartRef.current && chartRef.current.timeScale) {
       try {
         const visibleRange = chartRef.current.timeScale().getVisibleRange();
         if (visibleRange) {
           zoomStateRef.current = visibleRange;
         }
-      } catch (e) {
-        // Could not save zoom state
-      }
+      } catch (e) {}
     }
 
-    // Create series if they don't exist yet
     if (chartType === 'candles' && !candleSeriesRef.current) {
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
         upColor: isDark ? '#00E676' : '#4CAF50',
@@ -929,9 +1022,9 @@ const PriceChartAdvanced = memo(({ token }) => {
               bottomColor: 'rgba(156, 39, 176, 0.04)'
             }
           : {
-              lineColor: theme.palette.primary.main,
-              topColor: theme.palette.primary.main + '80',
-              bottomColor: theme.palette.primary.main + '08'
+              lineColor: '#147DFE',
+              topColor: 'rgba(20, 125, 254, 0.5)',
+              bottomColor: 'rgba(20, 125, 254, 0.05)'
             };
 
       const areaSeries = chartRef.current.addSeries(AreaSeries, {
@@ -955,7 +1048,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
       volumeSeriesRef.current = volumeSeries;
 
-      // Configure volume scale separately
       chartRef.current.priceScale('volume').applyOptions({
         scaleMargins: {
           top: 0.9,
@@ -964,19 +1056,15 @@ const PriceChartAdvanced = memo(({ token }) => {
       });
     }
 
-    // Check if this is a range change or currency change
     const isRangeChange = lastChartTypeRef.current !== `${chartType}-${range}`;
     const isCurrencyChange = activeFiatCurrencyRef.current !== activeFiatCurrency;
 
-    // Update series data - use update for the last bar if it's an auto-update
     const isAutoUpdate = !isRangeChange && !isCurrencyChange && dataRef.current && chartData.length > 0;
 
     if (chartType === 'candles' && candleSeriesRef.current) {
-      // Calculate scale factor for small prices
       const scaleFactor = getScaleFactor(chartData);
       scaleFactorRef.current = scaleFactor;
 
-      // Scale the data if needed
       const scaledData =
         scaleFactor === 1
           ? chartData
@@ -994,11 +1082,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         candleSeriesRef.current.update(lastBar);
       } else {
         candleSeriesRef.current.setData(scaledData);
-
-        // Applied scaling factor for small prices
       }
     } else if (chartType === 'line' && lineSeriesRef.current) {
-      // Calculate scale factor for small prices
       const scaleFactor = getScaleFactor(chartData);
       scaleFactorRef.current = scaleFactor;
 
@@ -1012,8 +1097,6 @@ const PriceChartAdvanced = memo(({ token }) => {
         lineSeriesRef.current.update(lastPoint);
       } else {
         lineSeriesRef.current.setData(lineData);
-
-        // Line: Applied scaling factor for small prices
       }
     } else if (chartType === 'holders' && lineSeriesRef.current) {
       const holdersLineData = chartData.map((d) => ({ time: d.time, value: d.value || d.holders }));
@@ -1025,7 +1108,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     }
 
-    // Update volume series
     if (chartType !== 'holders' && volumeSeriesRef.current && data) {
       const volumeData = data.map((d) => ({
         time: d.time,
@@ -1047,95 +1129,47 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     }
 
-    // Don't call fitContent on auto-updates - preserve user's zoom
-    // Only fit content on initial load, range change, or currency change
     if (isRangeChange || isCurrencyChange) {
-      // This is a range/currency change or initial load, fit content
       chartRef.current.timeScale().fitContent();
       lastChartTypeRef.current = `${chartType}-${range}`;
-      // Update currency ref after processing
       activeFiatCurrencyRef.current = activeFiatCurrency;
     } else if (zoomStateRef.current) {
-      // This is an auto-update, restore the saved zoom
       setTimeout(() => {
         if (chartRef.current && chartRef.current.timeScale && zoomStateRef.current) {
           try {
             chartRef.current.timeScale().setVisibleRange(zoomStateRef.current);
-          } catch (e) {
-            // Could not restore zoom
-          }
+          } catch (e) {}
         }
       }, 0);
     }
-
-    // The tooltip will maintain its position automatically since we're not recreating the chart
-  }, [data, holderData, chartType, isDark, range, theme, isMobile]);
+  }, [data, holderData, chartType, isDark, range, isMobile]);
 
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => !prev);
   }, []);
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        // Keep within grid column to preserve two-column layout
-        mx: 0,
-        width: '100%',
-        p: isMobile ? 1 : 1.5,
-        pr: isMobile ? 0.5 : 1.5,
-        background: 'transparent',
-        backdropFilter: 'none',
-        boxShadow: 'none',
-        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-        borderRadius: '12px',
-        overflow: 'hidden',
-        '&:hover': {
-          borderColor: alpha(theme.palette.divider, 0.2),
-          background: alpha(theme.palette.background.paper, 0.02)
-        },
-        ...(isFullscreen && {
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: 99999,
-          borderRadius: 0,
-          width: '100vw',
-          height: '100vh',
-          maxWidth: '100vw',
-          maxHeight: '100vh',
-          background: theme.palette.background.default
-        })
-      }}
-    >
-      <Box
-        sx={{ display: 'flex', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
-          <Typography variant="h6" sx={{ fontSize: '14px', fontWeight: 400 }}>
-            {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} •{' '}
-            {range} • {chartInterval}
+    <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen}>
+      <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <Typography variant="h6" isDark={isDark}>
+            {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} • {range} • {chartInterval}
           </Typography>
           {athData.price && chartType !== 'holders' && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.75,
-                px: 1.2,
-                py: 0.5,
-                borderRadius: '8px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
+            <Box style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '4px 10px',
+              borderRadius: '8px',
+              border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+              background: 'transparent'
+            }}>
               <Typography
-                variant="caption"
-                sx={{
+                isDark={isDark}
+                fontWeight={400}
+                style={{
                   fontSize: '12px',
-                  fontWeight: 400,
                   color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
                   lineHeight: 1,
                   fontFamily: 'monospace'
@@ -1144,11 +1178,11 @@ const PriceChartAdvanced = memo(({ token }) => {
                 {athData.percentDown}%
               </Typography>
               <Typography
-                variant="caption"
-                sx={{
+                isDark={isDark}
+                style={{
                   fontSize: '11px',
                   fontWeight: 400,
-                  color: alpha(theme.palette.text.secondary, 0.5),
+                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
                   lineHeight: 1
                 }}
               >
@@ -1156,13 +1190,13 @@ const PriceChartAdvanced = memo(({ token }) => {
               </Typography>
               {!isMobile && (
                 <>
-                  <Box sx={{ width: '1px', height: '12px', bgcolor: alpha(theme.palette.divider, 0.2) }} />
+                  <Box style={{ width: '1px', height: '12px', background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }} />
                   <Typography
-                    variant="caption"
-                    sx={{
+                    isDark={isDark}
+                    style={{
                       fontSize: '11px',
                       fontWeight: 400,
-                      color: alpha(theme.palette.text.primary, 0.7),
+                      color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                       fontFamily: 'monospace',
                       lineHeight: 1
                     }}
@@ -1186,51 +1220,43 @@ const PriceChartAdvanced = memo(({ token }) => {
               )}
             </Box>
           )}
-          <Box
-            sx={{
-              ml: 2,
-              minWidth: 140,
-              display: 'inline-flex',
-              alignItems: 'center',
-              height: 20,
-              position: 'relative'
-            }}
-          >
+          <Box style={{
+            marginLeft: '16px',
+            minWidth: '140px',
+            display: 'inline-flex',
+            alignItems: 'center',
+            height: '20px',
+            position: 'relative'
+          }}>
             {isUpdating ? (
-              <Box
-                sx={{
-                  width: 6,
-                  height: 6,
-                  borderRadius: '50%',
-                  bgcolor: 'success.main',
-                }}
-              />
+              <Box style={{
+                width: '6px',
+                height: '6px',
+                borderRadius: '50%',
+                background: '#4caf50'
+              }} />
             ) : lastUpdate ? (
-              <Box
-                sx={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 0.75,
-                  opacity: isUserZoomed ? 0.5 : 0.7,
-                }}
-              >
-                <Box
-                  sx={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: '50%',
-                    bgcolor: isUserZoomed ? 'warning.main' : 'success.main',
-                    opacity: isUserZoomed ? 0.6 : 1
-                  }}
-                />
+              <Box style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                opacity: isUserZoomed ? 0.5 : 0.7
+              }}>
+                <Box style={{
+                  width: '4px',
+                  height: '4px',
+                  borderRadius: '50%',
+                  background: isUserZoomed ? '#ff9800' : '#4caf50',
+                  opacity: isUserZoomed ? 0.6 : 1
+                }} />
                 <Typography
-                  component="span"
-                  sx={{
+                  isDark={isDark}
+                  color="text.secondary"
+                  style={{
                     fontSize: '13px',
                     fontWeight: 400,
                     letterSpacing: '0.03em',
                     fontFamily: '"SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace',
-                    color: 'text.secondary',
                     userSelect: 'none'
                   }}
                 >
@@ -1243,14 +1269,14 @@ const PriceChartAdvanced = memo(({ token }) => {
                 </Typography>
                 {isUserZoomed && (
                   <Typography
-                    component="span"
-                    sx={{
+                    isDark={isDark}
+                    color="warning.main"
+                    style={{
                       fontSize: '12px',
                       fontWeight: 400,
                       letterSpacing: '0.05em',
                       textTransform: 'uppercase',
-                      opacity: 0.6,
-                      color: 'warning.main'
+                      opacity: 0.6
                     }}
                   >
                     paused
@@ -1261,43 +1287,23 @@ const PriceChartAdvanced = memo(({ token }) => {
           </Box>
         </Box>
 
-        <Box
-          sx={{
-            display: 'flex',
-            gap: isMobile ? 0.5 : 1,
-            flexWrap: 'wrap',
-            alignItems: 'center',
-            position: 'relative'
-          }}
-        >
-          <ButtonGroup size="small">
+        <Box style={{
+          display: 'flex',
+          gap: isMobile ? '4px' : '8px',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          position: 'relative'
+        }}>
+          <ButtonGroup>
             {Object.entries(chartTypeIcons).map(([type, icon]) => (
               <Button
                 key={type}
                 onClick={() => setChartType(type)}
-                variant={chartType === type ? 'contained' : 'outlined'}
-                sx={{
-                  px: isMobile ? 0.75 : 1.25,
-                  fontSize: isMobile ? '11px' : '13px',
-                  minWidth: isMobile ? 'auto' : 'unset',
-                  height: isMobile ? 26 : 30,
-                  borderRadius: '6px',
-                  textTransform: 'none',
-                  fontWeight: chartType === type ? 600 : 400,
-                  border: `1px solid ${chartType === type ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2)}`,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                    borderColor: alpha(theme.palette.primary.main, 0.3)
-                  },
-                  '& .MuiButton-startIcon': {
-                    marginRight: isMobile ? '2px' : '6px',
-                    '& > svg': {
-                      fontSize: isMobile ? '12px' : '16px'
-                    }
-                  }
-                }}
-                startIcon={icon}
+                isActive={chartType === type}
+                isMobile={isMobile}
+                isDark={isDark}
               >
+                {icon}
                 {type === 'holders'
                   ? 'Holders'
                   : type.charAt(0).toUpperCase() + type.slice(1)}
@@ -1305,18 +1311,14 @@ const PriceChartAdvanced = memo(({ token }) => {
             ))}
           </ButtonGroup>
 
-          <ButtonGroup
-            size="small"
-            sx={{ '& .MuiButtonGroup-grouped': { minWidth: isMobile ? 20 : 'auto' } }}
-          >
+          <ButtonGroup>
             {['1D', '5D', '1M', '3M', '1Y', '5Y', 'ALL'].map((r) => (
               <Button
                 key={r}
                 onClick={() => {
                   setRange(r);
-                  setIsUserZoomed(false); // Reset zoom state on range change
+                  setIsUserZoomed(false);
 
-                  // Auto-adjust interval to safe default
                   const rangeDefaults = {
                     '1D': '5m',
                     '5D': '15m',
@@ -1331,196 +1333,158 @@ const PriceChartAdvanced = memo(({ token }) => {
                     setChartInterval(defaultInterval);
                   }
                 }}
-                variant={range === r ? 'contained' : 'outlined'}
-                sx={{
-                  px: isMobile ? 0.5 : 0.75,
-                  fontSize: isMobile ? '13px' : '12px',
-                  minWidth: isMobile ? 26 : 32,
-                  height: isMobile ? 26 : 30,
-                  letterSpacing: '-0.02em',
-                  borderRadius: '6px',
-                  fontWeight: range === r ? 600 : 400,
-                  border: `1px solid ${range === r ? theme.palette.primary.main : alpha(theme.palette.divider, 0.2)}`,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                    borderColor: alpha(theme.palette.primary.main, 0.3)
-                  }
-                }}
+                isActive={range === r}
+                isMobile={isMobile}
+                isDark={isDark}
+                minWidth={isMobile ? '26px' : '32px'}
               >
                 {r}
               </Button>
             ))}
           </ButtonGroup>
 
-          <IconButton
-            size={isMobile ? 'small' : 'small'}
-            onClick={(e) => setAnchorEl(e.currentTarget)}
-            sx={{
-              ml: isMobile ? 0.5 : 1,
-              p: isMobile ? 0.5 : 1,
-              '& .MuiSvgIcon-root': {
-                fontSize: isMobile ? '16px' : '20px'
-              }
-            }}
-          >
-            <MoreVertIcon />
-          </IconButton>
+          <div style={{ position: 'relative' }}>
+            <IconButton
+              size="small"
+              onClick={() => setAnchorEl(anchorEl ? null : {})}
+              isMobile={isMobile}
+              isDark={isDark}
+              style={{ marginLeft: isMobile ? '4px' : '8px' }}
+            >
+              <MoreVertical />
+            </IconButton>
+
+            <Menu open={!!anchorEl} isDark={isDark}>
+              {isMobile && (
+                <>
+                  <MenuItem
+                    onClick={() => {
+                      handleFullscreen();
+                      setAnchorEl(null);
+                    }}
+                    isDark={isDark}
+                  >
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
+                      {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                    </Box>
+                  </MenuItem>
+                  <Divider isDark={isDark} />
+                </>
+              )}
+              <MenuItem disabled isHeader isDark={isDark}>
+                Interval
+              </MenuItem>
+              {['1m', '5m', '15m', '30m', '1h', '4h', '1d'].map((int) => {
+                const validCombos = {
+                  '1D': ['1m', '5m', '15m', '30m', '1h'],
+                  '5D': ['5m', '15m', '30m', '1h', '4h'],
+                  '1M': ['15m', '30m', '1h', '4h', '1d'],
+                  '3M': ['30m', '1h', '4h', '1d'],
+                  '1Y': ['1h', '4h', '1d'],
+                  '5Y': ['4h', '1d'],
+                  'ALL': ['1d']
+                };
+
+                const isValid = validCombos[range]?.includes(int);
+
+                return (
+                  <MenuItem
+                    key={int}
+                    disabled={!isValid}
+                    onClick={() => {
+                      if (isValid) {
+                        setChartInterval(int);
+                        setAnchorEl(null);
+                      }
+                    }}
+                    isActive={chartInterval === int}
+                    isDark={isDark}
+                  >
+                    <Box style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                      <Box style={{
+                        width: '16px',
+                        height: '16px',
+                        border: '2px solid',
+                        borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+                        borderRadius: '50%',
+                        marginRight: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: chartInterval === int ? '#147DFE' : 'transparent'
+                      }}>
+                        {chartInterval === int && (
+                          <Box style={{ width: '6px', height: '6px', background: 'white', borderRadius: '50%' }} />
+                        )}
+                      </Box>
+                      {int}
+                    </Box>
+                  </MenuItem>
+                );
+              })}
+            </Menu>
+          </div>
 
           {!isMobile && (
-            <>
-              <IconButton
-                size="small"
-                onClick={handleFullscreen}
-                sx={{
-                  ml: 1,
-                  p: 1,
-                  '& .MuiSvgIcon-root': {
-                    fontSize: '20px'
-                  }
-                }}
-                title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-              >
-                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-              </IconButton>
-            </>
+            <IconButton
+              size="small"
+              onClick={handleFullscreen}
+              isDark={isDark}
+              style={{ marginLeft: '8px' }}
+              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+            >
+              {isFullscreen ? <Minimize /> : <Maximize />}
+            </IconButton>
           )}
-
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
-            {isMobile && (
-              <>
-                <MenuItem
-                  onClick={() => {
-                    handleFullscreen();
-                    setAnchorEl(null);
-                  }}
-                  sx={{ fontSize: '14px' }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {isFullscreen ? (
-                      <FullscreenExitIcon fontSize="small" />
-                    ) : (
-                      <FullscreenIcon fontSize="small" />
-                    )}
-                    {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
-                  </Box>
-                </MenuItem>
-                <Divider />
-              </>
-            )}
-            <MenuItem disabled sx={{ fontSize: '14px', fontWeight: 500 }}>
-              Interval
-            </MenuItem>
-            {['1m', '5m', '15m', '30m', '1h', '4h', '1d'].map((int) => {
-              // Disable invalid combinations
-              const validCombos = {
-                '1D': ['1m', '5m', '15m', '30m', '1h'],
-                '5D': ['5m', '15m', '30m', '1h', '4h'],
-                '1M': ['15m', '30m', '1h', '4h', '1d'],
-                '3M': ['30m', '1h', '4h', '1d'],
-                '1Y': ['1h', '4h', '1d'],
-                '5Y': ['4h', '1d'],
-                'ALL': ['1d']
-              };
-
-              const isValid = validCombos[range]?.includes(int);
-
-              return (
-                <MenuItem
-                  key={int}
-                  disabled={!isValid}
-                  onClick={() => {
-                    if (isValid) {
-                      setChartInterval(int);
-                      setAnchorEl(null);
-                    }
-                  }}
-                  sx={{
-                    fontSize: '14px',
-                    backgroundColor: chartInterval === int ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
-                    opacity: !isValid ? 0.4 : 1
-                  }}
-                >
-                <Box sx={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      border: '2px solid',
-                      borderColor: theme.palette.divider,
-                      borderRadius: '50%',
-                      mr: 1,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      bgcolor: chartInterval === int ? theme.palette.primary.main : 'transparent'
-                    }}
-                  >
-                    {chartInterval === int && (
-                      <Box sx={{ width: 6, height: 6, bgcolor: 'white', borderRadius: '50%' }} />
-                    )}
-                  </Box>
-                  {int}
-                </Box>
-              </MenuItem>
-              );
-            })}
-          </Menu>
         </Box>
       </Box>
 
-      <Box
-        sx={{
-          position: 'relative',
-          height: isFullscreen ? 'calc(100vh - 120px)' : isMobile ? 380 : 550,
-          borderRadius: 1,
-          overflow: 'hidden',
-          contain: 'layout style paint',
-          mr: isMobile ? -0.5 : 0,
-          ml: isMobile ? -0.5 : 0
-        }}
-      >
+      <Box style={{
+        position: 'relative',
+        height: isFullscreen ? 'calc(100vh - 120px)' : isMobile ? '380px' : '550px',
+        borderRadius: '8px',
+        overflow: 'hidden',
+        marginRight: isMobile ? '-4px' : '0',
+        marginLeft: isMobile ? '-4px' : '0'
+      }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {(() => {
           const hasChartData =
             chartType === 'holders' ? holderData && holderData.length > 0 : data && data.length > 0;
 
-          // Only overlay spinner if no chart instance exists yet
           if (loading && !chartRef.current) {
             return (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  pointerEvents: 'none'
-                }}
-              >
-                <CircularProgress size={24} />
+              <Box style={{
+                position: 'absolute',
+                inset: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                pointerEvents: 'none'
+              }}>
+                <Spinner size={24} color={isDark ? '#FFFFFF' : '#212B36'} />
               </Box>
             );
           }
 
           if (!hasChartData && !loading) {
             return (
-              <Box
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <Typography color="text.secondary">No data available</Typography>
+              <Box style={{
+                position: 'absolute',
+                inset: '0',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <Typography color="text.secondary" isDark={isDark}>No data available</Typography>
               </Box>
             );
           }
           return null;
         })()}
       </Box>
-    </Paper>
+    </Card>
   );
 });
 
