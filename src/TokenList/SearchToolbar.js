@@ -1,22 +1,9 @@
 import React, { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import CategoryIcon from '@mui/icons-material/Category';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import DiamondIcon from '@mui/icons-material/Diamond';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import NewReleasesIcon from '@mui/icons-material/NewReleases';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import SettingsIcon from '@mui/icons-material/Settings';
-import StarIcon from '@mui/icons-material/Star';
-import FiberNewIcon from '@mui/icons-material/FiberNew';
-import SearchIcon from '@mui/icons-material/Search';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-import { Box, Chip as MuiChip, Link, Typography, Badge, Drawer as MuiDrawer, IconButton, alpha, Menu, MenuItem } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
+import Link from 'next/link';
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -184,16 +171,13 @@ const Button = styled.button`
   border-radius: 8px;
   background: ${(props) => {
     if (props.variant === 'contained') {
-      return props.theme?.palette?.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.08)'
-        : 'rgba(0, 0, 0, 0.06)';
+      return props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)';
     }
     if (props.selected) return 'rgba(33, 150, 243, 0.08)';
     return 'transparent';
   }};
   color: ${(props) => {
-    if (props.variant === 'contained')
-      return props.theme?.palette?.mode === 'dark' ? '#fff' : '#333';
+    if (props.variant === 'contained') return props.isDark ? '#fff' : '#333';
     if (props.selected) return '#2196f3';
     return 'inherit';
   }};
@@ -211,9 +195,7 @@ const Button = styled.button`
   &:hover {
     background: ${(props) => {
       if (props.variant === 'contained') {
-        return props.theme?.palette?.mode === 'dark'
-          ? 'rgba(255, 255, 255, 0.12)'
-          : 'rgba(0, 0, 0, 0.08)';
+        return props.isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.08)';
       }
       return 'rgba(33, 150, 243, 0.06)';
     }};
@@ -417,6 +399,171 @@ const AllTagsButton = styled.button`
   }
 `;
 
+const Drawer = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1300;
+  display: ${props => props.open ? 'block' : 'none'};
+`;
+
+const DrawerBackdrop = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+`;
+
+const DrawerPaper = styled.div`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-height: 80vh;
+  background: ${props => props.isDark ? '#000' : '#fff'};
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+`;
+
+const DrawerHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+`;
+
+const DrawerTitle = styled.h2`
+  font-weight: 400;
+  font-size: 16px;
+  margin: 0;
+  color: ${props => props.isDark ? '#fff' : '#000'};
+`;
+
+const DrawerClose = styled.button`
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.isDark ? '#fff' : '#000'};
+  font-size: 20px;
+
+  &:hover {
+    background: rgba(0,0,0,0.04);
+  }
+`;
+
+const Menu = styled.div`
+  position: fixed;
+  z-index: 1300;
+  display: ${props => props.open ? 'block' : 'none'};
+`;
+
+const MenuPaper = styled.div`
+  min-width: 120px;
+  border-radius: 12px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  margin-top: 4px;
+  overflow: hidden;
+`;
+
+const MenuItem = styled.button`
+  width: 100%;
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  color: ${props => props.isDark ? '#fff' : '#000'};
+
+  &:hover {
+    background: rgba(76, 175, 80, 0.08);
+  }
+`;
+
+const SearchBox = styled.div`
+  padding: 16px;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+`;
+
+const SearchInput = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border-radius: 12px;
+  font-size: 14px;
+  outline: none;
+  background: ${props => props.isDark ? '#1a1a1a' : '#fff'};
+  color: ${props => props.isDark ? '#fff' : '#000'};
+  font-family: inherit;
+`;
+
+const TagsGrid = styled.div`
+  padding: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  max-height: 60vh;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px;
+  }
+`;
+
+const TagButton = styled.button`
+  min-width: 80px;
+  max-width: 200px;
+  height: 36px;
+  padding: 0 12px;
+  border: 1.5px solid rgba(145, 158, 171, 0.2);
+  border-radius: 6px;
+  background: transparent;
+  color: ${props => props.isDark ? '#fff' : '#000'};
+  font-size: 13px;
+  font-weight: 400;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &:hover {
+    border-color: #4285f4;
+    background: rgba(66, 133, 244, 0.04);
+  }
+`;
+
+const EmptyState = styled.div`
+  width: 100%;
+  text-align: center;
+  padding: 32px 0;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  font-size: 14px;
+`;
+
 // Normalize tag function (shared)
 const normalizeTag = (tag) => {
   if (!tag) return '';
@@ -437,88 +584,33 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
   return (
     <>
       {tags && tags.length > 0 && (
-        <Box sx={{ p: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
-          <input
+        <SearchBox isDark={darkMode}>
+          <SearchInput
             type="search"
             placeholder="Search categories..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             autoComplete="off"
-            style={{
-              width: '100%',
-              padding: '10px 12px',
-              border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-              borderRadius: '12px',
-              fontSize: '14px',
-              outline: 'none',
-              backgroundColor: darkMode ? '#1a1a1a' : '#fff',
-              color: darkMode ? '#fff' : '#000',
-              fontFamily: 'inherit'
-            }}
+            isDark={darkMode}
           />
-        </Box>
+        </SearchBox>
       )}
 
-      <Box
-        sx={{
-          p: 2,
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 1,
-          maxHeight: '60vh',
-          overflowY: 'auto',
-          '&::-webkit-scrollbar': { width: '8px' },
-          '&::-webkit-scrollbar-thumb': {
-            background: 'rgba(0,0,0,0.2)',
-            borderRadius: '4px'
-          }
-        }}
-      >
+      <TagsGrid>
         {filteredTags.length > 0 ? (
           filteredTags.map((tag) => (
-            <Link
-              key={tag}
-              href={`/view/${normalizeTag(tag)}`}
-              style={{ textDecoration: 'none' }}
-            >
-              <Box
-                component="button"
-                sx={{
-                  minWidth: '80px',
-                  maxWidth: '200px',
-                  height: '36px',
-                  px: 1.5,
-                  border: '1.5px solid',
-                  borderColor: 'rgba(145, 158, 171, 0.2)',
-                  borderRadius: '6px',
-                  background: 'transparent',
-                  color: 'text.primary',
-                  fontSize: '13px',
-                  fontWeight: 400,
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  textAlign: 'center',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  '&:hover': {
-                    borderColor: '#4285f4',
-                    background: 'rgba(66, 133, 244, 0.04)'
-                  }
-                }}
-              >
+            <Link key={tag} href={`/view/${normalizeTag(tag)}`} style={{ textDecoration: 'none' }}>
+              <TagButton isDark={darkMode} onClick={() => {}}>
                 {tag}
-              </Box>
+              </TagButton>
             </Link>
           ))
         ) : (
-          <Box sx={{ width: '100%', textAlign: 'center', py: 4 }}>
-            <Typography variant="body2" color="text.secondary">
-              {searchTerm ? 'No matching categories' : 'No categories available'}
-            </Typography>
-          </Box>
+          <EmptyState isDark={darkMode}>
+            {searchTerm ? 'No matching categories' : 'No categories available'}
+          </EmptyState>
         )}
-      </Box>
+      </TagsGrid>
     </>
   );
 });
@@ -786,7 +878,6 @@ const SearchToolbar = memo(function SearchToolbar({
               className={currentView === 'tokens' ? 'selected' : ''}
               onClick={() => (window.location.href = '/')}
             >
-              <GridOnIcon sx={{ width: 14, height: 14 }} />
               Tokens
             </button>
             <button
@@ -869,8 +960,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(255, 87, 34, 0.08)"
             hoverBorderColor="#ff5722"
           >
-            <LocalFireDepartmentIcon sx={{ width: 15, height: 15 }} />
-            Hot
+            🔥 Hot
           </Chip>
 
           <Chip
@@ -881,8 +971,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(33, 150, 243, 0.08)"
             hoverBorderColor="#2196f3"
           >
-            <DiamondIcon sx={{ width: 15, height: 15 }} />
-            Gems
+            💎 Gems
           </Chip>
 
           <Chip
@@ -893,8 +982,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(76, 175, 80, 0.08)"
             hoverBorderColor="#4caf50"
           >
-            <TrendingUpIcon sx={{ width: 15, height: 15 }} />
-            Gainers
+            📈 Gainers
           </Chip>
 
           <Chip
@@ -905,8 +993,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(255, 152, 0, 0.08)"
             hoverBorderColor="#ff9800"
           >
-            <NewReleasesIcon sx={{ width: 15, height: 15 }} />
-            New
+            ✨ New
           </Chip>
 
           <Chip
@@ -917,8 +1004,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(156, 39, 176, 0.08)"
             hoverBorderColor="#9c27b0"
           >
-            <VisibilityIcon sx={{ width: 15, height: 15 }} />
-            Popular
+            👁 Popular
           </Chip>
         </RowContent>
 
@@ -957,7 +1043,7 @@ const SearchToolbar = memo(function SearchToolbar({
               title="Configure columns"
               aria-label="Configure custom columns"
             >
-              <SettingsIcon sx={{ width: 20, height: 20 }} />
+              ⚙️
             </StyledIconButton>
           )}
 
@@ -983,140 +1069,84 @@ const SearchToolbar = memo(function SearchToolbar({
       </Row>
 
       {/* Gainers Period Menu */}
-      <Menu
-        anchorEl={gainersMenuAnchor}
-        open={Boolean(gainersMenuAnchor)}
-        onClose={() => setGainersMenuAnchor(null)}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left'
-        }}
-        PaperProps={{
-          sx: {
-            mt: 0.5,
-            minWidth: '120px',
-            borderRadius: '12px',
-            border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'}`,
-            backgroundColor: darkMode ? '#1a1a1a' : '#ffffff',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
-          }
-        }}
-      >
-        <MenuItem
-          onClick={() => {
-            window.location.href = '/gainers/5m';
-            setGainersMenuAnchor(null);
-          }}
-          sx={{
-            fontSize: '14px',
-            py: 1,
-            '&:hover': {
-              backgroundColor: alpha('#4caf50', 0.08)
-            }
-          }}
-        >
-          5 Minutes
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            window.location.href = '/gainers/1h';
-            setGainersMenuAnchor(null);
-          }}
-          sx={{
-            fontSize: '14px',
-            py: 1,
-            '&:hover': {
-              backgroundColor: alpha('#4caf50', 0.08)
-            }
-          }}
-        >
-          1 Hour
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            window.location.href = '/gainers/24h';
-            setGainersMenuAnchor(null);
-          }}
-          sx={{
-            fontSize: '14px',
-            py: 1,
-            '&:hover': {
-              backgroundColor: alpha('#4caf50', 0.08)
-            }
-          }}
-        >
-          24 Hours
-        </MenuItem>
-        <MenuItem
-          onClick={() => {
-            window.location.href = '/gainers/7d';
-            setGainersMenuAnchor(null);
-          }}
-          sx={{
-            fontSize: '14px',
-            py: 1,
-            '&:hover': {
-              backgroundColor: alpha('#4caf50', 0.08)
-            }
-          }}
-        >
-          7 Days
-        </MenuItem>
-      </Menu>
-
-      <MuiDrawer
-        anchor="bottom"
-        open={categoriesOpen}
-        onClose={() => setCategoriesOpen(false)}
-        PaperProps={{
-          sx: {
-            maxHeight: '80vh',
-            borderTopLeftRadius: '20px',
-            borderTopRightRadius: '20px'
-          }
-        }}
-      >
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            p: 2,
-            borderBottom: '1px solid',
-            borderColor: 'divider'
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '16px' }}>
-            Categories {tags?.length ? `(${tags.length})` : ''}
-          </Typography>
-          <Box
-            component="button"
-            onClick={() => setCategoriesOpen(false)}
-            aria-label="Close"
-            sx={{
-              width: 32,
-              height: 32,
-              border: '1.5px solid',
-              borderColor: 'divider',
-              borderRadius: '12px',
-              background: 'transparent',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'text.primary',
-              '&:hover': { background: 'rgba(0,0,0,0.04)' }
+      {Boolean(gainersMenuAnchor) && (
+        <>
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 1299
             }}
-          >
-            ×
-          </Box>
-        </Box>
-        <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
-      </MuiDrawer>
+            onClick={() => setGainersMenuAnchor(null)}
+          />
+          <Menu open={Boolean(gainersMenuAnchor)}>
+            <MenuPaper
+              isDark={darkMode}
+              style={{
+                position: 'absolute',
+                top: gainersMenuAnchor?.getBoundingClientRect().bottom + 4,
+                left: gainersMenuAnchor?.getBoundingClientRect().left
+              }}
+            >
+              <MenuItem
+                isDark={darkMode}
+                onClick={() => {
+                  window.location.href = '/gainers/5m';
+                  setGainersMenuAnchor(null);
+                }}
+              >
+                5 Minutes
+              </MenuItem>
+              <MenuItem
+                isDark={darkMode}
+                onClick={() => {
+                  window.location.href = '/gainers/1h';
+                  setGainersMenuAnchor(null);
+                }}
+              >
+                1 Hour
+              </MenuItem>
+              <MenuItem
+                isDark={darkMode}
+                onClick={() => {
+                  window.location.href = '/gainers/24h';
+                  setGainersMenuAnchor(null);
+                }}
+              >
+                24 Hours
+              </MenuItem>
+              <MenuItem
+                isDark={darkMode}
+                onClick={() => {
+                  window.location.href = '/gainers/7d';
+                  setGainersMenuAnchor(null);
+                }}
+              >
+                7 Days
+              </MenuItem>
+            </MenuPaper>
+          </Menu>
+        </>
+      )}
+
+      {/* Categories Drawer */}
+      <Drawer open={categoriesOpen}>
+        <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
+        <DrawerPaper isDark={darkMode}>
+          <DrawerHeader isDark={darkMode}>
+            <DrawerTitle isDark={darkMode}>
+              Categories {tags?.length ? `(${tags.length})` : ''}
+            </DrawerTitle>
+            <DrawerClose isDark={darkMode} onClick={() => setCategoriesOpen(false)} aria-label="Close">
+              ×
+            </DrawerClose>
+          </DrawerHeader>
+          <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
+        </DrawerPaper>
+      </Drawer>
     </Container>
   );
 });

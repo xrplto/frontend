@@ -3,8 +3,6 @@ import { useContext, useState, useEffect, useRef, useMemo, memo } from 'react';
 import { createPortal } from 'react-dom';
 import styled from '@emotion/styled';
 import { css } from '@emotion/react';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import { useTheme } from '@mui/material/styles';
 
 // Translations removed - not using i18n
 
@@ -33,8 +31,8 @@ import { format } from 'date-fns';
 const Container = styled.div`
   position: relative;
   z-index: 2;
-  margin-top: ${(props) => props.theme?.spacing?.(2) || '16px'};
-  margin-bottom: ${(props) => props.theme?.spacing?.(2) || '16px'};
+  margin-top: 16px;
+  margin-bottom: 16px;
   width: 100%;
   max-width: 100%;
   background: transparent;
@@ -96,11 +94,8 @@ const MetricBox = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   border-radius: 12px;
-  background: ${(props) =>
-    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid
-    ${(props) =>
-      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
   @media (max-width: 600px) {
     padding: 6px 6px;
@@ -126,8 +121,7 @@ const MetricBox = styled.div`
 const MetricTitle = styled.span`
   font-size: 0.75rem;
   font-weight: 400;
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   margin-bottom: 6px;
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -150,7 +144,7 @@ const MetricTitle = styled.span`
 const MetricValue = styled.span`
   font-size: 1.35rem;
   font-weight: 500;
-  color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
+  color: ${(props) => props.isDark ? '#FFFFFF' : '#212B36'};
   line-height: 1.1;
   margin-bottom: 4px;
   font-family: inherit;
@@ -172,10 +166,7 @@ const MetricValue = styled.span`
 
 const PercentageChange = styled.span`
   font-size: 0.85rem;
-  color: ${(props) =>
-    props.isPositive
-      ? props.theme?.palette?.success?.main || '#4caf50'
-      : props.theme?.palette?.error?.main || '#f44336'};
+  color: ${(props) => props.isPositive ? '#4caf50' : '#f44336'};
   display: inline-flex;
   align-items: flex-start;
   gap: 3px;
@@ -199,8 +190,7 @@ const PercentageChange = styled.span`
 
 const VolumePercentage = styled.span`
   font-size: 0.6rem;
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)'};
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)'};
   font-weight: 400;
   letter-spacing: 0.01em;
 
@@ -216,8 +206,7 @@ const VolumePercentage = styled.span`
 `;
 
 const ContentTypography = styled.span`
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+  color: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -414,7 +403,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       } else if (maxMarketcap > 2000) {
         segmentColor = '#eab308'; // Yellow for medium
       } else {
-        segmentColor = theme.palette.primary.main; // Default theme color
+        segmentColor = '#147DFE'; // Default theme color
       }
 
       // Draw gradient fill for segment
@@ -441,7 +430,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       ctx.lineJoin = 'round';
       ctx.stroke();
     }
-  }, [data, theme]);
+  }, [data]);
 
   // Tooltip Portal Component
   const TooltipPortal = ({ tooltip, darkMode, activeFiatCurrency }) => {
@@ -455,7 +444,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           top: tooltip.y - 60,
           background: darkMode ? '#1c1c1c' : 'white',
           color: darkMode ? '#fff' : '#000',
-          border: `1px solid ${theme.palette.primary.main}`,
+          border: '1px solid #147DFE',
           borderRadius: '12px',
           padding: '12px',
           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
@@ -470,7 +459,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             fontSize: '14px',
             fontWeight: 400,
             marginBottom: '8px',
-            color: theme.palette.primary.main
+            color: '#147DFE'
           }}
         >
           {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
@@ -509,7 +498,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             <>
               <div
                 style={{
-                  borderTop: `1px solid ${theme.palette.primary.main}40`,
+                  borderTop: '1px solid rgba(20, 125, 254, 0.25)',
                   margin: '8px 0 4px',
                   paddingTop: '4px'
                 }}
@@ -539,7 +528,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           <>
             <div
               style={{
-                borderTop: `1px solid ${theme.palette.primary.main}40`,
+                borderTop: '1px solid rgba(20, 125, 254, 0.25)',
                 margin: '8px 0 4px',
                 paddingTop: '4px'
               }}
@@ -568,9 +557,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                       width: '16px',
                       height: '16px',
                       borderRadius: '50%',
-                      background: theme.palette.primary.main + '20',
+                      background: 'rgba(20, 125, 254, 0.13)',
                       objectFit: 'cover',
-                      border: `1px solid ${theme.palette.primary.main}40`
+                      border: '1px solid rgba(20, 125, 254, 0.25)'
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -719,7 +708,6 @@ export default function Summary() {
   const tokenCreation = useSelector(selectTokenCreation);
   const { activeFiatCurrency, darkMode } = useContext(AppContext);
   const [isLoading, setIsLoading] = useState(true);
-  const theme = useTheme();
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   const fiatRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
@@ -937,7 +925,7 @@ export default function Summary() {
           <div style={{ width: '100%', paddingBottom: '0' }}>
             <Grid cols={8} mdCols={4} smCols={3}>
               {[...Array(7)].map((_, i) => (
-                <MetricBox key={`summary-skeleton-${i}`}>
+                <MetricBox key={`summary-skeleton-${i}`} isDark={darkMode}>
                   <Skeleton height="12px" width="60%" style={{ marginBottom: '4px' }} />
                   <Skeleton height="20px" width="80%" />
                 </MetricBox>
@@ -947,9 +935,9 @@ export default function Summary() {
         ) : (
           <div style={{ width: '100%' }}>
             <Grid cols={6} mdCols={3} smCols={1}>
-              <MetricBox>
-                <MetricTitle>MCap</MetricTitle>
-                <MetricValue>
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>MCap</MetricTitle>
+                <MetricValue isDark={darkMode}>
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(
                     new Decimal(metrics.global?.gMarketcap || metrics.market_cap_usd || 0)
@@ -963,9 +951,9 @@ export default function Summary() {
                 </PercentageChange>
               </MetricBox>
 
-              <MetricBox>
-                <MetricTitle>TVL</MetricTitle>
-                <MetricValue>
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>TVL</MetricTitle>
+                <MetricValue isDark={darkMode}>
                   {currencySymbols[activeFiatCurrency]}
                   {formatNumberWithDecimals(
                     new Decimal(metrics.H24?.totalTVL || 0)
@@ -979,14 +967,14 @@ export default function Summary() {
                 </PercentageChange>
               </MetricBox>
 
-              <MetricBox>
-                <MetricTitle>{isMobile ? '24h Vol' : '24h Volume'}</MetricTitle>
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>{isMobile ? '24h Vol' : '24h Volume'}</MetricTitle>
                 {(() => {
                   const stablePercent = ((metrics.global?.gStableVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   const memePercent = ((metrics.global?.gMemeVolume || 0) / (metrics.global?.gDexVolume || 1) * 100);
                   return (
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', marginBottom: '4px', flexWrap: 'wrap' }}>
-                      <MetricValue>
+                      <MetricValue isDark={darkMode}>
                         {currencySymbols[activeFiatCurrency]}
                         {formatNumberWithDecimals(
                           new Decimal(metrics.global?.gDexVolume || metrics.total_volume_usd || 0)
@@ -1001,7 +989,7 @@ export default function Summary() {
                             fontWeight: 400,
                             padding: '2px 5px',
                             borderRadius: '3px',
-                            background: theme?.palette?.mode === 'dark' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
+                            background: darkMode ? 'rgba(16, 185, 129, 0.12)' : 'rgba(16, 185, 129, 0.08)',
                             color: '#10b981'
                           }}>
                             Stable {stablePercent.toFixed(1)}%
@@ -1011,7 +999,7 @@ export default function Summary() {
                             fontWeight: 400,
                             padding: '2px 5px',
                             borderRadius: '3px',
-                            background: theme?.palette?.mode === 'dark' ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
+                            background: darkMode ? 'rgba(245, 158, 11, 0.12)' : 'rgba(245, 158, 11, 0.08)',
                             color: '#f59e0b'
                           }}>
                             Meme {memePercent.toFixed(1)}%
@@ -1027,9 +1015,9 @@ export default function Summary() {
                 </PercentageChange>
               </MetricBox>
 
-              <MetricBox>
-                <MetricTitle>{isMobile ? 'XRP' : 'XRP Price'}</MetricTitle>
-                <MetricValue>
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>{isMobile ? 'XRP' : 'XRP Price'}</MetricTitle>
+                <MetricValue isDark={darkMode}>
                   {xrpPriceSymbol}
                   {xrpPrice}
                 </MetricValue>
@@ -1041,11 +1029,11 @@ export default function Summary() {
                 </PercentageChange>
               </MetricBox>
 
-              <MetricBox>
-                <MetricTitle>Market</MetricTitle>
+              <MetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>Market</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
-                    <VolumePercentage style={{ display: 'block', marginBottom: '2px' }}>Sentiment</VolumePercentage>
+                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginBottom: '2px' }}>Sentiment</VolumePercentage>
                     <MetricValue
                       style={{
                         fontSize: isMobile ? '0.75rem' : '16px',
@@ -1061,8 +1049,9 @@ export default function Summary() {
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <VolumePercentage style={{ display: 'block', marginBottom: '2px' }}>RSI</VolumePercentage>
+                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginBottom: '2px' }}>RSI</VolumePercentage>
                     <MetricValue
+                      isDark={darkMode}
                       style={{
                         fontSize: isMobile ? '0.75rem' : '16px',
                         color:
@@ -1070,7 +1059,7 @@ export default function Summary() {
                             ? '#ef4444'
                             : (metrics.global?.avgRSI || 50) >= 70
                               ? '#10b981'
-                              : theme.palette.text.primary
+                              : darkMode ? '#FFFFFF' : '#212B36'
                       }}
                     >
                       {(metrics.global?.avgRSI || 50).toFixed(0)}
@@ -1079,22 +1068,20 @@ export default function Summary() {
                 </div>
               </MetricBox>
 
-              <ChartMetricBox>
-                <MetricTitle>New Tokens (30d)</MetricTitle>
+              <ChartMetricBox isDark={darkMode}>
+                <MetricTitle isDark={darkMode}>New Tokens (30d)</MetricTitle>
                 <TokenChart
                   data={chartData}
-                  theme={theme}
                   activeFiatCurrency={activeFiatCurrency}
                   darkMode={darkMode}
                 />
               </ChartMetricBox>
             </Grid>
 
-            <MobileChartBox>
-              <MetricTitle>New Tokens (30d)</MetricTitle>
+            <MobileChartBox isDark={darkMode}>
+              <MetricTitle isDark={darkMode}>New Tokens (30d)</MetricTitle>
               <TokenChart
                 data={chartData}
-                theme={theme}
                 activeFiatCurrency={activeFiatCurrency}
                 darkMode={darkMode}
               />

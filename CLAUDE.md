@@ -195,7 +195,7 @@ npm run analyze
 
 ### Tech Stack
 - **Framework**: Next.js 15.3.5 with React
-- **UI**: Material-UI v5, Emotion, Styled Components
+- **UI**: Tailwind CSS, Emotion Styled Components, Lucide React Icons
 - **State**: Redux Toolkit with Redux Persist
 - **Blockchain**: XRPL library v3.1.0
 - **Charts**: Highcharts, ApexCharts, ECharts, Recharts
@@ -229,7 +229,7 @@ Create `.env` file based on `.env.example`:
 
 - **Formatting**: Prettier with 100 char lines, single quotes, 2-space indent
 - **Linting**: ESLint with Next.js core web vitals
-- **Styling**: Emotion CSS-in-JS, Material-UI theme system
+- **Styling**: Tailwind CSS with Emotion CSS-in-JS for custom components
 - **State Management**: Redux slices in `src/redux/`
 
 ## Important Patterns
@@ -247,103 +247,102 @@ Create `.env` file based on `.env.example`:
 
 ### Theme System
 - Light/Dark themes in `src/theme/`
-- Theme provider wraps entire app
-- Material-UI theme customization
+- Custom isDark prop pattern (no theme provider in new components)
+- Use `const isDark = themeName === 'XrplToDarkTheme'` from AppContext
 
 ## UI Design Guidelines - MUST FOLLOW
+
+### Technology Stack
+**DO NOT USE Material-UI (MUI)** - The codebase has migrated away from MUI.
+
+**Approved Stack:**
+1. **Styling**: Tailwind CSS with `cn()` utility (see `pages/news.js`)
+2. **Custom Components**: @emotion/styled for styled components
+3. **Icons**: Lucide React (`lucide-react`)
+4. **State Management**: React hooks (useState, useEffect, useContext)
+5. **Theme**: Custom isDark prop pattern (no theme provider)
 
 ### Clean, Minimalist Design Principles
 1. **Flat Design Only**
    - NO gradients on buttons or backgrounds
    - NO box shadows or drop shadows
    - NO 3D effects or transforms
-   - Use solid colors with transparency (alpha) for depth
+   - Use solid colors with alpha transparency for depth
 
-2. **Button Styling**
-   - Use `variant="outlined"` for all primary buttons
-   - Border radius: 12px for modern rounded corners
-   - Border width: 1.5px for subtle definition
-   - Padding: py: 1.5-1.8 for comfortable click targets
-   - Colors: Use single accent color (#4285f4) consistently
-   - Hover: Only subtle background color change, NO transforms
+2. **Borders and Radius**
+   - Border radius: `rounded-xl` (12px) for containers
+   - Border width: `border-[1.5px]` consistently
+   - Border colors: `border-white/10` (dark) or `border-gray-200` (light)
 
 3. **Typography**
-   - Font weights: 400-500 maximum (no bold 600-700)
-   - Font sizes: 0.95rem-1rem for consistency
-   - Text colors: Use alpha for secondary text
-   - No unnecessary uppercase transformations
+   - Font weights: 400-500 (normal-medium) - NO bold 600+
+   - Font sizes: `text-sm`, `text-[13px]`, `text-[15px]`
+   - Uppercase for labels: `text-[11px] font-medium uppercase tracking-wide`
+   - Use `font-normal` by default
 
-4. **Spacing and Layout**
-   - Tight, consistent spacing (1.2-2.5 units)
-   - Minimal padding in containers
-   - Clean alignment without excessive gaps
-   - Use Stack with controlled spacing
+4. **Spacing**
+   - Padding: `p-4`, `px-4 py-2`
+   - Gaps: `gap-2`, `gap-4`
+   - Margins: `mb-4`, `mt-4`
 
 5. **Color Palette**
-   - Primary accent: #4285f4 (blue)
-   - Borders: alpha(divider, 0.15-0.2)
-   - Backgrounds: transparent or alpha(color, 0.04)
-   - Text: primary for main, alpha(secondary, 0.6) for muted
-   - Disabled: alpha(text, 0.4)
+   - Primary: `#4285f4` (blue) / CSS variable `text-primary`
+   - Dark mode: `bg-black`, `text-white`, `border-white/10`
+   - Light mode: `bg-white`, `text-gray-900`, `border-gray-200`
+   - Hover: `hover:border-primary hover:bg-primary/5`
 
-6. **Visual Effects to AVOID**
-   ```css
-   /* ❌ WRONG - Complex effects */
-   background: linear-gradient(135deg, color1, color2);
-   boxShadow: '0 4px 12px rgba(0,0,0,0.15)';
-   transform: translateY(-1px);
-   border: 2px solid;
-   fontWeight: 600;
-
-   /* ✅ CORRECT - Clean and simple */
-   background: 'transparent';
-   boxShadow: 'none';
-   border: `1.5px solid ${alpha(divider, 0.2)}`;
-   fontWeight: 400;
+6. **Buttons**
+   ```jsx
+   // ✅ CORRECT Tailwind pattern
+   <button
+     className={cn(
+       "rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal",
+       isDark ? "border-gray-700 hover:border-primary" : "border-gray-300 hover:bg-gray-100"
+     )}
+   >
+     Button Text
+   </button>
    ```
 
-7. **Icons and Decorations**
-   - NO icons unless absolutely necessary
-   - Use text-only interfaces
-   - Simple × for close buttons (no containers)
-   - Minimal visual decorations
+7. **Icons**
+   - Use Lucide React: `import { Icon } from 'lucide-react'`
+   - Size: `<Icon size={14} />` or `<Icon size={16} />`
+   - NO emoji icons
 
 8. **Hover States**
-   - Subtle color changes only
-   - Light background tint with alpha
-   - Border color emphasis
-   - NO elevation or movement
+   - Subtle only: `hover:border-primary hover:bg-primary/5`
+   - NO transforms, NO animations
+   - Border color emphasis only
 
-9. **Animations - Keep to Minimum**
-   - NO hover animations (no transform, translateY, scale, etc.)
-   - NO transition effects on hover states
-   - Only use animations when absolutely necessary for UX:
-     - Loading states (spinners)
-     - Page transitions (if required)
-     - Critical user feedback (form submission success)
-   - When animations are needed, keep them subtle and fast (< 200ms)
-   - Avoid animation libraries unless specifically requested
-   - Static, clean interfaces are preferred over animated ones
+9. **Theme Pattern**
+   ```jsx
+   const { themeName } = useContext(AppContext);
+   const isDark = themeName === 'XrplToDarkTheme';
 
-### Example Implementation
-```javascript
-// Clean button style
-sx={{
-  py: 1.5,
-  fontSize: '0.95rem',
-  fontWeight: 400,
-  textTransform: 'none',
-  borderColor: alpha(theme.palette.divider, 0.2),
-  borderRadius: '12px',
-  borderWidth: '1.5px',
-  color: '#4285f4',
-  backgroundColor: 'transparent',
-  '&:hover': {
-    borderColor: '#4285f4',
-    backgroundColor: alpha('#4285f4', 0.04),
-    borderWidth: '1.5px'
-  }
-}}
+   <div className={cn(isDark ? "bg-black text-white" : "bg-white text-gray-900")}>
+   ```
+
+### Example Implementation (see pages/news.js)
+```jsx
+import { cn } from 'src/utils/cn';
+import { Search } from 'lucide-react';
+
+function Component({ isDark }) {
+  return (
+    <div className={cn(
+      "rounded-xl border-[1.5px] p-4",
+      isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50"
+    )}>
+      <button className={cn(
+        "flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+        isDark ? "border-white/15 hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+      )}>
+        <Search size={14} />
+        Search
+      </button>
+    </div>
+  );
+}
 ```
 
 ## Wallet Authentication System Architecture

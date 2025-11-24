@@ -1,24 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
-import {
-  IconButton,
-  Typography,
-  Stack,
-  Box,
-  Chip,
-  CircularProgress,
-  Alert,
-  useTheme,
-  Fade,
-  Tooltip,
-  Badge,
-  Drawer
-} from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import CloseIcon from '@mui/icons-material/Close';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import FiberManualRecordIcon from '@mui/icons-material/FiberManualRecord';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
+import styled from '@emotion/styled';
+import { X, RefreshCw, Circle, ExternalLink, Wallet } from 'lucide-react';
 import { Client } from 'xrpl';
 import { fNumber } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
@@ -27,6 +9,188 @@ import Decimal from 'decimal.js-light';
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
 const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';
+
+// Helper function
+const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
+
+// Custom styled components
+const Box = styled.div``;
+const Stack = styled.div`
+  display: flex;
+  flex-direction: ${props => props.direction || 'column'};
+  gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  justify-content: ${props => props.justifyContent || 'flex-start'};
+`;
+
+const Typography = styled.div`
+  font-size: ${props =>
+    props.variant === 'h6' ? '1.25rem' :
+    props.variant === 'body2' ? '0.875rem' :
+    props.variant === 'caption' ? '0.75rem' : '1rem'};
+  font-weight: ${props => props.fontWeight || 400};
+  color: ${props =>
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') :
+    props.color === 'text.primary' ? (props.isDark ? '#FFFFFF' : '#212B36') :
+    props.isDark ? '#FFFFFF' : '#212B36'};
+  line-height: ${props => props.lineHeight || 'inherit'};
+  white-space: ${props => props.whiteSpace || 'normal'};
+  overflow: ${props => props.overflow || 'visible'};
+  text-overflow: ${props => props.textOverflow || 'clip'};
+  display: ${props => props.display || 'block'};
+  margin-top: ${props => props.mt ? `${props.mt * 8}px` : '0'};
+`;
+
+const CircularProgress = styled.div`
+  width: ${props => props.size || 40}px;
+  height: ${props => props.size || 40}px;
+  border: ${props => props.thickness || 4}px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-top-color: #147DFE;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+
+const Chip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: ${props => props.size === 'small' ? '14px' : '26px'};
+  padding: ${props => props.size === 'small' ? '0 4px' : '0 10px'};
+  font-size: ${props => props.size === 'small' ? '10px' : '12px'};
+  font-weight: ${props => props.fontWeight || 400};
+  border-radius: 6px;
+  background: ${props =>
+    props.color === 'warning' ? '#FF9800' :
+    props.color === 'primary' ? '#147DFE' :
+    props.background || '#147DFE'};
+  color: ${props => props.textColor || 'white'};
+`;
+
+const Alert = styled.div`
+  padding: 12px;
+  border-radius: 12px;
+  background: ${props =>
+    props.severity === 'error' ? 'rgba(244, 67, 54, 0.1)' :
+    props.severity === 'warning' ? 'rgba(255, 152, 0, 0.1)' :
+    'rgba(33, 150, 243, 0.1)'};
+  color: ${props =>
+    props.severity === 'error' ? '#f44336' :
+    props.severity === 'warning' ? '#ff9800' :
+    '#2196f3'};
+  font-size: 14px;
+`;
+
+const IconButton = styled.button`
+  padding: ${props => props.size === 'small' ? '4px' : '8px'};
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background-color: ${props =>
+      props.hoverColor ? alpha(props.hoverColor, 0.1) :
+      props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'};
+  }
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+const Badge = styled.div`
+  position: relative;
+  display: inline-flex;
+  &::after {
+    content: '${props => props.badgeContent || ''}';
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 16px;
+    height: 16px;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 500;
+    color: white;
+    background: #147DFE;
+    border-radius: 8px;
+  }
+`;
+
+const Drawer = styled.div`
+  position: fixed;
+  top: 56px;
+  left: 0;
+  width: ${props => props.width || '256px'};
+  height: calc(100vh - 56px);
+  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
+  border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  overflow: hidden;
+  z-index: 1200;
+  transform: translateX(${props => props.open ? '0' : '-100%'});
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 1279px) {
+    width: 240px;
+  }
+
+  @media (max-width: 959px) {
+    width: 236px;
+  }
+`;
+
+const Tooltip = ({ title, children }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.9)',
+          color: '#fff',
+          borderRadius: '4px',
+          fontSize: '12px',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          marginBottom: '4px'
+        }}>
+          {title}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Fade = ({ in: inProp, timeout, children }) => {
+  return (
+    <div style={{
+      opacity: inProp ? 1 : 0,
+      transition: `opacity ${timeout || 300}ms ease`
+    }}>
+      {children}
+    </div>
+  );
+};
 
 const getFailureDescription = (code) => {
   const failureCodes = {
@@ -47,8 +211,7 @@ const getFailureDescription = (code) => {
   return failureCodes[code] || `Transaction failed with code: ${code}`;
 };
 
-const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTransaction }) => {
-  const theme = useTheme();
+const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTransaction, isDark }) => {
   const { tx, meta, validated, ledger_index } = transaction;
 
   const txType = tx.TransactionType;
@@ -313,7 +476,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
       console.error('Error formatting transaction amount:', error);
       return 'N/A';
     }
-  }, [tx, meta, theme]);
+  }, [tx, meta]);
 
   const formatTime = useMemo(() => {
     if (tx.date) {
@@ -334,169 +497,133 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
     return 'Pending';
   }, [tx.date]);
 
-  const getTxIcon = useMemo(() => {
-    if (isTokenToXrpConversion) {
-      return 'mdi:trending-down';
-    }
-    if (isXrpToTokenConversion) {
-      return 'mdi:trending-up';
-    }
-    if (isCurrencyConversion) {
-      return 'mdi:swap-horizontal-circle';
-    }
-
-    switch (txType) {
-      case 'Payment':
-        return isIncoming ? 'mdi:arrow-down-circle' : 'mdi:arrow-up-circle';
-      case 'OfferCreate':
-        return 'mdi:swap-horizontal';
-      case 'OfferCancel':
-        return 'mdi:close-circle-outline';
-      case 'TrustSet':
-        return 'mdi:link-variant';
-      case 'NFTokenMint':
-        return 'mdi:creation';
-      case 'NFTokenCreateOffer':
-        return 'mdi:tag-outline';
-      case 'NFTokenAcceptOffer':
-        return 'mdi:check-circle-outline';
-      case 'NFTokenCancelOffer':
-        return 'mdi:cancel';
-      case 'NFTokenBurn':
-        return 'mdi:fire';
-      case 'AMMDeposit':
-        return 'mdi:bank-plus';
-      case 'AMMWithdraw':
-        return 'mdi:bank-minus';
-      case 'OracleSet':
-        return 'mdi:database-sync';
-      case 'CheckCash':
-        return 'mdi:cash-check';
-      case 'CheckCreate':
-        return 'mdi:checkbook';
-      case 'CheckCancel':
-        return 'mdi:check-bold';
-      default:
-        return 'mdi:transfer';
-    }
-  }, [txType, isTokenToXrpConversion, isXrpToTokenConversion, isCurrencyConversion, isIncoming]);
-
   const getTxColor = useMemo(() => {
-    if (!validated) return theme.palette.warning.main;
+    if (!validated) return '#FF9800';
 
     // Check if transaction failed
     if (meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS') {
-      return theme.palette.error.main;
+      return '#f44336';
     }
 
     if (isCurrencyConversion) {
-      return theme.palette.info.main;
+      return '#2196F3';
     }
 
     switch (txType) {
       case 'Payment':
-        return isIncoming ? theme.palette.success.main : theme.palette.error.main;
+        return isIncoming ? '#4caf50' : '#f44336';
       case 'OfferCreate':
-        return theme.palette.info.main;
+        return '#2196F3';
       case 'OfferCancel':
-        return theme.palette.warning.main;
+        return '#FF9800';
       case 'TrustSet':
-        return theme.palette.primary.main;
+        return '#147DFE';
       case 'NFTokenMint':
       case 'NFTokenCreateOffer':
       case 'NFTokenAcceptOffer':
       case 'NFTokenCancelOffer':
       case 'NFTokenBurn':
-        return theme.palette.secondary.main;
+        return '#9c27b0';
       case 'AMMDeposit':
       case 'AMMWithdraw':
-        return theme.palette.info.main;
+        return '#2196F3';
       case 'OracleSet':
-        return theme.palette.primary.main;
+        return '#147DFE';
       case 'CheckCash':
       case 'CheckCreate':
       case 'CheckCancel':
-        return theme.palette.success.main;
+        return '#4caf50';
       default:
-        return theme.palette.text.secondary;
+        return isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
     }
-  }, [validated, meta, isCurrencyConversion, txType, isIncoming, theme]);
+  }, [validated, meta, isCurrencyConversion, txType, isIncoming, isDark]);
 
   return (
     <Fade in timeout={300}>
       <Box
         onClick={() => onSelectTransaction && onSelectTransaction(tx.hash)}
-        sx={{
-          p: 1,
+        style={{
+          padding: '8px',
           borderRadius: '6px',
           position: 'relative',
           overflow: 'hidden',
           cursor: 'pointer',
           background: isTokenToXrpConversion
-            ? alpha('#ff6347', 0.04)
+            ? 'rgba(255, 99, 71, 0.04)'
             : isXrpToTokenConversion
-              ? alpha('#4169e1', 0.04)
+              ? 'rgba(65, 105, 225, 0.04)'
               : isNew
-                ? alpha(theme.palette.primary.main, 0.08)
-                : alpha(theme.palette.background.default, 0.5),
+                ? 'rgba(20, 125, 254, 0.08)'
+                : isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
           border: `1px solid ${
             meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS'
-              ? alpha(theme.palette.error.main, 0.3)
-              : alpha(theme.palette.divider, isNew ? 0.2 : 0.1)
+              ? 'rgba(244, 67, 54, 0.3)'
+              : isDark ? (isNew ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)') : (isNew ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.1)')
           }`,
-          transition: 'all 0.2s ease',
-          '&:hover': {
-            background: isTokenToXrpConversion
-              ? alpha('#ff6347', 0.08)
-              : isXrpToTokenConversion
-                ? alpha('#4169e1', 0.08)
-                : alpha(theme.palette.background.paper, 0.8),
-            borderColor: alpha(getTxColor, 0.2)
-          }
+          transition: 'all 0.2s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = isTokenToXrpConversion
+            ? 'rgba(255, 99, 71, 0.08)'
+            : isXrpToTokenConversion
+              ? 'rgba(65, 105, 225, 0.08)'
+              : isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)';
+          e.currentTarget.style.borderColor = alpha(getTxColor, 0.2);
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = isTokenToXrpConversion
+            ? 'rgba(255, 99, 71, 0.04)'
+            : isXrpToTokenConversion
+              ? 'rgba(65, 105, 225, 0.04)'
+              : isNew
+                ? 'rgba(20, 125, 254, 0.08)'
+                : isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)';
+          e.currentTarget.style.borderColor = meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS'
+            ? 'rgba(244, 67, 54, 0.3)'
+            : isDark ? (isNew ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.1)') : (isNew ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.1)');
         }}
       >
         <Stack direction="row" spacing={1} alignItems="center">
           <Box
-            sx={{
-              width: 28,
-              height: 28,
+            style={{
+              width: '28px',
+              height: '28px',
               borderRadius: '6px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               background: isTokenToXrpConversion
-                ? alpha('#ff6347', 0.08)
+                ? 'rgba(255, 99, 71, 0.08)'
                 : isXrpToTokenConversion
-                  ? alpha('#4169e1', 0.08)
+                  ? 'rgba(65, 105, 225, 0.08)'
                   : alpha(getTxColor, 0.08),
-              border: `1px solid ${isTokenToXrpConversion ? alpha('#ff6347', 0.2) : isXrpToTokenConversion ? alpha('#4169e1', 0.2) : alpha(getTxColor, 0.15)}`,
+              border: `1px solid ${isTokenToXrpConversion ? 'rgba(255, 99, 71, 0.2)' : isXrpToTokenConversion ? 'rgba(65, 105, 225, 0.2)' : alpha(getTxColor, 0.15)}`,
               position: 'relative',
               zIndex: 1
             }}
           >
-            <AccountBalanceWalletIcon
-              sx={{
-                fontSize: '16px',
-                color: isTokenToXrpConversion
-                  ? '#ff6347'
-                  : isXrpToTokenConversion
-                    ? '#4169e1'
-                    : getTxColor
-              }}
+            <Wallet
+              size={16}
+              color={isTokenToXrpConversion
+                ? '#ff6347'
+                : isXrpToTokenConversion
+                  ? '#4169e1'
+                  : getTxColor}
             />
           </Box>
 
-          <Box sx={{ minWidth: '50px', maxWidth: '70px', flexShrink: 0 }}>
+          <Box style={{ minWidth: '50px', maxWidth: '70px', flexShrink: 0 }}>
             <Stack direction="column" spacing={0}>
               <Stack direction="row" alignItems="center" spacing={0.5}>
                 <Typography
                   variant="body2"
-                  sx={{
+                  isDark={isDark}
+                  style={{
                     fontWeight: 400,
                     fontSize: '12px',
                     color:
                       meta?.TransactionResult && meta.TransactionResult !== 'tesSUCCESS'
-                        ? theme.palette.error.main
+                        ? '#f44336'
                         : 'inherit',
                     lineHeight: 1.2,
                     whiteSpace: 'nowrap',
@@ -546,38 +673,33 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
                   <Chip
                     label="NEW"
                     size="small"
-                    sx={{
-                      height: '14px',
-                      fontSize: '12px',
-                      px: 0.5,
-                      fontWeight: 400,
-                      background: theme.palette.primary.main,
-                      color: 'white'
-                    }}
-                  />
+                    background="#147DFE"
+                    textColor="white"
+                    fontWeight={400}
+                  >
+                    NEW
+                  </Chip>
                 )}
                 {!validated && (
                   <Chip
                     label="PENDING"
                     size="small"
                     color="warning"
-                    sx={{
-                      height: '14px',
-                      fontSize: '12px',
-                      px: 0.5
-                    }}
-                  />
+                  >
+                    PENDING
+                  </Chip>
                 )}
               </Stack>
 
               <Typography
                 variant="caption"
-                sx={{
-                  color: alpha(theme.palette.text.secondary, 0.6),
+                isDark={isDark}
+                style={{
+                  color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
                   fontSize: '11px',
                   lineHeight: 1,
                   display: 'block',
-                  mt: 0.25
+                  marginTop: '2px'
                 }}
               >
                 {formatTime}
@@ -585,10 +707,11 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
             </Stack>
           </Box>
 
-          <Box sx={{ flex: 1, textAlign: 'right', minWidth: 0 }}>
+          <Box style={{ flex: 1, textAlign: 'right', minWidth: 0 }}>
             <Typography
               variant="body2"
-              sx={{
+              isDark={isDark}
+              style={{
                 fontWeight: 400,
                 color: getTxColor,
                 fontSize: '12px',
@@ -607,8 +730,9 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
               !isCurrencyConversion && (
                 <Typography
                   variant="caption"
-                  sx={{
-                    color: alpha(theme.palette.text.secondary, 0.7),
+                  isDark={isDark}
+                  style={{
+                    color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                     fontSize: '11px',
                     display: 'block'
                   }}
@@ -631,8 +755,7 @@ const TransactionRow = memo(({ transaction, isNew, creatorAddress, onSelectTrans
 });
 
 const CreatorTransactionsDialog = memo(
-  ({ open, onClose, creatorAddress, tokenName, onLatestTransaction, onSelectTransaction }) => {
-    const theme = useTheme();
+  ({ open, onClose, creatorAddress, tokenName, onLatestTransaction, onSelectTransaction, isDark = false }) => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -880,71 +1003,43 @@ const CreatorTransactionsDialog = memo(
 
     // Always fetch transactions to populate latestCreatorTx in parent
     return (
-      <Drawer
-        anchor="left"
-        variant="persistent"
-        open={open}
-        hideBackdrop
-        PaperProps={{
-          sx: {
-            width: { md: 240, lg: 256, xl: 272 },
-            minWidth: { md: 236 },
-            top: { xs: 56, sm: 56, md: 56 },
-            height: {
-              xs: 'calc(100vh - 56px)',
-              sm: 'calc(100vh - 56px)',
-              md: 'calc(100vh - 56px)'
-            },
-            borderRight: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            backgroundColor: theme.palette.background.paper,
-            boxShadow: 'none',
-            overflow: 'hidden',
-            zIndex: 1200
-          }
-        }}
-        ModalProps={{ keepMounted: true }}
-      >
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <Drawer open={open} isDark={isDark}>
+        <Box style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
           <Box
-            sx={{
-              p: 1.5,
-              pb: 1,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            style={{
+              padding: '12px',
+              paddingBottom: '8px',
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
               flexShrink: 0
             }}
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '16px' }}>
+                <Typography variant="h6" isDark={isDark} style={{ fontWeight: 400, fontSize: '16px' }}>
                   Creator Activity
                 </Typography>
                 {isSubscribed && (
                   <Tooltip title="Live monitoring active">
-                    <FiberManualRecordIcon
-                      sx={{
-                        fontSize: 8,
-                        color: theme.palette.success.main,
-                        animation: 'pulse 2s ease-in-out infinite',
-                        '@keyframes pulse': {
-                          '0%, 100%': { opacity: 1 },
-                          '50%': { opacity: 0.3 }
+                    <div style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: '#4caf50',
+                      animation: 'pulse 2s ease-in-out infinite'
+                    }}>
+                      <style>{`
+                        @keyframes pulse {
+                          0%, 100% { opacity: 1; }
+                          50% { opacity: 0.3; }
                         }
-                      }}
-                    />
+                      `}</style>
+                    </div>
                   </Tooltip>
                 )}
                 {newTxCount > 0 && (
-                  <Badge
-                    badgeContent={newTxCount}
-                    color="primary"
-                    sx={{
-                      '& .MuiBadge-badge': {
-                        fontSize: '11px',
-                        height: '16px',
-                        minWidth: '16px'
-                      }
-                    }}
-                  />
+                  <Badge badgeContent={newTxCount}>
+                    <div />
+                  </Badge>
                 )}
               </Stack>
 
@@ -955,37 +1050,32 @@ const CreatorTransactionsDialog = memo(
                       size="small"
                       onClick={refresh}
                       disabled={loading}
-                      sx={{
-                        '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.1)
-                        }
-                      }}
+                      isDark={isDark}
+                      hoverColor="#147DFE"
                     >
-                      <RefreshIcon sx={{ fontSize: 18 }} />
+                      <RefreshCw size={18} />
                     </IconButton>
                   </span>
                 </Tooltip>
                 <IconButton
                   size="small"
                   onClick={onClose}
-                  sx={{
-                    '&:hover': {
-                      background: alpha(theme.palette.error.main, 0.1)
-                    }
-                  }}
+                  isDark={isDark}
+                  hoverColor="#f44336"
                 >
-                  <CloseIcon sx={{ fontSize: 18 }} />
+                  <X size={18} />
                 </IconButton>
               </Stack>
             </Stack>
 
             <Typography
               variant="caption"
-              sx={{
-                color: alpha(theme.palette.text.secondary, 0.7),
+              isDark={isDark}
+              style={{
+                color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                 fontSize: '11px',
                 display: 'block',
-                mt: 0.25,
+                marginTop: '2px',
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis'
@@ -997,13 +1087,14 @@ const CreatorTransactionsDialog = memo(
             </Typography>
           </Box>
 
-          <Box sx={{ p: 1.5, flex: 1, overflowY: 'auto' }}>
+          <Box style={{ padding: '12px', flex: 1, overflowY: 'auto' }}>
             {loading && transactions.length === 0 ? (
-              <Box sx={{ py: 4, textAlign: 'center' }}>
-                <CircularProgress size={32} />
+              <Box style={{ paddingTop: '32px', paddingBottom: '32px', textAlign: 'center' }}>
+                <CircularProgress size={32} isDark={isDark} />
                 <Typography
                   variant="body2"
-                  sx={{ mt: 2, color: alpha(theme.palette.text.secondary, 0.7) }}
+                  isDark={isDark}
+                  style={{ marginTop: '16px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}
                 >
                   Loading transactions...
                 </Typography>
@@ -1011,25 +1102,23 @@ const CreatorTransactionsDialog = memo(
             ) : error ? (
               <Alert
                 severity="error"
-                sx={{
-                  borderRadius: '12px',
-                  background: alpha(theme.palette.error.main, 0.1)
-                }}
               >
                 {error}
               </Alert>
             ) : transactions.length === 0 ? (
               <Box
-                sx={{
-                  py: 4,
+                style={{
+                  paddingTop: '32px',
+                  paddingBottom: '32px',
                   textAlign: 'center',
                   borderRadius: '12px',
-                  background: alpha(theme.palette.background.default, 0.5)
+                  background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
                 }}
               >
                 <Typography
                   variant="body2"
-                  sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}
+                  isDark={isDark}
+                  style={{ color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}
                 >
                   No transactions found
                 </Typography>
@@ -1043,6 +1132,7 @@ const CreatorTransactionsDialog = memo(
                     isNew={index < newTxCount}
                     creatorAddress={creatorAddress}
                     onSelectTransaction={onSelectTransaction}
+                    isDark={isDark}
                   />
                 ))}
               </Stack>

@@ -1,41 +1,112 @@
 import React from 'react';
 import NextLink from 'next/link';
-import { Box, Container, Link, Typography, IconButton, Tooltip } from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
-import { Twitter, Send, Reddit, Forum } from '@mui/icons-material';
+import styled from '@emotion/styled';
 import Logo from 'src/components/Logo';
 
-const Root = styled('footer')(({ theme }) => ({
-  width: '100%',
-  borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-  backgroundColor: 'transparent',
-  marginTop: theme.spacing(1.5)
-}));
+// Helper function
+const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
-const FooterLink = ({ href, children }) => {
-  const external = /^https?:\/\//.test(href || '');
+// Custom styled components
+const Box = styled.div``;
+const Container = styled.div`
+  max-width: 100%;
+  padding: ${props => props.px || '16px'} ${props => props.py || '14px'};
+  padding-bottom: ${props => props.pb || props.py || '14px'};
+`;
+
+const Typography = styled.div`
+  font-size: ${props =>
+    props.variant === 'body2' ? '0.875rem' : '1rem'};
+  color: ${props =>
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') : 'inherit'};
+  opacity: ${props => props.opacity || 1};
+`;
+
+const Tooltip = ({ title, children, arrow }) => {
+  const [show, setShow] = React.useState(false);
   return (
-    <Link
-      component={external ? 'a' : NextLink}
-      href={href}
-      underline="none"
-      target={external ? '_blank' : undefined}
-      rel={external ? 'noreferrer noopener' : undefined}
-      sx={{
-        color: 'text.secondary',
-        fontSize: { xs: '0.8rem', md: '0.95rem' },
-        fontWeight: 400,
-        px: { xs: 0.6, md: 1 },
-        py: { xs: 0.3, md: 0.5 },
-        borderRadius: '8px',
-        '&:hover': {
-          color: '#4285f4',
-          backgroundColor: alpha('#4285f4', 0.04)
-        }
-      }}
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
     >
       {children}
-    </Link>
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.9)',
+          color: '#fff',
+          borderRadius: '4px',
+          fontSize: '12px',
+          whiteSpace: 'nowrap',
+          zIndex: 1000,
+          marginBottom: '4px'
+        }}>
+          {title}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const Root = styled.footer`
+  width: 100%;
+  border-top: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  background-color: transparent;
+  margin-top: 12px;
+`;
+
+const Link = styled.a`
+  text-decoration: none;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  font-size: 0.95rem;
+  font-weight: 400;
+  padding: 4px 8px;
+  border-radius: 8px;
+  &:hover {
+    color: #4285f4;
+    background-color: rgba(66, 133, 244, 0.04);
+  }
+`;
+
+const IconButton = styled.a`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  border-radius: 8px;
+  text-decoration: none;
+  &:hover {
+    color: #4285f4;
+    background-color: rgba(66, 133, 244, 0.04);
+  }
+`;
+
+const FooterLink = ({ href, children, isDark }) => {
+  const external = /^https?:\/\//.test(href || '');
+  if (external) {
+    return (
+      <Link
+        href={href}
+        target="_blank"
+        rel="noreferrer noopener"
+        isDark={isDark}
+      >
+        {children}
+      </Link>
+    );
+  }
+  return (
+    <NextLink href={href} passHref legacyBehavior>
+      <Link isDark={isDark}>
+        {children}
+      </Link>
+    </NextLink>
   );
 };
 
@@ -49,72 +120,63 @@ const PRODUCTS = [
   { href: '/about', label: 'About' }
 ];
 const SOCIALS = [
-  { href: 'https://twitter.com/xrplto', label: 'Twitter', Icon: Twitter },
-  { href: 'https://t.me/xrplto/', label: 'Telegram', Icon: Send },
-  { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit', Icon: Reddit },
-  { href: 'https://xrpl.to/discord/', label: 'Discord', Icon: Forum }
+  { href: 'https://twitter.com/xrplto', label: 'Twitter', icon: '🐦' },
+  { href: 'https://t.me/xrplto/', label: 'Telegram', icon: '✈️' },
+  { href: 'https://www.reddit.com/r/xrplto/', label: 'Reddit', icon: '🔥' },
+  { href: 'https://xrpl.to/discord/', label: 'Discord', icon: '💬' }
 ];
 
-const Group = React.memo(({ items }) => (
-  <Box sx={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: { xs: 0.2, md: 0.5 } }}>
+const Group = React.memo(({ items, isDark }) => (
+  <Box style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
     {items.map((it) => (
-      <FooterLink key={it.label} href={it.href}>{it.label}</FooterLink>
+      <FooterLink key={it.label} href={it.href} isDark={isDark}>{it.label}</FooterLink>
     ))}
   </Box>
 ));
 
-const SocialIcons = React.memo(() => (
-  <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.3, md: 0.5 } }}>
-    {SOCIALS.map((social) => {
-      const { Icon } = social;
-      return (
-        <Tooltip key={social.label} title={social.label} arrow>
-          <IconButton
-            component="a"
-            href={social.href}
-            target="_blank"
-            rel="noreferrer noopener"
-            size="small"
-            sx={{
-              color: 'text.secondary',
-              padding: { xs: 0.5, md: 0.8 },
-              '&:hover': {
-                color: '#4285f4',
-                backgroundColor: alpha('#4285f4', 0.04)
-              }
-            }}
-          >
-            <Icon sx={{ fontSize: { xs: 16, md: 20 } }} />
-          </IconButton>
-        </Tooltip>
-      );
-    })}
+const SocialIcons = React.memo(({ isDark }) => (
+  <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    {SOCIALS.map((social) => (
+      <Tooltip key={social.label} title={social.label} arrow>
+        <IconButton
+          href={social.href}
+          target="_blank"
+          rel="noreferrer noopener"
+          isDark={isDark}
+        >
+          <span style={{ fontSize: '18px' }}>{social.icon}</span>
+        </IconButton>
+      </Tooltip>
+    ))}
   </Box>
 ));
 
-function Footer() {
+function Footer({ isDark = false }) {
   const year = new Date().getFullYear();
 
   return (
-    <Root>
-      <Container maxWidth={false} sx={{ px: { xs: 1.5, md: 4, xl: 8 }, py: { xs: 1.2, md: 1.8 }, pb: { xs: 8, md: 2.5 } }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, alignItems: { xs: 'center', md: 'center' }, justifyContent: { xs: 'center', md: 'space-between' }, gap: { xs: 1.2, md: 2 } }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 0.8, md: 1.2 } }}>
-            <Link href="/" underline="none" sx={{ display: 'inline-flex' }}>
-              <Logo alt="XRPL.to" style={{ width: '70px', height: 'auto' }} />
-            </Link>
+    <Root isDark={isDark}>
+      <Container px="32px" py="14px" pb="20px">
+        <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <NextLink href="/" passHref legacyBehavior>
+              <Link isDark={isDark} style={{ display: 'inline-flex' }}>
+                <Logo alt="XRPL.to" style={{ width: '70px', height: 'auto' }} />
+              </Link>
+            </NextLink>
             <Typography
               variant="body2"
               color="text.secondary"
-              sx={{ display: { xs: 'none', md: 'inline' }, fontSize: '0.9rem', opacity: 0.5 }}
+              isDark={isDark}
+              style={{ fontSize: '0.9rem', opacity: 0.5 }}
             >
               © {year}
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: { xs: 1.5, md: 2.5 }, flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Group items={PRODUCTS} />
-            <SocialIcons />
+          <Box style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <Group items={PRODUCTS} isDark={isDark} />
+            <SocialIcons isDark={isDark} />
           </Box>
         </Box>
       </Container>

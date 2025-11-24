@@ -1,56 +1,146 @@
 import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext } from 'react';
-// Material
-import {
-  alpha,
-  styled,
-  useTheme,
-  CardHeader,
-  Stack,
-  Typography,
-  Table,
-  TableRow,
-  TableBody,
-  TableCell,
-  Tooltip,
-  IconButton,
-  Avatar,
-  Chip,
-  Link,
-  useMediaQuery,
-  Box,
-  Dialog,
-  DialogContent,
-  Button
-} from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import LockIcon from '@mui/icons-material/Lock';
-
-// Iconify
-import CircleIcon from '@mui/icons-material/Circle';
-import TwitterIcon from '@mui/icons-material/Twitter';
-import TelegramIcon from '@mui/icons-material/Telegram';
-import GitHub from '@mui/icons-material/GitHub';
-import Reddit from '@mui/icons-material/Reddit';
-import Language from '@mui/icons-material/Language';
-import LinkIcon from '@mui/icons-material/Link';
-
-// Components
+import styled from '@emotion/styled';
+import { AlertTriangle, Lock, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon } from 'lucide-react';
 import IssuerInfoDialog from '../../dialogs/IssuerInfoDialog';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-
-// Redux
-import { useSelector /*, useDispatch*/ } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
+import { fNumber, fDate } from 'src/utils/formatters';
+import { AppContext } from 'src/AppContext';
 
-// Utils
-import { fNumber } from 'src/utils/formatters';
-import { fDate } from 'src/utils/formatters';
+// Helper
+const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
+// Custom components
+const Box = styled.div``;
+const Stack = styled.div`
+  display: flex;
+  flex-direction: ${props => props.direction || 'column'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
+  flex-wrap: ${props => props.flexWrap || 'nowrap'};
+`;
+const Typography = styled.div`
+  font-size: ${props =>
+    props.variant === 'h6' ? '1.25rem' :
+    props.variant === 'body2' ? '0.875rem' :
+    props.variant === 'caption' ? '0.75rem' : '1rem'};
+  font-weight: ${props => props.fontWeight || 400};
+  color: ${props => props.color || 'inherit'};
+  white-space: ${props => props.noWrap ? 'nowrap' : 'normal'};
+`;
+const Table = styled.table`
+  width: 100%;
+  background: transparent;
+`;
+const TableBody = styled.tbody``;
+const TableRow = styled.tr``;
+const TableCell = styled.td`
+  padding: ${props => props.padding || '4px 6px'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  text-align: ${props => props.align || 'left'};
+`;
+const Chip = styled.div`
+  display: inline-flex;
+  align-items: center;
+  padding: ${props => props.size === 'small' ? '1px 8px' : '4px 12px'};
+  border-radius: 6px;
+  font-size: ${props => props.fontSize || '12px'};
+  font-weight: 400;
+  cursor: ${props => props.onClick ? 'pointer' : 'default'};
+`;
+const IconButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: ${props => props.size === 'small' ? '3px' : '8px'};
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+`;
+const Link = styled.a`
+  text-decoration: none;
+  color: inherit;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+const Tooltip = ({ title, children }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.9)',
+          color: '#fff',
+          borderRadius: '4px',
+          fontSize: '12px',
+          whiteSpace: 'pre-line',
+          zIndex: 1000,
+          marginBottom: '4px',
+          minWidth: 'max-content'
+        }}>
+          {title}
+        </div>
+      )}
+    </div>
+  );
+};
+const Dialog = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: ${props => props.open ? 'flex' : 'none'};
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+const DialogPaper = styled.div`
+  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
+  border-radius: 12px;
+  padding: 0;
+  max-width: 600px;
+  width: 100%;
+`;
+const DialogContent = styled.div`
+  padding: 16px;
+  text-align: ${props => props.textAlign || 'left'};
+`;
+const Button = styled.button`
+  padding: 6px 24px;
+  font-size: 14px;
+  font-weight: 400;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  background: ${props => props.isDark ? '#f44336' : '#f44336'};
+  color: white;
+`;
 
-// ----------------------------------------------------------------------
+const StyledTable = styled(Table)`
+  margin-top: 4px;
+`;
+
+const ModernTableCell = styled(TableCell)`
+  padding: 6px 12px;
+  border-bottom: ${props => props.isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)'};
+`;
+
 // Constants
 const currencySymbols = {
   USD: '$ ',
@@ -59,61 +149,23 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-import { AppContext } from 'src/AppContext';
-
-const badge24hStyle = {
-  display: 'inline-block',
-  marginLeft: '3px',
-  color: '#C4CDD5',
-  fontSize: '10px',
-  fontWeight: 400,
-  lineHeight: '16px',
-  backgroundColor: '#323546',
-  borderRadius: '3px',
-  padding: '1px 3px'
-};
-
-// Enhanced styled components
-const ModernTableCell = styled(TableCell)(({ theme }) => ({
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  padding: theme.spacing(0.5, 0.75),
-  '&:first-of-type': {
-    paddingLeft: theme.spacing(0.75),
-    fontWeight: 400,
-    color: alpha(theme.palette.text.primary, 0.75),
-    width: '40%'
-  },
-  '&:last-of-type': {
-    paddingRight: theme.spacing(0.75),
-    paddingLeft: theme.spacing(1)
-  },
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(0.4, 0.5),
-    '&:first-of-type': {
-      paddingLeft: theme.spacing(0.5),
-      width: '45%'
-    },
-    '&:last-of-type': {
-      paddingRight: theme.spacing(0.5),
-      paddingLeft: theme.spacing(0.7)
-    }
-  }
-}));
-
-const StyledTable = styled(Table)(({ theme }) => ({
-  background: 'transparent'
-}));
 
 // ----------------------------------------------------------------------
 
-export default function PriceStatistics({ token }) {
-  const theme = useTheme();
+export default function PriceStatistics({ token, isDark = false }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
   const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isMobile, setIsMobile] = useState(false);
   const [creations, setCreations] = useState(0);
   const [openScamWarning, setOpenScamWarning] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const {
     id,
@@ -221,89 +273,68 @@ export default function PriceStatistics({ token }) {
 
   return (
     <Box
-      sx={{
+      style={{
         borderRadius: '12px',
         background: 'transparent',
-        border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+        border: `1px solid ${alpha(isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", 0.15)}`,
         width: '100%',
-        mb: 0.5,
+        marginBottom: '4px'
       }}
     >
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
 
       {/* Scam Warning Dialog */}
-      <Dialog
-        open={openScamWarning}
-        onClose={() => setOpenScamWarning(false)}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: '12px',
-            background: theme.palette.background.paper,
-            border: `2px solid ${theme.palette.error.main}`
-          }
-        }}
-      >
-        <DialogContent sx={{ textAlign: 'center', py: 2, px: 2 }}>
-          <WarningAmberIcon
-            sx={{
-              fontSize: '32px',
-              color: theme.palette.error.main,
-              mb: 1
-            }}
-          />
-          <Typography
-            variant="h6"
-            sx={{
-              color: theme.palette.error.main,
-              fontWeight: 400,
-              mb: 1,
-              letterSpacing: '-0.02em'
-            }}
-          >
-            Scam Warning
-          </Typography>
-          <Typography
-            variant="body2"
-            sx={{
-              color: alpha(theme.palette.text.primary, 0.7),
-              mb: 2
-            }}
-          >
-            This token has been flagged as a potential scam. Please exercise extreme caution.
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => setOpenScamWarning(false)}
-            sx={{
-              backgroundColor: theme.palette.error.main,
-              color: theme.palette.common.white,
-              px: 3,
-              py: 0.75,
-              borderRadius: '12px',
-              fontWeight: 400
-            }}
-          >
-            I Understand
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {openScamWarning && (
+        <Dialog open>
+          <DialogPaper isDark={isDark} onClick={(e) => e.stopPropagation()}>
+            <DialogContent style={{ textAlign: 'center', padding: '16px' }}>
+              <AlertTriangle size={32} color="#f44336" style={{ marginBottom: '8px' }} />
+              <Typography
+                variant="h6"
+                style={{
+                  color: '#f44336',
+                  fontWeight: 400,
+                  marginBottom: '8px',
+                  letterSpacing: '-0.02em'
+                }}
+              >
+                Scam Warning
+              </Typography>
+              <Typography
+                variant="body2"
+                style={{
+                  color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                  marginBottom: '16px'
+                }}
+              >
+                This token has been flagged as a potential scam. Please exercise extreme caution.
+              </Typography>
+              <Button
+                isDark={isDark}
+                onClick={() => setOpenScamWarning(false)}
+              >
+                I Understand
+              </Button>
+            </DialogContent>
+          </DialogPaper>
+        </Dialog>
+      )}
 
       {/* Header */}
       <Box
-        sx={{
-          p: 0.5,
-          px: 0.75,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+        style={{
+          padding: '4px',
+          paddingLeft: '6px',
+          paddingRight: '6px',
+          borderBottom: `1px solid ${alpha(isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", 0.1)}`
         }}
       >
         <Typography
           variant="h6"
-          sx={{
+          style={{
             fontSize: '12px',
             fontWeight: 400,
-            color: alpha(theme.palette.text.primary, 0.5),
+            color: alpha("#212B36", 0.5),
             letterSpacing: '0.5px',
             textTransform: 'uppercase'
           }}
@@ -312,16 +343,16 @@ export default function PriceStatistics({ token }) {
         </Typography>
       </Box>
 
-      <StyledTable size="small" sx={{ mt: 0.5 }}>
+      <StyledTable size="small" style={{ marginTop: '4px' }}>
         <TableBody>
           {/* Issuer Row */}
           <TableRow>
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
-                  color: alpha(theme.palette.text.primary, 0.75),
+                  color: alpha("#212B36", 0.75),
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -332,47 +363,33 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25}>
                 <Chip
-                  label={
-                    <Stack direction="row" alignItems="center" spacing={isMobile ? 0.25 : 0.5}>
-                      <Typography
-                        variant="caption"
-                        sx={{ fontWeight: 400, fontSize: isMobile ? '13px' : '12px' }}
-                      >
-                        {truncate(issuer, 16)}
-                      </Typography>
-                      {info.blackholed && (
-                        <Tooltip title="Blackholed - Cannot issue more tokens">
-                          <LockIcon
-                            sx={{
-                              fontSize: isMobile ? '12px' : '14px',
-                              color: theme.palette.success.main
-                            }}
-                          />
-                        </Tooltip>
-                      )}
-                    </Stack>
-                  }
                   size="small"
-                  sx={{
-                    pl: isMobile ? 0.75 : 1,
-                    pr: isMobile ? 0.75 : 1,
+                  style={{
+                    paddingLeft: '8px',
+                    paddingRight: '8px',
                     borderRadius: '6px',
-                    height: isMobile ? '22px' : '26px',
+                    height: '26px',
                     cursor: 'pointer',
-                    background: alpha(theme.palette.primary.main, 0.08),
-                    backdropFilter: 'none',
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                    color: theme.palette.primary.main,
+                    background: alpha('rgba(66,133,244,1)', 0.08),
+                    border: `1px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
+                    color: '#4285f4',
                     fontWeight: 400,
-                    boxShadow: 'none',
-                    '&:hover': {
-                      background: alpha(theme.palette.primary.main, 0.12),
-                      border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`,
-                      boxShadow: 'none'
-                    }
+                    gap: '6px'
                   }}
                   onClick={handleOpenIssuerInfo}
-                />
+                >
+                  <Typography
+                    variant="caption"
+                    style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace' }}
+                  >
+                    {issuer}
+                  </Typography>
+                  {info.blackholed && (
+                    <Tooltip title="Blackholed - Cannot issue more tokens">
+                      <Lock size={14} color="#2E7D32" />
+                    </Tooltip>
+                  )}
+                </Chip>
                 <Tooltip title="Copy issuer address">
                   <IconButton
                     onClick={() => {
@@ -381,26 +398,16 @@ export default function PriceStatistics({ token }) {
                       });
                     }}
                       size="small"
-                      sx={{
-                        p: 0.4,
-                        width: 28,
-                        height: 28,
+                      style={{
+                        padding: '3px',
+                        width: '28px',
+                        height: '28px',
                         borderRadius: '6px',
                         background: 'transparent',
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        '&:hover': {
-                          background: alpha(theme.palette.primary.main, 0.04),
-                          border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                        }
+                        border: `1px solid ${alpha(isDark ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)', 0.1)}`
                       }}
                     >
-                      <ContentCopyIcon
-                        sx={{
-                          width: isMobile ? 12 : 14,
-                          height: isMobile ? 12 : 14,
-                          color: theme.palette.primary.main
-                        }}
-                      />
+                      <Copy size={isMobile ? 12 : 14} color="#4285f4" />
                   </IconButton>
                 </Tooltip>
               </Stack>
@@ -413,9 +420,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: alpha("#212B36", 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -426,30 +433,25 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25}>
                   <Chip
-                    label={
-                      <Typography
-                        variant="caption"
-                        sx={{ fontWeight: 400, fontSize: isMobile ? '13px' : '12px' }}
-                      >
-                        {truncate(creator, 16)}
-                      </Typography>
-                    }
                     size="small"
-                    sx={{
-                      pl: isMobile ? 0.75 : 1,
-                      pr: isMobile ? 0.75 : 1,
+                    style={{
+                      paddingLeft: '8px',
+                      paddingRight: '8px',
                       borderRadius: '6px',
-                      height: isMobile ? '18px' : '22px',
-                      background: alpha('#9C27B0', 0.08),
-                      border: `1px solid ${alpha('#9C27B0', 0.15)}`,
+                      height: '26px',
+                      background: alpha('rgba(156,39,176,1)', 0.08),
+                      border: `1px solid ${alpha('rgba(156,39,176,1)', 0.15)}`,
                       color: '#9C27B0',
-                      fontWeight: 400,
-                      '&:hover': {
-                        background: alpha('#9C27B0', 0.12),
-                        border: `1px solid ${alpha('#9C27B0', 0.25)}`
-                      }
+                      fontWeight: 400
                     }}
-                  />
+                  >
+                    <Typography
+                      variant="caption"
+                      style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace' }}
+                    >
+                      {creator}
+                    </Typography>
+                  </Chip>
                   <Tooltip title="Copy creator address">
                     <IconButton
                       onClick={() => {
@@ -458,49 +460,36 @@ export default function PriceStatistics({ token }) {
                         });
                       }}
                         size="small"
-                        sx={{
-                          p: 0.25,
-                          width: 22,
-                          height: 22,
+                        style={{
+                          padding: '2px',
+                          width: '22px',
+                          height: '22px',
                           borderRadius: '6px',
                           background: 'transparent',
-                          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                          '&:hover': {
-                            background: alpha('#9C27B0', 0.04),
-                            border: `1px solid ${alpha('#9C27B0', 0.2)}`
-                          }
+                          border: `1px solid ${alpha(isDark ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)', 0.1)}`
                         }}
                       >
-                        <ContentCopyIcon
-                          sx={{
-                            width: isMobile ? 10 : 12,
-                            height: isMobile ? 10 : 12,
-                            color: theme.palette.mode === 'dark' ? '#CE93D8' : '#7B1FA2'
-                          }}
-                        />
+                        <Copy size={isMobile ? 10 : 12} color="#9C27B0" />
                     </IconButton>
                   </Tooltip>
                   {creations > 0 ? (
                     <Tooltip title="Number of tokens created by this creator.">
                       <Chip
-                        label={
-                          isMobile ? creations : `${creations} creation${creations > 1 ? 's' : ''}`
-                        }
                         size="small"
-                        sx={{
+                        style={{
                           borderRadius: '6px',
-                          height: isMobile ? '16px' : '18px',
-                          background: alpha(theme.palette.info.main, 0.08),
-                          border: `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                          color: theme.palette.info.main,
+                          height: '18px',
+                          background: alpha('rgba(33,150,243,1)', 0.08),
+                          border: `1px solid ${alpha('rgba(33,150,243,1)', 0.15)}`,
+                          color: '#2196F3',
                           fontWeight: 400,
-                          fontSize: isMobile ? '11px' : '13px',
-                          minWidth: isMobile ? '20px' : 'unset',
-                          justifyContent: isMobile ? 'center' : 'flex-start',
-                          pl: isMobile ? 0.5 : 1,
-                          pr: isMobile ? 0.5 : 1
+                          fontSize: '11px',
+                          paddingLeft: '8px',
+                          paddingRight: '8px'
                         }}
-                      />
+                      >
+                        {isMobile ? creations : `${creations} creation${creations > 1 ? 's' : ''}`}
+                      </Chip>
                     </Tooltip>
                   ) : null}
                 </Stack>
@@ -513,9 +502,9 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
-                  color: alpha(theme.palette.text.primary, 0.75),
+                  color: alpha("#212B36", 0.75),
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -526,9 +515,9 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
-                  color: theme.palette.warning.main,
+                  color: '#FF9800',
                   fontSize: isMobile ? '12px' : '14px'
                 }}
               >
@@ -542,9 +531,9 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
-                  color: alpha(theme.palette.text.primary, 0.75),
+                  color: alpha("#212B36", 0.75),
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -555,7 +544,7 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
                   color: '#2E7D32',
                   fontSize: isMobile ? '12px' : '14px'
@@ -571,9 +560,9 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
-                  color: alpha(theme.palette.text.primary, 0.75),
+                  color: alpha("#212B36", 0.75),
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -584,9 +573,9 @@ export default function PriceStatistics({ token }) {
             <ModernTableCell align="left">
               <Typography
                 variant="body2"
-                sx={{
+                style={{
                   fontWeight: 400,
-                  color: theme.palette.info.main,
+                  color: '#2196F3',
                   fontSize: isMobile ? '12px' : '14px'
                 }}
               >
@@ -602,9 +591,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: alpha("#212B36", 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -615,9 +604,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: theme.palette.warning.main,
+                    color: '#FF9800',
                     fontSize: isMobile ? '12px' : '14px'
                   }}
                 >
@@ -633,9 +622,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: alpha("#212B36", 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -646,9 +635,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: theme.palette.info.main,
+                    color: '#2196F3',
                     fontSize: isMobile ? '12px' : '14px'
                   }}
                 >
@@ -664,9 +653,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: theme.palette.text.primary,
+                    color: "#212B36",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -677,7 +666,7 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
                     color: '#1976D2',
                     fontSize: isMobile ? '12px' : '14px'
@@ -695,9 +684,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: alpha("#212B36", 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -708,9 +697,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: theme.palette.warning.main,
+                    color: '#FF9800',
                     fontSize: isMobile ? '12px' : '14px'
                   }}
                 >
@@ -726,9 +715,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: theme.palette.text.primary,
+                    color: "#212B36",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -739,7 +728,7 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
                     color: '#F57C00',
                     fontSize: isMobile ? '12px' : '14px'
@@ -757,9 +746,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: alpha("#212B36", 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -770,9 +759,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.secondary, 0.8),
+                    color: alpha("rgba(0,0,0,0.6)", 0.8),
                     fontSize: isMobile ? '11px' : '14px'
                   }}
                 >
@@ -788,9 +777,9 @@ export default function PriceStatistics({ token }) {
               <ModernTableCell align="left">
                 <Typography
                   variant="body2"
-                  sx={{
+                  style={{
                     fontWeight: 400,
-                    color: alpha(theme.palette.text.primary, 0.85),
+                    color: alpha("#212B36", 0.85),
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -803,7 +792,7 @@ export default function PriceStatistics({ token }) {
                   direction="row"
                   alignItems="center"
                   spacing={isMobile ? 0.5 : 1.25}
-                  sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
+                  style={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
                 >
                   <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 2 : 3} />
                   <CompactSocialLinks social={social} size="small" />
@@ -871,76 +860,82 @@ const getFullUrl = (platform, handle) => {
 };
 
 // Compact social links component for header integration
-export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', isDark = false }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (!social) return null;
 
   const socialEntries = Object.entries(social).filter(([key, value]) => value);
   if (socialEntries.length === 0) return null;
 
-  const iconSize = size === 'small' ? 14 : 16;
+  const getIcon = (platform) => {
+    const size = isMobile ? 12 : 14;
+    const color = '#4285f4';
+    switch(platform) {
+      case 'twitter':
+      case 'x': return <Twitter size={size} color={color} />;
+      case 'telegram': return <Send size={size} color={color} />;
+      case 'discord': return <MessageCircle size={size} color={color} />;
+      case 'website': return <Globe size={size} color={color} />;
+      case 'github': return <Github size={size} color={color} />;
+      case 'reddit': return <TrendingUp size={size} color={color} />;
+      default: return <LinkIcon size={size} color={color} />;
+    }
+  };
 
   return (
-    <Stack direction="row" spacing={isMobile ? 0.25 : 0.75} alignItems="center">
-      {socialEntries.slice(0, isMobile ? 2 : 4).map(([platform, url]) => (
-        <Tooltip key={platform} title={`${platform}: ${url}`} arrow>
+    <Stack direction="row" spacing={0.75} alignItems="center" style={{ gap: '8px' }}>
+      {socialEntries.slice(0, 4).map(([platform, url]) => (
+        <Tooltip key={platform} title={`${platform}: ${url}`}>
           <IconButton
-            component="a"
+            as="a"
             href={getFullUrl(platform, url)}
             target="_blank"
             rel="noopener noreferrer"
             size="small"
-            sx={{
-              width: isMobile ? 18 : 22,
-              height: isMobile ? 18 : 22,
-              p: isMobile ? 0.25 : 0.4,
+            style={{
+              width: '26px',
+              height: '26px',
+              padding: '4px',
               borderRadius: '6px',
-              background: alpha(theme.palette.primary.main, 0.08),
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-              color: theme.palette.primary.main,
-              '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.12),
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
-              }
+              background: alpha('rgba(66,133,244,1)', 0.08),
+              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.2)}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            {(platform === 'twitter' || platform === 'x') && (
-              <TwitterIcon sx={{ width: iconSize, height: iconSize }} />
-            )}
-            {platform === 'telegram' && <TelegramIcon sx={{ width: iconSize, height: iconSize }} />}
-            {platform === 'discord' && <CircleIcon sx={{ width: iconSize, height: iconSize }} />}
-            {platform === 'website' && <Language sx={{ width: iconSize, height: iconSize }} />}
-            {platform === 'github' && <GitHub sx={{ width: iconSize, height: iconSize }} />}
-            {platform === 'reddit' && <Reddit sx={{ width: iconSize, height: iconSize }} />}
-            {!['twitter', 'x', 'telegram', 'discord', 'website', 'github', 'reddit'].includes(
-              platform
-            ) && <LinkIcon sx={{ width: iconSize, height: iconSize }} />}
+            {getIcon(platform)}
           </IconButton>
         </Tooltip>
       ))}
-      {socialEntries.length > (isMobile ? 2 : 4) && toggleLinksDrawer && (
-        <Tooltip title="View all links" arrow>
+      {socialEntries.length > 4 && toggleLinksDrawer && (
+        <Tooltip title="View all links">
           <IconButton
             onClick={() => toggleLinksDrawer(true)}
             size="small"
-            sx={{
-              width: isMobile ? 18 : 22,
-              height: isMobile ? 18 : 22,
-              p: isMobile ? 0.25 : 0.4,
+            style={{
+              width: '26px',
+              height: '26px',
+              padding: '4px',
               borderRadius: '6px',
-              background: alpha(theme.palette.secondary.main, 0.08),
-              border: `1px solid ${alpha(theme.palette.secondary.main, 0.15)}`,
-              color: theme.palette.secondary.main,
-              '&:hover': {
-                background: alpha(theme.palette.secondary.main, 0.12),
-                border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`
-              }
+              background: alpha('rgba(156,39,176,1)', 0.08),
+              border: `1.5px solid ${alpha('rgba(156,39,176,1)', 0.2)}`,
+              color: '#9C27B0',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            <Typography sx={{ fontSize: isMobile ? '11px' : '13px', fontWeight: 400 }}>
-              +{socialEntries.length - (isMobile ? 2 : 4)}
+            <Typography style={{ fontSize: '12px', fontWeight: 500 }}>
+              +{socialEntries.length - 4}
             </Typography>
           </IconButton>
         </Tooltip>
@@ -950,90 +945,89 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small' }
 };
 
 // Compact tags component for inline integration
-export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDark = false }) => {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   if (!enhancedTags || enhancedTags.length === 0) return null;
 
   return (
     <Stack
       direction="row"
-      spacing={isMobile ? 0.4 : 0.75}
+      spacing={0.75}
       alignItems="center"
-      sx={{ flexWrap: 'wrap', gap: isMobile ? 0.4 : 0.75 }}
+      style={{ flexWrap: 'wrap', gap: '8px' }}
     >
       {enhancedTags.slice(0, maxTags).map((tag) => (
         <Link
           key={tag}
           href={`/view/${normalizeTag(tag)}`}
-          sx={{ display: 'inline-flex' }}
-          underline="none"
+          style={{ display: 'inline-flex', textDecoration: 'none' }}
           rel="noreferrer noopener nofollow"
         >
           <Chip
             size="small"
-            label={
-              tag === 'aigent.run' ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                  <Box
-                    component="img"
-                    src="/static/aigentrun.gif"
-                    alt="Aigent.Run"
-                    sx={{
-                      width: '12px',
-                      height: '12px',
-                      objectFit: 'contain'
-                    }}
-                  />
-                  {tag}
-                </Box>
-              ) : (
-                tag
-              )
-            }
-            sx={{
-              height: isMobile ? '18px' : '20px',
-              fontSize: isMobile ? '11px' : '13px',
+            style={{
+              height: '26px',
+              fontSize: '12px',
               borderRadius: '6px',
-              px: isMobile ? 0.6 : 0.8,
-              background: alpha(theme.palette.background.paper, 0.5),
-              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-              color: theme.palette.text.primary,
-              fontWeight: 400,
+              paddingLeft: '10px',
+              paddingRight: '10px',
+              background: alpha('rgba(66,133,244,1)', 0.08),
+              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.2)}`,
+              color: '#4285f4',
+              fontWeight: 500,
               cursor: 'pointer',
               minHeight: 'auto',
-              '&:hover': {
-                background: alpha(theme.palette.primary.main, 0.08),
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                color: theme.palette.primary.main
-              }
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px'
             }}
-          />
+          >
+            {tag === 'aigent.run' ? (
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <img
+                  src="/static/aigentrun.gif"
+                  alt="Aigent.Run"
+                  style={{
+                    width: '14px',
+                    height: '14px',
+                    objectFit: 'contain'
+                  }}
+                />
+                {tag}
+              </Box>
+            ) : (
+              tag
+            )}
+          </Chip>
         </Link>
       ))}
       {enhancedTags.length > maxTags && toggleTagsDrawer && (
         <Chip
-          label={`+${enhancedTags.length - maxTags}`}
           size="small"
           onClick={() => toggleTagsDrawer(true)}
-          sx={{
-            height: isMobile ? '18px' : '20px',
-            fontSize: isMobile ? '11px' : '13px',
+          style={{
+            height: '26px',
+            fontSize: '12px',
             borderRadius: '6px',
-            px: isMobile ? 0.5 : 0.8,
-            background: alpha(theme.palette.primary.main, 0.08),
-            border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-            color: theme.palette.primary.main,
-            fontWeight: 400,
+            paddingLeft: '10px',
+            paddingRight: '10px',
+            background: alpha('rgba(66,133,244,1)', 0.08),
+            border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.2)}`,
+            color: '#4285f4',
+            fontWeight: 500,
             cursor: 'pointer',
-            minHeight: 'auto',
-            '&:hover': {
-              background: alpha(theme.palette.primary.main, 0.12),
-              border: `1px solid ${alpha(theme.palette.primary.main, 0.25)}`
-            }
+            minHeight: 'auto'
           }}
-        />
+        >
+          +{enhancedTags.length - maxTags}
+        </Chip>
       )}
     </Stack>
   );
@@ -1046,24 +1040,37 @@ export const CompactSocialAndTags = ({
   toggleLinksDrawer,
   toggleTagsDrawer,
   maxTags = 3,
-  socialSize = 'small'
+  socialSize = 'small',
+  isDark = false
 }) => {
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <Stack
       direction="row"
       alignItems="center"
-      spacing={isMobile ? 0.5 : 1.25}
-      sx={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
+      spacing={1}
+      style={{ flexWrap: 'wrap', gap: '8px' }}
     >
       <CompactTags
         enhancedTags={enhancedTags}
         toggleTagsDrawer={toggleTagsDrawer}
         maxTags={maxTags}
+        isDark={isDark}
       />
-      <CompactSocialLinks social={social} toggleLinksDrawer={toggleLinksDrawer} size={socialSize} />
+      <CompactSocialLinks
+        social={social}
+        toggleLinksDrawer={toggleLinksDrawer}
+        size={socialSize}
+        isDark={isDark}
+      />
     </Stack>
   );
 };

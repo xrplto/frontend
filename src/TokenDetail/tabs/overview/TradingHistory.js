@@ -2,51 +2,48 @@ import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from '
 import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
 import Decimal from 'decimal.js-light';
-import { alpha } from '@mui/material/styles';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  Stack,
-  Link,
-  Tooltip,
-  IconButton,
-  Chip,
-  CircularProgress,
-  Box,
-  Pagination,
-  keyframes,
-  List,
-  ListItem,
-  ListItemText,
-  FormControl,
-  Select,
-  MenuItem,
-  styled,
-  useTheme,
-  Card,
-  CardContent,
-  FormControlLabel,
-  Switch,
-  Tabs,
-  Tab,
-  Grid,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent
-} from '@mui/material';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import CloseIcon from '@mui/icons-material/Close';
-import AddIcon from '@mui/icons-material/Add';
-import { TextField, InputAdornment, RadioGroup, Radio } from '@mui/material';
+import styled from '@emotion/styled';
+import { lazy, Suspense } from 'react';
+import PairsList from 'src/TokenDetail/tabs/market/PairsList';
+import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
+import RichList from 'src/TokenDetail/tabs/holders/RichList';
+
+// Helper function
+const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
+
+// Custom styled components
+const Box = styled.div``;
+const Stack = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
+`;
+const CircularProgress = styled.div`
+  width: ${props => props.size || 40}px;
+  height: ${props => props.size || 40}px;
+  border: ${props => props.thickness || 4}px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-top-color: #147DFE;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+`;
+const Typography = styled.div`
+  font-size: ${props =>
+    props.variant === 'h6' ? '1.25rem' :
+    props.variant === 'body2' ? '0.875rem' :
+    props.variant === 'caption' ? '0.75rem' : '1rem'};
+  font-weight: ${props => props.fontWeight || 400};
+  color: ${props =>
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') :
+    props.color === 'text.primary' ? (props.isDark ? '#FFFFFF' : '#212B36') :
+    props.color === 'primary.main' ? '#147DFE' :
+    props.color === 'success.main' ? '#4caf50' :
+    props.isDark ? '#FFFFFF' : '#212B36'};
+  opacity: ${props => props.opacity || 1};
+`;
+
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
   // XRP has a special MD5
@@ -71,10 +68,6 @@ const decodeCurrency = (currency) => {
   // Already plain text (e.g., "DROP", "GDROP", "BTC")
   return currency;
 };
-import PairsList from 'src/TokenDetail/tabs/market/PairsList';
-import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
-import { lazy, Suspense } from 'react';
-import RichList from 'src/TokenDetail/tabs/holders/RichList';
 
 // Performance utilities
 const throttle = (func, delay) => {
@@ -98,125 +91,372 @@ const throttle = (func, delay) => {
 };
 
 // Define the highlight animation with softer colors
-const highlightAnimation = (theme) => keyframes`
-  0% {
-    background-color: ${alpha(theme.palette.primary.main, 0.08)};
-  }
-  50% {
-    background-color: ${alpha(theme.palette.primary.main, 0.04)};
-  }
-  100% {
-    background-color: transparent;
+const highlightAnimation = (isDark) => `
+  @keyframes highlight {
+    0% {
+      background-color: ${isDark ? 'rgba(20, 125, 254, 0.08)' : 'rgba(20, 125, 254, 0.08)'};
+    }
+    50% {
+      background-color: ${isDark ? 'rgba(20, 125, 254, 0.04)' : 'rgba(20, 125, 254, 0.04)'};
+    }
+    100% {
+      background-color: transparent;
+    }
   }
 `;
 
 // Styled components with improved design
-const LiveIndicator = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  padding: theme.spacing(0.25, 0.75),
-  borderRadius: '12px',
-  backgroundColor: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-  boxShadow: 'none'
-}));
+const LiveIndicator = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 6px;
+  border-radius: 12px;
+  background-color: transparent;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+`;
 
-const LiveCircle = styled('div')(({ theme }) => ({
-  width: '8px',
-  height: '8px',
-  borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main,
-  animation: 'pulse 2s infinite',
-  boxShadow: 'none',
-  '@keyframes pulse': {
-    '0%': {
-      transform: 'scale(0.95)',
-      opacity: 0.8
-    },
-    '50%': {
-      transform: 'scale(1.1)',
-      opacity: 1
-    },
-    '100%': {
-      transform: 'scale(0.95)',
-      opacity: 0.8
+const LiveCircle = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #147DFE;
+  animation: pulse 2s infinite;
+  @keyframes pulse {
+    0% {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(0.95);
+      opacity: 0.8;
     }
   }
-}));
+`;
 
-const TradeCard = styled(Card, {
-  shouldForwardProp: (prop) => prop !== 'isNew' && prop !== 'tradetype'
-})(({ theme, isNew, tradetype }) => ({
-  marginBottom: '1px',
-  borderRadius: '0',
-  background: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  border: 'none',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: 'none',
-  position: 'relative',
-  overflow: 'hidden',
-  animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
-  '&:hover': {
-    boxShadow: 'none',
-    backgroundColor: alpha(theme.palette.action.hover, 0.02)
+const Card = styled.div`
+  margin-bottom: 1px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  position: relative;
+  overflow: hidden;
+  animation: ${props => props.isNew ? 'highlight 1s ease-in-out' : 'none'};
+  &:hover {
+    background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   }
-}));
+  ${props => props.isNew && highlightAnimation(props.isDark)}
+`;
 
-const TradeTypeChip = styled(Chip)(({ theme, tradetype }) => ({
-  fontSize: '13px',
-  height: '20px',
-  fontWeight: 400,
-  borderRadius: '4px',
-  background: 'transparent',
-  color: tradetype === 'BUY' ? '#4caf50' : '#f44336',
-  border: 'none',
-  padding: '0 6px',
-  boxShadow: 'none',
-  '& .MuiChip-label': {
-    padding: '0 2px'
+const CardContent = styled.div`
+  padding: 8px;
+`;
+
+const TradeTypeChip = styled.div`
+  font-size: 13px;
+  height: 20px;
+  font-weight: 400;
+  border-radius: 4px;
+  background: transparent;
+  color: ${props => props.tradetype === 'BUY' ? '#4caf50' : '#f44336'};
+  border: none;
+  padding: 0 6px;
+  display: inline-flex;
+  align-items: center;
+`;
+
+const VolumeIndicator = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: ${props => props.volume}%;
+  background: ${props => props.isDark ? 'rgba(33, 150, 243, 0.04)' : 'rgba(33, 150, 243, 0.02)'};
+  transition: width 0.3s ease-in-out;
+  border-radius: 12px;
+`;
+
+const Pagination = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+`;
+
+const PaginationButton = styled.button`
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  background: ${props => props.selected ? '#147DFE' : 'transparent'};
+  border: 1.5px solid ${props => props.selected ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
+  border-radius: 12px;
+  margin: 0 3px;
+  font-weight: ${props => props.selected ? 500 : 400};
+  min-width: 32px;
+  height: 32px;
+  cursor: pointer;
+  &:hover {
+    background-color: ${props => props.selected ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)')};
   }
-}));
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
 
-const VolumeIndicator = styled('div')(({ theme, volume }) => ({
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  height: '100%',
-  width: `${volume}%`,
-  background: theme.palette.mode === 'dark'
-    ? 'rgba(33, 150, 243, 0.04)'
-    : 'rgba(33, 150, 243, 0.02)',
-  transition: 'width 0.3s ease-in-out',
-  borderRadius: '12px'
-}));
+const Table = styled.table`
+  width: 100%;
+  border-collapse: collapse;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+`;
 
-const StyledPagination = styled(Pagination)(({ theme }) => ({
-  '& .MuiPaginationItem-root': {
-    color: theme.palette.text.primary,
-    borderRadius: '12px',
-    margin: '0 3px',
-    fontWeight: 400,
-    minWidth: '32px',
-    height: '32px',
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
+const TableHead = styled.thead``;
+const TableBody = styled.tbody``;
+const TableRow = styled.tr`
+  &:hover {
+    background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  }
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+`;
+
+const TableCell = styled.td`
+  padding: 12px;
+  font-size: ${props => props.size === 'small' ? '13px' : '14px'};
+  text-align: ${props => props.align || 'left'};
+  font-weight: ${props => props.fontWeight || 400};
+  opacity: ${props => props.opacity || 1};
+  text-transform: ${props => props.textTransform || 'none'};
+`;
+
+const TableContainer = styled.div`
+  border-radius: 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  overflow: auto;
+`;
+
+const Paper = styled.div`
+  background: ${props => props.isDark ? 'transparent' : 'transparent'};
+`;
+
+const Link = styled.a`
+  text-decoration: none;
+  color: #147DFE;
+  font-weight: 400;
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
+const Tooltip = ({ title, children, arrow }) => {
+  const [show, setShow] = useState(false);
+  return (
+    <div
+      style={{ position: 'relative', display: 'inline-block' }}
+      onMouseEnter={() => setShow(true)}
+      onMouseLeave={() => setShow(false)}
+    >
+      {children}
+      {show && (
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          padding: '4px 8px',
+          background: 'rgba(0,0,0,0.9)',
+          color: '#fff',
+          borderRadius: '4px',
+          fontSize: '12px',
+          whiteSpace: 'pre-line',
+          zIndex: 1000,
+          marginBottom: '4px'
+        }}>
+          {title}
+        </div>
+      )}
+    </div>
+  );
+};
+
+const IconButton = styled.button`
+  padding: ${props => props.size === 'small' ? '4px' : '8px'};
+  background: transparent;
+  border: 1.5px solid transparent;
+  border-radius: 6px;
+  color: ${props => props.isDark ? '#147DFE' : '#147DFE'};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  &:hover {
+    background-color: ${props => props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)'};
+    border-color: ${props => props.isDark ? 'rgba(20,125,254,0.2)' : 'rgba(20,125,254,0.2)'};
+  }
+`;
+
+const Switch = styled.label`
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  span {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: ${props => props.checked ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)')};
+    transition: 0.3s;
+    border-radius: 20px;
+    &:before {
+      position: absolute;
+      content: "";
+      height: 14px;
+      width: 14px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+      transform: ${props => props.checked ? 'translateX(16px)' : 'translateX(0)'};
     }
-  },
-  '& .Mui-selected': {
-    backgroundColor: `${theme.palette.primary.main} !important`,
-    color: '#fff !important',
-    fontWeight: 500,
-    borderRadius: '12px',
-    '&:hover': {
-      backgroundColor: `${theme.palette.primary.dark} !important`
-    }
   }
-}));
+`;
+
+const FormControlLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 400;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)'};
+  cursor: pointer;
+`;
+
+const Tabs = styled.div`
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  display: flex;
+  gap: 0;
+`;
+
+const Tab = styled.button`
+  font-size: 13px;
+  font-weight: 400;
+  text-transform: none;
+  min-height: 36px;
+  padding: 8px 16px;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid ${props => props.selected ? '#147DFE' : 'transparent'};
+  color: ${props => props.selected ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+  cursor: pointer;
+  &:hover {
+    color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  }
+`;
+
+const Button = styled.button`
+  padding: ${props => props.size === 'small' ? '4px 12px' : '12px 24px'};
+  font-size: ${props => props.size === 'small' ? '12px' : '14px'};
+  font-weight: 400;
+  text-transform: none;
+  border-radius: ${props => props.size === 'small' ? '8px' : '12px'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  background: transparent;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  &:hover {
+    border-color: #147DFE;
+    background-color: ${props => props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)'};
+  }
+`;
+
+const Dialog = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: ${props => props.open ? 'flex' : 'none'};
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+`;
+
+const DialogPaper = styled.div`
+  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
+  border-radius: 12px;
+  padding: 0;
+  max-width: ${props => props.maxWidth === 'sm' ? '600px' : '900px'};
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+`;
+
+const DialogTitle = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 24px;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  font-size: 1.25rem;
+  font-weight: 500;
+`;
+
+const DialogContent = styled.div`
+  padding: 24px;
+`;
+
+const TextField = styled.input`
+  width: 100%;
+  padding: 8px 12px;
+  font-size: 14px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  &:focus {
+    outline: none;
+    border-color: #147DFE;
+  }
+`;
+
+const InputAdornment = styled.span`
+  font-size: 13px;
+  opacity: 0.7;
+  margin-left: 8px;
+`;
+
+const FormControl = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const RadioGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
+
+const Radio = styled.input`
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+`;
 
 // Helper functions
 const formatRelativeTime = (timestamp) => {
@@ -447,7 +687,7 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers = []) =>
   return array;
 };
 
-const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
+const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark = false }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -456,7 +696,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   const [xrpOnly, setXrpOnly] = useState(true);
   const [tabValue, setTabValue] = useState(0);
   const previousTradesRef = useRef(new Set());
-  const theme = useTheme();
   const limit = 20;
 
   // OrderBook state
@@ -815,32 +1054,30 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       }
 
       return (
-        <TradeCard
+        <Card
           key={trade._id}
           isNew={newTradeIds.has(trade._id)}
           tradetype={isBuy ? 'BUY' : 'SELL'}
+          isDark={isDark}
         >
-          <VolumeIndicator volume={volumePercentage} />
-          <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
+          <VolumeIndicator volume={volumePercentage} isDark={isDark} />
+          <CardContent>
             <Box
-              sx={{
+              style={{
                 display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr 1fr',
-                  sm: '1fr 0.8fr 1.5fr',
-                  md: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr'
-                },
-                gap: 1,
+                gridTemplateColumns: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr',
+                gap: '8px',
                 alignItems: 'center'
               }}
             >
               {/* Time and Type */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   fontWeight="400"
-                  sx={{
+                  isDark={isDark}
+                  style={{
                     width: '65px',
                     fontSize: '12px',
                     opacity: 0.7,
@@ -857,11 +1094,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               </Box>
 
               {/* Price */}
-              <Box sx={{ textAlign: { xs: 'left', md: 'left' } }}>
+              <Box style={{ textAlign: { xs: 'left', md: 'left' } }}>
                 <Typography
                   variant="body2"
                   color="text.secondary"
-                  sx={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
+                  isDark={isDark}
+                  style={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
                 >
                   Price (XRP)
                 </Typography>
@@ -869,24 +1107,26 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   variant="body2"
                   fontWeight="600"
                   color="text.primary"
-                  sx={{ fontSize: '14px' }}
+                  isDark={isDark}
+                  style={{ fontSize: '14px' }}
                 >
                   {formatPrice(price)}
                 </Typography>
               </Box>
 
               {/* Amount */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <img
                   src={getTokenImageUrl(amountData.issuer, amountData.currency)}
                   alt={decodeCurrency(amountData.currency)}
-                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
                 />
                 <Box>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
+                    isDark={isDark}
+                    style={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
                   >
                     Amount
                   </Typography>
@@ -894,7 +1134,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     variant="body2"
                     fontWeight="600"
                     color="text.primary"
-                    sx={{ fontSize: '14px' }}
+                    isDark={isDark}
+                    style={{ fontSize: '14px' }}
                   >
                     {formatTradeValue(amountData.value)}{' '}
                     {decodeCurrency(amountData.currency)}
@@ -903,17 +1144,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               </Box>
 
               {/* Total */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <img
                   src={getTokenImageUrl(totalData.issuer, totalData.currency)}
                   alt={decodeCurrency(totalData.currency)}
-                  style={{ width: 18, height: 18, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
                 />
                 <Box>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                    sx={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
+                    isDark={isDark}
+                    style={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
                   >
                     Total
                   </Typography>
@@ -921,12 +1163,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     variant="body2"
                     fontWeight="600"
                     color="text.primary"
-                    sx={{ fontSize: '14px' }}
+                    isDark={isDark}
+                    style={{ fontSize: '14px' }}
                   >
                     {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                   </Typography>
                 </Box>
-                <Box component="span" sx={{ fontSize: '13px', ml: 0.5, opacity: 0.7 }}>
+                <span style={{ fontSize: '13px', marginLeft: '4px', opacity: 0.7 }}>
                   {(() => {
                     const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
                     if (val < 500) return '🦐';
@@ -936,28 +1179,20 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     if (val < 10000) return '🦈';
                     return '🐋';
                   })()}
-                </Box>
+                </span>
               </Box>
 
               {/* Maker/Taker */}
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
                   <Link
                     href={`/profile/${addressToShow}`}
-                    sx={{
-                      textDecoration: 'none',
-                      color: 'primary.main',
-                      fontWeight: 400,
-                      '&:hover': {
-                        textDecoration: 'underline',
-                        color: 'primary.dark'
-                      }
-                    }}
                   >
                     <Typography
                       variant="body2"
                       fontWeight="400"
-                      sx={{ fontSize: '12px', color: 'primary.main', opacity: 0.9 }}
+                      isDark={isDark}
+                      style={{ fontSize: '12px', color: '#147DFE', opacity: 0.9 }}
                     >
                       {addressToShow
                         ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
@@ -968,39 +1203,30 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
               </Box>
 
               {/* Actions */}
-              <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+              <Box style={{ display: 'flex', justifyContent: 'flex-end' }}>
                 <Tooltip title="View Transaction" arrow>
                   <IconButton
                     size="small"
                     onClick={() => handleTxClick(trade.hash)}
-                    sx={{
-                      color: theme.palette.primary.main,
-                      padding: '4px',
-                      border: `1.5px solid transparent`,
-                      borderRadius: '6px',
-                      '&:hover': {
-                        backgroundColor: alpha(theme.palette.primary.main, 0.04),
-                        borderColor: alpha(theme.palette.primary.main, 0.2)
-                      }
-                    }}
+                    isDark={isDark}
                   >
-                    <OpenInNewIcon fontSize="small" />
+                    ↗
                   </IconButton>
                 </Tooltip>
               </Box>
             </Box>
           </CardContent>
-        </TradeCard>
+        </Card>
       );
     });
-  }, [trades, newTradeIds, amm, calculatePrice, theme, handleTxClick]);
+  }, [trades, newTradeIds, amm, calculatePrice, handleTxClick]);
 
 
   if (loading) {
     return (
       <Stack spacing={1}>
-        <Box display="flex" justifyContent="center" p={4}>
-          <CircularProgress size={40} thickness={4} />
+        <Box style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+          <CircularProgress size={40} thickness={4} isDark={isDark} />
         </Box>
       </Stack>
     );
@@ -1010,21 +1236,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
     return (
       <Stack spacing={1}>
         <Box
-          sx={{
+          style={{
             textAlign: 'center',
-            py: 3,
+            padding: '24px',
             backgroundColor: 'transparent',
-            backdropFilter: 'none',
-            WebkitBackdropFilter: 'none',
             borderRadius: '12px',
-            border: `1.5px dashed ${alpha(theme.palette.divider, 0.2)}`,
-            boxShadow: 'none'
+            border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
           }}
         >
-          <Typography variant="h6" color="text.secondary" gutterBottom>
+          <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px' }}>
             No Recent Trades
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" color="text.secondary" isDark={isDark}>
             Trading activity will appear here when available
           </Typography>
         </Box>
@@ -1033,150 +1256,117 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
   }
 
   return (
-    <Stack spacing={1} sx={{ mx: 0, width: '100%' }}>
+    <Stack spacing={1} style={{ marginLeft: 0, marginRight: 0, width: '100%' }}>
       <Box
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
+        style={{
+          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between'
         }}
       >
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          aria-label="trading tabs"
-          sx={{
-            '& .MuiTab-root': {
-              fontSize: '13px',
-              fontWeight: 400,
-              textTransform: 'none',
-              minHeight: 36,
-              py: 1
-            },
-            '& .MuiTabs-indicator': {
-              height: 2,
-              borderRadius: '2px 2px 0 0'
-            }
-          }}
-        >
-          <Tab label="Trading History" />
-          <Tab label="AMM Pools" />
-          <Tab label="Top Traders" />
-          <Tab label="Rich List" />
+        <Tabs isDark={isDark}>
+          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>Trading History</Tab>
+          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}>AMM Pools</Tab>
+          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}>Top Traders</Tab>
+          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Rich List</Tab>
         </Tabs>
       </Box>
 
       {tabValue === 0 && (
         <>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <FormControlLabel
-              control={
-                <Switch
-                  checked={xrpOnly}
-                  onChange={handleXrpOnlyChange}
-                  size="small"
-                />
-              }
-              label="XRP Trades Only"
-              sx={{
-                '& .MuiFormControlLabel-label': {
-                  fontSize: '13px',
-                  fontWeight: 400,
-                  opacity: 0.8
-                }
-              }}
-            />
+          <Box style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <FormControlLabel isDark={isDark}>
+              <Switch checked={xrpOnly} isDark={isDark}>
+                <input type="checkbox" checked={xrpOnly} onChange={handleXrpOnlyChange} />
+                <span></span>
+              </Switch>
+              <span style={{ marginLeft: '8px' }}>XRP Trades Only</span>
+            </FormControlLabel>
           </Box>
           {/* Table Headers with integrated title */}
           <Box
-            sx={{
+            style={{
               display: 'grid',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: '1fr 1fr',
-                md: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr'
-              },
-              gap: 1,
-              p: 1,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              backgroundColor: alpha(theme.palette.background.default, 0.3),
+              gridTemplateColumns: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr',
+              gap: '8px',
+              padding: '8px',
+              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+              backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
               borderRadius: '12px 12px 0 0',
-              border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-              boxShadow: 'none',
-              '& > *': {
-                fontWeight: 400,
-                color: theme.palette.text.secondary,
-                fontSize: '13px',
-                textTransform: 'uppercase',
-                letterSpacing: '0.02em',
-                opacity: 0.7
-              }
+              border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
             }}
           >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>TIME / TYPE</Typography>
-              <LiveIndicator sx={{ display: { xs: 'none', md: 'flex' }, ml: 1 }}>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>TIME / TYPE</Typography>
+              <LiveIndicator isDark={isDark} style={{ marginLeft: '8px' }}>
                 <LiveCircle />
                 <Typography
                   variant="caption"
                   fontWeight="600"
-                  sx={{ color: 'primary.main', fontSize: '10px' }}
+                  isDark={isDark}
+                  style={{ color: '#147DFE', fontSize: '10px' }}
                 >
                   LIVE
                 </Typography>
               </LiveIndicator>
             </Box>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>PRICE (XRP)</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>AMOUNT</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>TOTAL</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}>BY</Typography>
-            <Typography sx={{ display: { xs: 'none', md: 'block' }, fontSize: '11px' }}></Typography>
+            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>PRICE (XRP)</Typography>
+            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>AMOUNT</Typography>
+            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>TOTAL</Typography>
+            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>BY</Typography>
+            <Typography isDark={isDark} style={{ fontSize: '11px' }}></Typography>
           </Box>
 
-          <Stack spacing={0.25} sx={{ mt: 0.5 }}>
+          <Stack spacing={0.25} style={{ marginTop: '4px' }}>
             {renderedTrades}
           </Stack>
 
           {totalPages > 1 && (
-            <Stack direction="row" justifyContent="center" sx={{ mt: 2 }}>
-              <StyledPagination
-                count={totalPages}
-                page={page}
-                onChange={handlePageChange}
-                size="large"
-                showFirstButton
-                showLastButton
-              />
-            </Stack>
+            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+              <Pagination isDark={isDark}>
+                <PaginationButton onClick={() => handlePageChange(null, 1)} disabled={page === 1} isDark={isDark}>≪</PaginationButton>
+                <PaginationButton onClick={() => handlePageChange(null, page - 1)} disabled={page === 1} isDark={isDark}>‹</PaginationButton>
+                {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
+                  const pageNum = i + 1;
+                  return (
+                    <PaginationButton key={pageNum} onClick={() => handlePageChange(null, pageNum)} selected={page === pageNum} isDark={isDark}>
+                      {pageNum}
+                    </PaginationButton>
+                  );
+                })}
+                <PaginationButton onClick={() => handlePageChange(null, page + 1)} disabled={page === totalPages} isDark={isDark}>›</PaginationButton>
+                <PaginationButton onClick={() => handlePageChange(null, totalPages)} disabled={page === totalPages} isDark={isDark}>≫</PaginationButton>
+              </Pagination>
+            </div>
           )}
         </>
       )}
 
 
       {tabValue === 1 && (
-        <Box sx={{ mt: 2 }}>
+        <Box style={{ marginTop: '16px' }}>
           {ammLoading ? (
-            <Box display="flex" justifyContent="center" p={4}>
-              <CircularProgress size={40} />
+            <Box style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
+              <CircularProgress size={40} isDark={isDark} />
             </Box>
           ) : ammPools.length === 0 ? (
-            <Box sx={{ textAlign: 'center', py: 3, border: `1.5px dashed ${alpha(theme.palette.divider, 0.2)}`, borderRadius: '12px' }}>
-              <Typography variant="body2" color="text.secondary">No AMM pools found</Typography>
+            <Box style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, borderRadius: '12px' }}>
+              <Typography variant="body2" color="text.secondary" isDark={isDark}>No AMM pools found</Typography>
             </Box>
           ) : (
-            <TableContainer component={Paper} sx={{ boxShadow: 'none', border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`, borderRadius: '12px' }}>
-              <Table size="small">
+            <TableContainer isDark={isDark} style={{ borderRadius: '12px' }}>
+              <Paper isDark={isDark}>
+              <Table size="small" isDark={isDark}>
                 <TableHead>
-                  <TableRow sx={{ backgroundColor: alpha(theme.palette.background.default, 0.3) }}>
-                    <TableCell sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Pool Pair</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Trading Fee</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d APY</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d Fees Earned</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>7d Volume</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Liquidity</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', py: 1.5 }}>Action</TableCell>
+                  <TableRow isDark={isDark} style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
+                    <TableCell style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Pool Pair</TableCell>
+                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Trading Fee</TableCell>
+                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>7d APY</TableCell>
+                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>7d Fees Earned</TableCell>
+                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>7d Volume</TableCell>
+                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Liquidity</TableCell>
+                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Action</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
@@ -1187,14 +1377,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                     return (
                       <TableRow
                         key={pool._id}
-                        sx={{
-                          '&:hover': { backgroundColor: alpha(theme.palette.action.hover, 0.02) },
-                          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                        }}
+                        isDark={isDark}
                       >
-                        <TableCell sx={{ py: 1.5 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', mr: 0.5 }}>
+                        <TableCell style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                          <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Box style={{ display: 'flex', alignItems: 'center', marginRight: '4px' }}>
                               <img
                                 src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
                                 alt={asset1}
@@ -1206,37 +1393,38 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                                 style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)', marginLeft: -8 }}
                               />
                             </Box>
-                            <Typography variant="body2" fontWeight="500" sx={{ fontSize: '13px' }}>
+                            <Typography variant="body2" fontWeight="500" isDark={isDark} style={{ fontSize: '13px' }}>
                               {asset1}/{asset2}
                             </Typography>
                           </Box>
                         </TableCell>
-                        <TableCell align="right" sx={{ py: 1.5 }}>
-                          <Typography variant="body2" sx={{ fontSize: '13px', opacity: 0.8 }}>
+                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px', opacity: 0.8 }}>
                             {feePercent}%
                           </Typography>
                         </TableCell>
-                        <TableCell align="right" sx={{ py: 1.5 }}>
+                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
                           <Typography
                             variant="body2"
                             color={pool.apy7d?.apy > 0 ? 'success.main' : 'text.secondary'}
-                            sx={{ fontSize: '13px', fontWeight: pool.apy7d?.apy > 0 ? 500 : 400 }}
+                            isDark={isDark}
+                            style={{ fontSize: '13px', fontWeight: pool.apy7d?.apy > 0 ? 500 : 400 }}
                           >
                             {pool.apy7d?.apy ? `${pool.apy7d.apy.toFixed(2)}%` : '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell align="right" sx={{ py: 1.5 }}>
-                          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
                             {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell align="right" sx={{ py: 1.5 }}>
-                          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
                             {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell align="right" sx={{ py: 1.5 }}>
-                          <Typography variant="body2" sx={{ fontSize: '13px' }}>
+                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
+                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
                             {pool.apy7d?.liquidity > 0
                               ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
                               : pool.currentLiquidity
@@ -1244,29 +1432,16 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                                 : '-'}
                           </Typography>
                         </TableCell>
-                        <TableCell align="right" sx={{ py: 1.5 }}>
+                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
                           <Button
-                            variant="outlined"
                             size="small"
-                            startIcon={<AddIcon />}
                             onClick={() => handleAddLiquidity(pool)}
-                            sx={{
-                              py: 0.5,
-                              px: 1.5,
-                              fontSize: '12px',
-                              fontWeight: 400,
-                              textTransform: 'none',
-                              borderRadius: '8px',
-                              borderWidth: '1.5px',
-                              borderColor: alpha(theme.palette.divider, 0.2),
-                              '&:hover': {
-                                borderWidth: '1.5px',
-                                borderColor: theme.palette.primary.main,
-                                backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                              }
+                            style={{
+                              padding: '4px 12px'
                             }}
+                            isDark={isDark}
                           >
-                            Add
+                            ➕ Add
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -1274,6 +1449,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
                   })}
                 </TableBody>
               </Table>
+              </Paper>
             </TableContainer>
           )}
         </Box>
@@ -1288,71 +1464,84 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
       )}
 
       {/* Add Liquidity Dialog */}
-      <Dialog open={addLiquidityDialog.open} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Dialog open={addLiquidityDialog.open} onClick={(e) => e.target === e.currentTarget && handleCloseDialog()}>
+        <DialogPaper isDark={isDark} maxWidth="sm">
+        <DialogTitle isDark={isDark} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           Add Liquidity
-          <IconButton onClick={handleCloseDialog} size="small">
-            <CloseIcon />
+          <IconButton onClick={handleCloseDialog} size="small" isDark={isDark}>
+            ×
           </IconButton>
         </DialogTitle>
         <DialogContent>
           {addLiquidityDialog.pool && (
-            <Stack spacing={2.5} sx={{ mt: 1 }}>
+            <Stack spacing={2.5} style={{ marginTop: '8px' }}>
               <Box>
-                <Typography variant="body2" sx={{ mb: 1, fontSize: '13px', opacity: 0.7 }}>
+                <Typography variant="body2" isDark={isDark} style={{ marginBottom: '8px', fontSize: '13px', opacity: 0.7 }}>
                   Pool: {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}/{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
                 </Typography>
               </Box>
 
-              <FormControl component="fieldset">
-                <Typography variant="body2" sx={{ mb: 1, fontSize: '13px', fontWeight: 500 }}>Deposit Mode</Typography>
-                <RadioGroup value={depositMode} onChange={(e) => setDepositMode(e.target.value)}>
-                  <FormControlLabel value="double" control={<Radio size="small" />} label={<Typography sx={{ fontSize: '13px' }}>Double-asset (both tokens, no fee)</Typography>} />
-                  <FormControlLabel value="single1" control={<Radio size="small" />} label={<Typography sx={{ fontSize: '13px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</Typography>} />
-                  <FormControlLabel value="single2" control={<Radio size="small" />} label={<Typography sx={{ fontSize: '13px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</Typography>} />
+              <FormControl>
+                <Typography variant="body2" isDark={isDark} style={{ marginBottom: '8px', fontSize: '13px', fontWeight: 500 }}>Deposit Mode</Typography>
+                <RadioGroup>
+                  <FormControlLabel isDark={isDark}>
+                    <Radio type="radio" value="double" checked={depositMode === 'double'} onChange={(e) => setDepositMode(e.target.value)} />
+                    <span style={{ marginLeft: '4px' }}>Double-asset (both tokens, no fee)</span>
+                  </FormControlLabel>
+                  <FormControlLabel isDark={isDark}>
+                    <Radio type="radio" value="single1" checked={depositMode === 'single1'} onChange={(e) => setDepositMode(e.target.value)} />
+                    <span style={{ marginLeft: '4px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</span>
+                  </FormControlLabel>
+                  <FormControlLabel isDark={isDark}>
+                    <Radio type="radio" value="single2" checked={depositMode === 'single2'} onChange={(e) => setDepositMode(e.target.value)} />
+                    <span style={{ marginLeft: '4px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</span>
+                  </FormControlLabel>
                 </RadioGroup>
               </FormControl>
 
               {(depositMode === 'double' || depositMode === 'single1') && (
-                <TextField
-                  label={decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
-                  value={depositAmount1}
-                  onChange={(e) => handleAmount1Change(e.target.value)}
-                  type="number"
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">{decodeCurrency(addLiquidityDialog.pool.asset1.currency)}</InputAdornment>
-                  }}
-                />
+                <div>
+                  <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                    {decodeCurrency(addLiquidityDialog.pool.asset1.currency)}
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TextField
+                      value={depositAmount1}
+                      onChange={(e) => handleAmount1Change(e.target.value)}
+                      type="number"
+                      placeholder="0.00"
+                      isDark={isDark}
+                    />
+                    <span style={{ fontSize: '13px', opacity: 0.7 }}>{decodeCurrency(addLiquidityDialog.pool.asset1.currency)}</span>
+                  </div>
+                </div>
               )}
 
               {(depositMode === 'double' || depositMode === 'single2') && (
-                <TextField
-                  label={decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
-                  value={depositAmount2}
-                  onChange={(e) => handleAmount2Change(e.target.value)}
-                  type="number"
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    endAdornment: <InputAdornment position="end">{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}</InputAdornment>
-                  }}
-                />
+                <div>
+                  <label style={{ fontSize: '13px', marginBottom: '4px', display: 'block', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                    {decodeCurrency(addLiquidityDialog.pool.asset2.currency)}
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <TextField
+                      value={depositAmount2}
+                      onChange={(e) => handleAmount2Change(e.target.value)}
+                      type="number"
+                      placeholder="0.00"
+                      isDark={isDark}
+                    />
+                    <span style={{ fontSize: '13px', opacity: 0.7 }}>{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}</span>
+                  </div>
+                </div>
               )}
 
               <Button
-                variant="outlined"
                 onClick={handleSubmitDeposit}
-                fullWidth
-                sx={{
-                  py: 1.5,
+                isDark={isDark}
+                style={{
+                  padding: '12px 24px',
                   fontSize: '14px',
-                  fontWeight: 400,
-                  textTransform: 'none',
-                  borderRadius: '12px',
-                  borderWidth: '1.5px',
-                  '&:hover': { borderWidth: '1.5px' }
+                  width: '100%'
                 }}
               >
                 Add Liquidity
@@ -1360,6 +1549,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick }) => {
             </Stack>
           )}
         </DialogContent>
+        </DialogPaper>
       </Dialog>
     </Stack>
   );

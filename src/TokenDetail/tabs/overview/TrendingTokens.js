@@ -1,23 +1,5 @@
-import {
-  useTheme,
-  styled,
-  Link,
-  Stack,
-  Typography,
-  Box,
-  useMediaQuery,
-  Button,
-  Card,
-  Skeleton,
-  Chip,
-  alpha,
-  Avatar,
-  Alert
-} from '@mui/material';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import styled from '@emotion/styled';
+import Image from 'next/image';
 
 import { useContext, useState, useEffect, useMemo } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -33,64 +15,88 @@ const currencySymbols = {
 };
 import axios from 'axios';
 
-const TokenCard = styled(Card)(({ theme }) => ({
+// Helper function for alpha
+const alpha = (color, opacity) => {
+  if (color.startsWith('rgba')) {
+    return color.replace(/[\d.]+\)$/g, `${opacity})`);
+  }
+  if (color.startsWith('rgb')) {
+    return color.replace('rgb', 'rgba').replace(')', `, ${opacity})`);
+  }
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color;
+};
+
+const Container = styled('div')(({ isDark }) => ({
+  borderRadius: '12px',
+  background: 'transparent',
+  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+  boxShadow: 'none',
+  position: 'relative',
+  overflow: 'hidden',
+  width: '100%',
+  marginBottom: '6px',
+  '&:hover': {
+    boxShadow: 'none',
+    borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
+    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'
+  }
+}));
+
+const TokenCard = styled('div')(({ isDark }) => ({
   background: 'transparent',
   backdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
+  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
   borderRadius: '10px',
   padding: '6px 10px',
   cursor: 'pointer',
   boxShadow: 'none',
   '&:hover': {
-    background: alpha(theme.palette.primary.main, 0.03),
-    borderColor: alpha(theme.palette.primary.main, 0.2)
+    background: alpha('#147DFE', 0.03),
+    borderColor: alpha('#147DFE', 0.2)
   }
 }));
 
-const StyledCard = styled(Card)(({ theme }) => ({
-  borderRadius: '12px',
-  background: 'transparent',
-  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-  boxShadow: 'none',
-  position: 'relative',
-  overflow: 'hidden',
-  width: '100%',
-  mb: 0.75,
-  '&:hover': {
-    boxShadow: 'none',
-    borderColor: alpha(theme.palette.divider, 0.3),
-    background: alpha(theme.palette.background.paper, 0.04)
-  }
-}));
+const RankBadge = styled('div')(({ isDark, rank }) => {
+  const getRankColors = () => {
+    if (rank === 1) return { bg: alpha('#FFD700', 0.12), color: '#FFD700', border: alpha('#FFD700', 0.4) };
+    if (rank === 2) return { bg: alpha('#C0C0C0', 0.12), color: '#C0C0C0', border: alpha('#C0C0C0', 0.4) };
+    if (rank === 3) return { bg: alpha('#CD7F32', 0.12), color: '#CD7F32', border: alpha('#CD7F32', 0.4) };
+    return {
+      bg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+      color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
+      border: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'
+    };
+  };
+  const colors = getRankColors();
 
-const RankBadge = styled(Box)(({ theme, rank }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 22,
-  height: 22,
-  borderRadius: '6px',
-  fontWeight: 500,
-  fontSize: '11px',
-  flexShrink: 0,
-  background:
-    rank === 1
-      ? alpha('#FFD700', 0.12)
-      : rank === 2
-        ? alpha('#C0C0C0', 0.12)
-        : rank === 3
-          ? alpha('#CD7F32', 0.12)
-          : alpha(theme.palette.divider, 0.05),
-  color: rank === 1 ? '#FFD700' : rank === 2 ? '#C0C0C0' : rank === 3 ? '#CD7F32' : alpha(theme.palette.text.secondary, 0.6),
-  border: `1px solid ${rank === 1 ? alpha('#FFD700', 0.4) : rank === 2 ? alpha('#C0C0C0', 0.4) : rank === 3 ? alpha('#CD7F32', 0.4) : alpha(theme.palette.divider, 0.15)}`,
-  [theme.breakpoints.down('sm')]: {
-    width: 20,
-    height: 20,
-    fontSize: '10px'
-  }
-}));
+  return {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: 22,
+    height: 22,
+    borderRadius: '6px',
+    fontWeight: 500,
+    fontSize: '11px',
+    flexShrink: 0,
+    background: colors.bg,
+    color: colors.color,
+    border: `1px solid ${colors.border}`,
+    '@media (max-width: 600px)': {
+      width: 20,
+      height: 20,
+      fontSize: '10px'
+    }
+  };
+});
 
-const StatsBox = styled(Box)(({ theme }) => ({
+const StatsBox = styled('div')({
   display: 'flex',
   flexDirection: 'column',
   gap: 0,
@@ -104,15 +110,137 @@ const StatsBox = styled(Box)(({ theme }) => ({
     textAlign: 'right',
     width: '100%'
   }
+});
+
+const Stack = styled('div')(({ direction = 'column', spacing = 0, alignItems, justifyContent, sx = {} }) => ({
+  display: 'flex',
+  flexDirection: direction,
+  gap: typeof spacing === 'number' ? `${spacing * 8}px` : spacing,
+  alignItems,
+  justifyContent,
+  ...sx
 }));
 
+const Box = styled('div')({});
+
+const Link = styled('a')(({ isDark }) => ({
+  color: 'inherit',
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'none'
+  },
+  '&:focus-visible': {
+    outline: '2px solid #147DFE',
+    outlineOffset: '2px',
+    borderRadius: '12px'
+  }
+}));
+
+const Button = styled('button')(({ isDark }) => ({
+  textTransform: 'none',
+  fontSize: '12px',
+  fontWeight: 400,
+  color: '#147DFE',
+  padding: '4px 8px',
+  minHeight: 'auto',
+  background: 'transparent',
+  border: 'none',
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: '4px',
+  '&:hover': {
+    backgroundColor: alpha('#147DFE', 0.04)
+  },
+  '&:focus-visible': {
+    outline: '2px solid #147DFE',
+    outlineOffset: '2px'
+  }
+}));
+
+const Typography = styled('span')(({ variant, color, sx = {} }) => {
+  const baseStyles = {};
+
+  if (variant === 'h6') {
+    baseStyles.fontSize = '0.75rem';
+    baseStyles.fontWeight = 400;
+  } else if (variant === 'body2') {
+    baseStyles.fontSize = '13px';
+    baseStyles.fontWeight = 400;
+  } else if (variant === 'caption') {
+    baseStyles.fontSize = '10px';
+  }
+
+  if (color === 'text.secondary') {
+    baseStyles.opacity = 0.7;
+  }
+
+  return { ...baseStyles, ...sx };
+});
+
+const Chip = styled('span')(({ isDark }) => ({
+  height: 14,
+  fontSize: '9px',
+  backgroundColor: alpha('#4caf50', 0.08),
+  color: '#4caf50',
+  fontWeight: 400,
+  padding: '0 4px',
+  borderRadius: '4px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center'
+}));
+
+const Avatar = styled('div')(({ isDark }) => ({
+  width: 32,
+  height: 32,
+  fontSize: '14px',
+  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+  '& img': {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  }
+}));
+
+const Skeleton = ({ variant, width, height, sx = {} }) => {
+  const isDark = typeof window !== 'undefined' && document.documentElement.classList.contains('dark');
+  return (
+    <div
+      style={{
+        width: typeof width === 'number' ? `${width}px` : width || '100%',
+        height: typeof height === 'number' ? `${height}px` : height || '20px',
+        backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+        borderRadius: variant === 'rounded' ? '12px' : variant === 'text' ? '4px' : '4px',
+        ...sx
+      }}
+    />
+  );
+};
+
+const Alert = styled('div')(({ severity, isDark }) => ({
+  background: 'transparent',
+  border: `1.5px solid ${severity === 'error' ? alpha('#f44336', 0.2) : alpha('#147DFE', 0.2)}`,
+  borderRadius: '12px',
+  padding: '12px',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '8px',
+  color: severity === 'error' ? '#f44336' : '#147DFE'
+}));
+
+const BASE_URL = 'https://api.xrpl.to/api';
+
 const TrendingTokens = () => {
-  const BASE_URL = 'https://api.xrpl.to/api';
-  const theme = useTheme();
   const { darkMode, activeFiatCurrency } = useContext(AppContext);
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || (activeFiatCurrency === 'CNH' ? metrics.CNY : null) || 1;
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   const [trendingList, setTrendingList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,7 +267,7 @@ const TrendingTokens = () => {
       }
     };
     getTrendingTokens();
-  }, [BASE_URL]);
+  }, []);
 
   // Memoize formatting functions to avoid recalculation on every render
   const formatPrice = useMemo(() => {
@@ -195,18 +323,17 @@ const TrendingTokens = () => {
 
   if (loading) {
     return (
-      <StyledCard elevation={0}>
+      <Container isDark={darkMode}>
         {/* Header Skeleton */}
         <Box
-          sx={{
-            mb: 0.75,
+          style={{
+            marginBottom: '6px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            px: { xs: 0.75, sm: 1 },
-            pt: { xs: 0.75, sm: 1 },
-            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-            pb: 0.75
+            padding: isMobile ? '6px' : '8px',
+            borderBottom: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+            paddingBottom: '6px'
           }}
         >
           <Skeleton variant="text" width={140} height={24} />
@@ -214,187 +341,148 @@ const TrendingTokens = () => {
         </Box>
 
         {/* Column Headers Skeleton */}
-        <Box sx={{ px: { xs: 1, sm: 1.25 }, mb: 0.25, mt: 1 }}>
+        <Box style={{ padding: '8px 10px', marginBottom: '2px', marginTop: '8px' }}>
           <Skeleton variant="text" width="100%" height={16} />
         </Box>
 
         {/* Token List Skeleton */}
-        <Stack spacing={0.25} sx={{ px: { xs: 0.75, sm: 1 }, pb: { xs: 0.75, sm: 1 } }}>
+        <Stack spacing={0.25} sx={{ padding: isMobile ? '6px' : '8px', paddingBottom: isMobile ? '6px' : '8px' }}>
           {[...Array(isMobile ? 5 : 15)].map((_, i) => (
             <Skeleton key={`trending-skeleton-${i}`} variant="rounded" height={58} sx={{ borderRadius: '12px' }} />
           ))}
         </Stack>
-      </StyledCard>
+      </Container>
     );
   }
 
   if (error) {
     return (
-      <StyledCard elevation={0} sx={{ p: 2 }}>
-        <Alert
-          severity="error"
-          icon={<ErrorOutlineIcon fontSize="small" />}
-          sx={{
-            background: 'transparent',
-            border: `1.5px solid ${alpha(theme.palette.error.main, 0.2)}`,
-            borderRadius: '12px',
-            '& .MuiAlert-icon': {
-              color: theme.palette.error.main
-            }
-          }}
-        >
+      <Container isDark={darkMode} style={{ padding: '16px' }}>
+        <Alert severity="error" isDark={darkMode}>
+          <span style={{ marginRight: '4px' }}>⚠</span>
           {error}
         </Alert>
-      </StyledCard>
+      </Container>
     );
   }
 
   if (!trendingList || trendingList.length === 0) {
     return (
-      <StyledCard elevation={0} sx={{ p: 3, textAlign: 'center' }}>
-        <TrendingUpIcon sx={{ fontSize: 48, color: alpha(theme.palette.text.secondary, 0.3), mb: 1 }} />
-        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.9rem' }}>
+      <Container isDark={darkMode} style={{ padding: '24px', textAlign: 'center' }}>
+        <div style={{ fontSize: 48, color: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)', marginBottom: '8px' }}>📈</div>
+        <Typography variant="body2" style={{ fontSize: '0.9rem', opacity: 0.7 }}>
           No trending tokens available
         </Typography>
-      </StyledCard>
+      </Container>
     );
   }
 
   return (
-    <StyledCard elevation={0} component="section" aria-label="Trending Tokens">
+    <Container isDark={darkMode} role="region" aria-label="Trending Tokens">
       {/* Header */}
       <Box
-        sx={{
-          mb: 0.75,
+        style={{
+          marginBottom: '6px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          px: { xs: 0.75, sm: 1 },
-          pt: { xs: 0.75, sm: 1 },
-          borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-          pb: 0.75
+          padding: isMobile ? '6px' : '8px',
+          borderBottom: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+          paddingBottom: '6px'
         }}
       >
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography variant="h6" component="h2" fontWeight={400} fontSize="0.75rem">
+          <Typography variant="h6" style={{ fontWeight: 400, fontSize: '0.75rem' }}>
             Trending Tokens
           </Typography>
-          <Chip
-            label="LIVE"
-            size="small"
-            sx={{
-              height: 14,
-              fontSize: '9px',
-              bgcolor: alpha('#4caf50', 0.08),
-              color: '#4caf50',
-              fontWeight: 400,
-              px: 0.5
-            }}
-          />
+          <Chip isDark={darkMode}>LIVE</Chip>
         </Stack>
-        <Button
-          component={Link}
-          href="/trending"
-          endIcon={<ArrowForwardIcon sx={{ fontSize: 11 }} />}
-          aria-label="View all trending tokens"
-          sx={{
-            textTransform: 'none',
-            fontSize: '12px',
-            fontWeight: 400,
-            color: theme.palette.primary.main,
-            padding: '4px 8px',
-            minHeight: 'auto',
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.primary.main, 0.04)
-            },
-            '&:focus-visible': {
-              outline: `2px solid ${theme.palette.primary.main}`,
-              outlineOffset: '2px'
-            }
-          }}
-        >
+        <Button isDark={darkMode} as="a" href="/trending" aria-label="View all trending tokens">
           View All
+          <span style={{ fontSize: 11 }}>→</span>
         </Button>
       </Box>
 
       {/* Column Headers - Desktop */}
       <Box
-        sx={{
-          display: { xs: 'none', sm: 'flex' },
+        style={{
+          display: isMobile ? 'none' : 'flex',
           alignItems: 'center',
-          gap: 1,
-          mb: 0.5,
-          px: 1.25,
+          gap: '8px',
+          marginBottom: '4px',
+          padding: '0 10px',
           opacity: 0.5
         }}
       >
-        <Box sx={{ width: 22 }} />
-        <Box sx={{ width: 32 }} />
-        <Box sx={{ flex: '1 1 auto', minWidth: 0, ml: 0.75 }}>
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
+        <Box style={{ width: 22 }} />
+        <Box style={{ width: 32 }} />
+        <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '6px' }}>
+          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
             Token
           </Typography>
         </Box>
         <Box
-          sx={{
+          style={{
             display: 'grid',
             gridTemplateColumns: '75px 60px 70px 70px',
-            gap: 1,
-            ml: 'auto'
+            gap: '8px',
+            marginLeft: 'auto'
           }}
         >
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             Price
           </Typography>
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             24h %
           </Typography>
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             MCap
           </Typography>
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
             Volume
           </Typography>
         </Box>
       </Box>
 
       {/* Column Headers - Mobile */}
-      <Box
-        sx={{
-          display: { xs: 'flex', sm: 'none' },
-          alignItems: 'center',
-          gap: 0.75,
-          mb: 0.5,
-          px: 0.75,
-          opacity: 0.5
-        }}
-      >
-        <Box sx={{ width: 22 }} />
-        <Box sx={{ width: 32 }} />
-        <Box sx={{ flex: '1 1 auto', minWidth: 0, ml: 0.5 }}>
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
-            Token
-          </Typography>
-        </Box>
+      {isMobile && (
         <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: '60px 70px',
-            gap: 1,
-            ml: 'auto'
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginBottom: '4px',
+            padding: '0 6px',
+            opacity: 0.5
           }}
         >
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
-            24h %
-          </Typography>
-          <Typography sx={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
-            Volume
-          </Typography>
+          <Box style={{ width: 22 }} />
+          <Box style={{ width: 32 }} />
+          <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '4px' }}>
+            <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
+              Token
+            </Typography>
+          </Box>
+          <Box
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '60px 70px',
+              gap: '8px',
+              marginLeft: 'auto'
+            }}
+          >
+            <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+              24h %
+            </Typography>
+            <Typography style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+              Volume
+            </Typography>
+          </Box>
         </Box>
-      </Box>
+      )}
 
       {/* Token List */}
-      <Stack spacing={0.5} sx={{ px: { xs: 0.75, sm: 1 }, pb: { xs: 0.75, sm: 1 } }}>
+      <Stack spacing={0.5} sx={{ padding: isMobile ? '6px' : '8px', paddingBottom: isMobile ? '6px' : '8px' }}>
         {trendingList.slice(0, isMobile ? 5 : 15).map((token, index) => {
           const rank = index + 1;
           const priceChange = token.pro24h || 0;
@@ -404,82 +492,76 @@ const TrendingTokens = () => {
             <Link
               key={token.md5 || token.slug || `trending-${index}`}
               href={`/token/${token.slug}`}
-              underline="none"
-              color="inherit"
+              isDark={darkMode}
               aria-label={`View ${token.user} token details`}
-              sx={{
-                '&:hover': {
-                  textDecoration: 'none'
-                },
-                '&:focus-visible': {
-                  outline: `2px solid ${theme.palette.primary.main}`,
-                  outlineOffset: '2px',
-                  borderRadius: '12px'
-                }
-              }}>
-              <TokenCard>
+            >
+              <TokenCard isDark={darkMode}>
                 <Box
-                  sx={{
+                  style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: { xs: 0.75, sm: 1 }
+                    gap: isMobile ? '6px' : '8px'
                   }}
                 >
                   {/* Rank */}
-                  <RankBadge rank={rank}>{rank}</RankBadge>
+                  <RankBadge rank={rank} isDark={darkMode}>{rank}</RankBadge>
 
                   {/* Token Avatar */}
-                  <Avatar
-                    src={`https://s1.xrpl.to/token/${token.md5}`}
-                    alt={token.user}
-                    sx={{
-                      width: 32,
-                      height: 32,
-                      fontSize: '14px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.15)}`
-                    }}
-                  >
-                    {token.user?.[0]?.toUpperCase()}
+                  <Avatar isDark={darkMode}>
+                    {token.md5 ? (
+                      <img
+                        src={`https://s1.xrpl.to/token/${token.md5}`}
+                        alt={token.user}
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.parentNode.textContent = token.user?.[0]?.toUpperCase();
+                        }}
+                      />
+                    ) : (
+                      token.user?.[0]?.toUpperCase()
+                    )}
                   </Avatar>
 
                   {/* Token Info */}
-                  <Box sx={{ flex: '1 1 auto', minWidth: 0, ml: { xs: 0.5, sm: 0.75 } }}>
+                  <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: isMobile ? '4px' : '6px' }}>
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <Typography
                         variant="body2"
-                        fontWeight={400}
-                        sx={{
-                          fontSize: { xs: '13px', sm: '13px' },
+                        style={{
+                          fontSize: '13px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          maxWidth: { xs: '90px', sm: 'none' }
+                          maxWidth: isMobile ? '90px' : 'none'
                         }}
                       >
                         {token.user}
                       </Typography>
                       {token.verified && (
-                        <VerifiedIcon
-                          sx={{
+                        <span
+                          style={{
                             fontSize: 12,
                             color: '#1976d2',
                             flexShrink: 0
                           }}
-                        />
+                          title="Verified"
+                        >
+                          ✓
+                        </span>
                       )}
                     </Stack>
-                    {token.name && token.name !== token.user && (
+                    {token.name && token.name !== token.user && !isMobile && (
                       <Typography
                         variant="caption"
                         color="text.secondary"
-                        sx={{
+                        style={{
                           fontSize: '10px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                           opacity: 0.5,
-                          display: { xs: 'none', sm: 'block' },
-                          mt: -0.25
+                          marginTop: '-2px',
+                          display: 'block'
                         }}
                       >
                         {token.name}
@@ -489,24 +571,23 @@ const TrendingTokens = () => {
 
                   {/* Stats Grid */}
                   <Box
-                    sx={{
+                    style={{
                       display: 'grid',
-                      gridTemplateColumns: {
-                        xs: '60px 70px',
-                        sm: '75px 60px 70px 70px'
-                      },
-                      gap: 1,
-                      ml: 'auto'
+                      gridTemplateColumns: isMobile ? '60px 70px' : '75px 60px 70px 70px',
+                      gap: '8px',
+                      marginLeft: 'auto'
                     }}
                   >
-                    <StatsBox sx={{ display: { xs: 'none', sm: 'flex' } }}>
-                      <Box className="value">{formatPrice(token.exch)}</Box>
-                    </StatsBox>
+                    {!isMobile && (
+                      <StatsBox>
+                        <Box className="value">{formatPrice(token.exch)}</Box>
+                      </StatsBox>
+                    )}
 
                     <StatsBox>
                       <Box
                         className="value"
-                        sx={{
+                        style={{
                           color: isPositive ? '#4caf50' : '#f44336'
                         }}
                       >
@@ -515,9 +596,11 @@ const TrendingTokens = () => {
                       </Box>
                     </StatsBox>
 
-                    <StatsBox sx={{ display: { xs: 'none', sm: 'flex' } }}>
-                      <Box className="value">{formatCompact(token.marketcap)}</Box>
-                    </StatsBox>
+                    {!isMobile && (
+                      <StatsBox>
+                        <Box className="value">{formatCompact(token.marketcap)}</Box>
+                      </StatsBox>
+                    )}
 
                     <StatsBox>
                       <Box className="value">{formatCompact(token.vol24hxrp)}</Box>
@@ -529,7 +612,7 @@ const TrendingTokens = () => {
           );
         })}
       </Stack>
-    </StyledCard>
+    </Container>
   );
 };
 
