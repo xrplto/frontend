@@ -40,7 +40,7 @@ const Typography = styled.div`
     props.color === 'text.primary' ? (props.isDark ? '#FFFFFF' : '#212B36') :
     props.color === 'primary.main' ? '#147DFE' :
     props.color === 'success.main' ? '#4caf50' :
-    props.isDark ? '#FFFFFF' : '#212B36'};
+    props.isDark ? '#FFFFFF !important' : '#212B36 !important'};
   opacity: ${props => props.opacity || 1};
 `;
 
@@ -211,6 +211,29 @@ const Table = styled.table`
   width: 100%;
   border-collapse: collapse;
   color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+`;
+
+const TableHeader = styled.div`
+  display: flex;
+  padding: 12px 8px;
+  background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  border-bottom: ${props => props.isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)'};
+  border-radius: 12px 12px 0 0;
+  border: ${props => props.isDark ? '1.5px solid rgba(255,255,255,0.15)' : '1.5px solid rgba(0,0,0,0.15)'};
+
+  & > div,
+  & > div *,
+  & div,
+  & span {
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    color: ${props => props.isDark ? '#FFFFFF !important' : '#000000 !important'};
+  }
+
+  & span[style*="color: #147DFE"] {
+    color: #147DFE !important;
+  }
 `;
 
 const TableHead = styled.thead``;
@@ -414,10 +437,12 @@ const DialogTitle = styled.div`
   border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   font-size: 1.25rem;
   font-weight: 500;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
 `;
 
 const DialogContent = styled.div`
   padding: 24px;
+  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
 `;
 
 const TextField = styled.input`
@@ -1284,41 +1309,31 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <span style={{ marginLeft: '8px' }}>XRP Trades Only</span>
             </FormControlLabel>
           </Box>
-          {/* Table Headers with integrated title */}
-          <Box
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr',
-              gap: '8px',
-              padding: '8px',
-              borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-              backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)',
-              borderRadius: '12px 12px 0 0',
-              border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-            }}
-          >
-            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>TIME / TYPE</Typography>
-              <LiveIndicator isDark={isDark} style={{ marginLeft: '8px' }}>
-                <LiveCircle />
-                <Typography
-                  variant="caption"
-                  fontWeight="600"
-                  isDark={isDark}
-                  style={{ color: '#147DFE', fontSize: '10px' }}
-                >
-                  LIVE
-                </Typography>
-              </LiveIndicator>
-            </Box>
-            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>PRICE (XRP)</Typography>
-            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>AMOUNT</Typography>
-            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>TOTAL</Typography>
-            <Typography isDark={isDark} style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.7)', textTransform: 'uppercase', fontWeight: 500 }}>BY</Typography>
-            <Typography isDark={isDark} style={{ fontSize: '11px' }}></Typography>
-          </Box>
 
-          <Stack spacing={0.25} style={{ marginTop: '4px' }}>
+          <TableHeader isDark={isDark}>
+            <div style={{ flex: 1 }}>
+              TIME / TYPE
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '2px 8px',
+                borderRadius: '12px',
+                border: isDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid rgba(0,0,0,0.2)',
+                marginLeft: '8px'
+              }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#147DFE' }}></div>
+                <span style={{ color: '#147DFE', fontSize: '10px', fontWeight: 600 }}>LIVE</span>
+              </div>
+            </div>
+            <div style={{ flex: '0.8' }}>PRICE (XRP)</div>
+            <div style={{ flex: '1.5' }}>AMOUNT</div>
+            <div style={{ flex: '1.5' }}>TOTAL</div>
+            <div style={{ flex: 1 }}>BY</div>
+            <div style={{ flex: '0.3' }}></div>
+          </TableHeader>
+
+          <Stack spacing={0.25}>
             {renderedTrades}
           </Stack>
 
@@ -1472,7 +1487,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             ×
           </IconButton>
         </DialogTitle>
-        <DialogContent>
+        <DialogContent isDark={isDark}>
           {addLiquidityDialog.pool && (
             <Stack spacing={2.5} style={{ marginTop: '8px' }}>
               <Box>
@@ -1486,15 +1501,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <RadioGroup>
                   <FormControlLabel isDark={isDark}>
                     <Radio type="radio" value="double" checked={depositMode === 'double'} onChange={(e) => setDepositMode(e.target.value)} />
-                    <span style={{ marginLeft: '4px' }}>Double-asset (both tokens, no fee)</span>
+                    <span style={{ marginLeft: '4px', color: isDark ? '#FFFFFF' : '#212B36' }}>Double-asset (both tokens, no fee)</span>
                   </FormControlLabel>
                   <FormControlLabel isDark={isDark}>
                     <Radio type="radio" value="single1" checked={depositMode === 'single1'} onChange={(e) => setDepositMode(e.target.value)} />
-                    <span style={{ marginLeft: '4px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</span>
+                    <span style={{ marginLeft: '4px', color: isDark ? '#FFFFFF' : '#212B36' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</span>
                   </FormControlLabel>
                   <FormControlLabel isDark={isDark}>
                     <Radio type="radio" value="single2" checked={depositMode === 'single2'} onChange={(e) => setDepositMode(e.target.value)} />
-                    <span style={{ marginLeft: '4px' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</span>
+                    <span style={{ marginLeft: '4px', color: isDark ? '#FFFFFF' : '#212B36' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</span>
                   </FormControlLabel>
                 </RadioGroup>
               </FormControl>
@@ -1512,7 +1527,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                       placeholder="0.00"
                       isDark={isDark}
                     />
-                    <span style={{ fontSize: '13px', opacity: 0.7 }}>{decodeCurrency(addLiquidityDialog.pool.asset1.currency)}</span>
+                    <span style={{ fontSize: '13px', opacity: 0.7, color: isDark ? '#FFFFFF' : '#212B36' }}>{decodeCurrency(addLiquidityDialog.pool.asset1.currency)}</span>
                   </div>
                 </div>
               )}
@@ -1530,7 +1545,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                       placeholder="0.00"
                       isDark={isDark}
                     />
-                    <span style={{ fontSize: '13px', opacity: 0.7 }}>{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}</span>
+                    <span style={{ fontSize: '13px', opacity: 0.7, color: isDark ? '#FFFFFF' : '#212B36' }}>{decodeCurrency(addLiquidityDialog.pool.asset2.currency)}</span>
                   </div>
                 </div>
               )}

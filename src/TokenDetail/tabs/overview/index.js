@@ -20,7 +20,8 @@ const Overview = memo(
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     const isTablet = useMediaQuery(theme.breakpoints.down('md'));
     const BASE_URL = 'https://api.xrpl.to/api';
-    const { accountProfile, setLoading, openSnackbar } = useContext(AppContext);
+    const { accountProfile, setLoading, openSnackbar, themeName } = useContext(AppContext);
+    const isDark = themeName === 'XrplToDarkTheme';
 
     const [showEditor, setShowEditor] = useState(false);
     const [description, setDescription] = useState(token.description || '');
@@ -128,6 +129,7 @@ const Overview = memo(
                   token={token}
                   pairs={pairs}
                   onTransactionClick={onTransactionClick}
+                  isDark={isDark}
                 />
               </Box>
             )}
@@ -146,7 +148,7 @@ const Overview = memo(
               orderBookOpen={orderBookOpen}
               onOrderBookData={onOrderBookData}
             />
-            <PriceStatistics token={token} />
+            <PriceStatistics token={token} isDark={isDark} />
             <Description
               token={token}
               showEditor={showEditor}

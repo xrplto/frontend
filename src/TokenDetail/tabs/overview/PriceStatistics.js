@@ -27,7 +27,7 @@ const Typography = styled.div`
     props.variant === 'body2' ? '0.875rem' :
     props.variant === 'caption' ? '0.75rem' : '1rem'};
   font-weight: ${props => props.fontWeight || 400};
-  color: ${props => props.color || 'inherit'};
+  color: ${props => props.color || (props.isDark ? '#FFFFFF' : '#212B36')};
   white-space: ${props => props.noWrap ? 'nowrap' : 'normal'};
 `;
 const Table = styled.table`
@@ -301,6 +301,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                 Scam Warning
               </Typography>
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
@@ -331,10 +332,11 @@ export default function PriceStatistics({ token, isDark = false }) {
       >
         <Typography
           variant="h6"
+          isDark={isDark}
           style={{
             fontSize: '12px',
             fontWeight: 400,
-            color: alpha("#212B36", 0.5),
+            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)',
             letterSpacing: '0.5px',
             textTransform: 'uppercase'
           }}
@@ -349,10 +351,11 @@ export default function PriceStatistics({ token, isDark = false }) {
           <TableRow>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: alpha("#212B36", 0.75),
+                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -419,10 +422,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("#212B36", 0.85),
+                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -501,10 +505,11 @@ export default function PriceStatistics({ token, isDark = false }) {
           <TableRow>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: alpha("#212B36", 0.75),
+                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -514,6 +519,7 @@ export default function PriceStatistics({ token, isDark = false }) {
             </ModernTableCell>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
@@ -530,10 +536,11 @@ export default function PriceStatistics({ token, isDark = false }) {
           <TableRow>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: alpha("#212B36", 0.75),
+                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -543,6 +550,7 @@ export default function PriceStatistics({ token, isDark = false }) {
             </ModernTableCell>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
@@ -559,10 +567,11 @@ export default function PriceStatistics({ token, isDark = false }) {
           <TableRow>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: alpha("#212B36", 0.75),
+                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
                   fontSize: isMobile ? '12px' : '11px'
                 }}
                 noWrap
@@ -572,6 +581,7 @@ export default function PriceStatistics({ token, isDark = false }) {
             </ModernTableCell>
             <ModernTableCell align="left">
               <Typography
+                isDark={isDark}
                 variant="body2"
                 style={{
                   fontWeight: 400,
@@ -590,10 +600,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("#212B36", 0.85),
+                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -603,7 +614,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#FF9800',
@@ -621,10 +633,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("#212B36", 0.85),
+                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -634,7 +647,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#2196F3',
@@ -652,10 +666,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: "#212B36",
+                    color: isDark ? "#FFFFFF" : "#212B36",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -665,7 +680,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#1976D2',
@@ -683,10 +699,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("#212B36", 0.85),
+                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -696,7 +713,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#FF9800',
@@ -714,10 +732,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: "#212B36",
+                    color: isDark ? "#FFFFFF" : "#212B36",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -727,7 +746,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
                     color: '#F57C00',
@@ -745,10 +765,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("#212B36", 0.85),
+                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
@@ -758,7 +779,8 @@ export default function PriceStatistics({ token, isDark = false }) {
               </ModernTableCell>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
                     color: alpha("rgba(0,0,0,0.6)", 0.8),
@@ -776,10 +798,11 @@ export default function PriceStatistics({ token, isDark = false }) {
             <TableRow>
               <ModernTableCell align="left">
                 <Typography
-                  variant="body2"
+                  isDark={isDark}
+                variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("#212B36", 0.85),
+                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
                     fontSize: isMobile ? '13px' : '12px'
                   }}
                   noWrap
