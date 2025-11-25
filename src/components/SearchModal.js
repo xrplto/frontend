@@ -10,15 +10,16 @@ import { cn } from 'src/utils/cn';
 const API_URL = 'https://api.xrpl.to/api';
 
 const getThemeClasses = (isDark) => ({
-  overlay: isDark ? 'bg-black/40' : 'bg-black/20',
+  overlay: isDark ? 'bg-black/90' : 'bg-black/60',
   modal: isDark
-    ? 'border-white/5 bg-gradient-to-br from-black/90 via-black/60 to-black/95'
+    ? 'border-white/10 bg-[#161616]'
     : 'border-gray-200 bg-white',
   text: isDark ? 'text-white' : 'text-gray-900',
-  textSecondary: isDark ? 'text-gray-400' : 'text-gray-600',
-  border: isDark ? 'border-gray-700' : 'border-gray-300',
-  hover: isDark ? 'hover:bg-primary/5' : 'hover:bg-gray-100',
-  bg: isDark ? 'bg-gray-800' : 'bg-gray-100'
+  textSecondary: isDark ? 'text-gray-500' : 'text-gray-500',
+  border: isDark ? 'border-white/10' : 'border-gray-200',
+  hover: isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50',
+  bg: isDark ? 'bg-white/5' : 'bg-gray-100',
+  divider: isDark ? 'bg-white/5' : 'bg-gray-100'
 });
 
 const currencySymbols = {
@@ -194,15 +195,15 @@ function SearchModal({ open, onClose }) {
   return (
     <Dialog.Root open={open} onOpenChange={onClose}>
       <Dialog.Portal>
-        <Dialog.Overlay className={cn("fixed inset-0 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0", theme.overlay)} />
+        <Dialog.Overlay className={cn("fixed inset-0 z-50", theme.overlay)} />
         <Dialog.Content
           onKeyDown={(e) => e.key === 'Escape' && handleClose()}
-          className={cn("fixed left-1/2 top-[12vh] max-h-[65vh] w-full max-w-[650px] -translate-x-1/2 overflow-hidden rounded-xl border shadow-2xl backdrop-blur-[40px] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95", theme.modal)}
+          className={cn("fixed left-1/2 top-[10vh] z-50 max-h-[70vh] w-full max-w-[480px] -translate-x-1/2 overflow-hidden rounded-2xl border", theme.modal)}
         >
           {/* Search Header */}
-          <div className="p-4">
+          <div className={cn("border-b px-4 py-3", theme.border)}>
             <div className="flex items-center gap-3">
-              <svg className={cn("h-5 w-5", theme.textSecondary)} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg className={cn("h-4 w-4", theme.textSecondary)} fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input
@@ -211,7 +212,7 @@ function SearchModal({ open, onClose }) {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoComplete="off"
-                className={cn("flex-1 bg-transparent text-sm font-normal focus:outline-none", theme.text, isDark ? "placeholder:text-white/50" : "placeholder:text-gray-400")}
+                className={cn("flex-1 bg-transparent text-[15px] font-normal focus:outline-none", theme.text, isDark ? "placeholder:text-gray-500" : "placeholder:text-gray-400")}
               />
               {loading && (
                 <svg className="h-4 w-4 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
@@ -219,8 +220,8 @@ function SearchModal({ open, onClose }) {
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
               )}
-              <button onClick={handleClose} className={theme.textSecondary}>
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button onClick={handleClose} className={cn("transition-colors", theme.textSecondary, "hover:text-white")}>
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -234,11 +235,11 @@ function SearchModal({ open, onClose }) {
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
                   <>
-                    <div className="px-4 pb-1 pt-2">
-                      <p className="text-[10px] font-normal text-gray-400/50">Recent</p>
+                    <div className="px-4 pb-1 pt-3">
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Recent</p>
                     </div>
-                    <div className="space-y-1">
-                      {recentSearches.slice(0, 3).map((item, index) => (
+                    <div>
+                      {recentSearches.slice(0, 2).map((item, index) => (
                         <button
                           key={index}
                           onClick={() => {
@@ -251,9 +252,9 @@ function SearchModal({ open, onClose }) {
                               }
                             }, 0);
                           }}
-                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-2 rounded-lg px-3 py-2 hover:bg-primary/5"
+                          className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-white/5"
                         >
-                          <Avatar.Root className="h-6 w-6">
+                          <Avatar.Root className="h-8 w-8">
                             <Avatar.Image
                               src={
                                 item.type === 'collection'
@@ -267,49 +268,47 @@ function SearchModal({ open, onClose }) {
                             </Avatar.Fallback>
                           </Avatar.Root>
                           <div className="flex-1 text-left">
-                            <p className="text-xs font-normal text-white">{item.user || item.name}</p>
-                            <p className="text-[11px] text-gray-400/50">{item.name}</p>
+                            <p className="text-[13px] font-normal text-white">{item.user || item.name}</p>
+                            <p className="text-[12px] text-gray-500">{item.name}</p>
                           </div>
-                          <span className="rounded border border-gray-700 px-2 py-0.5 text-[9px] font-normal text-gray-400">{item.type}</span>
                         </button>
                       ))}
                     </div>
-                    <div className="my-2 h-px bg-gray-800" />
                   </>
                 )}
 
                 {/* Trending Tokens */}
                 {!loadingTrending && trendingTokens.length > 0 && (
                   <>
-                    <div className="flex items-center gap-2 px-4 pb-3 pt-4">
-                      <svg className="h-4 w-4 text-primary/60" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-3">
+                      <svg className="h-3.5 w-3.5 text-primary" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
                       </svg>
-                      <p className="text-[11px] font-normal text-gray-400/60">Trending</p>
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Trending</p>
                     </div>
-                    <div className="space-y-2">
+                    <div>
                       {trendingTokens.map((token, index) => (
                         <button
                           key={index}
                           onClick={() => handleResultClick(token, 'token')}
-                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl px-4 py-3 hover:bg-primary/5"
+                          className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-white/5"
                         >
                           <Avatar.Root className="h-9 w-9">
                             <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-full w-full rounded-full object-cover" />
                             <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-sm">{token.user?.[0]}</Avatar.Fallback>
                           </Avatar.Root>
                           <div className="flex-1 text-left">
-                            <p className="truncate text-sm font-normal text-white">{token.user}</p>
-                            <p className="truncate text-[13px] text-gray-400/60">{token.name}</p>
+                            <p className="truncate text-[13px] font-normal text-white">{token.user}</p>
+                            <p className="truncate text-[12px] text-gray-500">{token.name}</p>
                           </div>
                           <div className="text-right">
                             {token.exch !== undefined && token.exch !== null && (
-                              <p className="text-sm font-normal text-white">
+                              <p className="text-[13px] font-normal text-white">
                                 {activeFiatCurrency === 'XRP' ? `${formatPrice(convertPrice(token.exch))} XRP` : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
                               </p>
                             )}
                             {token.pro24h !== undefined && token.pro24h !== null && (
-                              <p className={cn('text-xs font-normal', parseFloat(token.pro24h) >= 0 ? 'text-green-500' : 'text-red-500')}>
+                              <p className={cn('text-[12px] font-normal', parseFloat(token.pro24h) >= 0 ? 'text-green-500' : 'text-red-500')}>
                                 {parseFloat(token.pro24h) >= 0 ? '+' : ''}
                                 {parseFloat(token.pro24h).toFixed(2)}%
                               </p>
@@ -324,30 +323,30 @@ function SearchModal({ open, onClose }) {
                 {/* Trending Collections */}
                 {!loadingTrending && trendingCollections.length > 0 && (
                   <>
-                    <div className="my-2 h-px bg-gray-800" />
-                    <div className="flex items-center gap-2 px-4 pb-2 pt-4">
-                      <svg className="h-4 w-4 text-green-500/60" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="mx-4 my-2 h-px bg-white/5" />
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-2">
+                      <svg className="h-3.5 w-3.5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
                       </svg>
-                      <p className="text-[11px] font-normal text-gray-400/60">Trending Collections</p>
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Trending Collections</p>
                     </div>
-                    <div className="space-y-2">
+                    <div>
                       {trendingCollections.map((collection, index) => (
                         <button
                           key={index}
                           onClick={() => handleResultClick(collection, 'collection')}
-                          className="mx-2 flex w-[calc(100%-16px)] items-center gap-3 rounded-xl px-4 py-2.5 hover:bg-primary/5"
+                          className="flex w-full items-center gap-3 px-4 py-2.5 hover:bg-white/5"
                         >
-                          <Avatar.Root className="h-8 w-8">
+                          <Avatar.Root className="h-9 w-9">
                             <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-full w-full rounded-full object-cover" />
                             <Avatar.Fallback className="flex h-full w-full items-center justify-center rounded-full bg-gray-800 text-sm">{collection.name?.[0]}</Avatar.Fallback>
                           </Avatar.Root>
                           <div className="flex-1 text-left">
                             <div className="flex items-center gap-2">
                               <p className="truncate text-[13px] font-normal text-white">{collection.name}</p>
-                              {collection.verified === 'yes' && <span className="rounded bg-primary px-2 py-0.5 text-[10px] font-normal text-white">Verified</span>}
+                              {collection.verified === 'yes' && <span className="rounded bg-primary/90 px-1.5 py-0.5 text-[10px] font-medium text-white">Verified</span>}
                             </div>
-                            <p className="truncate text-xs text-gray-400/60">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
+                            <p className="truncate text-[12px] text-gray-500">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
                           </div>
                           <div className="text-right">
                             {collection.floor?.amount && (
@@ -356,7 +355,7 @@ function SearchModal({ open, onClose }) {
                               </p>
                             )}
                             {collection.sales24h > 0 && (
-                              <p className="text-[11px] text-gray-400/60">
+                              <p className="text-[11px] text-gray-500">
                                 {collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today
                               </p>
                             )}

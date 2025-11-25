@@ -255,7 +255,7 @@ import { processOrderbookOffers } from 'src/utils/parseUtils';
 import useWebSocket from 'react-use-websocket';
 
 // Components
-import Wallet from 'src/components/Wallet';
+import { ConnectWallet } from 'src/components/Wallet';
 import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Constants
@@ -3222,10 +3222,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                           {handleMsg()}
                         </button>
                       ) : (
-                        <Wallet
-                          style={{ width: '100%' }}
-                          buttonOnly={true}
-                        />
+                        <ConnectWallet text="Connect Wallet" fullWidth />
                       )}
                     </div>
                   </div>

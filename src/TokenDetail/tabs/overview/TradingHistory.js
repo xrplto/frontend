@@ -1,15 +1,10 @@
-import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo, Suspense } from 'react';
 import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
-import Decimal from 'decimal.js-light';
 import styled from '@emotion/styled';
-import { lazy, Suspense } from 'react';
-import PairsList from 'src/TokenDetail/tabs/market/PairsList';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-
-// Helper function
-const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
+import { ExternalLink, X, Plus, Fish, Waves, Anchor, Ship, Loader2 } from 'lucide-react';
 
 // Custom styled components
 const Box = styled.div``;
@@ -18,13 +13,9 @@ const Stack = styled.div`
   flex-direction: column;
   gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
 `;
-const CircularProgress = styled.div`
-  width: ${props => props.size || 40}px;
-  height: ${props => props.size || 40}px;
-  border: ${props => props.thickness || 4}px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  border-top-color: #147DFE;
-  border-radius: 50%;
+const Spinner = styled(Loader2)`
   animation: spin 1s linear infinite;
+  color: #147DFE;
   @keyframes spin {
     to { transform: rotate(360deg); }
   }
@@ -260,10 +251,6 @@ const TableContainer = styled.div`
   overflow: auto;
 `;
 
-const Paper = styled.div`
-  background: ${props => props.isDark ? 'transparent' : 'transparent'};
-`;
-
 const Link = styled.a`
   text-decoration: none;
   color: #147DFE;
@@ -317,41 +304,6 @@ const IconButton = styled.button`
   &:hover {
     background-color: ${props => props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)'};
     border-color: ${props => props.isDark ? 'rgba(20,125,254,0.2)' : 'rgba(20,125,254,0.2)'};
-  }
-`;
-
-const Switch = styled.label`
-  position: relative;
-  display: inline-block;
-  width: 36px;
-  height: 20px;
-  input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-  }
-  span {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: ${props => props.checked ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)')};
-    transition: 0.3s;
-    border-radius: 20px;
-    &:before {
-      position: absolute;
-      content: "";
-      height: 14px;
-      width: 14px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: 0.3s;
-      border-radius: 50%;
-      transform: ${props => props.checked ? 'translateX(16px)' : 'translateX(0)'};
-    }
   }
 `;
 
@@ -459,12 +411,6 @@ const TextField = styled.input`
   }
 `;
 
-const InputAdornment = styled.span`
-  font-size: 13px;
-  opacity: 0.7;
-  margin-left: 8px;
-`;
-
 const FormControl = styled.div`
   display: flex;
   flex-direction: column;
@@ -504,14 +450,15 @@ const formatRelativeTime = (timestamp) => {
   }
 };
 
-const getTradeSizeIcon = (value) => {
+// Trade size indicator - returns icon component and color based on XRP value
+const getTradeSizeInfo = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return 'game-icons:shrimp';
-  if (xrpValue < 1000) return 'ph:fish-fill';
-  if (xrpValue < 2500) return 'game-icons:dolphin';
-  if (xrpValue < 5000) return 'game-icons:octopus';
-  if (xrpValue < 10000) return 'game-icons:shark-fin';
-  return 'game-icons:sperm-whale';
+  if (xrpValue < 500) return { Icon: Fish, size: 12, opacity: 0.4 };
+  if (xrpValue < 1000) return { Icon: Fish, size: 13, opacity: 0.5 };
+  if (xrpValue < 2500) return { Icon: Waves, size: 13, opacity: 0.6 };
+  if (xrpValue < 5000) return { Icon: Anchor, size: 14, opacity: 0.7 };
+  if (xrpValue < 10000) return { Icon: Ship, size: 14, opacity: 0.8 };
+  return { Icon: Ship, size: 16, opacity: 1 };
 };
 
 const formatTradeValue = (value) => {
@@ -588,27 +535,27 @@ const filterTrades = (trades, selectedFilter) => {
 
   const filters = {
     All: () => true,
-    '🦐 <500 XRP': (trade) => {
+    '<500': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount > 0 && xrpAmount < 500;
     },
-    '🐟 500-1000 XRP': (trade) => {
+    '500-1k': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 500 && xrpAmount < 1000;
     },
-    '🐬 1000-2500 XRP': (trade) => {
+    '1k-2.5k': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 1000 && xrpAmount < 2500;
     },
-    '🐙 2500-5000 XRP': (trade) => {
+    '2.5k-5k': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 2500 && xrpAmount < 5000;
     },
-    '🦈 5000-10000 XRP': (trade) => {
+    '5k-10k': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 5000 && xrpAmount < 10000;
     },
-    '🐋 10000+ XRP': (trade) => {
+    '10k+': (trade) => {
       const xrpAmount = getXRPAmount(trade);
       return xrpAmount >= 10000;
     }
@@ -709,7 +656,8 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers = []) =>
     return orderType === ORDER_TYPE_BIDS ? b.price - a.price : a.price - b.price;
   });
 
-  return array;
+  // Limit to 30 entries to prevent memory growth
+  return array.slice(0, 30);
 };
 
 const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark = false }) => {
@@ -807,7 +755,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           }, 1000);
         }
 
-        setTrades(data.hists);
+        setTrades(data.hists.slice(0, 50));
         setTotalPages(Math.ceil(data.count / limit));
       }
     } catch (error) {
@@ -881,8 +829,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             console.error('Error processing orderbook data:', error);
           }
         });
-      }, 150), // Increased throttle for better batching
-    [applyBatchedUpdates, orderBookData.asks, orderBookData.bids]
+      }, 300), // Increased throttle for better batching
+    [applyBatchedUpdates]
   );
 
   // OrderBook WebSocket request
@@ -960,7 +908,12 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     // Sync orderbook requests with ledger updates
     const timer = setInterval(() => requestOrderBook(), 4000);
 
-    return () => clearInterval(timer);
+    return () => {
+      clearInterval(timer);
+      if (updateTimerRef.current) {
+        cancelAnimationFrame(updateTimerRef.current);
+      }
+    };
   }, [wsReady, selectedPair, requestOrderBook]);
 
 
@@ -1163,17 +1116,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 >
                   {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
                 </Typography>
-                <span style={{ fontSize: '12px', opacity: 0.7 }}>
-                  {(() => {
-                    const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
-                    if (val < 500) return '🦐';
-                    if (val < 1000) return '🐟';
-                    if (val < 2500) return '🐬';
-                    if (val < 5000) return '🐙';
-                    if (val < 10000) return '🦈';
-                    return '🐋';
-                  })()}
-                </span>
+                {(() => {
+                  const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
+                  const { Icon, size, opacity } = getTradeSizeInfo(val);
+                  return <Icon size={size} style={{ opacity, color: '#147DFE' }} />;
+                })()}
               </Box>
 
               {/* Maker/Taker */}
@@ -1204,7 +1151,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     onClick={() => handleTxClick(trade.hash)}
                     isDark={isDark}
                   >
-                    ↗
+                    <ExternalLink size={14} />
                   </IconButton>
                 </Tooltip>
               </Box>
@@ -1220,7 +1167,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     return (
       <Stack spacing={1}>
         <Box style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
-          <CircularProgress size={40} thickness={4} isDark={isDark} />
+          <Spinner size={32} />
         </Box>
       </Stack>
     );
@@ -1328,7 +1275,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         <Box style={{ marginTop: '16px' }}>
           {ammLoading ? (
             <Box style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
-              <CircularProgress size={40} isDark={isDark} />
+              <Spinner size={32} />
             </Box>
           ) : ammPools.length === 0 ? (
             <Box style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, borderRadius: '12px' }}>
@@ -1336,7 +1283,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             </Box>
           ) : (
             <TableContainer isDark={isDark} style={{ borderRadius: '12px' }}>
-              <Paper isDark={isDark}>
               <Table size="small" isDark={isDark}>
                 <TableHead>
                   <TableRow isDark={isDark} style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
@@ -1404,13 +1350,22 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                           </Typography>
                         </TableCell>
                         <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
-                            {pool.apy7d?.liquidity > 0
-                              ? `${abbreviateNumber(pool.apy7d.liquidity)} XRP`
-                              : pool.currentLiquidity
-                                ? `${abbreviateNumber(pool.currentLiquidity.asset1Amount)} ${asset1} / ${abbreviateNumber(pool.currentLiquidity.asset2Amount)} ${asset2}`
-                                : '-'}
-                          </Typography>
+                          {pool.apy7d?.liquidity > 0 ? (
+                            <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
+                              {abbreviateNumber(pool.apy7d.liquidity)} XRP
+                            </Typography>
+                          ) : pool.currentLiquidity ? (
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                              <Typography variant="body2" isDark={isDark} style={{ fontSize: '12px', opacity: 0.8 }}>
+                                {abbreviateNumber(pool.currentLiquidity.asset1Amount)} {asset1}
+                              </Typography>
+                              <Typography variant="body2" isDark={isDark} style={{ fontSize: '12px', opacity: 0.8 }}>
+                                {abbreviateNumber(pool.currentLiquidity.asset2Amount)} {asset2}
+                              </Typography>
+                            </div>
+                          ) : (
+                            <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px', opacity: 0.5 }}>-</Typography>
+                          )}
                         </TableCell>
                         <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
                           <Button
@@ -1421,7 +1376,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                             }}
                             isDark={isDark}
                           >
-                            ➕ Add
+                            <Plus size={12} /> Add
                           </Button>
                         </TableCell>
                       </TableRow>
@@ -1429,7 +1384,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   })}
                 </TableBody>
               </Table>
-              </Paper>
             </TableContainer>
           )}
         </Box>
@@ -1438,7 +1392,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       {tabValue === 2 && token && <TopTraders token={token} />}
 
       {tabValue === 3 && token && (
-        <Suspense fallback={<CircularProgress />}>
+        <Suspense fallback={<Spinner size={32} />}>
           <RichList token={token} amm={amm} />
         </Suspense>
       )}
@@ -1449,7 +1403,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         <DialogTitle isDark={isDark} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           Add Liquidity
           <IconButton onClick={handleCloseDialog} size="small" isDark={isDark}>
-            ×
+            <X size={16} />
           </IconButton>
         </DialogTitle>
         <DialogContent isDark={isDark}>

@@ -200,12 +200,8 @@ const PriceChartAdvanced = memo(({ token }) => {
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
   const isTablet = typeof window !== 'undefined' && window.innerWidth < 900;
 
-  // Performance: Reduce data points for mobile/tablet
-  const maxDataPoints = useMemo(() => {
-    if (isMobile) return 100;
-    if (isTablet) return 200;
-    return 500;
-  }, [isMobile, isTablet]);
+  // Performance: Limit data points
+  const maxDataPoints = isMobile ? 100 : isTablet ? 200 : 300;
 
   const [chartType, setChartType] = useState('candles');
   const [range, setRange] = useState('1D');
@@ -384,8 +380,10 @@ const PriceChartAdvanced = memo(({ token }) => {
             }))
             .sort((a, b) => a.time - b.time);
 
-          setData(processedData);
-          dataRef.current = processedData;
+          // Limit data points to prevent memory growth
+          const limitedData = processedData.slice(-maxDataPoints);
+          setData(limitedData);
+          dataRef.current = limitedData;
           setLastUpdate(new Date());
 
           const allTimeHigh = Math.max(...processedData.map((d) => d.high));
@@ -889,6 +887,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
+      clearTimeout(zoomCheckTimeout);
 
       if (chartContainerRef.current) {
         const tooltips = chartContainerRef.current.querySelectorAll(
@@ -901,6 +900,10 @@ const PriceChartAdvanced = memo(({ token }) => {
           chartRef.current.remove();
         } catch (e) {}
         chartRef.current = null;
+        candleSeriesRef.current = null;
+        lineSeriesRef.current = null;
+        volumeSeriesRef.current = null;
+        chartCreatedRef.current = false;
       }
     };
   }, [chartType, isDark, isMobile, data, holderData]);

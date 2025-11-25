@@ -111,8 +111,8 @@ const TokenDetail = memo(
 
     return (
       <div className="relative flex flex-row">
-        {/* Creator Transactions Panel - Always render but conditionally show */}
-        {!isMobile && token?.creator && (
+        {/* Creator Transactions Panel - Only render when open to save memory */}
+        {!isMobile && token?.creator && creatorTxOpen && (
           <CreatorTransactionsDialog
             open={creatorTxOpen}
             onClose={handleCreatorTxToggle}

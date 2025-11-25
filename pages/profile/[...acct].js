@@ -127,91 +127,69 @@ const OverView = ({ account }) => {
       </h1>
 
       <div className="max-w-screen-2xl mx-auto w-full px-4 py-6">
-        {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
-            The imports have been updated, but the component JSX still uses MUI components like:
-            Box, Typography, Paper, Stack, Grid, Chip, etc.
-            Each section needs to be migrated to Tailwind CSS classes following the design patterns in:
-            - Use cn() utility for conditional classes
-            - Replace Box/Stack with div + Tailwind flex/grid
-            - Replace Typography with appropriate HTML tags (h1-h6, p, span) + text-* classes
-            - Replace Paper with div + rounded-xl + border-[1.5px] + border-white/10 (dark) or border-gray-200 (light)
-            - Replace Chip with span + appropriate styling
-            - Use isDark variable for theme-aware classes
-            See pages/news.js and pages/nft-traders.js for complete examples.
-        */}
         {/* Account Header */}
-        <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
-          <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 400 }}>
+        <div className="flex items-center gap-2 mb-4">
+          <h2 className={cn("text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
             {account.substring(0, 10)}...{account.substring(account.length - 8)}
-          </Typography>
-          {data?.isAMM && <Chip label="AMM" size="small" sx={{ fontSize: '11px', height: '20px', backgroundColor: alpha('#4285f4', 0.08), color: '#4285f4', border: 'none', fontWeight: 400 }} />}
-          {data?.firstTradeDate && (
-            <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), ml: 'auto' }}>
-              {fDateTime(data.firstTradeDate)} → {fDateTime(data.lastTradeDate)}
-            </Typography>
+          </h2>
+          {data?.isAMM && (
+            <span className="text-[11px] h-5 px-2 rounded bg-[#4285f4]/10 text-[#4285f4] font-normal flex items-center">
+              AMM
+            </span>
           )}
-        </Stack>
+          {data?.firstTradeDate && (
+            <span className={cn("text-[0.9rem] ml-auto", isDark ? "text-white/50" : "text-gray-500")}>
+              {fDateTime(data.firstTradeDate)} → {fDateTime(data.lastTradeDate)}
+            </span>
+          )}
+        </div>
 
         {/* Key Metrics */}
         {data && (
         <>
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(4, 1fr)',
-          gap: 4,
-          mb: 4,
-          pb: 4,
-          borderBottom: `1px solid ${alpha('#fff', 0.06)}`
-        }}>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Balance</Typography>
-            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, mb: 0.5 }}>
+        <div className={cn("grid grid-cols-4 gap-4 mb-4 pb-4 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Balance</p>
+            <p className={cn("text-[1.4rem] font-normal mb-0.5", isDark ? "text-white" : "text-gray-900")}>
               {holdings?.accountData ? fCurrency5(holdings.accountData.balanceDrops / 1000000) : '—'} XRP
-            </Typography>
+            </p>
             {holdings?.accountData && (
-              <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+              <span className={cn("text-[0.85rem]", isDark ? "text-white/50" : "text-gray-500")}>
                 {fCurrency5((holdings.accountData.balanceDrops - holdings.accountData.reserveDrops) / 1000000)} available
-              </Typography>
+              </span>
             )}
-          </Box>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Total P&L</Typography>
-            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, color: totalPnL >= 0 ? '#10b981' : '#ef4444', mb: 0.5 }}>
+          </div>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Total P&L</p>
+            <p className={cn("text-[1.4rem] font-normal mb-0.5", totalPnL >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
               {fCurrency5(totalPnL)} XRP
-            </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.85rem', color: data.avgROI >= 0 ? alpha('#10b981', 0.7) : alpha('#ef4444', 0.7) }}>
+            </p>
+            <span className={cn("text-[0.85rem]", data.avgROI >= 0 ? "text-[#10b981]/70" : "text-[#ef4444]/70")}>
               {fCurrency5(data.avgROI)}% ROI
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Trading</Typography>
-            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, mb: 0.5 }}>
+            </span>
+          </div>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Trading</p>
+            <p className={cn("text-[1.4rem] font-normal mb-0.5", isDark ? "text-white" : "text-gray-900")}>
               {data.totalTrades}
-            </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+            </p>
+            <span className={cn("text-[0.85rem]", isDark ? "text-white/50" : "text-gray-500")}>
               {fCurrency5(winRate)}% win rate
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Volume</Typography>
-            <Typography variant="h6" sx={{ fontSize: '1.4rem', fontWeight: 400, mb: 0.5 }}>
+            </span>
+          </div>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Volume</p>
+            <p className={cn("text-[1.4rem] font-normal mb-0.5", isDark ? "text-white" : "text-gray-900")}>
               {fCurrency5(data.totalVolume)}
-            </Typography>
-            <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+            </p>
+            <span className={cn("text-[0.85rem]", isDark ? "text-white/50" : "text-gray-500")}>
               {data.buyTrades} buys · {data.sellTrades} sells
-            </Typography>
-          </Box>
-        </Box>
+            </span>
+          </div>
+        </div>
 
         {/* Period Performance */}
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(5, 1fr)',
-          gap: 3,
-          mb: 4,
-          pb: 4,
-          borderBottom: `1px solid ${alpha('#fff', 0.06)}`
-        }}>
+        <div className={cn("grid grid-cols-5 gap-3 mb-4 pb-4 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
           {[
             { label: '24H', profit: data.profit24h, volume: data.volume24h },
             { label: '7D', profit: data.profit7d, volume: data.volume7d },
@@ -219,275 +197,239 @@ const OverView = ({ account }) => {
             { label: '2M', profit: data.profit2m, volume: data.volume2m },
             { label: '3M', profit: data.profit3m, volume: data.volume3m }
           ].map((period) => (
-            <Box key={period.label}>
-              <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>
+            <div key={period.label}>
+              <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>
                 {period.label}
-              </Typography>
-              <Typography variant="body1" sx={{
-                fontSize: '1.1rem',
-                fontWeight: 400,
-                color: period.profit !== 0 ? (period.profit >= 0 ? '#10b981' : '#ef4444') : (theme) => alpha(theme.palette.text.secondary, 0.4),
-                mb: 0.5
-              }}>
+              </p>
+              <p className={cn(
+                "text-[1.1rem] font-normal mb-0.5",
+                period.profit !== 0
+                  ? (period.profit >= 0 ? "text-[#10b981]" : "text-[#ef4444]")
+                  : (isDark ? "text-white/40" : "text-gray-400")
+              )}>
                 {period.profit !== 0 ? fCurrency5(period.profit) : '—'}
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+              </p>
+              <span className={cn("text-[0.85rem]", isDark ? "text-white/50" : "text-gray-500")}>
                 {period.volume !== 0 ? fCurrency5(period.volume) : '—'} vol
-              </Typography>
-            </Box>
+              </span>
+            </div>
           ))}
-        </Box>
+        </div>
 
         {/* Trading Details */}
-        <Box sx={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 4,
-          mb: 4,
-          pb: 4,
-          borderBottom: `1px solid ${alpha('#fff', 0.06)}`
-        }}>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Win/Loss Record</Typography>
-            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 400 }}>
+        <div className={cn("grid grid-cols-3 gap-4 mb-4 pb-4 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Win/Loss Record</p>
+            <p className={cn("text-[1.1rem] font-normal", isDark ? "text-white" : "text-gray-900")}>
               {data.profitableTrades}W · {data.losingTrades}L
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Best Trade</Typography>
-            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 400, color: '#10b981' }}>
+            </p>
+          </div>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Best Trade</p>
+            <p className="text-[1.1rem] font-normal text-[#10b981]">
               {fCurrency5(data.maxProfitTrade)} XRP
-            </Typography>
-          </Box>
-          <Box>
-            <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), mb: 1 }}>Worst Trade</Typography>
-            <Typography variant="body1" sx={{ fontSize: '1.1rem', fontWeight: 400, color: '#ef4444' }}>
+            </p>
+          </div>
+          <div>
+            <p className={cn("text-[0.85rem] mb-1", isDark ? "text-white/60" : "text-gray-500")}>Worst Trade</p>
+            <p className="text-[1.1rem] font-normal text-[#ef4444]">
               {fCurrency5(data.maxLossTrade)} XRP
-            </Typography>
-          </Box>
-        </Box>
+            </p>
+          </div>
+        </div>
         </>
         )}
 
         {/* Holdings */}
         {holdings && (
-          <Box sx={{ mb: 4 }}>
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6) }}>
+          <div className="mb-4">
+            <div className="flex items-center gap-2 mb-2">
+              <p className={cn("text-[0.9rem]", isDark ? "text-white/60" : "text-gray-500")}>
                 Holdings ({holdings.total})
-              </Typography>
+              </p>
               {holdings.accountActive === false && (
-                <Chip label="Deleted" size="small" sx={{ fontSize: '11px', height: '20px', backgroundColor: alpha('#ef4444', 0.08), color: '#ef4444', border: 'none', fontWeight: 400 }} />
+                <span className="text-[11px] h-5 px-2 rounded bg-[#ef4444]/10 text-[#ef4444] font-normal flex items-center">
+                  Deleted
+                </span>
               )}
-            </Stack>
+            </div>
             {holdings.lines?.length > 0 && (
               <>
-                <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 2, mb: 3 }}>
+                <div className="grid grid-cols-5 gap-2 mb-3">
                   {holdings.lines.map((line, idx) => (
-                  <Box key={idx} sx={{
-                    p: 2,
-                    backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06),
-                    borderRadius: '8px',
-                    border: `1px solid ${alpha('#fff', 0.04)}`
-                  }}>
-                      <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1 }}>
-                        <Box component="img" src={`https://s1.xrpl.to/token/${line.token?.md5}`} sx={{ width: 18, height: 18, borderRadius: '4px' }} onError={(e) => { e.target.style.display = 'none'; }} />
-                        <Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400 }}>{line.token?.name || line.currency}</Typography>
-                      </Stack>
-                      <Typography variant="body1" sx={{ fontSize: '1rem', fontWeight: 400, mb: 0.5 }}>
+                  <div key={idx} className={cn(
+                    "p-2 rounded-lg border",
+                    isDark ? "bg-white/[0.03] border-white/[0.04]" : "bg-gray-50 border-gray-200"
+                  )}>
+                      <div className="flex items-center gap-1 mb-1">
+                        <img
+                          src={`https://s1.xrpl.to/token/${line.token?.md5}`}
+                          className="w-[18px] h-[18px] rounded"
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                          alt=""
+                        />
+                        <span className={cn("text-[0.9rem] font-normal", isDark ? "text-white" : "text-gray-900")}>
+                          {line.token?.name || line.currency}
+                        </span>
+                      </div>
+                      <p className={cn("text-[1rem] font-normal mb-0.5", isDark ? "text-white" : "text-gray-900")}>
                         {fCurrency5(line.value)} XRP
-                      </Typography>
-                      <Typography variant="caption" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5) }}>
+                      </p>
+                      <span className={cn("text-[0.85rem]", isDark ? "text-white/50" : "text-gray-500")}>
                         {fCurrency5(Math.abs(parseFloat(line.balance)))} tokens
-                      </Typography>
-                  </Box>
+                      </span>
+                  </div>
                   ))}
-                </Box>
-                <Stack direction="row" spacing={3} justifyContent="center" alignItems="center">
-                  <Typography
-                    component="button"
+                </div>
+                <div className="flex gap-3 justify-center items-center">
+                  <button
                     onClick={() => setHoldingsPage(Math.max(0, holdingsPage - 1))}
                     disabled={holdingsPage === 0}
-                    sx={{
-                      fontSize: '0.9rem',
-                      fontWeight: 400,
-                      color: holdingsPage === 0 ? (theme) => alpha(theme.palette.text.secondary, 0.4) : '#4285f4',
-                      cursor: holdingsPage === 0 ? 'default' : 'pointer',
-                      background: 'none',
-                      border: 'none',
-                      p: 0
-                    }}
+                    className={cn(
+                      "text-[0.9rem] font-normal bg-transparent border-none p-0",
+                      holdingsPage === 0 ? (isDark ? "text-white/40 cursor-default" : "text-gray-400 cursor-default") : "text-[#4285f4] cursor-pointer"
+                    )}
                   >
                     Previous
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6) }}>
+                  </button>
+                  <span className={cn("text-[0.9rem]", isDark ? "text-white/60" : "text-gray-500")}>
                     {holdingsPage + 1} / {Math.ceil(holdings.total / 20)}
-                  </Typography>
-                  <Typography
-                    component="button"
+                  </span>
+                  <button
                     onClick={() => setHoldingsPage(holdingsPage + 1)}
                     disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1}
-                    sx={{
-                      fontSize: '0.9rem',
-                      fontWeight: 400,
-                      color: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (theme) => alpha(theme.palette.text.secondary, 0.4) : '#4285f4',
-                      cursor: holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? 'default' : 'pointer',
-                      background: 'none',
-                      border: 'none',
-                      p: 0
-                    }}
+                    className={cn(
+                      "text-[0.9rem] font-normal bg-transparent border-none p-0",
+                      holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/40 cursor-default" : "text-gray-400 cursor-default") : "text-[#4285f4] cursor-pointer"
+                    )}
                   >
                     Next
-                  </Typography>
-                </Stack>
+                  </button>
+                </div>
               </>
             )}
-          </Box>
+          </div>
         )}
 
         {/* Tokens Table */}
         {data?.tokensTraded?.length > 0 && (
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="body2" sx={{
-              fontSize: '0.9rem',
-              color: (theme) => alpha(theme.palette.text.secondary, 0.6),
-              mb: 2
-            }}>
+          <div className="mb-4">
+            <p className={cn("text-[0.9rem] mb-2", isDark ? "text-white/60" : "text-gray-500")}>
               Tokens Traded ({data.tokensTraded.length})
-            </Typography>
-            <Box sx={{
-              backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06),
-              borderRadius: '8px',
-              overflow: 'hidden',
-              border: `1px solid ${alpha('#fff', 0.04)}`
-            }}>
+            </p>
+            <div className={cn(
+              "rounded-lg overflow-hidden border",
+              isDark ? "bg-white/[0.03] border-white/[0.04]" : "bg-gray-50 border-gray-200"
+            )}>
               {/* Table Header */}
-              <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: '140px repeat(4, 1fr)',
-                gap: 2,
-                px: 2,
-                py: 1.5,
-                borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
-                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.04)
-              }}>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>
+              <div className={cn(
+                "grid gap-2 px-2 py-1.5 border-b",
+                isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-100 border-gray-200"
+              )} style={{ gridTemplateColumns: '140px repeat(4, 1fr)' }}>
+                <span className={cn("text-[0.85rem] font-normal", isDark ? "text-white/60" : "text-gray-500")}>
                   Token
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                </span>
+                <span className={cn("text-[0.85rem] font-normal text-right", isDark ? "text-white/60" : "text-gray-500")}>
                   Volume
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                </span>
+                <span className={cn("text-[0.85rem] font-normal text-right", isDark ? "text-white/60" : "text-gray-500")}>
                   Avg Price
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                </span>
+                <span className={cn("text-[0.85rem] font-normal text-right", isDark ? "text-white/60" : "text-gray-500")}>
                   Position
-                </Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>
+                </span>
+                <span className={cn("text-[0.85rem] font-normal text-right", isDark ? "text-white/60" : "text-gray-500")}>
                   P&L
-                </Typography>
-              </Box>
+                </span>
+              </div>
               {/* Table Rows */}
               {data.tokensTraded.map((token, idx) => {
-                const totalPnL = (token.realizedPnL || 0) + (token.unrealizedPnL || 0);
+                const tokenPnL = (token.realizedPnL || 0) + (token.unrealizedPnL || 0);
                 const totalVolume = (token.buyVolume || 0) + (token.sellVolume || 0);
                 const avgPrice = token.buyAvgPrice > 0 && token.sellAvgPrice > 0
                   ? (token.buyAvgPrice + token.sellAvgPrice) / 2
                   : token.buyAvgPrice || token.sellAvgPrice || 0;
 
                 return (
-                  <Box key={idx} sx={{
-                    display: 'grid',
-                    gridTemplateColumns: '140px repeat(4, 1fr)',
-                    gap: 2,
-                    px: 2,
-                    py: 1.5,
-                    borderBottom: idx < data.tokensTraded.length - 1 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
-                    '&:hover': {
-                      backgroundColor: alpha('#fff', 0.01)
-                    }
-                  }}>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Box
-                        component="img"
+                  <div
+                    key={idx}
+                    className={cn(
+                      "grid gap-2 px-2 py-1.5",
+                      idx < data.tokensTraded.length - 1 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100"),
+                      isDark ? "hover:bg-white/[0.01]" : "hover:bg-gray-50"
+                    )}
+                    style={{ gridTemplateColumns: '140px repeat(4, 1fr)' }}
+                  >
+                    <div className="flex items-center gap-1">
+                      <img
                         src={`https://s1.xrpl.to/token/${token.tokenId}`}
-                        sx={{ width: 20, height: 20, borderRadius: '4px' }}
+                        className="w-5 h-5 rounded"
                         onError={(e) => { e.target.style.display = 'none'; }}
+                        alt=""
                       />
-                      <Typography variant="body2" sx={{ fontSize: '0.9rem', fontWeight: 400 }}>
+                      <span className={cn("text-[0.9rem] font-normal", isDark ? "text-white" : "text-gray-900")}>
                         {token.tokenName}
-                      </Typography>
-                    </Stack>
-                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
+                      </span>
+                    </div>
+                    <span className={cn("text-[0.9rem] text-right font-normal", isDark ? "text-white" : "text-gray-900")}>
                       {totalVolume > 0 ? fCurrency5(totalVolume) : '—'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
+                    </span>
+                    <span className={cn("text-[0.9rem] text-right font-normal", isDark ? "text-white" : "text-gray-900")}>
                       {avgPrice > 0 ? fCurrency5(avgPrice) : '—'}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
+                    </span>
+                    <span className={cn("text-[0.9rem] text-right font-normal", isDark ? "text-white" : "text-gray-900")}>
                       {Math.abs(token.balanceChange) > 0.00001 ? fCurrency5(token.balanceChange) : '0'}
-                    </Typography>
-                    <Typography variant="body2" sx={{
-                      fontSize: '0.9rem',
-                      textAlign: 'right',
-                      fontWeight: 400,
-                      color: totalPnL >= 0 ? '#10b981' : '#ef4444'
-                    }}>
-                      {Math.abs(totalPnL) > 0.00001 ? fCurrency5(totalPnL) : '0'}
-                    </Typography>
-                  </Box>
+                    </span>
+                    <span className={cn(
+                      "text-[0.9rem] text-right font-normal",
+                      tokenPnL >= 0 ? "text-[#10b981]" : "text-[#ef4444]"
+                    )}>
+                      {Math.abs(tokenPnL) > 0.00001 ? fCurrency5(tokenPnL) : '0'}
+                    </span>
+                  </div>
                 );
               })}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
 
         {/* Transaction History */}
         {txHistory.length > 0 && (
-          <Box sx={{ mt: 4 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
-              <Typography variant="body2" sx={{ fontSize: '0.9rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6) }}>
+          <div className="mt-4">
+            <div className="flex items-center justify-between mb-2">
+              <p className={cn("text-[0.9rem]", isDark ? "text-white/60" : "text-gray-500")}>
                 Transactions ({filteredTxHistory.length})
-              </Typography>
-              <Stack direction="row" spacing={1}>
+              </p>
+              <div className="flex gap-1">
                 {getAvailableTxTypes().map(filter => (
-                  <Typography
+                  <button
                     key={filter}
-                    component="button"
                     onClick={() => setTxFilter(filter)}
-                    sx={{
-                      fontSize: '0.85rem',
-                      px: 1.5,
-                      py: 0.5,
-                      borderRadius: '6px',
-                      border: `1px solid ${alpha('#fff', txFilter === filter ? 0.15 : 0.04)}`,
-                      backgroundColor: txFilter === filter ? alpha('#4285f4', 0.06) : 'transparent',
-                      color: txFilter === filter ? '#4285f4' : (theme) => alpha(theme.palette.text.secondary, 0.6),
-                      cursor: 'pointer',
-                      textTransform: 'none',
-                      fontWeight: 400
-                    }}
+                    className={cn(
+                      "text-[0.85rem] px-1.5 py-0.5 rounded-md border font-normal",
+                      txFilter === filter
+                        ? (isDark ? "border-white/15 bg-[#4285f4]/10 text-[#4285f4]" : "border-blue-200 bg-blue-50 text-[#4285f4]")
+                        : (isDark ? "border-white/[0.04] bg-transparent text-white/60" : "border-gray-200 bg-transparent text-gray-500")
+                    )}
                   >
                     {filter === 'all' ? 'All' : filter}
-                  </Typography>
+                  </button>
                 ))}
-              </Stack>
-            </Stack>
-            <Box sx={{ backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.06), borderRadius: '8px', overflow: 'hidden', border: `1px solid ${alpha('#fff', 0.04)}` }}>
-              <Box sx={{
-                display: 'grid',
-                gridTemplateColumns: '120px 2fr 1fr 120px',
-                gap: 2,
-                px: 2,
-                py: 1.5,
-                borderBottom: `1px solid ${alpha('#fff', 0.04)}`,
-                backgroundColor: (theme) => alpha(theme.palette.background.paper, 0.04)
-              }}>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>Type</Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>Description</Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), textAlign: 'right', fontWeight: 400 }}>Amount</Typography>
-                <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.6), fontWeight: 400 }}>Time</Typography>
-              </Box>
+              </div>
+            </div>
+            <div className={cn(
+              "rounded-lg overflow-hidden border",
+              isDark ? "bg-white/[0.03] border-white/[0.04]" : "bg-gray-50 border-gray-200"
+            )}>
+              <div className={cn(
+                "grid gap-2 px-2 py-1.5 border-b",
+                isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-100 border-gray-200"
+              )} style={{ gridTemplateColumns: '120px 2fr 1fr 120px' }}>
+                <span className={cn("text-[0.85rem] font-normal", isDark ? "text-white/60" : "text-gray-500")}>Type</span>
+                <span className={cn("text-[0.85rem] font-normal", isDark ? "text-white/60" : "text-gray-500")}>Description</span>
+                <span className={cn("text-[0.85rem] font-normal text-right", isDark ? "text-white/60" : "text-gray-500")}>Amount</span>
+                <span className={cn("text-[0.85rem] font-normal", isDark ? "text-white/60" : "text-gray-500")}>Time</span>
+              </div>
               {filteredTxHistory.slice(0, 20).map((tx, idx) => {
                 const txData = tx.tx_json || tx.tx;
                 const meta = tx.meta;
@@ -555,15 +497,15 @@ const OverView = ({ account }) => {
 
                 // Build action description
                 let actionDesc = '';
-                let actionColor = 'inherit';
+                let actionColor = isDark ? 'text-white' : 'text-gray-900';
 
                 if (txData.TransactionType === 'OfferCreate' && offerDetails) {
                   const parts = offerDetails.split(' → ');
                   actionDesc = `Offer to sell ${parts[0]} for ${parts[1]}`;
-                  actionColor = '#4285f4';
+                  actionColor = 'text-[#4285f4]';
                 } else if (txData.TransactionType === 'OfferCancel') {
                   actionDesc = `Cancelled offer #${txData.OfferSequence || 'unknown'}`;
-                  actionColor = '#ef4444';
+                  actionColor = 'text-[#ef4444]';
                 } else if (txData.TransactionType === 'Payment') {
                   const isSender = txData.Account === account;
 
@@ -572,7 +514,7 @@ const OverView = ({ account }) => {
                     const drops = parseInt(txData.Amount);
                     if (drops < 1000) {
                       actionDesc = `Dusting attack from ${txData.Account.substring(0, 8)}...`;
-                      actionColor = '#ef4444';
+                      actionColor = 'text-[#ef4444]';
                     }
                   }
 
@@ -585,13 +527,13 @@ const OverView = ({ account }) => {
                         const curr = decodeCurrency(meta.delivered_amount.currency);
                         const tokenAmt = parseFloat(meta.delivered_amount.value);
                         actionDesc = `Swapped ${fCurrency5(xrpAmt)} XRP → ${fCurrency5(tokenAmt)} ${curr}`;
-                        actionColor = '#10b981';
+                        actionColor = 'text-[#10b981]';
                       } else if (!sendIsXRP && deliveredIsXRP) {
                         const curr = decodeCurrency(txData.SendMax.currency);
                         const tokenAmt = parseFloat(txData.SendMax.value);
                         const xrpAmt = parseInt(meta.delivered_amount) / 1000000;
                         actionDesc = `Swapped ${fCurrency5(tokenAmt)} ${curr} → ${fCurrency5(xrpAmt)} XRP`;
-                        actionColor = '#10b981';
+                        actionColor = 'text-[#10b981]';
                       } else {
                         actionDesc = isSender ? `Sent to ${txData.Destination.substring(0, 8)}...` : `Received from ${txData.Account.substring(0, 8)}...`;
                       }
@@ -603,17 +545,17 @@ const OverView = ({ account }) => {
                   const curr = decodeCurrency(txData.LimitAmount?.currency);
                   const limit = parseFloat(txData.LimitAmount?.value || 0);
                   actionDesc = limit === 0 ? `Removed trust line for ${curr}` : `Set trust line for ${curr}`;
-                  actionColor = limit === 0 ? '#ef4444' : '#10b981';
+                  actionColor = limit === 0 ? 'text-[#ef4444]' : 'text-[#10b981]';
                 } else if (txData.TransactionType === 'NFTokenMint') {
                   const nftId = txData.NFTokenID || (meta?.nftoken_id);
                   const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
                   actionDesc = shortId ? `Minted NFT ${shortId}` : 'Minted NFT';
-                  actionColor = '#10b981';
+                  actionColor = 'text-[#10b981]';
                 } else if (txData.TransactionType === 'NFTokenBurn') {
                   const nftId = txData.NFTokenID;
                   const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
                   actionDesc = shortId ? `Burned NFT ${shortId}` : 'Burned NFT';
-                  actionColor = '#ef4444';
+                  actionColor = 'text-[#ef4444]';
                 } else if (txData.TransactionType === 'NFTokenCreateOffer') {
                   const isSellOffer = txData.Flags & 1;
                   const nftId = txData.NFTokenID;
@@ -626,12 +568,12 @@ const OverView = ({ account }) => {
                   } else {
                     actionDesc = shortId ? `Offered to buy NFT ${shortId}` : 'Created buy offer';
                   }
-                  actionColor = '#4285f4';
+                  actionColor = 'text-[#4285f4]';
                 } else if (txData.TransactionType === 'NFTokenAcceptOffer') {
                   const nftId = txData.NFTokenID || (meta?.nftoken_id);
                   const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
                   actionDesc = shortId ? `Accepted offer for NFT ${shortId}` : 'Accepted NFT offer';
-                  actionColor = '#10b981';
+                  actionColor = 'text-[#10b981]';
                 } else if (txData.TransactionType === 'NFTokenCancelOffer') {
                   const offers = txData.NFTokenOffers || [];
                   if (offers.length === 1) {
@@ -642,48 +584,38 @@ const OverView = ({ account }) => {
                   } else {
                     actionDesc = 'Cancelled NFT offer';
                   }
-                  actionColor = '#ef4444';
+                  actionColor = 'text-[#ef4444]';
                 } else {
                   actionDesc = txData.TransactionType.replace(/([A-Z])/g, ' $1').trim();
                 }
 
                 return (
-                  <Box key={idx} sx={{
-                    display: 'grid',
-                    gridTemplateColumns: '120px 2fr 1fr 120px',
-                    gap: 2,
-                    px: 2,
-                    py: 1.5,
-                    borderBottom: idx < 19 ? `1px solid ${alpha('#fff', 0.02)}` : 'none',
-                    '&:hover': { backgroundColor: alpha('#fff', 0.01) }
-                  }}>
-                    <Typography variant="body2" sx={{
-                      fontSize: '0.85rem',
-                      color: txData.TransactionType === 'Payment' ? '#4285f4' : (theme) => alpha(theme.palette.text.secondary, 0.6),
-                      fontWeight: 400
-                    }}>
+                  <div
+                    key={idx}
+                    className={cn(
+                      "grid gap-2 px-2 py-1.5",
+                      idx < 19 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100"),
+                      isDark ? "hover:bg-white/[0.01]" : "hover:bg-gray-50"
+                    )}
+                    style={{ gridTemplateColumns: '120px 2fr 1fr 120px' }}
+                  >
+                    <span className={cn(
+                      "text-[0.85rem] font-normal",
+                      txData.TransactionType === 'Payment' ? "text-[#4285f4]" : (isDark ? "text-white/60" : "text-gray-500")
+                    )}>
                       {txData.TransactionType}
-                    </Typography>
-                    <Box>
-                      <Typography variant="body2" sx={{
-                        fontSize: '0.9rem',
-                        color: actionColor,
-                        fontWeight: 400,
-                        mb: sourceLabel ? 0.3 : 0
-                      }}>
+                    </span>
+                    <div>
+                      <p className={cn("text-[0.9rem] font-normal", actionColor, sourceLabel ? "mb-0.5" : "")}>
                         {actionDesc}
-                      </Typography>
+                      </p>
                       {sourceLabel && (
-                        <Typography variant="caption" sx={{
-                          fontSize: '0.8rem',
-                          color: (theme) => alpha(theme.palette.text.secondary, 0.5),
-                          fontWeight: 400
-                        }}>
+                        <span className={cn("text-[0.8rem] font-normal", isDark ? "text-white/50" : "text-gray-400")}>
                           {sourceLabel}
-                        </Typography>
+                        </span>
                       )}
-                    </Box>
-                    <Typography variant="body2" sx={{ fontSize: '0.9rem', textAlign: 'right', fontWeight: 400 }}>
+                    </div>
+                    <span className={cn("text-[0.9rem] text-right font-normal", isDark ? "text-white" : "text-gray-900")}>
                       {(() => {
                         if (txData.TransactionType === 'OfferCreate' || txData.TransactionType === 'OfferCancel') return '—';
 
@@ -701,21 +633,21 @@ const OverView = ({ account }) => {
                         const curr = decodeCurrency(amt.currency);
                         return `${fCurrency5(val)} ${curr}`;
                       })()}
-                    </Typography>
-                    <Typography variant="body2" sx={{ fontSize: '0.85rem', color: (theme) => alpha(theme.palette.text.secondary, 0.5), fontWeight: 400 }}>
+                    </span>
+                    <span className={cn("text-[0.85rem] font-normal", isDark ? "text-white/50" : "text-gray-500")}>
                       {formatDistanceToNow(date, { addSuffix: true })}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
                 );
               })}
-            </Box>
-          </Box>
+            </div>
+          </div>
         )}
-      </Container>
+      </div>
 
       <ScrollToTop />
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 };
 

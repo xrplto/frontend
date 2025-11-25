@@ -630,7 +630,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {/* Launch Button */}
               <a
                 href="/launch"
-                className="flex h-8 items-center rounded-xl border-[1.5px] border-primary/25 px-4 text-[0.95rem] font-medium text-primary hover:border-primary hover:bg-primary/10"
+                className="flex h-8 items-center rounded-xl bg-primary px-4 text-[0.95rem] font-medium text-white hover:bg-primary/90"
               >
                 Launch
               </a>

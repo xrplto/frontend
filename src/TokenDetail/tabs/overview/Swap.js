@@ -945,11 +945,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       const req = orderBook.id % 2;
       if (req === 1) {
         const parsed = processOrderbookOffers(orderBook.result.offers, 'asks');
-        setAsks(parsed);
+        setAsks(parsed.slice(0, 30));
       }
       if (req === 0) {
         const parsed = processOrderbookOffers(orderBook.result.offers, 'bids');
-        setBids(parsed);
+        setBids(parsed.slice(0, 30));
       }
     }
   };
@@ -2186,6 +2186,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               </Stack>
             </SummaryBox>
           )}
+
+          {/* Connect Wallet - inside the swap card when not connected */}
+          {!accountProfile?.account && (
+            <Box sx={{ mt: 2 }}>
+              <ConnectWallet
+                text="Connect Wallet"
+                py={{ xs: 1.25, sm: 1 }}
+                fontSize={{ xs: '0.9rem', sm: '0.85rem' }}
+                sx={{
+                  borderRadius: '12px',
+                  fontWeight: 500,
+                  width: '100%'
+                }}
+              />
+            </Box>
+          )}
         </ConverterFrame>
       </OverviewWrapper>
 
@@ -2211,8 +2227,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </Typography>
       </Stack>
 
-      <Stack sx={{ width: '100%' }}>
-        {accountProfile && accountProfile.account ? (
+      {accountProfile && accountProfile.account ? (
+        <Stack sx={{ width: '100%' }}>
           <ExchangeButton
             variant="outlined"
             onClick={handlePlaceOrder}
@@ -2230,25 +2246,15 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           >
             {handleMsg()}
           </ExchangeButton>
-        ) : (
-          <ConnectWallet
-            text="Connect Wallet"
-            py={{ xs: 1, sm: 0.8 }}
-            fontSize={{ xs: '0.875rem', sm: '0.85rem' }}
-            sx={{
-              borderRadius: '10px',
-              fontWeight: 400
-            }}
-          />
-        )}
-        {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
-          <Alert severity="error" sx={{ mt: 1 }}>
-            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px' }}>
-              {errMsg}
-            </Typography>
-          </Alert>
-        )}
-      </Stack>
+          {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
+            <Alert severity="error" sx={{ mt: 1 }}>
+              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px' }}>
+                {errMsg}
+              </Typography>
+            </Alert>
+          )}
+        </Stack>
+      ) : null}
 
       {!onOrderBookToggle && (
         <TransactionDetailsPanel

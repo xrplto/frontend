@@ -968,7 +968,7 @@ const CreatorTransactionsDialog = memo(
         fetchTransactionHistory();
         subscribeToTransactions();
 
-        // Auto-refresh every 10 seconds (reduced frequency for performance)
+        // Auto-refresh every 10 seconds
         const refreshInterval = setInterval(() => {
           fetchTransactionHistory();
         }, 10000);
@@ -978,6 +978,9 @@ const CreatorTransactionsDialog = memo(
           clearInterval(refreshInterval);
           if (reconnectTimeoutRef.current) {
             clearTimeout(reconnectTimeoutRef.current);
+          }
+          if (clientRef.current) {
+            clientRef.current.removeAllListeners();
           }
           unsubscribe();
         };
