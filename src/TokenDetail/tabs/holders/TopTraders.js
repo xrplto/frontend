@@ -2,7 +2,7 @@ import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
 import { format } from 'date-fns';
 import Link from 'next/link';
-import { Loader2, TrendingUp, TrendingDown, BarChart2, ExternalLink, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 
 // Context
 import { AppContext } from 'src/AppContext';
@@ -71,37 +71,18 @@ function getComparator(order, orderBy) {
     : (a, b) => -descendingComparator(a, b, orderBy);
 }
 
-function ProfitCell({ value, isDark }) {
-  const isPositive = value >= 0;
-  return (
-    <div className="flex items-center justify-end gap-1">
-      {isPositive ? (
-        <TrendingUp size={14} className="text-green-500" />
-      ) : (
-        <TrendingDown size={14} className="text-red-500" />
-      )}
-      <span className={cn('text-[14px] font-normal', isPositive ? 'text-green-500' : 'text-red-500')}>
-        {fNumber(Math.abs(value))}
-      </span>
-    </div>
-  );
-}
-
 export default function TopTraders({ token }) {
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
 
   const [traders, setTraders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedTrader, setSelectedTrader] = useState(null);
-  const [traderStats, setTraderStats] = useState({});
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState('profit24h');
-  const [copiedTrader, setCopiedTrader] = useState(null);
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(20);
+  const rowsPerPage = 20;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
@@ -188,18 +169,6 @@ export default function TopTraders({ token }) {
     }
   }, [traders, order, orderBy]);
 
-  const handleOpenStats = (trader) => {
-    setSelectedTrader(trader);
-    setTraderStats((prev) => ({
-      ...prev,
-      [trader.address]: trader
-    }));
-  };
-
-  const handleCloseStats = () => {
-    setSelectedTrader(null);
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -231,169 +200,83 @@ export default function TopTraders({ token }) {
         </div>
       ) : (
         <>
-          {/* Table Headers */}
+          {/* Table */}
           <div className={cn(
-            'hidden md:grid grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1.5fr_1fr] gap-4 p-4 rounded-t-xl border-[1.5px]',
+            'overflow-hidden rounded-xl border-[1.5px]',
             isDark ? 'border-white/10' : 'border-gray-200'
           )}>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>#</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Trader</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>P&L (24h)</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>P&L (7d)</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Vol (24h)</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Total Vol</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Trades</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>ROI</span>
-            <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Last Trade</span>
-            <span></span>
-          </div>
+            <table className="w-full">
+              <thead>
+                <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  <th className={cn('px-4 py-3 text-left text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>#</th>
+                  <th className={cn('px-4 py-3 text-left text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Trader</th>
+                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>P&L 24h</th>
+                  <th className={cn('hidden md:table-cell px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>P&L 7d</th>
+                  <th className={cn('hidden lg:table-cell px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Volume</th>
+                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Trades</th>
+                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>ROI</th>
+                  <th className={cn('hidden md:table-cell px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Last Trade</th>
+                </tr>
+              </thead>
+              <tbody>
 
-          <div className="space-y-1">
-            {paginatedTraders.map((trader, index) => {
-              const volumePercentage = Math.min(
-                100,
-                Math.max(5, (trader.totalVolume / 1000000) * 100)
-              );
-
-              return (
-                <div
-                  key={trader.address + '-' + index}
-                  className={cn(
-                    'relative rounded-xl border-[1.5px] overflow-hidden transition-all hover:-translate-y-0.5',
-                    isDark
-                      ? 'border-white/10 hover:border-primary/30'
-                      : 'border-gray-200 hover:border-primary/30'
-                  )}
-                >
-                  {/* Volume Indicator */}
-                  <div
+                {paginatedTraders.map((trader, index) => (
+                  <tr
+                    key={trader.address + '-' + index}
                     className={cn(
-                      'absolute left-0 top-0 h-full rounded-xl transition-all',
-                      isDark ? 'bg-primary/5' : 'bg-primary/3'
+                      'border-b transition-colors',
+                      isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50'
                     )}
-                    style={{ width: `${volumePercentage}%` }}
-                  />
-
-                  <div className="relative p-3">
-                    <div className={cn(
-                      'grid gap-3 items-center',
-                      'grid-cols-1 sm:grid-cols-2',
-                      'md:grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1.5fr_1.5fr_1fr_1fr_1.5fr_1fr]'
-                    )}>
-                      {/* Rank */}
-                      <div className="hidden md:block">
-                        <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                          {page * rowsPerPage + index + 1}
-                        </span>
-                      </div>
-
-                      {/* Trader Address */}
-                      <div className="flex items-center gap-1.5">
-                        <Link
-                          href={`/profile/${trader.address}`}
-                          className="text-[13px] font-normal text-primary hover:underline"
-                        >
-                          {`${trader.address.slice(0, 4)}...${trader.address.slice(-4)}`}
+                  >
+                    <td className="px-4 py-3">
+                      <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                        {page * rowsPerPage + index + 1}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/profile/${trader.address}`} className="text-[13px] text-primary hover:underline">
+                          {`${trader.address.slice(0, 6)}...${trader.address.slice(-6)}`}
                         </Link>
                         {trader.AMM && (
-                          <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] text-purple-500">
-                            AMM
-                          </span>
+                          <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] text-white">AMM</span>
                         )}
                       </div>
-
-                      {/* P&L 24h */}
-                      <div className="text-left md:text-right">
-                        <span className={cn('text-[11px] block md:hidden', isDark ? 'text-white/60' : 'text-gray-500')}>
-                          P&L (24h)
-                        </span>
-                        <ProfitCell value={trader.profit24h} isDark={isDark} />
-                      </div>
-
-                      {/* P&L 7d */}
-                      <div className="hidden md:block text-right">
-                        <ProfitCell value={trader.profit7d} isDark={isDark} />
-                      </div>
-
-                      {/* Volume 24h */}
-                      <div className="text-left md:text-right">
-                        <span className={cn('text-[11px] block md:hidden', isDark ? 'text-white/60' : 'text-gray-500')}>
-                          Vol (24h)
-                        </span>
-                        <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                          {fNumber(trader.volume24h)}
-                        </span>
-                      </div>
-
-                      {/* Total Volume */}
-                      <div className="hidden md:block text-right">
-                        <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                          {fNumber(trader.totalVolume)}
-                        </span>
-                      </div>
-
-                      {/* Trades */}
-                      <div className="text-left md:text-right">
-                        <span className={cn('text-[11px] block md:hidden', isDark ? 'text-white/60' : 'text-gray-500')}>
-                          Trades
-                        </span>
-                        <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
-                          {fNumber(trader.totalTrades)}
-                        </span>
-                      </div>
-
-                      {/* ROI */}
-                      <div className="flex items-center gap-1 justify-start md:justify-end">
-                        {trader.roi >= 0 ? (
-                          <TrendingUp size={14} className="text-green-500" />
-                        ) : (
-                          <TrendingDown size={14} className="text-red-500" />
-                        )}
-                        <span className={cn('text-[14px] font-normal', trader.roi >= 0 ? 'text-green-500' : 'text-red-500')}>
-                          {fPercent(trader.roi)}
-                        </span>
-                      </div>
-
-                      {/* Last Trade */}
-                      <div className="text-left md:text-right">
-                        <span className={cn('text-[11px] block md:hidden', isDark ? 'text-white/60' : 'text-gray-500')}>
-                          Last Trade
-                        </span>
-                        <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
-                          {formatDate(trader.lastTradeDate)}
-                        </span>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex justify-end gap-1">
-                        <button
-                          onClick={() => handleOpenStats(trader)}
-                          className={cn(
-                            'p-1 rounded-lg transition-colors',
-                            isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                          )}
-                          title="View Trader Statistics"
-                        >
-                          <BarChart2 size={16} className="text-primary" />
-                        </button>
-                        <Link
-                          href={`/profile/${trader.address}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={cn(
-                            'p-1 rounded-lg transition-colors',
-                            isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
-                          )}
-                          title="View Profile"
-                        >
-                          <ExternalLink size={16} className="text-primary" />
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={cn('text-[13px] font-medium', trader.profit24h >= 0 ? 'text-green-500' : 'text-red-500')}>
+                        {trader.profit24h >= 0 ? '▲' : '▼'} {fNumber(Math.abs(trader.profit24h))}
+                      </span>
+                    </td>
+                    <td className="hidden md:table-cell px-4 py-3 text-right">
+                      <span className={cn('text-[13px] font-medium', trader.profit7d >= 0 ? 'text-green-500' : 'text-red-500')}>
+                        {trader.profit7d >= 0 ? '▲' : '▼'} {fNumber(Math.abs(trader.profit7d))}
+                      </span>
+                    </td>
+                    <td className="hidden lg:table-cell px-4 py-3 text-right">
+                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                        {fNumber(trader.totalVolume)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                        {fNumber(trader.totalTrades)}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-right">
+                      <span className={cn('text-[13px] font-medium', trader.roi >= 0 ? 'text-green-500' : 'text-red-500')}>
+                        {fPercent(trader.roi)}
+                      </span>
+                    </td>
+                    <td className="hidden md:table-cell px-4 py-3 text-right">
+                      <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                        {formatDate(trader.lastTradeDate)}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {/* Pagination */}

@@ -4,10 +4,16 @@ import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import { MD5 } from 'crypto-js';
 
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
-  return `https://xrpl.to/api/token_logo/${issuer}/${currency}`;
+  if (currency === 'XRP') {
+    return 'https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8';
+  }
+  const tokenIdentifier = issuer + '_' + currency;
+  const md5Hash = MD5(tokenIdentifier).toString();
+  return `https://s1.xrpl.to/token/${md5Hash}`;
 };
 const decodeCurrency = (currency) => {
   if (currency === 'XRP') return 'XRP';
