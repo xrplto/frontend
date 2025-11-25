@@ -5,13 +5,49 @@ import React, {
   useCallback,
   useMemo,
   useRef,
-  lazy,
-  Suspense,
   createContext
 } from 'react';
 import axios from 'axios';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
+import Link from 'next/link';
+import PropTypes from 'prop-types';
+
+// Lucide Icons
+import {
+  Search,
+  Filter,
+  X,
+  Send,
+  BarChart3,
+  Share2,
+  Pencil,
+  BadgeCheck,
+  TrendingUp,
+  Wallet,
+  Package,
+  Users,
+  ChevronDown,
+  Layers,
+  CheckCircle,
+  ClipboardCheck,
+  Bookmark,
+  Settings2,
+  Target,
+  MoreVertical,
+  Info,
+  Loader2
+} from 'lucide-react';
+
+// Utils & Context
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
+import AccountTransactions from 'src/components/CollectionActivity';
+import Watch from 'src/components/Watch';
+import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
+import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';
+import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from '../components/ShareButtons';
+
 // Native debounce implementation
 const debounce = (func, delay) => {
   let timeoutId;
@@ -25,116 +61,27 @@ const debounce = (func, delay) => {
 const InfiniteScroll = dynamic(() => import('react-infinite-scroll-component'), {
   ssr: false,
   loading: () => (
-    <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-      <CircularProgress size={30} />
-    </Box>
+    <div className="flex justify-center py-4">
+      <Loader2 className="animate-spin text-primary" size={30} />
+    </div>
   )
 });
-import {
-  FacebookShareButton,
-  TwitterShareButton,
-  FacebookIcon,
-  TwitterIcon
-} from '../components/ShareButtons';
 
-import {
-  Box,
-  IconButton,
-  InputAdornment,
-  TextField,
-  Paper,
-  Fade,
-  Typography,
-  Skeleton,
-  Chip,
-  Tooltip,
-  Stack,
-  useTheme,
-  useMediaQuery,
-  Link,
-  Popover,
-  Divider,
-  styled,
-  ToggleButtonGroup,
-  ToggleButton,
-  Button
-} from '@mui/material';
-import { alpha } from '@mui/material/styles';
-// Removed import of TabComponents.js - components inlined below
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  LinearProgress,
-  Radio,
-  RadioGroup,
-  FormControl,
-  Card,
-  CardMedia,
-  CardContent,
-  Grid
-} from '@mui/material';
-import PropTypes from 'prop-types';
-import { useEffect as useEffectReact } from 'react';
-import { isEqual } from 'src/utils/formatters';
-
-// Icons
-import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import ClearIcon from '@mui/icons-material/Clear';
-import CloseIcon from '@mui/icons-material/Close';
-import SendIcon from '@mui/icons-material/Send';
-import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
-import ShareIcon from '@mui/icons-material/Share';
-import EditIcon from '@mui/icons-material/Edit';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import PeopleIcon from '@mui/icons-material/People';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CategoryIcon from '@mui/icons-material/Category';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import FactCheckIcon from '@mui/icons-material/FactCheck';
-import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
-import TuneIcon from '@mui/icons-material/Tune';
-import SportsScoreIcon from '@mui/icons-material/SportsScore';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import InfoIcon from '@mui/icons-material/Info';
-
-import CircularProgress from '@mui/material/CircularProgress';
-
-// Utils & Context
-import { AppContext } from 'src/AppContext';
-import AccountTransactions from 'src/components/CollectionActivity';
-import Watch from 'src/components/Watch';
-
-// Inline Tab Components (previously TabComponents.js)
+// Inline Tab Components
 const TabContextProvider = createContext();
 
 const TabContext = ({ value, children }) => {
   return <TabContextProvider.Provider value={value}>{children}</TabContextProvider.Provider>;
 };
 
-const TabPanel = ({ value, children, sx = {}, ...props }) => {
+const TabPanel = ({ value, children, className = '' }) => {
   const currentValue = useContext(TabContextProvider);
-
-  if (currentValue !== value) {
-    return null;
-  }
-
-  return (
-    <Box sx={sx} {...props}>
-      {children}
-    </Box>
-  );
+  if (currentValue !== value) return null;
+  return <div className={className}>{children}</div>;
 };
+
 // Constants
 const getMinterName = (account) => {
-  // Function to get minter name for an account
   const minterMap = {
     'rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH': 'XLS-20d',
     'rNH4g2bh86BQBKrW8bEiN8xLwKvF9YB4U1': 'OnXRP',
@@ -142,500 +89,158 @@ const getMinterName = (account) => {
   };
   return minterMap[account] || null;
 };
-import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
-import { formatMonthYear } from 'src/utils/formatters';
-import { getNftCoverUrl, getNftFilesUrls } from 'src/utils/parseUtils';
-import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 
-// Styled Components with optimized styles
-const MainContainer = styled(Box)({
-  width: '100%',
-  position: 'relative',
-  opacity: 0,
-  animation: 'fadeInUp 0.3s ease-out forwards',
-  '@keyframes fadeInUp': {
-    to: { opacity: 1, transform: 'translateY(0)' }
+// Alpha utility for colors
+const alpha = (color, opacity) => {
+  if (!color) return `rgba(0,0,0,${opacity})`;
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
   }
-});
-
-const CompactCard = styled(Box)(({ theme }) => ({
-  background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-  borderRadius: '12px',
-  padding: theme.spacing(2.5),
-  marginBottom: theme.spacing(2.5),
-  position: 'relative',
-  overflow: 'hidden',
-  [theme.breakpoints.down('sm')]: {
-    padding: theme.spacing(2),
-    marginBottom: theme.spacing(2),
-    borderRadius: '12px'
-  }
-}));
-
-const IconCover = styled(Box)(({ theme }) => ({
-  width: '80px',
-  height: '80px',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  borderRadius: '12px',
-  background: 'transparent',
-  position: 'relative',
-  overflow: 'hidden',
-  [theme.breakpoints.up('sm')]: {
-    width: '100px',
-    height: '100px'
-  }
-}));
-
-const CompactStatsCard = styled(Box)(({ theme }) => ({
-  background: 'transparent',
-  border: 'none',
-  borderRadius: '12px',
-  padding: theme.spacing(1.5),
-  textAlign: 'center',
-  minWidth: '90px',
-  display: 'flex',
-  flexDirection: 'column',
-  justifyContent: 'center',
-  alignItems: 'center'
-}));
-
-const ActionButton = styled(IconButton)(({ theme }) => ({
-  background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  borderRadius: '12px',
-  padding: '8px',
-  '&:hover': {
-    background: 'transparent',
-    borderColor: alpha(theme.palette.divider, 0.25)
-  }
-}));
+  return color;
+};
 
 // Label Component
-const RootStyle = styled('span')(({ theme, ownerState }) => {
-  const { color, variant } = ownerState;
-
-  const styleFilled = (color) => ({
-    color: theme.palette[color].contrastText,
-    backgroundColor: theme.palette[color].main
-  });
-
-  const styleOutlined = (color) => ({
-    color: theme.palette[color].main,
-    backgroundColor: 'transparent',
-    border: `1px solid ${theme.palette[color].main}`
-  });
-
-  const styleGhost = (color) => ({
-    color: theme.palette[color].dark,
-    backgroundColor: alpha(theme.palette[color].main, 0.16)
-  });
-
-  return {
-    height: 22,
-    minWidth: 22,
-    lineHeight: 0,
-    borderRadius: 12,
-    cursor: 'default',
-    alignItems: 'center',
-    whiteSpace: 'nowrap',
-    display: 'inline-flex',
-    justifyContent: 'center',
-    padding: theme.spacing(0, 1),
-    color: theme.palette.grey[800],
-    fontSize: theme.typography.pxToRem(12),
-    fontFamily: theme.typography.fontFamily,
-    backgroundColor: 'transparent',
-    fontWeight: theme.typography.fontWeightBold,
-
-    ...(color !== 'default'
-      ? {
-          ...(variant === 'filled' && { ...styleFilled(color) }),
-          ...(variant === 'outlined' && { ...styleOutlined(color) }),
-          ...(variant === 'ghost' && { ...styleGhost(color) })
-        }
-      : {
-          ...(variant === 'outlined' && {
-            backgroundColor: 'transparent',
-            color: theme.palette.text.primary,
-            border: `1px solid ${theme.palette.grey[500_32]}`
-          }),
-          ...(variant === 'ghost' && {
-            color: theme.palette.text.secondary,
-            backgroundColor: alpha(theme.palette.grey[500], 0.16)
-          })
-        })
+function Label({ color = 'default', variant = 'ghost', children, className = '' }) {
+  const colorStyles = {
+    default: variant === 'ghost' ? 'bg-gray-500/10 text-gray-500' : 'border-gray-500/20 text-gray-500',
+    primary: variant === 'ghost' ? 'bg-primary/10 text-primary' : 'border-primary/20 text-primary',
+    success: variant === 'ghost' ? 'bg-green-500/10 text-green-500' : 'border-green-500/20 text-green-500',
+    warning: variant === 'ghost' ? 'bg-yellow-500/10 text-yellow-500' : 'border-yellow-500/20 text-yellow-500',
+    error: variant === 'ghost' ? 'bg-red-500/10 text-red-500' : 'border-red-500/20 text-red-500',
+    info: variant === 'ghost' ? 'bg-blue-500/10 text-blue-500' : 'border-blue-500/20 text-blue-500'
   };
-});
 
-function Label({ color = 'default', variant = 'ghost', children, ...other }) {
   return (
-    <RootStyle ownerState={{ color, variant }} {...other}>
+    <span className={cn(
+      'inline-flex items-center justify-center px-1.5 py-0.5 rounded text-[10px] font-medium whitespace-nowrap',
+      variant === 'outlined' && 'border bg-transparent',
+      colorStyles[color] || colorStyles.default,
+      className
+    )}>
       {children}
-    </RootStyle>
+    </span>
   );
 }
 
 Label.propTypes = {
   children: PropTypes.node,
-  color: PropTypes.oneOf([
-    'default',
-    'primary',
-    'secondary',
-    'info',
-    'success',
-    'warning',
-    'error'
-  ]),
+  color: PropTypes.oneOf(['default', 'primary', 'secondary', 'info', 'success', 'warning', 'error']),
   variant: PropTypes.oneOf(['filled', 'outlined', 'ghost'])
 };
 
 // AttributeFilter Component
-const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  background: 'transparent',
-  backdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  borderRadius: '12px !important',
-  marginBottom: '8px !important',
-  overflow: 'hidden',
-  position: 'relative',
-  '&:before': {
-    display: 'none'
-  },
-  '&.Mui-expanded': {
-    margin: '0 0 8px 0 !important'
-  }
-}));
-
-const StyledAccordionSummary = styled(AccordionSummary)(({ theme }) => ({
-  background: 'transparent',
-  backdropFilter: 'none',
-  borderRadius: '12px 12px 0 0',
-  padding: '8px 12px',
-  minHeight: '48px !important',
-  transition: 'transform 0.2s ease, border-color 0.2s ease',
-  '& .MuiAccordionSummary-content': {
-    margin: '0 !important',
-    alignItems: 'center'
-  },
-  '& .MuiAccordionSummary-expandIconWrapper': {
-    color: theme.palette.primary.main,
-    transition: 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-    '&.Mui-expanded': {
-      transform: 'rotate(180deg)'
-    }
-  }
-}));
-
-const StyledAccordionDetails = styled(AccordionDetails)(({ theme }) => ({
-  padding: '12px',
-  background: 'transparent',
-  backdropFilter: 'none',
-  borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`
-}));
-
-const AttributeItem = styled(Box)(({ theme, checked }) => ({
-  padding: '8px 12px',
-  borderRadius: '12px',
-  background: 'transparent',
-  border: `1px solid ${
-    checked ? alpha(theme.palette.primary.main, 0.15) : alpha(theme.palette.divider, 0.06)
-  }`,
-  transition: 'border-color 0.15s ease',
-  marginBottom: '6px',
-  cursor: 'pointer',
-  '&:hover': {
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`
-  }
-}));
-
-const StyledLinearProgress = styled(LinearProgress)(({ theme }) => ({
-  height: 4,
-  borderRadius: 4,
-  backgroundColor: alpha(theme.palette.divider, 0.08),
-  marginTop: '4px',
-  '& .MuiLinearProgress-bar': {
-    borderRadius: 4,
-    background: `linear-gradient(90deg, ${theme.palette.primary.main}, ${theme.palette.primary.light})`,
-    boxShadow: `0 1px 2px ${alpha(theme.palette.primary.main, 0.2)}`
-  }
-}));
-
-const CountChip = styled(Box)(({ theme }) => ({
-  padding: '2px 8px',
-  borderRadius: '12px',
-  background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.success.main, 0.15)}`,
-  color: theme.palette.success.main,
-  fontWeight: 400,
-  fontSize: '13px',
-  minWidth: '24px',
-  textAlign: 'center'
-}));
-
 function AttributeFilter({ attrs, setFilterAttrs }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [attrFilter, setAttrFilter] = useState([]);
 
   useEffect(() => {
-    const tempAttrs = [];
-    for (const attr of attrs) {
-      tempAttrs.push({
-        trait_type: attr.title,
-        value: []
-      });
-    }
-    setAttrFilter(tempAttrs);
+    setAttrFilter(attrs.map(attr => ({ trait_type: attr.title, value: [] })));
   }, [attrs]);
 
   const handleAttrChange = (title, key) => {
     const tempAttrs = [...attrFilter];
     const found = tempAttrs.find((elem) => elem.trait_type === title);
-
     if (found) {
-      if (found.value.includes(key)) {
-        let values = [...found.value];
-        values.splice(found.value.indexOf(key), 1);
-        found.value = values;
-      } else {
-        found.value.push(key);
-      }
-
+      found.value = found.value.includes(key) ? found.value.filter(v => v !== key) : [...found.value, key];
       setAttrFilter(tempAttrs);
       setFilterAttrs(tempAttrs);
     }
   };
 
-  // Calculate total selected filters
   const totalSelected = attrFilter.reduce((sum, attr) => sum + attr.value.length, 0);
 
   return (
-    <Box>
-      {/* Header with selection count */}
+    <div>
       {totalSelected > 0 && (
-        <Box sx={{ mb: 2 }}>
-          <Chip
-            icon={<CheckCircleIcon sx={{ fontSize: '14px !important' }} />}
-            label={`${totalSelected} filter${totalSelected > 1 ? 's' : ''} selected`}
-            size="small"
-            sx={{
-              background: 'transparent',
-              color: (theme) => theme.palette.primary.main,
-              fontWeight: 400,
-              fontSize: '11px',
-              height: '24px',
-              border: (theme) => `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-              '&:hover': {
-                transform: 'translateY(-0.5px)'
-              }
-            }}
-          />
-        </Box>
+        <div className="mb-2">
+          <span className={cn('inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium', 'bg-primary/10 text-primary')}>
+            <CheckCircle size={10} />{totalSelected} selected
+          </span>
+        </div>
       )}
 
-      <Stack spacing={1}>
+      <div className="space-y-1">
         {attrs.map((attr, idx) => {
           const title = attr.title;
           const items = attr.items;
           const count = Object.keys(items).length;
-          const selectedCount =
-            attrFilter.find((elem) => elem.trait_type === title)?.value?.length || 0;
+          const selectedCount = attrFilter.find((elem) => elem.trait_type === title)?.value?.length || 0;
           const maxValue = Math.max(...Object.values(items).map((item) => item.count || item));
 
           return (
-            <StyledAccordion key={title} defaultExpanded={idx === 0}>
-              <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  width="100%"
-                  pr={0.5}
-                >
-                  <Stack direction="row" alignItems="center" spacing={1.5}>
-                    <Box
-                      sx={{
-                        p: 0.5,
-                        borderRadius: '6px',
-                        background: 'transparent',
-                        border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.15)}`,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      <CategoryIcon
-                        sx={{
-                          color: 'info.main',
-                          fontSize: '14px'
-                        }}
-                      />
-                    </Box>
-                    <Box>
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 400,
-                          color: 'text.primary',
-                          fontSize: '14px',
-                          lineHeight: 1.2
-                        }}
-                      >
-                        {title}
-                      </Typography>
-                      {selectedCount > 0 && (
-                        <Typography
-                          variant="caption"
-                          color="primary.main"
-                          sx={{
-                            fontWeight: 400,
-                            fontSize: '13px'
-                          }}
-                        >
-                          {selectedCount} selected
-                        </Typography>
-                      )}
-                    </Box>
-                  </Stack>
-                  <Tooltip title={`${count} options available`} placement="top" arrow>
-                    <Box
-                      sx={{
-                        px: 1.5,
-                        py: 0.25,
-                        borderRadius: '12px',
-                        background: 'transparent',
-                        border: (theme) => `1px solid ${alpha(theme.palette.warning.main, 0.15)}`,
-                        color: 'warning.main',
-                        fontWeight: 400,
-                        fontSize: '13px',
-                        minWidth: '24px',
-                        textAlign: 'center'
-                      }}
-                    >
-                      {count}
-                    </Box>
-                  </Tooltip>
-                </Stack>
-              </StyledAccordionSummary>
-              <StyledAccordionDetails>
-                <Stack spacing={0.5}>
-                  {Object.keys(items).map((key) => {
-                    const data = items[key];
-                    const itemCount = data.count || data;
-                    const isChecked =
-                      attrFilter.find((elem) => elem.trait_type === title)?.value?.includes(key) ===
-                      true;
-                    const percentage = (itemCount / maxValue) * 100;
+            <details key={title} className={cn('group rounded-lg border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')} open={idx === 0}>
+              <summary className={cn('flex items-center justify-between px-2.5 py-2 cursor-pointer list-none', isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50')}>
+                <div className="flex items-center gap-2">
+                  <Layers size={12} className="text-blue-500" />
+                  <span className={cn('text-[11px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>{title}</span>
+                  {selectedCount > 0 && <span className="text-[9px] text-primary">({selectedCount})</span>}
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className={cn('px-1 py-0.5 rounded text-[9px]', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500')}>{count}</span>
+                  <ChevronDown size={12} className="text-primary transition-transform group-open:rotate-180" />
+                </div>
+              </summary>
+              <div className={cn('px-2 pb-2 pt-1 border-t space-y-0.5', isDark ? 'border-white/5' : 'border-gray-100')}>
+                {Object.keys(items).map((key) => {
+                  const data = items[key];
+                  const itemCount = data.count || data;
+                  const isChecked = attrFilter.find((elem) => elem.trait_type === title)?.value?.includes(key);
+                  const percentage = (itemCount / maxValue) * 100;
 
-                    return (
-                      <AttributeItem
-                        key={title + key}
-                        checked={isChecked}
-                        onClick={() => handleAttrChange(title, key)}
-                      >
-                        <Stack direction="row" alignItems="center" spacing={1.5}>
-                          <Checkbox
-                            checked={isChecked ?? false}
-                            onChange={() => handleAttrChange(title, key)}
-                            color="primary"
-                            size="small"
-                            sx={{
-                              '& .MuiSvgIcon-root': {
-                                fontSize: '16px'
-                              }
-                            }}
-                          />
-                          <Box sx={{ flex: 1 }}>
-                            <Stack
-                              direction="row"
-                              alignItems="center"
-                              justifyContent="space-between"
-                              sx={{ mb: 0.25 }}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{
-                                  fontWeight: 400,
-                                  color: 'text.primary',
-                                  fontSize: '12px'
-                                }}
-                              >
-                                {key}
-                              </Typography>
-                              <CountChip>{fIntNumber(itemCount)}</CountChip>
-                            </Stack>
-                            <Box sx={{ position: 'relative' }}>
-                              <StyledLinearProgress variant="determinate" value={percentage} />
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{
-                                  position: 'absolute',
-                                  right: 0,
-                                  top: -14,
-                                  fontSize: '12px',
-                                  fontWeight: 400
-                                }}
-                              >
-                                {percentage.toFixed(1)}%
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </Stack>
-                      </AttributeItem>
-                    );
-                  })}
-                </Stack>
-              </StyledAccordionDetails>
-            </StyledAccordion>
+                  return (
+                    <div key={title + key} onClick={() => handleAttrChange(title, key)}
+                      className={cn('px-2 py-1.5 rounded-md cursor-pointer transition-all flex items-center gap-2',
+                        isChecked ? 'bg-primary/10' : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50')}>
+                      <input type="checkbox" checked={isChecked || false} onChange={() => {}} className="w-3 h-3 rounded border-gray-300 text-primary" />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className={cn('text-[10px] truncate', isDark ? 'text-white' : 'text-gray-900')}>{key}</span>
+                          <span className={cn('text-[9px] ml-1', isDark ? 'text-white/40' : 'text-gray-500')}>{fIntNumber(itemCount)}</span>
+                        </div>
+                        <div className={cn('h-0.5 rounded-full mt-0.5', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                          <div className="h-full rounded-full bg-primary/50" style={{ width: `${percentage}%` }} />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
           );
         })}
-      </Stack>
-    </Box>
+      </div>
+    </div>
   );
 }
 
-// NFT Card Component with optimized image loading
+// NFT Card Component
 const NFTCard = React.memo(({ nft, collection, onRemove }) => {
-  const theme = useTheme();
-  const { accountProfile } = useContext(AppContext);
+  const { themeName, accountProfile } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const isAdmin = accountProfile?.admin;
   const [loadingImg, setLoadingImg] = useState(true);
   const [imageError, setImageError] = useState(false);
 
-  const {
-    uuid,
-    account,
-    cost,
-    costb,
-    meta,
-    NFTokenID,
-    destination,
-    rarity_rank,
-    updateEvent,
-    amount,
-    MasterSequence
-  } = nft;
-
-  const isSold = cost?.amount || costb?.amount || amount; // Show SALE badge only if there's a price
+  const { cost, costb, meta, NFTokenID, rarity_rank, amount, MasterSequence } = nft;
+  const isSold = cost?.amount || costb?.amount || amount;
   const imgUrl = getNftCoverUrl(nft, 'large');
   const name = nft.meta?.name || meta?.Name || 'No Name';
   const isVideo = nft?.meta?.video;
 
-  // Get video URL
   let videoUrl = null;
   if (isVideo) {
     const videoFiles = getNftFilesUrls(nft, 'video');
     videoUrl = videoFiles?.[0]?.cachedUrl || null;
   }
 
-  // Debug: Check if loading from IPFS
   const isIPFS = imgUrl?.includes('ipfs.io') || videoUrl?.includes('ipfs.io');
 
   const handleImageLoad = () => setLoadingImg(false);
-  const handleImageError = () => {
-    setLoadingImg(false);
-    setImageError(true);
-  };
+  const handleImageError = () => { setLoadingImg(false); setImageError(true); };
 
   const handleRemoveNft = (e) => {
     e.preventDefault();
@@ -646,281 +251,88 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
   };
 
   return (
-    <Link
-      href={`/nft/${NFTokenID}`}
-      underline="none"
-      sx={{
-        display: 'block',
-        width: '100%',
-        maxWidth: '100%',
-        minWidth: 0,
-        position: 'relative',
-        overflow: 'hidden',
-        '&:hover .nft-card': {
-          borderColor: alpha(theme.palette.primary.main, 0.25)
-        }
-      }}
-    >
-      <Box
-        className="nft-card"
-        sx={{
-          width: '100%',
-          maxWidth: '100%',
-          minWidth: 0,
-          aspectRatio: '1 / 1.4',
-          borderRadius: '12px',
-          background: 'transparent',
-          border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'relative',
-          cursor: 'pointer',
-          boxSizing: 'border-box'
-        }}
-      >
-        {/* Image Section with lazy loading */}
-        <Box sx={{ position: 'relative', height: '65%', overflow: 'hidden', flexShrink: 0 }}>
+    <Link href={`/nft/${NFTokenID}`} className="block w-full">
+      <div className={cn(
+        'w-full rounded-lg border-[1.5px] overflow-hidden flex flex-col cursor-pointer transition-all',
+        isDark ? 'border-white/10 hover:border-primary/30' : 'border-gray-200 hover:border-primary/30'
+      )} style={{ aspectRatio: '1 / 1.35' }}>
+        {/* Image Section */}
+        <div className="relative h-[68%] overflow-hidden flex-shrink-0">
           {loadingImg && !imageError && (
-            <Skeleton
-              variant="rectangular"
-              sx={{ width: '100%', height: '100%', position: 'absolute' }}
-            />
+            <div className={cn('w-full h-full animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-100')} />
           )}
           {!imageError ? (
             isVideo && videoUrl ? (
-              <Box
-                component="video"
-                src={videoUrl}
-                poster={imgUrl}
-                muted
-                autoPlay
-                loop
-                playsInline
-                className="card-media"
-                onLoadedData={handleImageLoad}
-                onError={handleImageError}
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  opacity: loadingImg ? 0 : 1,
-                  display: 'block'
-                }}
-              />
+              <video src={videoUrl} poster={imgUrl} muted autoPlay loop playsInline onLoadedData={handleImageLoad} onError={handleImageError}
+                className={cn('w-full h-full object-cover', loadingImg && 'opacity-0')} />
             ) : (
-              <Box
-                component="img"
-                src={imgUrl}
-                alt={name}
-                loading="lazy"
-                decoding="async"
-                fetchpriority={isIPFS ? 'low' : 'auto'}
-                className="card-media"
-                onLoad={handleImageLoad}
-                onError={handleImageError}
-                sx={{
-                  width: '100%',
-                  height: '100%',
-                  maxWidth: '100%',
-                  maxHeight: '100%',
-                  objectFit: 'cover',
-                  objectPosition: 'center',
-                  opacity: loadingImg ? 0 : 1,
-                  display: 'block'
-                }}
-              />
+              <img src={imgUrl} alt={name} loading="lazy" onLoad={handleImageLoad} onError={handleImageError}
+                className={cn('w-full h-full object-cover', loadingImg && 'opacity-0')} />
             )
           ) : (
-            <Box
-              sx={{
-                width: '100%',
-                height: '100%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                bgcolor: 'action.disabledBackground'
-              }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                Image unavailable
-              </Typography>
-            </Box>
+            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-gray-50')}>
+              <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
+            </div>
           )}
 
-          {/* Admin Close Button */}
+          {/* Admin Close */}
           {isAdmin && (
-            <IconButton
-              size="small"
-              aria-label="Remove NFT from collection"
-              onClick={handleRemoveNft}
-              sx={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                zIndex: 10,
-                backgroundColor: 'background.paper',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.error.main, 0.1),
-                  borderColor: alpha(theme.palette.error.main, 0.3),
-                  color: theme.palette.error.main,
-                  transform: 'rotate(90deg)'
-                }
-              }}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
+            <button onClick={handleRemoveNft} className={cn(
+              'absolute top-1 right-1 z-10 w-5 h-5 rounded flex items-center justify-center transition-all',
+              isDark ? 'bg-black/60 hover:bg-red-500/30 text-white/70 hover:text-red-500' : 'bg-white/80 hover:bg-red-50 text-gray-500 hover:text-red-500'
+            )}>
+              <X size={12} />
+            </button>
           )}
 
-          {/* IPFS Debug Badge - top left */}
-          {isIPFS && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 6,
-                left: 6,
-                zIndex: 9,
-                px: 0.8,
-                py: 0.25,
-                borderRadius: '4px',
-                backgroundColor: alpha('#ff9800', 0.9),
-                color: '#fff',
-                fontSize: '0.7rem',
-                fontWeight: 500
-              }}
-            >
-              IPFS
-            </Box>
-          )}
+          {/* Badges */}
+          <div className="absolute top-1 left-1 z-10 flex gap-1">
+            {isIPFS && <span className="px-1 py-0.5 rounded text-[8px] font-bold bg-orange-500 text-white">IPFS</span>}
+            {isSold && !isAdmin && <span className={cn('px-1 py-0.5 rounded text-[8px] font-medium', isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-50 text-green-600')}>Listed</span>}
+          </div>
+        </div>
 
-          {/* Sale Badge - top right */}
-          {isSold && !isAdmin && (
-            <Box
-              sx={{
-                position: 'absolute',
-                top: 6,
-                right: 6,
-                zIndex: 9,
-                px: 0.8,
-                py: 0.25,
-                borderRadius: '4px',
-                backgroundColor: alpha(theme.palette.divider, 0.15),
-                backdropFilter: 'blur(8px)',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                color: theme.palette.text.secondary,
-                fontSize: '11px',
-                fontWeight: 400,
-                letterSpacing: '0.3px'
-              }}
-            >
-              Sold
-            </Box>
-          )}
-        </Box>
-
-        {/* Content Section */}
-        <Box
-          sx={{
-            p: 1.5,
-            height: '35%',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'space-between',
-            borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-          }}
-        >
-          <Box>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                fontWeight: 400,
-                fontSize: '15px',
-                color: theme.palette.text.primary,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-                mb: 0.5
-              }}
-            >
-              {name}
-            </Typography>
+        {/* Content */}
+        <div className={cn('p-2 h-[32%] flex flex-col justify-between border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+          <div>
+            <h3 className={cn('text-[12px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{name}</h3>
             {(cost || amount) && (
-              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 400 }}>
-                {cost
-                  ? cost.currency === 'XRP'
-                    ? `✕ ${fNumber(cost.amount)}`
-                    : `${fNumber(cost.amount)} ${normalizeCurrencyCode(cost.currency)}`
-                  : `✕ ${fNumber(amount)}`}
-              </Typography>
+              <span className={cn('text-[10px]', isDark ? 'text-green-400' : 'text-green-600')}>
+                {cost ? (cost.currency === 'XRP' ? `✕${fNumber(cost.amount)}` : `${fNumber(cost.amount)} ${normalizeCurrencyCode(cost.currency)}`) : `✕${fNumber(amount)}`}
+              </span>
             )}
-          </Box>
+          </div>
 
           {/* Ranks */}
-          <Stack direction="row" spacing={0.5} justifyContent="flex-end">
+          <div className="flex gap-1 justify-end">
             {MasterSequence > 0 && (
-              <Box
-                sx={{
-                  px: 0.8,
-                  py: 0.3,
-                  borderRadius: '6px',
-                  backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.4
-                }}
-              >
-                <Typography sx={{ fontSize: '13px', fontWeight: 400, color: theme.palette.primary.main }}>
-                  #
-                </Typography>
-                <Typography sx={{ fontSize: '13px', fontWeight: 400, color: theme.palette.text.primary }}>
-                  {fIntNumber(MasterSequence)}
-                </Typography>
-              </Box>
+              <span className={cn('px-1 py-0.5 rounded text-[9px] flex items-center gap-0.5', isDark ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary')}>
+                #{fIntNumber(MasterSequence)}
+              </span>
             )}
             {rarity_rank > 0 && (
-              <Box
-                sx={{
-                  px: 0.8,
-                  py: 0.3,
-                  borderRadius: '6px',
-                  backgroundColor: alpha(theme.palette.divider, 0.06),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 0.4
-                }}
-              >
-                <LeaderboardOutlinedIcon sx={{ fontSize: '12px', color: theme.palette.text.secondary }} />
-                <Typography sx={{ fontSize: '13px', fontWeight: 400, color: theme.palette.text.primary }}>
-                  {fIntNumber(rarity_rank)}
-                </Typography>
-              </Box>
+              <span className={cn('px-1 py-0.5 rounded text-[9px] flex items-center gap-0.5', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-50 text-gray-500')}>
+                <BarChart3 size={9} />{fIntNumber(rarity_rank)}
+              </span>
             )}
-          </Stack>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </Link>
   );
 });
 
-// NFT Grid Component with optimized rendering
+// NFT Grid Component
 const NFTGrid = React.memo(({ collection }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
-  const theme = useTheme();
-  const { setDeletingNfts } = useContext(AppContext);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { themeName, setDeletingNfts } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [anchorEl, setAnchorEl] = useState(null);
+  const dropdownRef = useRef(null);
 
-  // Extract slug from collection
   const collectionData = collection?.collection || collection || {};
   const slug = collectionData.slug;
 
-  // Initialize with SSR data if available
   const initialNfts = collection?.initialNfts || [];
   const [nfts, setNfts] = useState(initialNfts);
   const [page, setPage] = useState(initialNfts.length > 0 ? 1 : 0);
@@ -933,24 +345,32 @@ const NFTGrid = React.memo(({ collection }) => {
   const [filterAttrs, setFilterAttrs] = useState([]);
   const [isFirstLoad, setIsFirstLoad] = useState(initialNfts.length === 0);
 
-  const sortOptions = useMemo(
-    () => [
-      { value: 'activity', label: 'Latest Activity' },
-      { value: 'price-low', label: 'Low to High' },
-      { value: 'price-high', label: 'High to Low' },
-      { value: 'minted-latest', label: 'Recently Minted' },
-      { value: 'minted-earliest', label: 'First Minted' }
-    ],
-    []
-  );
+  const sortOptions = useMemo(() => [
+    { value: 'activity', label: 'Latest Activity' },
+    { value: 'price-low', label: 'Low to High' },
+    { value: 'price-high', label: 'High to Low' },
+    { value: 'minted-latest', label: 'Recently Minted' },
+    { value: 'minted-earliest', label: 'First Minted' }
+  ], []);
 
   const currentSort = sortOptions.find((opt) => opt.value === subFilter) || sortOptions[0];
 
-  // Fetch NFTs with optimized batch size
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setAnchorEl(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Fetch NFTs
   const fetchNfts = useCallback(() => {
     if (!slug) return;
     setLoading(true);
-    const limit = isMobile ? 16 : 24;
+    const limit = 24;
 
     const params = new URLSearchParams({
       page: page.toString(),
@@ -971,21 +391,15 @@ const NFTGrid = React.memo(({ collection }) => {
       })
       .catch((err) => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
-  }, [page, slug, subFilter, filter, isMobile, setDeletingNfts]);
+  }, [page, slug, subFilter, filter, setDeletingNfts]);
 
-  // Reset on filter change
   useEffect(() => {
     setNfts([]);
     setPage(0);
     setHasMore(true);
   }, [search, filter, subFilter, filterAttrs]);
 
-  // Fetch on page change
   useEffect(() => {
-    // Always fetch when:
-    // 1. Page is 0 and it's the first load with no initial data
-    // 2. Page > 0 (loading more)
-    // 3. Not first load (filters changed)
     if ((isFirstLoad && initialNfts.length === 0) || page > 0 || !isFirstLoad) {
       fetchNfts();
     }
@@ -994,1417 +408,144 @@ const NFTGrid = React.memo(({ collection }) => {
 
   const debouncedSearch = useMemo(() => debounce((value) => setSearch(value), 500), []);
 
-  const handleRemove = useCallback(
-    (NFTokenID) => {
-      if (!collection) return;
-
-      setLoading(true);
-      axios
-        .delete(`${BASE_URL}/nfts`, {
-          data: {
-            issuer: collection.account,
-            taxon: collection.taxon,
-            cid: collection.uuid,
-            idsToDelete: NFTokenID
-          }
-        })
-        .then(() => location.reload())
-        .catch((err) => console.error('Error removing NFT:', err))
-        .finally(() => setLoading(false));
-    },
-    [collection]
-  );
+  const handleRemove = useCallback((NFTokenID) => {
+    if (!collection) return;
+    setLoading(true);
+    axios
+      .delete(`${BASE_URL}/nfts`, {
+        data: {
+          issuer: collection.account,
+          taxon: collection.taxon,
+          cid: collection.uuid,
+          idsToDelete: NFTokenID
+        }
+      })
+      .then(() => location.reload())
+      .catch((err) => console.error('Error removing NFT:', err))
+      .finally(() => setLoading(false));
+  }, [collection]);
 
   return (
-    <Box sx={{ p: { xs: 0, sm: 0 }, backgroundColor: 'transparent' }}>
+    <div className="bg-transparent">
       {/* Search and Filter Header */}
-      <Box sx={{ mb: 3 }}>
-        {/* Search Bar */}
-        <Box
-          sx={{
-            display: 'flex',
-            gap: 2,
-            mb: 2,
-            alignItems: 'stretch'
-          }}
-        >
-          <Paper
-            elevation={0}
-            sx={{
-              flex: 1,
-              display: 'flex',
-              alignItems: 'center',
-              px: 1.5,
-              py: 0.6,
-              borderRadius: '12px',
-              border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-              backgroundColor: 'transparent',
-              '&:focus-within': {
-                borderColor: alpha(theme.palette.divider, 0.25)
-              }
-            }}
-          >
-            <SearchIcon sx={{ color: 'text.disabled', mr: 1, fontSize: '18px' }} />
-            <TextField
-              fullWidth
-              variant="standard"
+      <div className="mb-4">
+        <div className="flex gap-2 items-center">
+          {/* Search Bar */}
+          <div className={cn(
+            'flex-1 flex items-center px-2.5 py-1.5 rounded-lg border-[1.5px]',
+            isDark ? 'border-white/10 focus-within:border-primary/30' : 'border-gray-200 focus-within:border-primary/30'
+          )}>
+            <Search size={14} className={isDark ? 'text-white/30 mr-2' : 'text-gray-400 mr-2'} />
+            <input
+              type="text"
               placeholder="Search..."
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value);
                 debouncedSearch(e.target.value);
               }}
-              InputProps={{
-                disableUnderline: true,
-                sx: { fontSize: '14px' },
-                endAdornment: (
-                  <Stack direction="row" spacing={0.5} alignItems="center">
-                    {search && (
-                      <IconButton
-                        size="small"
-                        aria-label="Clear NFT search"
-                        onClick={() => {
-                          setSearch('');
-                          debouncedSearch('');
-                        }}
-                        sx={{
-                          p: 0.5,
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.error.main, 0.08),
-                            color: theme.palette.error.main
-                          }
-                        }}
-                      >
-                        <ClearIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                    {loading && <CircularProgress size={16} sx={{ color: 'primary.main' }} />}
-                  </Stack>
-                )
-              }}
+              className={cn(
+                'flex-1 bg-transparent border-none outline-none text-[12px]',
+                isDark ? 'text-white placeholder-white/30' : 'text-gray-900 placeholder-gray-400'
+              )}
             />
-          </Paper>
+            {search && (
+              <button onClick={() => { setSearch(''); debouncedSearch(''); }} className="p-0.5 hover:text-red-500">
+                <X size={12} />
+              </button>
+            )}
+            {loading && <Loader2 size={12} className="animate-spin text-primary ml-1" />}
+          </div>
 
-          <Stack direction="row" spacing={1}>
-            {/* Sort Dropdown */}
-            <Button
-              variant="outlined"
-              onClick={(e) => setAnchorEl(e.currentTarget)}
-              endIcon={<ExpandMoreIcon sx={{ fontSize: '18px' }} />}
-              sx={{
-                px: 1.5,
-                py: 0.6,
-                borderRadius: '12px',
-                textTransform: 'none',
-                fontWeight: 400,
-                fontSize: '13px',
-                border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-                color: 'text.secondary',
-                backgroundColor: 'transparent',
-                '&:hover': {
-                  backgroundColor: 'transparent',
-                  borderColor: alpha(theme.palette.divider, 0.25)
-                }
-              }}
+          {/* Sort Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <button
+              onClick={() => setAnchorEl(anchorEl ? null : true)}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
+                isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
+              )}
             >
               {currentSort.label}
-            </Button>
+              <ChevronDown size={12} />
+            </button>
 
-          </Stack>
-        </Box>
+            {anchorEl && (
+              <div className={cn(
+                'absolute top-full right-0 mt-1 min-w-[160px] rounded-lg border-[1.5px] p-1 z-50',
+                isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
+              )}>
+                {sortOptions.map((option) => (
+                  <div
+                    key={option.value}
+                    onClick={() => { setSubFilter(option.value); setAnchorEl(null); setPage(0); }}
+                    className={cn(
+                      'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all',
+                      subFilter === option.value
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-50'
+                    )}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Quick Filter Pills */}
         {!showFilter && (filter > 0 || filterAttrs.length > 0) && (
-          <Fade in>
-            <Stack direction="row" spacing={1} flexWrap="wrap" sx={{ gap: 1 }}>
-              {(filter & 1) !== 0 && (
-                <Chip
-                  label="Buy with Mints"
-                  size="small"
-                  onDelete={() => setFilter(filter ^ 1)}
-                  sx={{
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                    color: theme.palette.primary.main,
-                    fontWeight: 400,
-                    '& .MuiChip-deleteIcon': {
-                      color: theme.palette.primary.main,
-                      '&:hover': {
-                        color: theme.palette.primary.dark
-                      }
-                    }
-                  }}
-                />
-              )}
-              {(filter & 2) !== 0 && (
-                <Chip
-                  label="Recently Minted"
-                  size="small"
-                  onDelete={() => setFilter(filter ^ 2)}
-                  sx={{
-                    backgroundColor: alpha(theme.palette.success.main, 0.1),
-                    border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
-                    color: theme.palette.success.main,
-                    fontWeight: 400,
-                    '& .MuiChip-deleteIcon': {
-                      color: theme.palette.success.main,
-                      '&:hover': {
-                        color: theme.palette.success.dark
-                      }
-                    }
-                  }}
-                />
-              )}
-              {(filter & 4) !== 0 && (
-                <Chip
-                  label="Buy Now"
-                  size="small"
-                  onDelete={() => setFilter(filter ^ 4)}
-                  sx={{
-                    backgroundColor: alpha(theme.palette.warning.main, 0.1),
-                    border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-                    color: theme.palette.warning.main,
-                    fontWeight: 400,
-                    '& .MuiChip-deleteIcon': {
-                      color: theme.palette.warning.main,
-                      '&:hover': {
-                        color: theme.palette.warning.dark
-                      }
-                    }
-                  }}
-                />
-              )}
-              {(filter & 16) !== 0 && (
-                <Chip
-                  label="Rarity Sorting"
-                  size="small"
-                  onDelete={() => setFilter(filter ^ 16)}
-                  sx={{
-                    backgroundColor: alpha(theme.palette.info.main, 0.1),
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                    color: theme.palette.info.main,
-                    fontWeight: 400,
-                    '& .MuiChip-deleteIcon': {
-                      color: theme.palette.info.main,
-                      '&:hover': {
-                        color: theme.palette.info.dark
-                      }
-                    }
-                  }}
-                />
-              )}
-              {filterAttrs.length > 0 && (
-                <Chip
-                  label={`${filterAttrs.reduce((sum, attr) => sum + attr.value.length, 0)} Attributes`}
-                  size="small"
-                  onDelete={() => setFilterAttrs([])}
-                  sx={{
-                    backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-                    border: `1px solid ${alpha(theme.palette.secondary.main, 0.3)}`,
-                    color: theme.palette.secondary.main,
-                    fontWeight: 400,
-                    '& .MuiChip-deleteIcon': {
-                      color: theme.palette.secondary.main,
-                      '&:hover': {
-                        color: theme.palette.secondary.dark
-                      }
-                    }
-                  }}
-                />
-              )}
-              <Button
-                size="small"
-                onClick={() => {
-                  setFilter(0);
-                  setFilterAttrs([]);
-                  setSubFilter(0);
-                }}
-                sx={{
-                  textTransform: 'none',
-                  fontWeight: 400,
-                  color: theme.palette.error.main,
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.error.main, 0.08)
-                  }
-                }}
-              >
-                Clear All
-              </Button>
-            </Stack>
-          </Fade>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {(filter & 1) !== 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
+                Mints <button onClick={() => setFilter(filter ^ 1)}><X size={10} /></button>
+              </span>
+            )}
+            {(filter & 2) !== 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-500">
+                Recent <button onClick={() => setFilter(filter ^ 2)}><X size={10} /></button>
+              </span>
+            )}
+            {(filter & 4) !== 0 && (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-500/10 text-yellow-500">
+                Buy Now <button onClick={() => setFilter(filter ^ 4)}><X size={10} /></button>
+              </span>
+            )}
+            <button onClick={() => { setFilter(0); setFilterAttrs([]); setSubFilter('price-low'); }} className="text-[10px] text-red-500 hover:text-red-400 px-1">
+              Clear
+            </button>
+          </div>
         )}
-      </Box>
-
-      {/* Sort Menu Popover */}
-      <Popover
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'left'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'left'
-        }}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            borderRadius: '12px',
-            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            backgroundColor: 'transparent',
-            backdropFilter: 'blur(20px)',
-            minWidth: 280
-          }
-        }}
-      >
-        <Box sx={{ p: 1 }}>
-          <Typography
-            variant="caption"
-            sx={{
-              px: 2,
-              py: 1,
-              display: 'block',
-              color: 'text.secondary',
-              fontWeight: 400,
-              textTransform: 'uppercase',
-              letterSpacing: '0.5px'
-            }}
-          >
-            Sort by
-          </Typography>
-          {sortOptions.map((option) => (
-            <Box
-              key={option.value}
-              onClick={() => {
-                setSubFilter(option.value);
-                setAnchorEl(null);
-                setPage(0);
-              }}
-              sx={{
-                px: 2,
-                py: 1.5,
-                cursor: 'pointer',
-                borderRadius: '12px',
-                backgroundColor:
-                  subFilter === option.value
-                    ? alpha(theme.palette.primary.main, 0.08)
-                    : 'transparent',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                }
-              }}
-            >
-              <Stack direction="row" alignItems="center" spacing={2}>
-                <Typography sx={{ fontSize: '19px' }}>{option.icon}</Typography>
-                <Box sx={{ flex: 1 }}>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      fontWeight: subFilter === option.value ? 600 : 400,
-                      color:
-                        subFilter === option.value ? theme.palette.primary.main : 'text.primary'
-                    }}
-                  >
-                    {option.label}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '11px' }}>
-                    {option.desc}
-                  </Typography>
-                </Box>
-                {subFilter === option.value && (
-                  <CheckCircleIcon
-                    sx={{
-                      fontSize: '19px',
-                      color: theme.palette.primary.main
-                    }}
-                  />
-                )}
-              </Stack>
-            </Box>
-          ))}
-        </Box>
-      </Popover>
-
-      {/* Filter Section */}
-      {showFilter && (
-        <Fade in={showFilter}>
-          <Box sx={{ mb: 3 }}>
-            <FilterDetail
-              collection={collection}
-              filter={filter}
-              setFilter={setFilter}
-              subFilter={subFilter}
-              setSubFilter={setSubFilter}
-              filterAttrs={filterAttrs}
-              setFilterAttrs={setFilterAttrs}
-              setPage={setPage}
-            />
-          </Box>
-        </Fade>
-      )}
+      </div>
 
       {/* NFT Grid */}
       <InfiniteScroll
         dataLength={nfts.length}
         next={() => setPage((prev) => prev + 1)}
         hasMore={hasMore}
-        loader={
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
-            <CircularProgress size={30} sx={{ color: 'primary.main' }} />
-          </Box>
-        }
+        loader={<div className="flex justify-center py-4"><Loader2 className="animate-spin text-primary" size={20} /></div>}
         endMessage={
-          <Box sx={{ textAlign: 'center', py: 6 }}>
-            <Image
-              src="/static/empty-folder.png"
-              alt="No more NFTs"
-              width={120}
-              height={120}
-              style={{ opacity: 0.5 }}
-            />
-            <Typography variant="h6" color="text.secondary" sx={{ mt: 2 }}>
-              That's all for now!
-            </Typography>
-          </Box>
+          <div className="text-center py-6">
+            <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>End of collection</p>
+          </div>
         }
       >
-        <Box
-          sx={{
-            display: 'grid',
-            gap: 2,
-            gridTemplateColumns: {
-              xs: 'repeat(2, 1fr)',
-              sm: 'repeat(3, 1fr)',
-              md: 'repeat(4, 1fr)',
-              lg: 'repeat(6, 1fr)',
-              xl: 'repeat(8, 1fr)'
-            },
-            '& > *': {
-              minWidth: 0,
-              minHeight: 0
-            }
-          }}
-        >
+        <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
           {nfts.map((nft) => (
-            <NFTCard
-              key={nft.NFTokenID}
-              nft={nft}
-              collection={collection}
-              onRemove={handleRemove}
-            />
+            <NFTCard key={nft.NFTokenID} nft={nft} collection={collection} onRemove={handleRemove} />
           ))}
-        </Box>
+        </div>
       </InfiniteScroll>
-    </Box>
+    </div>
   );
 });
 
-// FilterAttribute Component
-function FilterAttribute({ attrs, filterAttrs, setFilterAttrs }) {
-  const [expanded, setExpanded] = useState(false);
-  const [fAttrs, setFAttrs] = useState({});
-
-  const handleAccordionChange = (panel) => (event, isExpanded) => {
-    setExpanded(isExpanded ? panel : false);
-  };
-
-  const handleAttrChange = (e) => {
-    const value = e.target.value;
-    if (fAttrs[value]) delete fAttrs[value];
-    else fAttrs[value] = true;
-    setFAttrs({ ...fAttrs });
-  };
-
-  const handleApplyAttrFilter = (e) => {
-    setFilterAttrs({ ...fAttrs });
-  };
-
-  const handleClearAttrFilter = (e) => {
-    setFAttrs({});
-    setExpanded(false);
-  };
-
-  const activeFiltersCount = useMemo(() => Object.keys(fAttrs).length, [fAttrs]);
-
-  return (
-    <Box
-      sx={{
-        background: 'transparent',
-        p: 3,
-        borderRadius: 2,
-        border: (theme) => `1px solid ${alpha(theme.palette.divider, 0.1)}`
-      }}
-    >
-      {/* Action Buttons */}
-      <Box sx={{ mb: 3 }}>
-        <Stack direction="row" spacing={2} justifyContent="space-between" alignItems="center">
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: '14px' }}>
-            {activeFiltersCount > 0 ? `${activeFiltersCount} trait${activeFiltersCount > 1 ? 's' : ''} selected` : 'Select traits to filter'}
-          </Typography>
-          <Stack direction="row" spacing={1}>
-            {activeFiltersCount > 0 && (
-              <Button
-                variant="outlined"
-                onClick={handleClearAttrFilter}
-                size="small"
-                sx={{
-                  textTransform: 'none',
-                  borderRadius: '12px',
-                  fontSize: '13px'
-                }}
-              >
-                Clear
-              </Button>
-            )}
-          </Stack>
-        </Stack>
-      </Box>
-
-      {/* Attributes List */}
-      <Stack spacing={2}>
-        {attrs.map((attr, idx) => {
-          const itemCount = Object.keys(attr.items).length;
-          const maxValue = Math.max(...Object.values(attr.items));
-          return (
-            <StyledAccordion
-              key={attr.title}
-              expanded={expanded === 'panel' + idx}
-              onChange={handleAccordionChange('panel' + idx)}
-            >
-              <StyledAccordionSummary expandIcon={<ExpandMoreIcon />}>
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  width="100%"
-                  pr={1}
-                >
-                  <Stack direction="row" alignItems="center" spacing={2}>
-                    <Box
-                      sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: 'primary.main' }}
-                    />
-                    <Typography
-                      variant="subtitle1"
-                      sx={{ fontWeight: 400, color: 'text.primary', fontSize: '16px' }}
-                    >
-                      {attr.title}
-                    </Typography>
-                  </Stack>
-                  <Tooltip title={`${itemCount} options available`} placement="top" arrow>
-                    <Box
-                      sx={{
-                        px: 2,
-                        py: 0.5,
-                        borderRadius: '12px',
-                        background: 'transparent',
-                        border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                        color: 'info.main',
-                        fontWeight: 400,
-                        fontSize: '12px'
-                      }}
-                    >
-                      {itemCount}
-                    </Box>
-                  </Tooltip>
-                </Stack>
-              </StyledAccordionSummary>
-              <StyledAccordionDetails>
-                <Stack spacing={1}>
-                  {Object.entries(attr.items).map(([key, value]) => {
-                    const checkValue = `${attr.title}:${key}`;
-                    const isChecked = fAttrs[checkValue] === true;
-                    const percentage = (value / maxValue) * 100;
-                    return (
-                      <Box
-                        key={checkValue}
-                        sx={{
-                          p: 2,
-                          borderRadius: '12px',
-                          background: 'transparent',
-                          border: (theme) =>
-                            `1px solid ${isChecked ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
-                          transition: 'transform 0.2s ease, border-color 0.2s ease',
-                          '&:hover': {
-                            border: (theme) =>
-                              `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
-                            transform: 'translateX(4px)'
-                          }
-                        }}
-                      >
-                        <Stack direction="row" alignItems="center" spacing={2}>
-                          <Checkbox
-                            checked={isChecked}
-                            onChange={handleAttrChange}
-                            value={checkValue}
-                            color="primary"
-                            sx={{ '& .MuiSvgIcon-root': { fontSize: '21px' } }}
-                          />
-                          <Box sx={{ flex: 1 }}>
-                            <Stack
-                              direction="row"
-                              alignItems="center"
-                              justifyContent="space-between"
-                              sx={{ mb: 1 }}
-                            >
-                              <Typography
-                                variant="body2"
-                                sx={{ fontWeight: 400, color: 'text.primary', fontSize: '14px' }}
-                              >
-                                {key}
-                              </Typography>
-                              <Box
-                                sx={{
-                                  px: 1.5,
-                                  py: 0.3,
-                                  borderRadius: '12px',
-                                  background: 'transparent',
-                                  border: (theme) =>
-                                    `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                                  color: 'success.main',
-                                  fontWeight: 400,
-                                  fontSize: '11px'
-                                }}
-                              >
-                                {fIntNumber(value)}
-                              </Box>
-                            </Stack>
-                            <Box sx={{ position: 'relative' }}>
-                              <StyledLinearProgress variant="determinate" value={percentage} />
-                              <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{
-                                  position: 'absolute',
-                                  right: 0,
-                                  top: -20,
-                                  fontSize: '11px',
-                                  fontWeight: 400
-                                }}
-                              >
-                                {percentage.toFixed(1)}%
-                              </Typography>
-                            </Box>
-                          </Box>
-                        </Stack>
-                      </Box>
-                    );
-                  })}
-                </Stack>
-              </StyledAccordionDetails>
-            </StyledAccordion>
-          );
-        })}
-      </Stack>
-    </Box>
-  );
-}
-
-// FilterDetail Component
-function FilterDetail({
-  collection,
-  filter,
-  setFilter,
-  subFilter,
-  setSubFilter,
-  filterAttrs,
-  setFilterAttrs,
-  setPage
-}) {
-  const theme = useTheme();
-  const type = collection?.type;
-  const extra = collection?.extra;
-  const attrs = collection?.attrs || [];
-  const [expandedPanels, setExpandedPanels] = useState(['status', 'sort']);
-
-  const handlePanelChange = (panel) => (event, isExpanded) => {
-    setExpandedPanels((prev) => (isExpanded ? [...prev, panel] : prev.filter((p) => p !== panel)));
-  };
-
-  const handleFlagChange = (e) => {
-    const value = e.target.value;
-    let newFilter = filter ^ value;
-    if (value === '4') {
-      newFilter &= 0x07;
-    } else if (value === '8') {
-      newFilter &= 0x0b;
-    } else if (value === '16') {
-      newFilter &= 0x13;
-    }
-    setFilter(newFilter);
-    setPage(0);
-  };
-
-  const handleOnSaleFlagChange = (event) => {
-    const value = event.target.value;
-    setSubFilter(value);
-    setPage(0);
-  };
-
-  const activeFiltersCount =
-    (filter & 1 ? 1 : 0) +
-    (filter & 2 ? 1 : 0) +
-    (filter & 4 ? 1 : 0) +
-    (filter & 8 ? 1 : 0) +
-    (filter & 16 ? 1 : 0) +
-    (filterAttrs?.length || 0);
-
-  return (
-    <Box
-      sx={{
-        background: 'transparent',
-        p: 2,
-        borderRadius: '12px',
-        border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-        position: 'sticky',
-        top: 20,
-        maxHeight: 'calc(100vh - 40px)',
-        overflowY: 'auto',
-        '&::-webkit-scrollbar': {
-          width: '6px'
-        },
-        '&::-webkit-scrollbar-track': {
-          background: 'transparent'
-        },
-        '&::-webkit-scrollbar-thumb': {
-          background: alpha(theme.palette.primary.main, 0.2),
-          borderRadius: '3px',
-          '&:hover': {
-            background: alpha(theme.palette.primary.main, 0.3)
-          }
-        }
-      }}
-    >
-      <Box sx={{ mb: 3, p: 1 }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 1 }}>
-          <Typography
-            variant="h6"
-            sx={{ color: 'text.primary', fontWeight: 400, fontSize: '18px' }}
-          >
-            Filters
-          </Typography>
-          {activeFiltersCount > 0 && (
-            <Chip
-              label={`${activeFiltersCount} active`}
-              size="small"
-              sx={{
-                height: '22px',
-                fontSize: '11px',
-                fontWeight: 400,
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                color: theme.palette.primary.main,
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`
-              }}
-            />
-          )}
-        </Stack>
-        <Typography
-          variant="body2"
-          color="text.secondary"
-          sx={{ fontWeight: 400, fontSize: '13px' }}
-        >
-          Refine your search results
-        </Typography>
-      </Box>
-
-      <Stack spacing={1.5}>
-        <StyledAccordion
-          expanded={expandedPanels.includes('status')}
-          onChange={handlePanelChange('status')}
-          sx={{
-            background: 'transparent',
-            border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-            borderRadius: '12px !important',
-            overflow: 'hidden',
-            '&::before': { display: 'none' },
-            '&.Mui-expanded': {
-              margin: 0,
-              borderColor: alpha(theme.palette.primary.main, 0.15)
-            }
-          }}
-        >
-          <StyledAccordionSummary
-            expandIcon={
-              <ExpandMoreIcon
-                sx={{
-                  fontSize: '19px',
-                  transition: 'transform 0.2s ease, border-color 0.2s ease',
-                  color: theme.palette.primary.main
-                }}
-              />
-            }
-            sx={{
-              minHeight: '56px',
-              padding: '8px 16px',
-              '&.Mui-expanded': {
-                minHeight: '56px'
-              },
-              '& .MuiAccordionSummary-content': {
-                margin: '8px 0',
-                '&.Mui-expanded': {
-                  margin: '8px 0'
-                }
-              }
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-              <Box
-                sx={{
-                  p: 0.75,
-                  borderRadius: '12px',
-                  background: alpha(theme.palette.primary.main, 0.08),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <FactCheckIcon sx={{ color: 'primary.main', fontSize: '18px' }} />
-              </Box>
-              <Typography
-                variant="subtitle1"
-                sx={{ color: 'text.primary', fontWeight: 400, fontSize: '15px', flex: 1 }}
-              >
-                Status
-              </Typography>
-              {(filter & 1 || filter & 2 || filter & 4 || filter & 16) && (
-                <Chip
-                  label={
-                    [
-                      filter & 1 && 'Buy with Mints',
-                      filter & 2 && 'Recently Minted',
-                      filter & 4 && 'Buy Now',
-                      filter & 16 && 'Rarity'
-                    ].filter(Boolean).length
-                  }
-                  size="small"
-                  sx={{
-                    height: '20px',
-                    fontSize: '13px',
-                    fontWeight: 400,
-                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                    color: theme.palette.primary.main,
-                    minWidth: '24px'
-                  }}
-                />
-              )}
-            </Stack>
-          </StyledAccordionSummary>
-          <StyledAccordionDetails>
-            <Stack spacing={3}>
-              {type === 'bulk' && (
-                <Box
-                  sx={{
-                    p: 2.5,
-                    borderRadius: '12px',
-                    background:
-                      filter & 1 ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
-                    border: `1px solid ${filter & 1 ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
-                    transition: 'transform 0.2s ease, border-color 0.2s ease',
-                    cursor: 'pointer',
-                    '&:hover': {
-                      transform: 'translateY(-1px)',
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.08)}`,
-                      borderColor: alpha(theme.palette.primary.main, 0.3)
-                    }
-                  }}
-                  onClick={() => handleFlagChange({ target: { value: 1 } })}
-                >
-                  <Stack direction="row" alignItems="center" spacing={3}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 40,
-                        height: 40,
-                        borderRadius: '12px',
-                        background: filter & 1 ? theme.palette.primary.main : 'transparent',
-                        border: `1px solid ${filter & 1 ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.2)}`,
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      <Checkbox
-                        checked={(filter & 1) !== 0}
-                        onChange={handleFlagChange}
-                        value={1}
-                        color="primary"
-                        sx={{
-                          padding: 0,
-                          '& .MuiSvgIcon-root': {
-                            fontSize: '19px',
-                            color: filter & 1 ? 'white' : theme.palette.primary.main
-                          }
-                        }}
-                      />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                        <Typography
-                          variant="subtitle1"
-                          sx={{ fontWeight: 400, color: 'text.primary', fontSize: '15px' }}
-                        >
-                          Buy with Mints
-                        </Typography>
-                        <Chip
-                          label={extra?.buyWithMints || 0}
-                          size="small"
-                          sx={{
-                            height: '24px',
-                            fontSize: '11px',
-                            fontWeight: 400,
-                            backgroundColor:
-                              filter & 1
-                                ? theme.palette.primary.main
-                                : alpha(theme.palette.primary.main, 0.1),
-                            color: filter & 1 ? 'white' : theme.palette.primary.main,
-                            border: 'none'
-                          }}
-                        />
-                      </Stack>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontWeight: 400, fontSize: '13px' }}
-                        >
-                          Available for bulk minting purchases
-                        </Typography>
-                        <Tooltip
-                          title="Disabled on Spinning collections, only enabled on Bulk collections."
-                          placement="top"
-                          arrow
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 18,
-                              height: 18,
-                              borderRadius: '50%',
-                              background: alpha(theme.palette.info.main, 0.1),
-                              color: 'info.main',
-                              cursor: 'help',
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                background: alpha(theme.palette.info.main, 0.2),
-                                transform: 'scale(1.1)'
-                              }
-                            }}
-                          >
-                            <MoreVertIcon sx={{ fontSize: '10px' }} />
-                          </Box>
-                        </Tooltip>
-                      </Stack>
-                    </Box>
-                  </Stack>
-                </Box>
-              )}
-
-              {type !== 'normal' && (
-                <Box
-                  sx={{
-                    p: 3,
-                    borderRadius: '12px',
-                    background: 'transparent',
-                    border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    '&:hover': {
-                      transform: 'translateY(-2px)',
-                      border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                    }
-                  }}
-                >
-                  <Stack direction="row" alignItems="center" spacing={3}>
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 48,
-                        height: 48,
-                        borderRadius: '12px',
-                        background: 'transparent',
-                        border: (theme) => `1px solid ${alpha(theme.palette.success.main, 0.2)}`
-                      }}
-                    >
-                      <Checkbox
-                        checked={(filter & 2) !== 0}
-                        onChange={handleFlagChange}
-                        value={2}
-                        color="success"
-                        sx={{ '& .MuiSvgIcon-root': { fontSize: '24px' } }}
-                      />
-                    </Box>
-                    <Box sx={{ flex: 1 }}>
-                      <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                        <Typography
-                          variant="h6"
-                          sx={{ fontWeight: 400, color: 'text.primary', fontSize: '18px' }}
-                        >
-                          Recently Minted
-                        </Typography>
-                        <Box
-                          sx={{
-                            px: 2,
-                            py: 0.5,
-                            borderRadius: '12px',
-                            background: (theme) => theme.palette.success.main,
-                            color: 'white',
-                            fontWeight: 400,
-                            fontSize: '12px'
-                          }}
-                        >
-                          {extra?.boughtWithMints || 0}
-                        </Box>
-                      </Stack>
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
-                          Fresh NFTs pending transfer or acceptance
-                        </Typography>
-                        <Tooltip
-                          title="Display recently Minted NFTs and being transferred to users. Or NFTs that pending to be accepted by users."
-                          placement="top"
-                          arrow
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              width: 20,
-                              height: 20,
-                              borderRadius: '50%',
-                              background: (theme) => alpha(theme.palette.info.main, 0.1),
-                              color: 'info.main',
-                              cursor: 'help',
-                              transition: 'all 0.2s ease',
-                              '&:hover': {
-                                background: (theme) => alpha(theme.palette.info.main, 0.2),
-                                transform: 'scale(1.1)'
-                              }
-                            }}
-                          >
-                            <MoreVertIcon sx={{ fontSize: '12px' }} />
-                          </Box>
-                        </Tooltip>
-                      </Stack>
-                    </Box>
-                  </Stack>
-                </Box>
-              )}
-
-              <Box
-                sx={{
-                  p: 2.5,
-                  borderRadius: '12px',
-                  background: filter & 4 ? alpha(theme.palette.warning.main, 0.04) : 'transparent',
-                  border: `1px solid ${filter & 4 ? alpha(theme.palette.warning.main, 0.2) : alpha(theme.palette.divider, 0.08)}`,
-                  transition: 'transform 0.2s ease, border-color 0.2s ease',
-                  cursor: 'pointer',
-                  '&:hover': {
-                    transform: 'translateY(-1px)',
-                    boxShadow: `0 4px 12px ${alpha(theme.palette.warning.main, 0.08)}`,
-                    borderColor: alpha(theme.palette.warning.main, 0.3)
-                  }
-                }}
-                onClick={() => handleFlagChange({ target: { value: 4 } })}
-              >
-                <Stack direction="row" alignItems="center" spacing={2.5}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 40,
-                      height: 40,
-                      borderRadius: '12px',
-                      background: filter & 4 ? theme.palette.warning.main : 'transparent',
-                      border: `1px solid ${filter & 4 ? theme.palette.warning.main : alpha(theme.palette.warning.main, 0.2)}`,
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    <Checkbox
-                      checked={(filter & 4) !== 0}
-                      onChange={handleFlagChange}
-                      value={4}
-                      sx={{
-                        padding: 0,
-                        color: filter & 4 ? 'white' : theme.palette.warning.main,
-                        '&.Mui-checked': {
-                          color: 'white'
-                        },
-                        '& .MuiSvgIcon-root': {
-                          fontSize: '19px'
-                        }
-                      }}
-                    />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={1.5} sx={{ mb: 0.5 }}>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: 400, color: 'text.primary', fontSize: '15px' }}
-                      >
-                        Buy Now
-                      </Typography>
-                      <Chip
-                        label={extra?.onSaleCount || 0}
-                        size="small"
-                        sx={{
-                          height: '24px',
-                          fontSize: '11px',
-                          fontWeight: 400,
-                          backgroundColor:
-                            filter & 4
-                              ? theme.palette.warning.main
-                              : alpha(theme.palette.warning.main, 0.1),
-                          color: filter & 4 ? 'white' : theme.palette.warning.main,
-                          border: 'none'
-                        }}
-                      />
-                    </Stack>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontWeight: 400, fontSize: '13px' }}
-                    >
-                      NFTs available for immediate purchase
-                    </Typography>
-                  </Box>
-                </Stack>
-
-                {(filter & 0x04) !== 0 && (
-                  <Fade in={true}>
-                    <Box
-                      sx={{
-                        mt: 2,
-                        p: 2,
-                        background: alpha(theme.palette.warning.main, 0.02),
-                        border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
-                        borderRadius: '12px'
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle2"
-                        sx={{
-                          fontWeight: 400,
-                          color: 'text.primary',
-                          mb: 1.5,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          fontSize: '14px'
-                        }}
-                      >
-                        <TuneIcon sx={{ fontSize: '16px', color: theme.palette.warning.main }} />
-                        Sort by Price
-                      </Typography>
-                      <RadioGroup value={subFilter} onChange={handleOnSaleFlagChange}>
-                        <Stack spacing={0.5}>
-                          {[
-                            {
-                              value: 'pricenoxrp',
-                              label: 'No XRP',
-                              desc: 'Exclude XRP',
-                              icon: '🚫'
-                            },
-                            {
-                              value: 'pricexrpasc',
-                              label: 'Low to High',
-                              desc: 'Cheapest first',
-                              icon: '📈'
-                            },
-                            {
-                              value: 'pricexrpdesc',
-                              label: 'High to Low',
-                              desc: 'Most expensive',
-                              icon: '📉'
-                            }
-                          ].map((option) => (
-                            <Box
-                              key={option.value}
-                              sx={{
-                                p: 1.5,
-                                borderRadius: '12px',
-                                background:
-                                  subFilter === option.value
-                                    ? alpha(theme.palette.warning.main, 0.08)
-                                    : 'transparent',
-                                border: `1px solid ${subFilter === option.value ? alpha(theme.palette.warning.main, 0.2) : 'transparent'}`,
-                                transition: 'all 0.2s ease',
-                                cursor: 'pointer',
-                                '&:hover': {
-                                  background: alpha(theme.palette.warning.main, 0.05),
-                                  borderColor: alpha(theme.palette.warning.main, 0.15)
-                                }
-                              }}
-                              onClick={() =>
-                                handleOnSaleFlagChange({ target: { value: option.value } })
-                              }
-                            >
-                              <FormControlLabel
-                                value={option.value}
-                                control={
-                                  <Radio
-                                    size="small"
-                                    sx={{
-                                      p: 0.5,
-                                      color: theme.palette.warning.main,
-                                      '&.Mui-checked': {
-                                        color: theme.palette.warning.main
-                                      }
-                                    }}
-                                  />
-                                }
-                                label={
-                                  <Stack
-                                    direction="row"
-                                    alignItems="center"
-                                    spacing={1}
-                                    sx={{ ml: 0.5 }}
-                                  >
-                                    <Typography sx={{ fontSize: '16px' }}>{option.icon}</Typography>
-                                    <Box>
-                                      <Typography
-                                        variant="body2"
-                                        sx={{
-                                          fontWeight: 400,
-                                          color: 'text.primary',
-                                          fontSize: '14px'
-                                        }}
-                                      >
-                                        {option.label}
-                                      </Typography>
-                                      <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ fontSize: '11px' }}
-                                      >
-                                        {option.desc}
-                                      </Typography>
-                                    </Box>
-                                  </Stack>
-                                }
-                                sx={{
-                                  margin: 0,
-                                  width: '100%',
-                                  '& .MuiFormControlLabel-label': { width: '100%' }
-                                }}
-                              />
-                            </Box>
-                          ))}
-                        </Stack>
-                      </RadioGroup>
-                    </Box>
-                  </Fade>
-                )}
-              </Box>
-
-              <Box
-                sx={{
-                  p: 3,
-                  borderRadius: '12px',
-                  background: 'transparent',
-                  border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.12)}`,
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  '&:hover': {
-                    transform: 'translateY(-2px)',
-                    border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                  }
-                }}
-              >
-                <Stack direction="row" alignItems="center" spacing={3}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 48,
-                      height: 48,
-                      borderRadius: '12px',
-                      background: 'transparent',
-                      border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                    }}
-                  >
-                    <Checkbox
-                      checked={(filter & 16) !== 0}
-                      onChange={handleFlagChange}
-                      value={16}
-                      color="info"
-                      sx={{ '& .MuiSvgIcon-root': { fontSize: '24px' } }}
-                    />
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 1 }}>
-                      <Typography
-                        variant="h6"
-                        sx={{ fontWeight: 400, color: 'text.primary', fontSize: '18px' }}
-                      >
-                        Rarity Sorting
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
-                        Sort NFTs by their rarity ranking
-                      </Typography>
-                      <Tooltip title="Sort NFTs with rarity" placement="top" arrow>
-                        <Box
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            background: (theme) => alpha(theme.palette.info.main, 0.1),
-                            color: 'info.main',
-                            cursor: 'help',
-                            transition: 'all 0.2s ease',
-                            '&:hover': {
-                              background: (theme) => alpha(theme.palette.info.main, 0.2),
-                              transform: 'scale(1.1)'
-                            }
-                          }}
-                        >
-                          <MoreVertIcon sx={{ fontSize: '12px' }} />
-                        </Box>
-                      </Tooltip>
-                    </Stack>
-                  </Box>
-                </Stack>
-              </Box>
-            </Stack>
-          </StyledAccordionDetails>
-        </StyledAccordion>
-
-        <StyledAccordion
-          expanded={expandedPanels.includes('attributes')}
-          onChange={handlePanelChange('attributes')}
-          sx={{
-            background: 'transparent',
-            border: `1px solid ${alpha(theme.palette.divider, 0.05)}`,
-            borderRadius: '12px !important',
-            overflow: 'hidden',
-            '&::before': { display: 'none' },
-            '&.Mui-expanded': {
-              margin: 0,
-              borderColor: alpha(theme.palette.success.main, 0.15)
-            }
-          }}
-        >
-          <StyledAccordionSummary
-            expandIcon={
-              <ExpandMoreIcon
-                sx={{
-                  fontSize: '19px',
-                  transition: 'transform 0.2s ease, border-color 0.2s ease',
-                  color: theme.palette.success.main
-                }}
-              />
-            }
-            sx={{
-              minHeight: '56px',
-              padding: '8px 16px',
-              '&.Mui-expanded': {
-                minHeight: '56px'
-              },
-              '& .MuiAccordionSummary-content': {
-                margin: '8px 0',
-                '&.Mui-expanded': {
-                  margin: '8px 0'
-                }
-              }
-            }}
-          >
-            <Stack direction="row" alignItems="center" spacing={2} sx={{ width: '100%' }}>
-              <Box
-                sx={{
-                  p: 0.75,
-                  borderRadius: '12px',
-                  background: alpha(theme.palette.success.main, 0.08),
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <CategoryIcon sx={{ color: 'success.main', fontSize: '18px' }} />
-              </Box>
-              <Typography
-                variant="subtitle1"
-                sx={{ color: 'text.primary', fontWeight: 400, fontSize: '15px', flex: 1 }}
-              >
-                Attributes
-              </Typography>
-              {filterAttrs?.length > 0 && (
-                <Chip
-                  label={filterAttrs.length}
-                  size="small"
-                  sx={{
-                    height: '20px',
-                    fontSize: '13px',
-                    fontWeight: 400,
-                    backgroundColor: alpha(theme.palette.success.main, 0.1),
-                    color: theme.palette.success.main,
-                    minWidth: '24px'
-                  }}
-                />
-              )}
-            </Stack>
-          </StyledAccordionSummary>
-          <StyledAccordionDetails>
-            {!attrs || attrs.length === 0 ? (
-              <Box
-                sx={{
-                  textAlign: 'center',
-                  p: 4,
-                  borderRadius: '12px',
-                  background: 'transparent',
-                  border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
-                }}
-              >
-                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 400 }}>
-                  No Attributes Available
-                </Typography>
-              </Box>
-            ) : (
-              <AttributeFilter setFilterAttrs={setFilterAttrs} attrs={attrs} />
-            )}
-          </StyledAccordionDetails>
-        </StyledAccordion>
-      </Stack>
-    </Box>
-  );
-}
-
 // Collection Card Component
-const CardWrapper = styled(Card)(({ theme }) => ({
-  borderRadius: '12px',
-  background: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  padding: 0,
-  cursor: 'pointer',
-  transition: 'transform 0.2s ease',
-  overflow: 'hidden',
-  paddingBottom: '5px',
-  willChange: 'transform',
-  '&:hover': {
-    transform: 'translateY(-2px)',
-    borderColor: alpha(theme.palette.primary.main, 0.3)
-  }
-}));
-
-// Skeleton component for loading state
-const LoadingSkeleton = () => (
-  <Skeleton variant="rectangular" sx={{ width: '100%', height: '75%' }} />
-);
-
 function CollectionCard({ collectionData, type, account, handleRemove }) {
   const collection = collectionData.collection;
-  const theme = useTheme();
-  const { accountProfile } = useContext(AppContext);
+  const { themeName, accountProfile } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const isAdmin = accountProfile?.admin;
   const [loadingImg, setLoadingImg] = useState(true);
 
@@ -2413,112 +554,53 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
   const name = collection.name || 'No Name';
   const collectionType = type.charAt(0).toUpperCase() + type.slice(1);
 
-  const onImageLoaded = () => setLoadingImg(false);
-
   const handleRemoveNft = (e) => {
     e.preventDefault();
-    if (!isAdmin) return;
-    if (!confirm(`Are you sure you want to remove "${name}"?`)) return;
+    if (!isAdmin || !confirm(`Remove "${name}"?`)) return;
     handleRemove(NFTokenID);
   };
 
   return (
-    <Link
-      href={`/account/${account}/collection${collectionType}/${collectionData.collection.id}`}
-      underline="none"
-      sx={{ position: 'relative' }}
-    >
-      <CardWrapper
-        sx={{
-          marginLeft: 'auto',
-          marginRight: 'auto',
-          width: '100%',
-          maxWidth: 280,
-          aspectRatio: '9 / 15'
-        }}
-      >
-        {isAdmin && (
-          <CloseIcon
-            sx={{ position: 'absolute', top: 0, right: 0, zIndex: 1500 }}
-            onClick={handleRemoveNft}
-          />
-        )}
-        <CardMedia
-          component={loadingImg ? LoadingSkeleton : 'img'}
-          image={imgUrl}
-          loading={loadingImg.toString()}
-          alt={'NFT' + collection.uuid}
-          sx={{ width: '100%', height: '75%', maxWidth: 280, marginTop: 0, objectFit: 'cover' }}
-        />
-        <img src={imgUrl} style={{ display: 'none' }} onLoad={onImageLoaded} alt="" />
-        <CardContent sx={{ padding: 0 }}>
-          <Box display={'flex'} flexDirection="column" justifyContent={'space-evenly'} px={1}>
-            <Typography
-              variant="subtitle2"
-              sx={{
-                mt: 0.5,
-                mb: 0.4,
-                fontWeight: 400,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              {name}
-            </Typography>
-            <Grid container alignItems="center" spacing={0.1}>
-              <Grid size={{ xs: 12 }}>
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ mt: 0, pl: 0, pr: 0 }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    {collectionData.nftCount} item(s)
-                  </Typography>
-                  {collection.rarity_rank > 0 && (
-                    <Chip
-                      variant="outlined"
-                      icon={<LeaderboardOutlinedIcon sx={{ width: '11px' }} />}
-                      label={
-                        <Typography variant="caption">
-                          {fIntNumber(collection.rarity_rank)}
-                        </Typography>
-                      }
-                      sx={{
-                        height: '18px',
-                        pt: 0,
-                        backgroundColor: 'transparent',
-                        border: (theme) => `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                        color: (theme) => theme.palette.info.main
-                      }}
-                    />
-                  )}
-                </Stack>
-              </Grid>
-              <Grid size={{ xs: 12 }}>
-                <Typography variant="caption" color="text.secondary">
-                  {collectionData.nftsForSale} listed
-                </Typography>
-              </Grid>
-            </Grid>
-          </Box>
-        </CardContent>
-      </CardWrapper>
+    <Link href={`/account/${account}/collection${collectionType}/${collectionData.collection.id}`} className="block">
+      <div className={cn(
+        'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-all w-full',
+        isDark ? 'border-white/10 hover:border-primary/30' : 'border-gray-200 hover:border-primary/30'
+      )} style={{ aspectRatio: '1 / 1.3' }}>
+        <div className="relative h-[70%]">
+          {isAdmin && (
+            <button onClick={handleRemoveNft} className={cn(
+              'absolute top-1 right-1 z-10 w-5 h-5 rounded flex items-center justify-center',
+              isDark ? 'bg-black/60 text-white/70 hover:text-red-500' : 'bg-white/80 text-gray-500 hover:text-red-500'
+            )}>
+              <X size={12} />
+            </button>
+          )}
+          {loadingImg && <div className={cn('w-full h-full animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-100')} />}
+          <img src={imgUrl} alt={collection.uuid} onLoad={() => setLoadingImg(false)} className={cn('w-full h-full object-cover', loadingImg && 'hidden')} />
+        </div>
+        <div className={cn('p-2 h-[30%] border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
+          <h3 className={cn('text-[11px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{name}</h3>
+          <div className="flex items-center justify-between mt-1">
+            <span className={cn('text-[9px]', isDark ? 'text-white/40' : 'text-gray-500')}>{collectionData.nftCount} items</span>
+            {collectionData.nftsForSale > 0 && (
+              <span className={cn('text-[9px]', isDark ? 'text-green-400' : 'text-green-600')}>{collectionData.nftsForSale} listed</span>
+            )}
+          </div>
+        </div>
+      </div>
     </Link>
   );
 }
 
 // Export components for external use
-export { AttributeFilter, FilterDetail, FilterAttribute, CollectionCard, NFTCard };
+export { AttributeFilter, CollectionCard, NFTCard };
 
 // Main Collection View Component
 export default function CollectionView({ collection }) {
   const anchorRef = useRef(null);
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const { accountProfile, deletingNfts } = useContext(AppContext);
+  const shareDropdownRef = useRef(null);
+  const { themeName, accountProfile, deletingNfts } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const isAdmin = accountProfile?.admin;
 
@@ -2527,12 +609,21 @@ export default function CollectionView({ collection }) {
 
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  // Handle undefined collection
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (shareDropdownRef.current && !shareDropdownRef.current.contains(e.target)) {
+        setOpenShare(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   if (!collection) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
-        <CircularProgress />
-      </Box>
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="animate-spin text-primary" size={32} />
+      </div>
     );
   }
 
@@ -2554,78 +645,33 @@ export default function CollectionView({ collection }) {
     owners,
     listedCount,
     totalSales,
-    marketcap,
+    burnedItems,
     topOffer,
-    offers,
-    category,
-    burnedItems
+    category
   } = collection?.collection || collection || {};
 
   const shareUrl = `https://xrpl.to/collection/${slug}`;
   const shareTitle = name;
-
   const totalVol = totalVolume || volume || 0;
 
   const statsData = [
-    {
-      label: 'Floor',
-      value: fNumber(floor?.amount || 0),
-      prefix: '✕'
-    },
+    { label: 'Floor', value: fNumber(floor?.amount || 0), prefix: '✕', color: 'text-green-500' },
     floor7dPercent !== undefined && floor7dPercent !== 0 && {
-      label: '7d %',
+      label: '7d',
       value: `${floor7dPercent > 0 ? '+' : ''}${floor7dPercent.toFixed(1)}%`,
-      color: floor7dPercent > 0 ? 'success.main' : 'error.main'
+      color: floor7dPercent > 0 ? 'text-green-500' : 'text-red-500'
     },
-    totalVol24h > 0 && {
-      label: '24h Vol',
-      value: fVolume(totalVol24h),
-      prefix: '✕'
-    },
-    totalVol > 0 && {
-      label: 'Total Vol',
-      value: fVolume(totalVol),
-      prefix: '✕'
-    },
-    topOffer?.amount > 0 && {
-      label: 'Top Offer',
-      value: fVolume(topOffer.amount),
-      prefix: '✕'
-    },
-    {
-      label: 'Supply',
-      value: fIntNumber(items || 0)
-    },
-    owners > 0 && {
-      label: 'Owners',
-      value: fIntNumber(owners)
-    },
-    listedCount > 0 && {
-      label: 'Listed',
-      value: fIntNumber(listedCount)
-    },
-    totalSales > 0 && {
-      label: 'Sales',
-      value: fIntNumber(totalSales)
-    },
-    burnedItems > 0 && {
-      label: 'Burned',
-      value: fIntNumber(burnedItems)
-    }
+    totalVol24h > 0 && { label: '24h Vol', value: fVolume(totalVol24h), prefix: '✕', color: 'text-red-500' },
+    totalVol > 0 && { label: 'Total Vol', value: fVolume(totalVol), prefix: '✕', color: 'text-blue-500' },
+    { label: 'Supply', value: fIntNumber(items || 0), color: 'text-orange-500' },
+    owners > 0 && { label: 'Owners', value: fIntNumber(owners), color: 'text-purple-500' },
+    listedCount > 0 && { label: 'Listed', value: fIntNumber(listedCount), color: 'text-cyan-500' }
   ].filter(Boolean);
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
 
   const handleRemoveAll = () => {
     if (deletingNfts.length === 0 || !isAdmin) return;
-
-    const nftNames = deletingNfts
-      ?.map((nft) => `"${nft.meta?.name}"` || `"${nft.meta?.Name}"` || `"No Name"`)
-      ?.join(', ');
+    const nftNames = deletingNfts?.map((nft) => `"${nft.meta?.name}"` || `"${nft.meta?.Name}"` || `"No Name"`)?.join(', ');
     const idsToDelete = deletingNfts?.map((nft) => nft._id);
-
     if (!confirm(`You're about to delete the following NFTs ${nftNames}?`)) return;
 
     axios
@@ -2637,11 +683,8 @@ export default function CollectionView({ collection }) {
           idsToDelete
         }
       })
-      .then((res) => {
-        location.reload();
-      })
-      .catch((err) => {
-      });
+      .then(() => location.reload())
+      .catch((err) => console.error(err));
   };
 
   const truncate = (str, n) => {
@@ -2650,234 +693,172 @@ export default function CollectionView({ collection }) {
   };
 
   return (
-    <MainContainer>
-      {/* Share Popover */}
-      <Popover
-        open={openShare}
-        onClose={() => setOpenShare(false)}
-        anchorEl={anchorRef.current}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-        PaperProps={{
-          sx: {
-            background: 'transparent',
-            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-            borderRadius: '12px',
-            p: 2
-          }
-        }}
-      >
-        <Box sx={{ p: 2 }}>
-          <Typography variant="subtitle2" fontWeight={500} sx={{ mb: 2, textAlign: 'center' }}>
-            Share Collection
-          </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center">
-            <>
-              <FacebookShareButton url={shareUrl} quote={shareTitle}>
-                <FacebookIcon size={40} round />
-              </FacebookShareButton>
-              <TwitterShareButton
-                title={`Check out ${shareTitle} on XRPNFT`}
-                url={shareUrl}
-              >
-                <TwitterIcon size={40} round />
-              </TwitterShareButton>
-            </>
-            <IconButton
-              onClick={() => {
-                navigator.clipboard.writeText(shareUrl);
-                setOpenShare(false);
-              }}
-              sx={{
-                width: 40,
-                height: 40,
-                border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
-                color: theme.palette.info.main
-              }}
-            >
-              <MoreVertIcon />
-            </IconButton>
-          </Stack>
-        </Box>
-      </Popover>
-
-      {/* Collection Header */}
-      <CompactCard>
-        <Stack direction="row" spacing={2.5} alignItems="center">
-          <IconCover sx={{ width: '70px', height: '70px' }}>
-            <Image
-              src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
-              alt={name}
-              fill
-              priority
-              sizes="70px"
-              style={{ objectFit: 'cover', borderRadius: '12px' }}
-            />
-          </IconCover>
-
-          <Stack spacing={0.5} sx={{ minWidth: 0 }}>
-            <Stack direction="row" spacing={0.8} alignItems="center">
-              <Typography variant="h5" sx={{ fontSize: '20px', fontWeight: 400 }}>
-                {name}
-              </Typography>
-              {verified === 'yes' && <VerifiedIcon sx={{ fontSize: '16px', color: 'primary.main' }} />}
-              {category && (
-                <Chip
-                  label={category}
-                  size="small"
-                  sx={{
-                    height: '20px',
-                    fontSize: '11px',
-                    fontWeight: 400,
-                    backgroundColor: alpha(theme.palette.info.main, 0.1),
-                    color: theme.palette.info.main,
-                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`
-                  }}
-                />
+    <div className="w-full relative animate-fadeIn">
+      {/* Collection Header - TokenSummary style */}
+      <div className={cn("rounded-xl border-[1.5px] px-4 py-2.5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+        {/* Main Row */}
+        <div className="flex items-center">
+          {/* Left: Logo + Info */}
+          <div className="flex items-center gap-3 min-w-[200px] flex-shrink-0">
+            <div className="relative">
+              <Image
+                src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
+                alt={name}
+                width={36}
+                height={36}
+                priority
+                className="rounded-lg object-cover border border-primary/20"
+              />
+              {verified === 'yes' && (
+                <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center text-[7px] text-black font-bold border border-white">✓</div>
               )}
-              <Stack direction="row" spacing={0.8} sx={{ ml: 2 }}>
-                {accountLogin === collection.account && (
-                  <Button
-                    component={Link}
-                    href={`/collection/${slug}/edit`}
-                    variant="outlined"
-                    size="small"
-                    startIcon={<EditIcon sx={{ fontSize: '13px' }} />}
-                    sx={{
-                      textTransform: 'none',
-                      fontSize: '12px',
-                      py: 0.4,
-                      px: 1,
-                      borderRadius: '6px',
-                      borderColor: alpha(theme.palette.divider, 0.2),
-                      color: 'text.secondary',
-                      '&:hover': { borderColor: alpha(theme.palette.divider, 0.3), backgroundColor: 'transparent' }
-                    }}
-                  >
-                    Edit
-                  </Button>
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className={cn("text-sm font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
+                {category && (
+                  <span className={cn("px-1 rounded text-[9px] font-medium", isDark ? "bg-blue-500/10 text-blue-400" : "bg-blue-50 text-blue-600")}>
+                    {category}
+                  </span>
                 )}
-                <Watch collection={collection} />
-                <Button
-                  variant="outlined"
-                  size="small"
-                  startIcon={<ShareIcon sx={{ fontSize: '13px' }} />}
-                  onClick={() => setOpenShare(true)}
-                  sx={{
-                    textTransform: 'none',
-                    fontSize: '12px',
-                    py: 0.4,
-                    px: 1,
-                    borderRadius: '6px',
-                    borderColor: alpha(theme.palette.divider, 0.2),
-                    color: 'text.secondary',
-                    '&:hover': { borderColor: alpha(theme.palette.divider, 0.3), backgroundColor: 'transparent' }
-                  }}
-                >
-                  Share
-                </Button>
-              </Stack>
-            </Stack>
-            <Stack direction="row" spacing={0.8} alignItems="center">
-              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                {accountName || account?.slice(0, 6) + '...' + account?.slice(-4)}
-              </Typography>
-              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.disabled' }}>•</Typography>
-              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                {formatMonthYear(created)}
-              </Typography>
-            </Stack>
-            {description && (
-              <Typography variant="caption" sx={{ fontSize: '12px', color: 'text.secondary', fontStyle: 'italic' }}>
-                {truncate(description, 80)}
-              </Typography>
-            )}
-          </Stack>
+              </div>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className={cn("text-[10px] truncate", isDark ? "text-white/40" : "text-gray-400")}>
+                  {accountName || account?.slice(0, 4) + '...' + account?.slice(-4)}
+                </span>
+                <span className={cn("text-[9px]", isDark ? "text-white/20" : "text-gray-300")}>•</span>
+                <span className={cn("text-[9px]", isDark ? "text-white/30" : "text-gray-400")}>
+                  {formatMonthYear(created)}
+                </span>
+              </div>
+            </div>
+          </div>
 
-          <Box sx={{ flex: 1 }} />
-
-          <Stack direction="row" spacing={2} divider={<Box sx={{ width: '1px', bgcolor: alpha(theme.palette.divider, 0.1), height: '32px' }} />}>
-            {statsData.map((item) => (
-              <Box key={item.label} sx={{ minWidth: '70px' }}>
-                <Typography variant="body2" sx={{ fontSize: '14px', fontWeight: 400, color: item.color || 'text.primary', mb: 0.3 }}>
-                  {item.prefix && <Box component="span" sx={{ color: 'text.secondary', mr: 0.3 }}>{item.prefix}</Box>}
-                  {item.value}
-                </Typography>
-                <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary', fontWeight: 400 }}>
-                  {item.label}
-                </Typography>
-              </Box>
+          {/* Center: Stats Grid */}
+          <div className="hidden md:grid grid-cols-4 lg:grid-cols-7 gap-4 flex-1 mx-6">
+            {statsData.map((stat) => (
+              <div key={stat.label} className="text-center">
+                <div className={cn("text-[9px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
+                <div className={cn("text-[13px] font-medium", stat.color)}>
+                  {stat.prefix && <span className={isDark ? "text-white/30" : "text-gray-400"}>{stat.prefix}</span>}
+                  {stat.value}
+                </div>
+              </div>
             ))}
-          </Stack>
-        </Stack>
-      </CompactCard>
+          </div>
+
+          {/* Right: Actions */}
+          <div className="flex items-center gap-1 ml-auto pl-2 border-l border-white/10">
+            {accountLogin === collection.account && (
+              <Link href={`/collection/${slug}/edit`} className={cn(
+                "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
+                isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+              )}>
+                <Pencil size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
+              </Link>
+            )}
+            <Watch collection={collection} />
+            <div className="relative" ref={shareDropdownRef}>
+              <button
+                onClick={() => setOpenShare(!openShare)}
+                className={cn(
+                  "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
+                  isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                )}
+              >
+                <Share2 size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
+              </button>
+
+              {openShare && (
+                <div className={cn(
+                  'absolute top-full right-0 mt-2 p-3 rounded-xl border z-50 min-w-[180px]',
+                  isDark ? 'bg-black/95 border-white/10 backdrop-blur-lg' : 'bg-white border-gray-200 shadow-lg'
+                )}>
+                  <p className={cn('text-[11px] font-medium mb-2 text-center uppercase tracking-wider', isDark ? 'text-white/50' : 'text-gray-500')}>
+                    Share
+                  </p>
+                  <div className="flex justify-center gap-2">
+                    <FacebookShareButton url={shareUrl} quote={shareTitle}>
+                      <FacebookIcon size={32} round />
+                    </FacebookShareButton>
+                    <TwitterShareButton title={`Check out ${shareTitle} on XRPNFT`} url={shareUrl}>
+                      <TwitterIcon size={32} round />
+                    </TwitterShareButton>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Description Row */}
+        {description && (
+          <div className="mt-2 pt-2 border-t border-white/5">
+            <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+              {truncate(description, 120)}
+            </p>
+          </div>
+        )}
+
+        {/* Mobile Stats */}
+        <div className="md:hidden grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-white/5">
+          {statsData.slice(0, 4).map((stat) => (
+            <div key={stat.label} className="text-center">
+              <div className={cn("text-[8px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
+              <div className={cn("text-[11px] font-medium", stat.color)}>
+                {stat.prefix && <span className={isDark ? "text-white/30" : "text-gray-400"}>{stat.prefix}</span>}
+                {stat.value}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* NFTs and Activity Tabs */}
-      <CompactCard>
+      <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
         <TabContext value={value}>
-          <Box
-            sx={{
-              borderBottom: 1,
-              borderColor: 'divider',
-              display: 'flex',
-              justifyContent: 'space-between',
-              mb: 3
-            }}
-          >
-            <ToggleButtonGroup
-              value={value}
-              exclusive
-              onChange={(e, newValue) => newValue && handleChange(e, newValue)}
-              size="small"
-              sx={{
-                bgcolor: 'transparent',
-                '& .MuiToggleButton-root': {
-                  border: 'none',
-                  borderBottom: `2px solid transparent`,
-                  borderRadius: 0,
-                  color: 'text.secondary',
-                  fontSize: '14px',
-                  fontWeight: 400,
-                  textTransform: 'none',
-                  px: 2,
-                  py: 0.8,
-                  '&.Mui-selected': {
-                    bgcolor: 'transparent',
-                    color: 'text.primary',
-                    fontWeight: 400,
-                    borderBottom: `2px solid ${theme.palette.primary.main}`
-                  },
-                  '&:hover': {
-                    bgcolor: 'transparent'
-                  }
-                }
-              }}
-            >
-              <ToggleButton value="tab-nfts">NFTs</ToggleButton>
-              <ToggleButton value="tab-creator-transactions">Activity</ToggleButton>
-            </ToggleButtonGroup>
+          <div className={cn('flex justify-between items-center mb-4 pb-2 border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
+            <div className="flex gap-1">
+              {['tab-nfts', 'tab-creator-transactions'].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setValue(tab)}
+                  className={cn(
+                    'px-3 py-1.5 rounded-lg text-[12px] font-medium transition-all',
+                    value === tab
+                      ? 'bg-primary/10 text-primary'
+                      : isDark ? 'text-white/50 hover:text-white hover:bg-white/5' : 'text-gray-500 hover:text-gray-900 hover:bg-gray-50'
+                  )}
+                >
+                  {tab === 'tab-nfts' ? 'NFTs' : 'Activity'}
+                </button>
+              ))}
+            </div>
 
             {isAdmin && value === 'tab-nfts' && (
-              <Button
-                variant="outlined"
-                color="error"
-                sx={{ py: 0.5 }}
+              <button
                 onClick={handleRemoveAll}
                 disabled={deletingNfts.length === 0}
+                className={cn(
+                  'px-2 py-1 rounded-lg text-[11px] font-medium border-[1.5px] transition-all',
+                  deletingNfts.length === 0
+                    ? 'opacity-40 cursor-not-allowed border-gray-300 text-gray-400'
+                    : 'border-red-500/20 text-red-500 hover:bg-red-500/10'
+                )}
               >
                 Delete All
-              </Button>
+              </button>
             )}
-          </Box>
+          </div>
 
-          <TabPanel value="tab-nfts" sx={{ p: 0 }}>
+          <TabPanel value="tab-nfts">
             <NFTGrid collection={collection} />
           </TabPanel>
-          <TabPanel value="tab-creator-transactions" sx={{ p: 0 }}>
+          <TabPanel value="tab-creator-transactions">
             <AccountTransactions collectionSlug={slug} />
           </TabPanel>
         </TabContext>
-      </CompactCard>
-    </MainContainer>
+      </div>
+    </div>
   );
 }

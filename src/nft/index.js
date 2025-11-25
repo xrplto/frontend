@@ -20,13 +20,13 @@ export default function Detail({ nft }) {
 
   return (
     <div className={cn(
-      "grid gap-4 mb-0 max-w-[1300px] mx-auto items-start",
-      "grid-cols-1 md:grid-cols-12"
+      "grid gap-6 mb-0 max-w-[1400px] mx-auto items-start",
+      "grid-cols-1 lg:grid-cols-12"
     )}>
-      <div className="md:col-span-4">
+      <div className="lg:col-span-5">
         <NFTDetails nft={nft} />
       </div>
-      <div className="md:col-span-8">
+      <div className="lg:col-span-7">
         {status === NFToken.SELL_WITH_MINT_BULK ? (
           <NFTActionsBulk nft={nft} />
         ) : (

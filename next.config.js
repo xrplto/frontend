@@ -222,12 +222,7 @@ const config = {
     esmExternals: true,
     webpackMemoryOptimizations: true,
     optimizePackageImports: [
-      '@mui/material',
-      '@mui/material-nextjs',
-      '@mui/icons-material',
-      '@mui/lab',
-      '@mui/system',
-      '@mui/utils',
+      'lucide-react',
       'date-fns',
       'react-redux',
       '@reduxjs/toolkit',
@@ -305,27 +300,13 @@ const config = {
                 chunks: 'async',
                 enforce: true
               },
-              // Material-UI core
-              muiCore: {
-                test: /[\\/]node_modules[\\/]@mui[\\/](material|system|private-theming|styled-engine)[\\/]/,
-                name: 'mui-core',
+              // Lucide icons
+              lucide: {
+                test: /[\\/]node_modules[\\/]lucide-react[\\/]/,
+                name: 'lucide-icons',
                 priority: 35,
-                chunks: 'all'
-              },
-              // Material-UI icons - lazy load
-              muiIcons: {
-                test: /[\\/]node_modules[\\/]@mui[\\/]icons-material[\\/]/,
-                name: 'mui-icons',
-                priority: 34,
                 chunks: 'async',
                 enforce: true
-              },
-              // Material-UI utilities
-              muiUtils: {
-                test: /[\\/]node_modules[\\/]@mui[\\/](utils|base|lab|x-[^/]+)[\\/]/,
-                name: 'mui-utils',
-                priority: 33,
-                chunks: 'async'
               },
               // Emotion styling
               emotion: {

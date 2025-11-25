@@ -46,18 +46,18 @@ export default function Overview({ collection }) {
 
   return (
     <OverviewWrapper>
-      <div className="h-16" id="back-to-top-anchor" />
+      <div className="h-4" id="back-to-top-anchor" />
 
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {collectionName} NFT Collection
       </h1>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-[1920px] px-4">
         <CollectionBreadcrumb collection={collection} />
       </div>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-[1920px] px-4">
         <Collection collection={collection} />
       </div>
 

@@ -52,7 +52,7 @@ export default function Overview({ nft }) {
 
   return (
     <div className="flex-1 overflow-hidden">
-      <div id="back-to-top-anchor" className="h-16" />
+      <div id="back-to-top-anchor" className="h-4" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {nftName} NFT on XRPL

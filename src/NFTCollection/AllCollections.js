@@ -137,7 +137,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
       }}
     >
       {/* Global Metrics Section */}
-      <div style={{ maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '0 16px' : '0 24px', marginBottom: '16px' }}>
+      <div style={{ padding: isMobile ? '0 8px' : '0 24px', marginBottom: '16px' }}>
         {globalMetrics && (
           <div style={{ width: '100%' }}>
             <Grid cols={6} mdCols={3} spacing="10px">

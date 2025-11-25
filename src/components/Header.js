@@ -350,68 +350,67 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onMouseEnter={handleTokensOpen}
                   onMouseLeave={handleTokensClose}
                   className={cn(
-                    'fixed left-auto top-12 z-[2147483647] min-w-[600px] overflow-hidden rounded-lg border-[1.5px]',
-                    isDark ? 'border-white/10 bg-black/[0.98]' : 'border-gray-200 bg-white/[0.98]'
+                    'absolute left-0 top-full z-[2147483647] mt-1 min-w-[580px] overflow-hidden rounded-xl border-[1.5px] backdrop-blur-sm',
+                    isDark ? 'border-white/10 bg-black/95' : 'border-gray-200 bg-white/95'
                   )}
-                  style={{ left: tokensRef.current?.offsetLeft || 0 }}
                 >
-                  <div className="flex gap-4 p-4">
+                  <div className="flex gap-6 p-5">
                     {/* Column 1: Launchpads */}
-                    <div className="flex-1">
-                      <p className={cn('mb-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
-                        LAUNCHPADS
+                    <div className="min-w-[160px]">
+                      <p className={cn('mb-3 px-3 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                        Launchpads
                       </p>
                       {launchpadItems.map((item) => (
                         <div
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'flex cursor-pointer items-center gap-3 px-3 py-2',
-                            isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors',
+                            isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                           )}
                         >
                           {item.icon}
-                          <span className="text-sm">{item.name}</span>
+                          <span className="text-[13px] font-normal">{item.name}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Column 2: Analytics */}
-                    <div className="flex-1">
-                      <p className={cn('mb-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
-                        ANALYTICS
+                    <div className="min-w-[150px]">
+                      <p className={cn('mb-3 px-3 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                        Analytics
                       </p>
                       {analyticsItems.map((item) => (
                         <div
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'flex cursor-pointer items-center gap-3 px-3 py-2',
-                            isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors',
+                            isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                           )}
                         >
                           {item.icon}
-                          <span className="text-sm">{item.name}</span>
+                          <span className="text-[13px] font-normal">{item.name}</span>
                         </div>
                       ))}
                     </div>
 
                     {/* Column 3: Discover */}
-                    <div className="flex-1">
-                      <p className={cn('mb-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
-                        DISCOVER
+                    <div className="min-w-[140px]">
+                      <p className={cn('mb-3 px-3 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                        Discover
                       </p>
                       {discoverMenuItems.map((item) => (
                         <div
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
                           className={cn(
-                            'flex cursor-pointer items-center gap-3 px-3 py-2',
-                            isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors',
+                            isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                           )}
                         >
                           {item.icon}
-                          <span className="text-sm">{item.name}</span>
+                          <span className="text-[13px] font-normal">{item.name}</span>
                         </div>
                       ))}
                     </div>
@@ -442,23 +441,22 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onMouseEnter={handleNftsOpen}
                   onMouseLeave={handleNftsClose}
                   className={cn(
-                    'fixed left-auto top-12 z-[2147483647] min-w-[200px] overflow-hidden rounded-lg border-[1.5px]',
-                    isDark ? 'border-white/10 bg-black/[0.98]' : 'border-gray-200 bg-white/[0.98]'
+                    'absolute left-0 top-full z-[2147483647] mt-1 min-w-[180px] overflow-hidden rounded-xl border-[1.5px] backdrop-blur-sm',
+                    isDark ? 'border-white/10 bg-black/95' : 'border-gray-200 bg-white/95'
                   )}
-                  style={{ left: nftsRef.current?.offsetLeft || 0 }}
                 >
-                  <div className="flex flex-col p-4">
+                  <div className="p-2">
                     {nftItems.map((item) => (
                       <div
                         key={item.path}
                         onClick={() => handleTokenOptionSelect(item.path)}
                         className={cn(
-                          'flex cursor-pointer items-center gap-3 px-3 py-2',
-                          isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                          'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2.5 transition-colors',
+                          isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                         )}
                       >
                         {item.icon}
-                        <span className="text-sm">{item.name}</span>
+                        <span className="text-[13px] font-normal">{item.name}</span>
                       </div>
                     ))}
                   </div>
@@ -556,15 +554,15 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 {settingsMenuOpen && (
                   <div
                     className={cn(
-                      'absolute right-0 top-10 z-[2147483647] min-w-[240px] overflow-hidden rounded-lg border-[1.5px]',
-                      isDark ? 'border-white/10 bg-black/[0.98]' : 'border-gray-200 bg-white/[0.98]'
+                      'absolute right-0 top-10 z-[2147483647] min-w-[220px] overflow-hidden rounded-xl border-[1.5px] backdrop-blur-sm',
+                      isDark ? 'border-white/10 bg-black/95' : 'border-gray-200 bg-white/95'
                     )}
                   >
                     <div className="p-2">
                       {/* Currency Section */}
-                      <p className={cn('flex items-center gap-2 px-3 py-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
-                        <ArrowLeftRight size={14} />
-                        CURRENCY
+                      <p className={cn('flex items-center gap-2 px-3 py-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                        <ArrowLeftRight size={12} />
+                        Currency
                       </p>
                       {currencyConfig.availableFiatCurrencies.map((currency) => (
                         <button
@@ -574,29 +572,29 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'mx-1 mb-1 flex w-[calc(100%-8px)] items-center justify-between rounded-md px-3 py-2',
+                            'flex w-full items-center justify-between rounded-lg px-3 py-2 transition-colors',
                             currency === activeFiatCurrency
-                              ? isDark ? 'bg-primary/10' : 'bg-primary/10'
+                              ? 'bg-primary/10'
                               : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                           )}
                         >
-                          <span className={cn('text-sm', currency === activeFiatCurrency ? 'font-medium' : 'font-normal')}>
+                          <span className="text-[13px] font-normal">
                             {currencySymbols[currency] || ''}{currency}
                           </span>
-                          {currency === activeFiatCurrency && <Check size={16} className="text-primary" />}
+                          {currency === activeFiatCurrency && <Check size={14} className="text-primary" />}
                         </button>
                       ))}
 
                       <div className={cn('my-2 border-t', isDark ? 'border-white/10' : 'border-gray-200')} />
 
                       {/* Theme Section */}
-                      <p className={cn('flex items-center gap-2 px-3 py-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
-                        <Palette size={14} />
-                        THEME
+                      <p className={cn('flex items-center gap-2 px-3 py-2 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                        <Palette size={12} />
+                        Theme
                       </p>
                       {[
                         { id: 'XrplToLightTheme', name: 'Light', color: '#ffffff', border: true },
-                        { id: 'XrplToDarkTheme', name: 'Dark', color: '#000000' }
+                        { id: 'XrplToDarkTheme', name: 'Dark', color: '#0a0a0a' }
                       ].map((themeOption) => (
                         <button
                           key={themeOption.id}
@@ -605,23 +603,23 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'mx-1 mb-1 flex w-[calc(100%-8px)] items-center gap-3 rounded-md px-3 py-2',
+                            'flex w-full items-center gap-3 rounded-lg px-3 py-2 transition-colors',
                             themeName === themeOption.id
-                              ? isDark ? 'bg-primary/10' : 'bg-primary/10'
+                              ? 'bg-primary/10'
                               : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                           )}
                         >
                           <div
-                            className="h-[18px] w-[18px] rounded"
+                            className="h-4 w-4 rounded-md"
                             style={{
                               backgroundColor: themeOption.color,
-                              border: themeOption.border ? '1px solid #e0e0e0' : 'none'
+                              border: themeOption.border ? '1px solid #d1d5db' : 'none'
                             }}
                           />
-                          <span className={cn('flex-1 text-left text-sm', themeName === themeOption.id ? 'font-medium' : 'font-normal')}>
+                          <span className="flex-1 text-left text-[13px] font-normal">
                             {themeOption.name}
                           </span>
-                          {themeName === themeOption.id && <Check size={16} className="text-primary" />}
+                          {themeName === themeOption.id && <Check size={14} className="text-primary" />}
                         </button>
                       ))}
                     </div>
@@ -677,56 +675,89 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div className="fixed inset-0 z-[1200] bg-black/50" onClick={() => toggleDrawer(false)} />
           <div
             className={cn(
-              'fixed bottom-0 right-0 top-0 z-[1300] w-full overflow-y-auto border-l-[1.5px] sm:w-[260px]',
+              'fixed bottom-0 right-0 top-0 z-[1300] w-[280px] overflow-y-auto border-l-[1.5px]',
               isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
             )}
           >
-            <div className="p-5">
-              <div className="mb-6 flex items-center justify-between">
-                <h2 className="text-lg font-medium">Menu</h2>
-                <button onClick={() => toggleDrawer(false)} className="rounded-lg p-1 hover:bg-white/10">
-                  <X size={20} />
+            <div className="p-4">
+              <div className="mb-5 flex items-center justify-between">
+                <span className="text-[15px] font-medium">Menu</span>
+                <button
+                  onClick={() => toggleDrawer(false)}
+                  className={cn(
+                    'rounded-lg p-1.5 transition-colors',
+                    isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                  )}
+                >
+                  <X size={18} />
                 </button>
               </div>
 
-              <nav>
+              <nav className="space-y-1">
                 {/* Tokens Expandable */}
                 <button
                   onClick={() => setTokensExpanded(!tokensExpanded)}
                   className={cn(
-                    'flex w-full items-center justify-between py-3 text-base font-medium',
-                    isDark ? 'text-white' : 'text-gray-900'
+                    'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors',
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                   )}
                 >
                   Tokens
-                  {tokensExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  {tokensExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
 
                 {tokensExpanded && (
-                  <div className="pl-4">
-                    <p className={cn('pb-1 pt-2 text-[9px] font-semibold uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>
-                      LAUNCHPADS
+                  <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
+                    <p className={cn('px-2 py-1 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                      Launchpads
                     </p>
                     {launchpadItems.map((item) => (
-                      <a key={item.path} href={item.path} onClick={() => toggleDrawer(false)} className="block py-1.5 text-[0.9rem] font-normal">
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={() => toggleDrawer(false)}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] font-normal transition-colors',
+                          isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                        )}
+                      >
+                        {item.icon}
                         {item.name}
                       </a>
                     ))}
 
-                    <p className={cn('mt-3 pb-1 text-[9px] font-semibold uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>
-                      ANALYTICS
+                    <p className={cn('mt-2 px-2 py-1 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                      Analytics
                     </p>
                     {analyticsItems.map((item) => (
-                      <a key={item.path} href={item.path} onClick={() => toggleDrawer(false)} className="block py-1.5 text-[0.9rem] font-normal">
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={() => toggleDrawer(false)}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] font-normal transition-colors',
+                          isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                        )}
+                      >
+                        {item.icon}
                         {item.name}
                       </a>
                     ))}
 
-                    <p className={cn('mt-3 pb-1 text-[9px] font-semibold uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>
-                      DISCOVER
+                    <p className={cn('mt-2 px-2 py-1 text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                      Discover
                     </p>
                     {discoverMenuItems.map((item) => (
-                      <a key={item.path} href={item.path} onClick={() => toggleDrawer(false)} className="block py-1.5 text-[0.9rem] font-normal">
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={() => toggleDrawer(false)}
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] font-normal transition-colors',
+                          isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                        )}
+                      >
+                        {item.icon}
                         {item.name}
                       </a>
                     ))}
@@ -737,22 +768,25 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <button
                   onClick={() => setNftsExpanded(!nftsExpanded)}
                   className={cn(
-                    'flex w-full items-center justify-between py-3 text-base font-medium',
-                    isDark ? 'text-white' : 'text-gray-900'
+                    'flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors',
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
                   )}
                 >
                   NFTs
-                  {nftsExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                  {nftsExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
                 </button>
 
                 {nftsExpanded && (
-                  <div className="pl-4">
+                  <div className="ml-3 space-y-1 border-l border-white/10 pl-3">
                     {nftItems.map((item) => (
                       <a
                         key={item.path}
                         href={item.path}
                         onClick={() => toggleDrawer(false)}
-                        className="flex items-center gap-3 py-1.5 text-[0.9rem] font-normal"
+                        className={cn(
+                          'flex items-center gap-2 rounded-lg px-2 py-2 text-[13px] font-normal transition-colors',
+                          isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                        )}
                       >
                         {item.icon}
                         {item.name}
@@ -761,13 +795,34 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   </div>
                 )}
 
-                <a href="/swap" onClick={() => toggleDrawer(false)} className="block py-3 text-base font-medium">
+                <a
+                  href="/swap"
+                  onClick={() => toggleDrawer(false)}
+                  className={cn(
+                    'flex items-center rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors',
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                  )}
+                >
                   Swap
                 </a>
-                <a href="/news" onClick={() => toggleDrawer(false)} className="block py-3 text-base font-medium">
+                <a
+                  href="/news"
+                  onClick={() => toggleDrawer(false)}
+                  className={cn(
+                    'flex items-center rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors',
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                  )}
+                >
                   News
                 </a>
-                <a href="/launch" onClick={() => toggleDrawer(false)} className="block py-3 text-base font-medium">
+                <a
+                  href="/launch"
+                  onClick={() => toggleDrawer(false)}
+                  className={cn(
+                    'flex items-center rounded-lg px-3 py-2.5 text-[14px] font-medium transition-colors',
+                    isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                  )}
+                >
                   Launch
                 </a>
               </nav>

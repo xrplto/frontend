@@ -1,60 +1,55 @@
 import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useState, useEffect, useContext } from 'react';
+import Link from 'next/link';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon } from '../components/ShareButtons';
 
-// Material
+// Lucide Icons
 import {
-  useTheme,
-  useMediaQuery,
-  Accordion,
-  AccordionDetails,
-  AccordionSummary,
-  Avatar,
-  Backdrop,
-  Box,
-  Button,
-  Divider,
-  Grid,
-  IconButton,
-  Link,
-  Paper,
-  Popover,
-  Stack,
-  Typography,
-  Tooltip,
-  Chip
-} from '@mui/material';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import ShareIcon from '@mui/icons-material/Share';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import LeaderboardOutlinedIcon from '@mui/icons-material/LeaderboardOutlined';
-import MessageIcon from '@mui/icons-material/Message';
-import MessageOutlinedIcon from '@mui/icons-material/MessageOutlined';
-import CheckIcon from '@mui/icons-material/Check';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+  ChevronDown,
+  Share2,
+  BadgeCheck,
+  BarChart3,
+  MessageSquare,
+  Check,
+  Copy,
+  Info,
+  X,
+  AlertTriangle,
+  RefreshCw,
+  ExternalLink,
+  Hand,
+  Tag,
+  Loader2
+} from 'lucide-react';
 
-// Icons
-import InfoIcon from '@mui/icons-material/Info';
-import CloseIcon from '@mui/icons-material/Close';
-import WarningIcon from '@mui/icons-material/Warning';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
-import LaunchIcon from '@mui/icons-material/Launch';
-import PanToolIcon from '@mui/icons-material/PanTool';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-
-// Loader
-import { PuffLoader, PulseLoader } from '../components/Spinners';
-// Removed unused react-loader-spinner import
-
-// Context
-import { useContext } from 'react';
+// Utils & Context
+import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
+import { normalizeAmount } from 'src/utils/parseUtils';
+import { fNumber, fIntNumber, getHashIcon } from 'src/utils/formatters';
+
+// Components
+import { PuffLoader, PulseLoader } from '../components/Spinners';
+import CreateOfferDialog from './CreateOfferDialog';
+import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
+import OffersList from './OffersList';
+import SelectPriceDialog from './SelectPriceDialog';
+import BurnNFT from './BurnNFT';
+import TransferDialog from './TransferDialog';
+import HistoryList from './HistoryList';
+import Wallet from 'src/components/Wallet';
+import CreateOfferXRPCafe from './CreateOfferXRPCafe';
+
+// XRPL
+import { Client } from 'xrpl';
+import { xrpToDrops, dropsToXrp } from 'xrpl';
 
 // Constants
 const NFToken = {
   SELL_WITH_MINT_BULK: 'SELL_WITH_MINT_BULK',
   BURNT: 'BURNT'
 };
+
 const getMinterName = (account) => {
   const minterMap = {
     'rN7n7otQDd6FczFgLdSqtcsAUxDkw6fzRH': 'XLS-20d',
@@ -63,37 +58,7 @@ const getMinterName = (account) => {
   };
   return minterMap[account] || null;
 };
-import { normalizeAmount } from 'src/utils/parseUtils';
-import { fNumber, fIntNumber } from 'src/utils/formatters';
-import { getHashIcon } from 'src/utils/formatters';
 
-// Components
-import CreateOfferDialog from './CreateOfferDialog';
-
-import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
-// import TimePeriods from './TimePeriodsDropdown';
-import OffersList from './OffersList';
-import SelectPriceDialog from './SelectPriceDialog';
-
-import BurnNFT from './BurnNFT';
-import TransferDialog from './TransferDialog';
-import HistoryList from './HistoryList';
-
-// Add these imports
-import { alpha, styled } from '@mui/material/styles';
-import Glass from '@mui/material/Paper';
-
-// Add this import at the top of the file
-import Wallet from 'src/components/Wallet';
-
-// Add these imports at the top of the file
-import { Client } from 'xrpl';
-import { xrpToDrops, dropsToXrp } from 'xrpl';
-
-// Add this import at the top of the file
-import CreateOfferXRPCafe from './CreateOfferXRPCafe';
-
-// Add these constants at the top of the file
 const BROKER_ADDRESSES = {
   rnPNSonfEN1TWkPH4Kwvkk3693sCT4tsZv: { fee: 0.015, name: 'Art Dept Fun' },
   rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC: { fee: 0.01589, name: 'XRP Cafe' },
@@ -102,58 +67,16 @@ const BROKER_ADDRESSES = {
   rJcCJyJkiTXGcxU4Lt4ZvKJz8YmorZXu8r: { fee: 0.01, name: 'OpulenceX' }
 };
 
-// Create a styled component for the glass effect
-const GlassPanel = styled(Glass)(({ theme }) => ({
-  background: alpha(theme.palette.background.paper, 0.7),
-  backdropFilter: 'blur(10px)',
-  borderRadius: theme.shape.borderRadius * 2,
-  padding: theme.spacing(2),
-  boxShadow: `0 8px 32px 0 ${alpha(theme.palette.primary.main, 0.1)}`,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.18)}`,
-  width: '100%',
-  boxSizing: 'border-box'
-}));
-
-// Add this new styled component for the verification badge
-const VerificationBadge = styled('div')(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 16,
-  height: 16,
-  borderRadius: '50%',
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.common.white,
-  boxShadow: `0 0 0 2px ${theme.palette.background.paper}`,
-  '& svg': {
-    fontSize: 12
-  }
-}));
-
-// const NFT_FLAGS = {
-//     0x00000001: 'lsfBurnable',
-//     0x00000002: 'lsfOnlyXRP',
-//     0x00000004: 'lsfTrustLine',
-//     0x00000008: 'lsfTransferable',
-// }
-
 function getCostFromOffers(nftOwner, offers, isSellOffer) {
   let xrpCost = null;
   let noXrpCost = null;
   for (const offer of offers) {
     const { amount, destination, flags, nft_offer_index, owner } = offer;
-
     let validOffer = true;
-
-    // Remove destination check to allow offers without brokers
-    // if (destination) validOffer = false;
-
     if (isSellOffer && nftOwner !== owner) validOffer = false;
-
     if (!validOffer) continue;
 
     const cost = normalizeAmount(amount);
-
     cost.offer = offer;
 
     if (cost.currency === 'XRP') {
@@ -167,227 +90,47 @@ function getCostFromOffers(nftOwner, offers, isSellOffer) {
         xrpCost = cost;
       }
     } else {
-      if (noXrpCost) {
-        // Do nothing for now.
-      } else {
-        noXrpCost = cost;
-      }
+      if (!noXrpCost) noXrpCost = cost;
     }
   }
-
   return xrpCost || noXrpCost;
 }
 
 function truncate(str, n) {
   if (!str) return '';
-  //return (str.length > n) ? str.substr(0, n-1) + '&hellip;' : str;
   return str.length > n ? str.substr(0, n - 1) + ' ...' : str;
 }
 
-// Add this styled component near the top with other styled components
-const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  backgroundColor: 'transparent',
-  boxShadow: 'none',
-  '&:before': {
-    display: 'none' // Removes the default divider
-  },
-  '& .MuiAccordionSummary-root': {
-    padding: theme.spacing(0, 1),
-    minHeight: 44,
-    '&.Mui-expanded': {
-      minHeight: 44
-    },
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(0, 0.5)
-    }
-  },
-  '& .MuiAccordionSummary-content': {
-    margin: '8px 0',
-    '&.Mui-expanded': {
-      margin: '8px 0'
-    }
-  },
-  '& .MuiAccordionDetails-root': {
-    padding: theme.spacing(1),
-    paddingTop: theme.spacing(0.5),
-    [theme.breakpoints.down('sm')]: {
-      padding: theme.spacing(0.5)
-    }
-  }
-}));
-
-// Add this styled component for the badge
-const OffersBadge = styled('span')(({ theme }) => ({
-  backgroundColor: 'transparent',
-  color: alpha(theme.palette.text.secondary, 0.5),
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  borderRadius: '4px',
-  padding: '2px 6px',
-  fontSize: '0.7rem',
-  fontWeight: 400,
-  marginLeft: theme.spacing(0.5)
-}));
-
-// Add this styled component for the offer count badge
-const OfferCountBadge = styled('span')(({ theme }) => ({
-  backgroundColor: 'transparent',
-  color: alpha(theme.palette.text.secondary, 0.5),
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  borderRadius: '4px',
-  padding: '2px 6px',
-  fontSize: '0.7rem',
-  fontWeight: 400,
-  marginLeft: theme.spacing(0.5)
-}));
-
-// Add this new component to display the price warning
-function PriceWarningIcon({ discrepancy, floorPrice }) {
-  if (discrepancy <= 0.9) {
-    return null;
-  }
-
-  return (
-    <Tooltip
-      title={`This offer is ${Math.round(
-        discrepancy * 100
-      )}% below the floor price of ${fNumber(floorPrice)} XRP.`}
-    >
-      <WarningIcon sx={{ color: 'orange', width: 24, height: 24 }} />
-    </Tooltip>
-  );
-}
-
-// Update helper function to handle different decimal places based on broker
 const formatXRPAmount = (amount, includeSymbol = true, brokerAddress = null) => {
-  // Always use 2 decimal places for both buy and sell offers
   const num = parseFloat(amount);
   const withTwoDecimals = num.toFixed(2);
-  // Remove trailing zero if it exists
   const formatted = withTwoDecimals.endsWith('0')
     ? withTwoDecimals.replace(/\.?0+$/, '')
     : withTwoDecimals;
   return includeSymbol ? `${formatted} XRP` : formatted;
 };
 
-// Add this new styled component near the top with other styled components
-const RankingBadge = styled(Paper)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: theme.spacing(0.75, 1.5),
-  borderRadius: theme.shape.borderRadius * 2,
-  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-  gap: theme.spacing(1),
-  flex: 1
-}));
-
-// Add this new styled component near the top with other styled components
-const MasterSequenceBadge = styled(Paper)(({ theme }) => ({
-  display: 'inline-flex',
-  alignItems: 'center',
-  padding: theme.spacing(0.75, 1.5),
-  borderRadius: theme.shape.borderRadius * 2,
-  backgroundColor: alpha(theme.palette.secondary.main, 0.1),
-  border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-  gap: theme.spacing(1),
-  flex: 1
-}));
-
-// Add this styled component near the top with other styled components
-const SquareAvatar = styled(Avatar)(({ theme }) => ({
-  borderRadius: theme.shape.borderRadius * 2,
-  width: 56,
-  height: 56,
-  boxShadow: `0 4px 15px ${alpha(theme.palette.common.black, 0.1)}`,
-  border: `2px solid ${alpha(theme.palette.background.paper, 0.9)}`
-}));
-
-// Add this new styled component near the top with other styled components
-const OwnerCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(2),
-  backgroundColor: alpha(theme.palette.background.default, 0.6),
-  borderRadius: theme.shape.borderRadius * 2,
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(2),
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`
-}));
-
-const OwnerInfo = styled('div')(({ theme }) => ({
-  flex: 1,
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(0.5)
-}));
-
-const OwnerAddress = styled(Link)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  color: theme.palette.text.primary,
-  textDecoration: 'none'
-}));
-
-// Update the FloorPriceCard styling for a more prominent look
-const FloorPriceCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1.5, 2),
-  backgroundColor: alpha(theme.palette.primary.main, 0.04),
-  borderRadius: theme.shape.borderRadius * 2,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-  width: 'fit-content'
-}));
-
-// Update the FloorPriceValue styling for better alignment
-const FloorPriceValue = styled('div')(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  '& .icon': {
-    color: theme.palette.primary.main,
-    width: 20,
-    height: 20
-  },
-  '& .amount': {
-    fontWeight: 400,
-    fontSize: '18px',
-    color: theme.palette.primary.main,
-    letterSpacing: '0.02em'
-  }
-}));
-
-// Add this new styled component near the top with other styled components
-const CollectionHeader = styled('div')(({ theme }) => ({
-  display: 'flex',
-  justifyContent: 'space-between',
-  alignItems: 'flex-start',
-  marginBottom: theme.spacing(2)
-}));
-
-const CollectionInfo = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  gap: theme.spacing(0.5)
-}));
-
-const NFTTitle = styled(Typography)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1),
-  marginTop: theme.spacing(0.5),
-  color: theme.palette.text.primary,
-  fontWeight: 500
-}));
+// Price Warning Component
+function PriceWarningIcon({ discrepancy, floorPrice }) {
+  if (discrepancy <= 0.9) return null;
+  return (
+    <div className="relative group">
+      <AlertTriangle size={20} className="text-yellow-500 cursor-help" />
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+        This offer is {Math.round(discrepancy * 100)}% below the floor price of {fNumber(floorPrice)} XRP.
+      </div>
+    </div>
+  );
+}
 
 export default function NFTActions({ nft }) {
-  const theme = useTheme();
   const anchorRef = useRef(null);
+  const shareDropdownRef = useRef(null);
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
-
-  // const theme = useTheme();
-  // const largescreen = useMediaQuery(theme => theme.breakpoints.up('md'));
 
   const {
     name,
@@ -406,62 +149,53 @@ export default function NFTActions({ nft }) {
     meta,
     URI,
     status,
-    // cost,
     destination,
     NFTokenID,
     self,
     MasterSequence
   } = nft;
 
-  const collectionName = collection || /*meta?.collection?.name ||*/ '[No Collection]';
-
-  const nftName = name || /*meta?.name || meta?.Name ||*/ '[No Name]';
-
+  const collectionName = collection || '[No Collection]';
+  const nftName = name || '[No Name]';
   const floorPrice = cfloor?.amount || 0;
-
   const accountLogo = getHashIcon(account);
-
   const shareUrl = `https://xrpnft.com/nft/${NFTokenID}`;
   const shareTitle = nftName;
   const shareDesc = meta?.description || '';
-
   const isOwner = accountLogin === account;
   const isBurnable = (flag & 0x00000001) > 0;
 
   const [openShare, setOpenShare] = useState(false);
   const [showPriceBreakdown, setShowPriceBreakdown] = useState(false);
-
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [isSellOffer, setIsSellOffer] = useState(false);
-
   const [burnt, setBurnt] = useState(status === NFToken.BURNT);
-
   const [sellOffers, setSellOffers] = useState([]);
   const [buyOffers, setBuyOffers] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(false);
-
   const [acceptOffer, setAcceptOffer] = useState(null);
   const [openConfirm, setOpenConfirm] = useState(false);
   const [openSelectPrice, setOpenSelectPrice] = useState(false);
-
   const [qrType, setQrType] = useState('NFTokenAcceptOffer');
-
   const [cost, setCost] = useState(null);
-
   const [sync, setSync] = useState(0);
-
   const [lowestSellOffer, setLowestSellOffer] = useState(null);
-
   const [openCreateOfferXRPCafe, setOpenCreateOfferXRPCafe] = useState(false);
 
-  const [anchorEl, setAnchorEl] = useState(null);
+  // Close share dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (shareDropdownRef.current && !shareDropdownRef.current.contains(e.target)) {
+        setOpenShare(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
-  // Add this callback function to handle successful offer creation
   const handleOfferCreated = () => {
-    // Increment sync to trigger useEffect and refresh offers
     setSync((prev) => prev + 1);
   };
 
@@ -476,123 +210,34 @@ export default function NFTActions({ nft }) {
             const offers = ret.sellOffers;
             const nftOwner = nft.account;
             setCost(getCostFromOffers(nftOwner, offers, true));
-
             setSellOffers(getValidOffers(ret.sellOffers, true));
             setBuyOffers(getValidOffers(ret.buyOffers, false));
           }
         })
-        .catch((err) => {
-        })
-        .then(function () {
-          // always executed
-          setLoading(false);
-        });
+        .catch((err) => {})
+        .finally(() => setLoading(false));
     }
     getOffers();
   }, [sync]);
 
   useEffect(() => {
-    var timer = null;
-    var isRunning = false;
-    var counter = 150;
-    var dispatchTimer = null;
-
-    async function getDispatchResult() {
-      try {
-        const res = ret.data.data.response;
-        // const account = res.account;
-        const dispatched_result = res.dispatched_result;
-
-        return dispatched_result;
-      } catch (err) {}
-    }
-
-    const startInterval = () => {
-      let times = 0;
-
-      dispatchTimer = setInterval(async () => {
-        const dispatched_result = await getDispatchResult();
-
-        if (dispatched_result && dispatched_result === 'tesSUCCESS') {
-          setSync(sync + 1);
-          openSnackbar('Successful!', 'success');
-          stopInterval();
-          return;
-        }
-
-        times++;
-
-        if (times >= 15) {
-          openSnackbar('Rejected!', 'error');
-          stopInterval();
-          return;
-        }
-      }, 1200);
-    };
-
-    // Stop the interval
-    const stopInterval = () => {
-      clearInterval(dispatchTimer);
-      handleScanQRClose();
-    };
-
-    async function getPayload() {
-      if (isRunning) return;
-      isRunning = true;
-      try {
-        const resolved_at = ret.data?.resolved_at;
-        // const dispatched_result = ret.data?.dispatched_result;
-        if (resolved_at) {
-          startInterval();
-          return;
-        }
-      } catch (err) {}
-      isRunning = false;
-      counter--;
-      if (counter <= 0) {
-        openSnackbar('Timeout!', 'error');
-        handleScanQRClose();
-      }
-    }
-      // timer = setInterval(getPayload, 2000); // TODO: Fix missing condition
-    // }
-    return () => {
-      // if (timer) {
-      //   clearInterval(timer);
-      // }
-    };
-  }, []); // Added missing useEffect closing
-
-  useEffect(() => {
     async function getLowestSellOffer() {
       if (!NFTokenID) return;
-
       let client = null;
       try {
         client = new Client('wss://s1.ripple.com');
         await client.connect();
-
-        const request = {
-          command: 'nft_sell_offers',
-          nft_id: NFTokenID
-        };
-
+        const request = { command: 'nft_sell_offers', nft_id: NFTokenID };
         const response = await client.request(request);
 
-        // Find the lowest valid sell offer
         let lowestOffer = null;
         if (response.result.offers && response.result.offers.length > 0) {
           lowestOffer = response.result.offers.reduce(
             (min, offer) => {
-              // Skip non-XRP amounts (issued currencies are objects)
-              if (typeof offer.amount !== 'string') {
-                return min;
-              }
-
+              if (typeof offer.amount !== 'string') return min;
               const amount = BigInt(offer.amount);
               const isValidAmount = amount > BigInt(0);
               const isValidOwner = offer.owner === nft.account;
-
               if (isValidAmount && isValidOwner && (!min.amount || amount < BigInt(min.amount))) {
                 return { amount, offer };
               }
@@ -603,17 +248,12 @@ export default function NFTActions({ nft }) {
         }
 
         if (lowestOffer && lowestOffer.offer) {
-          const baseAmount = parseFloat(
-            parseFloat(dropsToXrp(lowestOffer.amount.toString())).toFixed(6)
-          );
+          const baseAmount = parseFloat(parseFloat(dropsToXrp(lowestOffer.amount.toString())).toFixed(6));
           const brokerAddress = lowestOffer.offer.destination;
           const hasBroker = brokerAddress && BROKER_ADDRESSES[brokerAddress];
           const brokerInfo = hasBroker ? BROKER_ADDRESSES[brokerAddress] : null;
           const brokerFeePercentage = brokerInfo ? brokerInfo.fee : 0;
-
-          const brokerFee = hasBroker
-            ? parseFloat((baseAmount * brokerFeePercentage).toFixed(6))
-            : 0;
+          const brokerFee = hasBroker ? parseFloat((baseAmount * brokerFeePercentage).toFixed(6)) : 0;
           const totalAmount = parseFloat((baseAmount + brokerFee).toFixed(6));
 
           setLowestSellOffer({
@@ -632,28 +272,20 @@ export default function NFTActions({ nft }) {
           setLowestSellOffer(null);
         }
       } catch (error) {
-        // Check for the "notFound" error which is normal when NFT has no sell offers
         const isNotFoundError =
           (error.name === 'RippledError' && error.data?.error === 'notFound') ||
           (error.message && error.message.includes('notFound')) ||
           error.toString().includes('notFound');
-
-        if (isNotFoundError) {
-          // This is normal - NFT has no sell offers
-          setLowestSellOffer(null);
-        } else {
+        if (!isNotFoundError) {
           console.error('Error with XRPL connection or fetching NFT sell offers:', error);
         }
+        setLowestSellOffer(null);
       } finally {
         if (client && client.isConnected()) {
-          try {
-            await client.disconnect();
-          } catch (disconnectError) {
-          }
+          try { await client.disconnect(); } catch (e) {}
         }
       }
     }
-
     getLowestSellOffer();
   }, [NFTokenID, nft.account]);
 
@@ -669,13 +301,11 @@ export default function NFTActions({ nft }) {
     const isSell = offer.flags === 1;
 
     if (isAcceptOrCancel) {
-      // Accept mode
       if (accountLogin === owner) {
         openSnackbar('You are the owner of this offer, you can not accept it.', 'error');
         return;
       }
     } else {
-      // Cancel mode
       if (accountLogin !== owner) {
         openSnackbar('You are not the owner of this offer', 'error');
         return;
@@ -684,9 +314,7 @@ export default function NFTActions({ nft }) {
 
     setPageLoading(true);
     try {
-
       const user_token = accountProfile.user_token;
-
       const body = {
         account: accountLogin,
         NFTokenID,
@@ -702,12 +330,9 @@ export default function NFTActions({ nft }) {
       });
 
       if (res.status === 200) {
-        const nextlink = res.data.data.next;
-
         let newQrType = isAcceptOrCancel ? 'NFTokenAcceptOffer' : 'NFTokenCancelOffer';
         if (isSell) newQrType += ' [Sell Offer]';
         else newQrType += ' [Buy Offer]';
-
         setQrType(newQrType);
       }
     } catch (err) {
@@ -716,638 +341,432 @@ export default function NFTActions({ nft }) {
     setPageLoading(false);
   };
 
-  const handleScanQRClose = () => {
-  };
-
   const getValidOffers = (offers, isSell) => {
     const newOffers = [];
     for (const offer of offers) {
       if (isSell) {
-        // Sell Offers
         if (isOwner) {
-          // I am the Owner of NFT
-          if (accountLogin === offer.owner) {
-            newOffers.push(offer);
-          }
+          if (accountLogin === offer.owner) newOffers.push(offer);
         } else {
-          // I am not the Owner of NFT
-          // Remove the owner check to display all valid sell offers
-          if (nft.account === offer.owner) {
-            newOffers.push(offer);
-          }
+          if (nft.account === offer.owner) newOffers.push(offer);
         }
       } else {
-        // Buy Offers
-        if (nft.account === offer.owner) continue; // orphaned
-
-        // Buy Offers - keep existing logic
+        if (nft.account === offer.owner) continue;
         newOffers.push(offer);
       }
     }
-
     return newOffers;
   };
 
-  const handleCreateSellOffer = () => {
-    setIsSellOffer(true);
-    setOpenCreateOffer(true);
-  };
-
-  const handleTransfer = () => {
-    setOpenTransfer(true);
-  };
-
-  const handleCreateBuyOffer = () => {
-    setIsSellOffer(false);
-    setOpenCreateOffer(true);
-  };
-
-  const onHandleBurn = () => {
-    setBurnt(true);
-  };
-
-  const handleCancelOffer = async (offer) => {
-    // Sell Offer
-    /*
-        {
-            "amount": {
-                "currency": "534F4C4F00000000000000000000000000000000",
-                "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-                "value": "10"
-            },
-            "flags": 1,
-            "nft_offer_index": "2212BFA0AAF995E9F9E9B6553DC97A1C37FB97334BBE8C5856CF7C7B1016D20E",
-            "owner": "rHAfrQNDBohGbWuWTWzpJe1LQWyYVnbG2n"
-        },
-        {
-            "amount": "10000000",
-            "flags": 1,
-            "nft_offer_index": "DF13A4FE5F44FF804015ED5C827F753BB7A1379651D88473CB50454EB0B89F17",
-            "owner": "rHAfrQNDBohGbWuWTWzpJe1LQWyYVnbG2n"
-        }
-        */
-
-    doProcessOffer(offer, false);
-  };
-
-  const handleAcceptOffer = async (offer) => {
-    setAcceptOffer(offer);
-    setOpenConfirm(true);
-  };
-
-  const onContinueAccept = async () => {
-    doProcessOffer(acceptOffer, true);
-  };
+  const handleCreateSellOffer = () => { setIsSellOffer(true); setOpenCreateOffer(true); };
+  const handleTransfer = () => { setOpenTransfer(true); };
+  const handleCreateBuyOffer = () => { setIsSellOffer(false); setOpenCreateOffer(true); };
+  const onHandleBurn = () => { setBurnt(true); };
+  const handleCancelOffer = async (offer) => { doProcessOffer(offer, false); };
+  const handleAcceptOffer = async (offer) => { setAcceptOffer(offer); setOpenConfirm(true); };
+  const onContinueAccept = async () => { doProcessOffer(acceptOffer, true); };
 
   const handleBuyNow = async () => {
     if (!lowestSellOffer) {
       openSnackbar('No valid sell offer available', 'error');
       return;
     }
-
     if (lowestSellOffer.hasBroker) {
-      // Handle broker-mediated offers through XRP Cafe
       setOpenCreateOfferXRPCafe(true);
     } else {
-      // Handle direct offers through normal accept offer flow
       handleAcceptOffer(lowestSellOffer.offer);
     }
   };
 
-  const handleOpenShare = () => {
-    setAnchorEl(anchorRef.current);
-    setOpenShare(true);
-  };
-
-  const handleCloseShare = () => {
-    setAnchorEl(null);
-    setOpenShare(false);
-  };
-
-  const handleCloseCreateOffer = () => {
-    setOpenCreateOffer(false);
-    setIsSellOffer(false);
-  };
-
-  const handleCloseTransfer = () => {
-    setOpenTransfer(false);
-  };
-
-  const handleShareClick = (event) => {
-    setAnchorEl(event.currentTarget);
-    setOpenShare(true);
-  };
-
-  const handleShareClose = () => {
-    setAnchorEl(null);
-    setOpenShare(false);
-  };
-
-  const parsedFloorPrice = cfloor?.amount ? parseFloat(cfloor.amount) : 0;
+  const handleCloseCreateOffer = () => { setOpenCreateOffer(false); setIsSellOffer(false); };
+  const handleCloseTransfer = () => { setOpenTransfer(false); };
 
   return (
     <>
-      <GlassPanel elevation={0} sx={{ mt: 0 }}>
-        <Stack spacing={1.5}>
+      {/* Main Glass Panel */}
+      <div className={cn(
+        'rounded-2xl p-4 border backdrop-blur-lg',
+        isDark
+          ? 'bg-white/5 border-primary/20'
+          : 'bg-white/70 border-primary/15 shadow-lg shadow-primary/5'
+      )}>
+        <div className="space-y-4">
+          {/* Collection Header */}
           {self && (
-            <CollectionHeader>
-              <CollectionInfo>
+            <div className="flex justify-between items-start">
+              <div className="space-y-1">
                 {cslug ? (
-                  <Link href={`/collection/${cslug}`} underline="none">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'text.secondary'
-                        }}
-                      >
-                        {collectionName}
-                      </Typography>
-                      {cverified === 'yes' && (
-                        <Tooltip title="Verified">
-                          <VerificationBadge>
-                            <CheckIcon />
-                          </VerificationBadge>
-                        </Tooltip>
-                      )}
-                    </Stack>
+                  <Link href={`/collection/${cslug}`} className="inline-flex items-center gap-2 group">
+                    <span className={cn('text-sm', isDark ? 'text-gray-400' : 'text-gray-500')}>
+                      {collectionName}
+                    </span>
+                    {cverified === 'yes' && (
+                      <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                        <Check size={10} className="text-white" />
+                      </span>
+                    )}
                   </Link>
                 ) : (
-                  <Stack direction="row" spacing={1} alignItems="center">
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: 'text.secondary'
-                      }}
-                    >
+                  <div className="flex items-center gap-2">
+                    <span className={cn('text-sm', isDark ? 'text-gray-400' : 'text-gray-500')}>
                       {collectionName}
-                    </Typography>
+                    </span>
                     {cverified === 'yes' && (
-                      <Tooltip title="Verified">
-                        <VerificationBadge>
-                          <CheckIcon />
-                        </VerificationBadge>
-                      </Tooltip>
+                      <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                        <Check size={10} className="text-white" />
+                      </span>
                     )}
-                  </Stack>
+                  </div>
                 )}
 
-                <NFTTitle variant="h5">{nftName}</NFTTitle>
+                <h2 className={cn('text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                  {nftName}
+                </h2>
 
-                <FloorPriceCard elevation={0}>
-                  <Stack direction="row" spacing={2} alignItems="center">
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          color: 'primary.main',
-                          fontWeight: 400,
-                          letterSpacing: '0.02em'
+                {/* Floor Price */}
+                <div className={cn(
+                  'inline-flex items-center gap-3 px-3 py-1.5 rounded-xl border',
+                  isDark ? 'bg-primary/5 border-primary/15' : 'bg-primary/5 border-primary/10'
+                )}>
+                  <div className="flex items-center gap-1">
+                    <span className="text-sm text-primary font-normal">Global Floor</span>
+                    <Info size={14} className="text-primary/70 cursor-help" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Info size={16} className="text-primary" />
+                    <span className="text-lg text-primary font-normal">
+                      {floorPrice > 0 ? fNumber(floorPrice) : '- - -'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Share Button */}
+              <div className="relative" ref={shareDropdownRef}>
+                <button
+                  onClick={() => setOpenShare(!openShare)}
+                  className={cn(
+                    'p-3 rounded-xl border transition-colors',
+                    isDark
+                      ? 'bg-primary/10 border-white/20 text-primary hover:border-primary/30'
+                      : 'bg-primary/10 border-gray-200 text-primary hover:border-primary/30'
+                  )}
+                >
+                  <Share2 size={20} />
+                </button>
+
+                {openShare && (
+                  <div className={cn(
+                    'absolute top-full right-0 mt-2 p-2 w-52 rounded-xl border z-50',
+                    isDark ? 'bg-black/90 border-white/20 backdrop-blur-lg' : 'bg-white border-gray-200 shadow-lg'
+                  )}>
+                    <div className="space-y-2">
+                      <TwitterShareButton url={shareUrl} title={shareTitle} via="xrpnft" hashtags={['XRPL', 'NFT', 'XRP']}>
+                        <button className={cn(
+                          'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-normal border transition-colors',
+                          isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                        )}>
+                          <X size={18} className="p-0.5 rounded-full bg-black text-white" />
+                          Share on X
+                        </button>
+                      </TwitterShareButton>
+
+                      <FacebookShareButton url={shareUrl} quote={shareTitle}>
+                        <button className={cn(
+                          'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-normal border transition-colors',
+                          isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                        )}>
+                          <FacebookIcon size={24} round />
+                          Share on Facebook
+                        </button>
+                      </FacebookShareButton>
+
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(shareUrl);
+                          openSnackbar('Link copied to clipboard!', 'success');
+                          setOpenShare(false);
                         }}
+                        className={cn(
+                          'w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-normal border transition-colors',
+                          isDark ? 'border-white/15 hover:bg-white/5' : 'border-gray-200 hover:bg-gray-50'
+                        )}
                       >
-                        Global Floor
-                      </Typography>
-                      <Tooltip title="Collection-wide floor price">
-                        <InfoIcon
-                          sx={{
-                            width: 16,
-                            height: 16,
-                            color: theme.palette.primary.main,
-                            opacity: 0.7,
-                            cursor: 'help'
-                          }}
-                        />
-                      </Tooltip>
-                    </Stack>
-                    <FloorPriceValue>
-                      <InfoIcon className="icon" />
-                      <Typography className="amount">
-                        {floorPrice > 0 ? fNumber(floorPrice) : '- - -'}
-                      </Typography>
-                    </FloorPriceValue>
-                  </Stack>
-                </FloorPriceCard>
-              </CollectionInfo>
-
-              <IconButton
-                size="large"
-                sx={{
-                  backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.1),
-                  border: (theme) => `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                  borderRadius: '12px',
-                  color: 'primary.main'
-                }}
-                onClick={handleShareClick}
-                ref={anchorRef}
-              >
-                <ShareIcon />
-              </IconButton>
-            </CollectionHeader>
+                        <Copy size={18} />
+                        Copy Link
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
-
-
-          {/* Action buttons */}
-          <Stack spacing={1.2}>
+          {/* Action Buttons */}
+          <div className="space-y-3">
             {burnt ? (
-              <Typography variant="h6" color="error">
-                This NFT is burnt.
-              </Typography>
+              <p className="text-lg text-red-500 font-medium">This NFT is burnt.</p>
             ) : isOwner ? (
-              <Stack direction="row" spacing={1.5}>
-                <Button
-                  fullWidth
-                  variant="outlined"
+              <div className="flex gap-3">
+                <button
                   onClick={handleCreateSellOffer}
                   disabled={!accountLogin || burnt}
-                  sx={{
-                    py: 1.5,
-                    fontSize: '0.95rem',
-                    fontWeight: 400,
-                    textTransform: 'none',
-                    borderRadius: '12px',
-                    borderWidth: '1.5px',
-                    borderColor: '#4285f4',
-                    color: '#4285f4',
-                    backgroundColor: 'transparent'
-                  }}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-colors',
+                    'border-primary text-primary hover:bg-primary/5',
+                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed'
+                  )}
                 >
                   Sell
-                </Button>
-                <Button
-                  fullWidth
-                  variant="outlined"
+                </button>
+                <button
                   onClick={handleTransfer}
                   disabled={!accountLogin || burnt}
-                  sx={{
-                    py: 1.5,
-                    fontSize: '0.95rem',
-                    fontWeight: 400,
-                    textTransform: 'none',
-                    borderRadius: '12px',
-                    borderWidth: '1.5px',
-                    borderColor: alpha(theme.palette.divider, 0.2),
-                    color: theme.palette.text.primary,
-                    backgroundColor: 'transparent'
-                  }}
+                  className={cn(
+                    'flex-1 py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-colors',
+                    isDark ? 'border-white/20 text-white hover:border-white/30' : 'border-gray-200 text-gray-900 hover:border-gray-300',
+                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed'
+                  )}
                 >
                   Transfer
-                </Button>
+                </button>
                 <BurnNFT nft={nft} onHandleBurn={onHandleBurn} />
-              </Stack>
+              </div>
             ) : (
-              <Stack spacing={1.2}>
+              <div className="space-y-3">
                 {loading ? (
-                  <PulseLoader color={theme.palette.primary.main} size={10} />
+                  <div className="flex justify-center py-3">
+                    <PulseLoader color="#4285f4" size={10} />
+                  </div>
                 ) : lowestSellOffer ? (
-                  <Box sx={{ p: 1.2, backgroundColor: 'transparent', borderRadius: '12px', border: `1px solid ${alpha(theme.palette.divider, 0.12)}` }}>
-                    <Stack spacing={0.5}>
-                      <Stack direction="row" justifyContent="space-between" alignItems="center">
-                        <Typography variant="caption" sx={{ fontSize: '0.8rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Price</Typography>
-                        <Typography variant="h6" sx={{ fontSize: '1rem', fontWeight: 400, color: theme.palette.text.primary, fontFamily: 'monospace' }}>
+                  <div className={cn(
+                    'p-3 rounded-xl border',
+                    isDark ? 'border-white/10' : 'border-gray-200'
+                  )}>
+                    <div className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className={cn('text-xs', isDark ? 'text-gray-500' : 'text-gray-400')}>Price</span>
+                        <span className={cn('text-base font-mono font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                           {formatXRPAmount(lowestSellOffer.totalAmount, false)} XRP
-                        </Typography>
-                      </Stack>
+                        </span>
+                      </div>
                       {lowestSellOffer.hasBroker && (
                         <>
                           {showPriceBreakdown && (
                             <>
-                              <Stack direction="row" justifyContent="space-between">
-                                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.6) }}>Base</Typography>
-                                <Typography variant="caption" sx={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>{lowestSellOffer.baseAmount} XRP</Typography>
-                              </Stack>
-                              <Stack direction="row" justifyContent="space-between">
-                                <Typography variant="caption" sx={{ fontSize: '0.75rem', color: alpha(theme.palette.text.secondary, 0.6) }}>{lowestSellOffer.brokerName} Fee</Typography>
-                                <Typography variant="caption" sx={{ fontSize: '0.8rem', fontFamily: 'monospace' }}>{lowestSellOffer.brokerFee} XRP</Typography>
-                              </Stack>
+                              <div className="flex justify-between">
+                                <span className={cn('text-[11px]', isDark ? 'text-gray-500' : 'text-gray-400')}>Base</span>
+                                <span className="text-xs font-mono">{lowestSellOffer.baseAmount} XRP</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className={cn('text-[11px]', isDark ? 'text-gray-500' : 'text-gray-400')}>{lowestSellOffer.brokerName} Fee</span>
+                                <span className="text-xs font-mono">{lowestSellOffer.brokerFee} XRP</span>
+                              </div>
                             </>
                           )}
-                          <Typography
-                            variant="caption"
+                          <button
                             onClick={() => setShowPriceBreakdown(!showPriceBreakdown)}
-                            sx={{
-                              fontSize: '0.65rem',
-                              color: alpha(theme.palette.text.secondary, 0.5),
-                              cursor: 'pointer',
-                              textAlign: 'right',
-                              mt: 0.3
-                            }}
+                            className={cn('block w-full text-right text-[10px] mt-1', isDark ? 'text-gray-600' : 'text-gray-400')}
                           >
                             {showPriceBreakdown ? '−' : '+'} breakdown
-                          </Typography>
+                          </button>
                         </>
                       )}
-                    </Stack>
-                  </Box>
+                    </div>
+                  </div>
                 ) : (
-                  <Typography variant="caption" sx={{ color: 'text.disabled', textAlign: 'center', py: 1 }}>Not listed</Typography>
+                  <p className={cn('text-center py-2 text-sm', isDark ? 'text-gray-600' : 'text-gray-400')}>Not listed</p>
                 )}
+
                 {accountLogin ? (
                   <>
                     {lowestSellOffer && !burnt && (
-                      <Button
-                        fullWidth
-                        variant="outlined"
+                      <button
                         onClick={handleBuyNow}
-                        sx={{
-                          py: 1.5,
-                          fontSize: '0.95rem',
-                          fontWeight: 400,
-                          textTransform: 'none',
-                          borderRadius: '12px',
-                          borderWidth: '1.5px',
-                          borderColor: '#4285f4',
-                          color: '#4285f4',
-                          backgroundColor: 'transparent'
-                        }}
+                        className="w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] border-primary text-primary hover:bg-primary/5 transition-colors"
                       >
                         Buy Now
-                      </Button>
+                      </button>
                     )}
-                    <Button
-                      fullWidth
+                    <button
                       disabled={burnt}
-                      variant="outlined"
                       onClick={handleCreateBuyOffer}
-                      sx={{
-                        py: 1.5,
-                        fontSize: '0.95rem',
-                        fontWeight: 400,
-                        textTransform: 'none',
-                        borderRadius: '12px',
-                        borderWidth: '1.5px',
-                        borderColor: alpha(theme.palette.divider, 0.2),
-                        color: theme.palette.text.primary,
-                        backgroundColor: 'transparent'
-                      }}
+                      className={cn(
+                        'w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-colors',
+                        isDark ? 'border-white/20 text-white hover:border-white/30' : 'border-gray-200 text-gray-900 hover:border-gray-300',
+                        burnt && 'opacity-50 cursor-not-allowed'
+                      )}
                     >
                       Make Offer
-                    </Button>
+                    </button>
                   </>
                 ) : (
                   <Wallet />
                 )}
-              </Stack>
+              </div>
             )}
-          </Stack>
+          </div>
 
-
-          {/* Offers and History sections */}
-          <Stack spacing={1.5}>
+          {/* Offers and History */}
+          <div className="space-y-4">
+            {/* Sell Offers (only for owner) */}
             {isOwner && (
-              <Box>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.2, px: 1 }}>
-                  <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
-                    Sell Offers
-                  </Typography>
+              <div>
+                <div className="flex items-center gap-2 mb-3 px-2">
+                  <h3 className={cn('text-sm font-normal', isDark ? 'text-white' : 'text-gray-900')}>Sell Offers</h3>
                   {sellOffers.length > 0 && (
-                    <OffersBadge>
+                    <span className={cn(
+                      'px-1.5 py-0.5 rounded text-[11px] font-normal border',
+                      isDark ? 'border-white/20 text-gray-500' : 'border-gray-200 text-gray-400'
+                    )}>
                       {sellOffers.length}
-                    </OffersBadge>
+                    </span>
                   )}
-                </Stack>
-                  {loading ? (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        py: 3
-                      }}
-                    >
-                      <PulseLoader color={theme.palette.primary.main} size={10} />
-                    </Box>
-                  ) : sellOffers.length > 0 ? (
-                    <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.12)}`, borderRadius: '8px', overflow: 'hidden' }}>
-                      {sellOffers.map((offer, index) => {
-                        const amount = normalizeAmount(offer.amount);
-                        const isLast = index === sellOffers.length - 1;
-
-                        return (
-                          <Box
-                            key={index}
-                            sx={{
-                              p: 1,
-                              borderBottom: isLast ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                            }}
-                          >
-                            <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
-                              <Stack spacing={0.2} sx={{ flex: 1, minWidth: 0 }}>
-                                <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 400, fontFamily: 'monospace', color: theme.palette.text.primary }}>
-                                  {formatXRPAmount(amount.amount, false, 'sell_offer')} XRP
-                                </Typography>
-                                {offer.destination && (
-                                  <Typography sx={{ color: alpha(theme.palette.text.secondary, 0.5), fontSize: '0.7rem' }}>
-                                    {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 10)}
-                                  </Typography>
-                                )}
-                              </Stack>
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => handleCancelOffer(offer)}
-                                sx={{
-                                  py: 0.4,
-                                  px: 1,
-                                  fontSize: '0.7rem',
-                                  fontWeight: 400,
-                                  textTransform: 'none',
-                                  borderRadius: '6px',
-                                  borderWidth: '1px',
-                                  borderColor: alpha(theme.palette.error.main, 0.5),
-                                  color: theme.palette.error.main,
-                                  minWidth: 'auto',
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
-                                Cancel
-                              </Button>
-                            </Stack>
-                          </Box>
-                        );
-                      })}
-                    </Box>
-                  ) : (
-                    <Box
-                      sx={{
-                        py: 4,
-                        textAlign: 'center',
-                        background: (theme) =>
-                          `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
-                        borderRadius: 2,
-                        border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
-                      }}
-                    >
-                      <Typography color="text.secondary">No sell offers available</Typography>
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<LocalOfferIcon />}
-                        onClick={handleCreateSellOffer}
-                        sx={{ mt: 2 }}
-                      >
-                        Create Sell Offer
-                      </Button>
-                    </Box>
-                  )}
-              </Box>
-            )}
-
-            <Box>
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 1.2, px: 1 }}>
-                <Typography variant="h6" sx={{ fontSize: '0.9rem', fontWeight: 400, color: theme.palette.text.primary }}>
-                  Buy Offers
-                </Typography>
-                {buyOffers.length > 0 && (
-                  <OfferCountBadge>
-                    {buyOffers.length}
-                  </OfferCountBadge>
-                )}
-              </Stack>
+                </div>
                 {loading ? (
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'center',
-                      py: 3
-                    }}
-                  >
-                    <PulseLoader color={theme.palette.primary.main} size={10} />
-                  </Box>
-                ) : buyOffers.length > 0 ? (
-                  <Box sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.12)}`, borderRadius: '8px', overflow: 'hidden' }}>
-                    {buyOffers.map((offer, index) => {
+                  <div className="flex justify-center py-6">
+                    <PulseLoader color="#4285f4" size={10} />
+                  </div>
+                ) : sellOffers.length > 0 ? (
+                  <div className={cn('rounded-lg border overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                    {sellOffers.map((offer, index) => {
                       const amount = normalizeAmount(offer.amount);
-                      const isLast = index === buyOffers.length - 1;
-
+                      const isLast = index === sellOffers.length - 1;
                       return (
-                        <Box
-                          key={index}
-                          sx={{
-                            p: 1,
-                            borderBottom: isLast ? 'none' : `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                          }}
-                        >
-                          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={1.5}>
-                            <Stack spacing={0.2} sx={{ flex: 1, minWidth: 0 }}>
-                              <Typography variant="body2" sx={{ fontSize: '0.85rem', fontWeight: 400, fontFamily: 'monospace', color: theme.palette.text.primary }}>
-                                {formatXRPAmount(amount.amount, false, offer.destination)} XRP
-                              </Typography>
-                              <Stack direction="row" spacing={0.8} alignItems="center">
-                                <Link
-                                  href={`/profile/${offer.owner}`}
-                                  underline="none"
-                                  sx={{
-                                    color: alpha(theme.palette.text.secondary, 0.6),
-                                    fontFamily: 'monospace',
-                                    fontSize: '0.7rem'
-                                  }}
-                                >
-                                  {truncate(offer.owner, 10)}
-                                </Link>
-                                {offer.destination && (
-                                  <>
-                                    <Typography sx={{ color: alpha(theme.palette.text.secondary, 0.3), fontSize: '0.7rem' }}>•</Typography>
-                                    <Typography sx={{ color: alpha(theme.palette.text.secondary, 0.5), fontSize: '0.7rem' }}>
-                                      {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 10)}
-                                    </Typography>
-                                  </>
-                                )}
-                              </Stack>
-                            </Stack>
-                            {isOwner ? (
-                              <Button
-                                variant="outlined"
-                                size="small"
-                                onClick={() => handleAcceptOffer(offer)}
-                                sx={{
-                                  py: 0.4,
-                                  px: 1,
-                                  fontSize: '0.7rem',
-                                  fontWeight: 400,
-                                  textTransform: 'none',
-                                  borderRadius: '6px',
-                                  borderWidth: '1px',
-                                  borderColor: '#4285f4',
-                                  color: '#4285f4',
-                                  minWidth: 'auto',
-                                  whiteSpace: 'nowrap'
-                                }}
-                              >
-                                Accept
-                              </Button>
-                            ) : (
-                              accountLogin === offer.owner && (
-                                <Button
-                                  variant="outlined"
-                                  size="small"
-                                  onClick={() => handleCancelOffer(offer)}
-                                  sx={{
-                                    py: 0.4,
-                                    px: 1,
-                                    fontSize: '0.7rem',
-                                    fontWeight: 400,
-                                    textTransform: 'none',
-                                    borderRadius: '6px',
-                                    borderWidth: '1px',
-                                    borderColor: alpha(theme.palette.error.main, 0.5),
-                                    color: theme.palette.error.main,
-                                    minWidth: 'auto',
-                                    whiteSpace: 'nowrap'
-                                  }}
-                                >
-                                  Cancel
-                                </Button>
-                              )
-                            )}
-                          </Stack>
-                        </Box>
+                        <div key={index} className={cn('p-2.5', !isLast && (isDark ? 'border-b border-white/5' : 'border-b border-gray-100'))}>
+                          <div className="flex justify-between items-center gap-3">
+                            <div className="flex-1 min-w-0">
+                              <span className={cn('text-sm font-mono font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                                {formatXRPAmount(amount.amount, false)} XRP
+                              </span>
+                              {offer.destination && (
+                                <span className={cn('block text-[11px]', isDark ? 'text-gray-600' : 'text-gray-400')}>
+                                  {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 10)}
+                                </span>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleCancelOffer(offer)}
+                              className="px-2 py-1 rounded-md text-[11px] font-normal border border-red-500/50 text-red-500 hover:bg-red-500/10 transition-colors"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
                       );
                     })}
-                  </Box>
+                  </div>
                 ) : (
-                  <Box
-                    sx={{
-                      py: 4,
-                      textAlign: 'center',
-                      background: (theme) =>
-                        `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.4)} 0%, ${alpha(theme.palette.background.default, 0.3)} 100%)`,
-                      borderRadius: 2,
-                      border: (theme) => `1px dashed ${alpha(theme.palette.divider, 0.3)}`
-                    }}
-                  >
-                    <Typography color="text.secondary">No buy offers available</Typography>
-                    {!isOwner && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<PanToolIcon />}
-                        onClick={handleCreateBuyOffer}
-                        sx={{ mt: 2 }}
-                      >
-                        Make Offer
-                      </Button>
-                    )}
-                  </Box>
+                  <div className={cn(
+                    'py-8 text-center rounded-xl border border-dashed',
+                    isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50/50'
+                  )}>
+                    <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>No sell offers available</p>
+                    <button
+                      onClick={handleCreateSellOffer}
+                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal border border-primary/30 text-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <Tag size={14} />
+                      Create Sell Offer
+                    </button>
+                  </div>
                 )}
-            </Box>
+              </div>
+            )}
 
-            <Box>
-              <Typography
-                variant="h6"
-                sx={{
-                  fontSize: '0.9rem',
-                  fontWeight: 400,
-                  color: theme.palette.text.primary,
-                  mb: 1.2,
-                  px: 1
-                }}
-              >
-                History
-              </Typography>
+            {/* Buy Offers */}
+            <div>
+              <div className="flex items-center gap-2 mb-3 px-2">
+                <h3 className={cn('text-sm font-normal', isDark ? 'text-white' : 'text-gray-900')}>Buy Offers</h3>
+                {buyOffers.length > 0 && (
+                  <span className={cn(
+                    'px-1.5 py-0.5 rounded text-[11px] font-normal border',
+                    isDark ? 'border-white/20 text-gray-500' : 'border-gray-200 text-gray-400'
+                  )}>
+                    {buyOffers.length}
+                  </span>
+                )}
+              </div>
+              {loading ? (
+                <div className="flex justify-center py-6">
+                  <PulseLoader color="#4285f4" size={10} />
+                </div>
+              ) : buyOffers.length > 0 ? (
+                <div className={cn('rounded-lg border overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  {buyOffers.map((offer, index) => {
+                    const amount = normalizeAmount(offer.amount);
+                    const isLast = index === buyOffers.length - 1;
+                    return (
+                      <div key={index} className={cn('p-2.5', !isLast && (isDark ? 'border-b border-white/5' : 'border-b border-gray-100'))}>
+                        <div className="flex justify-between items-center gap-3">
+                          <div className="flex-1 min-w-0">
+                            <span className={cn('text-sm font-mono font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                              {formatXRPAmount(amount.amount, false)} XRP
+                            </span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Link href={`/profile/${offer.owner}`} className={cn('text-[11px] font-mono', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                                {truncate(offer.owner, 10)}
+                              </Link>
+                              {offer.destination && (
+                                <>
+                                  <span className={cn('text-[11px]', isDark ? 'text-gray-700' : 'text-gray-300')}>•</span>
+                                  <span className={cn('text-[11px]', isDark ? 'text-gray-600' : 'text-gray-400')}>
+                                    {BROKER_ADDRESSES[offer.destination]?.name || truncate(offer.destination, 10)}
+                                  </span>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                          {isOwner ? (
+                            <button
+                              onClick={() => handleAcceptOffer(offer)}
+                              className="px-2 py-1 rounded-md text-[11px] font-normal border border-primary text-primary hover:bg-primary/5 transition-colors"
+                            >
+                              Accept
+                            </button>
+                          ) : (
+                            accountLogin === offer.owner && (
+                              <button
+                                onClick={() => handleCancelOffer(offer)}
+                                className="px-2 py-1 rounded-md text-[11px] font-normal border border-red-500/50 text-red-500 hover:bg-red-500/10 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className={cn(
+                  'py-8 text-center rounded-xl border border-dashed',
+                  isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50/50'
+                )}>
+                  <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>No buy offers available</p>
+                  {!isOwner && (
+                    <button
+                      onClick={handleCreateBuyOffer}
+                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal border border-primary/30 text-primary hover:bg-primary/5 transition-colors"
+                    >
+                      <Hand size={14} />
+                      Make Offer
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* History */}
+            <div>
+              <h3 className={cn('text-sm font-normal mb-3 px-2', isDark ? 'text-white' : 'text-gray-900')}>History</h3>
               <HistoryList nft={nft} />
-            </Box>
-          </Stack>
-        </Stack>
+            </div>
+          </div>
+        </div>
+
+        {/* Dialogs */}
         <CreateOfferDialog
           open={openCreateOffer}
           setOpen={setOpenCreateOffer}
@@ -1377,87 +796,7 @@ export default function NFTActions({ nft }) {
           offer={acceptOffer}
           onContinue={onContinueAccept}
         />
-      </GlassPanel>
-
-      <Popover
-        open={openShare}
-        anchorEl={anchorEl}
-        onClose={handleShareClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: 200,
-            '& .MuiMenuItem-root': {
-              px: 1,
-              typography: 'body2',
-              borderRadius: 0.75
-            }
-          }
-        }}
-      >
-        <Stack spacing={2} sx={{ p: 1 }}>
-          <TwitterShareButton
-            url={shareUrl}
-            title={shareTitle}
-            via="xrpnft"
-            hashtags={['XRPL', 'NFT', 'XRP']}
-          >
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={
-                <CloseIcon
-                  sx={{
-                    width: 24,
-                    height: 24,
-                    borderRadius: '50%',
-                    padding: 0.5,
-                    backgroundColor: 'black',
-                    color: 'white'
-                  }}
-                />
-              }
-              sx={{ justifyContent: 'flex-start' }}
-            >
-              Share on X
-            </Button>
-          </TwitterShareButton>
-
-          <FacebookShareButton url={shareUrl} quote={shareTitle}>
-            <Button
-              fullWidth
-              variant="outlined"
-              startIcon={<FacebookIcon size={32} round />}
-              sx={{ justifyContent: 'flex-start' }}
-            >
-              Share on Facebook
-            </Button>
-          </FacebookShareButton>
-
-          <Button
-            fullWidth
-            variant="outlined"
-            startIcon={<ContentCopyIcon />}
-            onClick={() => {
-              navigator.clipboard.writeText(shareUrl);
-              openSnackbar('Link copied to clipboard!', 'success');
-              handleShareClose();
-            }}
-            sx={{ justifyContent: 'flex-start' }}
-          >
-            Copy Link
-          </Button>
-        </Stack>
-      </Popover>
+      </div>
     </>
   );
 }
-

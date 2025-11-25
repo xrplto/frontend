@@ -1,9 +1,10 @@
-import React, { useState, useCallback, useMemo, memo, useRef, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, memo, useRef, useEffect, Fragment } from 'react';
 import { useRouter } from 'next/router';
 import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Link from 'next/link';
+import { Flame, Gem, TrendingUp, Sparkles, Eye } from 'lucide-react';
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -47,9 +48,9 @@ const Row = styled.div`
   align-items: center;
   justify-content: ${(props) => (props.spaceBetween ? 'space-between' : 'flex-start')};
   gap: 10px;
-  flex-wrap: wrap;
+  flex-wrap: ${(props) => (props.noWrap ? 'nowrap' : 'wrap')};
   flex-direction: row;
-  overflow-x: hidden;
+  overflow-x: ${(props) => (props.noWrap ? 'auto' : 'hidden')};
   overflow-y: visible;
   width: 100%;
 
@@ -424,13 +425,14 @@ const DrawerPaper = styled.div`
   bottom: 0;
   left: 0;
   right: 0;
-  max-height: 80vh;
+  max-height: 70vh;
   background: ${props => props.isDark ? '#000' : '#fff'};
   border-top-left-radius: 20px;
   border-top-right-radius: 20px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  z-index: 1301;
 `;
 
 const DrawerHeader = styled.div`
@@ -519,7 +521,7 @@ const TagsGrid = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  max-height: 60vh;
+  flex: 1;
   overflow-y: auto;
 
   &::-webkit-scrollbar {
@@ -832,10 +834,11 @@ const SearchToolbar = memo(function SearchToolbar({
   }, [currentOrderBy, router.pathname]);
 
   return (
-    <Container darkMode={darkMode} ref={containerRef}>
+    <Fragment>
+      <Container darkMode={darkMode} ref={containerRef}>
       {/* Top Categories - first row */}
       {tags && tags.length > 0 && (
-        <Row style={{ paddingBottom: '2px' }}>
+        <Row noWrap style={{ paddingBottom: '2px' }}>
           {/* Display categories dynamically based on available space */}
           {tags.slice(0, visibleTagCount).map((tag, index) => {
             const normalizedTag = tag
@@ -960,7 +963,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(255, 87, 34, 0.08)"
             hoverBorderColor="#ff5722"
           >
-            🔥 Hot
+            <Flame size={14} /> Hot
           </Chip>
 
           <Chip
@@ -971,7 +974,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(33, 150, 243, 0.08)"
             hoverBorderColor="#2196f3"
           >
-            💎 Gems
+            <Gem size={14} /> Gems
           </Chip>
 
           <Chip
@@ -982,7 +985,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(76, 175, 80, 0.08)"
             hoverBorderColor="#4caf50"
           >
-            📈 Gainers
+            <TrendingUp size={14} /> Gainers
           </Chip>
 
           <Chip
@@ -993,7 +996,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(255, 152, 0, 0.08)"
             hoverBorderColor="#ff9800"
           >
-            ✨ New
+            <Sparkles size={14} /> New
           </Chip>
 
           <Chip
@@ -1004,7 +1007,7 @@ const SearchToolbar = memo(function SearchToolbar({
             hoverBackground="rgba(156, 39, 176, 0.08)"
             hoverBorderColor="#9c27b0"
           >
-            👁 Popular
+            <Eye size={14} /> Popular
           </Chip>
         </RowContent>
 
@@ -1132,7 +1135,10 @@ const SearchToolbar = memo(function SearchToolbar({
         </>
       )}
 
-      {/* Categories Drawer */}
+    </Container>
+
+    {/* Categories Drawer - rendered outside Container to avoid position:relative issues */}
+    {categoriesOpen && (
       <Drawer open={categoriesOpen}>
         <DrawerBackdrop onClick={() => setCategoriesOpen(false)} />
         <DrawerPaper isDark={darkMode}>
@@ -1147,7 +1153,8 @@ const SearchToolbar = memo(function SearchToolbar({
           <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
         </DrawerPaper>
       </Drawer>
-    </Container>
+    )}
+    </Fragment>
   );
 });
 

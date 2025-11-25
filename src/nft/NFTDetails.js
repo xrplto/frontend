@@ -349,9 +349,8 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
 // Main NFTDetails Component
 const NFTDetails = memo(function NFTDetails({ nft }) {
-  const { openSnackbar } = useContext(AppContext);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { openSnackbar, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const handleCopy = (text, label) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -361,7 +360,6 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         openSnackbar('Failed to copy', 'error');
       });
     } else {
-      // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = text;
       textArea.style.position = 'fixed';
@@ -389,26 +387,12 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
     total,
     volume,
     rarity_rank,
-    files,
     royalty,
     MasterSequence
   } = nft;
 
-  const { flag, issuer } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
+  const { issuer } = useMemo(() => parseNFTokenID(NFTokenID), [NFTokenID]);
   const transferFee = royalty ? (royalty / 1000).toFixed(1) : 0;
-
-  const strDateTime = useMemo(() => {
-    if (!date) return '';
-    try {
-      const dt = new Date(date);
-      if (!isNaN(dt.getTime())) {
-        return dt.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
-      }
-    } catch (error) {
-      console.error('Error formatting date:', error);
-    }
-    return '';
-  }, [date]);
 
   const collectionName = useMemo(
     () => collection || meta?.collection?.name || 'No Collection',
@@ -417,165 +401,134 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
   const properties = useMemo(() => props || getProperties(meta), [props, meta]);
 
   return (
-    <Container>
+    <div className="flex flex-col w-full">
       {/* NFT Preview */}
-      <Box sx={{ mb: 1, width: '100%' }}>
+      <div className="mb-4 w-full">
         <NFTPreviewComponent nft={nft} showDetails={false} />
-      </Box>
+      </div>
 
       {/* Title and Collection */}
-      <Box sx={{ mb: 1, px: 1, py: 0.8 }}>
-        <Typography variant="h6" sx={{ fontSize: '15px', fontWeight: 400, mb: 0.3 }}>
+      <div className="mb-4">
+        <h2 className={cn("text-lg font-normal mb-1", isDark ? "text-white" : "text-gray-900")}>
           {nft.name || meta?.name || 'Untitled'}
-        </Typography>
-        <Stack direction="row" spacing={1} alignItems="center">
+        </h2>
+        <div className="flex items-center gap-2">
           {cslug && (
-            <Link href={`/collection/${cslug}`} underline="none" color="inherit">
-              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                {collectionName}
-              </Typography>
+            <Link href={`/collection/${cslug}`} className={cn("text-[13px] hover:text-primary", isDark ? "text-gray-400" : "text-gray-500")}>
+              {collectionName}
             </Link>
           )}
           {date && (
-            <Typography variant="caption" sx={{ fontSize: '13px', color: 'text.disabled' }}>
-              {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-            </Typography>
+            <>
+              <span className={cn("text-[13px]", isDark ? "text-gray-600" : "text-gray-300")}>•</span>
+              <span className={cn("text-[13px]", isDark ? "text-gray-500" : "text-gray-400")}>
+                {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+              </span>
+            </>
           )}
-        </Stack>
-      </Box>
+        </div>
+      </div>
 
       {/* Properties */}
       {properties && properties.length > 0 && (
-        <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-          <SectionTitle>Properties</SectionTitle>
-          <Grid container spacing={0.5}>
-            {properties.map((item, idx) => {
+        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+          <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-3", isDark ? "text-gray-500" : "text-gray-400")}>Properties</p>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+            {properties.map((item) => {
               const type = item.type || item.trait_type;
               const value = item.value;
               const count = item.count || 0;
               const rarity = total > 0 && count > 0 ? ((count * 100) / total).toFixed(2) : 0;
 
               return (
-                <Grid key={`${type}-${value}`} size={{ xs: 6, sm: 4, md: 3 }}>
-                  <Paper
-                    sx={{
-                      p: 0.5,
-                      textAlign: 'center',
-                      borderRadius: '4px',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      backgroundColor: alpha(theme.palette.background.paper, 0.3),
-                      height: '100%'
-                    }}
-                  >
-                    <Typography
-                      sx={{
-                        fontSize: '12px',
-                        color: 'text.secondary',
-                        textTransform: 'uppercase',
-                        fontWeight: 400
-                      }}
-                    >
-                      {type}
-                    </Typography>
-                    <Typography sx={{ fontSize: '11px', fontWeight: 400, my: 0.25 }}>
-                      {value}
-                    </Typography>
-                    {total > 0 && count > 0 && (
-                      <Typography sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                        {count} ({rarity}%)
-                      </Typography>
-                    )}
-                  </Paper>
-                </Grid>
+                <div key={`${type}-${value}`} className={cn("p-2.5 text-center rounded-lg border", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                  <p className={cn("text-[10px] uppercase tracking-wide mb-1", isDark ? "text-gray-500" : "text-gray-400")}>{type}</p>
+                  <p className={cn("text-[13px] font-normal", isDark ? "text-white" : "text-gray-900")}>{value}</p>
+                  {total > 0 && count > 0 && (
+                    <p className={cn("text-[11px] mt-1 text-primary")}>{rarity}%</p>
+                  )}
+                </div>
               );
             })}
-          </Grid>
-        </Paper>
+          </div>
+        </div>
       )}
 
       {/* Description */}
       {meta?.description && (
-        <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-          <SectionTitle>Description</SectionTitle>
-          <Value sx={{ lineHeight: 1.4, fontSize: '11px', maxHeight: 60, overflowY: 'auto' }}>
-            {meta.description}
-          </Value>
-        </Paper>
+        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+          <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-gray-500" : "text-gray-400")}>Description</p>
+          <p className={cn("text-[13px] leading-relaxed", isDark ? "text-gray-300" : "text-gray-600")}>{meta.description}</p>
+        </div>
       )}
 
       {/* Stats */}
       {(rarity_rank > 0 || MasterSequence > 0 || volume > 0) && (
-        <Paper sx={{ p: 1, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-          <Stack direction="row" spacing={3}>
+        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex flex-wrap gap-6">
             {rarity_rank > 0 && (
-              <Box>
-                <Label sx={{ mb: 0.3 }}>Rarity Rank</Label>
-                <Value sx={{ fontSize: '12px' }}>#{rarity_rank}</Value>
-              </Box>
+              <div>
+                <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Rarity Rank</p>
+                <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>#{rarity_rank}</p>
+              </div>
             )}
             {MasterSequence > 0 && (
-              <Box>
-                <Label sx={{ mb: 0.3 }}>On-Chain Rank</Label>
-                <Value sx={{ fontSize: '12px' }}>#{MasterSequence}</Value>
-              </Box>
+              <div>
+                <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>On-Chain Rank</p>
+                <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>#{MasterSequence}</p>
+              </div>
             )}
             {volume > 0 && (
-              <Box>
-                <Label sx={{ mb: 0.3 }}>Volume</Label>
-                <Value sx={{ fontSize: '12px' }}>✕{fVolume(volume)}</Value>
-              </Box>
+              <div>
+                <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Volume</p>
+                <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>✕{fVolume(volume)}</p>
+              </div>
             )}
-          </Stack>
-        </Paper>
+          </div>
+        </div>
       )}
 
       {/* Technical Details */}
-      <Paper sx={{ p: 1.2, mb: 1, backgroundColor: alpha(theme.palette.background.paper, 0.5) }}>
-        <Stack spacing={0.6}>
-          <Stack direction="row" spacing={2}>
-            <Box sx={{ flex: 1 }}>
-              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.2 }}>
-                <Label>Owner</Label>
-                <IconButton onClick={() => handleCopy(account, 'Owner')} size="small" sx={{ p: 0.3 }}>
-                  <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
-                </IconButton>
-              </Stack>
-              <Link href={`/profile/${account}`} underline="none" color="inherit">
-                <Value sx={{ fontSize: '13px', wordBreak: 'break-all', maxWidth: '100%', overflowWrap: 'break-word' }}>{account}</Value>
-              </Link>
-            </Box>
-            <Box>
-              <Label sx={{ mb: 0.2 }}>Royalties</Label>
-              <Value sx={{ fontSize: '11px' }}>{transferFee}%</Value>
-            </Box>
-          </Stack>
+      <div className={cn("p-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className="space-y-4">
+          <div className="flex gap-6">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Owner</span>
+                <button onClick={() => handleCopy(account, 'Owner')} className={cn("p-1 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900")}>
+                  <Copy size={12} />
+                </button>
+              </div>
+              <Link href={`/profile/${account}`} className={cn("text-[13px] break-all block", isDark ? "text-white hover:text-primary" : "text-gray-900 hover:text-primary")}>{account}</Link>
+            </div>
+            <div className="flex-shrink-0">
+              <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Royalties</p>
+              <p className={cn("text-[13px] font-normal text-primary")}>{transferFee}%</p>
+            </div>
+          </div>
 
-          <Box>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.2 }}>
-              <Label>Issuer</Label>
-              <IconButton onClick={() => handleCopy(issuer, 'Issuer')} size="small" sx={{ p: 0.3 }}>
-                <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
-              </IconButton>
-            </Stack>
-            <Link href={`/profile/${issuer}`} underline="none" color="inherit">
-              <Value sx={{ fontSize: '13px', wordBreak: 'break-all', maxWidth: '100%', overflowWrap: 'break-word' }}>{issuer}</Value>
-            </Link>
-          </Box>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Issuer</span>
+              <button onClick={() => handleCopy(issuer, 'Issuer')} className={cn("p-1 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900")}>
+                <Copy size={12} />
+              </button>
+            </div>
+            <Link href={`/profile/${issuer}`} className={cn("text-[13px] break-all block", isDark ? "text-white hover:text-primary" : "text-gray-900 hover:text-primary")}>{issuer}</Link>
+          </div>
 
-          <Box>
-            <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mb: 0.2 }}>
-              <Label>Token ID</Label>
-              <IconButton onClick={() => handleCopy(NFTokenID, 'Token ID')} size="small" sx={{ p: 0.3 }}>
-                <ContentCopyIcon sx={{ fontSize: '0.7rem' }} />
-              </IconButton>
-            </Stack>
-            <Link href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" underline="none" color="inherit">
-              <Value sx={{ fontSize: '0.7rem', wordBreak: 'break-all', lineHeight: 1.2, maxWidth: '100%', overflowWrap: 'break-word' }}>{NFTokenID}</Value>
-            </Link>
-          </Box>
-        </Stack>
-      </Paper>
-    </Container>
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Token ID</span>
+              <button onClick={() => handleCopy(NFTokenID, 'Token ID')} className={cn("p-1 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900")}>
+                <Copy size={12} />
+              </button>
+            </div>
+            <a href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" rel="noopener noreferrer" className={cn("text-[12px] break-all leading-relaxed block", isDark ? "text-white hover:text-primary" : "text-gray-900 hover:text-primary")}>{NFTokenID}</a>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 });
 
