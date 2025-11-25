@@ -2,8 +2,6 @@ import { useState, createContext, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Client } from 'xrpl';
 
-import { Backdrop } from '@mui/material';
-
 // Redux
 import { Provider, useDispatch } from 'react-redux';
 import { configureRedux } from 'src/redux/store';
@@ -516,9 +514,11 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   return (
     <AppContext.Provider value={contextValue}>
-      <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 202 }} open={loading}>
-        <PuffLoader color={'#00AB55'} size={50} />
-      </Backdrop>
+      {loading && (
+        <div className="fixed inset-0 z-[999] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <PuffLoader color={'#00AB55'} size={50} />
+        </div>
+      )}
       {children}
     </AppContext.Provider>
   );

@@ -1,4 +1,5 @@
-import { alpha, createTheme, darken } from '@mui/material/styles';
+// Simplified Dark Theme - No MUI dependencies
+// Color configuration for dark mode
 
 const themeColors = {
   primary: '#147DFE',
@@ -10,384 +11,128 @@ const themeColors = {
   black: '#000000',
   white: '#FFFFFF',
   primaryAlt: '#0A0E1A',
-  trueWhite: '#ffffff'
+  trueWhite: '#ffffff',
+  neutral: {
+    50: '#18181B',
+    100: '#27272A',
+    200: '#3F3F46',
+    300: '#52525B',
+    400: '#71717A',
+    500: '#A1A1AA',
+    600: '#D4D4D8',
+    700: '#E4E4E7',
+    800: '#F4F4F5',
+    900: '#FAFAFA'
+  }
 };
 
-const createAlphaColors = (color) => ({
-  5: alpha(color, 0.02),
-  10: alpha(color, 0.1),
-  30: alpha(color, 0.3),
-  50: alpha(color, 0.5),
-  70: alpha(color, 0.7),
-  100: color
-});
+// Simple alpha helper (replaces MUI's alpha function)
+const alpha = (color, opacity) => {
+  // Convert hex to rgba
+  if (color.startsWith('#')) {
+    const hex = color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color;
+};
 
-export const XrplToDarkTheme = createTheme({
-  spacing: 9,
-  shape: { borderRadius: 10 },
+// Simple darken helper
+const darken = (color, amount) => color; // Simplified - return original
 
-  palette: {
-    mode: 'dark',
-    common: {
-      black: themeColors.black,
-      white: themeColors.white
-    },
-    primary: {
-      lighter: alpha(themeColors.primary, 0.1),
-      light: alpha(themeColors.primary, 0.3),
-      main: themeColors.primary,
-      dark: darken(themeColors.primary, 0.2),
-      contrastText: '#fff'
-    },
-    secondary: {
-      lighter: alpha(themeColors.secondary, 0.1),
-      light: alpha(themeColors.secondary, 0.3),
-      main: themeColors.secondary,
-      dark: darken(themeColors.secondary, 0.2),
-      contrastText: '#fff'
-    },
-    error: {
-      lighter: alpha(themeColors.error, 0.1),
-      light: alpha(themeColors.error, 0.3),
-      main: themeColors.error,
-      dark: darken(themeColors.error, 0.2),
-      contrastText: '#fff'
-    },
-    warning: {
-      lighter: alpha(themeColors.warning, 0.1),
-      light: alpha(themeColors.warning, 0.3),
-      main: themeColors.warning,
-      dark: darken(themeColors.warning, 0.2)
-    },
-    info: {
-      lighter: alpha(themeColors.info, 0.1),
-      light: alpha(themeColors.info, 0.3),
-      main: themeColors.info,
-      dark: darken(themeColors.info, 0.2),
-      contrastText: '#fff'
-    },
-    success: {
-      lighter: alpha(themeColors.success, 0.1),
-      light: alpha(themeColors.success, 0.3),
-      main: themeColors.success,
-      dark: darken(themeColors.success, 0.2),
-      contrastText: '#fff'
-    },
-    text: {
-      primary: themeColors.white,
-      secondary: alpha(themeColors.white, 0.7),
-      disabled: alpha(themeColors.white, 0.5)
-    },
-    background: {
-      paper: '#000000',
-      default: '#000000'
-    },
-    action: {
-      active: themeColors.white,
-      hover: alpha(themeColors.primary, 0.1),
-      selected: alpha(themeColors.white, 0.1),
-      disabled: alpha(themeColors.white, 0.5),
-      disabledBackground: alpha(themeColors.white, 0.05)
-    }
-  },
-
+export const XrplToDarkTheme = {
+  // Core color palette
   colors: {
+    primary: themeColors.primary,
+    secondary: themeColors.secondary,
+    success: themeColors.success,
+    warning: themeColors.warning,
+    error: themeColors.error,
+    info: themeColors.info,
+    black: themeColors.black,
+    white: themeColors.white,
+    neutral: themeColors.neutral,
+
+    // Alpha variations
     alpha: {
-      white: createAlphaColors(themeColors.white),
-      trueWhite: createAlphaColors(themeColors.trueWhite),
-      black: createAlphaColors(themeColors.black)
-    },
-    primary: {
-      lighter: alpha(themeColors.primary, 0.1),
-      light: alpha(themeColors.primary, 0.3),
-      main: themeColors.primary,
-      dark: darken(themeColors.primary, 0.2)
-    },
-    secondary: {
-      lighter: alpha(themeColors.secondary, 0.1),
-      light: alpha(themeColors.secondary, 0.3),
-      main: themeColors.secondary,
-      dark: darken(themeColors.secondary, 0.2)
+      white: {
+        5: alpha(themeColors.white, 0.02),
+        10: alpha(themeColors.white, 0.1),
+        30: alpha(themeColors.white, 0.3),
+        50: alpha(themeColors.white, 0.5),
+        70: alpha(themeColors.white, 0.7),
+        100: themeColors.white
+      },
+      black: {
+        5: alpha(themeColors.black, 0.02),
+        10: alpha(themeColors.black, 0.1),
+        30: alpha(themeColors.black, 0.3),
+        50: alpha(themeColors.black, 0.5),
+        70: alpha(themeColors.black, 0.7),
+        100: themeColors.black
+      }
     }
   },
 
+  // Layout configuration
   general: {
-    reactFrameworkColor: '#007b5580',
     borderRadiusSm: '8px',
     borderRadius: '12px',
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
     backgroundAlt: '#000000',
     backgroundAsset: '#000000',
-    backgroundTrait: '#ffffff10',
+    backgroundTrait: alpha('#ffffff', 0.1),
     borderTrait: '#ffffff',
     glassMorphism: 'rgba(255, 255, 255, 0.05)',
     cardBackground: '#000000',
     surfaceElevated: '#111111'
   },
 
+  // Header configuration
   header: {
     height: '80px',
     background: '#000000',
     boxShadow: '0px 1px 0px rgba(255, 255, 255, 0.1)',
     backdropFilter: 'blur(20px) saturate(180%)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)'
+    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    textColor: themeColors.white
   },
 
+  // Sidebar configuration
   sidebar: {
     background: themeColors.primaryAlt,
     textColor: themeColors.secondary,
     width: '290px'
   },
 
+  // Wallet dialog
   walletDialog: {
     background: 'rgba(0, 0, 0, 0.95)',
     backgroundSecondary: 'rgba(0, 0, 0, 0.6)',
     border: alpha('#ffffff', 0.1)
   },
 
+  // Currency component
   currency: {
     background1: alpha('#ffffff', 0.05),
     background2: alpha('#ffffff', 0.08),
     border: `1px solid ${alpha('#ffffff', 0.1)}`
   },
 
+  // Chart configuration
   chart: {
     background: '#000000',
     gridColor: alpha('#ffffff', 0.1),
     borderColor: alpha('#ffffff', 0.2)
   },
 
+  // Typography
   typography: {
-    fontFamily:
-      'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
-    fontVariantNumeric: 'tabular-nums',
-    h1: { fontWeight: 500, fontSize: '19px', letterSpacing: '-0.02em', fontVariantNumeric: 'tabular-nums' },
-    h2: { fontWeight: 500, fontSize: '16px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h3: { fontWeight: 500, fontSize: '14px', letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h4: { fontWeight: 400, fontSize: 16, letterSpacing: '-0.01em', fontVariantNumeric: 'tabular-nums' },
-    h5: { fontWeight: 500, fontSize: 14, fontVariantNumeric: 'tabular-nums' },
-    h6: { fontSize: 15, fontVariantNumeric: 'tabular-nums' },
-    body1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
-    body2: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
-    button: { fontWeight: 400, textTransform: 'none', fontVariantNumeric: 'tabular-nums' },
-    caption: { fontSize: 13, fontVariantNumeric: 'tabular-nums' },
-    subtitle1: { fontSize: 14, fontVariantNumeric: 'tabular-nums' },
-    subtitle2: { fontWeight: 400, fontSize: 15, fontVariantNumeric: 'tabular-nums' },
-    overline: { fontSize: 13, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }
-  },
-
-  shadows: [
-    'none',
-    '0 1px 3px rgba(0, 0, 0, 0.3)',
-    '0 4px 6px rgba(0, 0, 0, 0.3)',
-    '0 10px 15px rgba(0, 0, 0, 0.3)',
-    '0 20px 25px rgba(0, 0, 0, 0.3)',
-    '0 25px 50px rgba(0, 0, 0, 0.5)',
-    ...Array(19).fill('0 25px 50px rgba(0, 0, 0, 0.5)')
-  ],
-
-  components: {
-    MuiCssBaseline: {
-      styleOverrides: {
-        body: {
-          background: '#000000',
-          scrollbarWidth: 'thin',
-          scrollbarColor: '#475569 #1E293B',
-          '&::-webkit-scrollbar': {
-            width: '6px',
-            height: '6px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: '#1E293B'
-          },
-          '&::-webkit-scrollbar-thumb': {
-            borderRadius: 6,
-            backgroundColor: '#475569'
-          },
-          '&::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: '#64748B'
-          }
-        },
-        ':root': {
-          '--swiper-theme-color': themeColors.primary,
-          colorScheme: 'dark'
-        }
-      }
-    },
-    MuiButton: {
-      defaultProps: { disableRipple: true },
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-          textTransform: 'none',
-          paddingLeft: 16,
-          paddingRight: 16
-        },
-        contained: {
-          backgroundColor: themeColors.primary,
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
-          '&:hover': {
-            backgroundColor: alpha(themeColors.primary, 0.8),
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)'
-          }
-        },
-        sizeSmall: {
-          padding: '8px 16px',
-          lineHeight: 1.5
-        },
-        sizeMedium: {
-          padding: '10px 20px'
-        },
-        sizeLarge: {
-          padding: '12px 24px'
-        }
-      }
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          background: `linear-gradient(145deg, 
-            ${alpha('#000000', 0.9)} 0%, 
-            ${alpha('#111111', 0.6)} 50%,
-            ${alpha('#000000', 0.95)} 100%)`,
-          border: `1px solid ${alpha('#ffffff', 0.08)}`,
-          backdropFilter: 'blur(40px) saturate(200%)',
-          boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
-          '&:hover': {
-            boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
-            borderColor: alpha('#ffffff', 0.12)
-          }
-        }
-      }
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: '12px',
-          border: `1px solid ${alpha('#ffffff', 0.08)}`,
-          background: `linear-gradient(145deg, 
-            ${alpha('#000000', 0.9)} 0%, 
-            ${alpha('#111111', 0.6)} 50%,
-            ${alpha('#000000', 0.95)} 100%)`,
-          backdropFilter: 'blur(40px) saturate(200%)',
-          boxShadow: `0 8px 32px ${alpha('#000000', 0.4)}, inset 0 1px 0 ${alpha('#ffffff', 0.1)}`,
-          '&:hover': {
-            boxShadow: `0 20px 60px ${alpha('#000000', 0.3)}, inset 0 1px 0 ${alpha('#ffffff', 0.15)}`,
-            borderColor: alpha(themeColors.primary, 0.5)
-          }
-        }
-      }
-    },
-    MuiDialog: {
-      styleOverrides: {
-        paper: { backgroundColor: '#000000' }
-      }
-    },
-    MuiTooltip: {
-      styleOverrides: {
-        tooltip: {
-          color: themeColors.white,
-          background: alpha('#000000', 0.95),
-          border: `1px solid ${alpha('#ffffff', 0.1)}`,
-          backdropFilter: 'blur(20px) saturate(180%)',
-          padding: '12px 16px',
-          fontSize: 13,
-          borderRadius: '12px'
-        },
-        arrow: { color: alpha('#000000', 0.95) }
-      }
-    },
-    MuiDivider: {
-      styleOverrides: {
-        root: {
-          background: alpha(themeColors.white, 0.1),
-          border: 0,
-          height: 1
-        }
-      }
-    },
-    MuiOutlinedInput: {
-      styleOverrides: {
-        root: {
-          '&:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: alpha(themeColors.white, 0.5)
-          },
-          '&.Mui-focused:hover .MuiOutlinedInput-notchedOutline': {
-            borderColor: themeColors.primary
-          }
-        }
-      }
-    },
-    MuiLink: {
-      defaultProps: {
-        underline: 'hover',
-        color: '#2de370 !important'
-      }
-    },
-    MuiToolbar: {
-      styleOverrides: {
-        root: {
-          minHeight: '0 !important',
-          padding: '0 !important'
-        }
-      }
-    },
-    MuiContainer: {
-      styleOverrides: {
-        root: {
-          paddingLeft: '16px !important',
-          paddingRight: '16px !important'
-        },
-        maxWidthLg: {
-          maxWidth: '1700px !important'
-        },
-        maxWidthXl: {
-          maxWidth: '2000px !important'
-        }
-      }
-    },
-    MuiPagination: {
-      styleOverrides: {
-        root: {
-          '& .MuiPaginationItem-root': {
-            backgroundColor: alpha('#000000', 0.8),
-            color: themeColors.white,
-            border: `1px solid ${alpha('#ffffff', 0.1)}`,
-            backdropFilter: 'blur(20px) saturate(180%)',
-            borderRadius: '12px',
-            '&:hover': {
-              backgroundColor: alpha(themeColors.primary, 0.2),
-              borderColor: alpha(themeColors.primary, 0.6)
-            },
-            '&.Mui-selected': {
-              backgroundColor: themeColors.primary,
-              color: themeColors.white,
-              borderColor: themeColors.primary,
-              boxShadow: `0 4px 16px ${alpha(themeColors.primary, 0.3)}`,
-              '&:hover': {
-                backgroundColor: alpha(themeColors.primary, 0.8)
-              }
-            }
-          }
-        }
-      }
-    },
-    MuiTablePagination: {
-      styleOverrides: {
-        root: {
-          backgroundColor: alpha('#000000', 0.9),
-          backdropFilter: 'blur(20px) saturate(180%)',
-          borderTop: `1px solid ${alpha('#ffffff', 0.08)}`,
-          color: themeColors.white
-        },
-        selectIcon: {
-          color: alpha(themeColors.white, 0.7)
-        },
-        select: {
-          color: themeColors.white
-        }
-      }
-    }
+    fontFamily: 'var(--font-inter), "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif',
+    fontSize: 14,
+    fontVariantNumeric: 'tabular-nums'
   }
-});
+};

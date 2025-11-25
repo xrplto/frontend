@@ -1,30 +1,19 @@
 import React, { useContext, useState } from 'react';
-import {
-  IconButton,
-  alpha,
-  Menu,
-  MenuItem,
-  ListItemIcon,
-  ListItemText,
-  Typography,
-  Box
-} from '@mui/material';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
-import PaletteIcon from '@mui/icons-material/Palette';
+import { Palette, Sun, Moon } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 
 const themes = [
   {
     id: 'XrplToLightTheme',
     name: 'Light',
-    icon: <Brightness7Icon />,
+    icon: <Sun size={16} />,
     color: '#ffffff'
   },
   {
     id: 'XrplToDarkTheme',
     name: 'Dark',
-    icon: <Brightness4Icon />,
+    icon: <Moon size={16} />,
     color: '#000000'
   }
 ];
@@ -32,6 +21,7 @@ const themes = [
 export default function ThemeSwitcher() {
   const { themeName, setTheme } = useContext(AppContext);
   const [anchorEl, setAnchorEl] = useState(null);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -49,86 +39,63 @@ export default function ThemeSwitcher() {
   const currentTheme = themes.find((t) => t.id === themeName) || themes[0];
 
   return (
-    <>
-      <IconButton
+    <div className="relative">
+      <button
         onClick={handleClick}
-        size="small"
-        sx={{
-          backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
-          borderRadius: '6px',
-          padding: '4px',
-          minWidth: '32px',
-          width: '32px',
-          height: '32px',
-          '&:hover': {
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.2)
-          }
-        }}
+        className={cn(
+          "rounded-md p-1 min-w-8 w-8 h-8 border-none flex items-center justify-center",
+          isDark
+            ? "bg-primary/[0.08] hover:bg-primary/20"
+            : "bg-primary/[0.08] hover:bg-primary/20"
+        )}
       >
-        <PaletteIcon sx={{ fontSize: 16 }} />
-      </IconButton>
+        <Palette size={16} />
+      </button>
 
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            minWidth: 160,
-            '& .MuiMenuItem-root': {
-              borderRadius: 1,
-              mx: 0.5,
-              mb: 0.5
-            }
-          }
-        }}
-      >
-        {themes.map((theme) => (
-          <MenuItem
-            key={theme.id}
-            onClick={() => handleThemeChange(theme.id)}
-            selected={themeName === theme.id}
-            sx={{
-              '&.Mui-selected': {
-                backgroundColor: (t) => alpha(t.palette.primary.main, 0.08),
-                '&:hover': {
-                  backgroundColor: (t) => alpha(t.palette.primary.main, 0.2)
-                }
-              }
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 36 }}>
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  width: 24,
-                  height: 24,
-                  borderRadius: '6px',
-                  backgroundColor: theme.color,
-                  border:
-                    theme.id === 'XrplToLightTheme'
-                      ? '1px solid #e0e0e0'
-                      : 'none',
-                  boxShadow: 'none'
-                }}
-              >
-                <PaletteIcon
-                  sx={{
-                    fontSize: 16,
-                    color: '#fff'
-                  }}
-                />
-              </Box>
-            </ListItemIcon>
-            <ListItemText>
-              <Typography variant="body2">{theme.name}</Typography>
-            </ListItemText>
-          </MenuItem>
-        ))}
-      </Menu>
-    </>
+      {anchorEl && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={handleClose}
+          />
+          <div className={cn(
+            "absolute mt-1 min-w-[160px] rounded-xl border-[1.5px] z-50 right-0",
+            isDark
+              ? "bg-black/95 border-white/[0.12] backdrop-blur-xl"
+              : "bg-white/95 border-gray-200 backdrop-blur-xl"
+          )}>
+            <div className="p-1">
+              {themes.map((theme) => (
+                <button
+                  key={theme.id}
+                  onClick={() => handleThemeChange(theme.id)}
+                  className={cn(
+                    "w-full rounded-lg px-2.5 py-2 min-h-9 flex items-center gap-2 border-none cursor-pointer my-0.5 text-left",
+                    themeName === theme.id
+                      ? isDark
+                        ? "bg-primary/[0.08] hover:bg-primary/20"
+                        : "bg-primary/[0.08] hover:bg-primary/20"
+                      : isDark
+                      ? "bg-transparent hover:bg-white/[0.06]"
+                      : "bg-transparent hover:bg-gray-100"
+                  )}
+                >
+                  <div
+                    className="flex items-center justify-center w-6 h-6 rounded-md border"
+                    style={{
+                      backgroundColor: theme.color,
+                      borderColor: theme.id === 'XrplToLightTheme' ? '#e0e0e0' : 'transparent'
+                    }}
+                  >
+                    <Palette size={16} className="text-white" />
+                  </div>
+                  <span className="text-sm">{theme.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

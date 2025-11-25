@@ -1,29 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-
-// Material
-import { Container, Grid, Link, Box, styled, Toolbar, Typography, Pagination } from '@mui/material';
-
-// Context
-import { useContext } from 'react';
+import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
-
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const BASE_URL = process.env.API_URL || 'https://api.xrpl.to/api';
-
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: hidden;
-        flex: 1;
-`
-);
+const BASE_URL = 'https://api.xrpl.to/api';
 
 const Sitemap = ({ tokens, slug }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   const totalCount = tokens.length;
   const perPage = 300;
   const pageCount = Math.ceil(totalCount / perPage);
@@ -52,7 +41,6 @@ const Sitemap = ({ tokens, slug }) => {
       });
     }
   };
-  const { darkMode } = useContext(AppContext);
 
   useEffect(() => {
     const startIndex = (page - 1) * perPage;
@@ -63,89 +51,76 @@ const Sitemap = ({ tokens, slug }) => {
   }, [page]);
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex-1 overflow-hidden">
+      <div id="back-to-top-anchor" className="h-16" />
       <Header />
 
-      <Container maxWidth="xl">
-        <Typography variant="h1" sx={{ mt: 4 }}>
+      <div className="mx-auto max-w-7xl px-4">
+        <h1 className={cn("mt-4 text-3xl font-normal", isDark ? "text-white" : "text-gray-900")}>
           {`${capitalizedText(slug)} Trustline Sitemap`}
-        </Typography>
+        </h1>
 
-        <Grid container rowSpacing={2} alignItems="center" sx={{ mt: 3 }}>
+        <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
           {slugs.map((token) => {
             return (
-              <Grid
+              <div
                 key={token}
-                item
-                xs={12}
-                sm={6}
-                md={3}
-                lg={2}
-                sx={{
-                  padding: '5px !important',
-                  width: '250px',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis'
-                }}
+                className="overflow-hidden text-ellipsis p-[5px]"
               >
-                <Link
-                  //  href={`/${slug}/${token}`}
+                <a
                   href={`/trustset/${token}`}
-                  underline="none"
                   target="_blank"
                   rel="noreferrer noopener nofollow"
-                  sx={{
-                    fontSize: 15,
-                    color: darkMode ? '#007B55 !important  ' : '#147DFE !important',
-                    '&:hover': {
-                      color: 'rgb(160, 160, 160) !important'
-                    }
-                  }}
+                  className={cn(
+                    "text-[15px] no-underline hover:text-gray-400",
+                    isDark ? "text-[#007B55]" : "text-[#147DFE]"
+                  )}
                 >
                   {capitalizedText(token)}
-                </Link>
-              </Grid>
+                </a>
+              </div>
             );
           })}
-        </Grid>
+        </div>
 
-        <Pagination
-          variant="rounded"
-          page={page}
-          count={pageCount}
-          onChange={handleChangePage}
-          sx={{
-            display: 'flex',
-            justifyContent: 'center',
-            mt: 3
-          }}
-        />
+        <div className="mt-3 flex justify-center">
+          <div className="flex items-center gap-2">
+            {Array.from({ length: pageCount }, (_, i) => i + 1).map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={(e) => handleChangePage(e, pageNum)}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal",
+                  page === pageNum
+                    ? "border-primary bg-primary text-white"
+                    : isDark
+                    ? "border-gray-700 hover:border-primary hover:bg-primary/5"
+                    : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                {pageNum}
+              </button>
+            ))}
+          </div>
+        </div>
 
-        <Grid container sx={{ mt: 3 }}>
-          <Grid size={{ xs: 12 }}>
-            <Link
-              href={`/sitemap/tokens`}
-              underline="none"
-              rel="noreferrer noopener nofollow"
-              sx={{
-                fontSize: 15,
-                color: darkMode ? '#007B55 !important  ' : '#147DFE !important',
-                '&:hover': {
-                  color: 'rgb(160, 160, 160) !important'
-                }
-              }}
-            >
-              Tokens Sitemap
-            </Link>
-          </Grid>
-        </Grid>
-      </Container>
+        <div className="mt-3">
+          <a
+            href="/sitemap/tokens"
+            rel="noreferrer noopener nofollow"
+            className={cn(
+              "text-[15px] no-underline hover:text-gray-400",
+              isDark ? "text-[#007B55]" : "text-[#147DFE]"
+            )}
+          >
+            Tokens Sitemap
+          </a>
+        </div>
+      </div>
 
       <ScrollToTop />
-
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 };
 
@@ -158,7 +133,7 @@ export const getServerSideProps = async (ctx) => {
   let total = 0;
   const time = new Date().toISOString();
 
-  const { slug } = { slug: 'token' }; //ctx.params; //webxtor disabling dynamic slug: renamed [slug].js to token.js
+  const { slug } = { slug: 'token' };
 
   try {
     var t1 = performance.now();
@@ -209,22 +184,10 @@ export const getServerSideProps = async (ctx) => {
           total,
           H24,
           global
-        },
-        ogp
+        }
       }
     };
   }
-
-  /* =============================
-        // Change freq
-            always = describe documents that change each time they are accessed
-            hourly
-            daily
-            weekly
-            monthly
-            yearly
-            never = describe archived URLs
-    =============================*/
 };
 
 export default Sitemap;

@@ -1,58 +1,22 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import styled from '@emotion/styled';
-import {
-  Box,
-  Container,
-  Typography,
-  Grid,
-  Card,
-  Button,
-  TextField,
-  Alert,
-  Chip,
-  alpha,
-  useTheme,
-  Divider,
-  Stack,
-  Paper,
-  IconButton,
-  Tooltip,
-  Fade,
-  Grow,
-  Autocomplete,
-  CircularProgress
-} from '@mui/material';
 import axios from 'axios';
-import {
-  ContentCopy as CopyIcon,
-  CheckCircle as CheckIcon,
-  TrendingUp as TrendingIcon,
-  Speed as SpeedIcon,
-  Visibility as ViewIcon,
-  AccountBalanceWallet as WalletIcon,
-  Timer as TimerIcon,
-  Info as InfoIcon,
-  Calculate as CalculateIcon,
-  Campaign as CampaignIcon,
-  AutoAwesome as AutoAwesomeIcon
-} from '@mui/icons-material';
+import { Loader2, Copy, Check, TrendingUp, Gauge, Eye, Wallet, Timer, Info, Calculator, Megaphone, Sparkles } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { AppContext } from 'src/AppContext';
 import { ConnectWallet } from 'src/components/Wallet';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-// GemWallet import removed
 import { enqueueSnackbar } from 'notistack';
-// QRDialog removed
 import Decimal from 'decimal.js-light';
+import { cn } from 'src/utils/cn';
 
 // Debounce hook with proper cleanup
 function useDebounce(value, delay) {
   const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
-    // Only set timer if delay is positive
     if (delay <= 0) {
       setDebouncedValue(value);
       return;
@@ -86,85 +50,14 @@ const MainContent = styled.main`
   }
 `;
 
-const HeroSection = styled(Box)(({ theme }) => ({
-  textAlign: 'center',
-  marginBottom: 48,
-  padding: '48px 0',
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, ${alpha('#147DFE', 0.1)} 0%, ${alpha('#147DFE', 0.05)} 100%)`
-      : `linear-gradient(135deg, ${alpha('#147DFE', 0.05)} 0%, ${alpha('#147DFE', 0.02)} 100%)`,
-  borderRadius: 16,
-  position: 'relative',
-  overflow: 'hidden',
-  '&::before': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background:
-      'radial-gradient(circle at top right, rgba(20, 125, 254, 0.15) 0%, transparent 50%)',
-    pointerEvents: 'none'
-  },
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background:
-      'radial-gradient(circle at bottom left, rgba(156, 39, 176, 0.1) 0%, transparent 50%)',
-    pointerEvents: 'none'
-  }
-}));
-
-const PriceTag = styled(Typography)`
-  font-size: 3rem;
-  font-weight: bold;
-  color: #1976d2;
-  margin: 20px 0;
-`;
-
-const FeatureList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 20px 0;
-  li {
-    padding: 8px 0;
-    &:before {
-      content: '✓ ';
-      color: #4caf50;
-      font-weight: bold;
-    }
-  }
-`;
-
-const ContactForm = styled(Box)(({ theme }) => ({
-  background:
-    theme.palette.mode === 'dark'
-      ? `linear-gradient(135deg, 
-        ${alpha('#111827', 0.5)} 0%, 
-        ${alpha('#111827', 0.3)} 50%,
-        ${alpha('#111827', 0.4)} 100%)`
-      : '#f5f5f5',
-  border: `1px solid ${theme.palette.mode === 'dark' ? alpha('#1F2937', 0.15) : 'transparent'}`,
-  backdropFilter: theme.palette.mode === 'dark' ? 'blur(60px) saturate(180%)' : 'none',
-  borderRadius: 12,
-  padding: 32,
-  marginTop: 48
-}));
-
-const API_URL = process.env.API_URL || 'https://api.xrpl.to/api';
+const API_URL = 'https://api.xrpl.to/api';
 
 export default function Advertise() {
-  const theme = useTheme();
   const dispatch = useDispatch();
-  const { accountProfile, openSnackbar, sync, setSync, setOpenWalletModal, setLoading } =
+  const { accountProfile, openSnackbar, sync, setSync, setOpenWalletModal, setLoading, themeName } =
     useContext(AppContext);
   const process = useSelector(selectProcess);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const [impressionInput, setImpressionInput] = useState('');
   const [customImpressions, setCustomImpressions] = useState('');
@@ -174,10 +67,9 @@ export default function Advertise() {
   const [localLoading, setLocalLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [inputValue, setInputValue] = useState('');
-  const [xrpRate, setXrpRate] = useState(0.65); // Default fallback rate
+  const [xrpRate, setXrpRate] = useState(0.65);
   const [totalTokens, setTotalTokens] = useState(0);
 
-  // Payment states
   const [openScanQR, setOpenScanQR] = useState(false);
   const [uuid, setUuid] = useState(null);
   const [qrUrl, setQrUrl] = useState(null);
@@ -188,12 +80,10 @@ export default function Advertise() {
 
   const debouncedSearchQuery = useDebounce(searchQuery, 300);
 
-  // Load top tokens initially
   useEffect(() => {
     fetchTopTokens();
   }, []);
 
-  // Search tokens when query changes
   useEffect(() => {
     if (debouncedSearchQuery) {
       searchTokens(debouncedSearchQuery);
@@ -209,14 +99,12 @@ export default function Advertise() {
         `${API_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`
       );
 
-      // Get total tokens count
       if (response.data.total) {
         setTotalTokens(response.data.total);
       }
 
-      // Get XRP rate from the API response
       if (response.data.exch && response.data.exch.USD) {
-        setXrpRate(1 / response.data.exch.USD); // Convert USD to XRP rate
+        setXrpRate(1 / response.data.exch.USD);
       }
 
       const tokenList = response.data.tokens.map((token) => ({
@@ -265,7 +153,6 @@ export default function Advertise() {
     }
   };
 
-  // Fixed pricing tiers for quick selection
   const pricingTiers = [
     { impressions: 10000, price: 299, label: '10k views' },
     { impressions: 25000, price: 699, label: '25k views' },
@@ -276,26 +163,22 @@ export default function Advertise() {
   ];
 
   const calculatePrice = (impressions) => {
-    // Check if it matches a tier exactly
     const tier = pricingTiers.find((t) => t.impressions === impressions);
     if (tier) return tier.price;
 
-    // For custom amounts, use progressive pricing
     if (impressions <= 0) return 0;
 
-    // Calculate based on volume brackets
     let price = 0;
     let remaining = impressions;
 
-    // Pricing structure (per 1000 impressions)
     const brackets = [
-      { max: 10000, rate: 29.9 }, // $29.9 per 1k for first 10k
-      { max: 25000, rate: 27.96 }, // $27.96 per 1k for 10k-25k
-      { max: 50000, rate: 19.98 }, // $19.98 per 1k for 25k-50k
-      { max: 100000, rate: 19.99 }, // $19.99 per 1k for 50k-100k
-      { max: 200000, rate: 19.995 }, // $19.995 per 1k for 100k-200k
-      { max: 400000, rate: 17.495 }, // $17.495 per 1k for 200k-400k
-      { max: Infinity, rate: 15 } // $15 per 1k above 400k
+      { max: 10000, rate: 29.9 },
+      { max: 25000, rate: 27.96 },
+      { max: 50000, rate: 19.98 },
+      { max: 100000, rate: 19.99 },
+      { max: 200000, rate: 19.995 },
+      { max: 400000, rate: 17.495 },
+      { max: Infinity, rate: 15 }
     ];
 
     let prevMax = 0;
@@ -336,7 +219,6 @@ export default function Advertise() {
     setCustomImpressions(value);
   };
 
-  // Handle wallet payment
   const handlePayment = async () => {
     if (!accountProfile || !accountProfile.account) {
       setOpenWalletModal(true);
@@ -376,23 +258,10 @@ export default function Advertise() {
     };
 
     try {
-      switch (wallet_type) {
-        case 'xaman':
-          // Xaman payment functionality removed
-          openSnackbar('Xaman payment no longer supported', 'info');
-          dispatch(updateProcess(0));
-          break;
-
-        case 'gem':
-          // GemWallet removed
-          openSnackbar('GemWallet no longer supported', 'info');
-          dispatch(updateProcess(0));
-          break;
-
-      }
+      openSnackbar('Payment no longer supported in this wallet type', 'info');
+      dispatch(updateProcess(0));
     } catch (err) {
       console.error('Payment error:', err);
-      console.error('Error details:', err.response?.data || err.message);
       dispatch(updateProcess(0));
       setLocalLoading(false);
       const errorMessage = err.response?.data?.message || 'Payment failed. Please try again.';
@@ -400,39 +269,8 @@ export default function Advertise() {
     }
   };
 
-  // Xaman QR scan functionality removed
   useEffect(() => {
-    return; // Disabled
-    /*
-    if (!openScanQR || !uuid) return;
-
-    const checkPayment = setInterval(async () => {
-      try {
-        const ret = await axios.get(`${API_URL}/xumm/payload/${uuid}`);
-        const res = ret.data.data.response;
-        const resolved_at = res.resolved_at;
-        const dispatched_result = res.dispatched_result;
-
-        if (resolved_at && dispatched_result === 'tesSUCCESS') {
-          setOpenScanQR(false);
-          openSnackbar(
-            'Payment successful! Your advertising campaign will start shortly.',
-            'success'
-          );
-          // Reset form
-          setCustomImpressions('');
-          setImpressionInput('');
-          setSelectedToken(null);
-          setInputValue('');
-          clearInterval(checkPayment);
-        }
-      } catch (err) {
-        console.log('Error checking payment status:', err);
-      }
-    }, 2000);
-
-    return () => clearInterval(checkPayment);
-    */
+    return;
   }, [openScanQR, uuid]);
 
   const handleScanQRClose = () => {
@@ -446,912 +284,479 @@ export default function Advertise() {
         Advertise on XRPL.to
       </h1>
       <MainContent>
-        <Container maxWidth="lg">
-          <Fade in timeout={600}>
-            <HeroSection>
-              <Stack spacing={2} alignItems="center" position="relative" zIndex={1}>
-                <Chip
-                  icon={<CampaignIcon />}
-                  label="Token Advertising Platform"
-                  color="primary"
-                  sx={{
-                    fontWeight: 400,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.8)})`,
-                    color: 'white'
+        <div className="mx-auto max-w-5xl px-4">
+          {/* Hero Section */}
+          <div className={cn(
+            "text-center mb-12 p-12 rounded-2xl relative overflow-hidden",
+            isDark
+              ? "bg-gradient-to-br from-blue-500/10 to-blue-500/5"
+              : "bg-gradient-to-br from-blue-500/5 to-blue-500/2"
+          )}>
+            <div className="relative z-10">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Megaphone size={20} className="text-primary" />
+                <span className={cn(
+                  "inline-block px-3 py-1 rounded-full text-xs font-medium uppercase tracking-wide",
+                  "bg-gradient-to-r from-primary to-blue-600 text-white"
+                )}>
+                  Token Advertising Platform
+                </span>
+              </div>
+
+              <h2 className={cn(
+                "text-3xl font-semibold mb-4",
+                "bg-gradient-to-r bg-clip-text text-transparent",
+                isDark
+                  ? "from-white to-gray-400"
+                  : "from-blue-600 to-blue-400"
+              )}>
+                Reach Millions on XRPL
+              </h2>
+
+              <p className={cn(
+                "text-base max-w-2xl mx-auto leading-relaxed",
+                isDark ? "text-white/70" : "text-gray-600"
+              )}>
+                Promote your token to our engaged community of traders and investors. Simple
+                pricing, instant activation, real-time analytics.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center gap-4 mt-6">
+                <div className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg border-[1.5px]",
+                  isDark ? "border-white/15" : "border-gray-200"
+                )}>
+                  <Eye size={14} />
+                  <span className="text-sm font-normal">40K+ Monthly Users</span>
+                </div>
+                <div className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg border-[1.5px]",
+                  isDark ? "border-white/15" : "border-gray-200"
+                )}>
+                  <TrendingUp size={14} />
+                  <span className="text-sm font-normal">
+                    {totalTokens > 0 ? `${totalTokens.toLocaleString()} Tokens` : 'Loading...'}
+                  </span>
+                </div>
+                <div className={cn(
+                  "flex items-center gap-2 px-3 py-1.5 rounded-lg border-[1.5px]",
+                  isDark ? "border-white/15" : "border-gray-200"
+                )}>
+                  <Gauge size={14} />
+                  <span className="text-sm font-normal">Instant Activation</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Calculator Card */}
+          <div className={cn(
+            "max-w-3xl mx-auto mb-12 overflow-hidden rounded-2xl border-[1.5px] transition-all",
+            isDark
+              ? "bg-gradient-to-br from-gray-900/50 to-gray-900/30 border-gray-800/15 backdrop-blur-xl"
+              : "bg-white border-gray-200"
+          )}>
+            {/* Card Header */}
+            <div className={cn(
+              "p-6 border-b-[3px] border-primary relative",
+              isDark ? "bg-primary/15" : "bg-primary/8"
+            )}>
+              <div className="flex items-center justify-center gap-3">
+                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-br from-primary to-blue-600 shadow-lg shadow-primary/30">
+                  <Calculator size={20} className="text-white" />
+                </div>
+                <h3 className="text-xl font-bold">Advertising Calculator</h3>
+              </div>
+            </div>
+
+            {/* Card Body */}
+            <div className="p-6">
+              {/* Token Selection */}
+              <div className="mb-6">
+                <label className={cn(
+                  "block text-sm font-medium mb-2",
+                  isDark ? "text-white/80" : "text-gray-700"
+                )}>
+                  Select Token to Advertise
+                </label>
+                <select
+                  value={selectedToken?.value || ''}
+                  onChange={(e) => {
+                    const token = tokens.find(t => t.value === e.target.value);
+                    setSelectedToken(token);
                   }}
-                />
-                <Typography
-                  variant="h3"
-                  fontWeight={600}
-                  sx={{
-                    background:
-                      theme.palette.mode === 'dark'
-                        ? 'linear-gradient(135deg, #fff 0%, #b3b3b3 100%)'
-                        : 'linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)',
-                    backgroundClip: 'text',
-                    WebkitBackgroundClip: 'text',
-                    WebkitTextFillColor: 'transparent',
-                    mb: 2
-                  }}
+                  className={cn(
+                    "w-full px-4 py-3 rounded-lg border-[1.5px] text-sm",
+                    isDark
+                      ? "bg-gray-900/80 border-white/15 text-white"
+                      : "bg-white border-gray-300 text-gray-900"
+                  )}
                 >
-                  Reach Millions on XRPL
-                </Typography>
-                <Typography
-                  variant="h6"
-                  color="text.secondary"
-                  maxWidth={600}
-                  sx={{ lineHeight: 1.6 }}
-                >
-                  Promote your token to our engaged community of traders and investors. Simple
-                  pricing, instant activation, real-time analytics.
-                </Typography>
-                <Stack direction="row" spacing={2} mt={3}>
-                  <Chip
-                    icon={<ViewIcon />}
-                    label="40K+ Monthly Users"
-                    variant="outlined"
-                    sx={{ fontWeight: 400 }}
-                  />
-                  <Chip
-                    icon={<TrendingIcon />}
-                    label={
-                      totalTokens > 0 ? `${totalTokens.toLocaleString()} Tokens` : 'Loading...'
-                    }
-                    variant="outlined"
-                    sx={{ fontWeight: 400 }}
-                  />
-                  <Chip
-                    icon={<SpeedIcon />}
-                    label="Instant Activation"
-                    variant="outlined"
-                    sx={{ fontWeight: 400 }}
-                  />
-                </Stack>
-              </Stack>
-            </HeroSection>
-          </Fade>
+                  <option value="">Choose a token...</option>
+                  {tokens.map((token) => (
+                    <option key={token.value} value={token.value}>
+                      {token.label}
+                    </option>
+                  ))}
+                </select>
+                <p className={cn(
+                  "flex items-center gap-1 mt-2 text-xs",
+                  isDark ? "text-white/60" : "text-gray-600"
+                )}>
+                  <TrendingUp size={14} />
+                  {searchQuery
+                    ? `Searching for "${searchQuery}"...`
+                    : totalTokens > 0
+                      ? `Showing top ${tokens.length} of ${totalTokens.toLocaleString()} total tokens by 24h volume`
+                      : 'Showing top 100 most traded tokens - type to search all tokens'}
+                </p>
+              </div>
 
-          <Grow in timeout={800}>
-            <Paper
-              elevation={theme.palette.mode === 'dark' ? 0 : 3}
-              sx={{
-                maxWidth: 700,
-                mx: 'auto',
-                mb: 6,
-                overflow: 'hidden',
-                background:
-                  theme.palette.mode === 'dark'
-                    ? `linear-gradient(135deg, 
-                      ${alpha('#111827', 0.5)} 0%, 
-                      ${alpha('#111827', 0.3)} 50%,
-                      ${alpha('#111827', 0.4)} 100%)`
-                    : theme.palette.background.paper,
-                border: `1px solid ${
-                  theme.palette.mode === 'dark' ? alpha('#1F2937', 0.15) : 'transparent'
-                }`,
-                backdropFilter:
-                  theme.palette.mode === 'dark' ? 'blur(60px) saturate(180%)' : 'none',
-                transition: 'all 0.3s ease'
-              }}
-            >
-              <Box
-                sx={{
-                  p: 3,
-                  background: `linear-gradient(135deg, 
-                    ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.15 : 0.08)} 0%, 
-                    ${alpha(theme.palette.primary.main, theme.palette.mode === 'dark' ? 0.08 : 0.03)} 100%)`,
-                  borderBottom: `3px solid ${theme.palette.primary.main}`,
-                  position: 'relative',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 1,
-                    background: `linear-gradient(90deg, transparent, ${theme.palette.primary.main}, transparent)`,
-                    animation: 'shimmer 3s infinite'
-                  }
-                }}
-              >
-                <Stack direction="row" alignItems="center" justifyContent="center" spacing={1.5}>
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      width: 40,
-                      height: 40,
-                      borderRadius: '50%',
-                      background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
-                      boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-                    }}
-                  >
-                    <CalculateIcon sx={{ color: 'white' }} />
-                  </Box>
-                  <Typography variant="h5" fontWeight={700}>
-                    Advertising Calculator
-                  </Typography>
-                </Stack>
-              </Box>
-
-              <Box p={4}>
-                <Grid container spacing={3} mb={3}>
-                  <Grid size={{ xs: 12 }}>
-                    <Autocomplete
-                      value={selectedToken}
-                      onChange={(event, newValue) => setSelectedToken(newValue)}
-                      inputValue={inputValue}
-                      onInputChange={(event, newInputValue, reason) => {
-                        setInputValue(newInputValue);
-                        if (reason === 'input') {
-                          setSearchQuery(newInputValue);
-                        }
-                      }}
-                      options={tokens}
-                      localLoading={localLoading}
-                      filterOptions={(x) => x}
-                      getOptionLabel={(option) => option.label}
-                      noOptionsText={searchQuery ? 'No tokens found' : 'Start typing to search'}
-                      renderOption={(props, option) => (
-                        <Box
-                          component="li"
-                          {...props}
-                          sx={{
-                            '&:hover': {
-                              background: alpha(theme.palette.primary.main, 0.08)
-                            }
-                          }}
-                        >
-                          <Stack direction="row" alignItems="center" spacing={2} width="100%">
-                            <Box
-                              sx={{
-                                width: 40,
-                                height: 40,
-                                borderRadius: '50%',
-                                overflow: 'hidden',
-                                border: `2px solid ${option.change24h >= 0 ? alpha('#4caf50', 0.3) : alpha('#f44336', 0.3)}`,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                background:
-                                  option.change24h >= 0
-                                    ? `linear-gradient(135deg, ${alpha('#4caf50', 0.1)}, ${alpha('#4caf50', 0.05)})`
-                                    : `linear-gradient(135deg, ${alpha('#f44336', 0.1)}, ${alpha('#f44336', 0.05)})`
-                              }}
-                            >
-                              <img
-                                src={`https://s1.xrpl.to/token/${option.value}`}
-                                alt={option.name || option.currency}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.parentElement.innerHTML = `<span style="font-weight: 700; font-size: 0.875rem; color: ${option.change24h >= 0 ? '#4caf50' : '#f44336'}">${(option.name || option.currency)?.charAt(0)?.toUpperCase() || '?'}</span>`;
-                                }}
-                              />
-                            </Box>
-                            <Box flex={1}>
-                              <Stack direction="row" alignItems="center" spacing={1}>
-                                <Typography variant="body2" fontWeight={600}>
-                                  {option.user || option.name || option.currency}
-                                </Typography>
-                                {option.verified && (
-                                  <Chip
-                                    label="Verified"
-                                    size="small"
-                                    color="primary"
-                                    sx={{ height: 18, fontSize: '11px' }}
-                                  />
-                                )}
-                                {option.volume24h > 10000 && (
-                                  <Chip
-                                    label="High Volume"
-                                    size="small"
-                                    color="success"
-                                    sx={{ height: 18, fontSize: '11px' }}
-                                  />
-                                )}
-                              </Stack>
-                              <Stack direction="row" spacing={2}>
-                                <Typography variant="caption" color="text.secondary">
-                                  Vol:{' '}
-                                  {option.volume24h > 1000000
-                                    ? `${(option.volume24h / 1000000).toFixed(1)}M`
-                                    : option.volume24h > 1000
-                                      ? `${(option.volume24h / 1000).toFixed(1)}K`
-                                      : option.volume24h.toFixed(0)}{' '}
-                                  XRP
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                  {option.price < 0.00000001
-                                    ? option.price.toFixed(12)
-                                    : option.price < 0.0000001
-                                      ? option.price.toFixed(10)
-                                      : option.price < 0.000001
-                                        ? option.price.toFixed(8)
-                                        : option.price < 0.0001
-                                          ? option.price.toFixed(6)
-                                          : option.price < 1
-                                            ? option.price.toFixed(4)
-                                            : option.price.toFixed(2)}{' '}
-                                  XRP
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  sx={{
-                                    color: option.change24h >= 0 ? '#4caf50' : '#f44336',
-                                    fontWeight: 400
-                                  }}
-                                >
-                                  {option.change24h >= 0 ? '+' : ''}
-                                  {option.change24h?.toFixed(2)}%
-                                </Typography>
-                              </Stack>
-                            </Box>
-                          </Stack>
-                        </Box>
-                      )}
-                      renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Select Token to Advertise"
-                          placeholder={
-                            searchQuery
-                              ? 'Searching all tokens...'
-                              : 'Type to search tokens or select from top 100...'
-                          }
-                          helperText={
-                            <Typography
-                              variant="caption"
-                              sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                            >
-                              <TrendingIcon sx={{ fontSize: 14 }} />
-                              {searchQuery
-                                ? `Searching for "${searchQuery}"...`
-                                : totalTokens > 0
-                                  ? `Showing top ${tokens.length} of ${totalTokens.toLocaleString()} total tokens by 24h volume`
-                                  : 'Showing top 100 most traded tokens - type to search all tokens'}
-                            </Typography>
-                          }
-                          InputProps={{
-                            ...params.InputProps,
-                            endAdornment: (
-                              <>
-                                {localLoading ? (
-                                  <CircularProgress color="inherit" size={20} />
-                                ) : null}
-                                {params.InputProps.endAdornment}
-                              </>
-                            )
-                          }}
-                        />
-                      )}
-                    />
-                  </Grid>
-                </Grid>
-
-                <Grid container spacing={3} alignItems="center">
-                  <Grid size={{ xs: 12, md: 7 }}>
-                    <TextField
-                      fullWidth
-                      label="Number of Impressions"
+              {/* Impressions Input */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className={cn(
+                    "block text-sm font-medium mb-2",
+                    isDark ? "text-white/80" : "text-gray-700"
+                  )}>
+                    Number of Impressions
+                  </label>
+                  <div className="relative">
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                      <Sparkles size={18} className="text-primary animate-pulse" />
+                    </div>
+                    <input
+                      type="text"
                       value={impressionInput}
                       onChange={handleImpressionChange}
                       placeholder="Enter any amount"
-                      variant="outlined"
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          fontSize: '19px',
-                          fontWeight: 400,
-                          transition: 'all 0.3s',
-                          '&:hover': {
-                            transform: 'translateY(-1px)',
-                            boxShadow: `0 4px 8px ${alpha(theme.palette.primary.main, 0.1)}`
-                          },
-                          '&.Mui-focused': {
-                            transform: 'translateY(-1px)',
-                            boxShadow: `0 6px 12px ${alpha(theme.palette.primary.main, 0.15)}`
-                          }
-                        }
-                      }}
-                      InputProps={{
-                        startAdornment: (
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              mr: 1,
-                              animation: 'pulse 2s infinite'
-                            }}
-                          >
-                            <AutoAwesomeIcon sx={{ color: 'primary.main' }} />
-                          </Box>
-                        )
-                      }}
-                      helperText={
-                        <Typography
-                          variant="caption"
-                          sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}
-                        >
-                          <InfoIcon sx={{ fontSize: 14 }} />
-                          Enter any amount or click packages below for popular options
-                        </Typography>
-                      }
-                    />
-                  </Grid>
-                  <Grid size={{ xs: 12, md: 5 }}>
-                    {customImpressions && parseInt(customImpressions) > 0 ? (
-                      <Paper
-                        elevation={0}
-                        sx={{
-                          p: 2.5,
-                          background: `linear-gradient(135deg, 
-                            ${alpha(theme.palette.primary.main, 0.08)} 0%, 
-                            ${alpha(theme.palette.primary.main, 0.03)} 100%)`,
-                          border: `2px solid ${theme.palette.primary.main}`,
-                          borderRadius: 3,
-                          textAlign: 'center',
-                          position: 'relative',
-                          overflow: 'hidden',
-                          transition: 'all 0.3s',
-                          animation: 'slideInRight 0.5s ease-out',
-                          '&::before': {
-                            content: '""',
-                            position: 'absolute',
-                            top: -2,
-                            left: -2,
-                            right: -2,
-                            bottom: -2,
-                            background: `linear-gradient(45deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.3)})`,
-                            borderRadius: 3,
-                            opacity: 0,
-                            transition: 'opacity 0.3s',
-                            zIndex: -1
-                          },
-                          '&:hover::before': {
-                            opacity: 0.1
-                          }
-                        }}
-                      >
-                        <Stack spacing={1} alignItems="center">
-                          <Typography variant="overline" color="text.secondary" fontWeight={600}>
-                            Total Cost
-                          </Typography>
-                          <Typography
-                            variant="h3"
-                            fontWeight={800}
-                            sx={{
-                              background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
-                              backgroundClip: 'text',
-                              WebkitBackgroundClip: 'text',
-                              WebkitTextFillColor: 'transparent',
-                              textShadow: `0 2px 4px ${alpha(theme.palette.primary.main, 0.1)}`
-                            }}
-                          >
-                            {formatPrice(calculatePrice(parseInt(customImpressions)))}
-                          </Typography>
-                          <Chip
-                            icon={<AutoAwesomeIcon />}
-                            label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
-                            color="primary"
-                            variant="outlined"
-                            sx={{ fontWeight: 400 }}
-                          />
-                        </Stack>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          fullWidth
-                          sx={{ mt: 2 }}
-                          startIcon={<WalletIcon />}
-                          disabled={!selectedToken}
-                          onClick={() => {
-                            document
-                              .getElementById('payment-section')
-                              ?.scrollIntoView({ behavior: 'smooth' });
-                          }}
-                        >
-                          {selectedToken ? 'Pay with XRP' : 'Select Token First'}
-                        </Button>
-                      </Paper>
-                    ) : (
-                      <Box
-                        sx={{
-                          p: 4,
-                          border: '2px dashed',
-                          borderColor: 'divider',
-                          borderRadius: 2,
-                          textAlign: 'center'
-                        }}
-                      >
-                        <Typography variant="body2" color="text.secondary">
-                          Enter impressions to see price
-                        </Typography>
-                      </Box>
-                    )}
-                  </Grid>
-                </Grid>
-
-                <Box
-                  sx={{
-                    mt: 3,
-                    p: 2.5,
-                    bgcolor: theme.palette.mode === 'dark' ? alpha('#1F2937', 0.2) : 'grey.50',
-                    borderRadius: 2,
-                    border: `1px solid ${
-                      theme.palette.mode === 'dark' ? alpha('#1F2937', 0.15) : alpha('#000', 0.05)
-                    }`
-                  }}
-                >
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" mb={2}>
-                    <Typography
-                      variant="subtitle2"
-                      fontWeight={600}
-                      sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
-                    >
-                      <TrendingIcon fontSize="small" />
-                      Quick Buy Packages
-                    </Typography>
-                    <Chip
-                      label="Best Value"
-                      size="small"
-                      color="success"
-                      sx={{ fontWeight: 400 }}
-                    />
-                  </Stack>
-                  <Grid container spacing={1}>
-                    {pricingTiers.map((tier, index) => (
-                      <Grid size={{ xs: 12 }} sm={6} key={index}>
-                        <Paper
-                          elevation={0}
-                          sx={{
-                            p: 2,
-                            bgcolor:
-                              theme.palette.mode === 'dark' ? alpha('#1F2937', 0.1) : 'grey.50',
-                            border: '2px solid',
-                            borderColor:
-                              theme.palette.mode === 'dark' ? alpha('#1F2937', 0.2) : 'divider',
-                            cursor: 'pointer',
-                            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                            position: 'relative',
-                            overflow: 'hidden',
-                            '&::before': {
-                              content: '""',
-                              position: 'absolute',
-                              top: 0,
-                              left: -100,
-                              width: '100%',
-                              height: '100%',
-                              background: `linear-gradient(90deg, transparent, ${alpha(theme.palette.primary.main, 0.1)}, transparent)`,
-                              transition: 'left 0.5s'
-                            },
-                            '&:hover': {
-                              borderColor: theme.palette.primary.main,
-                              bgcolor: alpha(theme.palette.primary.main, 0.08),
-                              transform: 'translateY(-2px) scale(1.02)',
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
-                              '&::before': {
-                                left: '100%'
-                              }
-                            },
-                            '&:active': {
-                              transform: 'translateY(0) scale(1)'
-                            }
-                          }}
-                          onClick={() => {
-                            setImpressionInput(formatNumber(tier.impressions));
-                            setCustomImpressions(tier.impressions.toString());
-                          }}
-                        >
-                          <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Typography variant="body2" fontWeight={400}>
-                              {tier.label}
-                            </Typography>
-                            <Typography variant="body2" fontWeight={600} color="primary">
-                              ${formatNumber(tier.price)}
-                            </Typography>
-                          </Box>
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                  <Box mt={2} textAlign="center">
-                    <Typography variant="caption" color="text.secondary">
-                      💡 Custom amounts welcome • Flexible pricing for any budget
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-            </Paper>
-          </Grow>
-
-          {selectedToken && customImpressions && parseInt(customImpressions) > 0 && (
-            <Fade in timeout={1000}>
-              <Paper
-                id="payment-section"
-                elevation={theme.palette.mode === 'dark' ? 0 : 3}
-                sx={{
-                  maxWidth: 700,
-                  mx: 'auto',
-                  overflow: 'hidden',
-                  background:
-                    theme.palette.mode === 'dark'
-                      ? `linear-gradient(135deg, 
-                        ${alpha('#111827', 0.5)} 0%, 
-                        ${alpha('#111827', 0.3)} 50%,
-                        ${alpha('#111827', 0.4)} 100%)`
-                      : theme.palette.background.paper,
-                  border: `1px solid ${
-                    theme.palette.mode === 'dark' ? alpha('#1F2937', 0.15) : 'transparent'
-                  }`,
-                  backdropFilter:
-                    theme.palette.mode === 'dark' ? 'blur(60px) saturate(180%)' : 'none'
-                }}
-              >
-                <Box
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${theme.palette.primary.main}, ${alpha(theme.palette.primary.main, 0.7)})`,
-                    color: 'white'
-                  }}
-                >
-                  <Stack direction="row" alignItems="center" justifyContent="center" spacing={1}>
-                    <WalletIcon />
-                    <Typography variant="h5" fontWeight={600}>
-                      Complete Your Order
-                    </Typography>
-                  </Stack>
-                </Box>
-
-                <Box p={4}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 3,
-                      mb: 4,
-                      background: `linear-gradient(135deg, 
-                        ${alpha(theme.palette.primary.main, 0.05)} 0%, 
-                        ${alpha(theme.palette.primary.main, 0.02)} 100%)`,
-                      border: `2px solid ${theme.palette.primary.main}`,
-                      borderRadius: 2,
-                      position: 'relative',
-                      overflow: 'hidden',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        height: 4,
-                        background: `linear-gradient(90deg, 
-                          ${theme.palette.primary.main} 0%, 
-                          ${alpha(theme.palette.primary.main, 0.5)} 50%,
-                          ${theme.palette.primary.main} 100%)`,
-                        animation: 'pulse 2s infinite'
-                      }
-                    }}
-                  >
-                    <Stack spacing={2} alignItems="center">
-                      {selectedToken && (
-                        <Box mb={2} textAlign="center">
-                          <Typography variant="overline" color="text.secondary">
-                            Advertising for
-                          </Typography>
-                          <Stack
-                            direction="row"
-                            alignItems="center"
-                            justifyContent="center"
-                            spacing={2}
-                            mt={1}
-                          >
-                            <Box
-                              sx={{
-                                width: 56,
-                                height: 56,
-                                borderRadius: '50%',
-                                overflow: 'hidden',
-                                border: `3px solid ${theme.palette.primary.main}`,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`
-                              }}
-                            >
-                              <img
-                                src={`https://s1.xrpl.to/token/${selectedToken.value}`}
-                                alt={selectedToken.name || selectedToken.currency}
-                                style={{
-                                  width: '100%',
-                                  height: '100%',
-                                  objectFit: 'cover'
-                                }}
-                                onError={(e) => {
-                                  e.target.style.display = 'none';
-                                  e.target.parentElement.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.2)}, ${alpha(theme.palette.primary.main, 0.1)}); font-weight: 700; font-size: 1.5rem; color: ${theme.palette.primary.main}">${(selectedToken.name || selectedToken.currency)?.charAt(0)?.toUpperCase() || '?'}</div>`;
-                                }}
-                              />
-                            </Box>
-                            <Box>
-                              <Typography variant="h6" fontWeight={700}>
-                                {selectedToken.name || selectedToken.currency}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Vol:{' '}
-                                {selectedToken.volume24h > 1000000
-                                  ? `${(selectedToken.volume24h / 1000000).toFixed(1)}M`
-                                  : selectedToken.volume24h > 1000
-                                    ? `${(selectedToken.volume24h / 1000).toFixed(1)}K`
-                                    : selectedToken.volume24h?.toFixed(0) || '0'}{' '}
-                                XRP
-                              </Typography>
-                            </Box>
-                          </Stack>
-                        </Box>
+                      className={cn(
+                        "w-full pl-10 pr-4 py-3 rounded-lg border-[1.5px] text-lg font-normal transition-all",
+                        isDark
+                          ? "bg-gray-900/80 border-white/15 text-white placeholder:text-white/40"
+                          : "bg-white border-gray-300 text-gray-900 placeholder:text-gray-400"
                       )}
-                      <Typography variant="overline" color="primary" fontWeight={600}>
-                        Total Amount Due
-                      </Typography>
-                      <Typography variant="h2" fontWeight={700}>
+                    />
+                  </div>
+                  <p className={cn(
+                    "flex items-center gap-1 mt-2 text-xs",
+                    isDark ? "text-white/60" : "text-gray-600"
+                  )}>
+                    <Info size={14} />
+                    Enter any amount or click packages below for popular options
+                  </p>
+                </div>
+
+                <div>
+                  {customImpressions && parseInt(customImpressions) > 0 ? (
+                    <div className={cn(
+                      "p-6 rounded-2xl border-2 border-primary text-center relative overflow-hidden",
+                      isDark ? "bg-primary/8" : "bg-primary/5"
+                    )}>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Total Cost</p>
+                      <p className="text-3xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent mb-3">
                         {formatPrice(calculatePrice(parseInt(customImpressions)))}
-                      </Typography>
-                      <Stack direction="row" spacing={2} alignItems="center">
-                        <Chip
-                          icon={<AutoAwesomeIcon />}
-                          label={`≈ ${(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP`}
-                          color="primary"
-                          size="large"
-                          sx={{ fontWeight: 400, fontSize: '18px' }}
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          @ ${xrpRate.toFixed(2)}/XRP
-                        </Typography>
-                      </Stack>
-                      <Typography variant="body2" color="text.secondary">
-                        {formatNumber(customImpressions)} impressions • $
-                        {getCPMRate(parseInt(customImpressions)).toFixed(2)} CPM
-                      </Typography>
-                    </Stack>
-                  </Paper>
+                      </p>
+                      <div className={cn(
+                        "inline-flex items-center gap-1 px-3 py-1 rounded-full border-[1.5px] border-primary text-sm font-normal",
+                        "text-primary"
+                      )}>
+                        <Sparkles size={14} />
+                        ≈ {(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP
+                      </div>
+                      <button
+                        onClick={() => {
+                          document.getElementById('payment-section')?.scrollIntoView({ behavior: 'smooth' });
+                        }}
+                        disabled={!selectedToken}
+                        className={cn(
+                          "w-full mt-4 px-4 py-2 rounded-lg border-[1.5px] text-sm font-normal transition-all",
+                          !selectedToken
+                            ? "opacity-50 cursor-not-allowed"
+                            : "hover:bg-primary/5"
+                        )}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <Wallet size={16} />
+                          {selectedToken ? 'Pay with XRP' : 'Select Token First'}
+                        </div>
+                      </button>
+                    </div>
+                  ) : (
+                    <div className={cn(
+                      "p-12 rounded-2xl border-2 border-dashed text-center",
+                      isDark ? "border-white/15" : "border-gray-300"
+                    )}>
+                      <p className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>
+                        Enter impressions to see price
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
 
-                  <Stack spacing={3}>
-                    <Box>
-                      <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-                        <WalletIcon color="primary" />
-                        <Typography variant="h6" fontWeight={600}>
-                          Payment Information
-                        </Typography>
-                      </Stack>
-
-                      <Stack spacing={2}>
-                        <Paper
-                          elevation={0}
-                          sx={{
-                            p: 2.5,
-                            bgcolor: theme.palette.mode === 'dark' ? alpha('#000', 0.2) : 'grey.50',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: 2,
-                            position: 'relative'
-                          }}
-                        >
-                          <Stack direction="row" justifyContent="space-between" alignItems="start">
-                            <Box flex={1}>
-                              <Typography
-                                variant="overline"
-                                color="text.secondary"
-                                fontWeight={600}
-                              >
-                                XRP Address
-                              </Typography>
-                              <Typography
-                                variant="body1"
-                                sx={{
-                                  fontFamily: 'monospace',
-                                  fontSize: '18px',
-                                  fontWeight: 400,
-                                  wordBreak: 'break-all'
-                                }}
-                              >
-                                rN7n7otQDd6FczFgLdAtqCSVvUV6jGUMxt
-                              </Typography>
-                            </Box>
-                            <Tooltip title={copied ? 'Copied!' : 'Copy address'}>
-                              <IconButton
-                                color="primary"
-                                onClick={() => {
-                                  navigator.clipboard.writeText(
-                                    'rN7n7otQDd6FczFgLdAtqCSVvUV6jGUMxt'
-                                  );
-                                  setCopied(true);
-                                  setTimeout(() => setCopied(false), 2000);
-                                }}
-                              >
-                                {copied ? <CheckIcon /> : <CopyIcon />}
-                              </IconButton>
-                            </Tooltip>
-                          </Stack>
-                        </Paper>
-
-                        <Paper
-                          elevation={0}
-                          sx={{
-                            p: 2.5,
-                            bgcolor: theme.palette.mode === 'dark' ? alpha('#000', 0.2) : 'grey.50',
-                            border: '1px solid',
-                            borderColor: 'divider',
-                            borderRadius: 2
-                          }}
-                        >
-                          <Typography variant="overline" color="text.secondary" fontWeight={600}>
-                            Destination Tag (Required)
-                          </Typography>
-                          <Typography
-                            variant="h5"
-                            sx={{
-                              fontFamily: 'monospace',
-                              fontWeight: 400,
-                              color: 'primary.main'
-                            }}
-                          >
-                            {destinationTag}
-                          </Typography>
-                        </Paper>
-                      </Stack>
-                    </Box>
-
-                    <Alert
-                      severity="warning"
-                      icon={<InfoIcon />}
-                      sx={{
-                        borderRadius: 2,
-                        '& .MuiAlert-icon': {
-                          fontSize: 28
-                        }
+              {/* Quick Buy Packages */}
+              <div className={cn(
+                "p-6 rounded-xl",
+                isDark ? "bg-gray-900/20 border-[1.5px] border-gray-800/15" : "bg-gray-50 border-[1.5px] border-gray-200"
+              )}>
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <TrendingUp size={16} />
+                    <p className="text-sm font-semibold">Quick Buy Packages</p>
+                  </div>
+                  <span className="px-2 py-1 text-xs font-normal rounded bg-green-500/10 text-green-500 border border-green-500/30">
+                    Best Value
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {pricingTiers.map((tier, index) => (
+                    <div
+                      key={index}
+                      onClick={() => {
+                        setImpressionInput(formatNumber(tier.impressions));
+                        setCustomImpressions(tier.impressions.toString());
                       }}
+                      className={cn(
+                        "p-4 rounded-lg border-2 cursor-pointer transition-all relative overflow-hidden",
+                        isDark
+                          ? "bg-gray-900/10 border-gray-800/20 hover:border-primary hover:bg-primary/8"
+                          : "bg-gray-50 border-gray-200 hover:border-primary hover:bg-primary/5"
+                      )}
                     >
-                      <Typography variant="body2" fontWeight={400}>
-                        Include the destination tag in your transaction to ensure proper order
-                        processing
-                      </Typography>
-                    </Alert>
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-normal">{tier.label}</span>
+                        <span className="text-sm font-semibold text-primary">${formatNumber(tier.price)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className={cn(
+                  "text-center mt-4 text-xs",
+                  isDark ? "text-white/60" : "text-gray-600"
+                )}>
+                  💡 Custom amounts welcome • Flexible pricing for any budget
+                </p>
+              </div>
+            </div>
+          </div>
 
-                    {accountProfile && accountProfile.account ? (
-                      <Grid container spacing={2}>
-                        <Grid size={{ xs: 12 }} sm={6}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            size="large"
-                            fullWidth
-                            startIcon={<WalletIcon />}
-                            sx={{
-                              py: 1.5,
-                              fontWeight: 400,
-                              boxShadow: 3,
-                              '&:hover': {
-                                boxShadow: 5
-                              }
-                            }}
-                            onClick={handlePayment}
-                            disabled={process.status === 'processing'}
-                          >
-                            {process.status === 'processing' ? 'Processing...' : 'Pay with Wallet'}
-                          </Button>
-                        </Grid>
-                        <Grid size={{ xs: 12 }} sm={6}>
-                          <Button
-                            variant="outlined"
-                            size="large"
-                            fullWidth
-                            onClick={() => {
-                              setCustomImpressions('');
-                              setImpressionInput('');
-                            }}
-                            sx={{ py: 1.5, fontWeight: 400 }}
-                          >
-                            Change Amount
-                          </Button>
-                        </Grid>
-                      </Grid>
-                    ) : (
-                      <Box>
-                        <ConnectWallet />
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          display="block"
-                          textAlign="center"
-                          mt={1}
-                        >
-                          Connect your wallet to complete payment
-                        </Typography>
-                      </Box>
+          {/* Payment Section */}
+          {selectedToken && customImpressions && parseInt(customImpressions) > 0 && (
+            <div id="payment-section" className={cn(
+              "max-w-3xl mx-auto overflow-hidden rounded-2xl border-[1.5px]",
+              isDark
+                ? "bg-gradient-to-br from-gray-900/50 to-gray-900/30 border-gray-800/15 backdrop-blur-xl"
+                : "bg-white border-gray-200"
+            )}>
+              <div className="p-4 bg-gradient-to-r from-primary to-blue-600 text-white">
+                <div className="flex items-center justify-center gap-2">
+                  <Wallet size={20} />
+                  <h3 className="text-xl font-semibold">Complete Your Order</h3>
+                </div>
+              </div>
+
+              <div className="p-6">
+                <div className={cn(
+                  "p-6 mb-8 rounded-xl border-2 border-primary relative overflow-hidden",
+                  isDark ? "bg-primary/5" : "bg-primary/3"
+                )}>
+                  <div className="text-center space-y-4">
+                    {selectedToken && (
+                      <div className="mb-4">
+                        <p className={cn("text-xs uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
+                          Advertising for
+                        </p>
+                        <div className="flex items-center justify-center gap-4 mt-2">
+                          <div className="w-14 h-14 rounded-full overflow-hidden border-[3px] border-primary shadow-lg shadow-primary/30">
+                            <img
+                              src={`https://s1.xrpl.to/token/${selectedToken.value}`}
+                              alt={selectedToken.name || selectedToken.currency}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-lg font-bold">{selectedToken.name || selectedToken.currency}</p>
+                            <p className={cn("text-xs", isDark ? "text-white/60" : "text-gray-600")}>
+                              Vol: {selectedToken.volume24h > 1000000
+                                ? `${(selectedToken.volume24h / 1000000).toFixed(1)}M`
+                                : selectedToken.volume24h > 1000
+                                  ? `${(selectedToken.volume24h / 1000).toFixed(1)}K`
+                                  : selectedToken.volume24h?.toFixed(0) || '0'} XRP
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
+                    <p className="text-xs text-primary uppercase tracking-wide font-semibold">Total Amount Due</p>
+                    <p className="text-4xl font-bold">{formatPrice(calculatePrice(parseInt(customImpressions)))}</p>
+                    <div className="flex items-center justify-center gap-4">
+                      <span className={cn(
+                        "inline-flex items-center gap-1 px-4 py-1.5 rounded-full border-[1.5px] border-primary text-lg font-normal",
+                        "text-primary"
+                      )}>
+                        <Sparkles size={16} />
+                        ≈ {(calculatePrice(parseInt(customImpressions)) / xrpRate).toFixed(2)} XRP
+                      </span>
+                      <p className={cn("text-xs", isDark ? "text-white/60" : "text-gray-600")}>
+                        @ ${xrpRate.toFixed(2)}/XRP
+                      </p>
+                    </div>
+                    <p className={cn("text-sm", isDark ? "text-white/70" : "text-gray-600")}>
+                      {formatNumber(customImpressions)} impressions • $
+                      {getCPMRate(parseInt(customImpressions)).toFixed(2)} CPM
+                    </p>
+                  </div>
+                </div>
 
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 3,
-                        bgcolor: alpha(theme.palette.success.main, 0.05),
-                        border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
-                        borderRadius: 2
-                      }}
-                    >
-                      <Stack direction="row" spacing={2}>
-                        <SpeedIcon color="success" sx={{ mt: 0.5 }} />
-                        <Box>
-                          <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                            What Happens Next?
-                          </Typography>
-                          <Stack spacing={1}>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <CheckIcon fontSize="small" color="success" />
-                              <Typography variant="body2">
-                                Send XRP to the address with destination tag
-                              </Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <CheckIcon fontSize="small" color="success" />
-                              <Typography variant="body2" fontWeight={600}>
-                                Campaign starts instantly
-                              </Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <CheckIcon fontSize="small" color="success" />
-                              <Typography variant="body2">
-                                Receive analytics dashboard access
-                              </Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <CheckIcon fontSize="small" color="success" />
-                              <Typography variant="body2">
-                                Track impressions in real-time
-                              </Typography>
-                            </Box>
-                          </Stack>
-                        </Box>
-                      </Stack>
-                    </Paper>
-                  </Stack>
-                </Box>
-              </Paper>
-            </Fade>
+                <div className="space-y-6">
+                  <div>
+                    <div className="flex items-center gap-2 mb-4">
+                      <Wallet size={18} className="text-primary" />
+                      <h4 className="text-lg font-semibold">Payment Information</h4>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className={cn(
+                        "p-6 rounded-xl border-[1.5px]",
+                        isDark ? "bg-black/20 border-white/10" : "bg-gray-50 border-gray-200"
+                      )}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <p className={cn(
+                              "text-xs uppercase tracking-wide font-semibold mb-2",
+                              isDark ? "text-white/60" : "text-gray-600"
+                            )}>
+                              XRP Address
+                            </p>
+                            <p className="text-lg font-mono font-normal break-all">
+                              rN7n7otQDd6FczFgLdAtqCSVvUV6jGUMxt
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              navigator.clipboard.writeText('rN7n7otQDd6FczFgLdAtqCSVvUV6jGUMxt');
+                              setCopied(true);
+                              setTimeout(() => setCopied(false), 2000);
+                            }}
+                            className={cn(
+                              "ml-4 p-2 rounded-lg border-[1.5px] transition-colors",
+                              isDark ? "border-white/15 hover:bg-white/5" : "border-gray-300 hover:bg-gray-100"
+                            )}
+                            title={copied ? 'Copied!' : 'Copy address'}
+                          >
+                            {copied ? <Check size={20} className="text-green-500" /> : <Copy size={20} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className={cn(
+                        "p-6 rounded-xl border-[1.5px]",
+                        isDark ? "bg-black/20 border-white/10" : "bg-gray-50 border-gray-200"
+                      )}>
+                        <p className={cn(
+                          "text-xs uppercase tracking-wide font-semibold mb-2",
+                          isDark ? "text-white/60" : "text-gray-600"
+                        )}>
+                          Destination Tag (Required)
+                        </p>
+                        <p className="text-2xl font-mono font-normal text-primary">
+                          {destinationTag}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={cn(
+                    "p-4 rounded-xl border-[1.5px]",
+                    "bg-yellow-500/10 border-yellow-500/30"
+                  )}>
+                    <div className="flex items-start gap-2">
+                      <Info size={20} className="text-yellow-500 mt-0.5" />
+                      <p className="text-sm font-normal">
+                        Include the destination tag in your transaction to ensure proper order processing
+                      </p>
+                    </div>
+                  </div>
+
+                  {accountProfile && accountProfile.account ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <button
+                        onClick={handlePayment}
+                        disabled={process.status === 'processing'}
+                        className={cn(
+                          "flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-[1.5px] text-sm font-normal transition-all",
+                          process.status === 'processing'
+                            ? "opacity-50 cursor-not-allowed"
+                            : "bg-primary text-white border-primary hover:opacity-90"
+                        )}
+                      >
+                        <Wallet size={16} />
+                        {process.status === 'processing' ? 'Processing...' : 'Pay with Wallet'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setCustomImpressions('');
+                          setImpressionInput('');
+                        }}
+                        className={cn(
+                          "px-4 py-3 rounded-lg border-[1.5px] text-sm font-normal transition-all",
+                          isDark
+                            ? "border-white/15 hover:bg-white/5"
+                            : "border-gray-300 hover:bg-gray-100"
+                        )}
+                      >
+                        Change Amount
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <ConnectWallet />
+                      <p className={cn(
+                        "text-center mt-2 text-xs",
+                        isDark ? "text-white/60" : "text-gray-600"
+                      )}>
+                        Connect your wallet to complete payment
+                      </p>
+                    </div>
+                  )}
+
+                  <div className={cn(
+                    "p-6 rounded-xl border-[1.5px]",
+                    "bg-green-500/5 border-green-500/20"
+                  )}>
+                    <div className="flex items-start gap-4">
+                      <Gauge size={20} className="text-green-500 mt-1" />
+                      <div>
+                        <p className="text-sm font-semibold mb-2">What Happens Next?</p>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <Check size={16} className="text-green-500" />
+                            <p className="text-sm">Send XRP to the address with destination tag</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check size={16} className="text-green-500" />
+                            <p className="text-sm font-semibold">Campaign starts instantly</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check size={16} className="text-green-500" />
+                            <p className="text-sm">Receive analytics dashboard access</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Check size={16} className="text-green-500" />
+                            <p className="text-sm">Track impressions in real-time</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           )}
-        </Container>
+        </div>
       </MainContent>
       <Footer />
-      <style jsx global>{`
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        @keyframes pulse {
-          0%,
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.05);
-          }
-        }
-        @keyframes slideInRight {
-          from {
-            opacity: 0;
-            transform: translateX(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-      `}</style>
     </PageWrapper>
   );
 }

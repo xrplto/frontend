@@ -1,19 +1,7 @@
 import axios from 'axios';
-import { useState } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  useTheme,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Avatar
-} from '@mui/material';
+import { useState, useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { rippleTimeToISO8601 } from 'src/utils/parseUtils';
@@ -26,14 +14,19 @@ const AccountAvatar = ({ account }) => {
     setImgSrc(getHashIcon(account));
   };
 
-  return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 32, height: 32, mr: 1 }} />;
+  return (
+    <img
+      src={imgSrc}
+      onError={handleImageError}
+      alt={account}
+      className="w-8 h-8 rounded-full mr-2"
+    />
+  );
 };
 
-const LedgerDetails = ({ ledgerData, error }) => {
-  const theme = useTheme();
-
+const LedgerDetails = ({ ledgerData, error, isDark }) => {
   if (error) {
-    return <Typography color="error">{error}</Typography>;
+    return <div className="text-red-500">{error}</div>;
   }
 
   const { ledger } = ledgerData;
@@ -59,115 +52,117 @@ const LedgerDetails = ({ ledgerData, error }) => {
   );
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: { xs: 2, sm: 3, md: 4 },
-        borderRadius: '0',
-        background: 'transparent',
-        border: `1px solid ${theme.palette.divider}`
-      }}
-    >
-      <Typography variant="h5" gutterBottom>
+    <div className={cn(
+      "p-4 sm:p-6 md:p-8 rounded-xl border-[1.5px]",
+      isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+    )}>
+      <h2 className="text-xl font-normal mb-2">
         Ledger transactions #{ledger_index}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+      </h2>
+      <p className={cn(
+        "text-[15px] mb-4",
+        isDark ? "text-white/60" : "text-gray-600"
+      )}>
         {closeTimeLocale}
-      </Typography>
+      </p>
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Index</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Hash</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className={cn(
+              "border-b-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Index</th>
+              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Type</th>
+              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Address</th>
+              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Status</th>
+              <th className="text-left py-3 px-2 text-[11px] font-medium uppercase tracking-wide text-white/60">Hash</th>
+            </tr>
+          </thead>
+          <tbody>
             {sortedTransactions.map((tx) => (
-              <TableRow key={tx.hash}>
-                <TableCell>{tx.metaData.TransactionIndex}</TableCell>
-                <TableCell>{tx.TransactionType}</TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <tr key={tx.hash} className={cn(
+                "border-b-[1.5px]",
+                isDark ? "border-white/5" : "border-gray-100"
+              )}>
+                <td className="py-3 px-2 text-[13px]">{tx.metaData.TransactionIndex}</td>
+                <td className="py-3 px-2 text-[13px]">{tx.TransactionType}</td>
+                <td className="py-3 px-2">
+                  <div className="flex items-center">
                     <AccountAvatar account={tx.Account} />
-                    <Typography
-                      variant="body2"
+                    <span
                       onClick={() => (window.location.href = `/profile/${tx.Account}`)}
-                      sx={{
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        '&:hover': { textDecoration: 'underline' }
-                      }}
+                      className="text-primary cursor-pointer hover:underline text-[13px]"
                     >
                       {shortenAddress(tx.Account)}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography
-                    variant="body2"
-                    color={
-                      tx.metaData.TransactionResult === 'tesSUCCESS' ? 'success.main' : 'error.main'
-                    }
-                  >
+                    </span>
+                  </div>
+                </td>
+                <td className="py-3 px-2">
+                  <span className={cn(
+                    "text-[13px]",
+                    tx.metaData.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
+                  )}>
                     {tx.metaData.TransactionResult}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography
-                    variant="body2"
+                  </span>
+                </td>
+                <td className="py-3 px-2">
+                  <span
                     onClick={() => (window.location.href = `/tx/${tx.hash}`)}
-                    sx={{
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
+                    className="text-primary cursor-pointer hover:underline text-[13px]"
                   >
                     {shortenHash(tx.hash)}
-                  </Typography>
-                </TableCell>
-              </TableRow>
+                  </span>
+                </td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
 
-      <Box sx={{ pt: 3, mt: 3, borderTop: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="body2" color="text.secondary">
+      <div className={cn(
+        "pt-4 mt-4 border-t-[1.5px]",
+        isDark ? "border-white/10" : "border-gray-200"
+      )}>
+        <p className={cn(
+          "text-[13px] mb-1",
+          isDark ? "text-white/60" : "text-gray-600"
+        )}>
           Ledger Unix close time: {close_time}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </p>
+        <p className={cn(
+          "text-[13px]",
+          isDark ? "text-white/60" : "text-gray-600"
+        )}>
           Ledger UTC close time: {closeTimeISO}
-        </Typography>
-      </Box>
-    </Paper>
+        </p>
+      </div>
+    </div>
   );
 };
 
 const LatestLedgerPage = ({ ledgerData, error }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="flex flex-col min-h-screen">
       <Header />
-      <Container maxWidth="lg" sx={{ flex: 1, py: 4 }}>
-        <Box mb={4}>
-          <Typography variant="h4" component="h1" gutterBottom>
+      <div className="flex-1 py-8 max-w-screen-lg mx-auto w-full px-4">
+        <div className="mb-8">
+          <h1 className="text-3xl font-normal mb-2">
             Latest Ledger
-          </Typography>
-        </Box>
+          </h1>
+        </div>
         {error ? (
-          <Typography color="error">{error}</Typography>
+          <div className="text-red-500">{error}</div>
         ) : (
-          <LedgerDetails ledgerData={ledgerData} />
+          <LedgerDetails ledgerData={ledgerData} isDark={isDark} />
         )}
-      </Container>
+      </div>
       <Footer />
-    </Box>
+    </div>
   );
 };
 

@@ -154,7 +154,7 @@ const Card = styled.div`
 `;
 
 const CardContent = styled.div`
-  padding: 8px;
+  padding: 6px 8px;
 `;
 
 const TradeTypeChip = styled.div`
@@ -1111,29 +1111,19 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 >
                   {formatRelativeTime(trade.time)}
                 </Typography>
-                <TradeTypeChip
-                  label={isBuy ? 'BUY' : 'SELL'}
-                  tradetype={isBuy ? 'BUY' : 'SELL'}
-                  size="small"
-                />
+                <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>
+                  {isBuy ? 'BUY' : 'SELL'}
+                </TradeTypeChip>
               </Box>
 
               {/* Price */}
-              <Box style={{ textAlign: { xs: 'left', md: 'left' } }}>
+              <Box>
                 <Typography
                   variant="body2"
-                  color="text.secondary"
-                  isDark={isDark}
-                  style={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
-                >
-                  Price (XRP)
-                </Typography>
-                <Typography
-                  variant="body2"
-                  fontWeight="600"
+                  fontWeight="500"
                   color="text.primary"
                   isDark={isDark}
-                  style={{ fontSize: '14px' }}
+                  style={{ fontSize: '13px' }}
                 >
                   {formatPrice(price)}
                 </Typography>
@@ -1144,28 +1134,17 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <img
                   src={getTokenImageUrl(amountData.issuer, amountData.currency)}
                   alt={decodeCurrency(amountData.currency)}
-                  style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    isDark={isDark}
-                    style={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
-                  >
-                    Amount
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight="600"
-                    color="text.primary"
-                    isDark={isDark}
-                    style={{ fontSize: '14px' }}
-                  >
-                    {formatTradeValue(amountData.value)}{' '}
-                    {decodeCurrency(amountData.currency)}
-                  </Typography>
-                </Box>
+                <Typography
+                  variant="body2"
+                  fontWeight="500"
+                  color="text.primary"
+                  isDark={isDark}
+                  style={{ fontSize: '13px' }}
+                >
+                  {formatTradeValue(amountData.value)} {decodeCurrency(amountData.currency)}
+                </Typography>
               </Box>
 
               {/* Total */}
@@ -1173,28 +1152,18 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <img
                   src={getTokenImageUrl(totalData.issuer, totalData.currency)}
                   alt={decodeCurrency(totalData.currency)}
-                  style={{ width: '18px', height: '18px', borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
+                  style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
                 />
-                <Box>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    isDark={isDark}
-                    style={{ fontSize: '12px', display: { xs: 'block', md: 'none' } }}
-                  >
-                    Total
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    fontWeight="600"
-                    color="text.primary"
-                    isDark={isDark}
-                    style={{ fontSize: '14px' }}
-                  >
-                    {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
-                  </Typography>
-                </Box>
-                <span style={{ fontSize: '13px', marginLeft: '4px', opacity: 0.7 }}>
+                <Typography
+                  variant="body2"
+                  fontWeight="500"
+                  color="text.primary"
+                  isDark={isDark}
+                  style={{ fontSize: '13px' }}
+                >
+                  {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
+                </Typography>
+                <span style={{ fontSize: '12px', opacity: 0.7 }}>
                   {(() => {
                     const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
                     if (val < 500) return '🦐';
@@ -1300,33 +1269,29 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
       {tabValue === 0 && (
         <>
-          <Box style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <FormControlLabel isDark={isDark}>
-              <Switch checked={xrpOnly} isDark={isDark}>
-                <input type="checkbox" checked={xrpOnly} onChange={handleXrpOnlyChange} />
-                <span></span>
-              </Switch>
-              <span style={{ marginLeft: '8px' }}>XRP Trades Only</span>
-            </FormControlLabel>
+          <Box style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+              <input type="checkbox" checked={xrpOnly} onChange={handleXrpOnlyChange} style={{ width: '14px', height: '14px', accentColor: '#147DFE' }} />
+              XRP Only
+            </label>
           </Box>
 
-          <TableHeader isDark={isDark}>
-            <div style={{ flex: 1 }}>
+          <TableHeader isDark={isDark} style={{ padding: '8px' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
               TIME / TYPE
               <div style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '2px 8px',
-                borderRadius: '12px',
-                border: isDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid rgba(0,0,0,0.2)',
-                marginLeft: '8px'
+                gap: '4px',
+                padding: '1px 6px',
+                borderRadius: '8px',
+                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.15)'
               }}>
-                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#147DFE' }}></div>
-                <span style={{ color: '#147DFE', fontSize: '10px', fontWeight: 600 }}>LIVE</span>
+                <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#147DFE', animation: 'pulse 2s infinite' }}></div>
+                <span style={{ color: '#147DFE', fontSize: '9px', fontWeight: 500 }}>LIVE</span>
               </div>
             </div>
-            <div style={{ flex: '0.8' }}>PRICE (XRP)</div>
+            <div style={{ flex: '0.8' }}>PRICE</div>
             <div style={{ flex: '1.5' }}>AMOUNT</div>
             <div style={{ flex: '1.5' }}>TOTAL</div>
             <div style={{ flex: 1 }}>BY</div>

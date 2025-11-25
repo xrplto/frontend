@@ -2,9 +2,6 @@ import axios from 'axios';
 import { useState, useEffect } from 'react';
 import useWebSocket from 'react-use-websocket';
 
-// Material
-import { Box, Container, styled, Toolbar } from '@mui/material';
-
 // Redux
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
@@ -16,14 +13,6 @@ import ScrollToTop from 'src/components/ScrollToTop';
 // TrustSetDialog removed - Xaman no longer used
 
 import TokenDetail from 'src/TokenDetail';
-
-// overflow: hidden;
-const OverviewWrapper = styled(Box)(
-  () => `
-    overflow: hidden;
-    flex: 1;
-`
-);
 
 function Detail({ data }) {
   const dispatch = useDispatch();
@@ -57,9 +46,11 @@ function Detail({ data }) {
     }
   }, [lastMessage, dispatch]);
 
+  const isPanelOpen = creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
+
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="overflow-hidden flex-1">
+      <div id="back-to-top-anchor" className="h-6" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -68,14 +59,7 @@ function Detail({ data }) {
         {tokenName} Price Chart & Trading Data
       </h1>
 
-      <Container
-        maxWidth={creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen ? false : 'xl'}
-        sx={
-          creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen
-            ? { width: '100%', px: 2 }
-            : undefined
-        }
-      >
+      <div className={isPanelOpen ? "w-full px-4" : "max-w-[1920px] mx-auto w-full px-4"}>
         <TokenDetail
           token={token}
           tab={data.tab}
@@ -87,13 +71,13 @@ function Detail({ data }) {
           orderBookOpen={orderBookOpen}
           notificationPanelOpen={notificationPanelOpen}
         />
-      </Container>
+      </div>
 
       <ScrollToTop />
 
       <Footer />
 
-    </OverviewWrapper>
+    </div>
   );
 }
 

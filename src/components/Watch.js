@@ -1,10 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect } from 'react';
-
-// Material
-import { useTheme, Chip, Tooltip, IconButton, Button, alpha } from '@mui/material';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import StarRateIcon from '@mui/icons-material/StarRate';
+import { Star } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
@@ -13,8 +10,8 @@ import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 export default function Watch({ collection }) {
   const BASE_URL = 'https://api.xrpl.to/api'; //process.env.API_URL;
-  const theme = useTheme();
-  const { accountProfile, openSnackbar, setLoading, darkMode } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar, setLoading } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const [watchList, setWatchList] = useState([]);
 
@@ -97,23 +94,22 @@ export default function Watch({ collection }) {
   };
 
   return (
-    <Button
-      variant="outlined"
-      size="small"
-      startIcon={watchList.includes(md5) ? <StarRateIcon sx={{ fontSize: '14px' }} /> : <StarOutlineIcon sx={{ fontSize: '14px' }} />}
+    <button
       onClick={() => onChangeWatchList(md5)}
-      sx={{
-        textTransform: 'none',
-        fontSize: '11px',
-        py: 0.5,
-        px: 1,
-        borderRadius: '6px',
-        borderColor: alpha(theme.palette.divider, 0.2),
-        color: 'text.secondary',
-        '&:hover': { borderColor: alpha(theme.palette.divider, 0.4), backgroundColor: 'transparent' }
-      }}
+      className={cn(
+        "flex items-center gap-1.5 rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal transition-colors",
+        isDark
+          ? "border-white/10 text-white/60 hover:border-white/20 hover:text-white"
+          : "border-gray-200 text-gray-600 hover:border-gray-300 hover:text-gray-900"
+      )}
     >
+      <Star
+        size={14}
+        className={cn(
+          watchList.includes(md5) && "fill-current"
+        )}
+      />
       {watchList.includes(md5) ? 'Following' : 'Follow'}
-    </Button>
+    </button>
   );
 }

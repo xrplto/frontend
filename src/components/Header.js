@@ -1,47 +1,8 @@
-import { alpha } from '@mui/material/styles';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Container from '@mui/material/Container';
-import IconButton from '@mui/material/IconButton';
-import Link from '@mui/material/Link';
-import Snackbar from '@mui/material/Snackbar';
-import Stack from '@mui/material/Stack';
-import useMediaQuery from '@mui/material/useMediaQuery';
-import { useTheme } from '@mui/material/styles';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import Divider from '@mui/material/Divider';
-import SvgIcon from '@mui/material/SvgIcon';
-import Typography from '@mui/material/Typography';
-import Drawer from '@mui/material/Drawer';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemText from '@mui/material/ListItemText';
-import Collapse from '@mui/material/Collapse';
-import ExpandLess from '@mui/icons-material/ExpandLess';
-import ExpandMore from '@mui/icons-material/ExpandMore';
-import { styled } from '@mui/material/styles';
 import Image from 'next/image';
-import SearchIcon from '@mui/icons-material/Search';
-import MenuIcon from '@mui/icons-material/Menu';
-import StarOutlineIcon from '@mui/icons-material/StarOutline';
-import TroubleshootIcon from '@mui/icons-material/Troubleshoot';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import NotificationsIcon from '@mui/icons-material/Notifications';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import PaletteIcon from '@mui/icons-material/Palette';
-import SettingsIcon from '@mui/icons-material/Settings';
-import CheckIcon from '@mui/icons-material/Check';
-// Translation removed - not using i18n
 import {
   useState,
   useContext,
   useEffect,
-  forwardRef,
   memo,
   useCallback,
   lazy,
@@ -51,7 +12,6 @@ import {
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
-import Decimal from 'decimal.js-light';
 import axios from 'axios';
 import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
@@ -61,6 +21,34 @@ const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
+import { cn } from 'src/utils/cn';
+import {
+  Search,
+  Menu,
+  Star,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Sparkles,
+  Trophy,
+  Bell,
+  ArrowLeftRight,
+  Palette,
+  Settings,
+  Check,
+  TrendingUp,
+  Eye,
+  Newspaper,
+  Flame,
+  Info,
+  Waves,
+  X,
+  Fish,
+  PawPrint,
+  Droplets,
+  Sun
+} from 'lucide-react';
+
 const BASE_URL = 'https://api.xrpl.to/api';
 const currencySymbols = {
   USD: '$ ',
@@ -78,18 +66,6 @@ const currencyConfig = {
 import CurrencySwitcher from './CurrencySwitcher';
 import ThemeSwitcher from './ThemeSwitcher';
 
-// Iconify
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import FiberNewIcon from '@mui/icons-material/FiberNew';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import InfoIcon from '@mui/icons-material/Info';
-import WavesIcon from '@mui/icons-material/Waves';
-import SetMealIcon from '@mui/icons-material/SetMeal';
-import PetsIcon from '@mui/icons-material/Pets';
-import WaterIcon from '@mui/icons-material/Water';
-import CloseIcon from '@mui/icons-material/Close';
-
 // Helper functions (from Topbar)
 const abbreviateNumber = (num) => {
   if (Math.abs(num) < 1000) return num.toFixed(1);
@@ -99,263 +75,108 @@ const abbreviateNumber = (num) => {
   return scaled.toFixed(2).replace(/\.?0+$/, '') + suffixes[magnitude];
 };
 
-// Add XPMarket icon component
-const XPMarketIcon = memo((props) => {
-  // Filter out non-DOM props that might cause warnings
-  const { darkMode, ...otherProps } = props;
+// Custom SVG icons as components
+const XPMarketIcon = memo(({ className, size = 16 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 32 32" fill="currentColor">
+    <path d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z" />
+    <path d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z" />
+    <path d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z" />
+  </svg>
+));
+XPMarketIcon.displayName = 'XPMarketIcon';
 
-  return (
-    <SvgIcon {...otherProps} viewBox="0 0 32 32">
-      <path
-        d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z"
-        fill="inherit"
-      />
-      <path
-        d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z"
-        fill="inherit"
-      />
-      <path
-        d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z"
-        fill="inherit"
-      />
-    </SvgIcon>
-  );
-});
-
-const LedgerMemeIcon = memo(
-  forwardRef((props, ref) => {
-    // Filter out any non-DOM props that might cause warnings
-    const { width, darkMode, ...otherProps } = props;
-
-    return (
-      <SvgIcon {...otherProps} ref={ref} viewBox="0 0 26 26">
-        <g transform="scale(0.55)">
-          <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0"></rect>
-          <g>
-            <g>
-              <path
-                fill="#262626"
-                d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-              ></path>
-              <path
-                fill="#262626"
-                d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z"
-              ></path>
-              <path
-                fill="#262626"
-                d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z"
-              ></path>
-              <path
-                fill="#262626"
-                d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z"
-              ></path>
-            </g>
-            <path
-              fill="#262626"
-              d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z"
-            ></path>
-          </g>
+const LedgerMemeIcon = memo(({ className, size = 16 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 26 26">
+    <g transform="scale(0.55)">
+      <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0" />
+      <g>
+        <g>
+          <path fill="#262626" d="M25.74,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z" />
+          <path fill="#262626" d="M27.43,10.62c-0.45-0.46-1.05-0.72-1.69-0.72s-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78Z" />
+          <path fill="#262626" d="M10.22,9.68c0.64,0,1.24-0.26,1.69-0.72l2.69-2.76h-1.64l-1.87,1.92c-0.23,0.24-0.55,0.37-0.88,0.37s-0.64-0.13-0.88-0.37l-1.87-1.92h-1.64l2.69,2.76c0.45,0.46,1.05,0.72,1.69,0.72Z" />
+          <path fill="#262626" d="M10.22,9.90c-0.64,0-1.24,0.26-1.69,0.72l-2.71,2.78h1.64l1.89-1.93c0.23-0.24,0.55-0.37,0.88-0.37s0.64,0.13,0.88,0.37l1.89,1.93h1.64l-2.71-2.78c-0.45-0.46-1.05-0.72-1.69-0.72Z" />
         </g>
-      </SvgIcon>
-    );
-  })
-);
-
+        <path fill="#262626" d="M5.81,17.4c0,6.73,5.45,12.18,12.18,12.18s12.18-5.45,12.18-12.18H5.81Z" />
+      </g>
+    </g>
+  </svg>
+));
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
-const HorizonIcon = memo(
-  forwardRef((props, ref) => {
-    const { width, darkMode, ...otherProps } = props;
-    return (
-      <SvgIcon
-        {...otherProps}
-        ref={ref}
-        viewBox="0 0 24 24"
-        sx={{
-          '& circle, & path': {
-            fill: 'none',
-            stroke: '#f97316',
-            strokeWidth: 2,
-            strokeLinecap: 'round',
-            strokeLinejoin: 'round'
-          },
-          // Enhanced visibility on mobile
-          '@media (max-width: 600px)': {
-            '& circle, & path': {
-              strokeWidth: 2.5
-            }
-          }
-        }}
-      >
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2" />
-        <path d="M12 20v2" />
-        <path d="M4.93 4.93l1.41 1.41" />
-        <path d="M17.66 17.66l1.41 1.41" />
-        <path d="M2 12h2" />
-        <path d="M20 12h2" />
-        <path d="M6.34 17.66l-1.41 1.41" />
-        <path d="M19.07 4.93l-1.41 1.41" />
-      </SvgIcon>
-    );
-  })
-);
-
+const HorizonIcon = memo(({ className, size = 16 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2" />
+    <path d="M12 20v2" />
+    <path d="M4.93 4.93l1.41 1.41" />
+    <path d="M17.66 17.66l1.41 1.41" />
+    <path d="M2 12h2" />
+    <path d="M20 12h2" />
+    <path d="M6.34 17.66l-1.41 1.41" />
+    <path d="M19.07 4.93l-1.41 1.41" />
+  </svg>
+));
 HorizonIcon.displayName = 'HorizonIcon';
 
-const MoonvalveIcon = memo(
-  forwardRef((props, ref) => {
-    const { width, darkMode, ...otherProps } = props;
-    return (
-      <SvgIcon
-        {...otherProps}
-        ref={ref}
-        viewBox="0 0 1080 1080"
-        sx={{
-          '& path': {
-            fill: '#ff6b35'
-          }
-        }}
-      >
-        <g transform="matrix(0.21 0 0 -0.21 405.9 545.69)">
-          <path d="M 4690 8839 C 4166 8779 3630 8512 3267 8130 C 2862 7705 2643 7206 2599 6608 C 2561 6084 2717 5513 3023 5055 C 3214 4769 3472 4512 3749 4333 C 4414 3901 5232 3796 5955 4050 C 6070 4091 6193 4147 6188 4157 C 6115 4302 6106 4421 6160 4563 C 6171 4591 6178 4615 6177 4617 C 6175 4618 6150 4613 6120 4604 C 5919 4550 5578 4525 5349 4549 C 4904 4595 4475 4772 4138 5047 C 4035 5132 3858 5318 3774 5430 C 3359 5983 3235 6685 3436 7347 C 3620 7955 4061 8447 4652 8706 C 4758 8752 4989 8830 5021 8830 C 5031 8830 5042 8835 5045 8840 C 5053 8852 4800 8851 4690 8839 z"
-                transform="translate(-4390.76, -6381.14)" />
-        </g>
-        <g transform="matrix(0.21 0 0 -0.21 592.36 356.11)">
-          <path d="M 4344 7780 C 4332 7775 4310 7755 4294 7735 C 4238 7661 4257 7531 4333 7476 C 4360 7456 4376 7455 4726 7452 L 5090 7449 L 5090 7245 L 5090 7040 L 4962 7040 C 4876 7040 4830 7036 4822 7028 C 4805 7011 4805 6789 4822 6772 C 4831 6763 4941 6760 5256 6760 C 5627 6760 5680 6762 5694 6776 C 5707 6788 5710 6815 5710 6899 C 5710 7042 5712 7040 5552 7040 L 5430 7040 L 5430 7245 L 5430 7449 L 5803 7452 L 6175 7455 L 6209 7479 C 6301 7545 6300 7713 6208 7770 C 6176 7790 6160 7790 5270 7789 C 4772 7789 4355 7785 4344 7780 z"
-                transform="translate(-5269.57, -7274.67)" />
-        </g>
-        <g transform="matrix(0.21 0 0 -0.21 577.88 638.18)">
-          <path d="M 4775 6606 C 4731 6586 4709 6557 4703 6508 C 4700 6484 4693 6459 4687 6453 C 4680 6443 4553 6440 4113 6440 C 3639 6440 3549 6438 3544 6426 C 3535 6402 3571 6230 3611 6105 C 3632 6039 3676 5933 3707 5870 L 3765 5755 L 4201 5750 L 4637 5745 L 4671 5717 C 4815 5600 4922 5539 5045 5505 C 5136 5480 5309 5474 5406 5493 C 5554 5521 5666 5576 5804 5689 L 5873 5745 L 5989 5748 C 6095 5751 6109 5749 6149 5728 C 6180 5711 6201 5690 6217 5660 C 6238 5620 6240 5605 6240 5454 C 6240 5303 6241 5290 6259 5280 C 6285 5266 6815 5266 6841 5280 C 6859 5290 6860 5304 6860 5534 C 6860 5797 6850 5868 6796 5985 C 6719 6155 6543 6322 6374 6389 C 6277 6426 6180 6440 6006 6440 C 5822 6440 5810 6444 5810 6504 C 5810 6545 5778 6588 5734 6606 C 5686 6626 4820 6626 4775 6606 z"
-                transform="translate(-5201.3, -5945.25)" />
-        </g>
-        <g transform="matrix(0.21 0 0 -0.21 992.56 807.22)">
-          <path d="M 7461 5547 C 7323 5341 7117 5124 6923 4978 C 6868 4936 6814 4898 6805 4893 C 6789 4884 6790 4880 6813 4844 C 6826 4822 6852 4776 6869 4742 C 6886 4708 6904 4680 6909 4680 C 6925 4680 7115 4886 7186 4980 C 7264 5083 7349 5218 7400 5319 C 7440 5400 7523 5610 7517 5617 C 7514 5619 7489 5588 7461 5547 z"
-                transform="translate(-7155.74, -5148.55)" />
-        </g>
-        <g transform="matrix(0.21 0 0 -0.21 863.97 931.46)">
-          <path d="M 6512 5023 C 6368 4810 6239 4568 6219 4470 C 6183 4296 6260 4139 6416 4068 C 6454 4051 6483 4046 6550 4046 C 6617 4046 6646 4051 6684 4068 C 6759 4102 6813 4152 6850 4221 C 6877 4273 6884 4299 6888 4360 C 6894 4470 6877 4535 6801 4683 C 6743 4797 6568 5080 6555 5080 C 6553 5080 6533 5054 6512 5023 z"
-                transform="translate(-6549.68, -4563)" />
-        </g>
-      </SvgIcon>
-    );
-  })
-);
-
+const MoonvalveIcon = memo(({ className, size = 16 }) => (
+  <svg className={className} width={size} height={size} viewBox="0 0 1080 1080" fill="#ff6b35">
+    <g transform="matrix(0.21 0 0 -0.21 405.9 545.69)">
+      <path d="M 4690 8839 C 4166 8779 3630 8512 3267 8130 C 2862 7705 2643 7206 2599 6608 C 2561 6084 2717 5513 3023 5055 C 3214 4769 3472 4512 3749 4333 C 4414 3901 5232 3796 5955 4050 C 6070 4091 6193 4147 6188 4157 C 6115 4302 6106 4421 6160 4563 C 6171 4591 6178 4615 6177 4617 C 6175 4618 6150 4613 6120 4604 C 5919 4550 5578 4525 5349 4549 C 4904 4595 4475 4772 4138 5047 C 4035 5132 3858 5318 3774 5430 C 3359 5983 3235 6685 3436 7347 C 3620 7955 4061 8447 4652 8706 C 4758 8752 4989 8830 5021 8830 C 5031 8830 5042 8835 5045 8840 C 5053 8852 4800 8851 4690 8839 z" transform="translate(-4390.76, -6381.14)" />
+    </g>
+    <g transform="matrix(0.21 0 0 -0.21 592.36 356.11)">
+      <path d="M 4344 7780 C 4332 7775 4310 7755 4294 7735 C 4238 7661 4257 7531 4333 7476 C 4360 7456 4376 7455 4726 7452 L 5090 7449 L 5090 7245 L 5090 7040 L 4962 7040 C 4876 7040 4830 7036 4822 7028 C 4805 7011 4805 6789 4822 6772 C 4831 6763 4941 6760 5256 6760 C 5627 6760 5680 6762 5694 6776 C 5707 6788 5710 6815 5710 6899 C 5710 7042 5712 7040 5552 7040 L 5430 7040 L 5430 7245 L 5430 7449 L 5803 7452 L 6175 7455 L 6209 7479 C 6301 7545 6300 7713 6208 7770 C 6176 7790 6160 7790 5270 7789 C 4772 7789 4355 7785 4344 7780 z" transform="translate(-5269.57, -7274.67)" />
+    </g>
+    <g transform="matrix(0.21 0 0 -0.21 577.88 638.18)">
+      <path d="M 4775 6606 C 4731 6586 4709 6557 4703 6508 C 4700 6484 4693 6459 4687 6453 C 4680 6443 4553 6440 4113 6440 C 3639 6440 3549 6438 3544 6426 C 3535 6402 3571 6230 3611 6105 C 3632 6039 3676 5933 3707 5870 L 3765 5755 L 4201 5750 L 4637 5745 L 4671 5717 C 4815 5600 4922 5539 5045 5505 C 5136 5480 5309 5474 5406 5493 C 5554 5521 5666 5576 5804 5689 L 5873 5745 L 5989 5748 C 6095 5751 6109 5749 6149 5728 C 6180 5711 6201 5690 6217 5660 C 6238 5620 6240 5605 6240 5454 C 6240 5303 6241 5290 6259 5280 C 6285 5266 6815 5266 6841 5280 C 6859 5290 6860 5304 6860 5534 C 6860 5797 6850 5868 6796 5985 C 6719 6155 6543 6322 6374 6389 C 6277 6426 6180 6440 6006 6440 C 5822 6440 5810 6444 5810 6504 C 5810 6545 5778 6588 5734 6606 C 5686 6626 4820 6626 4775 6606 z" transform="translate(-5201.3, -5945.25)" />
+    </g>
+    <g transform="matrix(0.21 0 0 -0.21 992.56 807.22)">
+      <path d="M 7461 5547 C 7323 5341 7117 5124 6923 4978 C 6868 4936 6814 4898 6805 4893 C 6789 4884 6790 4880 6813 4844 C 6826 4822 6852 4776 6869 4742 C 6886 4708 6904 4680 6909 4680 C 6925 4680 7115 4886 7186 4980 C 7264 5083 7349 5218 7400 5319 C 7440 5400 7523 5610 7517 5617 C 7514 5619 7489 5588 7461 5547 z" transform="translate(-7155.74, -5148.55)" />
+    </g>
+    <g transform="matrix(0.21 0 0 -0.21 863.97 931.46)">
+      <path d="M 6512 5023 C 6368 4810 6239 4568 6219 4470 C 6183 4296 6260 4139 6416 4068 C 6454 4051 6483 4046 6550 4046 C 6617 4046 6646 4051 6684 4068 C 6759 4102 6813 4152 6850 4221 C 6877 4273 6884 4299 6888 4360 C 6894 4470 6877 4535 6801 4683 C 6743 4797 6568 5080 6555 5080 C 6553 5080 6533 5054 6512 5023 z" transform="translate(-6549.68, -4563)" />
+    </g>
+  </svg>
+));
 MoonvalveIcon.displayName = 'MoonvalveIcon';
 
-const HeaderWrapper = styled(Box)(
-  ({ theme }) => `
-    width: 100%;
-    display: flex;
-    align-items: center;
-    height: ${theme.spacing(6)};
-    margin-bottom: ${theme.spacing(0)};
-    border-radius: 0px;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1100;
-    background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
-    border-bottom: 1.5px solid ${alpha(theme.palette.divider, 0.15)};
-    box-shadow: none;
-    overflow: hidden;
-
-    ${theme.breakpoints.down('sm')} {
-      height: 52px;
-      background: ${theme.header?.background || (theme.palette.mode === 'dark' ? '#000000' : '#ffffff')};
-    }
-
-    &::before {
-      display: none;
-    }
-
-    &::after {
-      display: none;
-    }
-`
-);
-
-const StyledLink = styled(Link, {
-  shouldForwardProp: (prop) => prop !== 'darkMode'
-})(
-  ({ darkMode, theme }) => `
-    color: ${theme.palette.text.primary} !important;
-    font-weight: 400;
-    margin-right: 4px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    display: inline-flex;
-    align-items: center;
-    background: transparent;
-    border: none;
-    font-size: 0.9rem;
-    letter-spacing: 0;
-
-    &:hover {
-      color: #4285f4 !important;
-      background: ${alpha('#4285f4', 0.04)};
-      cursor: pointer;
-    }
-`
-);
-
-const StyledMenuItem = styled(MenuItem, {
-  shouldForwardProp: (prop) => prop !== 'darkMode'
-})(
-  ({ darkMode, theme }) => `
-    color: ${darkMode ? 'white' : theme.palette.text.primary};
-    margin: 4px 8px;
-    border-radius: 6px;
-    background: transparent;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.15)};
-    box-shadow: none;
-    position: relative;
-    overflow: hidden;
-
-    &::before {
-      display: none;
-    }
-
-    &:hover {
-      color: #4285f4;
-      background: ${alpha('#4285f4', 0.04)};
-      border: 1.5px solid ${alpha('#4285f4', 0.25)};
-      box-shadow: none;
-    }
-`
-);
-
 function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) {
-  // Translation removed - using hardcoded English text
-  const theme = useTheme();
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
   const metrics = useSelector(selectMetrics);
-  const isDesktop = useMediaQuery(theme.breakpoints.up('lg'));
-  const isTabletOrMobile = useMediaQuery(theme.breakpoints.down('lg'));
+  const { darkMode, setDarkMode, accountProfile, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isTabletOrMobile, setIsTabletOrMobile] = useState(true);
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [snackbarSeverity, setSnackbarSeverity] = useState('success');
-  const { darkMode, setDarkMode, accountProfile, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme } = useContext(AppContext);
-  const [tokensAnchorEl, setTokensAnchorEl] = useState(null);
   const [tokensMenuOpen, setTokensMenuOpen] = useState(false);
-  const openTokensMenu = Boolean(tokensAnchorEl);
-  const closeTimeoutRef = useRef(null);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
-  const [settingsAnchorEl, setSettingsAnchorEl] = useState(null);
-  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
-  const [tokensExpanded, setTokensExpanded] = useState(false);
-  const [nftsAnchorEl, setNftsAnchorEl] = useState(null);
   const [nftsMenuOpen, setNftsMenuOpen] = useState(false);
-  const nftsCloseTimeoutRef = useRef(null);
+  const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
+  const [searchModalOpen, setSearchModalOpen] = useState(false);
+  const [tokensExpanded, setTokensExpanded] = useState(false);
   const [nftsExpanded, setNftsExpanded] = useState(false);
 
+  const tokensRef = useRef(null);
+  const nftsRef = useRef(null);
+  const settingsRef = useRef(null);
+  const closeTimeoutRef = useRef(null);
+  const nftsCloseTimeoutRef = useRef(null);
+
+  // Handle responsive breakpoints
+  useEffect(() => {
+    const checkBreakpoints = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+      setIsTabletOrMobile(window.innerWidth < 1024);
+    };
+    checkBreakpoints();
+    window.addEventListener('resize', checkBreakpoints);
+    return () => window.removeEventListener('resize', checkBreakpoints);
+  }, []);
 
   // Check if metrics are properly loaded
   const metricsLoaded = useMemo(() => {
@@ -367,7 +188,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     );
   }, [metrics?.global?.total, metrics?.global?.totalAddresses, metrics?.H24?.transactions24H]);
 
-
   // Fetch metrics if not loaded
   useEffect(() => {
     if (!metricsLoaded) {
@@ -376,9 +196,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         try {
           const response = await axios.get(
             'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=',
-            {
-              signal: controller.signal
-            }
+            { signal: controller.signal }
           );
           if (response.status === 200 && response.data) {
             dispatch(update_metrics(response.data));
@@ -394,32 +212,38 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     }
   }, [metricsLoaded, dispatch]);
 
-  // Memoize menu items for better performance
+  // Menu items
   const discoverMenuItems = [
-    {
-      path: '/trending',
-      name: 'Trending',
-      icon: <LocalFireDepartmentIcon sx={{ fontSize: 16, color: '#ff6b35' }} />
-    },
-    {
-      path: '/spotlight',
-      name: 'Spotlight',
-      icon: <TroubleshootIcon sx={{ fontSize: 16, color: '#4fc3f7' }} />
-    },
-    {
-      path: '/most-viewed',
-      name: 'Most Viewed',
-      icon: <VisibilityIcon sx={{ fontSize: 16, color: '#9c27b0' }} />
-    },
-    {
-      path: '/gainers/24h',
-      name: 'Gainers',
-      icon: <TrendingUpIcon sx={{ fontSize: 16, color: '#4caf50' }} />
-    },
-    { path: '/new', name: 'New', icon: <FiberNewIcon sx={{ fontSize: 16, color: '#ffc107' }} /> }
+    { path: '/trending', name: 'Trending', icon: <Flame size={16} className="text-orange-500" /> },
+    { path: '/spotlight', name: 'Spotlight', icon: <Search size={16} className="text-cyan-400" /> },
+    { path: '/most-viewed', name: 'Most Viewed', icon: <Eye size={16} className="text-purple-500" /> },
+    { path: '/gainers/24h', name: 'Gainers', icon: <TrendingUp size={16} className="text-green-500" /> },
+    { path: '/new', name: 'New', icon: <Newspaper size={16} className="text-yellow-500" /> }
   ];
 
-  const handleFullSearch = useCallback((e) => {
+  const launchpadItems = [
+    { path: '/view/firstledger', name: 'FirstLedger', icon: <ExternalLink size={16} className="text-[#013CFE]" /> },
+    { path: '/view/magnetic-x', name: 'Magnetic X', icon: <Image src="/static/magneticx-logo.webp" alt="Magnetic X" width={16} height={16} className="object-contain" /> },
+    { path: '/view/xpmarket', name: 'XPmarket', icon: <XPMarketIcon size={16} className="text-[#6D1FEE]" /> },
+    { path: '/view/aigentrun', name: 'aigent.run', icon: <Image src="/static/aigentrun.gif?v=1" alt="Aigent.Run" width={16} height={16} unoptimized className="object-contain" /> },
+    { path: '/view/ledgermeme', name: 'LedgerMeme', icon: <LedgerMemeIcon size={16} /> },
+    { path: '/view/horizon', name: 'Horizon', icon: <HorizonIcon size={16} /> },
+    { path: '/view/moonvalve', name: 'Moonvalve', icon: <MoonvalveIcon size={16} /> }
+  ];
+
+  const analyticsItems = [
+    { path: '/market-metrics', name: 'Market Metrics', icon: <Trophy size={16} className="text-orange-500" /> },
+    { path: '/rsi-analysis', name: 'RSI Analysis', icon: <TrendingUp size={16} className="text-blue-500" /> },
+    { path: '/amm-pools', name: 'AMM Pools', icon: <Waves size={16} className="text-cyan-500" /> },
+    ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist', icon: <Star size={16} className="text-yellow-500" /> }] : [])
+  ];
+
+  const nftItems = [
+    { path: '/collections', name: 'Collections', icon: <PawPrint size={16} className="text-purple-500" /> },
+    { path: '/nft-traders', name: 'NFT Traders', icon: <Sparkles size={16} className="text-pink-500" /> }
+  ];
+
+  const handleFullSearch = useCallback(() => {
     setFullSearch(true);
     setSearchModalOpen(true);
   }, []);
@@ -428,889 +252,536 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     setOpenDrawer(isOpen);
   }, []);
 
-  const openSnackbar = useCallback((message, severity) => {
-    setSnackbarMessage(message);
-    setSnackbarSeverity(severity);
-    setSnackbarOpen(true);
-  }, []);
-
-  const handleSnackbarClose = useCallback(() => {
-    setSnackbarOpen(false);
-  }, []);
-
-  const handleTokensOpen = useCallback((event) => {
+  const handleTokensOpen = useCallback(() => {
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
       closeTimeoutRef.current = null;
     }
-    setTokensAnchorEl(event.currentTarget);
     setTokensMenuOpen(true);
   }, []);
 
   const handleTokensClose = useCallback(() => {
     closeTimeoutRef.current = setTimeout(() => {
-      setTokensAnchorEl(null);
       setTokensMenuOpen(false);
     }, 150);
   }, []);
 
-  const handleTokenOptionSelect = useCallback(
-    (path) => {
-      window.location.href = path;
-      handleTokensClose();
-    },
-    [handleTokensClose]
-  );
-
-  const handleNftsOpen = useCallback((event) => {
+  const handleNftsOpen = useCallback(() => {
     if (nftsCloseTimeoutRef.current) {
       clearTimeout(nftsCloseTimeoutRef.current);
       nftsCloseTimeoutRef.current = null;
     }
-    setNftsAnchorEl(event.currentTarget);
     setNftsMenuOpen(true);
   }, []);
 
   const handleNftsClose = useCallback(() => {
     nftsCloseTimeoutRef.current = setTimeout(() => {
-      setNftsAnchorEl(null);
       setNftsMenuOpen(false);
     }, 150);
   }, []);
 
-  const handleSettingsOpen = useCallback((event) => {
-    setSettingsAnchorEl(event.currentTarget);
-    setSettingsMenuOpen(true);
+  const handleSettingsToggle = useCallback(() => {
+    setSettingsMenuOpen((prev) => !prev);
   }, []);
 
-  const handleSettingsClose = useCallback(() => {
-    setSettingsAnchorEl(null);
-    setSettingsMenuOpen(false);
+  const handleTokenOptionSelect = useCallback((path) => {
+    window.location.href = path;
+    setTokensMenuOpen(false);
+    setNftsMenuOpen(false);
   }, []);
 
   useEffect(() => {
     if (isProcessing === 1 && isClosed) {
       dispatch(updateProcess(3));
     }
-
     if (isClosed) {
       setIsClosed(false);
     }
-  }, [isProcessing, isClosed]);
+  }, [isProcessing, isClosed, dispatch]);
 
-
+  // Close settings menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (settingsRef.current && !settingsRef.current.contains(event.target)) {
+        setSettingsMenuOpen(false);
+      }
+    };
+    if (settingsMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [settingsMenuOpen]);
 
   return (
-    <HeaderWrapper>
-      <Container maxWidth={false} sx={{ px: { xs: 1.5, sm: 2, md: 3 } }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          flex={2}
-          sx={{ pl: 0, pr: 0 }}
-        >
-          <Box
-            id="logo-container-laptop"
-            sx={{
-              mr: { sm: 1.5, md: 2.5 },
-              display: { xs: 'none', sm: 'flex' },
-              alignItems: 'center'
-            }}
-          >
-            <Logo
-              alt="xrpl.to Logo"
-              style={{ marginRight: '12px', width: 'auto', height: '30px' }}
-            />
-          </Box>
+    <header
+      className={cn(
+        'fixed left-0 right-0 top-0 z-[1100] flex h-12 items-center border-b-[1.5px] sm:h-14',
+        isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
+      )}
+    >
+      <div className="mx-auto flex w-full max-w-full items-center justify-between px-3 sm:px-4 md:px-6">
+        {/* Logo - Desktop */}
+        <div className="mr-4 hidden items-center sm:flex md:mr-6">
+          <Logo alt="xrpl.to Logo" style={{ marginRight: '12px', width: 'auto', height: '30px' }} />
+        </div>
 
-          {isDesktop && (
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center'
-              }}
+        {/* Desktop Navigation */}
+        {isDesktop && (
+          <nav className="flex items-center">
+            {/* Tokens Dropdown */}
+            <div
+              ref={tokensRef}
+              className="relative"
+              onMouseEnter={handleTokensOpen}
+              onMouseLeave={handleTokensClose}
             >
-              <Box
-                onMouseEnter={(e) => handleTokensOpen(e)}
-                onMouseLeave={handleTokensClose}
-                sx={{ position: 'relative', display: 'inline-block' }}
-              >
-                <StyledLink underline="none" darkMode={darkMode} href="/">
-                  {'Tokens'}
-                </StyledLink>
-
-                {tokensMenuOpen && tokensAnchorEl && (
-                  <Box
-                    onMouseEnter={() => {
-                      if (closeTimeoutRef.current) {
-                        clearTimeout(closeTimeoutRef.current);
-                        closeTimeoutRef.current = null;
-                      }
-                    }}
-                    onMouseLeave={handleTokensClose}
-                    sx={{
-                      position: 'fixed',
-                      top: '48px',
-                      left: tokensAnchorEl ? tokensAnchorEl.offsetLeft : 0,
-                      mt: 0,
-                      minWidth: 600,
-                      borderRadius: '8px',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      boxShadow: 'none',
-                      bgcolor:
-                        theme.header?.background ||
-                        (theme.palette.mode === 'dark'
-                          ? alpha('#000000', 0.98)
-                          : alpha('#ffffff', 0.98)),
-                      overflow: 'hidden',
-                      zIndex: 2147483647,
-                      '&::before': {
-                        display: 'none'
-                      }
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        p: 2,
-                        gap: 2,
-                        alignItems: 'flex-start'
-                      }}
-                    >
-                      {/* Column 1: All Launchpads */}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography
-                          variant="overline"
-                          sx={{
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            display: 'block'
-                          }}
-                        >
-                          {'LAUNCHPADS'}
-                        </Typography>
-                        {[
-                          {
-                            path: '/view/firstledger',
-                            name: 'FirstLedger',
-                            icon: <OpenInNewIcon sx={{ fontSize: 16, color: '#013CFE' }} />
-                          },
-                          {
-                            path: '/view/magnetic-x',
-                            name: 'Magnetic X',
-                            icon: (
-                              <Image
-                                src="/static/magneticx-logo.webp"
-                                alt="Magnetic X"
-                                width={16}
-                                height={16}
-                                quality={90}
-                                loading="lazy"
-                                style={{ width: 16, height: 16, objectFit: 'contain' }}
-                              />
-                            )
-                          },
-                          {
-                            path: '/view/xpmarket',
-                            name: 'XPmarket',
-                            icon: <XPMarketIcon sx={{ fontSize: 16, color: '#6D1FEE' }} />
-                          },
-                          {
-                            path: '/view/aigentrun',
-                            name: 'aigent.run',
-                            icon: (
-                              <Image
-                                src="/static/aigentrun.gif?v=1"
-                                alt="Aigent.Run"
-                                width={16}
-                                height={16}
-                                sizes="16px"
-                                quality={90}
-                                loading="lazy"
-                                unoptimized={true}
-                                style={{ objectFit: 'contain' }}
-                              />
-                            )
-                          },
-                          {
-                            path: '/view/ledgermeme',
-                            name: 'LedgerMeme',
-                            icon: <LedgerMemeIcon sx={{ fontSize: 16 }} />
-                          },
-                          {
-                            path: '/view/horizon',
-                            name: 'Horizon',
-                            icon: <HorizonIcon sx={{ fontSize: 16 }} />
-                          },
-                          {
-                            path: '/view/moonvalve',
-                            name: 'Moonvalve',
-                            icon: <MoonvalveIcon sx={{ fontSize: 16 }} />
-                          }
-                        ].map((item) => (
-                          <Box
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              py: 1,
-                              px: 1.5,
-                              borderRadius: 0,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                color: theme.palette.primary.main
-                              }
-                            }}
-                          >
-                            {item.icon}
-                            <Typography variant="body2" fontSize={14}>
-                              {item.name}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Box>
-
-                      {/* Column 2: Analytics */}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography
-                          variant="overline"
-                          sx={{
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            display: 'block'
-                          }}
-                        >
-                          {'ANALYTICS'}
-                        </Typography>
-                        {[
-                          {
-                            path: '/market-metrics',
-                            name: 'Market Metrics',
-                            icon: <EmojiEventsIcon sx={{ fontSize: 16, color: '#ff9800' }} />
-                          },
-                          {
-                            path: '/rsi-analysis',
-                            name: 'RSI Analysis',
-                            icon: <TrendingUpIcon sx={{ fontSize: 16, color: '#2196f3' }} />
-                          },
-                          {
-                            path: '/amm-pools',
-                            name: 'AMM Pools',
-                            icon: <WavesIcon sx={{ fontSize: 16, color: '#00bcd4' }} />
-                          },
-                          ...(accountProfile ? [{
-                            path: '/watchlist',
-                            name: 'Watchlist',
-                            icon: <StarOutlineIcon sx={{ fontSize: 16, color: '#ffc107' }} />
-                          }] : [])
-                        ].map((item) => (
-                          <Box
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              py: 1,
-                              px: 1.5,
-                              borderRadius: 0,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                color: theme.palette.primary.main
-                              }
-                            }}
-                          >
-                            {item.icon}
-                            <Typography variant="body2" fontSize={14}>
-                              {item.name}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Box>
-
-                      {/* Column 3: Discover */}
-                      <Box sx={{ flex: 1 }}>
-                        <Typography
-                          variant="overline"
-                          sx={{
-                            fontSize: '11px',
-                            fontWeight: 500,
-                            color: theme.palette.text.secondary,
-                            mb: 1,
-                            display: 'block'
-                          }}
-                        >
-                          {'DISCOVER'}
-                        </Typography>
-                        {discoverMenuItems.map((item) => (
-                          <Box
-                            key={item.path}
-                            onClick={() => handleTokenOptionSelect(item.path)}
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: 1.5,
-                              py: 1,
-                              px: 1.5,
-                              borderRadius: 0,
-                              cursor: 'pointer',
-                              '&:hover': {
-                                bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                color: theme.palette.primary.main
-                              }
-                            }}
-                          >
-                            {item.icon}
-                            <Typography variant="body2" fontSize={14}>
-                              {item.name}
-                            </Typography>
-                          </Box>
-                        ))}
-                      </Box>
-
-                    </Box>
-                  </Box>
+              <a
+                href="/"
+                className={cn(
+                  'mr-1 inline-flex items-center rounded-lg px-3.5 py-2 text-[0.9rem] font-normal',
+                  isDark ? 'text-white hover:bg-primary/5 hover:text-primary' : 'text-gray-900 hover:bg-gray-100 hover:text-primary'
                 )}
-              </Box>
-
-              <Box
-                onMouseEnter={(e) => handleNftsOpen(e)}
-                onMouseLeave={handleNftsClose}
-                sx={{ position: 'relative', display: 'inline-block' }}
               >
-                <StyledLink underline="none" darkMode={darkMode} href="/collections">
-                  {'NFTs'}
-                </StyledLink>
+                Tokens
+              </a>
 
-                {nftsMenuOpen && nftsAnchorEl && (
-                  <Box
-                    onMouseEnter={() => {
-                      if (nftsCloseTimeoutRef.current) {
-                        clearTimeout(nftsCloseTimeoutRef.current);
-                        nftsCloseTimeoutRef.current = null;
-                      }
-                    }}
-                    onMouseLeave={handleNftsClose}
-                    sx={{
-                      position: 'fixed',
-                      top: '48px',
-                      left: nftsAnchorEl ? nftsAnchorEl.offsetLeft : 0,
-                      mt: 0,
-                      minWidth: 200,
-                      borderRadius: '8px',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      boxShadow: 'none',
-                      bgcolor:
-                        theme.header?.background ||
-                        (theme.palette.mode === 'dark'
-                          ? alpha('#000000', 0.98)
-                          : alpha('#ffffff', 0.98)),
-                      overflow: 'hidden',
-                      zIndex: 2147483647,
-                      '&::before': {
-                        display: 'none'
-                      }
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        p: 2,
-                        gap: 0
-                      }}
-                    >
-                      {[
-                        {
-                          path: '/collections',
-                          name: 'Collections',
-                          icon: <PetsIcon sx={{ fontSize: 16, color: '#9c27b0' }} />
-                        },
-                        {
-                          path: '/nft-traders',
-                          name: 'NFT Traders',
-                          icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63' }} />
-                        }
-                      ].map((item) => (
-                        <Box
+              {tokensMenuOpen && (
+                <div
+                  onMouseEnter={handleTokensOpen}
+                  onMouseLeave={handleTokensClose}
+                  className={cn(
+                    'fixed left-auto top-12 z-[2147483647] min-w-[600px] overflow-hidden rounded-lg border-[1.5px]',
+                    isDark ? 'border-white/10 bg-black/[0.98]' : 'border-gray-200 bg-white/[0.98]'
+                  )}
+                  style={{ left: tokensRef.current?.offsetLeft || 0 }}
+                >
+                  <div className="flex gap-4 p-4">
+                    {/* Column 1: Launchpads */}
+                    <div className="flex-1">
+                      <p className={cn('mb-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
+                        LAUNCHPADS
+                      </p>
+                      {launchpadItems.map((item) => (
+                        <div
                           key={item.path}
                           onClick={() => handleTokenOptionSelect(item.path)}
-                          sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 1.5,
-                            py: 1,
-                            px: 1.5,
-                            borderRadius: 0,
-                            cursor: 'pointer',
-                            '&:hover': {
-                              bgcolor: alpha(theme.palette.primary.main, 0.08),
-                              color: theme.palette.primary.main
-                            }
-                          }}
+                          className={cn(
+                            'flex cursor-pointer items-center gap-3 px-3 py-2',
+                            isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                          )}
                         >
                           {item.icon}
-                          <Typography variant="body2" fontSize={14}>
-                            {item.name}
-                          </Typography>
-                        </Box>
+                          <span className="text-sm">{item.name}</span>
+                        </div>
                       ))}
-                    </Box>
-                  </Box>
-                )}
-              </Box>
+                    </div>
 
-              <StyledLink underline="none" darkMode={darkMode} href="/swap">
-                {'Swap'}
-              </StyledLink>
-              <StyledLink underline="none" darkMode={darkMode} href="/news">
-                {'News'}
-              </StyledLink>
-            </Box>
-          )}
+                    {/* Column 2: Analytics */}
+                    <div className="flex-1">
+                      <p className={cn('mb-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
+                        ANALYTICS
+                      </p>
+                      {analyticsItems.map((item) => (
+                        <div
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          className={cn(
+                            'flex cursor-pointer items-center gap-3 px-3 py-2',
+                            isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                          )}
+                        >
+                          {item.icon}
+                          <span className="text-sm">{item.name}</span>
+                        </div>
+                      ))}
+                    </div>
 
+                    {/* Column 3: Discover */}
+                    <div className="flex-1">
+                      <p className={cn('mb-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
+                        DISCOVER
+                      </p>
+                      {discoverMenuItems.map((item) => (
+                        <div
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          className={cn(
+                            'flex cursor-pointer items-center gap-3 px-3 py-2',
+                            isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                          )}
+                        >
+                          {item.icon}
+                          <span className="text-sm">{item.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
-          {fullSearch && (
-            <NavSearchBar
-              id="id_search_tokens"
-              placeholder="Search XRPL Tokens"
-              fullSearch={fullSearch}
-              setFullSearch={setFullSearch}
-              onOpenSearchModal={() => setSearchModalOpen(true)}
-            />
-          )}
-
-          {!fullSearch && (
-            <Box
-              id="logo-container-mobile"
-              sx={{
-                mr: 0,
-                ml: 0,
-                pl: 0,
-                display: { xs: 'flex', sm: 'none' },
-                '& img': {
-                  maxHeight: '26px',
-                  width: 'auto'
-                }
-              }}
+            {/* NFTs Dropdown */}
+            <div
+              ref={nftsRef}
+              className="relative"
+              onMouseEnter={handleNftsOpen}
+              onMouseLeave={handleNftsClose}
             >
-              <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '26px', paddingLeft: 0 }} />
-            </Box>
+              <a
+                href="/collections"
+                className={cn(
+                  'mr-1 inline-flex items-center rounded-lg px-3.5 py-2 text-[0.9rem] font-normal',
+                  isDark ? 'text-white hover:bg-primary/5 hover:text-primary' : 'text-gray-900 hover:bg-gray-100 hover:text-primary'
+                )}
+              >
+                NFTs
+              </a>
+
+              {nftsMenuOpen && (
+                <div
+                  onMouseEnter={handleNftsOpen}
+                  onMouseLeave={handleNftsClose}
+                  className={cn(
+                    'fixed left-auto top-12 z-[2147483647] min-w-[200px] overflow-hidden rounded-lg border-[1.5px]',
+                    isDark ? 'border-white/10 bg-black/[0.98]' : 'border-gray-200 bg-white/[0.98]'
+                  )}
+                  style={{ left: nftsRef.current?.offsetLeft || 0 }}
+                >
+                  <div className="flex flex-col p-4">
+                    {nftItems.map((item) => (
+                      <div
+                        key={item.path}
+                        onClick={() => handleTokenOptionSelect(item.path)}
+                        className={cn(
+                          'flex cursor-pointer items-center gap-3 px-3 py-2',
+                          isDark ? 'hover:bg-primary/10 hover:text-primary' : 'hover:bg-primary/5 hover:text-primary'
+                        )}
+                      >
+                        {item.icon}
+                        <span className="text-sm">{item.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <a
+              href="/swap"
+              className={cn(
+                'mr-1 inline-flex items-center rounded-lg px-3.5 py-2 text-[0.9rem] font-normal',
+                isDark ? 'text-white hover:bg-primary/5 hover:text-primary' : 'text-gray-900 hover:bg-gray-100 hover:text-primary'
+              )}
+            >
+              Swap
+            </a>
+            <a
+              href="/news"
+              className={cn(
+                'mr-1 inline-flex items-center rounded-lg px-3.5 py-2 text-[0.9rem] font-normal',
+                isDark ? 'text-white hover:bg-primary/5 hover:text-primary' : 'text-gray-900 hover:bg-gray-100 hover:text-primary'
+              )}
+            >
+              News
+            </a>
+          </nav>
+        )}
+
+        {/* Full Search (mobile expanded) */}
+        {fullSearch && (
+          <NavSearchBar
+            id="id_search_tokens"
+            placeholder="Search XRPL Tokens"
+            fullSearch={fullSearch}
+            setFullSearch={setFullSearch}
+            onOpenSearchModal={() => setSearchModalOpen(true)}
+          />
+        )}
+
+        {/* Logo - Mobile */}
+        {!fullSearch && (
+          <div className="flex items-center sm:hidden">
+            <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '26px', paddingLeft: 0 }} />
+          </div>
+        )}
+
+        {/* Right Side Actions */}
+        <div className="flex flex-grow items-center justify-end">
+          {/* Desktop Search */}
+          {!fullSearch && isDesktop && (
+            <div className="mr-2">
+              <NavSearchBar
+                id="id_search_tokens"
+                placeholder="Search XRPL Tokens"
+                fullSearch={fullSearch}
+                setFullSearch={setFullSearch}
+                onOpenSearchModal={() => setSearchModalOpen(true)}
+              />
+            </div>
           )}
 
-          <Box
-            sx={{
-              flexGrow: 1,
-              display: 'flex',
-              justifyContent: 'flex-end',
-              alignItems: 'center'
-            }}
-          >
-            {!fullSearch && isDesktop && (
-              <Stack mr={1}>
-                <NavSearchBar
-                  id="id_search_tokens"
-                  placeholder="Search XRPL Tokens"
-                  fullSearch={fullSearch}
-                  setFullSearch={setFullSearch}
-                  onOpenSearchModal={() => setSearchModalOpen(true)}
-                />
-              </Stack>
-            )}
+          {/* Mobile Search Icon */}
+          {!fullSearch && isTabletOrMobile && (
+            <button
+              aria-label="Open search"
+              onClick={handleFullSearch}
+              className={cn(
+                'flex h-9 w-9 items-center justify-center rounded-lg sm:h-10 sm:w-10',
+                isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+              )}
+            >
+              <Search size={20} className="sm:h-[22px] sm:w-[22px]" />
+            </button>
+          )}
 
-            {!fullSearch && isTabletOrMobile && (
-              <IconButton
-                aria-label="Open search"
-                onClick={handleFullSearch}
-                sx={{
-                  padding: { xs: '6px', sm: '8px' },
-                  minWidth: { xs: '36px', sm: '40px' },
-                  minHeight: { xs: '36px', sm: '40px' }
-                }}
-              >
-                <SearchIcon sx={{ fontSize: { xs: '20px', sm: '22px' } }} />
-              </IconButton>
-            )}
-
-            {!fullSearch && (
-              <Stack
-                direction="row"
-                alignItems="center"
-                spacing={1}
-                sx={{ display: { xs: 'none', md: 'flex' }, mr: 0 }}
-              >
-                {/* Settings Dropdown */}
-                <IconButton
-                  onClick={handleSettingsOpen}
-                  size="small"
+          {/* Desktop Actions */}
+          {!fullSearch && (
+            <div className="mr-0 hidden items-center gap-2 md:flex">
+              {/* Settings Dropdown */}
+              <div ref={settingsRef} className="relative">
+                <button
+                  onClick={handleSettingsToggle}
                   aria-label="Settings"
-                  sx={{
-                    padding: '6px',
-                    minWidth: '32px',
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: 'transparent',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                    borderRadius: '8px',
-                    '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.04),
-                      borderColor: alpha('#4285f4', 0.3)
-                    }
-                  }}
                   title="Settings"
+                  className={cn(
+                    'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px]',
+                    isDark
+                      ? 'border-white/15 hover:border-primary/30 hover:bg-primary/5'
+                      : 'border-gray-300 hover:border-primary/30 hover:bg-gray-100'
+                  )}
                 >
-                  <SettingsIcon sx={{ fontSize: 16 }} />
-                </IconButton>
+                  <Settings size={16} />
+                </button>
 
-                {/* Launch Button */}
-                <Link
-                  href="/launch"
-                  underline="none"
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    height: '32px',
-                    px: 1.8,
-                    fontSize: '0.95rem',
-                    fontWeight: 500,
-                    letterSpacing: 0,
-                    color: '#4285f4',
-                    border: `1.5px solid ${alpha('#4285f4', 0.25)}`,
-                    borderRadius: '12px',
-                    backgroundColor: 'transparent',
-                    transition: 'none',
-                    '&:hover': {
-                      backgroundColor: alpha('#4285f4', 0.08),
-                      borderColor: '#4285f4'
-                    }
-                  }}
-                >
-                  Launch
-                </Link>
-
-                {/* Settings Menu */}
-                <Menu
-                  anchorEl={settingsAnchorEl}
-                  open={settingsMenuOpen}
-                  onClose={handleSettingsClose}
-                  anchorOrigin={{
-                    vertical: 'bottom',
-                    horizontal: 'right'
-                  }}
-                  transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right'
-                  }}
-                  PaperProps={{
-                    sx: {
-                      mt: 1,
-                      minWidth: 240,
-                      borderRadius: '8px',
-                      border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-                      background: theme.palette.mode === 'dark'
-                        ? alpha('#000000', 0.98)
-                        : alpha('#ffffff', 0.98),
-                      boxShadow: 'none',
-                      '& .MuiList-root': {
-                        padding: '8px'
-                      }
-                    }
-                  }}
-                >
-                  {/* Currency Section Header */}
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      color: theme.palette.text.secondary,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
-                    }}
+                {settingsMenuOpen && (
+                  <div
+                    className={cn(
+                      'absolute right-0 top-10 z-[2147483647] min-w-[240px] overflow-hidden rounded-lg border-[1.5px]',
+                      isDark ? 'border-white/10 bg-black/[0.98]' : 'border-gray-200 bg-white/[0.98]'
+                    )}
                   >
-                    <SwapHorizIcon sx={{ fontSize: 14 }} />
-                    CURRENCY
-                  </Typography>
-
-                  {/* Currency Options */}
-                  {currencyConfig.availableFiatCurrencies.map((currency) => (
-                    <MenuItem
-                      key={currency}
-                      onClick={() => {
-                        toggleFiatCurrency(currency);
-                        handleSettingsClose();
-                      }}
-                      selected={currency === activeFiatCurrency}
-                      sx={{
-                        mx: 1,
-                        borderRadius: '6px',
-                        mb: 0.5,
-                        '&.Mui-selected': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.12)
-                          }
-                        }
-                      }}
-                    >
-                      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                        <Typography variant="body2" sx={{ flex: 1, fontWeight: currency === activeFiatCurrency ? 600 : 400 }}>
-                          {currencySymbols[currency] || ''}{currency}
-                        </Typography>
-                        {currency === activeFiatCurrency && (
-                          <CheckIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
-                        )}
-                      </Stack>
-                    </MenuItem>
-                  ))}
-
-                  <Divider sx={{ my: 1 }} />
-
-                  {/* Theme Section Header */}
-                  <Typography
-                    variant="overline"
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      fontSize: '11px',
-                      fontWeight: 500,
-                      color: theme.palette.text.secondary,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1
-                    }}
-                  >
-                    <PaletteIcon sx={{ fontSize: 14 }} />
-                    THEME
-                  </Typography>
-
-                  {/* Theme Options */}
-                  {[
-                    { id: 'XrplToLightTheme', name: 'Light', color: '#ffffff', border: true },
-                    { id: 'XrplToDarkTheme', name: 'Dark', color: '#000000' }
-                  ].map((themeOption) => (
-                    <MenuItem
-                      key={themeOption.id}
-                      onClick={() => {
-                        setTheme(themeOption.id);
-                        handleSettingsClose();
-                      }}
-                      selected={themeName === themeOption.id}
-                      sx={{
-                        mx: 1,
-                        borderRadius: '6px',
-                        mb: 0.5,
-                        '&.Mui-selected': {
-                          backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                          '&:hover': {
-                            backgroundColor: alpha(theme.palette.primary.main, 0.12)
-                          }
-                        }
-                      }}
-                    >
-                      <Stack direction="row" alignItems="center" spacing={1.5} sx={{ width: '100%' }}>
-                        <Box
-                          sx={{
-                            width: 18,
-                            height: 18,
-                            borderRadius: '4px',
-                            backgroundColor: themeOption.color,
-                            border: themeOption.border ? '1px solid #e0e0e0' : 'none',
-                            boxShadow: themeOption.glow ? `0 0 8px ${themeOption.color}` : 'none'
+                    <div className="p-2">
+                      {/* Currency Section */}
+                      <p className={cn('flex items-center gap-2 px-3 py-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
+                        <ArrowLeftRight size={14} />
+                        CURRENCY
+                      </p>
+                      {currencyConfig.availableFiatCurrencies.map((currency) => (
+                        <button
+                          key={currency}
+                          onClick={() => {
+                            toggleFiatCurrency(currency);
+                            setSettingsMenuOpen(false);
                           }}
-                        />
-                        <Typography variant="body2" sx={{ flex: 1, fontWeight: themeName === themeOption.id ? 600 : 400 }}>
-                          {themeOption.name}
-                        </Typography>
-                        {themeName === themeOption.id && (
-                          <CheckIcon sx={{ fontSize: 16, color: theme.palette.primary.main }} />
-                        )}
-                      </Stack>
-                    </MenuItem>
-                  ))}
-                </Menu>
+                          className={cn(
+                            'mx-1 mb-1 flex w-[calc(100%-8px)] items-center justify-between rounded-md px-3 py-2',
+                            currency === activeFiatCurrency
+                              ? isDark ? 'bg-primary/10' : 'bg-primary/10'
+                              : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                          )}
+                        >
+                          <span className={cn('text-sm', currency === activeFiatCurrency ? 'font-medium' : 'font-normal')}>
+                            {currencySymbols[currency] || ''}{currency}
+                          </span>
+                          {currency === activeFiatCurrency && <Check size={16} className="text-primary" />}
+                        </button>
+                      ))}
 
-                <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
-              </Stack>
-            )}
+                      <div className={cn('my-2 border-t', isDark ? 'border-white/10' : 'border-gray-200')} />
 
-            {isTabletOrMobile && !fullSearch && (
-              <IconButton
-                aria-label="Open menu"
-                onClick={() => toggleDrawer(true)}
-                sx={{
-                  padding: { xs: '6px', sm: '8px' },
-                  minWidth: { xs: '36px', sm: '40px' },
-                  minHeight: { xs: '36px', sm: '40px' },
-                  ml: { xs: 0.5, sm: 0.8 }
-                }}
+                      {/* Theme Section */}
+                      <p className={cn('flex items-center gap-2 px-3 py-2 text-[11px] font-medium uppercase tracking-wide', isDark ? 'text-gray-400' : 'text-gray-500')}>
+                        <Palette size={14} />
+                        THEME
+                      </p>
+                      {[
+                        { id: 'XrplToLightTheme', name: 'Light', color: '#ffffff', border: true },
+                        { id: 'XrplToDarkTheme', name: 'Dark', color: '#000000' }
+                      ].map((themeOption) => (
+                        <button
+                          key={themeOption.id}
+                          onClick={() => {
+                            setTheme(themeOption.id);
+                            setSettingsMenuOpen(false);
+                          }}
+                          className={cn(
+                            'mx-1 mb-1 flex w-[calc(100%-8px)] items-center gap-3 rounded-md px-3 py-2',
+                            themeName === themeOption.id
+                              ? isDark ? 'bg-primary/10' : 'bg-primary/10'
+                              : isDark ? 'hover:bg-white/5' : 'hover:bg-gray-100'
+                          )}
+                        >
+                          <div
+                            className="h-[18px] w-[18px] rounded"
+                            style={{
+                              backgroundColor: themeOption.color,
+                              border: themeOption.border ? '1px solid #e0e0e0' : 'none'
+                            }}
+                          />
+                          <span className={cn('flex-1 text-left text-sm', themeName === themeOption.id ? 'font-medium' : 'font-normal')}>
+                            {themeOption.name}
+                          </span>
+                          {themeName === themeOption.id && <Check size={16} className="text-primary" />}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Launch Button */}
+              <a
+                href="/launch"
+                className="flex h-8 items-center rounded-xl border-[1.5px] border-primary/25 px-4 text-[0.95rem] font-medium text-primary hover:border-primary hover:bg-primary/10"
               >
-                <MenuIcon sx={{ fontSize: { xs: '20px', sm: '22px' } }} />
-              </IconButton>
-            )}
+                Launch
+              </a>
 
-          </Box>
-        </Box>
-      </Container>
+              <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
+            </div>
+          )}
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        message={snackbarMessage}
-        severity={snackbarSeverity}
-      />
+          {/* Mobile Menu Button */}
+          {isTabletOrMobile && !fullSearch && (
+            <button
+              aria-label="Open menu"
+              onClick={() => toggleDrawer(true)}
+              className={cn(
+                'ml-1 flex h-9 w-9 items-center justify-center rounded-lg sm:ml-2 sm:h-10 sm:w-10',
+                isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+              )}
+            >
+              <Menu size={20} className="sm:h-[22px] sm:w-[22px]" />
+            </button>
+          )}
+        </div>
+      </div>
 
+      {/* Snackbar */}
+      {snackbarOpen && (
+        <div className="fixed right-4 top-20 z-[9999]">
+          <div className={cn('rounded-xl border-[1.5px] px-4 py-3', isDark ? 'border-white/10 bg-gray-900' : 'border-gray-200 bg-white')}>
+            {snackbarMessage}
+          </div>
+        </div>
+      )}
+
+      {/* Search Modal */}
       <Suspense fallback={null}>
         <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
       </Suspense>
 
-      <Drawer
-        anchor="right"
-        open={openDrawer}
-        onClose={() => toggleDrawer(false)}
-        PaperProps={{
-          sx: {
-            width: { xs: '100%', sm: 260 },
-            background: theme.palette.mode === 'dark' ? '#000000' : '#ffffff',
-            border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-            boxShadow: 'none'
-          }
-        }}
-      >
-        <Box sx={{ p: 2.5 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h6" sx={{ fontWeight: 500, fontSize: '1.1rem' }}>Menu</Typography>
-            <IconButton onClick={() => toggleDrawer(false)} size="small">
-              <CloseIcon sx={{ fontSize: 20 }} />
-            </IconButton>
-          </Box>
+      {/* Mobile Drawer */}
+      {openDrawer && (
+        <>
+          <div className="fixed inset-0 z-[1200] bg-black/50" onClick={() => toggleDrawer(false)} />
+          <div
+            className={cn(
+              'fixed bottom-0 right-0 top-0 z-[1300] w-full overflow-y-auto border-l-[1.5px] sm:w-[260px]',
+              isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
+            )}
+          >
+            <div className="p-5">
+              <div className="mb-6 flex items-center justify-between">
+                <h2 className="text-lg font-medium">Menu</h2>
+                <button onClick={() => toggleDrawer(false)} className="rounded-lg p-1 hover:bg-white/10">
+                  <X size={20} />
+                </button>
+              </div>
 
-          <List sx={{ p: 0 }}>
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setTokensExpanded(!tokensExpanded)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
-                <ListItemText primary="Tokens" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
-                {tokensExpanded ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-            </ListItem>
-            <Collapse in={tokensExpanded} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding sx={{ pl: 2 }}>
-                <Typography variant="overline" sx={{ px: 0, pb: 0.5, pt: 1, fontSize: '9px', fontWeight: 600, color: alpha(theme.palette.text.secondary, 0.5), display: 'block', letterSpacing: '0.5px' }}>
-                  LAUNCHPADS
-                </Typography>
-                {[
-                  { path: '/view/firstledger', name: 'FirstLedger' },
-                  { path: '/view/magnetic-x', name: 'Magnetic X' },
-                  { path: '/view/xpmarket', name: 'XPmarket' },
-                  { path: '/view/aigentrun', name: 'aigent.run' },
-                  { path: '/view/ledgermeme', name: 'LedgerMeme' },
-                  { path: '/view/horizon', name: 'Horizon' },
-                  { path: '/view/moonvalve', name: 'Moonvalve' }
-                ].map((item) => (
-                  <ListItem key={item.path} disablePadding>
-                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36 }}>
-                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+              <nav>
+                {/* Tokens Expandable */}
+                <button
+                  onClick={() => setTokensExpanded(!tokensExpanded)}
+                  className={cn(
+                    'flex w-full items-center justify-between py-3 text-base font-medium',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  Tokens
+                  {tokensExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
 
-                <Typography variant="overline" sx={{ px: 0, pb: 0.5, mt: 1.5, fontSize: '9px', fontWeight: 600, color: alpha(theme.palette.text.secondary, 0.5), display: 'block', letterSpacing: '0.5px' }}>
-                  ANALYTICS
-                </Typography>
-                {[
-                  { path: '/market-metrics', name: 'Market Metrics' },
-                  { path: '/rsi-analysis', name: 'RSI Analysis' },
-                  { path: '/amm-pools', name: 'AMM Pools' },
-                  ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist' }] : [])
-                ].map((item) => (
-                  <ListItem key={item.path} disablePadding>
-                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36 }}>
-                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
+                {tokensExpanded && (
+                  <div className="pl-4">
+                    <p className={cn('pb-1 pt-2 text-[9px] font-semibold uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                      LAUNCHPADS
+                    </p>
+                    {launchpadItems.map((item) => (
+                      <a key={item.path} href={item.path} onClick={() => toggleDrawer(false)} className="block py-1.5 text-[0.9rem] font-normal">
+                        {item.name}
+                      </a>
+                    ))}
 
-                <Typography variant="overline" sx={{ px: 0, pb: 0.5, mt: 1.5, fontSize: '9px', fontWeight: 600, color: alpha(theme.palette.text.secondary, 0.5), display: 'block', letterSpacing: '0.5px' }}>
-                  DISCOVER
-                </Typography>
-                {discoverMenuItems.map((item) => (
-                  <ListItem key={item.path} disablePadding>
-                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36 }}>
-                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Collapse>
+                    <p className={cn('mt-3 pb-1 text-[9px] font-semibold uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                      ANALYTICS
+                    </p>
+                    {analyticsItems.map((item) => (
+                      <a key={item.path} href={item.path} onClick={() => toggleDrawer(false)} className="block py-1.5 text-[0.9rem] font-normal">
+                        {item.name}
+                      </a>
+                    ))}
 
-            <ListItem disablePadding>
-              <ListItemButton onClick={() => setNftsExpanded(!nftsExpanded)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
-                <ListItemText primary="NFTs" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
-                {nftsExpanded ? <ExpandLess /> : <ExpandMore />}
-              </ListItemButton>
-            </ListItem>
-            <Collapse in={nftsExpanded} timeout="auto" unmountOnExit>
-              <List component="div" disablePadding sx={{ pl: 2 }}>
-                {[
-                  {
-                    path: '/collections',
-                    name: 'Collections',
-                    icon: <PetsIcon sx={{ fontSize: 16, color: '#9c27b0', mr: 1.5 }} />
-                  },
-                  {
-                    path: '/nft-traders',
-                    name: 'NFT Traders',
-                    icon: <AutoAwesomeIcon sx={{ fontSize: 16, color: '#e91e63', mr: 1.5 }} />
-                  }
-                ].map((item) => (
-                  <ListItem key={item.path} disablePadding>
-                    <ListItemButton component="a" href={item.path} onClick={() => toggleDrawer(false)} sx={{ py: 0.6, px: 0, minHeight: 36, display: 'flex', alignItems: 'center' }}>
-                      {item.icon}
-                      <ListItemText primary={item.name} primaryTypographyProps={{ fontSize: '0.9rem', fontWeight: 400 }} />
-                    </ListItemButton>
-                  </ListItem>
-                ))}
-              </List>
-            </Collapse>
+                    <p className={cn('mt-3 pb-1 text-[9px] font-semibold uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                      DISCOVER
+                    </p>
+                    {discoverMenuItems.map((item) => (
+                      <a key={item.path} href={item.path} onClick={() => toggleDrawer(false)} className="block py-1.5 text-[0.9rem] font-normal">
+                        {item.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
 
-            <ListItem disablePadding>
-              <ListItemButton component="a" href="/swap" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
-                <ListItemText primary="Swap" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component="a" href="/news" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
-                <ListItemText primary="News" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component="a" href="/launch" onClick={() => toggleDrawer(false)} sx={{ py: 1.2, px: 0, minHeight: 44 }}>
-                <ListItemText primary="Launch" primaryTypographyProps={{ fontSize: '1rem', fontWeight: 500 }} />
-              </ListItemButton>
-            </ListItem>
-          </List>
+                {/* NFTs Expandable */}
+                <button
+                  onClick={() => setNftsExpanded(!nftsExpanded)}
+                  className={cn(
+                    'flex w-full items-center justify-between py-3 text-base font-medium',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  NFTs
+                  {nftsExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                </button>
 
-          <Divider sx={{ my: 2 }} />
+                {nftsExpanded && (
+                  <div className="pl-4">
+                    {nftItems.map((item) => (
+                      <a
+                        key={item.path}
+                        href={item.path}
+                        onClick={() => toggleDrawer(false)}
+                        className="flex items-center gap-3 py-1.5 text-[0.9rem] font-normal"
+                      >
+                        {item.icon}
+                        {item.name}
+                      </a>
+                    ))}
+                  </div>
+                )}
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Wallet buttonOnly={true} />
-          </Box>
-        </Box>
-      </Drawer>
+                <a href="/swap" onClick={() => toggleDrawer(false)} className="block py-3 text-base font-medium">
+                  Swap
+                </a>
+                <a href="/news" onClick={() => toggleDrawer(false)} className="block py-3 text-base font-medium">
+                  News
+                </a>
+                <a href="/launch" onClick={() => toggleDrawer(false)} className="block py-3 text-base font-medium">
+                  Launch
+                </a>
+              </nav>
 
-    </HeaderWrapper>
+              <div className={cn('my-4 border-t', isDark ? 'border-white/10' : 'border-gray-200')} />
+
+              <div className="flex flex-col gap-4">
+                <Wallet buttonOnly={true} />
+              </div>
+            </div>
+          </div>
+        </>
+      )}
+    </header>
   );
 }
 

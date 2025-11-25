@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { useEffect, useState, memo, useRef } from 'react';
-import { useTheme, alpha } from '@mui/material/styles';
-import { Box, Skeleton } from '@mui/material';
+import { useEffect, useState, memo, useRef, useContext } from 'react';
 import { useInView } from 'react-intersection-observer';
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
 
 // Simple in-memory cache with TTL
 const chartDataCache = new Map();
@@ -30,7 +30,8 @@ const Sparkline = ({
   interpolationFactor = 2,
   ...props
 }) => {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [chartData, setChartData] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -140,7 +141,7 @@ const Sparkline = ({
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
-  }, [chartData, showGradient, lineWidth, interpolationFactor, theme]);
+  }, [chartData, showGradient, lineWidth, interpolationFactor, isDark]);
 
   // Fetch data when URL changes or component comes into view
   useEffect(() => {
@@ -197,100 +198,51 @@ const Sparkline = ({
   // Loading state with skeleton
   if (isLoading) {
     return (
-      <Box
+      <div
         ref={ref}
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '40px'
-        }}
+        className="w-full h-full flex items-center justify-center min-h-[40px]"
       >
-        <Skeleton
-          variant="rectangular"
-          width="100%"
-          height="100%"
-          animation="wave"
-          sx={{
-            borderRadius: 2,
-            bgcolor: alpha(theme.palette.primary.main, 0.08),
-            '&::after': {
-              background: `linear-gradient(90deg, transparent, ${alpha('#00ff88', 0.2)}, transparent)`
-            }
-          }}
-        />
-      </Box>
+        <div className={cn(
+          "w-full h-full rounded-lg animate-pulse",
+          isDark ? "bg-primary/[0.08]" : "bg-primary/[0.08]"
+        )} />
+      </div>
     );
   }
 
   // Error state
   if (isError) {
     return (
-      <Box
+      <div
         ref={ref}
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '40px',
-          opacity: 0.3
-        }}
+        className="w-full h-full flex items-center justify-center min-h-[40px] opacity-30"
       >
-        <Box
-          sx={{
-            width: '100%',
-            height: '2px',
-            background: `linear-gradient(90deg, transparent, ${alpha(
-              theme.palette.divider,
-              0.5
-            )}, transparent)`,
-            borderRadius: 1
-          }}
-        />
-      </Box>
+        <div className={cn(
+          "w-full h-0.5 rounded",
+          isDark
+            ? "bg-gradient-to-r from-transparent via-white/50 to-transparent"
+            : "bg-gradient-to-r from-transparent via-gray-400/50 to-transparent"
+        )} />
+      </div>
     );
   }
 
   // No data state
   if (!chartData) {
     return (
-      <Box
+      <div
         ref={ref}
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '40px'
-        }}
+        className="w-full h-full flex items-center justify-center min-h-[40px]"
       >
-        <Skeleton
-          variant="rectangular"
-          width="100%"
-          height="100%"
-          animation={false}
-          sx={{
-            borderRadius: 1,
-            bgcolor: 'transparent'
-          }}
-        />
-      </Box>
+        <div className="w-full h-full rounded bg-transparent" />
+      </div>
     );
   }
 
   return (
-    <Box
+    <div
       ref={ref}
-      sx={{
-        width: '100%',
-        height: '100%',
-        position: 'relative'
-      }}
+      className="w-full h-full relative"
     >
       <canvas
         ref={canvasRef}
@@ -300,7 +252,7 @@ const Sparkline = ({
           display: 'block'
         }}
       />
-    </Box>
+    </div>
   );
 };
 

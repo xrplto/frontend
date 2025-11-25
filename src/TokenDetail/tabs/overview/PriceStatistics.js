@@ -44,9 +44,9 @@ const TableCell = styled.td`
 const Chip = styled.div`
   display: inline-flex;
   align-items: center;
-  padding: ${props => props.size === 'small' ? '1px 8px' : '4px 12px'};
-  border-radius: 6px;
-  font-size: ${props => props.fontSize || '12px'};
+  padding: ${props => props.size === 'small' ? '2px 8px' : '4px 12px'};
+  border-radius: 8px;
+  font-size: ${props => props.fontSize || '11px'};
   font-weight: 400;
   cursor: ${props => props.onClick ? 'pointer' : 'default'};
 `;
@@ -54,11 +54,11 @@ const IconButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: ${props => props.size === 'small' ? '3px' : '8px'};
+  padding: ${props => props.size === 'small' ? '4px' : '8px'};
   border: none;
   background: transparent;
   cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
 `;
 const Link = styled.a`
   text-decoration: none;
@@ -104,15 +104,16 @@ const Dialog = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.6);
   display: ${props => props.open ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
   z-index: 1000;
 `;
 const DialogPaper = styled.div`
-  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
+  background: ${props => props.isDark ? '#0a0a0a' : '#ffffff'};
   border-radius: 12px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
   padding: 0;
   max-width: 600px;
   width: 100%;
@@ -122,14 +123,18 @@ const DialogContent = styled.div`
   text-align: ${props => props.textAlign || 'left'};
 `;
 const Button = styled.button`
-  padding: 6px 24px;
-  font-size: 14px;
+  padding: 8px 20px;
+  font-size: 13px;
   font-weight: 400;
-  border-radius: 12px;
-  border: none;
+  border-radius: 10px;
+  border: 1.5px solid rgba(244, 67, 54, 0.3);
   cursor: pointer;
-  background: ${props => props.isDark ? '#f44336' : '#f44336'};
-  color: white;
+  background: rgba(244, 67, 54, 0.1);
+  color: #f44336;
+  &:hover {
+    background: rgba(244, 67, 54, 0.15);
+    border-color: rgba(244, 67, 54, 0.4);
+  }
 `;
 
 const StyledTable = styled(Table)`
@@ -137,8 +142,8 @@ const StyledTable = styled(Table)`
 `;
 
 const ModernTableCell = styled(TableCell)`
-  padding: 6px 12px;
-  border-bottom: ${props => props.isDark ? '1px solid rgba(255,255,255,0.08)' : '1px solid rgba(0,0,0,0.08)'};
+  padding: 8px 12px;
+  border-bottom: ${props => props.isDark ? '1.5px solid rgba(255,255,255,0.08)' : '1.5px solid rgba(0,0,0,0.08)'};
 `;
 
 // Constants
@@ -276,9 +281,9 @@ export default function PriceStatistics({ token, isDark = false }) {
       style={{
         borderRadius: '12px',
         background: 'transparent',
-        border: `1px solid ${alpha(isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", 0.15)}`,
+        border: `1.5px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`,
         width: '100%',
-        marginBottom: '4px'
+        marginBottom: '6px'
       }}
     >
       <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
@@ -324,17 +329,15 @@ export default function PriceStatistics({ token, isDark = false }) {
       {/* Header */}
       <Box
         style={{
-          padding: '4px',
-          paddingLeft: '6px',
-          paddingRight: '6px',
-          borderBottom: `1px solid ${alpha(isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)", 0.1)}`
+          padding: '6px 10px',
+          borderBottom: `1.5px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`
         }}
       >
         <Typography
           variant="h6"
           isDark={isDark}
           style={{
-            fontSize: '12px',
+            fontSize: '11px',
             fontWeight: 400,
             color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)',
             letterSpacing: '0.5px',
@@ -364,26 +367,29 @@ export default function PriceStatistics({ token, isDark = false }) {
               </Typography>
             </ModernTableCell>
             <ModernTableCell align="left">
-              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25}>
+              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25} style={{ minWidth: 0, flex: 1 }}>
                 <Chip
                   size="small"
                   style={{
                     paddingLeft: '8px',
                     paddingRight: '8px',
-                    borderRadius: '6px',
+                    borderRadius: '8px',
                     height: '26px',
                     cursor: 'pointer',
                     background: alpha('rgba(66,133,244,1)', 0.08),
-                    border: `1px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
+                    border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
                     color: '#4285f4',
                     fontWeight: 400,
-                    gap: '6px'
+                    gap: '6px',
+                    minWidth: 0,
+                    maxWidth: isMobile ? '120px' : '200px',
+                    overflow: 'hidden'
                   }}
                   onClick={handleOpenIssuerInfo}
                 >
                   <Typography
                     variant="caption"
-                    style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace' }}
+                    style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                   >
                     {issuer}
                   </Typography>
@@ -400,17 +406,17 @@ export default function PriceStatistics({ token, isDark = false }) {
                         openSnackbar('Copied!', 'success');
                       });
                     }}
-                      size="small"
-                      style={{
-                        padding: '3px',
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '6px',
-                        background: 'transparent',
-                        border: `1px solid ${alpha(isDark ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)', 0.1)}`
-                      }}
-                    >
-                      <Copy size={isMobile ? 12 : 14} color="#4285f4" />
+                    size="small"
+                    style={{
+                      padding: '4px',
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '8px',
+                      background: 'transparent',
+                      border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`
+                    }}
+                  >
+                    <Copy size={isMobile ? 12 : 14} color="#4285f4" />
                   </IconButton>
                 </Tooltip>
               </Stack>
@@ -435,23 +441,26 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell align="left">
-                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25}>
+                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25} style={{ minWidth: 0, flex: 1 }}>
                   <Chip
                     size="small"
                     style={{
                       paddingLeft: '8px',
                       paddingRight: '8px',
-                      borderRadius: '6px',
+                      borderRadius: '8px',
                       height: '26px',
                       background: alpha('rgba(156,39,176,1)', 0.08),
-                      border: `1px solid ${alpha('rgba(156,39,176,1)', 0.15)}`,
+                      border: `1.5px solid ${alpha('rgba(156,39,176,1)', 0.15)}`,
                       color: '#9C27B0',
-                      fontWeight: 400
+                      fontWeight: 400,
+                      minWidth: 0,
+                      maxWidth: isMobile ? '120px' : '200px',
+                      overflow: 'hidden'
                     }}
                   >
                     <Typography
                       variant="caption"
-                      style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace' }}
+                      style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                     >
                       {creator}
                     </Typography>
@@ -463,17 +472,17 @@ export default function PriceStatistics({ token, isDark = false }) {
                           openSnackbar('Copied!', 'success');
                         });
                       }}
-                        size="small"
-                        style={{
-                          padding: '2px',
-                          width: '22px',
-                          height: '22px',
-                          borderRadius: '6px',
-                          background: 'transparent',
-                          border: `1px solid ${alpha(isDark ? 'rgba(255,255,255,1)' : 'rgba(0,0,0,1)', 0.1)}`
-                        }}
-                      >
-                        <Copy size={isMobile ? 10 : 12} color="#9C27B0" />
+                      size="small"
+                      style={{
+                        padding: '4px',
+                        width: '24px',
+                        height: '24px',
+                        borderRadius: '8px',
+                        background: 'transparent',
+                        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`
+                      }}
+                    >
+                      <Copy size={isMobile ? 10 : 12} color="#9C27B0" />
                     </IconButton>
                   </Tooltip>
                   {creations > 0 ? (
@@ -481,18 +490,19 @@ export default function PriceStatistics({ token, isDark = false }) {
                       <Chip
                         size="small"
                         style={{
-                          borderRadius: '6px',
-                          height: '18px',
+                          borderRadius: '8px',
+                          height: '20px',
                           background: alpha('rgba(33,150,243,1)', 0.08),
-                          border: `1px solid ${alpha('rgba(33,150,243,1)', 0.15)}`,
+                          border: `1.5px solid ${alpha('rgba(33,150,243,1)', 0.15)}`,
                           color: '#2196F3',
                           fontWeight: 400,
-                          fontSize: '11px',
+                          fontSize: '10px',
                           paddingLeft: '8px',
-                          paddingRight: '8px'
+                          paddingRight: '8px',
+                          flexShrink: 0
                         }}
                       >
-                        {isMobile ? creations : `${creations} creation${creations > 1 ? 's' : ''}`}
+                        {creations}
                       </Chip>
                     </Tooltip>
                   ) : null}
@@ -927,9 +937,9 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
               width: '26px',
               height: '26px',
               padding: '4px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               background: alpha('rgba(66,133,244,1)', 0.08),
-              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.2)}`,
+              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
@@ -948,16 +958,16 @@ export const CompactSocialLinks = ({ social, toggleLinksDrawer, size = 'small', 
               width: '26px',
               height: '26px',
               padding: '4px',
-              borderRadius: '6px',
+              borderRadius: '8px',
               background: alpha('rgba(156,39,176,1)', 0.08),
-              border: `1.5px solid ${alpha('rgba(156,39,176,1)', 0.2)}`,
+              border: `1.5px solid ${alpha('rgba(156,39,176,1)', 0.15)}`,
               color: '#9C27B0',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center'
             }}
           >
-            <Typography style={{ fontSize: '12px', fontWeight: 500 }}>
+            <Typography style={{ fontSize: '11px', fontWeight: 400 }}>
               +{socialEntries.length - 4}
             </Typography>
           </IconButton>
@@ -997,15 +1007,15 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
           <Chip
             size="small"
             style={{
-              height: '26px',
-              fontSize: '12px',
-              borderRadius: '6px',
+              height: '24px',
+              fontSize: '10px',
+              borderRadius: '8px',
               paddingLeft: '10px',
               paddingRight: '10px',
               background: alpha('rgba(66,133,244,1)', 0.08),
-              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.2)}`,
+              border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
               color: '#4285f4',
-              fontWeight: 500,
+              fontWeight: 400,
               cursor: 'pointer',
               minHeight: 'auto',
               textTransform: 'uppercase',
@@ -1036,15 +1046,15 @@ export const CompactTags = ({ enhancedTags, toggleTagsDrawer, maxTags = 3, isDar
           size="small"
           onClick={() => toggleTagsDrawer(true)}
           style={{
-            height: '26px',
-            fontSize: '12px',
-            borderRadius: '6px',
+            height: '24px',
+            fontSize: '10px',
+            borderRadius: '8px',
             paddingLeft: '10px',
             paddingRight: '10px',
             background: alpha('rgba(66,133,244,1)', 0.08),
-            border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.2)}`,
+            border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
             color: '#4285f4',
-            fontWeight: 500,
+            fontWeight: 400,
             cursor: 'pointer',
             minHeight: 'auto'
           }}

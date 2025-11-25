@@ -1,28 +1,183 @@
-import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useRef, memo, useMemo, useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 import {
-  Box,
-  IconButton,
-  Typography,
-  Stack,
-  Chip,
-  CircularProgress,
-  Alert,
-  useTheme,
-  Tooltip,
-  Divider,
-  Avatar,
-  Drawer
-} from '@mui/material';
-import { alpha } from '@mui/material/styles';
-import CloseIcon from '@mui/icons-material/Close';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+  X as CloseIcon,
+  RefreshCw as RefreshIcon,
+  Copy as ContentCopyIcon,
+  ExternalLink as OpenInNewIcon,
+  CheckCircle as CheckCircleIcon,
+  AlertCircle as ErrorIcon,
+  ArrowLeftRight as SwapHorizIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon
+} from 'lucide-react';
+
+// Utility function
+const alpha = (color, opacity) => {
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  if (color.startsWith('rgb(')) {
+    return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
+  }
+  return color;
+};
+
+// MUI replacement components
+const Box = ({ children, sx, style, className, component = 'div', ...props }) => {
+  const Component = component;
+  const combinedStyle = { ...style };
+  if (sx) {
+    Object.entries(sx).forEach(([key, value]) => {
+      if (typeof value === 'object' && !Array.isArray(value)) return;
+      const cssKey = key.replace(/([A-Z])/g, '-$1').toLowerCase();
+      if (key === 'mt') combinedStyle.marginTop = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'mb') combinedStyle.marginBottom = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'ml') combinedStyle.marginLeft = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'mr') combinedStyle.marginRight = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'mx') { combinedStyle.marginLeft = typeof value === 'number' ? `${value * 8}px` : value; combinedStyle.marginRight = typeof value === 'number' ? `${value * 8}px` : value; }
+      else if (key === 'my') { combinedStyle.marginTop = typeof value === 'number' ? `${value * 8}px` : value; combinedStyle.marginBottom = typeof value === 'number' ? `${value * 8}px` : value; }
+      else if (key === 'pt') combinedStyle.paddingTop = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'pb') combinedStyle.paddingBottom = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'pl') combinedStyle.paddingLeft = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'pr') combinedStyle.paddingRight = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'px') { combinedStyle.paddingLeft = typeof value === 'number' ? `${value * 8}px` : value; combinedStyle.paddingRight = typeof value === 'number' ? `${value * 8}px` : value; }
+      else if (key === 'py') { combinedStyle.paddingTop = typeof value === 'number' ? `${value * 8}px` : value; combinedStyle.paddingBottom = typeof value === 'number' ? `${value * 8}px` : value; }
+      else if (key === 'p') combinedStyle.padding = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'm') combinedStyle.margin = typeof value === 'number' ? `${value * 8}px` : value;
+      else combinedStyle[key] = value;
+    });
+  }
+  return <Component style={combinedStyle} className={className} {...props}>{children}</Component>;
+};
+
+const Stack = ({ children, direction = 'column', spacing = 0, alignItems, justifyContent, sx, style, ...props }) => {
+  const combinedStyle = {
+    display: 'flex',
+    flexDirection: direction === 'row' ? 'row' : 'column',
+    alignItems,
+    justifyContent,
+    gap: typeof spacing === 'number' ? `${spacing * 8}px` : spacing,
+    ...style
+  };
+  if (sx) {
+    Object.entries(sx).forEach(([key, value]) => {
+      if (typeof value === 'object' && !Array.isArray(value)) return;
+      if (key === 'mt') combinedStyle.marginTop = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'mb') combinedStyle.marginBottom = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'p') combinedStyle.padding = typeof value === 'number' ? `${value * 8}px` : value;
+      else if (key === 'px') { combinedStyle.paddingLeft = typeof value === 'number' ? `${value * 8}px` : value; combinedStyle.paddingRight = typeof value === 'number' ? `${value * 8}px` : value; }
+      else if (key === 'py') { combinedStyle.paddingTop = typeof value === 'number' ? `${value * 8}px` : value; combinedStyle.paddingBottom = typeof value === 'number' ? `${value * 8}px` : value; }
+      else combinedStyle[key] = value;
+    });
+  }
+  return <div style={combinedStyle} {...props}>{children}</div>;
+};
+
+const Typography = ({ children, variant, color, sx, style, fontWeight, ...props }) => {
+  const combinedStyle = { fontWeight, ...style };
+  if (variant === 'h6') { combinedStyle.fontSize = '1.1rem'; combinedStyle.fontWeight = combinedStyle.fontWeight || 500; }
+  else if (variant === 'subtitle1') combinedStyle.fontSize = '1rem';
+  else if (variant === 'subtitle2') combinedStyle.fontSize = '0.875rem';
+  else if (variant === 'body1') combinedStyle.fontSize = '1rem';
+  else if (variant === 'body2') combinedStyle.fontSize = '0.875rem';
+  else if (variant === 'caption') combinedStyle.fontSize = '0.75rem';
+  if (sx) Object.entries(sx).forEach(([key, value]) => { if (typeof value !== 'object') combinedStyle[key] = value; });
+  return <span style={combinedStyle} {...props}>{children}</span>;
+};
+
+const IconButton = ({ children, onClick, size, sx, style, disabled, ...props }) => {
+  const btnStyle = {
+    background: 'transparent',
+    border: 'none',
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    padding: size === 'small' ? '4px' : '8px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    opacity: disabled ? 0.5 : 1,
+    ...style
+  };
+  if (sx) Object.entries(sx).forEach(([key, value]) => { if (typeof value !== 'object') btnStyle[key] = value; });
+  return <button style={btnStyle} onClick={onClick} disabled={disabled} {...props}>{children}</button>;
+};
+
+const Chip = ({ label, size, sx, style, icon, color, variant, ...props }) => {
+  const colors = { success: '#4caf50', error: '#f44336', warning: '#ff9800', primary: '#4285f4', default: '#9e9e9e' };
+  const chipColor = colors[color] || colors.default;
+  const chipStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
+    padding: size === 'small' ? '2px 8px' : '4px 12px',
+    borderRadius: '16px',
+    fontSize: size === 'small' ? '0.75rem' : '0.8125rem',
+    background: variant === 'outlined' ? 'transparent' : alpha(chipColor, 0.1),
+    border: variant === 'outlined' ? `1px solid ${alpha(chipColor, 0.5)}` : 'none',
+    color: chipColor,
+    ...style
+  };
+  if (sx) Object.entries(sx).forEach(([key, value]) => { if (typeof value !== 'object') chipStyle[key] = value; });
+  return <span style={chipStyle} {...props}>{icon && <span style={{ display: 'flex', alignItems: 'center' }}>{icon}</span>}{label}</span>;
+};
+
+const CircularProgress = ({ size = 24 }) => (
+  <div style={{ width: size, height: size, border: '2px solid rgba(66,133,244,0.2)', borderTopColor: '#4285f4', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+);
+
+const Alert = ({ children, severity, sx, style, ...props }) => {
+  const colors = { error: '#f44336', warning: '#ff9800', info: '#2196f3', success: '#4caf50' };
+  const alertStyle = { padding: '8px 16px', borderRadius: '8px', background: alpha(colors[severity] || colors.info, 0.1), border: `1px solid ${alpha(colors[severity] || colors.info, 0.3)}`, ...style };
+  if (sx) Object.entries(sx).forEach(([key, value]) => { if (typeof value !== 'object') alertStyle[key] = value; });
+  return <div style={alertStyle} {...props}>{children}</div>;
+};
+
+const Tooltip = ({ children, title }) => children;
+
+const Divider = ({ sx, style }) => {
+  const divStyle = { height: '1px', background: 'rgba(128,128,128,0.2)', width: '100%', ...style };
+  if (sx) Object.entries(sx).forEach(([key, value]) => { if (typeof value !== 'object') divStyle[key] = value; });
+  return <div style={divStyle} />;
+};
+
+const Avatar = ({ children, sx, style, src, ...props }) => {
+  const avatarStyle = { width: '40px', height: '40px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...style };
+  if (sx) Object.entries(sx).forEach(([key, value]) => { if (typeof value !== 'object') avatarStyle[key] = value; });
+  if (src) return <img src={src} style={avatarStyle} {...props} />;
+  return <div style={avatarStyle} {...props}>{children}</div>;
+};
+
+const Drawer = ({ children, open, onClose, anchor = 'right', PaperProps, sx }) => {
+  if (!open) return null;
+  const paperStyle = PaperProps?.sx || {};
+  return (
+    <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1300 }}>
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)' }} onClick={onClose} />
+      <div style={{ position: 'absolute', top: 0, right: anchor === 'right' ? 0 : 'auto', left: anchor === 'left' ? 0 : 'auto', bottom: 0, width: paperStyle.width || '400px', background: paperStyle.background || paperStyle.backgroundColor || '#1e1e1e', overflowY: 'auto', ...paperStyle }}>{children}</div>
+    </div>
+  );
+};
+
+const useTheme = () => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  return {
+    palette: {
+      mode: isDark ? 'dark' : 'light',
+      primary: { main: '#4285f4' },
+      success: { main: '#4caf50' },
+      error: { main: '#f44336' },
+      warning: { main: '#ff9800' },
+      text: { primary: isDark ? '#fff' : '#212B36', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+      background: { default: isDark ? '#121212' : '#fff', paper: isDark ? '#1e1e1e' : '#fff' },
+      divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'
+    }
+  };
+};
 import { fNumber } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
@@ -48,6 +203,11 @@ const TransactionDetailsPanel = memo(
     embedded = false
   }) => {
     const theme = useTheme();
+    const { themeName } = useContext(AppContext);
+    const isDark = themeName === 'XrplToDarkTheme';
+    const textPrimary = isDark ? '#ffffff' : '#212B36';
+    const textSecondary = isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)';
+    const borderColor = isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)';
     const panelIdRef = useRef(Math.random().toString(36).slice(2));
     const asksScrollRef = useRef(null);
     const [transaction, setTransaction] = useState(null);
@@ -283,18 +443,18 @@ const TransactionDetailsPanel = memo(
     };
 
     const content = (
-        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%', color: textPrimary }}>
           <Box
             sx={{
               p: 1.5,
               pb: 1,
-              borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+              borderBottom: `1.5px solid ${borderColor}`,
               flexShrink: 0
             }}
           >
             <Stack direction="row" alignItems="center" justifyContent="space-between">
               <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '0.875rem' }}>
+                <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '0.875rem', color: textPrimary }}>
                   {mode === 'orderbook' ? 'Order Book' : 'Transaction Details'}
                 </Typography>
               </Stack>
@@ -307,12 +467,13 @@ const TransactionDetailsPanel = memo(
                         size="small"
                         onClick={copyToClipboard}
                         sx={{
+                          color: textPrimary,
                           '&:hover': {
                             background: alpha(theme.palette.primary.main, 0.1)
                           }
                         }}
                       >
-                        <ContentCopyIcon sx={{ fontSize: 18 }} />
+                        <ContentCopyIcon size={18} color={textPrimary} />
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="View on XRPL">
@@ -322,12 +483,13 @@ const TransactionDetailsPanel = memo(
                           window.open(`https://xrpl.to/tx/${transactionHash}`, '_blank')
                         }
                         sx={{
+                          color: textPrimary,
                           '&:hover': {
                             background: alpha(theme.palette.primary.main, 0.1)
                           }
                         }}
                       >
-                        <OpenInNewIcon sx={{ fontSize: 18 }} />
+                        <OpenInNewIcon size={18} color={textPrimary} />
                       </IconButton>
                     </Tooltip>
                   </>
@@ -339,12 +501,13 @@ const TransactionDetailsPanel = memo(
                       onClick={fetchTransactionDetails}
                       disabled={loading}
                       sx={{
+                        color: textPrimary,
                         '&:hover': {
                           background: alpha(theme.palette.primary.main, 0.1)
                         }
                       }}
                     >
-                      <RefreshIcon sx={{ fontSize: 18 }} />
+                      <RefreshIcon size={18} color={textPrimary} />
                     </IconButton>
                   </Tooltip>
                 )}
@@ -352,12 +515,13 @@ const TransactionDetailsPanel = memo(
                   size="small"
                   onClick={onClose}
                   sx={{
+                    color: textPrimary,
                     '&:hover': {
                       background: alpha(theme.palette.error.main, 0.1)
                     }
                   }}
                 >
-                  <CloseIcon sx={{ fontSize: 18 }} />
+                  <CloseIcon size={18} color={textPrimary} />
                 </IconButton>
               </Stack>
             </Stack>
@@ -366,7 +530,7 @@ const TransactionDetailsPanel = memo(
               <Typography
                 variant="caption"
                 sx={{
-                  color: alpha(theme.palette.text.secondary, 0.7),
+                  color: textSecondary,
                   fontSize: '9px',
                   display: 'block',
                   mt: 0.25,
@@ -386,7 +550,7 @@ const TransactionDetailsPanel = memo(
                   <Typography
                     variant="caption"
                     sx={{
-                      color: alpha(theme.palette.text.secondary, 0.7),
+                      color: textSecondary,
                       fontSize: '9px'
                     }}
                   >
@@ -404,7 +568,8 @@ const TransactionDetailsPanel = memo(
                       borderRadius: '6px',
                       cursor: 'pointer',
                       backgroundColor: 'transparent',
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                      color: textPrimary,
+                      border: `1px solid ${borderColor}`,
                       '&:hover': {
                         backgroundColor: alpha(theme.palette.primary.main, 0.04),
                         borderColor: theme.palette.primary.main
@@ -458,7 +623,7 @@ const TransactionDetailsPanel = memo(
                 <CircularProgress size={32} />
                 <Typography
                   variant="body2"
-                  sx={{ mt: 2, color: alpha(theme.palette.text.secondary, 0.7) }}
+                  sx={{ mt: 2, color: textSecondary }}
                 >
                   Loading transaction...
                 </Typography>
@@ -528,7 +693,7 @@ const TransactionDetailsPanel = memo(
                 {/* Transaction Status */}
                 <Stack direction="row" spacing={1}>
                   <Chip
-                    icon={transaction.meta?.TransactionResult === 'tesSUCCESS' ? <CheckCircleIcon /> : <ErrorIcon />}
+                    icon={transaction.meta?.TransactionResult === 'tesSUCCESS' ? <CheckCircleIcon size={12} /> : <ErrorIcon size={12} />}
                     label={transaction.meta?.TransactionResult === 'tesSUCCESS' ? 'Success' : 'Failed'}
                     color={transaction.meta?.TransactionResult === 'tesSUCCESS' ? 'success' : 'error'}
                     variant="outlined"
@@ -550,7 +715,7 @@ const TransactionDetailsPanel = memo(
                   <Typography
                     variant="caption"
                     sx={{
-                      color: alpha(theme.palette.text.secondary, 0.7),
+                      color: textSecondary,
                       mb: 0.5,
                       display: 'block'
                     }}
@@ -559,7 +724,7 @@ const TransactionDetailsPanel = memo(
                   </Typography>
                   <Stack spacing={0.5}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ color: textSecondary }}>
                         Ledger
                       </Typography>
                       <Typography variant="caption" sx={{ fontWeight: 400 }}>
@@ -567,7 +732,7 @@ const TransactionDetailsPanel = memo(
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ color: textSecondary }}>
                         Time
                       </Typography>
                       <Typography variant="caption" sx={{ fontWeight: 400 }}>
@@ -575,7 +740,7 @@ const TransactionDetailsPanel = memo(
                       </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ color: textSecondary }}>
                         Fee
                       </Typography>
                       <Typography variant="caption" sx={{ fontWeight: 400 }}>
@@ -596,7 +761,7 @@ const TransactionDetailsPanel = memo(
                         <Typography
                           variant="caption"
                           sx={{
-                            color: alpha(theme.palette.text.secondary, 0.7),
+                            color: textSecondary,
                             mb: 0.5,
                             display: 'block'
                           }}
@@ -624,7 +789,7 @@ const TransactionDetailsPanel = memo(
                   <Typography
                     variant="caption"
                     sx={{
-                      color: alpha(theme.palette.text.secondary, 0.7),
+                      color: textSecondary,
                       mb: 0.5,
                       display: 'block'
                     }}
@@ -633,7 +798,7 @@ const TransactionDetailsPanel = memo(
                   </Typography>
                   <Stack spacing={1}>
                     <Box>
-                      <Typography variant="caption" color="text.secondary">
+                      <Typography variant="caption" sx={{ color: textSecondary }}>
                         From
                       </Typography>
                       <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
@@ -661,7 +826,7 @@ const TransactionDetailsPanel = memo(
                     </Box>
                     {transaction.Destination && (
                       <Box>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" sx={{ color: textSecondary }}>
                           To
                         </Typography>
                         <Box sx={{ display: 'flex', alignItems: 'center', mt: 0.5 }}>
@@ -704,7 +869,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 0.5,
                           display: 'block'
                         }}
@@ -721,7 +886,7 @@ const TransactionDetailsPanel = memo(
                       {transaction.SendMax && (
                         <Typography
                           variant="caption"
-                          sx={{ color: alpha(theme.palette.text.secondary, 0.7), display: 'block' }}
+                          sx={{ color: textSecondary, display: 'block' }}
                         >
                           Max: {formatAmount(transaction.SendMax)}
                         </Typography>
@@ -738,7 +903,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 1,
                           display: 'block'
                         }}
@@ -751,7 +916,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 0.5,
                           display: 'block'
                         }}
@@ -776,7 +941,7 @@ const TransactionDetailsPanel = memo(
                             <Typography
                               variant="caption"
                               sx={{
-                                color: alpha(theme.palette.text.secondary, 0.6),
+                                color: textSecondary,
                                 display: 'block',
                                 mt: 1
                               }}
@@ -800,7 +965,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 0.5,
                           display: 'block'
                         }}
@@ -812,7 +977,7 @@ const TransactionDetailsPanel = memo(
                       </Typography>
                       <Typography
                         variant="caption"
-                        sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '9px' }}
+                        sx={{ color: textSecondary, fontSize: '9px' }}
                       >
                         {new Decimal(transaction.LimitAmount.value).eq(0) ? 'Removed' : 'Active'}
                       </Typography>
@@ -828,7 +993,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 0.5,
                           display: 'block'
                         }}
@@ -857,7 +1022,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 0.5,
                           display: 'block'
                         }}
@@ -886,7 +1051,7 @@ const TransactionDetailsPanel = memo(
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      color: alpha(theme.palette.text.secondary, 0.6),
+                                      color: textSecondary,
                                       fontSize: '13px'
                                     }}
                                   >
@@ -909,7 +1074,7 @@ const TransactionDetailsPanel = memo(
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      color: alpha(theme.palette.text.secondary, 0.6),
+                                      color: textSecondary,
                                       fontSize: '13px'
                                     }}
                                   >
@@ -932,7 +1097,7 @@ const TransactionDetailsPanel = memo(
                                   <Typography
                                     variant="caption"
                                     sx={{
-                                      color: alpha(theme.palette.text.secondary, 0.6),
+                                      color: textSecondary,
                                       fontSize: '13px',
                                       display: 'block',
                                       mb: 0.25
@@ -969,7 +1134,7 @@ const TransactionDetailsPanel = memo(
                       <Typography
                         variant="caption"
                         sx={{
-                          color: alpha(theme.palette.text.secondary, 0.7),
+                          color: textSecondary,
                           mb: 0.5,
                           display: 'block'
                         }}
@@ -1007,7 +1172,7 @@ const TransactionDetailsPanel = memo(
                     <Typography
                       variant="caption"
                       sx={{
-                        color: alpha(theme.palette.text.secondary, 0.6),
+                        color: textSecondary,
                         fontWeight: 400,
                         fontSize: '0.75rem',
                         textTransform: 'none'
@@ -1026,8 +1191,8 @@ const TransactionDetailsPanel = memo(
                             zIndex: 2,
                             px: 1.5,
                             py: 0.5,
-                            background: theme.palette.background.paper,
-                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
+                            background: isDark ? '#000000' : '#ffffff',
+                            borderBottom: `1.5px solid ${borderColor}`
                           }}
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1039,14 +1204,14 @@ const TransactionDetailsPanel = memo(
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}
+                              sx={{ color: textSecondary, fontSize: '0.75rem' }}
                             >
                               Amount
                             </Typography>
                             <Typography
                               variant="caption"
                               sx={{
-                                color: alpha(theme.palette.text.secondary, 0.7),
+                                color: textSecondary,
                                 fontSize: '0.75rem',
                                 display: { xs: 'none', sm: 'inline' }
                               }}
@@ -1167,7 +1332,7 @@ const TransactionDetailsPanel = memo(
                                         fontSize: '0.75rem',
                                         fontWeight: 400,
                                         display: { xs: 'none', sm: 'inline' },
-                                        color: alpha(theme.palette.text.secondary, 0.7),
+                                        color: textSecondary,
                                         position: 'relative',
                                         zIndex: 1
                                       }}
@@ -1185,7 +1350,7 @@ const TransactionDetailsPanel = memo(
                       <Box sx={{ p: 2, textAlign: 'center' }}>
                         <Typography
                           variant="caption"
-                          sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}
+                          sx={{ color: textSecondary }}
                         >
                           No sell orders
                         </Typography>
@@ -1200,8 +1365,8 @@ const TransactionDetailsPanel = memo(
                     px: 1.5,
                     py: 0.75,
                     background: 'transparent',
-                    borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
-                    borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
+                    borderTop: `1.5px solid ${borderColor}`,
+                    borderBottom: `1.5px solid ${borderColor}`
                   }}
                 >
                   <Stack direction="row" justifyContent="space-between" alignItems="center">
@@ -1209,7 +1374,7 @@ const TransactionDetailsPanel = memo(
                       variant="caption"
                       sx={{
                         fontWeight: 400,
-                        color: alpha(theme.palette.text.secondary, 0.7),
+                        color: textSecondary,
                         fontSize: '0.75rem'
                       }}
                     >
@@ -1220,7 +1385,7 @@ const TransactionDetailsPanel = memo(
                       sx={{
                         fontSize: '0.75rem',
                         fontWeight: 400,
-                        color: theme.palette.text.primary
+                        color: textPrimary
                       }}
                     >
                       {fNumber(spread.spreadAmount)} ({Number(spread.spreadPercentage).toFixed(2)}%)
@@ -1248,7 +1413,7 @@ const TransactionDetailsPanel = memo(
                     <Typography
                       variant="caption"
                       sx={{
-                        color: alpha(theme.palette.text.secondary, 0.6),
+                        color: textSecondary,
                         fontWeight: 400,
                         fontSize: '0.75rem',
                         textTransform: 'none'
@@ -1267,8 +1432,8 @@ const TransactionDetailsPanel = memo(
                             zIndex: 2,
                             px: 1.5,
                             py: 0.5,
-                            background: theme.palette.background.paper,
-                            borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
+                            background: isDark ? '#000000' : '#ffffff',
+                            borderBottom: `1.5px solid ${borderColor}`
                           }}
                         >
                           <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
@@ -1280,14 +1445,14 @@ const TransactionDetailsPanel = memo(
                             </Typography>
                             <Typography
                               variant="caption"
-                              sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}
+                              sx={{ color: textSecondary, fontSize: '0.75rem' }}
                             >
                               Amount
                             </Typography>
                             <Typography
                               variant="caption"
                               sx={{
-                                color: alpha(theme.palette.text.secondary, 0.7),
+                                color: textSecondary,
                                 fontSize: '0.75rem',
                                 display: { xs: 'none', sm: 'inline' }
                               }}
@@ -1404,7 +1569,7 @@ const TransactionDetailsPanel = memo(
                                         fontSize: '0.75rem',
                                         fontWeight: 400,
                                         display: { xs: 'none', sm: 'inline' },
-                                        color: alpha(theme.palette.text.secondary, 0.7),
+                                        color: textSecondary,
                                         position: 'relative',
                                         zIndex: 1
                                       }}
@@ -1422,7 +1587,7 @@ const TransactionDetailsPanel = memo(
                       <Box sx={{ p: 2, textAlign: 'center' }}>
                         <Typography
                           variant="caption"
-                          sx={{ color: alpha(theme.palette.text.secondary, 0.8) }}
+                          sx={{ color: textSecondary }}
                         >
                           No buy orders
                         </Typography>
@@ -1446,7 +1611,7 @@ const TransactionDetailsPanel = memo(
                     <Typography
                       variant="body2"
                       sx={{
-                        color: alpha(theme.palette.text.secondary, 0.8),
+                        color: textSecondary,
                         fontSize: '14px',
                         fontWeight: 400
                       }}
@@ -1460,7 +1625,7 @@ const TransactionDetailsPanel = memo(
 
             {mode === 'orderbook' && showDepth && (
               <Box sx={{ p: 1.5, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                <Typography variant="caption" sx={{ mb: 0.5, fontSize: '0.75rem', color: 'text.secondary' }}>
+                <Typography variant="caption" sx={{ mb: 0.5, fontSize: '0.75rem', color: textSecondary }}>
                   Market Depth
                 </Typography>
                 {(() => {
@@ -1475,18 +1640,18 @@ const TransactionDetailsPanel = memo(
                       <Stack spacing={0.75}>
                         <Stack direction="row" spacing={2} sx={{ justifyContent: 'space-between' }}>
                           <Box>
-                            <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary', display: 'block', mb: 0.15 }}>
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: textSecondary, display: 'block', mb: 0.15 }}>
                               Orders
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: 'text.primary' }}>
+                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: textPrimary }}>
                               {totalOrders}
                             </Typography>
                           </Box>
                           <Box>
-                            <Typography variant="caption" sx={{ fontSize: '9px', color: 'text.secondary', display: 'block', mb: 0.15 }}>
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: textSecondary, display: 'block', mb: 0.15 }}>
                               Ratio
                             </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: 'text.primary' }}>
+                            <Typography variant="caption" sx={{ fontSize: '12px', fontWeight: 500, color: textPrimary }}>
                               {buyDepth > 0 && sellDepth > 0 ? (buyDepth / sellDepth).toFixed(2) : '-'}
                             </Typography>
                           </Box>
@@ -1549,7 +1714,7 @@ const TransactionDetailsPanel = memo(
                                   sx={{
                                     fontSize: '9px',
                                     fontFamily: 'monospace',
-                                    color: 'text.secondary',
+                                    color: textSecondary,
                                     cursor: 'pointer',
                                     '&:hover': { color: theme.palette.primary.main }
                                   }}
@@ -1557,7 +1722,7 @@ const TransactionDetailsPanel = memo(
                                 >
                                   {i + 1}. {account.slice(0, 10)}...{account.slice(-6)}
                                 </Typography>
-                                <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 500, color: 'text.primary' }}>
+                                <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 500, color: textPrimary }}>
                                   {fNumber(amount)}
                                 </Typography>
                               </Box>
@@ -1578,7 +1743,7 @@ const TransactionDetailsPanel = memo(
                                   sx={{
                                     fontSize: '9px',
                                     fontFamily: 'monospace',
-                                    color: 'text.secondary',
+                                    color: textSecondary,
                                     cursor: 'pointer',
                                     '&:hover': { color: theme.palette.primary.main }
                                   }}
@@ -1586,7 +1751,7 @@ const TransactionDetailsPanel = memo(
                                 >
                                   {i + 1}. {account.slice(0, 10)}...{account.slice(-6)}
                                 </Typography>
-                                <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 500, color: 'text.primary' }}>
+                                <Typography variant="caption" sx={{ fontSize: '9px', fontWeight: 500, color: textPrimary }}>
                                   {fNumber(amount)}
                                 </Typography>
                               </Box>
@@ -1614,26 +1779,26 @@ const TransactionDetailsPanel = memo(
                     }}>
                       <Stack spacing={0.5}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: textSecondary }}>
                             Price
                           </Typography>
-                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: 'text.primary' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: textPrimary }}>
                             {fNumber(tooltip.price)}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: textSecondary }}>
                             Depth
                           </Typography>
-                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: 'text.primary' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: textPrimary }}>
                             {fNumber(tooltip.depth)}
                           </Typography>
                         </Box>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                          <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', color: textSecondary }}>
                             Orders
                           </Typography>
-                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: 'text.primary' }}>
+                          <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 500, color: textPrimary }}>
                             {tooltip.orders}
                           </Typography>
                         </Box>
@@ -1744,9 +1909,9 @@ const TransactionDetailsPanel = memo(
         <Box
           sx={{
             height: '100%',
-            border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
+            border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
             borderRadius: '8px',
-            backgroundColor: 'transparent',
+            backgroundColor: isDark ? '#000000' : '#ffffff',
             overflow: 'hidden',
             display: 'flex',
             flexDirection: 'column',
@@ -1774,8 +1939,8 @@ const TransactionDetailsPanel = memo(
               sm: 'calc(100vh - 56px)',
               md: 'calc(100vh - 56px)'
             },
-            borderLeft: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
-            backgroundColor: theme.palette.background.paper,
+            borderLeft: `1.5px solid ${borderColor}`,
+            backgroundColor: isDark ? '#000000' : '#ffffff',
             boxShadow: 'none',
             overflow: 'hidden'
           }

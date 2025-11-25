@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { useState, useContext, useEffect } from 'react';
-import { Stack, Typography, alpha, useTheme } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import { Box } from '@mui/material';
+import { Search } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 
 const NavSearchBar = ({
@@ -13,8 +12,8 @@ const NavSearchBar = ({
   onOpenSearchModal,
   ...props
 }) => {
-  const { darkMode } = useContext(AppContext);
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   useEffect(() => {
     const handleKeyPress = (event) => {
@@ -39,63 +38,35 @@ const NavSearchBar = ({
   };
 
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      sx={{
-        borderRadius: '12px',
-        cursor: 'pointer',
-        px: 2,
-        py: 1,
-        height: '36px',
-        width: '280px',
-        backgroundColor: alpha(theme.palette.background.paper, 0.02),
-        border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-        boxShadow: 'none',
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04),
-          borderColor: alpha(theme.palette.primary.main, 0.3)
-        }
-      }}
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-xl border-[1.5px] px-4 py-2 h-9 w-[280px] cursor-pointer",
+        isDark
+          ? "bg-white/[0.02] border-white/20 hover:bg-primary/5 hover:border-primary/30"
+          : "bg-black/[0.02] border-gray-200 hover:bg-primary/5 hover:border-primary/30"
+      )}
       onClick={openModal}
       {...props}
     >
-      <SearchIcon
-        sx={{
-          fontSize: '18px',
-          mr: 1.5,
-          color: alpha(theme.palette.text.secondary, 0.6)
-        }}
+      <Search
+        size={18}
+        className={isDark ? "text-white/60" : "text-gray-500/60"}
       />
-      <Typography
-        sx={{
-          fontSize: '14px',
-          flex: 1,
-          color: alpha(theme.palette.text.secondary, 0.7),
-          fontWeight: 400
-        }}
-      >
+      <span className={cn(
+        "flex-1 text-sm font-normal",
+        isDark ? "text-white/70" : "text-gray-500/70"
+      )}>
         {placeholder || 'Search'}
-      </Typography>
-      <Box
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          px: 1,
-          height: '22px',
-          borderRadius: '6px',
-          backgroundColor: alpha(theme.palette.divider, 0.08),
-          border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-          color: alpha(theme.palette.text.secondary, 0.6),
-          fontSize: '12px',
-          fontWeight: 400,
-          fontFamily: 'monospace'
-        }}
-      >
+      </span>
+      <div className={cn(
+        "flex items-center justify-center px-2 h-[22px] rounded-md border-[1.5px] text-xs font-normal font-mono",
+        isDark
+          ? "bg-white/[0.08] border-white/15 text-white/60"
+          : "bg-gray-100 border-gray-200 text-gray-500/60"
+      )}>
         /
-      </Box>
-    </Stack>
+      </div>
+    </div>
   );
 };
 

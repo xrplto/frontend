@@ -1,31 +1,27 @@
-// Material
-import { Box, Container, styled, Toolbar } from '@mui/material';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: hidden;
-        flex: 1;
-`
-);
-
 export default function Overview({ data }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex-1 overflow-hidden">
+      <div id="back-to-top-anchor" className="h-6" />
 
       <Header />
 
-      <Container maxWidth="sm"></Container>
+      <div className="mx-auto max-w-2xl px-4"></div>
 
       <ScrollToTop />
 
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 

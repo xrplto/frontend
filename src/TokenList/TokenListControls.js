@@ -1,14 +1,10 @@
 import React, { useContext, memo, useMemo, useCallback, useState, useRef, useEffect } from 'react';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
-import MoreVertIcon from '@mui/icons-material/MoreVert';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
-import LastPageIcon from '@mui/icons-material/LastPage';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
+import { ChevronsLeft, ChevronsRight, List, ChevronDown } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectFilteredCount } from 'src/redux/statusSlice';
-import { alpha } from '@mui/material';
+import { cn } from 'src/utils/cn';
 
 // ============== TokenListHead Styles ==============
 const StyledTableHead = styled.thead`
@@ -128,8 +124,8 @@ const PaginationContainer = styled.div`
   padding: 8px 14px;
   min-height: 48px;
   border-radius: 12px;
-  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
+  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
   box-shadow: none;
 
   @media (max-width: 900px) {
@@ -147,8 +143,8 @@ const RowsSelector = styled.div`
   padding: 8px 14px;
   min-height: 48px;
   border-radius: 12px;
-  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
+  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
   box-shadow: none;
 
   @media (max-width: 900px) {
@@ -167,9 +163,9 @@ const InfoBox = styled.div`
   flex-wrap: wrap;
   padding: 8px 14px;
   min-height: 48px;
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
   border-radius: 12px;
-  background: ${({ theme }) => theme.pagination?.background || theme.palette.background.paper};
+  background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
   box-shadow: none;
 
   @media (max-width: 900px) {
@@ -186,15 +182,15 @@ const Chip = styled.span`
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1.5px solid ${({ theme }) => theme.pagination?.border || alpha(theme.palette.divider, 0.2)};
+  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
   border-radius: 6px;
-  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.primary};
+  color: ${({ isDark }) => isDark ? '#fff' : '#000'};
 `;
 
 const Text = styled.span`
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: ${({ theme }) => theme.pagination?.textColor || theme.palette.text.secondary};
+  color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
   font-weight: ${(props) => props.fontWeight || 400};
 `;
 
@@ -208,16 +204,15 @@ const NavButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
+  color: ${({ isDark }) => isDark ? '#fff' : '#000'};
   padding: 0;
 
   &:hover:not(:disabled) {
-    background: ${({ theme }) =>
-      theme.pagination?.backgroundHover || alpha(theme.palette.primary.main, 0.08)};
+    background: ${({ isDark }) => isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
-    color: ${({ theme }) => alpha(theme.pagination?.textColor || theme.palette.text.primary, 0.3)};
+    color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'};
     cursor: not-allowed;
   }
 `;
@@ -227,14 +222,8 @@ const PageButton = styled.button`
   height: 24px;
   border-radius: 8px;
   border: none;
-  background: ${(props) =>
-    props.selected
-      ? props.theme.pagination?.selectedBackground || props.theme.palette.primary.main
-      : 'transparent'};
-  color: ${(props) =>
-    props.selected
-      ? props.theme.pagination?.selectedTextColor || 'white'
-      : props.theme.palette.text.primary || 'inherit'};
+  background: ${(props) => props.selected ? '#4285f4' : 'transparent'};
+  color: ${(props) => props.selected ? 'white' : props.isDark ? '#fff' : '#000'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -247,9 +236,7 @@ const PageButton = styled.button`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.selected
-        ? props.theme.palette.primary.dark || '#1976D2'
-        : props.theme.pagination?.backgroundHover || alpha(props.theme.palette.primary.main, 0.08)};
+      props.selected ? '#1976D2' : props.isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
@@ -266,7 +253,7 @@ const Select = styled.div`
 const SelectButton = styled.button`
   background: transparent;
   border: none;
-  color: ${({ theme }) => theme.palette.primary.main};
+  color: #4285f4;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -277,7 +264,7 @@ const SelectButton = styled.button`
   min-width: 40px;
 
   &:hover {
-    background: ${({ theme }) => alpha(theme.palette.primary.main, 0.04)};
+    background: rgba(66, 133, 244, 0.04);
     border-radius: 4px;
     padding: 2px 4px;
     margin: -2px -4px;
@@ -289,10 +276,10 @@ const SelectMenu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: ${({ theme }) => theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+  background: ${({ isDark }) => isDark ? '#1a1a1a' : '#fff'};
+  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
   border-radius: 4px;
-  box-shadow: ${({ theme }) => theme.shadows?.[4] || '0 4px 12px rgba(0, 0, 0, 0.15)'};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   min-width: 60px;
   backdrop-filter: blur(10px);
@@ -307,10 +294,10 @@ const SelectOption = styled.button`
   text-align: left;
   cursor: pointer;
   font-size: 12px;
-  color: ${({ theme }) => theme.palette.text.primary};
+  color: ${({ isDark }) => isDark ? '#fff' : '#000'};
 
   &:hover {
-    background: ${({ theme }) => alpha(theme.palette.action.hover, 0.04)};
+    background: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
   }
 `;
 
@@ -1093,6 +1080,8 @@ export const TokenListHead = memo(function TokenListHead({
 
 // ============== TokenListToolbar Component ==============
 export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, page, setPage, tokens }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const filteredCount = useSelector(selectFilteredCount);
   const [selectOpen, setSelectOpen] = useState(false);
   const selectRef = useRef(null);
@@ -1182,15 +1171,15 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
 
   return (
     <StyledToolbar>
-      <InfoBox>
-        <Chip>{`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}</Chip>
-        <Text>tokens</Text>
+      <InfoBox isDark={isDark}>
+        <Chip isDark={isDark}>{`${start}-${end} of ${currentFilteredCount.toLocaleString()}`}</Chip>
+        <Text isDark={isDark}>tokens</Text>
       </InfoBox>
 
       <CenterBox>
-        <PaginationContainer>
-          <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page">
-            <FirstPageIcon sx={{ width: 14, height: 14 }} />
+        <PaginationContainer isDark={isDark}>
+          <NavButton isDark={isDark} onClick={handleFirstPage} disabled={page === 0} title="First page">
+            <ChevronsLeft size={14} />
           </NavButton>
 
           {getPageNumbers().map((pageNum, idx) => {
@@ -1204,6 +1193,7 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
             return (
               <PageButton
                 key={pageNum}
+                isDark={isDark}
                 selected={pageNum === page + 1}
                 onClick={() => handleChangePage(pageNum - 1)}
               >
@@ -1212,25 +1202,25 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
             );
           })}
 
-          <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
-            <LastPageIcon sx={{ width: 14, height: 14 }} />
+          <NavButton isDark={isDark} onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
+            <ChevronsRight size={14} />
           </NavButton>
         </PaginationContainer>
       </CenterBox>
 
-      <RowsSelector>
-        <ViewListIcon sx={{ width: 14, height: 14 }} />
-        <Text>Rows</Text>
+      <RowsSelector isDark={isDark}>
+        <List size={14} />
+        <Text isDark={isDark}>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
             {rows}
-            <ArrowDropDownIcon sx={{ width: 16, height: 16 }} />
+            <ChevronDown size={16} />
           </SelectButton>
           {selectOpen && (
-            <SelectMenu>
-              <SelectOption onClick={() => handleChangeRows(100)}>100</SelectOption>
-              <SelectOption onClick={() => handleChangeRows(50)}>50</SelectOption>
-              <SelectOption onClick={() => handleChangeRows(20)}>20</SelectOption>
+            <SelectMenu isDark={isDark}>
+              <SelectOption isDark={isDark} onClick={() => handleChangeRows(100)}>100</SelectOption>
+              <SelectOption isDark={isDark} onClick={() => handleChangeRows(50)}>50</SelectOption>
+              <SelectOption isDark={isDark} onClick={() => handleChangeRows(20)}>20</SelectOption>
             </SelectMenu>
           )}
         </Select>

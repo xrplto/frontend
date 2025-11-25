@@ -1,8 +1,5 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
 import styled from '@emotion/styled';
-import { useTheme, alpha } from '@mui/material/styles';
-import { Button, TextField, Stack, InputAdornment, Box, Typography, LinearProgress, Chip, CircularProgress, Alert, Paper } from '@mui/material';
-import { Twitter, Telegram, Language, CloudUpload, CheckCircle, Info, ContentCopy, OpenInNew, AccountBalanceWallet } from '@mui/icons-material';
 import axios from 'axios';
 import * as xrpl from 'xrpl';
 import { AppContext } from 'src/AppContext';
@@ -10,6 +7,8 @@ import { ConnectWallet } from 'src/components/Wallet';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';
+import { cn } from 'src/utils/cn';
+import { Twitter, Send, Globe, Upload, CheckCircle, Info, Copy, ExternalLink, Wallet as WalletIcon } from 'lucide-react';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -29,13 +28,12 @@ const Container = styled.div`
 const PageTitle = styled.h1`
   font-size: 1.5rem;
   font-weight: 400;
-  color: ${props => props.theme?.palette?.text?.primary};
   margin-bottom: 6px;
 `;
 
 const Subtitle = styled.p`
   font-size: 0.88rem;
-  color: ${props => alpha(props.theme?.palette?.text?.secondary, 0.6)};
+  opacity: 0.6;
   margin-bottom: 28px;
 `;
 
@@ -54,16 +52,14 @@ const Step = styled.div`
   align-items: center;
   gap: 6px;
   font-size: 0.8rem;
-  color: ${props => props.active
-    ? '#4285f4'
-    : alpha(props.theme?.palette?.text?.secondary, 0.4)};
+  color: ${props => props.active ? '#4285f4' : 'rgba(150, 150, 150, 0.4)'};
   font-weight: 400;
 `;
 
 const Card = styled.div`
   padding: 20px;
   background: transparent;
-  border: 1.5px solid ${props => alpha(props.theme?.palette?.divider, 0.15)};
+  border: 1.5px solid rgba(150, 150, 150, 0.15);
   border-radius: 12px;
   margin-bottom: 14px;
 `;
@@ -78,21 +74,18 @@ const SectionHeader = styled.div`
 const SectionTitle = styled.h3`
   font-size: 0.95rem;
   font-weight: 400;
-  color: ${props => props.theme?.palette?.text?.primary};
 `;
 
 const Label = styled.label`
   display: block;
   font-size: 0.95rem;
   font-weight: 400;
-  color: ${props => props.theme?.palette?.text?.secondary};
+  opacity: 0.7;
   margin-bottom: 8px;
 `;
 
 const UploadBox = styled.div`
-  border: 1.5px dashed ${props => props.hasFile
-    ? alpha(props.theme?.palette?.success?.main, 0.4)
-    : alpha(props.theme?.palette?.divider, 0.25)};
+  border: 1.5px dashed ${props => props.hasFile ? 'rgba(16, 185, 129, 0.4)' : 'rgba(150, 150, 150, 0.25)'};
   border-radius: 12px;
   padding: 36px 20px;
   text-align: center;
@@ -101,15 +94,13 @@ const UploadBox = styled.div`
   position: relative;
 
   &:hover {
-    border-color: ${props => props.hasFile
-      ? alpha(props.theme?.palette?.success?.main, 0.6)
-      : alpha('#4285f4', 0.4)};
-    background: ${props => alpha('#4285f4', 0.02)};
+    border-color: ${props => props.hasFile ? 'rgba(16, 185, 129, 0.6)' : 'rgba(66, 133, 244, 0.4)'};
+    background: rgba(66, 133, 244, 0.02);
   }
 
   &.dragging {
     border-color: #4285f4;
-    background: ${props => alpha('#4285f4', 0.04)};
+    background: rgba(66, 133, 244, 0.04);
   }
 `;
 
@@ -127,14 +118,14 @@ const HiddenInput = styled.input`
 
 const InfoText = styled.div`
   font-size: 0.85rem;
-  color: ${props => alpha(props.theme?.palette?.text?.secondary, 0.7)};
+  opacity: 0.7;
   margin-top: 12px;
   line-height: 1.5;
 `;
 
 const WarningBox = styled.div`
-  background: ${props => alpha(props.theme?.palette?.warning?.main, 0.08)};
-  border: 1.5px solid ${props => alpha(props.theme?.palette?.warning?.main, 0.3)};
+  background: rgba(245, 158, 11, 0.08);
+  border: 1.5px solid rgba(245, 158, 11, 0.3);
   border-radius: 8px;
   padding: 16px;
   margin-top: 24px;
@@ -142,62 +133,171 @@ const WarningBox = styled.div`
 
 const WarningText = styled.p`
   font-size: 0.9rem;
-  color: ${props => props.theme?.palette?.warning?.main};
+  color: #f59e0b;
   margin: 0;
   font-weight: 400;
 `;
 
-const StyledTextField = styled(TextField)`
-  .MuiOutlinedInput-root {
-    border-radius: 8px;
-    background: ${props => props.theme?.palette?.mode === 'dark'
-      ? alpha(props.theme?.palette?.background?.default, 0.2)
-      : 'rgba(255, 255, 255, 0.6)'};
+const StyledInput = styled.input`
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  border-radius: 8px;
+  border: 1.5px solid ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.15)'};
+  background: transparent;
+  font-family: inherit;
 
-    & fieldset {
-      border: 1.5px solid ${props => props.error
-        ? props.theme?.palette?.error?.main
-        : alpha(props.theme?.palette?.divider, 0.15)};
-    }
-
-    &:hover fieldset {
-      border-color: ${props => props.error
-        ? props.theme?.palette?.error?.main
-        : alpha(props.theme?.palette?.divider, 0.25)};
-    }
-
-    &.Mui-focused fieldset {
-      border-color: ${props => props.error
-        ? props.theme?.palette?.error?.main
-        : props.theme?.palette?.primary?.main};
-      border-width: 1.5px;
-    }
+  &:hover {
+    border-color: ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.25)'};
   }
 
-  .MuiInputBase-input {
-    font-size: 0.92rem;
+  &:focus {
+    outline: none;
+    border-color: ${props => props.error ? '#ef4444' : '#4285f4'};
   }
 
-  .MuiInputLabel-root {
-    font-size: 0.92rem;
+  &::placeholder {
+    opacity: 0.5;
+  }
+`;
+
+const StyledTextarea = styled.textarea`
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  border-radius: 8px;
+  border: 1.5px solid ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.15)'};
+  background: transparent;
+  font-family: inherit;
+  resize: vertical;
+
+  &:hover {
+    border-color: ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.25)'};
   }
 
-  .MuiFormHelperText-root {
-    font-size: 0.75rem;
-    margin-top: 4px;
+  &:focus {
+    outline: none;
+    border-color: ${props => props.error ? '#ef4444' : '#4285f4'};
   }
+
+  &::placeholder {
+    opacity: 0.5;
+  }
+`;
+
+const InputWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+`;
+
+const InputLabel = styled.label`
+  font-size: 0.92rem;
+  opacity: 0.7;
+`;
+
+const HelperText = styled.div`
+  font-size: 0.75rem;
+  margin-top: 4px;
+  opacity: 0.7;
+  color: ${props => props.error ? '#ef4444' : 'inherit'};
 `;
 
 const CharCounter = styled.span`
   font-size: 0.75rem;
-  color: ${props => props.error
-    ? props.theme?.palette?.error?.main
-    : alpha(props.theme?.palette?.text?.secondary, 0.5)};
+  color: ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.5)'};
+`;
+
+const StyledButton = styled.button`
+  padding: ${props => props.size === 'small' ? '6px 12px' : '12px 24px'};
+  font-size: ${props => props.size === 'small' ? '13px' : '15px'};
+  font-weight: 400;
+  border-radius: ${props => props.size === 'small' ? '8px' : '12px'};
+  border: 1.5px solid ${props => props.variant === 'contained' ? '#4285f4' : 'rgba(66, 133, 244, 0.2)'};
+  background: ${props => props.variant === 'contained' ? '#4285f4' : 'transparent'};
+  color: ${props => props.variant === 'contained' ? '#fff' : '#4285f4'};
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: ${props => props.fullWidth ? '100%' : 'auto'};
+
+  &:hover:not(:disabled) {
+    background: ${props => props.variant === 'contained' ? '#3367d6' : 'rgba(66, 133, 244, 0.04)'};
+    border-color: #4285f4;
+  }
+
+  &:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+`;
+
+const AlertBox = styled.div`
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1.5px solid ${props =>
+    props.severity === 'error' ? 'rgba(239, 68, 68, 0.3)' :
+    props.severity === 'warning' ? 'rgba(245, 158, 11, 0.3)' :
+    props.severity === 'success' ? 'rgba(16, 185, 129, 0.3)' :
+    'rgba(66, 133, 244, 0.3)'
+  };
+  background: ${props =>
+    props.severity === 'error' ? 'rgba(239, 68, 68, 0.08)' :
+    props.severity === 'warning' ? 'rgba(245, 158, 11, 0.08)' :
+    props.severity === 'success' ? 'rgba(16, 185, 129, 0.08)' :
+    'rgba(66, 133, 244, 0.08)'
+  };
+  color: ${props =>
+    props.severity === 'error' ? '#ef4444' :
+    props.severity === 'warning' ? '#f59e0b' :
+    props.severity === 'success' ? '#10b981' :
+    '#4285f4'
+  };
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+`;
+
+const ProgressBar = styled.div`
+  height: ${props => props.height || '3px'};
+  background: rgba(150, 150, 150, 0.2);
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: ${props => props.value || 0}%;
+    background: #4285f4;
+    transition: width 0.3s ease;
+  }
+`;
+
+const Spinner = styled.div`
+  width: ${props => props.size === 'small' ? '16px' : '24px'};
+  height: ${props => props.size === 'small' ? '16px' : '24px'};
+  border: 2px solid rgba(66, 133, 244, 0.2);
+  border-top-color: #4285f4;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
 `;
 
 function CreatePage() {
-  const theme = useTheme();
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const fileInputRef = useRef(null);
   const [formData, setFormData] = useState({
     tokenName: '',

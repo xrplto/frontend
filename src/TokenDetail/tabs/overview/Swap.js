@@ -26,7 +26,6 @@ import { configureMemos } from 'src/utils/parseUtils';
 import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
-import { enqueueSnackbar } from 'notistack';
 import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Lazy load XRPL dependencies for device authentication
@@ -353,63 +352,64 @@ const IconButton = styled.button`
 `;
 
 const Alert = styled.div`
-  padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 16px` : '8px 16px'};
-  border-radius: 6px;
+  padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 12px` : '8px 12px'};
+  border-radius: 10px;
   border: 1.5px solid ${props => {
-    if (props.severity === 'error') return '#f44336';
-    if (props.severity === 'warning') return '#ff9800';
-    return '#4285f4';
+    if (props.severity === 'error') return 'rgba(244, 67, 54, 0.3)';
+    if (props.severity === 'warning') return 'rgba(255, 152, 0, 0.3)';
+    return 'rgba(66, 133, 244, 0.3)';
   }};
   background: ${props => {
-    if (props.severity === 'error') return 'rgba(244, 67, 54, 0.1)';
-    if (props.severity === 'warning') return 'rgba(255, 152, 0, 0.1)';
-    return 'rgba(66, 133, 244, 0.1)';
+    if (props.severity === 'error') return 'rgba(244, 67, 54, 0.08)';
+    if (props.severity === 'warning') return 'rgba(255, 152, 0, 0.08)';
+    return 'rgba(66, 133, 244, 0.08)';
   }};
   margin-top: ${props => props.sx?.mt ? `${props.sx.mt * 8}px` : '0'};
 `;
 
 const Tabs = styled.div`
   display: flex;
-  width: 100%;
-  min-height: ${props => props.sx?.minHeight || '48px'};
-  border-bottom: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  width: fit-content;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
 `;
 
 const Tab = styled.button`
-  flex: 1;
-  padding: ${props => props.sx?.['& .MuiTab-root']?.py ? `${props.sx['& .MuiTab-root'].py * 8}px 16px` : '12px 16px'};
-  min-height: ${props => props.sx?.['& .MuiTab-root']?.minHeight || '48px'};
-  font-size: ${props => props.sx?.['& .MuiTab-root']?.fontSize || '14px'};
-  text-transform: ${props => props.sx?.['& .MuiTab-root']?.textTransform || 'none'};
+  padding: 6px 14px;
+  font-size: 13px;
+  text-transform: none;
   border: none;
-  border-bottom: 2px solid ${props => props.isActive ? '#4285f4' : 'transparent'};
-  background: transparent;
-  color: ${props => props.isActive ? '#4285f4' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+  border-radius: 8px;
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : '#fff') : 'transparent'};
+  color: ${props => props.isActive ? '#4285f4' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
   cursor: pointer;
   font-weight: ${props => props.isActive ? 500 : 400};
+  transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
   }
 `;
 
 const Select = styled.select`
   padding: ${props => {
     if (props.sx?.['& .MuiSelect-select']?.py === 0) return '2px 8px';
-    return '8px';
+    return '6px 10px';
   }};
-  font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '14px'};
+  font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '12px'};
   height: ${props => props.sx?.height || 'auto'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
-  border-radius: 6px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : '#ffffff'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : '#ffffff'};
   color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
   cursor: pointer;
   outline: none;
 `;
 
 const MenuItem = styled.option`
-  padding: 8px;
-  font-size: 14px;
+  padding: 6px 10px;
+  font-size: 12px;
 `;
 
 const Tooltip = ({ title, children }) => {
@@ -445,19 +445,23 @@ const Tooltip = ({ title, children }) => {
 
 const CurrencyContent = styled.div`
   box-sizing: border-box;
-  margin: 4px 0;
+  margin: 6px 0;
   display: flex;
   flex-direction: row;
   padding: 14px 16px;
-  border-radius: 8px;
+  border-radius: 12px;
   align-items: center;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
   width: 100%;
   justify-content: space-between;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  transition: border-color 0.15s ease;
+  &:hover {
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  }
   @media (max-width: 600px) {
     padding: 12px 14px;
-    margin: 3px 0;
+    margin: 5px 0;
   }
 `;
 
@@ -476,15 +480,15 @@ const OverviewWrapper = styled.div`
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
-  border-radius: 8px;
+  border-radius: 16px;
   display: flex;
-  padding: 12px;
+  padding: 16px;
   width: 100%;
-  background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   @media (max-width: 600px) {
-    border-radius: 12px;
-    padding: 10px;
+    border-radius: 14px;
+    padding: 12px;
   }
 `;
 
@@ -506,14 +510,16 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${props => props.isDark ? '#000000' : '#ffffff'};
+  background: ${props => props.isDark ? '#0a0a0a' : '#ffffff'};
   border-radius: 50%;
-  padding: 6px;
+  padding: 8px;
   z-index: 1;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.isDark ? 'rgba(66,133,244,0.04)' : 'rgba(66,133,244,0.04)'};
+    background: ${props => props.isDark ? 'rgba(66,133,244,0.08)' : 'rgba(66,133,244,0.08)'};
     border-color: #4285f4;
+    transform: translate(-50%, -50%) scale(1.05);
     svg {
       color: #4285f4 !important;
     }
@@ -525,34 +531,36 @@ const ExchangeButton = styled(Button)`
   max-width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
+  border-radius: 12px;
   background: transparent;
   color: #4285f4;
-  font-weight: 400;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
-  padding: 10px 16px;
-  font-size: 0.875rem;
+  font-weight: 500;
+  border: 1.5px solid #4285f4;
+  padding: 12px 20px;
+  font-size: 0.9rem;
   text-transform: none;
-  margin-top: 8px;
-  margin-bottom: 8px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(66,133,244,0.04);
+    background: rgba(66,133,244,0.08);
     border-color: #4285f4;
   }
 
   &:active {
-    background: rgba(66,133,244,0.08);
+    background: rgba(66,133,244,0.12);
+    transform: scale(0.99);
   }
 
   &:disabled {
     background: transparent;
-    color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   }
 
   @media (max-width: 600px) {
-    padding: 8px 14px;
+    padding: 11px 16px;
     font-size: 0.85rem;
   }
 `;
@@ -569,10 +577,10 @@ const TokenImage = styled(Image)`
 `;
 
 const SummaryBox = styled.div`
-  padding: 8px;
+  padding: 10px 12px;
   background: transparent;
-  border-radius: 6px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-radius: 10px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
   margin-top: 4px;
   margin-bottom: 4px;
 `;
@@ -1501,7 +1509,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           const deviceWallet = getDeviceWallet(accountProfile);
 
           if (!deviceWallet) {
-            enqueueSnackbar('Device wallet not available', { variant: 'error' });
+            openSnackbar('Device wallet not available', 'error');
             return;
           }
 
@@ -1530,9 +1538,9 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 setSync(sync + 1);
                 dispatch(updateProcess(0));
               }, 1500);
-              enqueueSnackbar('Trustline created successfully!', { variant: 'success' });
+              openSnackbar('Trustline created successfully!', 'success');
             } else {
-              enqueueSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, { variant: 'error' });
+              openSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, 'error');
               dispatch(updateProcess(0));
             }
           } finally {
@@ -1540,19 +1548,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           }
         } catch (error) {
           console.error('Device wallet trustline error:', error);
-          enqueueSnackbar('Failed to create trustline: ' + error.message, { variant: 'error' });
+          openSnackbar('Failed to create trustline: ' + error.message, 'error');
           dispatch(updateProcess(0));
         }
       } else {
-        enqueueSnackbar('Device authentication required', { variant: 'error' });
+        openSnackbar('Device authentication required', 'error');
       }
     } catch (err) {
       dispatch(updateProcess(0));
-      enqueueSnackbar(
+      openSnackbar(
         `Failed to create trustline: ${
           err.response?.data?.message || err.message || 'Unknown error'
         }`,
-        { variant: 'error' }
+        'error'
       );
     }
     setLoading(false);
@@ -1614,16 +1622,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
           <AmountRows>
             <CurrencyContent isDark={isDark}>
               <Box display="flex" flexDirection="column" flex="1" gap="3px">
-                <Box display="flex" justifyContent="space-between" alignItems="top" width="100%">
-                  <Typography
-                    lineHeight="1.2"
-                    variant="body2"
-                    isDark={isDark}
-                    sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}
-                  >
-                    You sell
-                  </Typography>
-                </Box>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  isDark={isDark}
+                  sx={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.7 }}
+                >
+                  You pay
+                </Typography>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <TokenImage
                     src={`https://s1.xrpl.to/token/${curr1.md5}`}
@@ -1641,7 +1647,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   variant="caption"
                   color="textSecondary"
                   isDark={isDark}
-                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                  sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' }, opacity: 0.6 }}
                 >
                   {curr1.user}
                 </Typography>
@@ -1741,11 +1747,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
             <CurrencyContent isDark={isDark}>
               <Box display="flex" flexDirection="column" flex="1" gap="3px">
-                <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                  <Typography variant="body2" isDark={isDark} sx={{ fontSize: { xs: '0.875rem', sm: '0.875rem' } }}>
-                    You buy
-                  </Typography>
-                </Box>
+                <Typography
+                  variant="caption"
+                  color="textSecondary"
+                  isDark={isDark}
+                  sx={{ fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', opacity: 0.7 }}
+                >
+                  You receive
+                </Typography>
                 <Stack direction="row" alignItems="center" spacing={0.5}>
                   <TokenImage
                     src={`https://s1.xrpl.to/token/${curr2.md5}`}
@@ -1763,7 +1772,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   variant="caption"
                   color="textSecondary"
                   isDark={isDark}
-                  sx={{ fontSize: { xs: '0.7rem', sm: '0.75rem' } }}
+                  sx={{ fontSize: { xs: '0.65rem', sm: '0.7rem' }, opacity: 0.6 }}
                 >
                   {curr2.user}
                 </Typography>
@@ -2224,8 +2233,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         ) : (
           <ConnectWallet
             text="Connect Wallet"
-            py={{ xs: 0.8, sm: 0.6 }}
-            fontSize={{ xs: '0.9rem', sm: '0.85rem' }}
+            py={{ xs: 1, sm: 0.8 }}
+            fontSize={{ xs: '0.875rem', sm: '0.85rem' }}
+            sx={{
+              borderRadius: '10px',
+              fontWeight: 400
+            }}
           />
         )}
         {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (

@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react';
-import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
+import { useState, useMemo, useContext, useEffect } from 'react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
@@ -7,20 +6,7 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/formatters';
-
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
-    margin: 0;
-    padding: 0;
-    
-    ${theme.breakpoints.down('md')} {
-      margin: 0;
-      padding: 0;
-    }
-`
-);
+import { AppContext } from 'src/AppContext';
 
 function getInitialTokens(data) {
   if (data) return data.tokens;
@@ -28,8 +14,12 @@ function getInitialTokens(data) {
 }
 
 function SpotlightPage({ data }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   const tMap = useMemo(() => {
     const map = new Map();
     for (const t of tokens) {
@@ -37,13 +27,21 @@ function SpotlightPage({ data }) {
     }
     return map;
   }, [tokens]);
-  const isMobile = useMediaQuery('(max-width:600px)');
+
   const router = useRouter();
 
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 600);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
-    <OverviewWrapper>
-      {/* Only show Toolbar on desktop - remove on mobile to eliminate spacing */}
-      {!isMobile && <Toolbar id="back-to-top-anchor" />}
+    <div className="flex-1 overflow-hidden m-0 p-0">
+      {!isMobile && <div id="back-to-top-anchor" className="h-6" />}
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -52,48 +50,33 @@ function SpotlightPage({ data }) {
         Spotlight XRPL Tokens
       </h1>
 
-      <Container maxWidth={notificationPanelOpen ? false : "xl"}>
-        <Box
-          sx={{
-            width: '100%',
-            px: { xs: 0, sm: 0, md: 0 },
-            py: { xs: 0, sm: 0, md: 0 },
-            mt: { xs: 0, sm: 0, md: 0 },
-            mb: { xs: 0, sm: 0, md: 0 },
-            // Add negative margin on mobile to close any remaining gap
-            [(theme) => theme.breakpoints.down('md')]: {
-              marginTop: '-1px' // Pulls Summary closer to header
-            }
-          }}
-        >
+      <div className={notificationPanelOpen ? "mx-auto w-full px-4" : "mx-auto max-w-7xl px-4"}>
+        <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-px">
           <Summary />
-        </Box>
-      </Container>
+        </div>
+      </div>
 
-      <Container maxWidth="xl">
-        <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid size={{ xs: 12, md: 12 }} lg={12}>
-            {data && data.tags ? (
-              <>
-                <TokenList
-                  tags={data.tags}
-                  tokens={tokens}
-                  tMap={tMap}
-                  setTokens={setTokens}
-                  initialOrderBy="assessmentScore"
-                />
-              </>
-            ) : (
-              <></>
-            )}
-          </Grid>
-        </Grid>
-      </Container>
+      <div className="mx-auto max-w-7xl px-4">
+        <div>
+          {data && data.tags ? (
+            <>
+              <TokenList
+                tags={data.tags}
+                tokens={tokens}
+                tMap={tMap}
+                setTokens={setTokens}
+                initialOrderBy="assessmentScore"
+              />
+            </>
+          ) : (
+            <></>
+          )}
+        </div>
+      </div>
 
       <ScrollToTop />
-      {/* {isMobile ? <AppMenu /> : ''} */}
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 

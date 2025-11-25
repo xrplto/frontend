@@ -1,56 +1,11 @@
-import { Box, Typography, Container, Button, styled, alpha } from '@mui/material';
 import Head from 'next/head';
-
-const MainContent = styled(Box)(
-  ({ theme }) => `
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: ${theme.palette.background.default};
-  `
-);
-
-const ContentContainer = styled(Container)(
-  ({ theme }) => `
-    text-align: center;
-  `
-);
-
-const StyledNumber = styled(Typography)(
-  ({ theme }) => `
-    color: ${alpha(theme.palette.text.primary, 0.2)};
-    font-weight: 400;
-    font-size: 6rem;
-    line-height: 1;
-    margin-bottom: ${theme.spacing(2)};
-
-    @media (max-width: 600px) {
-      font-size: 4rem;
-    }
-  `
-);
-
-const StyledButton = styled(Button)(
-  ({ theme }) => `
-    text-transform: none;
-    font-weight: 400;
-    font-size: 0.95rem;
-    padding: ${theme.spacing(1.5, 3)};
-    border-radius: 12px;
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.2)};
-    color: #4285f4;
-    background: transparent;
-
-    &:hover {
-      border-color: #4285f4;
-      background: ${alpha('#4285f4', 0.04)};
-    }
-  `
-);
-
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 
 function Status404() {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   return (
     <>
@@ -60,39 +15,46 @@ function Status404() {
         <meta name="robots" content="noindex, nofollow" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </Head>
-      <MainContent>
-        <ContentContainer maxWidth="sm">
-          <StyledNumber variant="h1">404</StyledNumber>
+      <div className={cn(
+        "min-h-screen flex items-center justify-center",
+        isDark ? "bg-black" : "bg-white"
+      )}>
+        <div className="mx-auto max-w-xl px-4 text-center">
+          <h1 className={cn(
+            "text-6xl sm:text-[6rem] font-normal leading-none mb-4",
+            isDark ? "text-white/20" : "text-black/20"
+          )}>
+            404
+          </h1>
 
-          <Typography
-            variant="h5"
-            component="h2"
-            sx={{
-              fontWeight: 400,
-              mb: 1,
-              color: theme => theme.palette.text.primary,
-              fontSize: { xs: '1.1rem', sm: '1.25rem' }
-            }}
-          >
+          <h2 className={cn(
+            "text-[1.1rem] sm:text-[1.25rem] font-normal mb-2",
+            isDark ? "text-white" : "text-gray-900"
+          )}>
             Page not found
-          </Typography>
+          </h2>
 
-          <Typography
-            variant="body2"
-            sx={{
-              mb: 4,
-              color: theme => alpha(theme.palette.text.secondary, 0.6),
-              fontSize: '15px'
-            }}
-          >
+          <p className={cn(
+            "text-[15px] mb-8",
+            isDark ? "text-white/60" : "text-gray-600"
+          )}>
             The page you're looking for doesn't exist
-          </Typography>
+          </p>
 
-          <StyledButton href="/" variant="outlined">
+          <a
+            href="/"
+            className={cn(
+              "inline-block px-6 py-3 rounded-xl border-[1.5px] text-[0.95rem] font-normal transition-all",
+              "text-primary",
+              isDark
+                ? "border-white/20 hover:border-primary hover:bg-primary/5"
+                : "border-gray-200 hover:border-primary hover:bg-primary/5"
+            )}
+          >
             Return home
-          </StyledButton>
-        </ContentContainer>
-      </MainContent>
+          </a>
+        </div>
+      </div>
     </>
   );
 }

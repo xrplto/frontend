@@ -1,34 +1,13 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Decimal from 'decimal.js-light';
-
-// Material
-import {
-  alpha,
-  useTheme,
-  useMediaQuery,
-  styled,
-  Backdrop,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Select,
-  Stack,
-  Typography,
-  TextField,
-  CircularProgress,
-  Box,
-  Divider,
-  Avatar
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { X, PlusCircle, Loader2 } from 'lucide-react';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
+
+// Utils
+import { cn } from 'src/utils/cn';
 
 // Loader
 import { PulseLoader } from '../components/Spinners';
@@ -37,83 +16,11 @@ import { PulseLoader } from '../components/Spinners';
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 
 // Components
-// QRDialog removed - Xaman no longer used
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
 // ----------------------------------------------------------------------
-const OfferDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialog-paper': {
-    margin: 0,
-    width: '100%',
-    maxWidth: 'sm',
-    borderRadius: '0',
-    backgroundColor: theme.palette.background.paper,
-    border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-    position: 'relative',
-    overflow: 'hidden'
-  },
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(3),
-    backgroundColor: theme.palette.background.default
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(2)
-  }
-}));
-
-const OfferDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-  const theme = useTheme();
-
-  return (
-    <DialogTitle
-      sx={{
-        m: 0,
-        p: 3,
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.12)}`,
-        borderRadius: '24px 24px 0 0'
-      }}
-      {...other}
-    >
-      <Typography
-        variant="h6"
-        component="span"
-        sx={{
-          fontWeight: 400,
-          color: theme.palette.primary.main,
-          fontSize: '19px'
-        }}
-      >
-        {children}
-      </Typography>
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 12,
-            top: 12,
-            backgroundColor: alpha(theme.palette.background.paper, 0.9),
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            borderRadius: '12px',
-            color: theme.palette.text.secondary
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
-
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  }
-}));
 
 function GetNum(amount) {
   let num = 0;
@@ -125,24 +32,12 @@ function GetNum(amount) {
 }
 
 export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nftImageUrl }) {
-  // "costs": [
-  //     {
-  //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
-  //         "name": "SOLO",
-  //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-  //         "currency": "534F4C4F00000000000000000000000000000000",
-  //         "ext": "jpg",
-  //         "exch": 0.29431199670355546,
-  //         "cost": "100"
-  //     }
-  // ]
-  const theme = useTheme();
+  const { themeName, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
   const BASE_URL = 'https://api.xrpl.to/api';
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
 
-  const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
@@ -168,7 +63,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
           headers: { 'x-access-token': accountToken }
         });
         const res = ret.data.data.response;
-        // const account = res.account;
         const dispatched_result = res.dispatched_result;
 
         return dispatched_result;
@@ -198,7 +92,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
       }, 1000);
     };
 
-    // Stop the interval
     const stopInterval = () => {
       clearInterval(dispatchTimer);
       setOpenScanQR(false);
@@ -217,17 +110,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
         if (resolved_at) {
           startInterval();
           return;
-          // setOpenScanQR(false);
-          // if (dispatched_result === 'tesSUCCESS') {
-          //     // const newMints = ret.data.mints;
-          //     handleClose();
-          //     setSync(sync + 1);
-          //     openSnackbar('Create Offer successful!', 'success');
-          // }
-          // else
-          //     openSnackbar('Create Offer rejected!', 'error');
-
-          // return;
         }
       } catch (err) {
       }
@@ -250,7 +132,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
 
   const onCreateOfferXumm = async () => {
     openSnackbar('Xaman no longer supported', 'info');
-    return; // Function disabled
+    return;
     if (!account || !accountToken) {
       openSnackbar('Please login', 'error');
       return;
@@ -296,7 +178,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
       }
 
       if (wallet_type === 'device') {
-        // Device authentication required for NFT operations
         openSnackbar('Device authentication for NFT offers coming soon', 'info');
       } else {
         openSnackbar('Device authentication required', 'error');
@@ -327,7 +208,6 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
 
   const handleCreateOffer = () => {
     if (amount > 0) {
-      // onCreateOfferXumm(); // Xumm removed
       openSnackbar('Device authentication required', 'info');
     } else {
       openSnackbar('Invalid value!', 'error');
@@ -340,233 +220,141 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
     else return 'Create';
   };
 
+  if (!open) return null;
+
   return (
     <>
-      <Backdrop
-        sx={{
-          color: theme.palette.text.primary,
-          zIndex: (theme) => theme.zIndex.drawer + 1,
-          backgroundColor: alpha(theme.palette.common.black, 0.7),
-          WebkitBackdropFilter: 'blur(8px)'
-        }}
-        open={loading}
-      >
-        <PulseLoader color={theme.palette.primary.main} size={10} />
-      </Backdrop>
+      {/* Loading Backdrop */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <PulseLoader color="#4285f4" size={10} />
+        </div>
+      )}
 
-      <OfferDialog
-        fullScreen={fullScreen}
-        onClose={handleClose}
-        open={open}
-        disableScrollLock
-        disablePortal={false}
-        keepMounted
-        TransitionProps={{
-          enter: true,
-          exit: true
-        }}
-      >
-        <OfferDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          Create {isSellOffer ? 'Sell' : 'Buy'} Offer
-        </OfferDialogTitle>
-
-        <Divider sx={{ borderColor: alpha(theme.palette.divider, 0.08) }} />
-
-        <DialogContent>
-          <Box sx={{ p: 2 }}>
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: '12px',
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                mb: 3
-              }}
+      {/* Dialog Backdrop */}
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+        <div className={cn(
+          'relative w-full max-w-md rounded-xl border-[1.5px] overflow-hidden',
+          isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
+        )}>
+          {/* Dialog Title */}
+          <div className={cn(
+            'flex items-center justify-between p-4 border-b-[1.5px]',
+            isDark ? 'border-white/10' : 'border-gray-200'
+          )}>
+            <h2 className={cn('text-[19px] font-normal text-primary')}>
+              Create {isSellOffer ? 'Sell' : 'Buy'} Offer
+            </h2>
+            <button
+              onClick={handleClose}
+              className={cn(
+                'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors',
+                isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              )}
             >
-              <Stack direction="row" spacing={2} alignItems="center">
+              <X size={16} />
+            </button>
+          </div>
+
+          {/* Dialog Content */}
+          <div className="p-4 space-y-4">
+            {/* NFT Preview */}
+            <div className={cn(
+              'p-4 rounded-xl border-[1.5px]',
+              isDark ? 'border-white/10' : 'border-gray-200'
+            )}>
+              <div className="flex items-center gap-3">
                 {nftImageUrl && (
-                  <Avatar
+                  <img
                     src={nftImageUrl}
-                    variant="rounded"
-                    sx={{
-                      width: 64,
-                      height: 64,
-                      borderRadius: '12px',
-                      border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`
-                    }}
+                    alt={nft?.name}
+                    className="w-16 h-16 rounded-xl border-2 border-primary/20 object-cover"
                   />
                 )}
-                <Box>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      fontWeight: 400,
-                      color: theme.palette.text.primary,
-                      fontSize: '18px'
-                    }}
-                  >
+                <div>
+                  <p className={cn('text-[18px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                     {nft?.name}
-                  </Typography>
+                  </p>
                   {nft?.collection && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: theme.palette.text.secondary,
-                        fontWeight: 400
-                      }}
-                    >
+                    <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
                       Collection: {nft.collection}
-                    </Typography>
+                    </p>
                   )}
                   {nft?.rarity_rank && (
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color: theme.palette.warning.main,
-                        fontWeight: 400
-                      }}
-                    >
+                    <p className="text-[13px] text-yellow-500">
                       Rank: {nft.rarity_rank} / {nft.total}
-                    </Typography>
+                    </p>
                   )}
-                </Box>
-              </Stack>
-            </Box>
+                </div>
+              </div>
+            </div>
 
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: '12px',
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                mb: 3,
-                position: 'relative',
-                zIndex: 9999,
-                '& .MuiPopover-root': {
-                  zIndex: 10000
-                },
-                '& .MuiMenu-root': {
-                  zIndex: 10000
-                },
-                '& .MuiSelect-root': {
-                  zIndex: 10000
-                }
-              }}
-            >
-              <Box
-                sx={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  p: 2,
-                  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                  borderRadius: 2,
-                  bgcolor: alpha(theme.palette.background.paper, 0.5)
-                }}
-              >
-                <Typography variant="subtitle2" sx={{ fontWeight: 400 }}>
+            {/* Token Selection */}
+            <div className={cn(
+              'p-4 rounded-xl border-[1.5px]',
+              isDark ? 'border-white/10' : 'border-gray-200'
+            )}>
+              <div className={cn(
+                'px-3 py-2 rounded-lg',
+                isDark ? 'bg-white/5' : 'bg-gray-100'
+              )}>
+                <span className={cn('text-[14px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                   {token?.name || 'XRP'}
-                </Typography>
-              </Box>
-            </Box>
+                </span>
+              </div>
+            </div>
 
-            <Box
-              sx={{
-                p: 3,
-                borderRadius: '12px',
-                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                mb: 3
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                gutterBottom
-                sx={{
-                  fontWeight: 400,
-                  color: theme.palette.text.primary,
-                  mb: 2
-                }}
-              >
-                Cost{' '}
-                <Typography
-                  component="span"
-                  sx={{
-                    color: theme.palette.error.main,
-                    fontWeight: 400
-                  }}
-                >
-                  *
-                </Typography>
-              </Typography>
-
-              <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  id="id_txt_costamount"
-                  variant="outlined"
+            {/* Amount Input */}
+            <div className={cn(
+              'p-4 rounded-xl border-[1.5px]',
+              isDark ? 'border-white/10' : 'border-gray-200'
+            )}>
+              <p className={cn('text-[15px] font-normal mb-3', isDark ? 'text-white' : 'text-gray-900')}>
+                Cost <span className="text-red-500">*</span>
+              </p>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
                   placeholder="Enter amount"
-                  onChange={handleChangeAmount}
-                  autoComplete="new-password"
                   value={amount}
-                  onFocus={(event) => {
-                    event.target.select();
-                  }}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  fullWidth
-                  sx={{
-                    '& .MuiOutlinedInput-root': {
-                      borderRadius: '12px',
-                      backgroundColor: theme.palette.background.paper,
-                      border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                      '&.Mui-focused': {
-                        borderColor: theme.palette.primary.main
-                      }
-                    }
-                  }}
+                  onChange={handleChangeAmount}
+                  onFocus={(e) => e.target.select()}
+                  className={cn(
+                    'flex-1 px-4 py-3 rounded-xl border-[1.5px] text-[14px] outline-none transition-colors',
+                    isDark
+                      ? 'border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-primary'
+                      : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary'
+                  )}
                 />
-                <Typography
-                  variant="body1"
-                  sx={{
-                    fontWeight: 400,
-                    color: theme.palette.primary.main,
-                    minWidth: 'fit-content'
-                  }}
-                >
+                <span className="text-primary text-[14px] font-normal whitespace-nowrap">
                   {token?.name}
-                </Typography>
-              </Stack>
-            </Box>
+                </span>
+              </div>
+            </div>
 
-            <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                startIcon={
-                  isProcessing === 1 ? (
-                    <CircularProgress disableShrink size={20} color="inherit" />
-                  ) : (
-                    <AddCircleIcon />
-                  )
-                }
+            {/* Create Button */}
+            <div className="flex justify-center pt-2">
+              <button
                 onClick={handleCreateOffer}
                 disabled={isProcessing === 1 || !amount}
-                sx={{
-                  minWidth: 200,
-                  height: '52px',
-                  fontWeight: 400,
-                  textTransform: 'none',
-                  borderRadius: '12px',
-                  backgroundColor: theme.palette.primary.main,
-                  color: theme.palette.primary.contrastText,
-                  '&:disabled': {
-                    backgroundColor: alpha(theme.palette.action.disabled, 0.12),
-                    color: theme.palette.action.disabled
-                  }
-                }}
+                className={cn(
+                  'flex items-center gap-2 px-8 py-3 rounded-xl text-[14px] font-normal transition-colors',
+                  isProcessing === 1 || !amount
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    : 'bg-primary text-white hover:bg-primary/90'
+                )}
               >
+                {isProcessing === 1 ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <PlusCircle size={18} />
+                )}
                 {handleMsg()}
-              </Button>
-            </Box>
-          </Box>
-        </DialogContent>
-      </OfferDialog>
-
-      {/* QRDialog removed - Xaman no longer used */}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

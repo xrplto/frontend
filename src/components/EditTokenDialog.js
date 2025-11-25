@@ -1,61 +1,20 @@
 import axios from 'axios';
-import { useRef, useState } from 'react';
-
-// Material
-import {
-  alpha,
-  styled,
-  useTheme,
-  Avatar,
-  Backdrop,
-  Button,
-  Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  Grid,
-  IconButton,
-  Link,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  TextField,
-  Tooltip,
-  Typography
-} from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
-
-import {
-  Check as CheckIcon,
-  Close as CloseIcon,
-  AddCircle as AddCircleIcon
-} from '@mui/icons-material';
-
-// Iconify
-import InfoIcon from '@mui/icons-material/Info';
-import GetAppIcon from '@mui/icons-material/GetApp';
+import { useRef, useState, useContext } from 'react';
+import { Check, X, PlusCircle, Edit, Info, Download } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 // Loader
 import { PulseLoader } from './Spinners';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Redux
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 
-// Components
-// Removed import of EditDialog.js - component inlined below
-import { Edit as EditIcon } from '@mui/icons-material';
-
-// Inline EditDialog component (previously EditDialog.js)
-const EditDialog = ({ label, value, setValue }) => {
+// Inline EditDialog component
+const EditDialog = ({ label, value, setValue, isDark }) => {
   const [val, setVal] = useState(value ? value : '');
   const [open, setOpen] = useState(false);
 
@@ -79,89 +38,86 @@ const EditDialog = ({ label, value, setValue }) => {
 
   return (
     <div>
-      <IconButton onClick={handleClickOpen} edge="end" aria-label="edit" size="small">
-        <EditIcon fontSize="inherit" />
-      </IconButton>
-      <Dialog open={open} onClose={handleClose}>
-        <DialogContent>
-          <TextField
-            value={val}
-            onChange={onChangeValue}
-            autoFocus
-            margin="dense"
-            id="name"
-            label={label}
-            variant="standard"
-            style={{ width: '300px' }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose}>Cancel</Button>
-          <Button onClick={handleOK}>OK</Button>
-        </DialogActions>
-      </Dialog>
+      <button
+        onClick={handleClickOpen}
+        className={cn(
+          "rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal",
+          isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+        )}
+      >
+        <Edit size={14} />
+      </button>
+
+      {open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className={cn(
+            "rounded-xl border-[1.5px] p-6 w-[400px] max-w-[90vw]",
+            isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+          )}>
+            <div className="mb-4">
+              <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
+                {label}
+              </label>
+              <input
+                value={val}
+                onChange={onChangeValue}
+                autoFocus
+                className={cn(
+                  "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+                  isDark
+                    ? "bg-white/5 border-white/15 text-white focus:border-primary"
+                    : "bg-white border-gray-300 text-gray-900 focus:border-primary"
+                )}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={handleClose}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  isDark ? "border-white/15 hover:bg-white/5" : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleOK}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-const AdminDialog = styled(Dialog)(({ theme }) => ({
-  // boxShadow: theme.customShadows.z0,
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)' // Fix on Mobile
-  // backgroundColor: alpha(theme.palette.background.paper, 0.0),
-  // borderRadius: '0px',
-  // padding: '0.5em'
-  // backgroundColor: alpha("#00AB88", 0.99),
-}));
-
-const CoinNameTypography = styled(Typography)({
-  color: '#3366FF'
-});
-
-const Label = styled(Typography)({
-  color: alpha('#637381', 0.99)
-});
-
-const TokenImage = styled(Avatar)(({ theme }) => ({
-  '&:hover': {
-    cursor: 'pointer',
-    opacity: 0.6
-  }
-}));
-
 export default function EditTokenDialog({ token, setToken }) {
-  // const metrics = useSelector(selectMetrics);
-
-  const theme = useTheme();
   const fileRef = useRef();
 
-  const BASE_URL = process.env.API_URL;
-  const { accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
+  const BASE_URL = 'https://api.xrpl.to';
+  const { accountProfile, openSnackbar, setOpenWalletModal, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [loading, setLoading] = useState(false);
 
   const { issuer, name, currency, md5, dateon } = token;
 
-  // const imgUrl = `/static/tokens/${md5}.${token.ext}`;
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   const [file, setFile] = useState(null);
-
   const [kyc, setKYC] = useState(token.kyc);
-
   const [ext, setExt] = useState(token.ext || '');
-
   const [imgData, setImgData] = useState(imgUrl);
-
   const [user, setUser] = useState(token.user);
-
   const [domain, setDomain] = useState(token.domain);
-
   const [date, setDate] = useState(token.date);
-
   const [slug, setSlug] = useState(token.slug);
-
   const [whitepaper, setWhitepaper] = useState(token.whitepaper);
-
   const [twitter, setTwitter] = useState(token.social?.twitter);
   const [facebook, setFacebook] = useState(token.social?.facebook);
   const [linkedin, setLinkedin] = useState(token.social?.linkedin);
@@ -169,11 +125,10 @@ export default function EditTokenDialog({ token, setToken }) {
   const [telegram, setTelegram] = useState(token.social?.telegram);
   const [discord, setDiscord] = useState(token.social?.discord);
   const [youtube, setYoutube] = useState(token.social?.youtube);
-  const [medium, setMedium] = useState(token.social?.medium); // medium.com
-  const [twitch, setTwitch] = useState(token.social?.twitch); // twitch.tv
-  const [tiktok, setTiktok] = useState(token.social?.tiktok); // tiktok
-  const [reddit, setReddit] = useState(token.social?.reddit); // reddit
-
+  const [medium, setMedium] = useState(token.social?.medium);
+  const [twitch, setTwitch] = useState(token.social?.twitch);
+  const [tiktok, setTiktok] = useState(token.social?.tiktok);
+  const [reddit, setReddit] = useState(token.social?.reddit);
   const [tags, setTags] = useState(token.tags);
 
   // AddDialog inline state
@@ -199,7 +154,6 @@ export default function EditTokenDialog({ token, setToken }) {
     }
   };
 
-  // AddDialog inline handlers
   const handleAddTagClickOpen = () => {
     setAddTagOpen(true);
   };
@@ -228,23 +182,18 @@ export default function EditTokenDialog({ token, setToken }) {
       const accountAdmin = accountProfile.account;
       const accountToken = accountProfile.token;
 
-      // Debug logging
-
       if (!accountAdmin || !accountToken) {
         openSnackbar('Authentication required. Please connect your wallet.', 'error');
         setLoading(false);
         return;
       }
 
-      // Check if token might be expired (simple client-side check)
-      // If the profile was loaded from localStorage on page refresh, the token might be old
       const tokenAge = accountProfile.tokenCreatedAt
         ? Date.now() - accountProfile.tokenCreatedAt
         : null;
       if (!tokenAge || tokenAge > 23 * 60 * 60 * 1000) {
         openSnackbar('Your session has expired. Please reconnect your wallet.', 'info');
         setLoading(false);
-        // Open wallet modal to re-authenticate
         if (
           window.confirm(
             'Your authentication has expired. Would you like to reconnect your wallet?'
@@ -260,24 +209,12 @@ export default function EditTokenDialog({ token, setToken }) {
       formdata.append('account', accountAdmin);
       formdata.append('data', JSON.stringify(data));
 
-      /*const res = await axios.post(`${BASE_URL}/admin/update_token`, formdata, {
-                headers: { "Content-Type": "multipart/form-data" }
-            });*/
-
-      /*const body = {accountAdmin, data};
-
-            res = await axios.post(`${BASE_URL}/admin/update_token`, body);*/
-
-      // Log headers for debugging
-
-      // Try using fetch API as an alternative to axios
       if (!accountToken) {
         console.error('No auth token available!');
         openSnackbar('No authentication token. Please log in again.', 'error');
         setLoading(false);
         return;
       }
-
 
       res = await fetch(`${BASE_URL}/admin/update_token`, {
         method: 'POST',
@@ -290,7 +227,6 @@ export default function EditTokenDialog({ token, setToken }) {
 
       const responseData = await res.json();
 
-      // Convert fetch response to axios-like format
       res = {
         status: res.status,
         data: responseData
@@ -299,14 +235,12 @@ export default function EditTokenDialog({ token, setToken }) {
       if (res.status === 200) {
         const ret = res.data;
         if (ret.status) {
-          // Update myself
           Object.assign(token, data);
           token.time = Date.now();
           setFile(null);
           openSnackbar('Successfully changed the token info', 'success');
           finish = true;
         } else {
-          // { status: false, data: null, err: 'ERR_URL_SLUG' }
           const err = ret.err;
           if (err === 'ERR_TRANSFER') openSnackbar('Upload image error, please try again', 'error');
           else if (err === 'ERR_GENERAL') openSnackbar('Invalid data, please check again', 'error');
@@ -344,16 +278,6 @@ export default function EditTokenDialog({ token, setToken }) {
       openSnackbar('Invalid URL Slug, only alphabetic(A-Z, a-z, 0-9, -) allowed', 'error');
       return;
     }
-    /*
-        amount: 9989.174941923571,
-        holders: 15415,
-        kyc: true,
-        offers: 57,
-        trustlines: 18771,
-        slug: "47c6a1d2de5ad3391a58e4f0523c16a3",
-        verified: false,
-        ext: "jpg"
-        */
 
     const newToken = {};
     newToken.md5 = md5;
@@ -382,7 +306,6 @@ export default function EditTokenDialog({ token, setToken }) {
     if (tiktok) social.tiktok = tiktok;
     if (reddit) social.reddit = reddit;
 
-    // if (Object.keys(social).length !== 0)
     newToken.social = social;
 
     onUpdateToken(newToken);
@@ -403,11 +326,10 @@ export default function EditTokenDialog({ token, setToken }) {
       if (newExt === 'jpg' || newExt === 'png') {
         setExt(newExt);
         setFile(pickedFile);
-        // This is used as src of image
         const reader = new FileReader();
         reader.readAsDataURL(pickedFile);
         reader.onloadend = function (e) {
-          setImgData(reader.result); // data:image/jpeg;base64
+          setImgData(reader.result);
         };
       }
     }
@@ -415,7 +337,6 @@ export default function EditTokenDialog({ token, setToken }) {
 
   const handleGetDate = () => {
     setLoading(true);
-    // https://api.xrplorer.com/custom/getTokenBirth?issuer=rPdNJ8vZtneXFnmpxfe6bN3pSiwdXKsz6t&currency=5842656172647300000000000000000000000000
     axios
       .get(`https://api.xrplorer.com/custom/getTokenBirth?issuer=${issuer}&currency=${currency}`)
       .then((res) => {
@@ -432,599 +353,441 @@ export default function EditTokenDialog({ token, setToken }) {
         openSnackbar('Date is still unknown, you can manually edit it', 'error');
       })
       .then(function () {
-        // always executed
         setLoading(false);
       });
   };
 
-  /*
-        React js Resize Image Before Upload
-        https://www.tutsmake.com/react-js-resize-image-before-upload/
-        
-        Uploading and Resizing Images with React JS
-        https://github.com/CodeAT21/React-image-resize-before-upload
-    */
-
   return (
     <>
-      <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.modal + 1 }} open={loading}>
-        {/* <HashLoader color={"#00AB55"} size={50} /> */}
-        <PulseLoader color={'#FF4842'} size={10} />
-      </Backdrop>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <PulseLoader color={'#FF4842'} size={10} />
+        </div>
+      )}
 
-      <AdminDialog onClose={handleClose} open={true} sx={{ p: 5 }} fullWidth={true} maxWidth={'md'}>
-        <DialogTitle sx={{ pl: 4, pr: 4, pt: 1, pb: 1 }}>
-          <input
-            ref={fileRef}
-            style={{ display: 'none' }}
-            // accept='image/*,video/*,audio/*,webgl/*,.glb,.gltf'
-            // accept='image/*'
-            accept=".png, .jpg"
-            id="contained-button-file"
-            multiple={false}
-            type="file"
-            onChange={handleFileSelect}
-          />
-          <Stack direction="row" spacing={2} alignItems="center" justifyContent="space-between">
-            <Stack direction="row" alignItems="center">
-              <TokenImage
+      <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className={cn(
+          "rounded-xl border-[1.5px] w-full max-w-4xl my-8",
+          isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+        )}>
+          {/* Header */}
+          <div className="flex items-center justify-between p-4 border-b border-white/10">
+            <div className="flex items-center gap-3">
+              <input
+                ref={fileRef}
+                style={{ display: 'none' }}
+                accept=".png, .jpg"
+                id="contained-button-file"
+                multiple={false}
+                type="file"
+                onChange={handleFileSelect}
+              />
+              <img
                 alt={name}
                 src={imgData}
-                sx={{ mr: 1, width: 56, height: 56 }}
+                className="w-14 h-14 rounded-lg cursor-pointer hover:opacity-60 transition-opacity"
                 onClick={() => fileRef.current.click()}
               />
-              <CoinNameTypography variant="h5" noWrap color="primary">
-                {name}
-              </CoinNameTypography>
-            </Stack>
+              <h2 className="text-[15px] font-normal text-primary">{name}</h2>
+            </div>
 
-            <Stack direction="row" sx={{ p: 0 }} spacing={2} alignItems="center">
-              <Tooltip title={'Save'}>
-                <IconButton
-                  color="primary"
-                  onClick={handleSave}
-                  size="large"
-                  edge="end"
-                  aria-label="save"
-                >
-                  <CheckIcon fontSize="inherit" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title={'Cancel'}>
-                <IconButton
-                  color="error"
-                  onClick={handleClose}
-                  size="large"
-                  edge="end"
-                  aria-label="save"
-                >
-                  <CloseIcon fontSize="inherit" />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </Stack>
-        </DialogTitle>
-        <Divider />
-        <Table
-          sx={{
-            [`& .${tableCellClasses.root}`]: {
-              borderBottom: '0px solid',
-              borderBottomColor: theme.palette.divider
-            }
-          }}
-        >
-          <TableBody>
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 1, pb: 0, width: '15%' }}>
-                <Label variant="subtitle2" noWrap>
-                  Issuer
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 1, pb: 0, width: '40%' }}>
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mr: 2 }}>
-                  <Label variant="subtitle2" noWrap>
-                    {issuer}
-                  </Label>
-                </Stack>
-              </TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Currency
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Label variant="subtitle2" noWrap>
-                    {name}
-                  </Label>
-                  <Label variant="caption" noWrap>
-                    ({currency})
-                  </Label>
-                </Stack>
-              </TableCell>
-            </TableRow>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSave}
+                className={cn(
+                  "rounded-lg border-[1.5px] p-2 text-[13px] font-normal",
+                  "border-green-500/50 text-green-500 hover:bg-green-500/10"
+                )}
+                title="Save"
+              >
+                <Check size={16} />
+              </button>
+              <button
+                onClick={handleClose}
+                className={cn(
+                  "rounded-lg border-[1.5px] p-2 text-[13px] font-normal",
+                  "border-red-500/50 text-red-500 hover:bg-red-500/10"
+                )}
+                title="Cancel"
+              >
+                <X size={16} />
+              </button>
+            </div>
+          </div>
 
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0.5, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  MD5
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0.5, pb: 0.2 }}>
-                <Stack direction="row" spacing={1}>
-                  <Label variant="subtitle2" noWrap>
-                    {md5}
-                  </Label>
-                  <Label variant="subtitle2" noWrap>
-                    {ext.toUpperCase()}
-                  </Label>
-                </Stack>
-              </TableCell>
-            </TableRow>
+          {/* Main Info Table */}
+          <div className="p-4">
+            <table className="w-full">
+              <tbody>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">Issuer</td>
+                  <td className="py-2 text-[13px] text-gray-500">{issuer}</td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Currency</td>
+                  <td className="py-2 text-[13px]">
+                    <span className="text-gray-500">{name}</span>
+                    <span className="text-gray-400 text-[11px] ml-2">({currency})</span>
+                  </td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">MD5</td>
+                  <td className="py-2 text-[13px] text-gray-500">
+                    {md5} <span className="ml-2">{ext.toUpperCase()}</span>
+                  </td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Domain</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://${domain}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {domain}
+                      </a>
+                      <EditDialog label="Domain" value={domain} setValue={setDomain} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">User</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] text-primary">{user}</span>
+                      <EditDialog label="User" value={user} setValue={setUser} isDark={isDark} />
+                      <button
+                        onClick={() => setKYC(!kyc)}
+                        className={cn(
+                          "rounded-lg border-[1.5px] px-2 py-1 text-[11px] font-medium uppercase tracking-wide",
+                          kyc
+                            ? "border-green-500/50 text-green-500 bg-green-500/10"
+                            : "border-gray-500/50 text-gray-500 bg-gray-500/10"
+                        )}
+                        title="Click to toggle"
+                      >
+                        KYC
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Created Date</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[13px] text-primary">{date}</span>
+                      <button
+                        onClick={handleGetDate}
+                        className={cn(
+                          "rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal",
+                          isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                        )}
+                        title="Get date from online"
+                      >
+                        <Download size={14} />
+                      </button>
+                      <EditDialog label="Date" value={date} setValue={setDate} isDark={isDark} />
+                      <span className="text-[11px] text-gray-400">
+                        {new Date(dateon).toISOString().split('.')[0].replace('T', ' ')}
+                      </span>
+                      <Info size={14} className="text-gray-400" title="Token discovered date by the Ledger Scanner." />
+                    </div>
+                  </td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">URL Slug</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`token/${slug}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {slug}
+                      </a>
+                      <EditDialog label="URL Slug" value={slug} setValue={setSlug} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr className={isDark ? "border-b border-white/5" : "border-b border-gray-100"}>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Whitepaper</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`${whitepaper}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline truncate max-w-md"
+                      >
+                        {whitepaper}
+                      </a>
+                      <EditDialog label="Whitepaper URL" value={whitepaper} setValue={setWhitepaper} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr className="border-b border-white/10">
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Tags</td>
+                  <td className="py-2">
+                    <div className="flex flex-wrap gap-2 items-center">
+                      {tags &&
+                        tags.map((tag, idx) => (
+                          <span
+                            key={md5 + idx + tag}
+                            className={cn(
+                              "rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal flex items-center gap-1",
+                              isDark ? "border-white/15 bg-white/5" : "border-gray-300 bg-gray-50"
+                            )}
+                          >
+                            {tag}
+                            <button
+                              onClick={handleDeleteTags(tag)}
+                              className="ml-1 hover:text-red-500"
+                            >
+                              <X size={12} />
+                            </button>
+                          </span>
+                        ))}
+                      <button
+                        onClick={handleAddTagClickOpen}
+                        className={cn(
+                          "rounded-lg border-[1.5px] p-1.5 text-[13px] font-normal",
+                          isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                        )}
+                      >
+                        <PlusCircle size={14} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Domain
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://${domain}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" noWrap color="primary">
-                      {domain}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Domain" value={domain} setValue={setDomain} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  User
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography variant="subtitle2" noWrap color="primary">
-                    {user}
-                  </Typography>
-                  <EditDialog label="User" value={user} setValue={setUser} />
-                  <Tooltip title={'Click to toggle'}>
-                    <Link
-                      component="button"
-                      underline="none"
-                      variant="body2"
-                      color="inherit"
-                      onClick={() => {
-                        setKYC(!kyc);
-                      }}
-                    >
-                      <Typography variant={kyc ? 'kyc' : 'nokyc'}>KYC</Typography>
-                    </Link>
-                  </Tooltip>
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}></TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}></TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Created Date
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Typography variant="subtitle2" color="primary">
-                    {date}
-                  </Typography>
-                  <Tooltip title={'Get date from online'}>
-                    <IconButton
-                      onClick={handleGetDate}
-                      size="small"
-                      edge="end"
-                      aria-label="getdate"
-                    >
-                      <GetAppIcon />
-                    </IconButton>
-                  </Tooltip>
-
-                  <EditDialog label="Date" value={date} setValue={setDate} />
-
-                  <Label variant="caption" noWrap>
-                    {new Date(dateon).toISOString().split('.')[0].replace('T', ' ')}
-                  </Label>
-                  <Tooltip title={'Token discovered date by the Ledger Scanner.'}>
-                    <InfoIcon />
-                  </Tooltip>
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  URL Slug
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`token/${slug}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {slug}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="URL Slug" value={slug} setValue={setSlug} />
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}></TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}></TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Whitepaper
-                </Label>
-              </TableCell>
-              <TableCell align="left" colSpan={3} sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`${whitepaper}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {whitepaper}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Whitepaper URL" value={whitepaper} setValue={setWhitepaper} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow
-              sx={{
-                [`& .${tableCellClasses.root}`]: {
-                  borderBottom: '1px solid',
-                  borderBottomColor: theme.palette.divider
-                }
-              }}
-            >
-              <TableCell align="right" sx={{ pt: 0, pb: 0.5 }}>
-                <Label variant="subtitle2" noWrap>
-                  Tags
-                </Label>
-              </TableCell>
-              <TableCell align="left" colSpan={3} sx={{ pt: 0, pb: 0.5 }}>
-                <Grid container spacing={1} justifyContent="flex-start">
-                  {tags &&
-                    tags.map((tag, idx) => {
-                      return (
-                        <Grid key={md5 + idx + tag}>
-                          <Chip size="small" label={tag} onDelete={handleDeleteTags(tag)} />
-                        </Grid>
-                      );
-                    })}
-                  <Grid>
-                    <IconButton
-                      onClick={handleAddTagClickOpen}
-                      size="small"
-                      edge="end"
-                      aria-label="add tag"
-                    >
-                      <AddCircleIcon fontSize="inherit" />
-                    </IconButton>
-                  </Grid>
-                </Grid>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-
-        <Table
-          sx={{
-            [`& .${tableCellClasses.root}`]: {
-              borderBottom: '0px solid',
-              borderBottomColor: theme.palette.divider
-            },
-            tableLayout: 'fixed',
-            width: '100%',
-            mb: 3
-          }}
-        >
-          <TableBody>
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 1, pb: 0.2, width: '15%' }}>
-                <Label variant="subtitle2" noWrap>
-                  Twitter
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 1, pb: 0.2, width: '25%' }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://twitter.com/${twitter}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {twitter}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Twitter" value={twitter} setValue={setTwitter} />
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 1, pb: 0.2, width: '15%' }}>
-                <Label variant="subtitle2" noWrap>
-                  YouTube
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 1, pb: 0.2, width: '45%' }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://www.youtube.com/${youtube}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {youtube}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="YouTube" value={youtube} setValue={setYoutube} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Facebook
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://www.facebook.com/${facebook}/`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {facebook}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Facebook" value={facebook} setValue={setFacebook} />
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Medium
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://medium.com/${medium}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {medium}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Medium" value={medium} setValue={setMedium} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  LinkedIn
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://www.linkedin.com/company/${linkedin}/`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {linkedin}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="LinkedIn" value={linkedin} setValue={setLinkedin} />
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Twitch
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://twitch.tv/${twitch}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {twitch}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Twitch" value={twitch} setValue={setTwitch} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Instagram
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://www.instagram.com/${instagram}/`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {instagram}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Instagram" value={instagram} setValue={setInstagram} />
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Tiktok
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://tiktok.com/${tiktok}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {tiktok}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Tiktok" value={tiktok} setValue={setTiktok} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Discord
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://discord.gg/${discord}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {discord}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Discord" value={discord} setValue={setDiscord} />
-                </Stack>
-              </TableCell>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Reddit
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://reddit.com/${reddit}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {reddit}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Reddit" value={reddit} setValue={setReddit} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-
-            <TableRow>
-              <TableCell align="right" sx={{ pt: 0, pb: 0.2 }}>
-                <Label variant="subtitle2" noWrap>
-                  Telegram
-                </Label>
-              </TableCell>
-              <TableCell align="left" sx={{ pt: 0, pb: 0.2 }}>
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <Link
-                    underline="none"
-                    color="inherit"
-                    target="_blank"
-                    href={`https://t.me/${telegram}`}
-                    rel="noreferrer noopener nofollow"
-                  >
-                    <Typography variant="subtitle2" color="primary">
-                      {telegram}
-                    </Typography>
-                  </Link>
-                  <EditDialog label="Telegram" value={telegram} setValue={setTelegram} />
-                </Stack>
-              </TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
-      </AdminDialog>
+          {/* Social Links Table */}
+          <div className="p-4">
+            <table className="w-full">
+              <tbody>
+                <tr>
+                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">Twitter</td>
+                  <td className="py-2 w-[35%]">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://twitter.com/${twitter}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {twitter}
+                      </a>
+                      <EditDialog label="Twitter" value={twitter} setValue={setTwitter} isDark={isDark} />
+                    </div>
+                  </td>
+                  <td className="py-2 pr-4 text-right w-[15%] text-[13px] text-gray-500">YouTube</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://www.youtube.com/${youtube}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {youtube}
+                      </a>
+                      <EditDialog label="YouTube" value={youtube} setValue={setYoutube} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Facebook</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://www.facebook.com/${facebook}/`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {facebook}
+                      </a>
+                      <EditDialog label="Facebook" value={facebook} setValue={setFacebook} isDark={isDark} />
+                    </div>
+                  </td>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Medium</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://medium.com/${medium}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {medium}
+                      </a>
+                      <EditDialog label="Medium" value={medium} setValue={setMedium} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">LinkedIn</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://www.linkedin.com/company/${linkedin}/`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {linkedin}
+                      </a>
+                      <EditDialog label="LinkedIn" value={linkedin} setValue={setLinkedin} isDark={isDark} />
+                    </div>
+                  </td>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Twitch</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://twitch.tv/${twitch}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {twitch}
+                      </a>
+                      <EditDialog label="Twitch" value={twitch} setValue={setTwitch} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Instagram</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://www.instagram.com/${instagram}/`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {instagram}
+                      </a>
+                      <EditDialog label="Instagram" value={instagram} setValue={setInstagram} isDark={isDark} />
+                    </div>
+                  </td>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Tiktok</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://tiktok.com/${tiktok}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {tiktok}
+                      </a>
+                      <EditDialog label="Tiktok" value={tiktok} setValue={setTiktok} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Discord</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://discord.gg/${discord}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {discord}
+                      </a>
+                      <EditDialog label="Discord" value={discord} setValue={setDiscord} isDark={isDark} />
+                    </div>
+                  </td>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Reddit</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://reddit.com/${reddit}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {reddit}
+                      </a>
+                      <EditDialog label="Reddit" value={reddit} setValue={setReddit} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Telegram</td>
+                  <td className="py-2">
+                    <div className="flex items-center gap-2">
+                      <a
+                        href={`https://t.me/${telegram}`}
+                        target="_blank"
+                        rel="noreferrer noopener nofollow"
+                        className="text-[13px] text-primary hover:underline"
+                      >
+                        {telegram}
+                      </a>
+                      <EditDialog label="Telegram" value={telegram} setValue={setTelegram} isDark={isDark} />
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       {/* Inline AddTag Dialog */}
-      <Dialog open={addTagOpen} onClose={handleAddTagClose}>
-        <DialogContent>
-          <TextField
-            value={addTagVal}
-            onChange={onChangeAddTagValue}
-            autoFocus
-            margin="dense"
-            id="tag-name"
-            label="Tag"
-            variant="standard"
-            style={{ width: '300px' }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleAddTagClose}>Cancel</Button>
-          <Button onClick={handleAddTagOK}>OK</Button>
-        </DialogActions>
-      </Dialog>
+      {addTagOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className={cn(
+            "rounded-xl border-[1.5px] p-6 w-[400px] max-w-[90vw]",
+            isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+          )}>
+            <div className="mb-4">
+              <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
+                Tag
+              </label>
+              <input
+                value={addTagVal}
+                onChange={onChangeAddTagValue}
+                autoFocus
+                className={cn(
+                  "w-full rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal outline-none",
+                  isDark
+                    ? "bg-white/5 border-white/15 text-white focus:border-primary"
+                    : "bg-white border-gray-300 text-gray-900 focus:border-primary"
+                )}
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={handleAddTagClose}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  isDark ? "border-white/15 hover:bg-white/5" : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAddTagOK}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  "border-primary bg-primary/10 text-primary hover:bg-primary/20"
+                )}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

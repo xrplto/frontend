@@ -1,41 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 
-// Material
-import { styled, Typography } from '@mui/material';
-
-const ShowCounterContainer = styled('div')(
-  () => `
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        padding: 0.5rem;
-        text-decoration: none;
-  `
-);
-
-const CountDown = styled('div')(
-  () => `
-        line-height: 1.25rem;
-        padding: 0 0.75rem 0 0.75rem;
-        align-items: center;
-        display: flex;
-        flex-direction: column;
-  `
-);
-
-const DateTimeDisplay = ({ value, type, isDanger }) => {
+const DateTimeDisplay = ({ value, type, isDanger, isDark }) => {
   return (
-    <CountDown>
-      <Typography variant="subtitle1">{value}</Typography>
-      <Typography>{type}</Typography>
-    </CountDown>
+    <div className="flex flex-col items-center px-3">
+      <div className={cn(
+        "text-[15px] font-normal",
+        isDark ? "text-white" : "text-gray-900"
+      )}>
+        {value}
+      </div>
+      <div className={cn(
+        "text-[11px] font-normal",
+        isDark ? "text-white/60" : "text-gray-600"
+      )}>
+        {type}
+      </div>
+    </div>
   );
 };
 
-// Inline countdown logic (previously useCountdown hook)
+// Inline countdown logic
 const getReturnValues = (countDown) => {
-  // calculate time left
   const days = Math.floor(countDown / (1000 * 60 * 60 * 24));
   const hours = Math.floor((countDown % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((countDown % (1000 * 60 * 60)) / (1000 * 60));
@@ -45,7 +32,9 @@ const getReturnValues = (countDown) => {
 };
 
 export default function CountdownTimer({ targetDate }) {
-  // Inline countdown hook logic
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   const countDownDate = new Date(targetDate).getTime();
   const [countDown, setCountDown] = useState(countDownDate - new Date().getTime());
 
@@ -60,18 +49,25 @@ export default function CountdownTimer({ targetDate }) {
   const [days, hours, minutes, seconds] = getReturnValues(countDown);
 
   if (days + hours + minutes + seconds <= 0) {
-    return <Typography variant="subtitle1">Time expired</Typography>;
-  } else {
     return (
-      <ShowCounterContainer>
-        <DateTimeDisplay value={days} type={'Days'} isDanger={days <= 3} />
-        <p>:</p>
-        <DateTimeDisplay value={hours} type={'Hours'} isDanger={false} />
-        <p>:</p>
-        <DateTimeDisplay value={minutes} type={'Mins'} isDanger={false} />
-        <p>:</p>
-        <DateTimeDisplay value={seconds} type={'Seconds'} isDanger={false} />
-      </ShowCounterContainer>
+      <div className={cn(
+        "text-[15px] font-normal",
+        isDark ? "text-white" : "text-gray-900"
+      )}>
+        Time expired
+      </div>
     );
   }
+
+  return (
+    <div className="flex items-center justify-center p-2">
+      <DateTimeDisplay value={days} type="Days" isDanger={days <= 3} isDark={isDark} />
+      <span className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>:</span>
+      <DateTimeDisplay value={hours} type="Hours" isDanger={false} isDark={isDark} />
+      <span className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>:</span>
+      <DateTimeDisplay value={minutes} type="Mins" isDanger={false} isDark={isDark} />
+      <span className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>:</span>
+      <DateTimeDisplay value={seconds} type="Seconds" isDanger={false} isDark={isDark} />
+    </div>
+  );
 }

@@ -1,47 +1,11 @@
 import axios from 'axios';
 import { useState, useContext, useEffect } from 'react';
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  TextField,
-  Button,
-  Typography,
-  Stack,
-  IconButton,
-  useMediaQuery,
-  useTheme,
-  styled,
-  alpha,
-  Backdrop
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
+import { X, PlusCircle } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { PulseLoader } from '../components/Spinners';
-
+import { cn } from 'src/utils/cn';
 
 const BASE_URL = 'https://api.xrpl.to/api';
-
-const OfferDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)',
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiPaper-root': {
-    borderColor: theme.palette.primary.main,
-    borderWidth: 2,
-    borderStyle: 'solid'
-  }
-}));
-
-const OfferDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  margin: 0,
-  padding: theme.spacing(2),
-  backgroundColor: theme.palette.primary.main,
-  color: theme.palette.primary.contrastText
-}));
 
 export default function CreateOfferXRPCafe({
   open,
@@ -52,8 +16,8 @@ export default function CreateOfferXRPCafe({
   brokerFeePercentage,
   onOfferCreated
 }) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
@@ -70,23 +34,6 @@ export default function CreateOfferXRPCafe({
   }, [open, initialAmount]);
 
   useEffect(() => {
-    // TODO: Fix XRPCafe integration - broken axios calls need proper implementation
-    // let timer = null;
-    // let isRunning = false;
-    // let counter = 150;
-    // let dispatchTimer = null;
-
-    // async function getDispatchResult() {
-    //   try {
-    //     // const ret = await axios.get(MISSING_ENDPOINT, {
-    //     //   headers: { 'x-access-token': accountToken }
-    //     // });
-    //     // const res = ret.data.data.response;
-    //     // const dispatched_result = res.dispatched_result;
-    //     // return dispatched_result;
-    //   } catch (err) {}
-    // }
-
     const startInterval = () => {
       let times = 0;
       dispatchTimer = setInterval(async () => {
@@ -114,38 +61,8 @@ export default function CreateOfferXRPCafe({
       handleClose();
     };
 
-    // async function getPayload() {
-    //   if (isRunning) return;
-    //   isRunning = true;
-    //   try {
-    //     // const ret = await axios.get(MISSING_ENDPOINT, {
-    //     //   headers: { 'x-access-token': accountToken }
-    //     // });
-    //     // const resolved_at = ret.data?.resolved_at;
-    //     // if (resolved_at) {
-    //     //   startInterval();
-    //     //   return;
-    //     // }
-    //   } catch (err) {
-    //   }
-    //   // isRunning = false;
-    //   // counter--;
-    //   // if (counter <= 0) {
-    //   //   openSnackbar('Create Offer timeout!', 'error');
-    //   //   handleScanQRClose();
-    //   // }
-    // }
-
-    // if (condition) {  // TODO: Add proper condition
-    //   timer = setInterval(getPayload, 2000);
-    // }
-
-    return () => {
-      // if (timer) {
-      //   clearInterval(timer);
-      // }
-    };
-  }, []); // Added missing useEffect closing
+    return () => {};
+  }, []);
 
   const handleClose = () => {
     setOpen(false);
@@ -180,18 +97,15 @@ export default function CreateOfferXRPCafe({
         NFTokenID: nft.NFTokenID,
         owner: nft.account,
         user_token: accountProfile?.user_token,
-        brokerFeePercentage // Add this line
+        brokerFeePercentage
       };
-
 
       const res = await axios.post(`${BASE_URL}/offers/create`, body, {
         headers: { 'x-access-token': accountToken }
       });
 
-
       if (res.status === 200) {
         const nextlink = res.data.data.next;
-
       }
     } catch (err) {
       console.error(err);
@@ -200,89 +114,97 @@ export default function CreateOfferXRPCafe({
     setLoading(false);
   };
 
-  const handleScanQRClose = () => {
-  };
+  const handleScanQRClose = () => {};
+
+  if (!open) return null;
 
   return (
     <>
-      <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
-        <PulseLoader color={theme.palette.primary.main} size={10} />
-      </Backdrop>
+      {/* Backdrop */}
+      {loading && (
+        <div className="fixed inset-0 z-[1303] flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <PulseLoader color="#4285f4" size={10} />
+        </div>
+      )}
 
-      <OfferDialog
-        fullScreen={fullScreen}
-        open={open}
-        onClose={handleClose}
-        fullWidth
-        maxWidth="sm"
-      >
-        <OfferDialogTitle>
-          <Typography variant="h6">Create {isSellOffer ? 'Sell' : 'Buy'} Offer (XRP)</Typography>
-          <IconButton
-            aria-label="close"
-            onClick={handleClose}
-            sx={{
-              position: 'absolute',
-              right: 8,
-              top: 8,
-              color: 'inherit'
-            }}
-          >
-            <CloseIcon />
-          </IconButton>
-        </OfferDialogTitle>
-        <DialogContent>
-          <Stack spacing={3} sx={{ mt: 2 }}>
-            <Stack spacing={2}>
-              <Typography variant="subtitle1" color="text.primary">
-                Amount (XRP)
-                <Typography component="span" color="error">
-                  *
-                </Typography>
-              </Typography>
-              <TextField
-                variant="outlined"
-                label="Amount"
+      {/* Dialog */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/50" onClick={handleClose} />
+
+        <div
+          className={cn(
+            'relative w-full max-w-sm rounded-xl border-2 border-primary',
+            isDark ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'
+          )}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between bg-primary p-4 text-white">
+            <h2 className="text-[15px] font-normal">
+              Create {isSellOffer ? 'Sell' : 'Buy'} Offer (XRP)
+            </h2>
+            <button
+              onClick={handleClose}
+              className="rounded-lg p-1.5 hover:bg-white/10"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Content */}
+          <div className="p-6">
+            <div className="mb-4">
+              <label className="mb-2 block text-[13px] font-normal">
+                Amount (XRP) <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
                 placeholder="Enter amount in XRP"
-                onChange={handleChangeAmount}
                 value={amount}
+                onChange={handleChangeAmount}
                 onFocus={(event) => event.target.select()}
-                fullWidth
                 disabled={isAmountFixed}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    '&.Mui-focused fieldset': {
-                      borderColor: 'primary.main'
-                    }
-                  }
-                }}
+                className={cn(
+                  'w-full rounded-lg border-[1.5px] px-4 py-2 text-[13px] outline-none transition-colors',
+                  isDark
+                    ? 'border-white/15 bg-white/5 placeholder:text-white/30 focus:border-primary'
+                    : 'border-gray-300 bg-white placeholder:text-gray-400 focus:border-primary',
+                  isAmountFixed && 'cursor-not-allowed opacity-50'
+                )}
               />
               {isAmountFixed && (
-                <Typography variant="body2" color="text.secondary">
+                <p className={cn('mt-2 text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
                   This amount includes the broker fee of {(brokerFeePercentage * 100).toFixed(3)}%
                   and cannot be changed.
-                </Typography>
+                </p>
               )}
-            </Stack>
-            <Button
-              variant="contained"
-              startIcon={<AddCircleIcon />}
+            </div>
+
+            <button
               onClick={handleCreateOffer}
               disabled={loading}
-              sx={{
-                px: 4,
-                py: 1,
-                borderRadius: 2,
-                boxShadow: (theme) => `0px 4px 8px ${alpha(theme.palette.primary.main, 0.24)}`
-              }}
+              className={cn(
+                'flex w-full items-center justify-center gap-2 rounded-lg border-[1.5px] px-6 py-2 text-[13px] font-normal transition-colors',
+                loading
+                  ? isDark
+                    ? 'cursor-not-allowed border-white/10 bg-white/5 text-white/30'
+                    : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
+                  : isDark
+                    ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                    : 'border-primary bg-primary/5 text-primary hover:bg-primary/10'
+              )}
             >
-              {loading ? <PulseLoader color="#ffffff" size={10} /> : 'Create Offer'}
-            </Button>
-          </Stack>
-        </DialogContent>
-      </OfferDialog>
-
-      {/* QRDialog removed - Xaman no longer used */}
+              {loading ? (
+                <PulseLoader color="#ffffff" size={10} />
+              ) : (
+                <>
+                  <PlusCircle size={16} />
+                  Create Offer
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-
-// Material
-import { Box, Container, styled, Toolbar } from '@mui/material';
+import styled from '@emotion/styled';
 
 // Context
 import { useContext } from 'react';
@@ -18,12 +16,9 @@ import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: hidden;
-        flex: 1;
-`
-);
+const OverviewWrapper = styled.div`
+  flex: 1;
+`;
 
 export default function Overview({ collection }) {
   const { darkMode } = useContext(AppContext);
@@ -51,20 +46,20 @@ export default function Overview({ collection }) {
 
   return (
     <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+      <div className="h-16" id="back-to-top-anchor" />
 
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {collectionName} NFT Collection
       </h1>
 
-      <Container maxWidth="xl">
+      <div className="mx-auto max-w-7xl px-4">
         <CollectionBreadcrumb collection={collection} />
-      </Container>
+      </div>
 
-      <Container maxWidth="xl">
+      <div className="mx-auto max-w-7xl px-4">
         <Collection collection={collection} />
-      </Container>
+      </div>
 
       <ScrollToTop />
 

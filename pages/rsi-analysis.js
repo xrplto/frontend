@@ -1,9 +1,7 @@
 import { useState, useEffect, useContext, useRef, useCallback } from 'react';
-import { Box, Container, Grid, styled as muiStyled, Toolbar } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import { Tooltip } from '@mui/material';
 import { useRouter } from 'next/router';
 import axios from 'axios';
 import styled from '@emotion/styled';
@@ -20,20 +18,6 @@ const currencySymbols = {
 };
 import { fNumber } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-
-const Wrapper = muiStyled(Box)(({ theme }) => `
-  overflow: hidden;
-  flex: 1;
-  margin: 0;
-  padding: 0;
-
-  ${theme.breakpoints.down('md')} {
-    margin: 0;
-    padding: 0;
-  }
-`);
 
 const Controls = styled.div`
   display: flex;
@@ -367,7 +351,8 @@ const PriceChange = styled.span`
 `;
 
 function RSIAnalysisPage({ data }) {
-  const { darkMode, activeFiatCurrency } = useContext(AppContext);
+  const { themeName, activeFiatCurrency } = useContext(AppContext);
+  const darkMode = themeName === 'XrplToDarkTheme';
   const metrics = useSelector(selectMetrics);
   const exchRate = metrics[activeFiatCurrency] || 1;
   const canvasRef = useRef(null);
@@ -393,7 +378,7 @@ function RSIAnalysisPage({ data }) {
     maxRsi24h: ''
   });
 
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const timeframes = [
     { value: '15m', label: '15M' },
@@ -767,14 +752,14 @@ function RSIAnalysisPage({ data }) {
   }, []);
 
   return (
-    <Wrapper>
-      {!isMobile && <Toolbar />}
+    <div className="flex-1 overflow-hidden m-0 p-0">
+      {!isMobile && <div className="h-6" />}
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         RSI Analysis for XRPL Tokens
       </h1>
 
-      <Container maxWidth="xl">
+      <div className="mx-auto max-w-7xl px-4">
         <Controls darkMode={darkMode}>
               <ControlRow>
                 <MobileSection>
@@ -1030,18 +1015,18 @@ function RSIAnalysisPage({ data }) {
             </Button>
           </div>
         )}
-      </Container>
+      </div>
 
       <ScrollToTop />
       <Footer />
-    </Wrapper>
+    </div>
   );
 }
 
 export default RSIAnalysisPage;
 
 export async function getStaticProps() {
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   try {
     const res = await axios.get(`${BASE_URL}/rsi`, {

@@ -23,305 +23,55 @@ const useWindowSize = () => {
 
 // Removed confetti animation for build simplicity
 
-// Material
-import { useTheme } from '@mui/material/styles';
-import {
-  styled,
-  Box,
-  Button,
-  CardMedia,
-  Container,
-  Divider,
-  Grid,
-  CircularProgress,
-  LinearProgress,
-  Link,
-  Paper,
-  Stack,
-  Tooltip,
-  Typography
-} from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import VerifiedIcon from '@mui/icons-material/Verified';
-import { linearProgressClasses } from '@mui/material/LinearProgress';
-
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
+// Icons
+import { Edit, CheckCircle2 } from 'lucide-react';
+
 // Utils
+import { cn } from 'src/utils/cn';
 import { getNftCoverUrl } from 'src/utils/parseUtils';
 
 // Components
 import BuyMintDialog from './BuyMintDialog';
 import { useRouter } from 'next/router';
 
-const CardWrapper = styled(Paper)(
-  ({ theme }) => `
-        max-width: 420px;
-        width: 100%; // 300px;
-        // max-height: 530px;
-        // height: 340px;
-        // @media (min-width: ${theme.breakpoints.values.md}px) {
-        //     width: 420px;
-        //     height: 460px;
-        // }
-        // box-shadow: rgba(100, 100, 111, 0.2) 7px 7px 7px 7px;
-        // border-radius: 30px;
-        // backdrop-filter: blur(50px);
-        // background: rgb(2, 0, 36);
-        padding: 10px;
-        text-align: center;
-        object-fit: cover;
-        transition: width 1s ease-in-out, height .5s ease-in-out !important;
-        -webkit-tap-highlight-color: transparent;
-  `
-);
-
-const IconCover = styled('div')(
-  ({ theme }) => `
-        width: 102px;
-        height: 102px;
-        margin-top: -56px;
-        margin-bottom: 16px;
-        @media (min-width: ${theme.breakpoints.values.sm}px) {
-            width: 132px;
-            height: 132px;
-            margin-top: -86px;
-        }
-        @media (min-width: ${theme.breakpoints.values.md}px) {
-            width: 192px;
-            height: 192px;
-            margin-top: -156px;
-        }
-        border: 6px solid ${theme.colors.alpha.black[50]};
-        border-radius: 12px;
-        box-shadow: rgb(0 0 0 / 8%) 0px 5px 10px;
-        background-color: ${theme.colors.alpha.white[70]};
-        position: relative;
-        overflow: hidden;
-    `
-);
-
-const IconWrapper = styled('div')(
-  ({ theme }) => `
-        box-sizing: border-box;
-        display: inline-block;
-        position: relative;
-        width: 90px;
-        height: 90px;
-        @media (min-width: ${theme.breakpoints.values.sm}px) {
-            width: 120px;
-            height: 120px;
-        }
-        @media (min-width: ${theme.breakpoints.values.md}px) {
-            width: 180px;
-            height: 180px;
-        }
-        &:hover, &.Mui-focusVisible {
-            z-index: 1;
-            & .MuiImageBackdrop-root {
-                opacity: 0.1;
-            }
-            & .MuiIconEditButton-root {
-                opacity: 1;
-            }
-        }
-  `
-);
-
-const IconImage = styled('img')(
-  ({ theme }) => `
-    position: absolute;
-    inset: 0px;
-    box-sizing: border-box;
-    padding: 0px;
-    border: none;
-    margin: auto;
-    display: block;
-    width: 0px; height: 0px;
-    min-width: 100%;
-    max-width: 100%;
-    min-height: 100%;
-    max-height: 100%;
-    object-fit: cover;
-    border-radius: 0px;
-  `
-);
-
-const SlotBox = styled('div')(
-  ({ theme }) => `
-        // padding-top: 40px;
-        // width: 280px;
-        // height: 200px;
-        // @media (min-width: ${theme.breakpoints.values.md}px) {
-        //     width: 480px;
-        //     height: 400px;
-        // }
-        // margin-bottom: 20px;
-        // margin-top: 20px;
-        // border-style: solid;
-        justify-content: center;
-        overflow: hidden;
-        // line-height: 4;
-        border-radius: 12px;
-    `
-);
-
-const ImageBackdrop = styled('span')(({ theme }) => ({
-  position: 'absolute',
-  left: 0,
-  right: 0,
-  top: 0,
-  bottom: 0,
-  backgroundColor: theme.palette.common.black,
-  opacity: 0,
-  transition: theme.transitions.create('opacity')
-}));
-
-const CardOverlay = styled('div')(
-  ({ theme }) => `
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    position: absolute;
-    inset: 0;
-`
-);
-
-function CircularProgressWithLabel(props) {
+// Linear Progress Component
+function LinearProgressWithLabel({ value, progressColor, isDark }) {
   return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-      <CircularProgress variant="determinate" {...props} />
-      <Box
-        sx={{
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <Typography variant="caption" component="div" color="text.secondary">
-          {`${Math.round(props.value)}%`}
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
-
-CircularProgressWithLabel.propTypes = {
-  /**
-   * The value of the progress indicator for the determinate variant.
-   * Value between 0 and 100.
-   * @default 0
-   */
-  value: PropTypes.number.isRequired
-};
-
-const BorderLinearProgress = styled(LinearProgress)(({ theme }) => ({
-  height: 10,
-  borderRadius: 5,
-  [`&.${linearProgressClasses.colorPrimary}`]: {
-    backgroundColor: theme.palette.grey[theme.palette.mode === 'light' ? 200 : 800]
-  },
-  [`& .${linearProgressClasses.bar}`]: {
-    borderRadius: 5,
-    backgroundColor: theme.palette.mode === 'light' ? '#1a90ff' : '#308fe8'
-  }
-}));
-
-function LinearProgressWithLabel(props) {
-  const progressColor = props.progressColor;
-
-  return (
-    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-      <Box sx={{ width: '100%', mr: 1 }}>
-        {/* <LinearProgress variant="determinate" {...props} /> */}
-        <BorderLinearProgress
-          variant="determinate"
-          {...props}
-          sx={{
-            [`& .${linearProgressClasses.bar}`]: {
-              borderRadius: 5,
-              backgroundColor: progressColor
-            }
+    <div className="flex items-center gap-2">
+      <div className="flex-1 h-2.5 rounded-lg overflow-hidden bg-gray-200 dark:bg-gray-700">
+        <div
+          className="h-full rounded-lg transition-all duration-300"
+          style={{
+            width: `${value}%`,
+            backgroundColor: progressColor
           }}
         />
-      </Box>
-      <Box sx={{ minWidth: 35 }}>
-        <Typography variant="body2" color="text.secondary">
-          {props.value}%
-        </Typography>
-      </Box>
-    </Box>
+      </div>
+      <div className={cn('min-w-[35px] text-[13px] font-normal', isDark ? 'text-gray-400' : 'text-gray-600')}>
+        {value}%
+      </div>
+    </div>
   );
 }
 
 LinearProgressWithLabel.propTypes = {
-  /**
-   * The value of the progress indicator for the determinate and buffer variants.
-   * Value between 0 and 100.
-   */
-  value: PropTypes.number.isRequired
+  value: PropTypes.number.isRequired,
+  progressColor: PropTypes.string,
+  isDark: PropTypes.bool
 };
-
-function FacebookCircularProgress(props) {
-  return (
-    <Box sx={{ position: 'relative', display: 'inline-flex' }}>
-      <CircularProgress
-        variant="determinate"
-        sx={{
-          color: (theme) => theme.palette.grey[theme.palette.mode === 'light' ? 200 : 800]
-        }}
-        size={40}
-        thickness={4}
-        {...props}
-        value={100}
-      />
-      <CircularProgress
-        variant="determinate"
-        disableShrink
-        sx={{
-          position: 'absolute',
-          left: 0
-        }}
-        size={40}
-        thickness={4}
-        {...props}
-      />
-      <Box
-        sx={{
-          top: 0,
-          left: 0,
-          bottom: 0,
-          right: 0,
-          position: 'absolute',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}
-      >
-        <Typography variant="caption" component="div" color="text.secondary">
-          {`${Math.round(props.value)}%`}
-        </Typography>
-      </Box>
-    </Box>
-  );
-}
 
 export default function SpinNFT({ collection, setView }) {
   const BASE_URL = 'https://api.xrpl.to/api';
   const { width, height } = useWindowSize();
   // Sound effects removed for build simplicity
   const play = () => {};
-  // const fullScreen = useMediaQuery(theme.breakpoints.up('md'));
 
-  const { darkMode, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const account = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
@@ -362,7 +112,7 @@ export default function SpinNFT({ collection, setView }) {
   const img_dark = '/static/default_mint_black.svg';
   const img_light = '/static/default_mint_white.svg';
 
-  const defaultImage = darkMode ? img_light : img_dark;
+  const defaultImage = isDark ? img_light : img_dark;
 
   let nftImgUrl = imgUrl || defaultImage; // '/static/empty.png';
 
@@ -492,198 +242,179 @@ export default function SpinNFT({ collection, setView }) {
       />
 
       {/* Confetti animation removed for build simplicity */}
-      <Stack alignItems="center" sx={{ mb: 5 }}>
-        <IconCover>
-          <IconWrapper>
-            <IconImage src={`https://s1.xrpl.to/nft-collection/${logoImage}`} />
-            {account === collection.account && (
-              <Link href={`/collection/${slug}/edit`} underline="none">
-                <CardOverlay>
-                  <EditIcon
-                    className="MuiIconEditButton-root"
-                    // color='primary'
-                    fontSize="large"
-                    sx={{ opacity: 0, zIndex: 1 }}
-                  />
-                </CardOverlay>
-                <ImageBackdrop className="MuiImageBackdrop-root" />
-              </Link>
-            )}
-          </IconWrapper>
-        </IconCover>
-        <Stack direction="row" spacing={1}>
-          <Typography variant="h1a">{name}</Typography>
-          {verified === 'yes' && (
-            <Tooltip title="Verified">
-              <VerifiedIcon style={{ color: '#4589ff' }} />
-            </Tooltip>
+      <div className="flex flex-col items-center mb-10">
+        {/* Icon Cover */}
+        <div
+          className={cn(
+            'w-[102px] h-[102px] -mt-14 mb-4 sm:w-[132px] sm:h-[132px] sm:-mt-[86px] md:w-48 md:h-48 md:-mt-[156px]',
+            'border-[6px] rounded-xl shadow-md relative overflow-hidden',
+            isDark ? 'border-black/50 bg-white/70' : 'border-gray-200 bg-white/70'
           )}
-        </Stack>
-        {description && (
-          <Typography variant="d3" maxWidth="600px">
-            {description}
-          </Typography>
-        )}
-        <Link
-          component="button"
-          underline="always"
-          variant="body2"
-          // color="#33C2FF"
-          onClick={() => {
-            setView('');
-          }}
         >
-          <Typography sx={{ ml: 0 }}>View Minted Items</Typography>
-        </Link>
-      </Stack>
+          <div className="box-border inline-block relative w-[90px] h-[90px] sm:w-[120px] sm:h-[120px] md:w-[180px] md:h-[180px] group">
+            <img
+              src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
+              alt={name}
+              className="absolute inset-0 m-auto block w-full h-full object-cover"
+            />
+            {account === collection.account && (
+              <a href={`/collection/${slug}/edit`} className="block">
+                <div className="absolute inset-0 flex flex-col justify-center items-center opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                  <Edit size={32} className="text-primary" />
+                </div>
+                <span className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity" />
+              </a>
+            )}
+          </div>
+        </div>
 
-      <Container maxWidth="lg" sx={{ pl: 0, pr: 0 }}>
-        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, alignItems: 'center', mb: 10 }}>
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            <CardWrapper>
+        {/* Collection Name */}
+        <div className="flex flex-row items-center gap-2">
+          <h1 className={cn('text-[32px] font-semibold', isDark ? 'text-white' : 'text-gray-900')}>
+            {name}
+          </h1>
+          {verified === 'yes' && (
+            <div title="Verified">
+              <CheckCircle2 size={24} className="text-[#4589ff]" />
+            </div>
+          )}
+        </div>
+
+        {/* Description */}
+        {description && (
+          <p
+            className={cn(
+              'text-[15px] font-normal max-w-[600px] mt-2 text-center',
+              isDark ? 'text-gray-400' : 'text-gray-600'
+            )}
+          >
+            {description}
+          </p>
+        )}
+
+        {/* View Minted Items Link */}
+        <button
+          onClick={() => setView('')}
+          className="text-primary hover:underline text-[13px] font-normal mt-2"
+        >
+          View Minted Items
+        </button>
+      </div>
+
+      <div className="container mx-auto max-w-6xl px-0">
+        <div className="flex flex-col md:flex-row gap-4 items-center mb-10">
+          {/* NFT Card Section */}
+          <div className="flex-1 flex justify-center items-center">
+            <div className="max-w-[420px] w-full p-2.5 text-center object-cover">
               <img
                 src={spinImgUrl}
                 alt="NFT spinning animation"
-                style={{
-                  width: '100%',
-                  // height: fullScreen?'360px':'200px',
-                  // marginTop: 5,
-                  // borderRadius: 20,
-                  objectFit: 'cover',
-                  display: spinning ? 'block' : 'none'
-                }}
+                className="w-full object-cover rounded-xl"
+                style={{ display: spinning ? 'block' : 'none' }}
               />
               {isVideo ? (
-                <CardMedia
-                  component="video"
-                  image={nftImgUrl}
-                  title="title"
+                <video
+                  src={nftImgUrl}
+                  title="NFT video"
                   controls
-                  style={{
-                    width: '100%',
-                    // height: fullScreen?'360px':'200px',
-                    // marginTop: 5,
-                    // borderRadius: 20,
-                    objectFit: 'cover',
-                    display: spinning ? 'none' : 'block'
-                  }}
+                  className="w-full object-cover rounded-xl"
+                  style={{ display: spinning ? 'none' : 'block' }}
                 />
               ) : (
                 <img
                   src={nftImgUrl}
                   alt="NFT image"
-                  style={{
-                    width: '100%',
-                    // height: fullScreen?'360px':'200px',
-                    // marginTop: 5,
-                    // borderRadius: 20,
-                    objectFit: 'cover',
-                    display: spinning ? 'none' : 'block'
-                  }}
+                  className="w-full object-cover rounded-xl"
+                  style={{ display: spinning ? 'none' : 'block' }}
                 />
               )}
 
-              {/* <Stack alignItems="center" sx={{mt:1}}>
-                                <Typography variant='h2a'>{spinning?'Please Wait!':(nft?nft.name:'Spin to Mint')}</Typography>
-                            </Stack> */}
-              <Divider sx={{ mt: 0.8, mb: 2 }} />
-              <Stack alignItems="center">
-                {/*
-                                <Button
-                                    variant="contained"
-                                    disabled={spinning}
-                                    onClick={() => getOneNFT()}
-                                    sx={{ mb: 2 }}
-                                >
-                                    Mint
-                                </Button>
+              <div className={cn('h-px mt-2 mb-4', isDark ? 'bg-white/10' : 'bg-gray-200')} />
+              <div className="flex flex-col items-center">
+                {/* Mint button removed */}
+              </div>
+            </div>
+          </div>
 
-                                */}
-              </Stack>
-            </CardWrapper>
-          </Box>
-
-          <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-start', alignItems: 'flex-start' }}>
-            <Stack spacing={2} sx={{ mt: 3, mb: 6 }}>
-              <Typography variant="p5">
+          {/* Info Section */}
+          <div className="flex-1 flex justify-start items-start">
+            <div className="flex flex-col gap-4 mt-6 mb-6">
+              <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                 Get a {type} NFT from the{' '}
-                <Typography variant="s5" color="#57CA22">
-                  {name}
-                </Typography>
-              </Typography>
-              <ul>
+                <span className="text-[15px] font-medium text-[#57CA22]">{name}</span>
+              </p>
+              <ul className="list-disc pl-5 space-y-2">
                 <li>
-                  <Typography variant="p5" sx={{ mt: 0 }}>
+                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                     Buy Mints to participate
-                  </Typography>
+                  </p>
                 </li>
                 <li>
-                  <Typography variant="p5" sx={{ mt: 1 }}>
+                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                     Your Mints:{' '}
-                    <Typography variant="s5" color="#33C2FF">
-                      {mints}
-                    </Typography>
-                  </Typography>
+                    <span className="text-[15px] font-medium text-[#33C2FF]">{mints}</span>
+                  </p>
                 </li>
                 <li>
-                  <Typography variant="p5" sx={{ mt: 1 }}>
+                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                     Available XRP:{' '}
-                    <Typography variant="s5" color="#33C2FF">
-                      {xrpBalance}
-                    </Typography>
-                  </Typography>
+                    <span className="text-[15px] font-medium text-[#33C2FF]">{xrpBalance}</span>
+                  </p>
                 </li>
                 <li>
-                  <Typography variant="p5" sx={{ mt: 1 }}>
+                  <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
                     Remaining NFTs:{' '}
-                    <Typography variant="s5" color={progressColor}>
+                    <span className="text-[15px] font-medium" style={{ color: progressColor }}>
                       {pendingNfts}
-                    </Typography>{' '}
-                    /{' '}
-                    <Typography variant="s4" color="#33C2FF">
-                      {items}
-                    </Typography>
-                  </Typography>
+                    </span>{' '}
+                    / <span className="text-[15px] font-normal text-[#33C2FF]">{items}</span>
+                  </p>
                 </li>
-                <Box sx={{ width: '100%', mt: 1, mb: 3 }}>
-                  <LinearProgressWithLabel
-                    variant="determinate"
-                    value={pendingProgress}
-                    progressColor={progressColor}
-                  />
-                </Box>
-
-                {/* <CircularProgressWithLabel value={pendingProgress} color="success" /> */}
-                {/* <FacebookCircularProgress value={pendingProgress} color="success"/> */}
               </ul>
 
-              {/* <Stack alignItems="center" sx={{pb: 3}}>
-                                <FacebookCircularProgress value={pendingProgress} color="success"/>
-                            </Stack> */}
+              <div className="w-full mt-2 mb-6">
+                <LinearProgressWithLabel
+                  value={pendingProgress}
+                  progressColor={progressColor}
+                  isDark={isDark}
+                />
+              </div>
 
-              <Stack direction="row" spacing={2} justifyContent="center">
-                <Button variant="contained" onClick={() => setOpenBuyMint(true)}>
-                  Buy Mints
-                </Button>
-
-                <Link
-                  underline="none"
-                  color="inherit"
-                  target="_blank"
-                  href={`/buy-crypto`}
-                  rel="noreferrer noopener nofollow"
+              <div className="flex flex-row gap-4 justify-center">
+                <button
+                  onClick={() => setOpenBuyMint(true)}
+                  className={cn(
+                    'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                    isDark
+                      ? 'border-primary bg-primary text-white hover:bg-primary/90'
+                      : 'border-primary bg-primary text-white hover:bg-primary/90'
+                  )}
                 >
-                  <Stack>
-                    <Button variant="outlined" onClick={() => {}}>
-                      Buy XRP
-                    </Button>
-                  </Stack>
-                </Link>
-              </Stack>
-            </Stack>
-          </Box>
-        </Box>
-      </Container>
+                  Buy Mints
+                </button>
+
+                <a
+                  href="/buy-crypto"
+                  target="_blank"
+                  rel="noreferrer noopener nofollow"
+                  className="no-underline"
+                >
+                  <button
+                    className={cn(
+                      'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                      isDark
+                        ? 'border-white/15 hover:bg-primary/5 text-white'
+                        : 'border-gray-300 hover:bg-gray-100 text-gray-900'
+                    )}
+                  >
+                    Buy XRP
+                  </button>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* <Stack sx={{mt:5, minHeight: '20vh'}}>
             </Stack> */}

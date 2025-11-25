@@ -132,8 +132,8 @@ const Drawer = styled.div`
   left: 0;
   width: ${props => props.width || '256px'};
   height: calc(100vh - 56px);
-  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
-  border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  background: ${props => props.isDark ? '#000000' : '#ffffff'};
+  border-right: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   overflow: hidden;
   z-index: 1200;
   transform: translateX(${props => props.open ? '0' : '-100%'});

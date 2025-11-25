@@ -1,9 +1,7 @@
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 import { performance } from 'perf_hooks';
-
-// Material
-import { styled, Box, Container, Stack, Toolbar } from '@mui/material';
+import styled from '@emotion/styled';
 
 // Context
 import { useContext } from 'react';
@@ -15,12 +13,9 @@ import Footer from 'src/components/Footer';
 import EditCollection from 'src/NFTCollection/edit';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: hidden;
-        flex: 1;
-`
-);
+const OverviewWrapper = styled.div`
+  flex: 1;
+`;
 
 export default function Overview({ data }) {
   const BASE_URL = 'https://api.xrpnft.com/api';
@@ -64,17 +59,17 @@ export default function Overview({ data }) {
 
   return (
     <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+      <div className="h-16" id="back-to-top-anchor" />
 
       <Header />
 
-      <Container maxWidth="sm">
+      <div className="mx-auto max-w-2xl px-4">
         {collection ? (
           <EditCollection collection={collection} />
         ) : (
-          <Stack sx={{ mt: 5, minHeight: '50vh' }} />
+          <div className="mt-10 min-h-[50vh]" />
         )}
-      </Container>
+      </div>
 
       <ScrollToTop />
 

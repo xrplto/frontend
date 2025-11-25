@@ -1,12 +1,9 @@
 import axios from 'axios';
-import React, { useEffect, useState, createRef } from 'react';
-
-// Material
-import { Backdrop, Button, Grid, Paper, Stack, Typography } from '@mui/material';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import StorefrontIcon from '@mui/icons-material/Storefront';
-
-// Loader
+import React, { useEffect, useState } from 'react';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { Tag, Store } from 'lucide-react';
 import { PuffLoader, BarLoader } from '../components/Spinners';
 
 // Constants
@@ -15,14 +12,10 @@ const NFToken = {
   BURNT: 'BURNT'
 };
 
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
-
-// Components
-
 export default function NFTActionsBulk({ nft }) {
   const BASE_URL = 'https://api.xrpl.to/api';
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const accountLogin = accountProfile?.account;
@@ -68,7 +61,6 @@ export default function NFTActionsBulk({ nft }) {
         return;
       }
 
-      // https://api.xrpl.to/api/spin/count?account=rhhh
       axios
         .get(`${BASE_URL}/spin/count?account=${accountLogin}&cid=${cid}`, {
           headers: { 'x-access-token': accountToken }
@@ -81,11 +73,8 @@ export default function NFTActionsBulk({ nft }) {
             setPendingNfts(ret.pendingNfts);
           }
         })
-        .catch((err) => {
-        })
-        .then(function () {
-          // always executed
-        });
+        .catch((err) => {})
+        .then(function () {});
     }
     getMints();
   }, [accountLogin, accountToken]);
@@ -99,7 +88,6 @@ export default function NFTActionsBulk({ nft }) {
     }
 
     setLoading(true);
-    // setNft(null);
 
     const body = { account: accountLogin, cid, NFTokenID };
 
@@ -115,83 +103,85 @@ export default function NFTActionsBulk({ nft }) {
           } else {
             openSnackbar(ret.error, 'error');
           }
-
-          // setBought(true);
         }
       })
-      .catch((err) => {
-      })
+      .catch((err) => {})
       .then(function () {
-        // always executed
         setLoading(false);
       });
   };
 
   return (
     <>
-      <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading}>
-        <Stack alignItems="center" spacing={2}>
-          <PuffLoader color="white" />
-          <BarLoader color="#51E5FF" width={80} />
-        </Stack>
-      </Backdrop>
+      {/* Backdrop with loading spinner */}
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="flex flex-col items-center gap-2">
+            <PuffLoader color="white" />
+            <BarLoader color="#51E5FF" width={80} />
+          </div>
+        </div>
+      )}
 
-      <Stack spacing={2} sx={{ mt: 2 }}>
-        {/* <Link underline='none' color={'text.primary'}>
-                    Name
-                </Link> */}
-        <Typography
-          variant="subtitle"
-          gutterBottom
-          fontSize={30}
-          overflow="hidden"
-          fontWeight={600}
+      <div className="flex flex-col gap-2 mt-2">
+        <h3
+          className={cn(
+            'text-[30px] font-semibold overflow-hidden',
+            isDark ? 'text-white' : 'text-gray-900'
+          )}
         >
           {name}
-        </Typography>
-        <Paper
-          sx={{
-            padding: 2
-          }}
+        </h3>
+        <div
+          className={cn(
+            'rounded-xl border-[1.5px] p-2',
+            isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+          )}
         >
-          <Stack spacing={2}>
-            <Typography variant="p5">
+          <div className="flex flex-col gap-2">
+            <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
               You can only buy this NFT with a Mint and there are currently {pendingNfts} NFTs that
               can be bought with Mints.
-            </Typography>
-            <Typography variant="p5">
+            </p>
+            <p className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
               You currently have{' '}
-              <Typography variant="s5" color="#33C2FF">
-                {mints} Mints
-              </Typography>{' '}
+              <span className="text-[15px] font-medium text-[#33C2FF]">{mints} Mints</span>{' '}
               available and{' '}
-              <Typography variant="s5" color="#33C2FF">
-                {xrpBalance} XRP
-              </Typography>{' '}
+              <span className="text-[15px] font-medium text-[#33C2FF]">{xrpBalance} XRP</span>{' '}
               tokens in your wallet.
-            </Typography>
-            <Stack direction="row" spacing={2}>
-              <Button
-                sx={{ borderRadius: 10 }}
+            </p>
+            <div className="flex flex-row gap-2">
+              <button
+                className={cn(
+                  'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                  isDark
+                    ? 'border-white/15 bg-primary text-white hover:bg-primary/90'
+                    : 'border-primary bg-primary text-white hover:bg-primary/90',
+                  (!accountLogin || status != NFToken.SELL_WITH_MINT_BULK) &&
+                    'opacity-50 cursor-not-allowed'
+                )}
                 disabled={!accountLogin || status != NFToken.SELL_WITH_MINT_BULK}
-                variant="contained"
                 onClick={() => buyBulkNFT()}
-                startIcon={<LocalOfferIcon />}
               >
+                <Tag size={16} />
                 Buy Now
-              </Button>
-              <Button
-                sx={{ borderRadius: 10 }}
-                variant="outlined"
+              </button>
+              <button
+                className={cn(
+                  'flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                  isDark
+                    ? 'border-white/15 hover:bg-primary/5 text-white'
+                    : 'border-gray-300 hover:bg-gray-100 text-gray-900'
+                )}
                 onClick={() => setOpenBuyMint(true)}
-                startIcon={<StorefrontIcon />}
               >
+                <Store size={16} />
                 Buy Mints
-              </Button>
-            </Stack>
-          </Stack>
-        </Paper>
-      </Stack>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

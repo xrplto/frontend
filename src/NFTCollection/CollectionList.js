@@ -2,15 +2,10 @@ import axios from 'axios';
 import React, { useState, useEffect, useContext, useMemo, useCallback, memo, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import styled from '@emotion/styled';
-import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
 import { formatMonthYearDate } from 'src/utils/formatters';
 import { fNumber, fIntNumber, fVolume } from 'src/utils/formatters';
-import FirstPageIcon from '@mui/icons-material/FirstPage';
-import LastPageIcon from '@mui/icons-material/LastPage';
-import ViewListIcon from '@mui/icons-material/ViewList';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { alpha, Box } from '@mui/material';
+import { ChevronsLeft, ChevronsRight, List, ChevronDown } from 'lucide-react';
 import { MobileHeader, HeaderCell } from 'src/TokenList/TokenRow';
 import Sparkline from 'src/components/Sparkline';
 
@@ -23,7 +18,6 @@ const OptimizedChart = memo(
     const canvasRef = useRef(null);
     const observerRef = useRef(null);
     const pointsRef = useRef([]);
-    const theme = useTheme();
 
     useEffect(() => {
       if (!chartRef.current) return;
@@ -122,7 +116,7 @@ const OptimizedChart = memo(
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
       ctx.stroke();
-    }, [salesData, isVisible, theme]);
+    }, [salesData, isVisible]);
 
     const handleMouseMove = (e) => {
       if (!pointsRef.current.length) return;
@@ -271,11 +265,11 @@ const StyledTableBody = styled.tbody`
 `;
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
   cursor: pointer;
 
   &:hover {
-    background: ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+    background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
   }
 `;
 
@@ -285,7 +279,7 @@ const StyledCell = styled.td`
   text-align: ${(props) => props.align || 'left'};
   font-size: 13px;
   font-weight: ${(props) => props.fontWeight || 400};
-  color: ${(props) => props.color || props.theme.palette.text.primary};
+  color: ${(props) => props.color || (props.darkMode ? '#ffffff' : '#212B36')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isCollectionColumn ? '250px' : 'auto')};
@@ -296,13 +290,13 @@ const MobileCollectionCard = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 8px;
-  border-bottom: 1px solid ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
 
   &:hover {
-    background: ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
+    background: ${(props) => (props.darkMode ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)')};
   }
 `;
 
@@ -321,7 +315,7 @@ const MobileCell = styled.div`
   padding: 0 2px;
   font-weight: ${(props) => props.fontWeight || 500};
   font-size: 11px;
-  color: ${(props) => props.color || props.theme.palette.text.primary};
+  color: ${(props) => props.color || (props.darkMode ? '#ffffff' : '#212B36')};
   min-width: ${(props) => props.minWidth || 'auto'};
   ${(props) => props.wordBreak && `word-break: ${props.wordBreak};`}
   ${(props) => props.lineHeight && `line-height: ${props.lineHeight};`}
@@ -333,7 +327,7 @@ const CollectionImage = styled.div`
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${(props) => (props.theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
 `;
 
 const CollectionDetails = styled.div`
@@ -347,7 +341,7 @@ const CollectionDetails = styled.div`
 const CollectionName = styled.span`
   font-weight: 500;
   font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
-  color: ${(props) => props.theme.palette.text.primary};
+  color: ${(props) => (props.darkMode ? '#ffffff' : '#212B36')};
   max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
   overflow: hidden;
   text-overflow: ellipsis;
@@ -358,7 +352,7 @@ const CollectionName = styled.span`
 
 const CollectionSubtext = styled.span`
   font-size: ${(props) => (props.isMobile ? '9px' : '10px')};
-  color: ${(props) => props.theme.palette.text.secondary};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
   opacity: 1;
   font-weight: 400;
   display: block;
@@ -395,8 +389,8 @@ const PaginationContainer = styled.div`
   padding: 8px 14px;
   min-height: 48px;
   border-radius: 12px;
-  background: ${({ theme }) => theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.2)};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   box-shadow: none;
 
   @media (max-width: 900px) {
@@ -414,8 +408,8 @@ const RowsSelector = styled.div`
   padding: 8px 14px;
   min-height: 48px;
   border-radius: 12px;
-  background: ${({ theme }) => theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.2)};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   box-shadow: none;
 
   @media (max-width: 900px) {
@@ -434,9 +428,9 @@ const InfoBox = styled.div`
   flex-wrap: wrap;
   padding: 8px 14px;
   min-height: 48px;
-  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.2)};
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   border-radius: 12px;
-  background: ${({ theme }) => theme.palette.background.paper};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
   box-shadow: none;
 
   @media (max-width: 900px) {
@@ -453,15 +447,15 @@ const Chip = styled.span`
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.2)};
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
   border-radius: 6px;
-  color: ${({ theme }) => theme.palette.text.primary};
+  color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
 `;
 
 const Text = styled.span`
   font-size: 13px;
   font-variant-numeric: tabular-nums;
-  color: ${({ theme }) => theme.palette.text.secondary};
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
   font-weight: ${(props) => props.fontWeight || 400};
 `;
 
@@ -475,15 +469,15 @@ const NavButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: ${({ theme }) => theme.palette.text.primary || 'inherit'};
+  color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
   padding: 0;
 
   &:hover:not(:disabled) {
-    background: ${({ theme }) => alpha(theme.palette.primary.main, 0.08)};
+    background: rgba(66, 133, 244, 0.08);
   }
 
   &:disabled {
-    color: ${({ theme }) => alpha(theme.palette.text.primary, 0.3)};
+    color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(33, 43, 54, 0.3)')};
     cursor: not-allowed;
   }
 `;
@@ -493,9 +487,9 @@ const PageButton = styled.button`
   height: 24px;
   border-radius: 8px;
   border: none;
-  background: ${(props) => (props.selected ? props.theme.palette.primary.main : 'transparent')};
+  background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
   color: ${(props) =>
-    props.selected ? 'white' : props.theme.palette.text.primary || 'inherit'};
+    props.selected ? 'white' : (props.darkMode ? '#ffffff' : '#212B36')};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
@@ -508,7 +502,7 @@ const PageButton = styled.button`
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.selected ? props.theme.palette.primary.dark || '#1976D2' : alpha(props.theme.palette.primary.main, 0.08)};
+      props.selected ? '#1976D2' : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
@@ -525,7 +519,7 @@ const Select = styled.div`
 const SelectButton = styled.button`
   background: transparent;
   border: none;
-  color: ${({ theme }) => theme.palette.primary.main};
+  color: #4285f4;
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -536,7 +530,7 @@ const SelectButton = styled.button`
   min-width: 40px;
 
   &:hover {
-    background: ${({ theme }) => alpha(theme.palette.primary.main, 0.04)};
+    background: rgba(66, 133, 244, 0.04);
     border-radius: 4px;
     padding: 2px 4px;
     margin: -2px -4px;
@@ -548,10 +542,10 @@ const SelectMenu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: ${({ theme }) => theme.palette.background.paper};
-  border: 1.5px solid ${({ theme }) => alpha(theme.palette.divider, 0.12)};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
+  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')};
   border-radius: 4px;
-  box-shadow: ${({ theme }) => theme.shadows?.[4] || '0 4px 12px rgba(0, 0, 0, 0.15)'};
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 1000;
   min-width: 60px;
   backdrop-filter: blur(10px);
@@ -566,10 +560,10 @@ const SelectOption = styled.button`
   text-align: left;
   cursor: pointer;
   font-size: 12px;
-  color: ${({ theme }) => theme.palette.text.primary};
+  color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
 
   &:hover {
-    background: ${({ theme }) => alpha(theme.palette.action.hover, 0.04)};
+    background: rgba(66, 133, 244, 0.04);
   }
 `;
 
@@ -626,7 +620,7 @@ const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${(props) => props.theme.palette.background.default};
+  background: ${(props) => (props.darkMode ? '#000000' : '#ffffff')};
 `;
 
 // Table Head Configuration
@@ -732,7 +726,6 @@ OptimizedImage.displayName = 'OptimizedImage';
 
 // Mobile Collection Row Component
 const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
-  const theme = useTheme();
   const { name, slug, logoImage, floor, floor1dPercent, totalVolume } = collection;
 
   // Handle name being an object or string
@@ -743,9 +736,9 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   const floorChangePercent = floor1dPercent || 0;
 
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
-    if (percent < 0) return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
-    return theme.palette.text.secondary;
+    if (percent > 0) return darkMode ? '#4CAF50' : '#2E7D32';
+    if (percent < 0) return darkMode ? '#EF5350' : '#C62828';
+    return darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)';
   };
 
   const formatFloorChange = (percent) => {
@@ -755,26 +748,26 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
   };
 
   return (
-    <MobileCollectionCard onClick={handleRowClick}>
+    <MobileCollectionCard onClick={handleRowClick} darkMode={darkMode}>
       <MobileCollectionInfo>
-        <CollectionImage isMobile={true}>
+        <CollectionImage isMobile={true} darkMode={darkMode}>
           <OptimizedImage src={logoImageUrl} alt={collectionName} size={20} />
         </CollectionImage>
         <CollectionDetails>
-          <CollectionName isMobile={true}>{collectionName}</CollectionName>
-          <CollectionSubtext isMobile={true}>{slug}</CollectionSubtext>
+          <CollectionName isMobile={true} darkMode={darkMode}>{collectionName}</CollectionName>
+          <CollectionSubtext isMobile={true} darkMode={darkMode}>{slug}</CollectionSubtext>
         </CollectionDetails>
       </MobileCollectionInfo>
 
-      <MobileCell flex={1.2} align="right">
+      <MobileCell flex={1.2} align="right" darkMode={darkMode}>
         ✕ {fNumber(floorPrice)}
       </MobileCell>
 
-      <MobileCell flex={0.9} align="right" color={getFloorChangeColor(floorChangePercent)}>
+      <MobileCell flex={0.9} align="right" color={getFloorChangeColor(floorChangePercent)} darkMode={darkMode}>
         {formatFloorChange(floorChangePercent)}
       </MobileCell>
 
-      <MobileCell flex={1} align="right" color="#00AB55">
+      <MobileCell flex={1} align="right" color="#00AB55" darkMode={darkMode}>
         ✕ {fVolume(totalVolume || 0)}
       </MobileCell>
     </MobileCollectionCard>
@@ -783,7 +776,6 @@ const MobileCollectionRow = ({ collection, darkMode, handleRowClick }) => {
 
 // Desktop Collection Row Component
 const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => {
-  const theme = useTheme();
   const {
     name,
     slug,
@@ -813,9 +805,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   const strDateTime = formatMonthYearDate(created);
 
   const getFloorChangeColor = (percent) => {
-    if (percent > 0) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
-    if (percent < 0) return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
-    return theme.palette.text.secondary;
+    if (percent > 0) return darkMode ? '#4CAF50' : '#2E7D32';
+    if (percent < 0) return darkMode ? '#EF5350' : '#C62828';
+    return darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)';
   };
 
   const formatFloorChange = (percent) => {
@@ -825,19 +817,19 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   };
 
   const getMarketCapColor = (mcap) => {
-    if (!mcap || isNaN(mcap)) return theme.palette.text.primary;
+    if (!mcap || isNaN(mcap)) return darkMode ? '#ffffff' : '#212B36';
     // Elite: $5M+ (3% - dark green)
-    if (mcap >= 5e6) return theme.palette.mode === 'dark' ? '#2E7D32' : '#1B5E20';
+    if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
     // Established: $1M-$5M (8% - green)
-    if (mcap >= 1e6) return theme.palette.mode === 'dark' ? '#4CAF50' : '#2E7D32';
+    if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
     // Mid-tier: $100K-$1M (24% - blue)
-    if (mcap >= 1e5) return theme.palette.mode === 'dark' ? '#42A5F5' : '#1976D2';
+    if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
     // Small: $10K-$100K (32% - yellow)
-    if (mcap >= 1e4) return theme.palette.mode === 'dark' ? '#FFC107' : '#F57F17';
+    if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
     // Micro: $1K-$10K (orange)
-    if (mcap >= 1e3) return theme.palette.mode === 'dark' ? '#FF9800' : '#E65100';
+    if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
     // Nano: <$1K (red)
-    return theme.palette.mode === 'dark' ? '#EF5350' : '#C62828';
+    return darkMode ? '#EF5350' : '#C62828';
   };
 
   // Process chart data
@@ -858,9 +850,9 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
   }, [graphData30d]);
 
   return (
-    <StyledRow onClick={handleRowClick}>
+    <StyledRow onClick={handleRowClick} darkMode={darkMode}>
       <StyledCell align="center" darkMode={darkMode} style={{ width: '40px', minWidth: '40px', maxWidth: '40px' }}>
-        <span style={{ fontWeight: '400', color: theme.palette.text.secondary }}>{idx + 1}</span>
+        <span style={{ fontWeight: '400', color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)' }}>{idx + 1}</span>
       </StyledCell>
 
       <StyledCell
@@ -870,11 +862,11 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
         style={{ width: '250px', minWidth: '250px', maxWidth: '250px' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <CollectionImage>
+          <CollectionImage darkMode={darkMode}>
             <OptimizedImage src={logoImageUrl} alt={collectionName} size={28} />
           </CollectionImage>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <CollectionName title={collectionName}>{collectionName}</CollectionName>
+            <CollectionName title={collectionName} darkMode={darkMode}>{collectionName}</CollectionName>
           </div>
         </div>
       </StyledCell>
@@ -929,7 +921,7 @@ const DesktopCollectionRow = ({ collection, idx, darkMode, handleRowClick }) => 
             <OptimizedChart salesData={salesData} darkMode={darkMode} />
           </div>
         ) : (
-          <span style={{ color: theme.palette.text.disabled, fontSize: '12px' }}>No data</span>
+          <span style={{ color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(33, 43, 54, 0.3)', fontSize: '12px' }}>No data</span>
         )}
       </StyledCell>
     </StyledRow>
@@ -969,7 +961,7 @@ const CollectionRow = memo(
 
 
 // ListToolbar Component
-const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, total }) {
+const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, total, darkMode }) {
   const [selectOpen, setSelectOpen] = useState(false);
   const selectRef = useRef(null);
 
@@ -1056,15 +1048,15 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 
   return (
     <StyledToolbar>
-      <InfoBox>
-        <Chip>{`${start}-${end} of ${total.toLocaleString()}`}</Chip>
-        <Text>collections</Text>
+      <InfoBox darkMode={darkMode}>
+        <Chip darkMode={darkMode}>{`${start}-${end} of ${total.toLocaleString()}`}</Chip>
+        <Text darkMode={darkMode}>collections</Text>
       </InfoBox>
 
       <CenterBox>
-        <PaginationContainer>
-          <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page">
-            <FirstPageIcon sx={{ width: 14, height: 14 }} />
+        <PaginationContainer darkMode={darkMode}>
+          <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page" darkMode={darkMode}>
+            <ChevronsLeft size={14} />
           </NavButton>
 
           {getPageNumbers().map((pageNum, idx) => {
@@ -1076,31 +1068,31 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
               );
             }
             return (
-              <PageButton key={pageNum} selected={pageNum === page + 1} onClick={() => handleChangePage(pageNum - 1)}>
+              <PageButton key={pageNum} selected={pageNum === page + 1} onClick={() => handleChangePage(pageNum - 1)} darkMode={darkMode}>
                 {pageNum}
               </PageButton>
             );
           })}
 
-          <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
-            <LastPageIcon sx={{ width: 14, height: 14 }} />
+          <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page" darkMode={darkMode}>
+            <ChevronsRight size={14} />
           </NavButton>
         </PaginationContainer>
       </CenterBox>
 
-      <RowsSelector>
-        <ViewListIcon sx={{ width: 14, height: 14 }} />
-        <Text>Rows</Text>
+      <RowsSelector darkMode={darkMode}>
+        <List size={14} />
+        <Text darkMode={darkMode}>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
             {rows}
-            <ArrowDropDownIcon sx={{ width: 16, height: 16 }} />
+            <ChevronDown size={16} />
           </SelectButton>
           {selectOpen && (
-            <SelectMenu>
-              <SelectOption onClick={() => handleChangeRows(100)}>100</SelectOption>
-              <SelectOption onClick={() => handleChangeRows(50)}>50</SelectOption>
-              <SelectOption onClick={() => handleChangeRows(20)}>20</SelectOption>
+            <SelectMenu darkMode={darkMode}>
+              <SelectOption onClick={() => handleChangeRows(100)} darkMode={darkMode}>100</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(50)} darkMode={darkMode}>50</SelectOption>
+              <SelectOption onClick={() => handleChangeRows(20)} darkMode={darkMode}>20</SelectOption>
             </SelectMenu>
           )}
         </Select>
@@ -1112,7 +1104,8 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
 // Main CollectionList Component
 export default function CollectionList({ type, category, onGlobalMetrics, initialCollections = [], initialTotal = 0 }) {
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { darkMode } = useContext(AppContext);
+  const { themeName } = useContext(AppContext);
+  const darkMode = themeName === 'XrplToDarkTheme';
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState(50);
@@ -1266,7 +1259,7 @@ export default function CollectionList({ type, category, onGlobalMetrics, initia
         </TableContainer>
       )}
       <div style={{ marginTop: '8px' }}>
-        <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} />
+        <ListToolbar rows={rows} setRows={setRows} page={page} setPage={setPage} total={total} darkMode={darkMode} />
       </div>
     </Container>
   );

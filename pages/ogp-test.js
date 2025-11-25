@@ -1,178 +1,141 @@
-import React from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Card,
-  CardContent,
-  CardMedia,
-  Grid,
-  Toolbar,
-  Paper,
-  Chip,
-  Stack
-} from '@mui/material';
+import React, { useContext } from 'react';
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 
 function OGPTestPage({ imageUrls }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <Box>
-      <Toolbar id="back-to-top-anchor" />
+    <div>
+      <div id="back-to-top-anchor" className="h-6" />
       <Header />
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography variant="h2" gutterBottom align="center" sx={{ mb: 4 }}>
+      <div className="mx-auto max-w-7xl px-4 py-4">
+        <h2 className={cn("mb-4 text-center text-3xl font-normal", isDark ? "text-white" : "text-gray-900")}>
           Open Graph Test Page
-        </Typography>
+        </h2>
 
-        <Card elevation={3} sx={{ mb: 4 }}>
-          <CardContent>
-            <Typography variant="h4" gutterBottom>
-              OGP Image Gallery
-            </Typography>
-            <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-              All 13 Open Graph images for testing social media preview functionality
-            </Typography>
+        <div className={cn("mb-4 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+          <h4 className={cn("mb-2 text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
+            OGP Image Gallery
+          </h4>
+          <p className={cn("mb-3 text-[15px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>
+            All 13 Open Graph images for testing social media preview functionality
+          </p>
 
-            <Grid container spacing={2}>
-              {imageUrls.map((url, index) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
-                  <Paper elevation={2} sx={{ p: 1 }}>
-                    <Typography variant="subtitle2" gutterBottom>
-                      Image {index + 1}
-                    </Typography>
-                    <CardMedia
-                      component="img"
-                      image={url}
-                      alt={`OGP Image ${index + 1}`}
-                      sx={{
-                        width: '100%',
-                        height: 200,
-                        objectFit: 'cover',
-                        mb: 1
-                      }}
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        display: 'block',
-                        wordBreak: 'break-all',
-                        fontSize: '11px'
-                      }}
-                    >
-                      {url.split('/').pop()}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </Card>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-3">
+            {imageUrls.map((url, index) => (
+              <div key={index} className={cn("rounded-xl border-[1.5px] p-1", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <p className={cn("mb-1 text-[13px] font-medium", isDark ? "text-gray-300" : "text-gray-700")}>
+                  Image {index + 1}
+                </p>
+                <img
+                  src={url}
+                  alt={`OGP Image ${index + 1}`}
+                  className="mb-1 h-[200px] w-full rounded-lg object-cover"
+                />
+                <p className={cn("block break-all text-[11px] font-normal", isDark ? "text-gray-500" : "text-gray-500")}>
+                  {url.split('/').pop()}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
 
-        <Grid container spacing={4}>
-          <Grid size={{ xs: 12, md: 8 }}>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  Primary OGP Image
-                </Typography>
-                <Paper elevation={1} sx={{ p: 2, mb: 3 }}>
-                  <CardMedia
-                    component="img"
-                    image={imageUrls[0]}
-                    alt="Primary Open Graph Image"
-                    sx={{
-                      width: '100%',
-                      height: 'auto',
-                      maxHeight: 400,
-                      objectFit: 'contain'
-                    }}
-                  />
-                </Paper>
-                <Stack spacing={1}>
-                  <Chip label="Primary Image" color="primary" />
-                  <Chip label="Dimensions: 1200x630" variant="outlined" />
-                  <Chip label="Format: WEBP" variant="outlined" />
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-12">
+          <div className="md:col-span-8">
+            <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+              <h5 className={cn("mb-2 text-lg font-normal", isDark ? "text-white" : "text-gray-900")}>
+                Primary OGP Image
+              </h5>
+              <div className={cn("mb-3 rounded-xl border-[1.5px] p-2", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <img
+                  src={imageUrls[0]}
+                  alt="Primary Open Graph Image"
+                  className="h-auto max-h-[400px] w-full object-contain"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="inline-flex rounded-lg border-[1.5px] border-primary bg-primary px-3 py-1 text-[13px] font-normal text-white">
+                  Primary Image
+                </span>
+                <span className={cn("inline-flex rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal", isDark ? "border-white/15" : "border-gray-300")}>
+                  Dimensions: 1200x630
+                </span>
+                <span className={cn("inline-flex rounded-lg border-[1.5px] px-3 py-1 text-[13px] font-normal", isDark ? "border-white/15" : "border-gray-300")}>
+                  Format: WEBP
+                </span>
+              </div>
+            </div>
+          </div>
 
-          <Grid size={{ xs: 12, md: 4 }}>
-            <Card elevation={2}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  Social Media Preview
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                  This is how your link will appear when shared:
-                </Typography>
+          <div className="md:col-span-4">
+            <div className={cn("rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+              <h5 className={cn("mb-2 text-lg font-normal", isDark ? "text-white" : "text-gray-900")}>
+                Social Media Preview
+              </h5>
+              <p className={cn("mb-2 text-[13px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>
+                This is how your link will appear when shared:
+              </p>
 
-                <Paper variant="outlined" sx={{ p: 2 }}>
-                  <Box
-                    sx={{
-                      width: '100%',
-                      height: 150,
-                      backgroundImage: `url(${imageUrls[0]})`,
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
-                      mb: 2
-                    }}
-                  />
-                  <Typography variant="subtitle1" fontWeight={500}>
-                    OGP Test Page | xrpl.to
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Testing Open Graph image display functionality on XRPL.to platform
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    xrpl.to
-                  </Typography>
-                </Paper>
-              </CardContent>
-            </Card>
+              <div className={cn("rounded-xl border-[1.5px] p-2", isDark ? "border-white/10" : "border-gray-200")}>
+                <div
+                  className="mb-2 h-[150px] w-full rounded-lg bg-cover bg-center"
+                  style={{ backgroundImage: `url(${imageUrls[0]})` }}
+                />
+                <p className={cn("text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  OGP Test Page | xrpl.to
+                </p>
+                <p className={cn("text-[13px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>
+                  Testing Open Graph image display functionality on XRPL.to platform
+                </p>
+                <p className={cn("text-[11px] font-normal", isDark ? "text-gray-500" : "text-gray-500")}>
+                  xrpl.to
+                </p>
+              </div>
+            </div>
 
-            <Card elevation={2} sx={{ mt: 3 }}>
-              <CardContent>
-                <Typography variant="h5" gutterBottom>
-                  OGP Tags Used
-                </Typography>
-                <Stack spacing={1}>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    og:title
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    og:description
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    og:image
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    og:url
-                  </Typography>
-                  <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                    twitter:card
-                  </Typography>
-                </Stack>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
+            <div className={cn("mt-3 rounded-xl border-[1.5px] p-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-white")}>
+              <h5 className={cn("mb-2 text-lg font-normal", isDark ? "text-white" : "text-gray-900")}>
+                OGP Tags Used
+              </h5>
+              <div className="flex flex-col gap-1">
+                <p className={cn("font-mono text-[13px] font-normal", isDark ? "text-gray-300" : "text-gray-700")}>
+                  og:title
+                </p>
+                <p className={cn("font-mono text-[13px] font-normal", isDark ? "text-gray-300" : "text-gray-700")}>
+                  og:description
+                </p>
+                <p className={cn("font-mono text-[13px] font-normal", isDark ? "text-gray-300" : "text-gray-700")}>
+                  og:image
+                </p>
+                <p className={cn("font-mono text-[13px] font-normal", isDark ? "text-gray-300" : "text-gray-700")}>
+                  og:url
+                </p>
+                <p className={cn("font-mono text-[13px] font-normal", isDark ? "text-gray-300" : "text-gray-700")}>
+                  twitter:card
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
 
-        <Box sx={{ mt: 6 }}>
-          <Typography variant="h4" gutterBottom align="center">
+        <div className="mt-6">
+          <h4 className={cn("mb-2 text-center text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
             Test Your OGP Tags
-          </Typography>
-          <Typography variant="body1" align="center" color="text.secondary">
+          </h4>
+          <p className={cn("text-center text-[15px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>
             You can validate this page's Open Graph tags using tools like Facebook's Sharing
             Debugger or Twitter Card Validator
-          </Typography>
-        </Box>
-      </Container>
+          </p>
+        </div>
+      </div>
 
       <Footer />
-    </Box>
+    </div>
   );
 }
 

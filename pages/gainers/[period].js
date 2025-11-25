@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
+import styled from '@emotion/styled';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
@@ -8,19 +8,17 @@ import Summary from 'src/TokenList/Summary';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/formatters';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
+const OverviewWrapper = styled.div`
+  overflow: hidden;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+
+  @media (max-width: 768px) {
     margin: 0;
     padding: 0;
-    
-    ${theme.breakpoints.down('md')} {
-      margin: 0;
-      padding: 0;
-    }
-`
-);
+  }
+`;
 
 function getInitialTokens(data) {
   if (data) return data.tokens;
@@ -36,37 +34,33 @@ function GainersPage({ data, period }) {
     }
     return map;
   }, [tokens]);
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+
+  useState(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <OverviewWrapper>
-      {!isMobile && <Toolbar id="back-to-top-anchor" />}
+      {!isMobile && <div className="h-16" id="back-to-top-anchor" />}
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         Top Gaining XRPL Tokens
       </h1>
 
-      <Container maxWidth="xl">
-        <Box
-          sx={{
-            width: '100%',
-            px: { xs: 0, sm: 0, md: 0 },
-            py: { xs: 0, sm: 0, md: 0 },
-            mt: { xs: 0, sm: 0, md: 0 },
-            mb: { xs: 0, sm: 0, md: 0 },
-            [(theme) => theme.breakpoints.down('md')]: {
-              marginTop: '-1px'
-            }
-          }}
-        >
+      <div className="mx-auto max-w-7xl px-0 md:px-4">
+        <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-1">
           <Summary />
-        </Box>
-      </Container>
+        </div>
+      </div>
 
-      <Container maxWidth="xl">
-        <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid size={{ xs: 12, md: 12 }} lg={12}>
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="flex flex-col">
+          <div className="w-full">
             {data && data.tags ? (
               <>
                 <TokenList tags={data.tags} tokens={tokens} tMap={tMap} setTokens={setTokens} />
@@ -74,12 +68,11 @@ function GainersPage({ data, period }) {
             ) : (
               <></>
             )}
-          </Grid>
-        </Grid>
-      </Container>
+          </div>
+        </div>
+      </div>
 
       <ScrollToTop />
-      {/* {isMobile ? <AppMenu /> : ''} */}
       <Footer />
     </OverviewWrapper>
   );

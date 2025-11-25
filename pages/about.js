@@ -1,20 +1,12 @@
 import React, { useContext, memo, useState, useCallback, useMemo } from 'react';
 import styled from '@emotion/styled';
 import axios from 'axios';
-import { useTheme } from '@mui/material/styles';
 import { AppContext } from 'src/AppContext';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
+import { LineChart, ArrowLeftRight, Palette, TrendingUp, Code, Zap } from 'lucide-react';
 // Constants
 const BASE_URL = 'https://api.xrpl.to/api';
-import {
-  ShowChart,
-  SwapHoriz,
-  Palette,
-  TrendingUp,
-  Api,
-  FlashOn
-} from '@mui/icons-material';
 
 // Styled components
 const PageWrapper = styled.div`
@@ -44,7 +36,7 @@ const HeroSection = styled.div`
     left: -50%;
     width: 200%;
     height: 200%;
-    background: radial-gradient(circle, ${props => props.theme?.palette?.primary?.main}10 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(66, 133, 244, 0.1) 0%, transparent 70%);
     animation: pulse 20s ease-in-out infinite;
   }
 
@@ -71,7 +63,7 @@ const HeroTitle = styled.h1`
 
 const HeroSubtitle = styled.p`
   font-size: 1.25rem;
-  color: ${props => props.theme?.palette?.text?.secondary};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
   max-width: 600px;
   margin: 0 auto 48px;
   position: relative;
@@ -91,26 +83,22 @@ const StatsRow = styled.div`
 const StatCard = styled.div`
   text-align: center;
   padding: 24px;
-  background: ${props => props.theme?.palette?.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.02)'
-    : 'rgba(0, 0, 0, 0.02)'};
+  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   border-radius: 12px;
-  border: 1.5px solid ${props => props.theme?.palette?.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.05)'
-    : 'rgba(0, 0, 0, 0.05)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   backdrop-filter: blur(10px);
 `;
 
 const StatNumber = styled.h2`
   font-size: 2.5rem;
   font-weight: 700;
-  color: ${props => props.theme?.palette?.primary?.main};
+  color: #4285f4;
   margin-bottom: 8px;
 `;
 
 const StatLabel = styled.p`
   font-size: 0.9rem;
-  color: ${props => props.theme?.palette?.text?.secondary};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
   text-transform: uppercase;
   letter-spacing: 1px;
 `;
@@ -125,7 +113,7 @@ const SectionTitle = styled.h2`
   font-size: 2.5rem;
   font-weight: 700;
   margin-bottom: 48px;
-  color: ${props => props.theme?.palette?.text?.primary};
+  color: ${props => props.isDark ? '#fff' : '#000'};
 `;
 
 const FeatureGrid = styled.div`
@@ -138,14 +126,12 @@ const FeatureGrid = styled.div`
 const FeatureCard = styled.div`
   position: relative;
   padding: 40px 32px;
-  background: ${props => props.theme?.palette?.mode === 'dark'
-    ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.01) 100%)'
-    : 'linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.01) 100%)'};
-  border: 1.5px solid ${props => props.theme?.palette?.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.06)'
-    : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 0;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: ${props => props.isDark
+    ? 'rgba(255, 255, 255, 0.02)'
+    : 'rgba(0, 0, 0, 0.02)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-radius: 12px;
+  transition: all 0.3s ease;
   overflow: hidden;
 
   &::before {
@@ -157,12 +143,11 @@ const FeatureCard = styled.div`
     height: 3px;
     background: ${props => props.gradient || 'linear-gradient(90deg, #147DFE, #00D4FF)'};
     transform: scaleX(0);
-    transition: transform 0.4s ease;
+    transition: transform 0.3s ease;
   }
 
   &:hover {
-    transform: translateY(-4px);
-    border-color: ${props => props.theme?.palette?.primary?.main}30;
+    border-color: rgba(66, 133, 244, 0.3);
 
     &::before {
       transform: scaleX(1);
@@ -181,8 +166,9 @@ const FeatureIcon = styled.div`
   border-radius: 12px;
   color: white;
 
-  .MuiSvgIcon-root {
-    font-size: 28px;
+  svg {
+    width: 28px;
+    height: 28px;
   }
 `;
 
@@ -190,13 +176,13 @@ const FeatureTitle = styled.h3`
   font-size: 1.5rem;
   font-weight: 600;
   margin-bottom: 12px;
-  color: ${props => props.theme?.palette?.text?.primary};
+  color: ${props => props.isDark ? '#fff' : '#000'};
 `;
 
 const FeatureText = styled.p`
   font-size: 1rem;
   line-height: 1.6;
-  color: ${props => props.theme?.palette?.text?.secondary};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
 `;
 
 // Timeline Section
@@ -217,9 +203,7 @@ const Timeline = styled.div`
     top: 0;
     bottom: 0;
     width: 2px;
-    background: ${props => props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.1)'
-      : 'rgba(0, 0, 0, 0.1)'};
+    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
     transform: translateX(-50%);
 
     @media (max-width: 768px) {
@@ -246,7 +230,7 @@ const TimelineItem = styled.div`
     top: 30px;
     width: 12px;
     height: 12px;
-    background: ${props => props.theme?.palette?.primary?.main};
+    background: #4285f4;
     border-radius: 50%;
     transform: translateX(-50%);
     z-index: 1;
@@ -260,12 +244,8 @@ const TimelineItem = styled.div`
 const TimelineContent = styled.div`
   width: 45%;
   padding: 20px;
-  background: ${props => props.theme?.palette?.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.03)'
-    : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${props => props.theme?.palette?.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.06)'
-    : 'rgba(0, 0, 0, 0.06)'};
+  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
   border-radius: 12px;
 
   @media (max-width: 768px) {
@@ -276,22 +256,19 @@ const TimelineContent = styled.div`
 const TimelineDate = styled.div`
   font-size: 0.875rem;
   font-weight: 600;
-  color: ${props => props.theme?.palette?.primary?.main};
+  color: #4285f4;
   margin-bottom: 8px;
 `;
 
 const TimelineText = styled.div`
   font-size: 1rem;
-  color: ${props => props.theme?.palette?.text?.secondary};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
 `;
 
 // FAQ Components
 const FaqSection = styled.div`
   margin-top: 64px;
-  border-top: 1px solid ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.05)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   padding-top: 48px;
 `;
 
@@ -316,10 +293,7 @@ const FaqTitle = styled.h2`
 
 const FaqSubtitle = styled.h3`
   font-size: 1.25rem;
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.6)'
-      : 'rgba(0, 0, 0, 0.6)'};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
   max-width: 600px;
   margin: 0 auto;
   font-weight: 400;
@@ -332,28 +306,16 @@ const FaqList = styled.div`
 
 const AccordionItem = styled.div`
   margin-bottom: 16px;
-  background: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.02)'
-      : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.05)'
-      : 'rgba(0, 0, 0, 0.05)'};
+  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
   border-radius: 12px;
   overflow: hidden;
   backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 
   &:hover {
-    background: ${(props) =>
-      props.theme?.palette?.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.04)'
-        : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${(props) =>
-      props.theme?.palette?.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.08)'
-        : 'rgba(0, 0, 0, 0.08)'};
+    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
   }
 `;
 
@@ -370,30 +332,27 @@ const AccordionHeader = styled.button`
   transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${(props) =>
-      props.theme?.palette?.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.06)'
-        : 'rgba(0, 0, 0, 0.06)'};
+    background-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
   }
 `;
 
 const QuestionText = styled.span`
   font-size: 1.125rem;
   font-weight: 600;
-  color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
+  color: ${props => props.isDark ? '#fff' : '#212B36'};
   padding-right: 16px;
   flex: 1;
 `;
 
 const ExpandIcon = styled.svg`
-  color: ${(props) => props.theme?.palette?.primary?.main || '#147DFE'};
+  color: #4285f4;
   transition: transform 0.3s ease;
   flex-shrink: 0;
-  transform: ${(props) => props.expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transform: ${props => props.expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
 `;
 
 const AccordionContent = styled.div`
-  max-height: ${(props) => props.expanded ? '500px' : '0'};
+  max-height: ${props => props.expanded ? '500px' : '0'};
   overflow: hidden;
   transition: max-height 0.3s ease;
 `;
@@ -403,20 +362,17 @@ const AnswerText = styled.p`
   margin: 0;
   line-height: 1.7;
   font-size: 1.05rem;
-  color: ${(props) =>
-    props.theme?.palette?.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.7)'
-      : 'rgba(0, 0, 0, 0.6)'};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'};
 `;
 
 // Memoized FAQ Item Component
-const FAQItem = memo(({ faq, index, isExpanded, onToggle, theme }) => (
-  <AccordionItem theme={theme}>
-    <AccordionHeader onClick={onToggle} aria-expanded={isExpanded} theme={theme}>
-      <QuestionText theme={theme}>{faq.question}</QuestionText>
+const FAQItem = memo(({ faq, index, isExpanded, onToggle, isDark }) => (
+  <AccordionItem isDark={isDark}>
+    <AccordionHeader onClick={onToggle} aria-expanded={isExpanded} isDark={isDark}>
+      <QuestionText isDark={isDark}>{faq.question}</QuestionText>
       <ExpandIcon
         expanded={isExpanded}
-        theme={theme}
+        isDark={isDark}
         width="24"
         height="24"
         viewBox="0 0 24 24"
@@ -433,13 +389,14 @@ const FAQItem = memo(({ faq, index, isExpanded, onToggle, theme }) => (
       </ExpandIcon>
     </AccordionHeader>
     <AccordionContent expanded={isExpanded}>
-      <AnswerText theme={theme}>{faq.answer}</AnswerText>
+      <AnswerText isDark={isDark}>{faq.answer}</AnswerText>
     </AccordionContent>
   </AccordionItem>
 ));
 
 function AboutPage() {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [expandedIndex, setExpandedIndex] = useState(null);
 
   const toggleAccordion = useCallback((index) => {
@@ -494,12 +451,12 @@ function AboutPage() {
   ], []);
 
   const features = [
-    { icon: ShowChart, title: 'Live Price Tracking', text: 'Real-time prices for 19,000+ tokens with advanced charts and analytics', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
-    { icon: SwapHoriz, title: 'DEX Trading', text: 'Trade directly on XRPL DEX with professional tools and order books', gradient: 'linear-gradient(135deg, #f093fb, #f5576c)' },
+    { icon: LineChart, title: 'Live Price Tracking', text: 'Real-time prices for 19,000+ tokens with advanced charts and analytics', gradient: 'linear-gradient(135deg, #667eea, #764ba2)' },
+    { icon: ArrowLeftRight, title: 'DEX Trading', text: 'Trade directly on XRPL DEX with professional tools and order books', gradient: 'linear-gradient(135deg, #f093fb, #f5576c)' },
     { icon: Palette, title: 'NFT Marketplace', text: 'Explore and trade NFT collections with detailed ownership history', gradient: 'linear-gradient(135deg, #4facfe, #00f2fe)' },
     { icon: TrendingUp, title: 'Portfolio Tracker', text: 'Monitor your holdings and track performance across all assets', gradient: 'linear-gradient(135deg, #43e97b, #38f9d7)' },
-    { icon: Api, title: 'API Access', text: 'Developer-friendly APIs for seamless integration and data access', gradient: 'linear-gradient(135deg, #fa709a, #fee140)' },
-    { icon: FlashOn, title: 'Lightning Fast', text: '3-5 second transactions with minimal fees on XRP Ledger', gradient: 'linear-gradient(135deg, #30cfd0, #330867)' }
+    { icon: Code, title: 'API Access', text: 'Developer-friendly APIs for seamless integration and data access', gradient: 'linear-gradient(135deg, #fa709a, #fee140)' },
+    { icon: Zap, title: 'Lightning Fast', text: '3-5 second transactions with minimal fees on XRP Ledger', gradient: 'linear-gradient(135deg, #30cfd0, #330867)' }
   ];
 
   const timelineData = [
@@ -519,45 +476,45 @@ function AboutPage() {
 
       <Container>
         {/* Hero Section */}
-        <HeroSection theme={theme}>
+        <HeroSection>
           <HeroTitle>XRPL.to</HeroTitle>
-          <HeroSubtitle theme={theme}>
+          <HeroSubtitle isDark={isDark}>
             The premier analytics platform for the XRP Ledger ecosystem
           </HeroSubtitle>
 
           <StatsRow>
-            <StatCard theme={theme}>
-              <StatNumber theme={theme}>19,000+</StatNumber>
-              <StatLabel theme={theme}>Tokens Tracked</StatLabel>
+            <StatCard isDark={isDark}>
+              <StatNumber>19,000+</StatNumber>
+              <StatLabel isDark={isDark}>Tokens Tracked</StatLabel>
             </StatCard>
-            <StatCard theme={theme}>
-              <StatNumber theme={theme}>40,000+</StatNumber>
-              <StatLabel theme={theme}>Monthly Users</StatLabel>
+            <StatCard isDark={isDark}>
+              <StatNumber>40,000+</StatNumber>
+              <StatLabel isDark={isDark}>Monthly Users</StatLabel>
             </StatCard>
-            <StatCard theme={theme}>
-              <StatNumber theme={theme}>8M+</StatNumber>
-              <StatLabel theme={theme}>API Queries</StatLabel>
+            <StatCard isDark={isDark}>
+              <StatNumber>8M+</StatNumber>
+              <StatLabel isDark={isDark}>API Queries</StatLabel>
             </StatCard>
-            <StatCard theme={theme}>
-              <StatNumber theme={theme}>Live</StatNumber>
-              <StatLabel theme={theme}>Data</StatLabel>
+            <StatCard isDark={isDark}>
+              <StatNumber>Live</StatNumber>
+              <StatLabel isDark={isDark}>Data</StatLabel>
             </StatCard>
           </StatsRow>
         </HeroSection>
 
         {/* Features Section */}
         <FeaturesSection>
-          <SectionTitle theme={theme}>Platform Features</SectionTitle>
+          <SectionTitle isDark={isDark}>Platform Features</SectionTitle>
           <FeatureGrid>
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <FeatureCard key={index} theme={theme} gradient={feature.gradient}>
+                <FeatureCard key={index} isDark={isDark} gradient={feature.gradient}>
                   <FeatureIcon gradient={feature.gradient}>
                     <IconComponent />
                   </FeatureIcon>
-                  <FeatureTitle theme={theme}>{feature.title}</FeatureTitle>
-                  <FeatureText theme={theme}>{feature.text}</FeatureText>
+                  <FeatureTitle isDark={isDark}>{feature.title}</FeatureTitle>
+                  <FeatureText isDark={isDark}>{feature.text}</FeatureText>
                 </FeatureCard>
               );
             })}
@@ -566,13 +523,13 @@ function AboutPage() {
 
         {/* Timeline Section */}
         <TimelineSection>
-          <SectionTitle theme={theme}>Our Journey</SectionTitle>
-          <Timeline theme={theme}>
+          <SectionTitle isDark={isDark}>Our Journey</SectionTitle>
+          <Timeline isDark={isDark}>
             {timelineData.map((item, index) => (
-              <TimelineItem key={index} align={index % 2 === 0 ? 'left' : 'right'} theme={theme}>
-                <TimelineContent theme={theme}>
-                  <TimelineDate theme={theme}>{item.date}</TimelineDate>
-                  <TimelineText theme={theme}>{item.event}</TimelineText>
+              <TimelineItem key={index} align={index % 2 === 0 ? 'left' : 'right'}>
+                <TimelineContent isDark={isDark}>
+                  <TimelineDate>{item.date}</TimelineDate>
+                  <TimelineText isDark={isDark}>{item.event}</TimelineText>
                 </TimelineContent>
               </TimelineItem>
             ))}
@@ -580,10 +537,10 @@ function AboutPage() {
         </TimelineSection>
 
         {/* FAQ Section */}
-        <FaqSection theme={theme}>
+        <FaqSection isDark={isDark}>
           <FaqHeader>
             <FaqTitle>Frequently Asked Questions</FaqTitle>
-            <FaqSubtitle theme={theme}>Find answers to common questions about xrpl.to</FaqSubtitle>
+            <FaqSubtitle isDark={isDark}>Find answers to common questions about xrpl.to</FaqSubtitle>
           </FaqHeader>
 
           <FaqList>
@@ -594,7 +551,7 @@ function AboutPage() {
                 index={index}
                 isExpanded={expandedIndex === index}
                 onToggle={() => toggleAccordion(index)}
-                theme={theme}
+                isDark={isDark}
               />
             ))}
           </FaqList>

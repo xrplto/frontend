@@ -1,68 +1,12 @@
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { CheckCircle, X } from 'lucide-react';
 import { normalizeAmount } from 'src/utils/parseUtils';
 
-// Material
-import {
-  useTheme,
-  useMediaQuery,
-  styled,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Link,
-  Stack,
-  Typography
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { alpha } from '@mui/material/styles';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-
-// ----------------------------------------------------------------------
-const ConfirmDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialog-paper': {
-    borderRadius: 16,
-    boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)',
-    backdropFilter: 'blur(8px)',
-    WebkitBackdropFilter: 'blur(8px)',
-    border: '1.5px solid rgba(255, 255, 255, 0.18)'
-  },
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
-  }
-}));
-
-const ConfirmDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
-
 export default function ConfirmAcceptOfferDialog({ open, setOpen, offer, onContinue }) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const price = normalizeAmount(offer?.amount);
 
@@ -79,50 +23,67 @@ export default function ConfirmAcceptOfferDialog({ open, setOpen, offer, onConti
     setOpen(false);
   };
 
-  return (
-    <ConfirmDialog
-      fullScreen={fullScreen}
-      onClose={handleClose}
-      open={open}
-      // sx={{zIndex: 1302}}
-      maxWidth="xs"
-      hideBackdrop={true}
-      disableScrollLock
-      disablePortal
-      keepMounted
-      PaperProps={{
-        style: {
-          background: alpha(theme.palette.background.paper, 0.8)
-        }
-      }}
-    >
-      <ConfirmDialogTitle id="customized-dialog-title" onClose={handleClose}>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <CheckCircleOutlineIcon color="primary" />
-          <Typography variant="h6" component="span" color="primary.main">
-            Confirm Offer
-          </Typography>
-        </Stack>
-      </ConfirmDialogTitle>
+  if (!open) return null;
 
-      <DialogContent>
-        <Stack spacing={3} sx={{ px: 2 }}>
-          <Typography variant="body1" align="center">
-            Are you sure you want to accept the offer of
-          </Typography>
-          <Typography variant="h4" color="primary.main" align="center" fontWeight={500}>
-            {price.amount} {price.name}
-          </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center">
-            <Button variant="outlined" onClick={handleNo} color="primary" size="large">
-              Cancel
-            </Button>
-            <Button variant="contained" onClick={handleYes} color="primary" size="large">
-              Accept Offer
-            </Button>
-          </Stack>
-        </Stack>
-      </DialogContent>
-    </ConfirmDialog>
+  return (
+    <>
+      <div className="fixed inset-0 z-50 bg-black/50" onClick={handleClose} />
+      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 px-4">
+        <div
+          className={cn(
+            "rounded-xl border-[1.5px] p-6",
+            isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+          )}
+        >
+          <button
+            onClick={handleClose}
+            className={cn(
+              "absolute right-4 top-4 rounded-lg p-1",
+              isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+            )}
+          >
+            <X size={20} />
+          </button>
+
+          <div className="flex flex-col items-center gap-4 px-4">
+            <div className="flex items-center gap-2">
+              <CheckCircle size={24} className="text-primary" />
+              <h2 className="text-[18px] font-normal text-primary">Confirm Offer</h2>
+            </div>
+
+            <p className={cn(
+              "text-center text-[13px] font-normal",
+              isDark ? "text-white/60" : "text-gray-600"
+            )}>
+              Are you sure you want to accept the offer of
+            </p>
+
+            <div className="text-center text-[28px] font-normal text-primary">
+              {price.amount} {price.name}
+            </div>
+
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={handleNo}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-6 py-2 text-[13px] font-normal",
+                  isDark
+                    ? "border-white/15 hover:bg-white/5"
+                    : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleYes}
+                className="rounded-lg border-[1.5px] border-primary bg-transparent px-6 py-2 text-[13px] font-normal text-primary hover:bg-primary/5"
+              >
+                Accept Offer
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

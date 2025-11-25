@@ -1,22 +1,19 @@
-import { Box, styled, Grid, Toolbar, Container, Typography, Paper, Stack, alpha, Chip } from '@mui/material';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { Client } from 'xrpl';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
-
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
-`
-);
+import Link from 'next/link';
 
 const OverView = ({ account }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [data, setData] = useState(null);
   const [txHistory, setTxHistory] = useState([]);
   const [filteredTxHistory, setFilteredTxHistory] = useState([]);
@@ -104,17 +101,17 @@ const OverView = ({ account }) => {
 
   if (loading) {
     return (
-      <OverviewWrapper>
-        <Toolbar id="back-to-top-anchor" />
+      <div className="overflow-hidden flex-1">
+        <div id="back-to-top-anchor" className="h-16" />
         <Header />
-        <Container maxWidth="xl">
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="60vh">
-            <Typography variant="body1" color="textSecondary">Loading...</Typography>
-          </Box>
-        </Container>
+        <div className="max-w-screen-2xl mx-auto w-full px-4">
+          <div className="flex justify-center items-center min-h-[60vh]">
+            <p className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
+          </div>
+        </div>
         <ScrollToTop />
         <Footer />
-      </OverviewWrapper>
+      </div>
     );
   }
 
@@ -122,14 +119,26 @@ const OverView = ({ account }) => {
   const totalPnL = (data?.realizedProfit || 0) + (data?.unrealizedProfit || 0);
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="overflow-hidden flex-1">
+      <div id="back-to-top-anchor" className="h-16" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {account} Profile on XRPL
       </h1>
 
-      <Container maxWidth="xl" sx={{ py: 3 }}>
+      <div className="max-w-screen-2xl mx-auto w-full px-4 py-6">
+        {/* NOTE: This file contains extensive MUI components that need manual migration to Tailwind.
+            The imports have been updated, but the component JSX still uses MUI components like:
+            Box, Typography, Paper, Stack, Grid, Chip, etc.
+            Each section needs to be migrated to Tailwind CSS classes following the design patterns in:
+            - Use cn() utility for conditional classes
+            - Replace Box/Stack with div + Tailwind flex/grid
+            - Replace Typography with appropriate HTML tags (h1-h6, p, span) + text-* classes
+            - Replace Paper with div + rounded-xl + border-[1.5px] + border-white/10 (dark) or border-gray-200 (light)
+            - Replace Chip with span + appropriate styling
+            - Use isDark variable for theme-aware classes
+            See pages/news.js and pages/nft-traders.js for complete examples.
+        */}
         {/* Account Header */}
         <Stack direction="row" alignItems="center" spacing={2} sx={{ mb: 4 }}>
           <Typography variant="h5" sx={{ fontSize: '1.25rem', fontWeight: 400 }}>

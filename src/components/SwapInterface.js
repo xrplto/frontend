@@ -1,54 +1,249 @@
 import axios from 'axios';
 import { useState, useEffect, useCallback, useMemo, useRef, memo } from 'react';
 import Decimal from 'decimal.js-light';
+import Image from 'next/image';
+import { useRouter } from 'next/router';
 
 // Set Decimal precision immediately after import
 Decimal.set({ precision: 50 });
 
-import Sparkline from 'src/components/Sparkline';
 import { ClipLoader } from './Spinners';
 
-// Material UI components (to be gradually replaced with Tailwind)
+// Lucide React Icons
 import {
-  alpha,
-  styled,
-  useTheme,
-  Button,
-  IconButton,
-  Input,
-  Stack,
-  Typography,
-  Box,
-  Tooltip,
-  Slide,
-  TextField,
-  InputAdornment,
-  Avatar,
-  Skeleton,
-  Chip,
-  Grid,
-  Paper,
-  Divider
-} from '@mui/material';
-import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CloseIcon from '@mui/icons-material/Close';
+  Wallet as WalletIcon,
+  ChevronDown,
+  CheckCircle,
+  X,
+  ArrowLeftRight,
+  Info as InfoIcon,
+  Share2,
+  Search,
+  ArrowLeft,
+  TrendingUp,
+  ToggleLeft,
+  ToggleRight,
+  List
+} from 'lucide-react';
 
-// Material UI Icons
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import InfoIcon from '@mui/icons-material/Info';
-import ShareIcon from '@mui/icons-material/Share';
-import SearchIcon from '@mui/icons-material/Search';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
-import ListIcon from '@mui/icons-material/List';
+// Utils
+import { cn } from 'src/utils/cn';
 
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
+
+// ============================================
+// MUI Replacement Utilities
+// ============================================
+const alpha = (color, opacity) => {
+  if (!color) return `rgba(0,0,0,${opacity})`;
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  if (color.startsWith('rgb(')) {
+    return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
+  }
+  if (color.startsWith('rgba(')) {
+    return color.replace(/,\s*[\d.]+\)$/, `, ${opacity})`);
+  }
+  return color;
+};
+
+// Simple styled replacement - returns a functional component
+const styled = (Component) => (styleFn) => {
+  const StyledComponent = ({ className, style, ...props }) => {
+    const { themeName } = useContext(AppContext);
+    const isDark = themeName === 'XrplToDarkTheme';
+    const theme = createTheme(isDark);
+    const styles = typeof styleFn === 'function' ? styleFn({ theme }) : styleFn;
+    // Filter out pseudo-selectors for inline styles
+    const inlineStyles = {};
+    Object.entries(styles).forEach(([key, value]) => {
+      if (!key.startsWith('&') && !key.startsWith('.')) {
+        inlineStyles[key] = value;
+      }
+    });
+    if (Component === 'div' || Component === Box) {
+      return <div style={{ ...inlineStyles, ...style }} className={className} {...props} />;
+    }
+    if (Component === Image) {
+      return <Image style={{ ...inlineStyles, ...style }} className={className} {...props} />;
+    }
+    if (Component === Stack) {
+      return <Stack style={{ ...inlineStyles, ...style }} className={className} {...props} />;
+    }
+    if (Component === Typography) {
+      return <span style={{ ...inlineStyles, ...style }} className={className} {...props} />;
+    }
+    if (Component === Chip) {
+      return <Chip style={{ ...inlineStyles, ...style }} className={className} {...props} />;
+    }
+    return <Component style={{ ...inlineStyles, ...style }} className={className} {...props} />;
+  };
+  StyledComponent.displayName = `Styled(${Component?.displayName || Component?.name || 'Component'})`;
+  return StyledComponent;
+};
+
+// Theme creator
+const createTheme = (isDark) => ({
+  palette: {
+    mode: isDark ? 'dark' : 'light',
+    divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
+    primary: { main: '#4285f4' },
+    text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+    background: { default: isDark ? '#121212' : '#fff', paper: isDark ? '#1e1e1e' : '#fff' },
+    success: { main: '#4caf50' },
+    error: { main: '#f44336' },
+    warning: { main: '#ff9800' }
+  },
+  spacing: (...args) => args.length === 1 ? args[0] * 8 : args.map(v => v * 8 + 'px').join(' ')
+});
+
+// useTheme hook replacement
+const useTheme = () => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  return createTheme(isDark);
+};
+
+// Basic MUI component replacements
+const Box = ({ children, sx, style, className, component, onClick, ...props }) => {
+  const Component = component || 'div';
+  return <Component style={style} className={className} onClick={onClick} {...props}>{children}</Component>;
+};
+
+const Stack = ({ children, direction = 'column', spacing = 0, alignItems, justifyContent, style, className, ...props }) => (
+  <div style={{
+    display: 'flex',
+    flexDirection: direction === 'row' ? 'row' : 'column',
+    gap: spacing * 8,
+    alignItems,
+    justifyContent,
+    ...style
+  }} className={className} {...props}>{children}</div>
+);
+
+const Typography = ({ children, variant, sx, style, className, ...props }) => (
+  <span style={style} className={className} {...props}>{children}</span>
+);
+
+const Chip = ({ label, onClick, style, className, ...props }) => (
+  <span
+    onClick={onClick}
+    style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      padding: '4px 12px',
+      borderRadius: 12,
+      fontSize: 10,
+      cursor: onClick ? 'pointer' : 'default',
+      ...style
+    }}
+    className={className}
+    {...props}
+  >{label}</span>
+);
+
+const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick, sx, startIcon, style, className, ...props }) => {
+  const baseStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: size === 'small' ? '4px 10px' : '8px 16px',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 400,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+    width: fullWidth ? '100%' : 'auto',
+    border: variant === 'outlined' ? '1px solid rgba(255,255,255,0.2)' : 'none',
+    background: variant === 'contained' ? '#4285f4' : 'transparent',
+    color: variant === 'contained' ? '#fff' : '#4285f4',
+    ...style
+  };
+  return (
+    <button style={baseStyle} disabled={disabled} onClick={onClick} className={className} {...props}>
+      {startIcon}
+      {children}
+    </button>
+  );
+};
+
+const IconButton = ({ children, onClick, size, disabled, style, className, ...props }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    style={{
+      background: 'transparent',
+      border: 'none',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      padding: size === 'small' ? 4 : 8,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      opacity: disabled ? 0.5 : 1,
+      ...style
+    }}
+    className={className}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+// ShareIcon using lucide Share2
+const ShareIcon = ({ sx }) => (
+  <Share2 size={sx?.width || sx?.fontSize || 16} />
+);
+
+// ArrowDropDownIcon
+const ArrowDropDownIcon = ({ sx, className }) => (
+  <ChevronDown size={sx?.fontSize || 18} className={className} />
+);
+
+// Input component (MUI replacement)
+const Input = ({ inputRef, placeholder, value, onChange, onFocus, onBlur, disableUnderline, sx, inputProps, ...props }) => (
+  <input
+    ref={inputRef}
+    placeholder={placeholder}
+    value={value}
+    onChange={onChange}
+    onFocus={onFocus}
+    onBlur={onBlur}
+    style={{
+      border: 'none',
+      outline: 'none',
+      background: 'transparent',
+      width: '100%',
+      fontSize: 'inherit',
+      color: 'inherit',
+      fontFamily: 'inherit',
+      ...sx
+    }}
+    {...inputProps}
+    {...props}
+  />
+);
+
+// SwapHorizIcon using lucide ArrowLeftRight
+const SwapHorizIcon = ({ sx }) => (
+  <ArrowLeftRight size={sx?.width || sx?.fontSize || 20} />
+);
+
+// Toggle icons using lucide
+const ToggleOnIcon = ({ sx }) => (
+  <ToggleRight size={sx?.width || sx?.fontSize || 14} />
+);
+
+const ToggleOffIcon = ({ sx }) => (
+  <ToggleLeft size={sx?.width || sx?.fontSize || 14} />
+);
 
 // Redux
 import { useDispatch, useSelector } from 'react-redux';
@@ -73,120 +268,57 @@ const currencySymbols = {
 };
 const BASE_URL = 'https://api.xrpl.to/api';
 const WSS_URL = 'wss://s1.ripple.com';
-import Image from 'next/image';
-import { enqueueSnackbar } from 'notistack';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
-// Router
-import { useRouter } from 'next/router';
+const ExchangeButton = memo(({ onClick, disabled, children, isDark, className, ...props }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      "w-full rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal tracking-wide transition-colors",
+      disabled
+        ? isDark
+          ? "cursor-not-allowed border-gray-700 bg-gray-800 text-gray-500"
+          : "cursor-not-allowed border-gray-300 bg-gray-100 text-gray-400"
+        : "border-primary bg-primary text-white hover:bg-primary/90",
+      "sm:py-2.5 sm:text-[13px]",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+));
 
-const ExchangeButton = memo(
-  styled(Button)(
-    ({ theme }) => `
-    width: 100%;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    letter-spacing: 0.3px;
-    background: ${theme.palette.primary.main};
-    color: white;
-    border: none;
-    position: relative;
-    overflow: hidden;
-    
-    &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-    }
-    
-    &:hover:not(:disabled) {
-      background: ${theme.palette.primary.dark};
-      box-shadow: none;
+const AllowButton = memo(({ onClick, children, isDark, className, ...props }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal transition-all",
+      "border-primary/20 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10",
+      className
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+));
 
-      &::after {
-        width: 250px;
-        height: 250px;
-      }
-    }
-
-    &:active {
-    }
-    
-    &:disabled {
-      background: ${alpha(theme.palette.action.disabled, 0.12)};
-      color: ${theme.palette.action.disabled};
-      cursor: not-allowed;
-    }
-    
-    @media (max-width: 600px) {
-      padding: 10px 14px;
-      font-size: 13px;
-    }
-`
-  )
-);
-
-const AllowButton = memo(
-  styled(Button)(
-    ({ theme }) => `
-    padding: 4px 10px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: none;
-    background: ${alpha(theme.palette.primary.main, 0.08)};
-    color: ${theme.palette.primary.main};
-    border: 1.5px solid ${alpha(theme.palette.primary.main, 0.2)};
-    
-    &:hover {
-      background: ${alpha(theme.palette.primary.main, 0.12)};
-      border-color: ${theme.palette.primary.main};
-      transform: scale(1.02);
-    }
-`
-  )
-);
-
-const ToggleButton = memo(
-  styled(IconButton)(
-    ({ theme }) => `
-    background: ${theme.palette.background.paper};
-    border: 1.5px solid ${alpha(theme.palette.divider, 0.12)};
-    width: 28px;
-    height: 28px;
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 2;
-    box-shadow: none;
-    
-    &:hover {
-      background: ${theme.palette.primary.main};
-      border-color: ${theme.palette.primary.main};
-      transform: translate(-50%, -50%) rotate(180deg) scale(1.05);
-      box-shadow: none;
-      
-      svg {
-        color: white;
-      }
-    }
-
-    &.switching {
-      transform: translate(-50%, -50%) rotate(180deg);
-    }
-`
-  )
-);
+const ToggleButton = memo(({ onClick, isDark, isSwitching, children, ...props }) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "absolute left-1/2 top-1/2 z-[2] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-lg border-[1.5px] transition-all",
+      isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white",
+      "hover:border-primary hover:bg-primary hover:text-white",
+      isSwitching && "rotate-180"
+    )}
+    {...props}
+  >
+    {children}
+  </button>
+));
 
 const getPriceImpactColor = (impact) => {
   if (impact <= 1) return '#22C55E'; // Green for low impact
@@ -200,104 +332,63 @@ const getPriceImpactSeverity = (impact) => {
   return 'High';
 };
 
-const WalletDisplay = memo(
-  styled('div')(
-    ({ theme }) => `
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 10px;
-    margin-bottom: 8px;
-    border-radius: 8px;
-    background: ${alpha(theme.palette.success.main, 0.04)};
-    border: 1.5px solid ${alpha(theme.palette.success.main, 0.12)};
-    
-    &:hover {
-      background: ${alpha(theme.palette.success.main, 0.08)};
-      border-color: ${alpha(theme.palette.success.main, 0.2)};
-    }
-    
-    @media (max-width: 600px) {
-      padding: 6px 8px;
-      margin-bottom: 6px;
-    }
-`
-  )
+const WalletDisplay = memo(({ isDark, children, ...props }) => (
+  <div
+    className={cn(
+      "mb-2 flex items-center justify-between rounded-lg border-[1.5px] px-2.5 py-2 transition-colors",
+      "border-green-500/10 bg-green-500/5 hover:border-green-500/20 hover:bg-green-500/10",
+      "sm:mb-1.5 sm:px-2 sm:py-1.5"
+    )}
+    {...props}
+  >
+    {children}
+  </div>
+));
+
+const WalletInfo = ({ children, ...props }) => (
+  <div className="flex items-center gap-0.5" {...props}>
+    {children}
+  </div>
 );
 
-const WalletInfo = styled('div')(
-  ({ theme }) => `
-    display: flex;
-    align-items: center;
-    gap: 1px;
-`
+const WalletIconBox = ({ children, ...props }) => (
+  <div
+    className="flex h-6 w-6 items-center justify-center rounded-md bg-green-500/10 text-green-500"
+    {...props}
+  >
+    {children}
+  </div>
 );
 
-const WalletIcon = styled('div')(
-  ({ theme }) => `
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    background: ${alpha(theme.palette.success.main, 0.12)};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${theme.palette.success.main};
-`
+const WalletDetails = ({ children, ...props }) => (
+  <div className="flex flex-col gap-0" {...props}>
+    {children}
+  </div>
 );
 
-const WalletDetails = styled('div')(
-  ({ theme }) => `
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-`
+const WalletAddress = ({ isDark, children, ...props }) => (
+  <span
+    className={cn(
+      "text-[12px] font-medium leading-tight sm:text-[11px]",
+      isDark ? "text-white" : "text-black"
+    )}
+    {...props}
+  >
+    {children}
+  </span>
 );
 
-const WalletAddress = styled(Typography)(
-  ({ theme }) => `
-    font-family: inherit;
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: ${theme.palette.mode === 'dark' ? 'white' : 'black'};
-    line-height: 1.2;
-    
-    @media (max-width: 600px) {
-      font-size: 0.7rem;
-    }
-`
+const WalletType = ({ children, ...props }) => (
+  <span
+    className="text-[10px] font-normal capitalize leading-tight text-green-500"
+    {...props}
+  >
+    {children}
+  </span>
 );
 
-const WalletType = styled(Typography)(
-  ({ theme }) => `
-    font-size: 0.65rem;
-    color: ${theme.palette.success.main};
-    font-weight: 400;
-    text-transform: capitalize;
-    line-height: 1.2;
-`
-);
-
-const StatusIndicator = styled('div')(
-  ({ theme }) => `
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: ${theme.palette.success.main};
-    animation: pulse 2s infinite;
-    
-    @keyframes pulse {
-      0% {
-        box-shadow: none;
-      }
-      70% {
-        box-shadow: none;
-      }
-      100% {
-        box-shadow: none;
-      }
-    }
-`
+const StatusIndicator = () => (
+  <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
 );
 
 // Token Selector Components
@@ -475,11 +566,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     }
   }, [slippage]);
 
-  // Add state for latest sparkline prices
-  const [latestPrice1, setLatestPrice1] = useState(null);
-  const [latestPrice2, setLatestPrice2] = useState(null);
-
-
   // Orderbook state
   const [bids, setBids] = useState(propsBids || []);
   const [asks, setAsks] = useState(propsAsks || []);
@@ -655,53 +741,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     // Round to 2 decimal places
     return Math.round(result * 100) / 100;
   }, [inputPrice, outputPrice]);
-
-  // Helper function to format token price for charts
-  const formatTokenPrice = useCallback(
-    (token, otherToken, tokenExch, latestPrice) => {
-      if (token.currency === 'XRP') {
-        return `$${fNumber(latestPrice || token.exch || tokenExch)}`;
-      }
-
-      // Special handling for RLUSD when paired with XRP
-      if ((token.currency === '524C555344000000000000000000000000000000' || token.name === 'RLUSD') && otherToken.currency === 'XRP') {
-        let price = Number(tokenExch);
-        if (isNaN(price) || price === 0) {
-          // Try calculating from other token exchange rate
-          const otherExch = token === token1 ? tokenExch2 : tokenExch1;
-          price = otherExch > 0 ? 1 / otherExch : 0;
-        }
-        if (price > 0) {
-          return `${price.toFixed(4)} XRP`;
-        }
-      }
-
-      // Use token.exch first, then tokenExch, then latestPrice
-      let price = Number(token.exch || tokenExch || latestPrice);
-      if (isNaN(price) || price === 0) return '0 XRP';
-
-      // Format based on size
-      if (price >= 1) {
-        return `${price.toFixed(4)} XRP`;
-      }
-
-      // Handle scientific notation for small numbers
-      const priceStr = price.toString();
-      if (priceStr.includes('e')) {
-        const exponent = parseInt(priceStr.split('e')[1]);
-        const decimalPlaces = Math.abs(exponent) + 4;
-        const formattedPrice = price.toFixed(Math.min(decimalPlaces, 20));
-        return `${formattedPrice.replace(/\.?0+$/, '')} XRP`;
-      }
-
-      // Regular small numbers
-      if (price >= 0.01) return `${price.toFixed(6)} XRP`;
-      if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
-      if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
-      return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
-    },
-    [token1, token2, tokenExch1, tokenExch2]
-  );
 
   // Helper function to convert hex currency code to readable name
   const getCurrencyDisplayName = (currency, tokenName) => {
@@ -982,32 +1021,6 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
     getAccountInfo();
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
-
-  // Add function to fetch latest sparkline price
-  const fetchLatestSparklinePrice = async (token, setPriceFunction) => {
-    try {
-      const response = await axios.get(`${BASE_URL}/sparkline/${token.md5}?period=24h`);
-
-      if (response.data && response.data.data && response.data.data.prices) {
-        const prices = response.data.data.prices;
-        if (prices.length > 0) {
-          // Get the latest price (last element in the array)
-          const latestPrice = prices[prices.length - 1];
-          setPriceFunction(latestPrice);
-        }
-      }
-    } catch (error) {}
-  };
-
-  // Fetch latest sparkline prices when tokens change
-  useEffect(() => {
-    if (token1 && token1.md5) {
-      fetchLatestSparklinePrice(token1, setLatestPrice1);
-    }
-    if (token2 && token2.md5) {
-      fetchLatestSparklinePrice(token2, setLatestPrice2);
-    }
-  }, [token1, token2]);
 
   useEffect(() => {
     function getTokenPrice() {
@@ -1364,9 +1377,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const onCreateTrustline = async (currency) => {
     try {
       // TODO: Implement trustline creation
-      enqueueSnackbar(`Creating trustline for ${currency.currency}...`, { variant: 'info' });
+      openSnackbar(`Creating trustline for ${currency.currency}...`, 'info');
     } catch (error) {
-      enqueueSnackbar('Failed to create trustline', { variant: 'error' });
+      openSnackbar('Failed to create trustline', 'error');
     }
   };
 
@@ -1819,9 +1832,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       const shareUrl = getShareableUrl();
       if (shareUrl) {
         await navigator.clipboard.writeText(shareUrl);
-        enqueueSnackbar('Swap link copied to clipboard!', { variant: 'success' });
+        openSnackbar('Swap link copied to clipboard!', 'success');
       } else {
-        enqueueSnackbar('Unable to generate share link', { variant: 'error' });
+        openSnackbar('Unable to generate share link', 'error');
       }
     } catch (err) {
       // Fallback for browsers that don't support clipboard API
@@ -1833,9 +1846,9 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         textArea.select();
         document.execCommand('copy');
         document.body.removeChild(textArea);
-        enqueueSnackbar('Swap link copied to clipboard!', { variant: 'success' });
+        openSnackbar('Swap link copied to clipboard!', 'success');
       } catch (fallbackErr) {
-        enqueueSnackbar('Failed to copy link to clipboard', { variant: 'error' });
+        openSnackbar('Failed to copy link to clipboard', 'error');
       }
     }
   };
@@ -2092,145 +2105,69 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   };
 
   const renderTokenItem = (token, isToken1) => (
-    <Box
+    <div
       key={token.md5}
       onClick={() => handleSelectToken(token, isToken1)}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '8px 12px',
-        cursor: 'pointer',
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
-        '&:hover': {
-          backgroundColor: alpha(theme.palette.primary.main, 0.04)
-        },
-        '&:last-child': {
-          borderBottom: 'none'
-        }
-      }}
+      className={cn(
+        "flex items-center px-3 py-2 cursor-pointer border-b last:border-b-0 transition-colors",
+        darkMode
+          ? "border-white/5 hover:bg-primary/5"
+          : "border-gray-100 hover:bg-primary/5"
+      )}
     >
       {/* Token Icon */}
-      <Box sx={{
-        position: 'relative',
-        width: 30,
-        height: 30,
-        mr: 1.5,
-        flexShrink: 0
-      }}>
-        <Avatar
+      <div className="relative w-[30px] h-[30px] mr-3 flex-shrink-0">
+        <img
           src={`https://s1.xrpl.to/token/${token.md5}`}
           alt={token.name}
-          sx={{
-            width: 30,
-            height: 30,
-            backgroundColor: alpha(theme.palette.text.primary, 0.04),
-            fontSize: '13px',
-            fontWeight: 400
+          className={cn(
+            "w-[30px] h-[30px] rounded-full object-cover",
+            darkMode ? "bg-white/5" : "bg-gray-100"
+          )}
+          onError={(e) => {
+            e.target.style.display = 'none';
           }}
-          imgProps={{
-            onError: (e) => {
-              e.target.style.display = 'none';
-            }
-          }}
-        >
-          {token.name?.charAt(0) || '?'}
-        </Avatar>
+        />
         {token.verified && (
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: -1,
-              right: -1,
-              width: 10,
-              height: 10,
-              borderRadius: '50%',
-              backgroundColor: '#4285f4',
-              border: `1.5px solid ${theme.palette.background.paper}`
-            }}
-          />
+          <div className={cn(
+            "absolute -bottom-px -right-px w-[10px] h-[10px] rounded-full bg-primary border-[1.5px]",
+            darkMode ? "border-black" : "border-white"
+          )} />
         )}
-      </Box>
+      </div>
 
       {/* Token Name & Issuer */}
-      <Box sx={{ flex: '1', minWidth: 0 }}>
-        <Typography
-          variant="body2"
-          fontWeight={400}
-          noWrap
-          sx={{
-            fontSize: '13px',
-            lineHeight: 1.2,
-            color: theme.palette.text.primary
-          }}
-        >
+      <div className="flex-1 min-w-0">
+        <p className={cn("text-[13px] font-normal leading-tight truncate", darkMode ? "text-white" : "text-gray-900")}>
           {token.name || token.currency}
-        </Typography>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          sx={{
-            fontSize: '10px',
-            display: 'block',
-            opacity: 0.6,
-            mt: 0
-          }}
-          noWrap
-        >
+        </p>
+        <p className={cn("text-[10px] truncate opacity-60", darkMode ? "text-white/60" : "text-gray-500")}>
           {token.user || 'Unknown'}
-        </Typography>
-      </Box>
+        </p>
+      </div>
 
       {/* Price */}
-      <Box sx={{ width: '110px', textAlign: 'right', flexShrink: 0, mr: 1.5 }}>
-        <Typography
-          sx={{
-            fontSize: '11px',
-            fontWeight: 400,
-            color: theme.palette.text.primary,
-            fontVariantNumeric: 'tabular-nums',
-            whiteSpace: 'nowrap'
-          }}
-        >
+      <div className="w-[110px] text-right flex-shrink-0 mr-3">
+        <span className={cn("text-[11px] font-normal tabular-nums whitespace-nowrap", darkMode ? "text-white" : "text-gray-900")}>
           {(() => {
-            // Special case for XRP - show as 1.0000 with proper spacing
             if (token.currency === 'XRP') return '1.0000 XRP';
-
             if (!token.exch && token.exch !== 0) return '0 XRP';
             let price = Number(token.exch);
             if (isNaN(price) || price === 0) return '0 XRP';
-
-            // Format based on magnitude - consistent spacing
-            if (price >= 10000) {
-              return `${price.toLocaleString('en-US', { maximumFractionDigits: 0 })} XRP`;
-            } else if (price >= 1) {
-              return `${price.toFixed(4)} XRP`;
-            } else if (price >= 0.01) {
-              return `${price.toFixed(6)} XRP`;
-            } else if (price >= 0.0001) {
-              return `${price.toFixed(8)} XRP`;
-            } else if (price >= 0.000001) {
-              return `${price.toFixed(10)} XRP`;
-            } else if (price >= 0.00000001) {
-              return `${price.toFixed(12)} XRP`;
-            } else {
-              // For extremely small numbers, use more decimal places
-              return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
-            }
+            if (price >= 10000) return `${price.toLocaleString('en-US', { maximumFractionDigits: 0 })} XRP`;
+            if (price >= 1) return `${price.toFixed(4)} XRP`;
+            if (price >= 0.01) return `${price.toFixed(6)} XRP`;
+            if (price >= 0.0001) return `${price.toFixed(8)} XRP`;
+            if (price >= 0.000001) return `${price.toFixed(10)} XRP`;
+            if (price >= 0.00000001) return `${price.toFixed(12)} XRP`;
+            return `${price.toFixed(15).replace(/\.?0+$/, '')} XRP`;
           })()}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Volume */}
-      <Box sx={{ width: '65px', textAlign: 'right', flexShrink: 0, mr: 1.5 }}>
-        <Typography
-          sx={{
-            fontSize: '10px',
-            fontWeight: 400,
-            color: theme.palette.text.secondary,
-            fontVariantNumeric: 'tabular-nums',
-            whiteSpace: 'nowrap'
-          }}
-        >
+      <div className="w-[65px] text-right flex-shrink-0 mr-3">
+        <span className={cn("text-[10px] font-normal tabular-nums whitespace-nowrap", darkMode ? "text-white/60" : "text-gray-500")}>
           {(() => {
             if (!token.vol24hxrp) return '0';
             const vol = parseFloat(token.vol24hxrp);
@@ -2241,20 +2178,12 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             if (vol >= 1) return vol.toFixed(0);
             return vol.toFixed(1);
           })()}
-        </Typography>
-      </Box>
+        </span>
+      </div>
 
       {/* Market Cap */}
-      <Box sx={{ width: '70px', textAlign: 'right', flexShrink: 0 }}>
-        <Typography
-          sx={{
-            fontSize: '13px',
-            fontWeight: 400,
-            color: theme.palette.text.secondary,
-            fontVariantNumeric: 'tabular-nums',
-            display: 'block'
-          }}
-        >
+      <div className="w-[70px] text-right flex-shrink-0">
+        <span className={cn("text-[13px] font-normal tabular-nums", darkMode ? "text-white/60" : "text-gray-500")}>
           {(() => {
             if (!token.marketcap) return '0';
             const mcap = parseFloat(token.marketcap);
@@ -2265,282 +2194,150 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             if (mcap >= 1) return mcap.toFixed(0);
             return mcap.toFixed(1);
           })()}
-        </Typography>
-      </Box>
-
-    </Box>
+        </span>
+      </div>
+    </div>
   );
 
   const renderTokenSelector = (token, onClickToken, panelTitle) => {
     if (!token) return null;
 
-    const { md5 = '', name = 'Select Token', user = '', kyc = false, isOMCF = 'no' } = token;
-
+    const { md5 = '', name = 'Select Token', kyc = false } = token;
     const imgUrl = md5 ? `https://s1.xrpl.to/token/${md5}` : '/static/alt.webp';
 
     return (
-      <SelectTokenButton direction="row" alignItems="center" spacing={1.5} onClick={onClickToken}>
-        <Box sx={{ position: 'relative' }}>
-          <TokenImage
+      <button
+        onClick={onClickToken}
+        className={cn(
+          "flex items-center gap-2 rounded-xl px-3 py-2 transition-all",
+          "border-[1.5px] bg-transparent cursor-pointer",
+          darkMode
+            ? "border-white/10 hover:border-primary/30 hover:bg-white/[0.02]"
+            : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+        )}
+        style={{ background: 'transparent' }}
+      >
+        <div className="relative flex-shrink-0">
+          <img
             src={imgUrl}
-            width={36}
-            height={36}
+            width={32}
+            height={32}
             alt={name || 'Token'}
-            unoptimized={true}
-            onError={(event) => (event.target.src = '/static/alt.webp')}
+            className="rounded-full"
+            onError={(e) => (e.target.src = '/static/alt.webp')}
           />
           {kyc && (
-            <Box
-              sx={{
-                position: 'absolute',
-                bottom: -2,
-                right: -2,
-                backgroundColor: '#00AB55',
-                borderRadius: '50%',
-                width: 14,
-                height: 14,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                border: `2px solid ${darkMode ? '#1a1a1a' : '#ffffff'}`,
-                boxShadow: 'none'
-              }}
-            >
-              <Typography sx={{ fontSize: '8px', color: 'white', fontWeight: 400 }}>
-                ✓
-              </Typography>
-            </Box>
+            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full bg-green-500 border-2 border-black flex items-center justify-center">
+              <span className="text-[6px] text-white">✓</span>
+            </div>
           )}
-        </Box>
-        <Stack spacing={0.5} sx={{ flex: 1, minWidth: 0 }}>
-          <Typography
-            variant="subtitle2"
-            color={isOMCF !== 'yes' ? 'text.primary' : darkMode ? '#00AB55' : '#4E8DF4'}
-            sx={{
-              lineHeight: 1.2,
-              fontWeight: 400,
-              fontSize: '13px',
-              letterSpacing: '-0.01em'
-            }}
-            noWrap
-          >
-            {name || 'Select Token'}
-          </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{
-              lineHeight: 1,
-              fontSize: '10px',
-              opacity: 0.8,
-              letterSpacing: '0.02em'
-            }}
-            noWrap
-          >
-            {user ? truncate(user, 15) : 'Choose a token to swap'}
-          </Typography>
-        </Stack>
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'center',
-            backgroundColor: (theme) => alpha(theme.palette.primary.main, 0.08),
-            borderRadius: '50%',
-            width: 28,
-            height: 28,
-            justifyContent: 'center',
-            ml: 1
-          }}
-        >
-          <ArrowDropDownIcon
-            className="arrow-icon"
-            sx={{
-              fontSize: 18,
-              color: 'primary.main',
-            }}
-          />
-        </Box>
-      </SelectTokenButton>
+        </div>
+        <span className={cn(
+          "text-[14px] font-normal",
+          darkMode ? "text-white" : "text-gray-900"
+        )}>
+          {name || 'Select'}
+        </span>
+        <ChevronDown size={16} className="text-primary ml-auto" />
+      </button>
     );
   };
 
   const renderTokenSelectorPanel = (currentToken, title, isToken1, onClose) => (
     <>
       {/* Backdrop overlay */}
-      <Box
+      <div
         onClick={onClose}
-        sx={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: alpha(theme.palette.common.black, 0.4),
-          backdropFilter: 'blur(4px)',
-          WebkitBackdropFilter: 'blur(4px)',
-          zIndex: 1200
-        }}
+        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[1200]"
       />
 
       {/* Modal Panel */}
-      <Box
-        sx={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          width: '95%',
-          maxWidth: '720px',
-          height: '90vh',
-          maxHeight: '750px',
-          backgroundColor: theme.palette.background.paper,
-          borderRadius: '12px',
-          border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`,
-          boxShadow: 'none',
-          display: 'flex',
-          flexDirection: 'column',
-          zIndex: 1201
-        }}
+      <div
+        className={cn(
+          "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-[720px] h-[90vh] max-h-[750px] rounded-xl border-[1.5px] flex flex-col z-[1201]",
+          darkMode ? "bg-black border-white/10" : "bg-white border-gray-200"
+        )}
       >
         {/* Header */}
-        <Box sx={{ p: 1, borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-          <Stack direction="row" alignItems="center" justifyContent="space-between">
-            <Typography variant="body1" sx={{ fontSize: '13px', fontWeight: 400 }}>
-              {title}
-            </Typography>
-            <IconButton onClick={onClose} size="small" sx={{ p: 0.5 }}>
-              <CloseIcon sx={{ fontSize: 18 }} />
-            </IconButton>
-          </Stack>
-        </Box>
+        <div className={cn("p-2 border-b flex items-center justify-between", darkMode ? "border-white/10" : "border-gray-200")}>
+          <span className={cn("text-[13px] font-normal", darkMode ? "text-white" : "text-gray-900")}>{title}</span>
+          <button onClick={onClose} className={cn("p-1 rounded-lg hover:bg-white/5", darkMode ? "text-white/60" : "text-gray-500")}>
+            <X size={18} />
+          </button>
+        </div>
 
         {/* Search and Filters */}
-        <Box sx={{ p: 1, borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-        <TextField
-          inputRef={searchInputRef}
-          fullWidth
-          placeholder="Search tokens..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          variant="outlined"
-          size="small"
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '12px',
-              backgroundColor: 'transparent',
-              fontSize: '13px',
-              '& fieldset': {
-                borderColor: alpha(theme.palette.divider, 0.12),
-                borderWidth: '1.5px'
-              },
-              '&:hover fieldset': {
-                borderColor: alpha(theme.palette.divider, 0.2),
-                borderWidth: '1.5px'
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: '#4285f4',
-                borderWidth: '1.5px'
-              }
-            },
-            '& .MuiInputBase-input': {
-              padding: '10px 12px',
-              '&::placeholder': {
-                opacity: 0.6
-              }
-            }
-          }}
-          InputProps={{
-            endAdornment: searchQuery && (
-              <InputAdornment position="end">
-                <Box
-                  onClick={() => setSearchQuery('')}
-                  sx={{
-                    cursor: 'pointer',
-                    color: theme.palette.text.secondary,
-                    fontSize: '13px',
-                    padding: '4px',
-                    '&:hover': {
-                      color: theme.palette.text.primary
-                    }
-                  }}
-                >
-                  ×
-                </Box>
-              </InputAdornment>
-            )
-          }}
-        />
-
-        {/* Category Filters */}
-        <Stack direction="row" spacing={0.5} sx={{ mt: 1, flexWrap: 'wrap' }}>
-          {categories.slice(0, 6).map((cat) => (
-            <CategoryChip
-              key={cat.value}
-              label={cat.label}
-              onClick={() => setSelectedCategory(cat.value)}
-              sx={{
-                height: 24,
-                fontSize: '10px',
-                fontWeight: 400,
-                borderRadius: '8px',
-                borderWidth: '1.5px',
-                backgroundColor: selectedCategory === cat.value ? alpha('#4285f4', 0.08) : 'transparent',
-                color: selectedCategory === cat.value ? '#4285f4' : alpha(theme.palette.text.secondary, 0.7),
-                borderColor: selectedCategory === cat.value ? alpha('#4285f4', 0.3) : alpha(theme.palette.divider, 0.15),
-                '& .MuiChip-label': { px: 1 },
-                '&:hover': {
-                  borderColor: alpha('#4285f4', 0.3),
-                  backgroundColor: alpha('#4285f4', 0.04)
-                }
-              }}
-              variant="outlined"
+        <div className={cn("p-2 border-b", darkMode ? "border-white/10" : "border-gray-200")}>
+          <div className="relative">
+            <input
+              ref={searchInputRef}
+              type="text"
+              placeholder="Search tokens..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={cn(
+                "w-full px-3 py-2 text-[13px] rounded-xl border-[1.5px] bg-transparent outline-none transition-colors",
+                darkMode
+                  ? "border-white/10 text-white placeholder:text-white/40 focus:border-primary"
+                  : "border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+              )}
             />
-          ))}
-        </Stack>
-        </Box>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className={cn(
+                  "absolute right-3 top-1/2 -translate-y-1/2 text-[16px] hover:opacity-80",
+                  darkMode ? "text-white/50" : "text-gray-400"
+                )}
+              >
+                ×
+              </button>
+            )}
+          </div>
+
+          {/* Category Filters */}
+          <div className="flex flex-wrap gap-1 mt-2">
+            {categories.slice(0, 6).map((cat) => (
+              <button
+                key={cat.value}
+                onClick={() => setSelectedCategory(cat.value)}
+                className={cn(
+                  "px-2 py-1 text-[10px] rounded-lg border-[1.5px] transition-colors",
+                  selectedCategory === cat.value
+                    ? "bg-primary/10 text-primary border-primary/30"
+                    : darkMode
+                      ? "text-white/50 border-white/10 hover:border-primary/30 hover:bg-primary/5"
+                      : "text-gray-500 border-gray-200 hover:border-primary/30 hover:bg-primary/5"
+                )}
+              >
+                {cat.label}
+              </button>
+            ))}
+          </div>
+        </div>
 
         {/* Scrollable Content Area */}
-        <Box
-          sx={{
-            flex: 1,
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            p: 1,
-            '&::-webkit-scrollbar': { display: 'none' },
-            scrollbarWidth: 'none'
-          }}
-        >
+        <div className="flex-1 overflow-y-auto overflow-x-hidden p-2 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
           {/* Recent Tokens */}
           {!searchQuery && recentTokens.length > 0 && (
-            <Box mb={0.5}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" mb={0.5}>
-                <SectionTitle>
-                  Recent
-                </SectionTitle>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    cursor: 'pointer',
-                    color: theme.palette.error.main,
-                    fontSize: '10px',
-                    '&:hover': { textDecoration: 'underline' }
-                  }}
+            <div className="mb-2">
+              <div className="flex justify-between items-center mb-1">
+                <SectionTitle>Recent</SectionTitle>
+                <button
                   onClick={handleClearRecent}
+                  className="text-[10px] text-red-500 hover:underline"
                 >
                   Clear
-                </Typography>
-              </Stack>
-              <Box
-                sx={{ border: `1px solid ${alpha(theme.palette.divider, 0.08)}`, borderRadius: 1 }}
-              >
+                </button>
+              </div>
+              <div className={cn("rounded-lg border", darkMode ? "border-white/5" : "border-gray-100")}>
                 {recentTokens.map((token) => renderTokenItem(token, isToken1))}
-              </Box>
-              
-            </Box>
+              </div>
+            </div>
           )}
 
           {/* Token List */}
-          <Box>
+          <div>
             <SectionTitle>
               {searchQuery ? (
                 <>Search Results ({filteredTokens.length})</>
@@ -2552,127 +2349,43 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             </SectionTitle>
 
             {loadingTokens ? (
-              <Box>
+              <div>
                 {[...Array(12)].map((_, i) => (
-                  <Box
-                    key={`skeleton-${i}`}
-                    sx={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      px: 1,
-                      py: 0.5,
-                      mb: 0.5,
-                      borderRadius: '8px',
-                      opacity: 0.6
-                    }}
-                  >
-                    <Skeleton variant="circular" width={28} height={28} sx={{ mr: 1 }} />
-                    <Box flex={1}>
-                      <Skeleton variant="text" width="40%" height={10} />
-                      <Skeleton variant="text" width="25%" height={8} />
-                    </Box>
-                    <Skeleton variant="text" width={90} height={10} sx={{ mr: 1.5 }} />
-                    <Skeleton variant="text" width={55} height={8} sx={{ mr: 1.5 }} />
-                    <Skeleton variant="text" width={45} height={8} />
-                  </Box>
+                  <div key={`skeleton-${i}`} className="flex items-center px-2 py-1 mb-1 rounded-lg opacity-60 animate-pulse">
+                    <div className={cn("w-7 h-7 rounded-full mr-2", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                    <div className="flex-1">
+                      <div className={cn("h-2 w-[40%] rounded mb-1", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                      <div className={cn("h-1.5 w-[25%] rounded", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                    </div>
+                    <div className={cn("h-2 w-[90px] rounded mr-3", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                    <div className={cn("h-1.5 w-[55px] rounded mr-3", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                    <div className={cn("h-1.5 w-[45px] rounded", darkMode ? "bg-white/10" : "bg-gray-200")} />
+                  </div>
                 ))}
-              </Box>
+              </div>
             ) : filteredTokens.length > 0 ? (
-              <Box>
+              <div>
                 {/* Column Headers */}
-                <Box
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    px: 1,
-                    py: 0.5,
-                    mb: 0.5,
-                    borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`
-                  }}
-                >
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '9px',
-                      fontWeight: 400,
-                      color: alpha(theme.palette.text.secondary, 0.5),
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      flex: 1
-                    }}
-                  >
-                    Token
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '9px',
-                      fontWeight: 400,
-                      color: alpha(theme.palette.text.secondary, 0.5),
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      width: '110px',
-                      textAlign: 'right',
-                      mr: 1.5
-                    }}
-                  >
-                    Price
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '9px',
-                      fontWeight: 400,
-                      color: alpha(theme.palette.text.secondary, 0.5),
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      width: '65px',
-                      textAlign: 'right',
-                      mr: 1.5
-                    }}
-                  >
-                    Volume
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '9px',
-                      fontWeight: 400,
-                      color: alpha(theme.palette.text.secondary, 0.5),
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.05em',
-                      width: '55px',
-                      textAlign: 'right'
-                    }}
-                  >
-                    MCap
-                  </Typography>
-                </Box>
+                <div className={cn("flex items-center px-2 py-1 mb-1 border-b", darkMode ? "border-white/10" : "border-gray-200")}>
+                  <span className={cn("flex-1 text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Token</span>
+                  <span className={cn("w-[110px] text-right mr-3 text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Price</span>
+                  <span className={cn("w-[65px] text-right mr-3 text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Volume</span>
+                  <span className={cn("w-[55px] text-right text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>MCap</span>
+                </div>
                 {/* Token list */}
                 {filteredTokens.slice(0, 100).map((token) => renderTokenItem(token, isToken1))}
-              </Box>
+              </div>
             ) : (
-              <Paper
-                sx={{
-                  p: 6,
-                  textAlign: 'center',
-                  borderRadius: 2,
-                  backgroundColor: alpha(theme.palette.background.paper, 0.4)
-                }}
-              >
-                <Typography variant="h6" gutterBottom color="text.secondary">
-                  No tokens found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {searchQuery
-                    ? `No results for "${searchQuery}"`
-                    : 'No tokens available in this category'}
-                </Typography>
-              </Paper>
+              <div className={cn("p-6 text-center rounded-lg", darkMode ? "bg-white/5" : "bg-gray-50")}>
+                <p className={cn("text-[15px] mb-1", darkMode ? "text-white/60" : "text-gray-500")}>No tokens found</p>
+                <p className={cn("text-[13px]", darkMode ? "text-white/40" : "text-gray-400")}>
+                  {searchQuery ? `No results for "${searchQuery}"` : 'No tokens available in this category'}
+                </p>
+              </div>
             )}
-          </Box>
-        </Box>
-      </Box>
+          </div>
+        </div>
+      </div>
     </>
   );
 
@@ -2690,581 +2403,209 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   }, [showTokenSelector]);
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ maxWidth: showOrderbook && orderType === 'limit' ? '1200px' : '680px', margin: '0 auto', width: '100%' }}>
-        {/* Swap Interface Container */}
-        <Box
-          sx={{
-            flex: showOrderbook && orderType === 'limit' ? '0 0 680px' : '1 1 auto',
-            maxWidth: '680px',
-          px: { xs: 0.5, sm: 2, md: 3 },
-        }}
-      >
-        <Box sx={{ position: 'relative', width: '100%' }}>
-          {/* Token Selector */}
-          <Box
-            sx={{
-              opacity: showTokenSelector ? 1 : 0,
-              visibility: showTokenSelector ? 'visible' : 'hidden',
-              position: showTokenSelector ? 'relative' : 'absolute',
-              width: '100%',
-              pointerEvents: showTokenSelector ? 'auto' : 'none'
-            }}
-          >
-            {(panel1Open || panel2Open) &&
-              renderTokenSelectorPanel(
-                currentSelectorToken,
-                selectorTitle,
-                isToken1Selector,
-                () => {
-                  setPanel1Open(false);
-                  setPanel2Open(false);
-                }
-              )}
-          </Box>
+    <div className="w-full">
+      {/* Token Selector Modal */}
+      {(panel1Open || panel2Open) &&
+        renderTokenSelectorPanel(
+          currentSelectorToken,
+          selectorTitle,
+          isToken1Selector,
+          () => {
+            setPanel1Open(false);
+            setPanel2Open(false);
+          }
+        )}
 
-          {/* Swap UI */}
-          <Box
-            sx={{
-              opacity: showTokenSelector ? 0 : 1,
-              visibility: showTokenSelector ? 'hidden' : 'visible',
-              position: showTokenSelector ? 'absolute' : 'relative',
-              width: '100%',
-              pointerEvents: showTokenSelector ? 'none' : 'auto'
-            }}
-          >
-            <Stack
-              direction={{ xs: 'column', md: 'row' }}
-              spacing={{ xs: 1, md: 3 }}
-              alignItems="flex-start"
-              justifyContent="center"
-              sx={{ width: '100%' }}
-            >
-              <Stack
-                sx={{
-                  width: '100%',
-                  flex: 1,
-                  maxWidth: '100%',
-                }}
-              >
-                {/* Minimalist Swap Container */}
-                <Box
-                  sx={{
-                    width: '100%',
-                    backgroundColor: 'transparent',
-                    backdropFilter: 'blur(24px)',
-                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                    borderRadius: '12px',
-                    overflow: 'hidden',
-                    boxShadow: 'none',
-                    '&:hover': {
-                      boxShadow: 'none'
-                    }
-                  }}
-                >
+      {/* Swap UI */}
+      {!showTokenSelector && (
+        <div className="flex items-start justify-center gap-4 mx-auto">
+          {/* Swap Container */}
+          <div className={cn(
+            "w-full max-w-[460px] rounded-xl border-[1.5px] overflow-hidden flex-shrink-0",
+            darkMode ? "border-white/10 bg-white/[0.01]" : "border-gray-200 bg-white"
+                )}>
                   {/* Header with Market/Limit Tabs */}
-                  <Box
-                    sx={{
-                      borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                      background: alpha(theme.palette.background.paper, 0.04)
-                    }}
-                  >
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="space-between"
-                      sx={{ p: 1 }}
-                    >
-                      <Stack direction="row" spacing={0.5}>
-                        <Button
-                          size="small"
-                          variant={orderType === 'market' ? 'contained' : 'text'}
-                          onClick={() => {
-                            setOrderType('market');
-                            setShowOrders(false); // Reset orders view when switching tabs
-                          }}
-                          sx={{
-                            px: 2,
-                            py: 0.75,
-                            borderRadius: '12px',
-                            fontSize: '13px',
-                            fontWeight: 400,
-                            textTransform: 'none',
-                            backgroundColor:
-                              orderType === 'market' ? theme.palette.primary.main : 'transparent',
-                            color: orderType === 'market' ? 'white' : theme.palette.text.secondary,
-                            '&:hover': {
-                              backgroundColor:
-                                orderType === 'market'
-                                  ? theme.palette.primary.dark
-                                  : alpha(theme.palette.primary.main, 0.08)
-                            }
-                          }}
-                        >
-                          Market
-                        </Button>
-                        <Button
-                          size="small"
-                          variant={orderType === 'limit' ? 'contained' : 'text'}
-                          onClick={() => {
-                            setOrderType('limit');
-                            setShowOrders(false); // Reset orders view when switching tabs
-                          }}
-                          sx={{
-                            px: 2,
-                            py: 0.75,
-                            borderRadius: '12px',
-                            fontSize: '13px',
-                            fontWeight: 400,
-                            textTransform: 'none',
-                            backgroundColor:
-                              orderType === 'limit' ? theme.palette.primary.main : 'transparent',
-                            color: orderType === 'limit' ? 'white' : theme.palette.text.secondary,
-                            '&:hover': {
-                              backgroundColor:
-                                orderType === 'limit'
-                                  ? theme.palette.primary.dark
-                                  : alpha(theme.palette.primary.main, 0.08)
-                            }
-                          }}
-                        >
-                          Limit
-                        </Button>
-                      </Stack>
-                      <IconButton size="small" aria-label="Share swap URL" onClick={handleShareUrl}>
-                        <ShareIcon sx={{ width: 16, height: 16 }} />
-                      </IconButton>
-                    </Stack>
-                  </Box>
-
-                  <Box sx={{ p: 2 }}>
-                    {/* Debug Wallet Info */}
-                    {accountProfile && (
-                      <Paper sx={{
-                        mb: 2,
-                        p: 1,
-                        background: alpha(theme.palette.warning.main, 0.08),
-                        border: `1px solid ${alpha(theme.palette.warning.main, 0.4)}`,
-                        borderRadius: '12px'
-                      }}>
-                        <Stack spacing={1}>
-                          <Stack direction="row" alignItems="center" spacing={1}>
-                            <AccountBalanceWalletIcon sx={{ color: theme.palette.warning.main, fontSize: 16 }} />
-                            <Typography variant="caption" color="warning.main" fontWeight={400} sx={{ fontSize: '10px' }}>
-                              DEBUG (Remove in Production)
-                            </Typography>
-                          </Stack>
-                          <Box sx={{ pl: 0.5 }}>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
-                              <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
-                              <strong>Public Key:</strong> <code>{accountProfile.publicKey || 'N/A'}</code>
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
-                              <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
-                                {accountProfile.seed || accountProfile.secret || 'N/A'}
-                              </code>
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
-                              <strong>Type:</strong> {accountProfile.wallet_type || 'Unknown'}
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '13px', mb: 0.25 }}>
-                              <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
-                            </Typography>
-                            <Typography variant="caption" display="block" sx={{ fontSize: '13px' }}>
-                              <strong>Provider ID:</strong> <code>{accountProfile.provider_id || accountProfile.socialId || 'N/A'}</code>
-                            </Typography>
-                          </Box>
-                        </Stack>
-                      </Paper>
-                    )}
-
-                    {/* First Token - Clean Card Design */}
-                    <Box
-                      sx={{
-                        position: 'relative',
-                        borderRadius: '12px',
-                        border: `1px solid ${focusTop ? alpha(theme.palette.primary.main, 0.4) : alpha(theme.palette.divider, 0.08)}`,
-                        backgroundColor: alpha(theme.palette.background.paper, 0.4),
-                        backdropFilter: 'blur(12px)',
-                        overflow: 'hidden',
-                        background: 'transparent',
-                        boxShadow: 'none',
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                          borderColor: alpha(theme.palette.primary.main, 0.12),
-                          boxShadow: 'none'
-                        }
-                      }}
-                    >
-                      {/* Embedded sparkline background */}
-                      {token1 && token1.md5 && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                            width: '60%',
-                            height: '100%',
-                            opacity: 0.15,
-                            pointerEvents: 'none',
-                            maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
-                            WebkitMaskImage:
-                              'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
-                          }}
-                        >
-                          <Sparkline
-                            url={`${BASE_URL}/sparkline/${token1.md5}?period=24h&lightweight=true`}
-                            style={{ width: '100%', height: '100%' }}
-                            showGradient={false}
-                            lineWidth={1.5}
-                            animation={false}
-                          />
-                        </Box>
-                      )}
-                      <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
-                        <Stack
-                          direction="row"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
-                          mb={0.5}
-                        >
-                          <Box sx={{ flex: 1 }}>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                mb: 1,
-                                whiteSpace: 'nowrap',
-                                fontSize: '10px',
-                                fontWeight: 400,
-                                letterSpacing: '0.05em',
-                                textTransform: 'uppercase',
-                                color: theme.palette.text.primary,
-                                opacity: 0.9
-                              }}
-                            >
-                              <Box
-                                component="span"
-                                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                              >
-                                <Box
-                                  sx={{
-                                    width: 6,
-                                    height: 6,
-                                    borderRadius: '50%',
-                                    backgroundColor: theme.palette.error.main,
-                                    opacity: 0.8
-                                  }}
-                                />
-                                You pay
-                              </Box>
-                            </Typography>
-                            {renderTokenSelector(
-                              token1,
-                              () => setPanel1Open(true),
-                              'Select token to swap from'
-                            )}
-                          </Box>
-                          <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
-                            <Input
-                              inputRef={amount1Ref}
-                              placeholder="0.00"
-                              disableUnderline
-                              value={amount1}
-                              onChange={handleChangeAmount1}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && amount1 && amount2) {
-                                  handleButtonClick();
-                                }
-                              }}
-                              inputMode="decimal"
-                              sx={{
-                                width: '100%',
-                                input: {
-                                  textAlign: 'right',
-                                  fontSize: { xs: '20px', sm: '28px' },
-                                  fontWeight: 400,
-                                  padding: '8px 0',
-                                  background: 'transparent',
-                                  color: theme.palette.text.primary,
-                                  border: 'none',
-                                  outline: 'none',
-                                  fontFamily:
-                                    'inherit',
-                                  letterSpacing: '-0.02em',
-                                  '&::placeholder': {
-                                    color: alpha(theme.palette.text.primary, 0.4),
-                                    fontWeight: 400
-                                  },
-                                  '&:focus': {
-                                    transform: 'scale(1.02)',
-                                    transformOrigin: 'right center'
-                                  }
-                                }
-                              }}
-                              onFocus={() => setFocusTop(true)}
-                              onBlur={() => setFocusTop(false)}
-                            />
-                            <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1} sx={{ mt: 0.5 }}>
-                              <Typography variant="caption" sx={{ fontSize: '11px', fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.6) }}>
-                                {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : ' '}
-                              </Typography>
-                              {accountPairBalance?.curr1?.value && (
-                                <Chip
-                                  label="MAX"
-                                  size="small"
-                                  onClick={() => {
-                                    const maxVal = accountPairBalance.curr1.value;
-                                    setAmount1(maxVal);
-                                    handleChangeAmount1({ target: { value: maxVal } });
-                                  }}
-                                  sx={{
-                                    height: 18,
-                                    fontSize: '9px',
-                                    fontWeight: 400,
-                                    cursor: 'pointer',
-                                    borderRadius: '6px',
-                                    backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                                    color: theme.palette.primary.main,
-                                    '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.15) }
-                                  }}
-                                />
-                              )}
-                            </Stack>
-                          </Box>
-                        </Stack>
-                        {isLoggedIn && accountPairBalance && (
-                          <Stack
-                            direction="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{ mt: 1 }}
-                          >
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{
-                                fontSize: '10px',
-                                fontWeight: 400,
-                                letterSpacing: '0.01em'
-                              }}
-                            >
-                              Balance:{' '}
-                              {fNumber(
-                                revert
-                                  ? accountPairBalance?.curr2.value
-                                  : accountPairBalance?.curr1.value
-                              )}
-                            </Typography>
-                            {(revert
-                              ? accountPairBalance?.curr2.value
-                              : accountPairBalance?.curr1.value) > 0 && (
-                              <Stack direction="row" spacing={0.75}>
-                                {[25, 50, 100].map((percent) => (
-                                  <Box
-                                    key={percent}
-                                    onClick={() => {
-                                      const balance = revert
-                                        ? accountPairBalance?.curr2.value
-                                        : accountPairBalance?.curr1.value;
-                                      const newAmount =
-                                        percent === 100
-                                          ? balance.toString()
-                                          : ((balance * percent) / 100).toFixed(6);
-                                      handleChangeAmount1({ target: { value: newAmount } });
-                                    }}
-                                    sx={{
-                                      px: 1,
-                                      py: 0.5,
-                                      borderRadius: '12px',
-                                      fontSize: '10px',
-                                      fontWeight: 400,
-                                      cursor: 'pointer',
-                                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                                      color: theme.palette.primary.main,
-                                      border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                                      '&:hover': {
-                                        backgroundColor: alpha(theme.palette.primary.main, 0.2),
-                                        borderColor: theme.palette.primary.main,
-                                        boxShadow: 'none'
-                                      },
-                                      '&:active': {
-                                      }
-                                    }}
-                                  >
-                                    {percent}%
-                                  </Box>
-                                ))}
-                              </Stack>
-                            )}
-                          </Stack>
+                  <div className={cn(
+                    "flex items-center justify-between p-2 border-b",
+                    darkMode ? "border-white/5" : "border-gray-100"
+                  )}>
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => { setOrderType('market'); setShowOrders(false); }}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors",
+                          orderType === 'market'
+                            ? "bg-primary text-white"
+                            : darkMode ? "text-white/60 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
                         )}
-                      </Box>
-                    </Box>
+                      >
+                        Market
+                      </button>
+                      <button
+                        onClick={() => { setOrderType('limit'); setShowOrders(false); }}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors",
+                          orderType === 'limit'
+                            ? "bg-primary text-white"
+                            : darkMode ? "text-white/60 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
+                        )}
+                      >
+                        Limit
+                      </button>
+                    </div>
+                    <button
+                      onClick={handleShareUrl}
+                      aria-label="Share swap URL"
+                      className={cn(
+                        "p-1.5 rounded-lg transition-colors",
+                        darkMode ? "hover:bg-white/5" : "hover:bg-gray-100"
+                      )}
+                    >
+                      <Share2 size={16} className={darkMode ? "text-white/60" : "text-gray-400"} />
+                    </button>
+                  </div>
 
-                    {/* Clean Swap Button */}
-                    <Box sx={{ position: 'relative', height: '20px', my: 1 }}>
-                      <ToggleButton
+                  <div className="p-4">
+                    {/* First Token - You Pay */}
+                    <div className={cn(
+                      "rounded-xl border-[1.5px] p-4 transition-colors",
+                      focusTop
+                        ? "border-primary/40"
+                        : darkMode ? "border-white/10" : "border-gray-200",
+                      darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
+                    )}>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={cn(
+                          "text-[11px] font-normal uppercase tracking-wide",
+                          darkMode ? "text-white/50" : "text-gray-400"
+                        )}>
+                          You pay
+                        </span>
+                        {isLoggedIn && accountPairBalance && (
+                          <span className={cn(
+                            "text-[11px]",
+                            darkMode ? "text-white/40" : "text-gray-400"
+                          )}>
+                            Balance: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        {renderTokenSelector(token1, () => setPanel1Open(true), 'Select token')}
+                        <div className="flex-1 text-right">
+                          <input
+                            ref={amount1Ref}
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0.00"
+                            value={amount1}
+                            onChange={handleChangeAmount1}
+                            onFocus={() => setFocusTop(true)}
+                            onBlur={() => setFocusTop(false)}
+                            className={cn(
+                              "w-full text-right text-2xl sm:text-3xl font-normal bg-transparent border-none outline-none",
+                              darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-300"
+                            )}
+                          />
+                          <span className={cn(
+                            "text-[11px] block mt-1",
+                            darkMode ? "text-white/40" : "text-gray-400"
+                          )}>
+                            {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : '\u00A0'}
+                          </span>
+                        </div>
+                      </div>
+                      {isLoggedIn && accountPairBalance && (revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
+                        <div className="flex gap-1.5 mt-3 justify-end">
+                          {[25, 50, 100].map((percent) => (
+                            <button
+                              key={percent}
+                              onClick={() => {
+                                const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
+                                const newAmount = percent === 100 ? balance.toString() : ((balance * percent) / 100).toFixed(6);
+                                handleChangeAmount1({ target: { value: newAmount } });
+                              }}
+                              className={cn(
+                                "px-2 py-0.5 rounded-md text-[10px] font-normal transition-colors",
+                                darkMode
+                                  ? "text-primary bg-primary/10 hover:bg-primary/20"
+                                  : "text-primary bg-primary/5 hover:bg-primary/10"
+                              )}
+                            >
+                              {percent}%
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Swap Toggle */}
+                    <div className="relative h-5 my-2 flex items-center justify-center">
+                      <button
                         onClick={onRevertExchange}
                         disabled={isSwitching}
-                        className={isSwitching ? 'switching' : ''}
                         title="Switch currencies (Alt + S)"
-                      >
-                        <SwapHorizIcon sx={{ width: 20, height: 20 }} />
-                      </ToggleButton>
-                    </Box>
-
-                    {/* Second Token - Clean Card Design */}
-                    <Box
-                      sx={{
-                        position: 'relative',
-                        borderRadius: '12px',
-                        border: `1.5px solid ${focusBottom ? alpha(theme.palette.primary.main, 0.2) : 'transparent'}`,
-                        backgroundColor: 'transparent',
-                        backdropFilter: 'blur(8px)',
-                        overflow: 'hidden',
-                        background: 'transparent',
-                        opacity: amount2 ? 1 : 0.9,
-                        boxShadow: 'none',
-                        '&:hover': {
-                          backgroundColor: alpha(theme.palette.background.default, 0.4),
-                          borderColor: alpha(theme.palette.primary.main, 0.2),
-                          opacity: 1
-                        }
-                      }}
-                    >
-                      {/* Embedded sparkline background */}
-                      {token2 && token2.md5 && (
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            right: 0,
-                            top: 0,
-                            width: '60%',
-                            height: '100%',
-                            opacity: 0.15,
-                            pointerEvents: 'none',
-                            maskImage: 'linear-gradient(to left, rgba(0,0,0,0.8), transparent)',
-                            WebkitMaskImage:
-                              'linear-gradient(to left, rgba(0,0,0,0.8), transparent)'
-                          }}
-                        >
-                          <Sparkline
-                            url={`${BASE_URL}/sparkline/${token2.md5}?period=24h&lightweight=true`}
-                            style={{ width: '100%', height: '100%' }}
-                            showGradient={false}
-                            lineWidth={1.5}
-                            animation={false}
-                          />
-                        </Box>
-                      )}
-                      <Box sx={{ p: { xs: 2, sm: 3 }, position: 'relative', zIndex: 1 }}>
-                        <Stack
-                          direction="row"
-                          justifyContent="space-between"
-                          alignItems="flex-start"
-                          mb={0.5}
-                        >
-                          <Box sx={{ flex: 1 }}>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                mb: 1,
-                                display: 'block',
-                                fontSize: '10px',
-                                fontWeight: 400,
-                                letterSpacing: '0.05em',
-                                textTransform: 'uppercase',
-                                color: theme.palette.text.secondary,
-                                opacity: 0.8
-                              }}
-                            >
-                              <Box
-                                component="span"
-                                sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                              >
-                                <Box
-                                  sx={{
-                                    width: 6,
-                                    height: 6,
-                                    borderRadius: '50%',
-                                    backgroundColor: theme.palette.success.main,
-                                    opacity: 0.7
-                                  }}
-                                />
-                                You receive
-                              </Box>
-                            </Typography>
-                            {renderTokenSelector(
-                              token2,
-                              () => setPanel2Open(true),
-                              'Select token to receive'
-                            )}
-                          </Box>
-                          <Box sx={{ textAlign: 'right', flex: 1, maxWidth: '60%' }}>
-                            <Input
-                              placeholder="0.00"
-                              disableUnderline
-                              value={amount1 === '' ? '' : amount2}
-                              onChange={handleChangeAmount2}
-                              inputMode="decimal"
-                              sx={{
-                                width: '100%',
-                                input: {
-                                  textAlign: 'right',
-                                  fontSize: { xs: '20px', sm: '28px' },
-                                  fontWeight: 400,
-                                  padding: '8px 0',
-                                  background: 'transparent',
-                                  color: theme.palette.text.primary,
-                                  border: 'none',
-                                  outline: 'none',
-                                  fontFamily:
-                                    'inherit',
-                                  letterSpacing: '-0.02em',
-                                  '&::placeholder': {
-                                    color: alpha(theme.palette.text.primary, 0.4),
-                                    fontWeight: 400
-                                  },
-                                  '&:focus': {
-                                    transform: 'scale(1.02)',
-                                    transformOrigin: 'right center'
-                                  }
-                                }
-                              }}
-                              onFocus={() => setFocusBottom(true)}
-                              onBlur={() => setFocusBottom(false)}
-                            />
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              sx={{
-                                mt: 1,
-                                display: 'block',
-                                fontSize: '13px',
-                                fontWeight: 400,
-                                opacity: focusBottom ? 1 : 0.7,
-                              }}
-                            >
-                              {tokenPrice2 > 0
-                                ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}`
-                                : ' '}
-                            </Typography>
-                          </Box>
-                        </Stack>
-                        {isLoggedIn && accountPairBalance && (
-                          <Typography variant="caption" color="text.secondary">
-                            Balance:{' '}
-                            {fNumber(
-                              revert
-                                ? accountPairBalance?.curr1.value
-                                : accountPairBalance?.curr2.value
-                            )}
-                          </Typography>
+                        className={cn(
+                          "w-8 h-8 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
+                          darkMode
+                            ? "border-white/10 bg-black hover:border-primary hover:bg-primary hover:text-white"
+                            : "border-gray-200 bg-white hover:border-primary hover:bg-primary hover:text-white",
+                          isSwitching && "rotate-180"
                         )}
-                      </Box>
-                    </Box>
+                      >
+                        <ArrowLeftRight size={16} />
+                      </button>
+                    </div>
+
+                    {/* Second Token - You Receive */}
+                    <div className={cn(
+                      "rounded-xl border-[1.5px] p-4 transition-colors",
+                      focusBottom
+                        ? "border-primary/40"
+                        : darkMode ? "border-white/10" : "border-gray-200",
+                      darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
+                    )}>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={cn(
+                          "text-[11px] font-normal uppercase tracking-wide",
+                          darkMode ? "text-white/50" : "text-gray-400"
+                        )}>
+                          You receive
+                        </span>
+                        {isLoggedIn && accountPairBalance && (
+                          <span className={cn(
+                            "text-[11px]",
+                            darkMode ? "text-white/40" : "text-gray-400"
+                          )}>
+                            Balance: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between gap-4">
+                        {renderTokenSelector(token2, () => setPanel2Open(true), 'Select token')}
+                        <div className="flex-1 text-right">
+                          <input
+                            type="text"
+                            inputMode="decimal"
+                            placeholder="0.00"
+                            value={amount1 === '' ? '' : amount2}
+                            onChange={handleChangeAmount2}
+                            onFocus={() => setFocusBottom(true)}
+                            onBlur={() => setFocusBottom(false)}
+                            className={cn(
+                              "w-full text-right text-2xl sm:text-3xl font-normal bg-transparent border-none outline-none",
+                              darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-300"
+                            )}
+                          />
+                          <span className={cn(
+                            "text-[11px] block mt-1",
+                            darkMode ? "text-white/40" : "text-gray-400"
+                          )}>
+                            {tokenPrice2 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}` : '\u00A0'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
 
                     {/* View Buttons - Shows only for Limit orders */}
                     {orderType === 'limit' && (
@@ -3338,57 +2679,31 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       </Box>
                     )}
 
-                    {/* Market Order UI */}
+                    {/* Market Order UI - Slippage */}
                     {orderType === 'market' && (
-                      <Box sx={{ mb: 2 }}>
-                        <Stack spacing={1}>
-                          {/* Slippage Setting */}
-                          <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ px: 0.5 }}>
-                            <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.6) }}>
-                              Slippage
-                            </Typography>
-                            <Stack direction="row" spacing={0.5}>
-                              {[0.5, 1, 3].map((val) => (
-                                <Chip
-                                  key={val}
-                                  label={`${val}%`}
-                                  size="small"
-                                  onClick={() => setSlippage(val)}
-                                  variant={slippage === val ? 'filled' : 'outlined'}
-                                  sx={{
-                                    height: 20,
-                                    fontSize: '10px',
-                                    fontWeight: 400,
-                                    cursor: 'pointer',
-                                    borderRadius: '6px',
-                                    borderWidth: '1.5px',
-                                    borderColor: slippage === val ? 'transparent' : alpha(theme.palette.divider, 0.15),
-                                    backgroundColor: slippage === val ? theme.palette.primary.main : 'transparent',
-                                    color: slippage === val ? 'white' : theme.palette.text.secondary,
-                                    '& .MuiChip-label': { px: 0.75 },
-                                    '&:hover': {
-                                      backgroundColor: slippage === val ? theme.palette.primary.main : alpha(theme.palette.primary.main, 0.04),
-                                      borderColor: slippage === val ? 'transparent' : alpha(theme.palette.primary.main, 0.2)
-                                    }
-                                  }}
-                                />
-                              ))}
-                            </Stack>
-                          </Stack>
-
-                          {/* Min Received */}
-                          {amount2 && (
-                            <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ px: 0.5 }}>
-                              <Typography variant="caption" sx={{ fontSize: '10px', color: alpha(theme.palette.text.secondary, 0.6) }}>
-                                Min Received
-                              </Typography>
-                              <Typography variant="caption" sx={{ fontSize: '10px', fontWeight: 400 }}>
-                                {new Decimal(amount2).mul(1 - slippage / 100).toFixed(4)} {token2.name}
-                              </Typography>
-                            </Stack>
-                          )}
-                        </Stack>
-                      </Box>
+                      <div className="mt-3 flex items-center justify-between px-1">
+                        <span className={cn("text-[11px]", darkMode ? "text-white/40" : "text-gray-400")}>
+                          Slippage
+                        </span>
+                        <div className="flex gap-1">
+                          {[0.5, 1, 3].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setSlippage(val)}
+                              className={cn(
+                                "px-2 py-0.5 rounded-md text-[11px] font-normal transition-colors",
+                                slippage === val
+                                  ? "bg-primary text-white"
+                                  : darkMode
+                                    ? "text-white/60 hover:text-white hover:bg-white/5"
+                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
+                              )}
+                            >
+                              {val}%
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     )}
 
                     {/* Limit Order UI */}
@@ -3473,260 +2788,70 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                             />
                           </Box>
 
-                          {/* Quick Price Select */}
-                          {(bids[0] || asks[0]) && (
-                            <Stack direction="row" spacing={0.75}>
-                              {bids[0] && (
-                                <Box
-                                  onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
-                                  sx={{
-                                    flex: 1,
-                                    px: 1,
-                                    py: 0.5,
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    backgroundColor: alpha(theme.palette.success.main, 0.08),
-                                    border: `1px solid ${alpha(theme.palette.success.main, 0.12)}`,
-                                    textAlign: 'center',
-                                    '&:hover': {
-                                      backgroundColor: alpha(theme.palette.success.main, 0.12)
-                                    }
-                                  }}
-                                >
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      fontSize: '10px',
-                                      fontWeight: 400,
-                                      color: theme.palette.success.main
-                                    }}
-                                  >
-                                    Bid: {bids[0].price.toFixed(4)}
-                                  </Typography>
-                                </Box>
-                              )}
-                              {asks[0] && (
-                                <Box
-                                  onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
-                                  sx={{
-                                    flex: 1,
-                                    px: 1,
-                                    py: 0.5,
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    backgroundColor: alpha(theme.palette.error.main, 0.08),
-                                    border: `1px solid ${alpha(theme.palette.error.main, 0.12)}`,
-                                    textAlign: 'center',
-                                    '&:hover': {
-                                      backgroundColor: alpha(theme.palette.error.main, 0.12)
-                                    }
-                                  }}
-                                >
-                                  <Typography
-                                    variant="caption"
-                                    sx={{
-                                      fontSize: '10px',
-                                      fontWeight: 400,
-                                      color: theme.palette.error.main
-                                    }}
-                                  >
-                                    Ask: {asks[0].price.toFixed(4)}
-                                  </Typography>
-                                </Box>
-                              )}
-                            </Stack>
-                          )}
-
-                          {/* Expiration Setting */}
-                          <Box>
-                            <Typography
-                              variant="caption"
-                              sx={{
-                                fontSize: '13px',
-                                fontWeight: 400,
-                                color: theme.palette.text.secondary,
-                                textTransform: 'uppercase',
-                                letterSpacing: '0.03em',
-                                mb: 0.5,
-                                display: 'block'
-                              }}
-                            >
-                              Expires
-                            </Typography>
-                            <Stack direction="row" spacing={0.5}>
-                              {[
-                                { value: 'never', label: 'Never' },
-                                { value: '1h', label: '1h' },
-                                { value: '24h', label: '1d' },
-                                { value: '7d', label: '7d' }
-                              ].map((exp) => (
-                                <Box
+                          {/* Quick Price & Expiry - Inline */}
+                          <div className="flex items-center gap-2 mt-2">
+                            {bids[0] && (
+                              <button
+                                onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
+                                className="px-2 py-1 rounded-md text-[10px] text-green-500 bg-green-500/10 hover:bg-green-500/20 transition-colors"
+                              >
+                                Bid {bids[0].price.toFixed(4)}
+                              </button>
+                            )}
+                            {asks[0] && (
+                              <button
+                                onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
+                                className="px-2 py-1 rounded-md text-[10px] text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-colors"
+                              >
+                                Ask {asks[0].price.toFixed(4)}
+                              </button>
+                            )}
+                            <div className="flex-1" />
+                            <div className="flex gap-1">
+                              {[{ value: 'never', label: '∞' }, { value: '1h', label: '1h' }, { value: '24h', label: '1d' }, { value: '7d', label: '7d' }].map((exp) => (
+                                <button
                                   key={exp.value}
                                   onClick={() => setOrderExpiry(exp.value)}
-                                  sx={{
-                                    flex: 1,
-                                    px: 1,
-                                    py: 0.5,
-                                    borderRadius: '6px',
-                                    cursor: 'pointer',
-                                    textAlign: 'center',
-                                    backgroundColor:
-                                      orderExpiry === exp.value
-                                        ? alpha(theme.palette.primary.main, 0.12)
-                                        : alpha(theme.palette.background.default, 0.2),
-                                    color:
-                                      orderExpiry === exp.value
-                                        ? theme.palette.primary.main
-                                        : theme.palette.text.secondary,
-                                    border: `1px solid ${
-                                      orderExpiry === exp.value
-                                        ? alpha(theme.palette.primary.main, 0.2)
-                                        : alpha(theme.palette.divider, 0.08)
-                                    }`,
-                                    '&:hover': {
-                                      backgroundColor:
-                                        orderExpiry === exp.value
-                                          ? alpha(theme.palette.primary.main, 0.2)
-                                          : alpha(theme.palette.background.default, 0.4)
-                                    }
-                                  }}
+                                  className={cn(
+                                    "px-2 py-1 rounded-md text-[10px] transition-colors",
+                                    orderExpiry === exp.value
+                                      ? "bg-primary text-white"
+                                      : darkMode ? "text-white/50 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
+                                  )}
                                 >
-                                  <Typography
-                                    variant="caption"
-                                    sx={{ fontSize: '10px', fontWeight: 400 }}
-                                  >
-                                    {exp.label}
-                                  </Typography>
-                                </Box>
+                                  {exp.label}
+                                </button>
                               ))}
-                            </Stack>
-                            {orderExpiry === 'custom' && (
-                              <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', gap: 1 }}>
-                                <Input
-                                  type="number"
-                                  value={customExpiry}
-                                  onChange={(e) =>
-                                    setCustomExpiry(Math.max(1, parseInt(e.target.value) || 1))
-                                  }
-                                  disableUnderline
-                                  sx={{
-                                    width: '55px',
-                                    padding: '4px 8px',
-                                    borderRadius: '6px',
-                                    backgroundColor: alpha(theme.palette.background.paper, 0.04),
-                                    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                                    input: {
-                                      fontSize: '10px',
-                                      textAlign: 'center'
-                                    }
-                                  }}
-                                />
-                                <Typography variant="caption" fontSize="11px">
-                                  hours
-                                </Typography>
-                              </Box>
-                            )}
-                          </Box>
+                            </div>
+                          </div>
 
-                          {/* Price difference from market and warnings */}
-                          {limitPrice &&
-                            parseFloat(limitPrice) > 0 &&
-                            (() => {
-                              const limit = parseFloat(limitPrice);
-                              const bestAsk = asks[0]?.price || 0;
-                              const bestBid = bids[0]?.price || 0;
-
-                              // Determine the current market price based on order type
-                              const currentPrice = !revert ? bestAsk : bestBid;
-
-                              if (currentPrice > 0) {
-                                const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
-                                const isAbove = priceDiff > 0;
-
-                                // Check if order will execute immediately
-                                const willExecute =
-                                  (!revert && limit >= bestAsk && bestAsk > 0) ||
-                                  (revert && limit <= bestBid && bestBid > 0);
-
-                                return (
-                                  <Stack spacing={1} sx={{ mt: 1 }}>
-                                    {/* Price difference indicator */}
-                                    <Box
-                                      sx={{
-                                        p: 1,
-                                        borderRadius: '6px',
-                                        backgroundColor: alpha(
-                                          isAbove
-                                            ? theme.palette.error.main
-                                            : theme.palette.success.main,
-                                          0.1
-                                        ),
-                                        border: `1px solid ${alpha(
-                                          isAbove
-                                            ? theme.palette.error.main
-                                            : theme.palette.success.main,
-                                          0.3
-                                        )}`
-                                      }}
-                                    >
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          fontWeight: 400,
-                                          color: isAbove
-                                            ? theme.palette.error.main
-                                            : theme.palette.success.main
-                                        }}
-                                      >
-                                        {isAbove ? '▲' : '▼'} {Math.abs(priceDiff).toFixed(2)}%{' '}
-                                        {isAbove ? 'above' : 'below'} current{' '}
-                                        {!revert ? 'ask' : 'bid'} price ({currentPrice.toFixed(6)})
-                                      </Typography>
-                                    </Box>
-
-                                    {/* Warning for immediate execution */}
-                                    {willExecute && (
-                                      <Box
-                                        sx={{
-                                          p: 1,
-                                          borderRadius: '6px',
-                                          backgroundColor: alpha(theme.palette.warning.main, 0.08),
-                                          border: `1px solid ${alpha(theme.palette.warning.main, 0.4)}`
-                                        }}
-                                      >
-                                        <Typography
-                                          variant="caption"
-                                          color="warning.main"
-                                          sx={{ fontWeight: 400 }}
-                                        >
-                                          ⚠️ Order will execute immediately at market price
-                                        </Typography>
-                                      </Box>
-                                    )}
-                                  </Stack>
-                                );
-                              }
-                              return null;
-                            })()}
+                          {/* Price difference indicator */}
+                          {limitPrice && parseFloat(limitPrice) > 0 && (() => {
+                            const limit = parseFloat(limitPrice);
+                            const currentPrice = !revert ? (asks[0]?.price || 0) : (bids[0]?.price || 0);
+                            if (currentPrice <= 0) return null;
+                            const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
+                            const isAbove = priceDiff > 0;
+                            return (
+                              <div className={cn(
+                                "mt-2 px-2 py-1.5 rounded-md text-[10px]",
+                                isAbove ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10"
+                              )}>
+                                {isAbove ? '↑' : '↓'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} {!revert ? 'ask' : 'bid'}
+                              </div>
+                            );
+                          })()}
 
                           {/* Show Order Book Button */}
-                          <Button
-                            fullWidth
-                            size="small"
-                            variant="text"
+                          <button
                             onClick={() => setShowOrderbook(!showOrderbook)}
-                            sx={{
-                              fontSize: '0.8rem',
-                              textTransform: 'none',
-                              py: 0.75,
-                              color: 'text.secondary',
-                              '&:hover': {
-                                backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                              }
-                            }}
+                            className={cn(
+                              "w-full mt-2 py-1.5 rounded-md text-[11px] transition-colors",
+                              darkMode ? "text-white/50 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
+                            )}
                           >
                             {showOrderbook ? 'Hide' : 'Show'} Order Book
-                          </Button>
+                          </button>
                         </Stack>
                       </Box>
                     )}
@@ -4076,212 +3201,99 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                       })()}
 
                     {/* Action Button */}
-                    <Box sx={{ mt: 3 }}>
+                    <div className="mt-4">
                       {accountProfile && accountProfile.account ? (
-                        <ExchangeButton
-                          variant="contained"
-                          fullWidth
+                        <button
                           onClick={handlePlaceOrder}
                           disabled={
                             isProcessing === 1 ||
                             !isLoggedIn ||
                             (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
                           }
-                          sx={{
-                            minHeight: '52px',
-                            fontSize: '16px',
-                            fontWeight: 400,
-                            borderRadius: '12px',
-                            textTransform: 'none',
-                            boxShadow: 'none',
-                            '&:hover': {
-                              boxShadow: 'none'
-                            }
-                          }}
+                          className={cn(
+                            "w-full py-3 rounded-xl text-[14px] font-normal transition-colors border-[1.5px]",
+                            isProcessing === 1 || !isLoggedIn || (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                              ? darkMode
+                                ? "border-gray-700 bg-gray-800 text-gray-500 cursor-not-allowed"
+                                : "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
+                              : "border-primary bg-primary text-white hover:bg-primary/90"
+                          )}
                         >
                           {handleMsg()}
-                        </ExchangeButton>
+                        </button>
                       ) : (
                         <Wallet
                           style={{ width: '100%' }}
                           buttonOnly={true}
                         />
                       )}
-                    </Box>
-                  </Box>
-                </Box>
-              </Stack>
+                    </div>
+                  </div>
+          </div>
 
-            </Stack>
-          </Box>
-        </Box>
-      </Box>
-
-        {/* Inline Orderbook */}
-        {showOrderbook && orderType === 'limit' && (
-          <Box
-            sx={{
-              width: '320px',
-              height: '770px',
-              flexShrink: 0,
-              display: { xs: 'none', md: 'block' }
-            }}
-          >
-            <TransactionDetailsPanel
-              open={true}
-              onClose={() => setShowOrderbook(false)}
-              mode="orderbook"
-              pair={{
-                curr1: { ...curr1, name: curr1?.name || curr1?.currency },
-                curr2: { ...curr2, name: curr2?.name || curr2?.currency }
-              }}
-              asks={asks}
-              bids={bids}
-              limitPrice={limitPrice ? parseFloat(limitPrice) : null}
-              isBuyOrder={!!revert}
-              onAskClick={(e, idx) => {
-                if (asks && asks[idx]) {
-                  setLimitPrice(asks[idx].price.toString());
-                }
-              }}
-              onBidClick={(e, idx) => {
-                if (bids && bids[idx]) {
-                  setLimitPrice(bids[idx].price.toString());
-                }
-              }}
-              embedded={true}
-            />
-          </Box>
-        )}
-      </Stack>
-
-      {/* Chart Display - Hidden, sparklines moved inline to token selectors */}
-      {false && (token1 || token2) && !showTokenSelector && !(showOrderbook && orderType === 'limit') && (
-        <Box
-          sx={{
-            mt: 4,
-            width: '100%',
-            maxWidth: '680px',
-            margin: '40px auto 20px',
-            px: { xs: 0.5, sm: 2, md: 3 }
-          }}
-        >
-          <Box
-            sx={{
-              display: 'flex',
-              gap: 1,
-              width: '100%'
-            }}
-          >
-            {token1 && (
-              <Box
-                sx={{
-                  flex: '1 1 50%',
-                  minWidth: 0,
-                  p: 1,
-                  borderRadius: '12px',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                  backdropFilter: 'blur(20px)',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                    borderColor: alpha(theme.palette.primary.main, 0.12)
-                  }
-                }}
-              >
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  sx={{ mb: 1 }}
-                >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    fontWeight={400}
-                    sx={{ fontSize: '10px' }}
+          {/* Orderbook on right side */}
+          {showOrderbook && orderType === 'limit' && (
+            <div className={cn(
+              "w-[300px] flex-shrink-0 hidden md:block rounded-xl border-[1.5px] overflow-hidden",
+              darkMode ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+            )}>
+              <div className={cn(
+                "px-3 py-2 border-b text-[12px] font-normal",
+                darkMode ? "border-white/10 text-white/70" : "border-gray-100 text-gray-600"
+              )}>
+                Order Book
+              </div>
+              <div className="flex text-[10px] px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                <span className={cn("flex-1", darkMode ? "text-white/40" : "text-gray-400")}>Price</span>
+                <span className={cn("flex-1 text-right", darkMode ? "text-white/40" : "text-gray-400")}>Amount</span>
+                <span className={cn("flex-1 text-right", darkMode ? "text-white/40" : "text-gray-400")}>Total</span>
+              </div>
+              {/* Asks */}
+              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                {asks.slice(0, 15).reverse().map((ask, idx) => (
+                  <div
+                    key={`ask-${idx}`}
+                    onClick={() => setLimitPrice(ask.price.toString())}
+                    className={cn(
+                      "flex px-2 py-1 text-[11px] cursor-pointer hover:bg-red-500/10",
+                      darkMode ? "text-white/80" : "text-gray-700"
+                    )}
                   >
-                    {token1.name}
-                  </Typography>
-                  {(token1.exch || tokenExch1 || latestPrice1) && (
-                    <Typography
-                      variant="caption"
-                      fontWeight={400}
-                      color="text.primary"
-                      sx={{ fontSize: '10px' }}
-                    >
-                      {formatTokenPrice(token1, token2, tokenExch1, latestPrice1)}
-                    </Typography>
-                  )}
-                </Stack>
-                <Box sx={{ height: '80px', width: '100%' }}>
-                  <Sparkline
-                    url={`${BASE_URL}/sparkline/${token1.md5}?period=24h`}
-                    style={{ width: '100%', height: '100%' }}
-                    showGradient={true}
-                    lineWidth={2}
-                    animation={true}
-                  />
-                </Box>
-              </Box>
-            )}
-
-            {token2 && (
-              <Box
-                sx={{
-                  flex: '1 1 50%',
-                  minWidth: 0,
-                  p: 1,
-                  borderRadius: '12px',
-                  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                  backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                  backdropFilter: 'blur(20px)',
-                  '&:hover': {
-                    backgroundColor: alpha(theme.palette.background.paper, 0.6),
-                    borderColor: alpha(theme.palette.primary.main, 0.12)
-                  }
-                }}
-              >
-                <Stack
-                  direction="row"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  sx={{ mb: 1 }}
-                >
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    fontWeight={400}
-                    sx={{ fontSize: '10px' }}
+                    <span className="flex-1 text-red-500">{ask.price?.toFixed(6)}</span>
+                    <span className="flex-1 text-right">{ask.amount?.toFixed(2)}</span>
+                    <span className={cn("flex-1 text-right", darkMode ? "text-white/50" : "text-gray-500")}>{ask.total?.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Spread */}
+              <div className={cn(
+                "px-2 py-1.5 text-[11px] text-center border-y",
+                darkMode ? "border-white/10 bg-white/[0.02] text-white/60" : "border-gray-100 bg-gray-50 text-gray-500"
+              )}>
+                Spread: {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+              </div>
+              {/* Bids */}
+              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                {bids.slice(0, 15).map((bid, idx) => (
+                  <div
+                    key={`bid-${idx}`}
+                    onClick={() => setLimitPrice(bid.price.toString())}
+                    className={cn(
+                      "flex px-2 py-1 text-[11px] cursor-pointer hover:bg-green-500/10",
+                      darkMode ? "text-white/80" : "text-gray-700"
+                    )}
                   >
-                    {token2.name}
-                  </Typography>
-                  {(token2.exch || tokenExch2 || latestPrice2) && (
-                    <Typography
-                      variant="caption"
-                      fontWeight={400}
-                      color="text.primary"
-                      sx={{ fontSize: '10px' }}
-                    >
-                      {formatTokenPrice(token2, token1, tokenExch2, latestPrice2)}
-                    </Typography>
-                  )}
-                </Stack>
-                <Box sx={{ height: '80px', width: '100%' }}>
-                  <Sparkline
-                    url={`${BASE_URL}/sparkline/${token2.md5}?period=24h`}
-                    style={{ width: '100%', height: '100%' }}
-                    showGradient={true}
-                    lineWidth={2}
-                    animation={true}
-                  />
-                </Box>
-              </Box>
-            )}
-          </Box>
-        </Box>
+                    <span className="flex-1 text-green-500">{bid.price?.toFixed(6)}</span>
+                    <span className="flex-1 text-right">{bid.amount?.toFixed(2)}</span>
+                    <span className={cn("flex-1 text-right", darkMode ? "text-white/50" : "text-gray-500")}>{bid.total?.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       )}
-    </Box>
+    </div>
   );
 }
 

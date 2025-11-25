@@ -1,45 +1,16 @@
 import React, { useState, useEffect, useContext } from 'react';
 import Head from 'next/head';
-import { useTheme, alpha } from '@mui/material/styles';
-import {
-  Typography,
-  Container,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  TextField,
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  Button,
-  Modal,
-  CircularProgress,
-  IconButton,
-  Card,
-  CardContent,
-  Toolbar
-} from '@mui/material';
 import axios from 'axios';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CodeIcon from '@mui/icons-material/Code';
-import SearchIcon from '@mui/icons-material/Search';
+import { Copy, Menu, X, CheckCircle, Code, Search } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const ApiDocsPage = () => {
-  const theme = useTheme();
-  const { darkMode } = useContext(AppContext);
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [currentSection, setCurrentSection] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -90,69 +61,55 @@ const ApiDocsPage = () => {
     switch (currentSection) {
       case 'overview':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
+          <div>
+            <h2 className="text-2xl font-normal mb-6 text-primary">
               XRPL.to API Documentation
-            </Typography>
-            <Typography variant="body1" paragraph>
+            </h2>
+            <p className="text-[15px] mb-6">
               Welcome to the XRPL.to API! Access comprehensive XRP Ledger token data, market
               analytics, and trading information.
-            </Typography>
+            </p>
 
-            <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Base URL
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>https://api.xrpl.to</code>
-                </Paper>
-              </CardContent>
-            </Card>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10 bg-primary/5" : "border-gray-200 bg-primary/5"
+            )}>
+              <h3 className="text-lg font-normal mb-4">Base URL</h3>
+              <div className={cn(
+                "p-4 rounded-lg",
+                isDark ? "bg-black/30" : "bg-gray-100"
+              )}>
+                <code className="text-[13px]">https://api.xrpl.to</code>
+              </div>
+            </div>
 
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Quick Start
-                </Typography>
-                <Typography variant="body2" paragraph>
-                  Get trending tokens:
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>
-                    curl -X GET
-                    "https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc"
-                  </code>
-                </Paper>
-              </CardContent>
-            </Card>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <h3 className="text-lg font-normal mb-4">Quick Start</h3>
+              <p className="text-[13px] mb-3">Get trending tokens:</p>
+              <div className={cn(
+                "p-4 rounded-lg",
+                isDark ? "bg-black/30" : "bg-gray-100"
+              )}>
+                <code className="text-[13px]">
+                  curl -X GET "https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc"
+                </code>
+              </div>
+            </div>
 
-            <Card>
-              <CardContent>
-                <Typography variant="h6" gutterBottom>
-                  Rate Limits
-                </Typography>
-                <List>
-                  <ListItem>
-                    <ListItemText primary="Free: 1,000 requests/hour" />
-                  </ListItem>
-                  <ListItem>
-                    <ListItemText primary="Authenticated: 5,000 requests/hour" />
-                  </ListItem>
-                </List>
-              </CardContent>
-            </Card>
-          </Box>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <h3 className="text-lg font-normal mb-4">Rate Limits</h3>
+              <ul className="space-y-2">
+                <li className="text-[13px]">Free: 1,000 requests/hour</li>
+                <li className="text-[13px]">Authenticated: 5,000 requests/hour</li>
+              </ul>
+            </div>
+          </div>
         );
 
       case 'tokens':

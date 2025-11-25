@@ -1,39 +1,10 @@
-// Material
-import {
-  styled,
-  Avatar,
-  Box,
-  IconButton,
-  Link,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-  Tooltip,
-  useMediaQuery,
-  useTheme,
-  alpha,
-  Card,
-  CardContent,
-  keyframes,
-  Pagination,
-  Chip
-} from '@mui/material';
-
-// Iconify
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import InfoIcon from '@mui/icons-material/Info';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
+import { useEffect, useRef, useState, useContext } from 'react';
+import { ArrowLeftRight, TrendingUp, TrendingDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import Link from 'next/link';
 
 // Utils
+import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
-import { useEffect, useRef, useState } from 'react';
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import { useInView } from 'react-intersection-observer';
 
@@ -42,207 +13,7 @@ import Sparkline from 'src/components/Sparkline';
 
 // ----------------------------------------------------------------------
 
-// Define highlight animation with softer colors
-const highlightAnimation = (theme) => keyframes`
-  0% {
-    background-color: ${theme.palette.primary.main}30;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px ${theme.palette.primary.main}40;
-  }
-  50% {
-    background-color: ${theme.palette.primary.main}15;
-    transform: translateY(0);
-    box-shadow: 0 2px 4px ${theme.palette.primary.main}20;
-  }
-  100% {
-    background-color: transparent;
-    transform: translateY(0);
-    box-shadow: none;
-  }
-`;
-
-// Styled components with improved design
-const PairCard = styled(Card, {
-  shouldForwardProp: (prop) => prop !== 'isNew'
-})(({ theme, isNew }) => ({
-  marginBottom: theme.spacing(0.5),
-  borderRadius: '12px',
-  backgroundColor: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  boxShadow: `
-    0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-  transition: 'all 0.3s ease-in-out',
-  position: 'relative',
-  overflow: 'hidden',
-  animation: isNew ? `${highlightAnimation(theme)} 1s ease-in-out` : 'none',
-  '&:hover': {
-    transform: 'translateY(-1px)',
-    boxShadow: `
-      0 12px 40px ${alpha(theme.palette.common.black, 0.15)}, 
-      0 2px 4px ${alpha(theme.palette.common.black, 0.05)},
-      inset 0 1px 1px ${alpha(theme.palette.common.white, 0.15)}`,
-    border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-  }
-}));
-
-const VolumeIndicator = styled('div')(({ theme, volume }) => ({
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  height: '100%',
-  width: `${volume}%`,
-  background: `linear-gradient(90deg, 
-    ${theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.08)' : 'rgba(33, 150, 243, 0.05)'} 0%, 
-    ${
-      theme.palette.mode === 'dark' ? 'rgba(33, 150, 243, 0.02)' : 'rgba(33, 150, 243, 0.01)'
-    } 100%)`,
-  transition: 'width 0.3s ease-in-out',
-  borderRadius: '12px'
-}));
-
-const StyledPagination = styled(Pagination)(({ theme }) => ({
-  '& .MuiPaginationItem-root': {
-    color: theme.palette.text.primary,
-    borderRadius: '12px',
-    margin: '0 3px',
-    fontWeight: 400,
-    minWidth: '32px',
-    height: '32px',
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
-    }
-  },
-  '& .Mui-selected': {
-    backgroundColor: `${theme.palette.primary.main} !important`,
-    color: '#fff !important',
-    fontWeight: 500,
-    borderRadius: '12px',
-    '&:hover': {
-      backgroundColor: `${theme.palette.primary.dark} !important`
-    }
-  }
-}));
-
-const PairChip = styled(Chip)(({ theme }) => ({
-  fontSize: '11px',
-  height: '24px',
-  fontWeight: 500,
-  borderRadius: '12px',
-  backgroundColor: 'transparent',
-  color: theme.palette.primary.main,
-  border: `1px solid ${alpha(theme.palette.primary.main, 0.5)}`,
-  boxShadow: `
-    0 2px 8px ${alpha(theme.palette.primary.main, 0.15)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-}));
-
-const SmallInfoIcon = ({ isMobile, ...props }) => (
-  <InfoIcon
-    {...props}
-    sx={{
-      fontSize: isMobile ? '12px' : '14px',
-      ml: isMobile ? 0.25 : 0.5,
-      opacity: 0.7,
-      transition: 'opacity 0.2s ease',
-      '&:hover': {
-        opacity: 1
-      }
-    }}
-  />
-);
-
-const badge24hStyle = {
-  display: 'inline-block',
-  marginLeft: '4px',
-  marginRight: '4px',
-  color: '#fff',
-  fontSize: '9px',
-  fontWeight: '400',
-  lineHeight: '14px',
-  backgroundColor: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  borderRadius: '4px',
-  padding: '1px 4px',
-  border: '1.5px solid rgba(145, 158, 171, 0.2)'
-};
-
-const badgeDEXStyle = {
-  display: 'inline-block',
-  marginLeft: '4px',
-  marginRight: '4px',
-  color: '#fff',
-  fontSize: '9px',
-  fontWeight: '400',
-  lineHeight: '14px',
-  backgroundColor: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  borderRadius: '4px',
-  padding: '1px 4px',
-  border: '1.5px solid rgba(183, 129, 3, 0.3)'
-};
-
-const StyledTableHead = styled(TableHead, {
-  shouldForwardProp: (prop) => prop !== 'darkMode'
-})(({ theme, darkMode }) => ({
-  position: 'sticky',
-  zIndex: 999,
-  top: 0,
-  background: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  '&::after': {
-    content: '""',
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '1px',
-    background: `linear-gradient(90deg, transparent, ${alpha(
-      theme.palette.divider,
-      0.2
-    )}, transparent)`
-  }
-}));
-
-const StyledTableRow = styled(TableRow, {
-  shouldForwardProp: (prop) => prop !== 'darkMode' && prop !== 'isMobile'
-})(({ theme, darkMode, isMobile }) => ({
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-  transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-  backgroundColor: 'transparent',
-  '&:hover': {
-    '& .MuiTableCell-root': {
-      backgroundColor: alpha(theme.palette.primary.main, 0.04),
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none'
-    },
-    cursor: 'pointer',
-    transform: 'translateY(-1px)',
-    boxShadow: `
-      0 8px 32px ${alpha(theme.palette.common.black, 0.08)}, 
-      0 1px 2px ${alpha(theme.palette.common.black, 0.04)}`
-  },
-  '& .MuiTableCell-root': {
-    padding: isMobile ? '8px 4px' : '16px 12px',
-    whiteSpace: 'nowrap',
-    borderBottom: 'none',
-    fontSize: isMobile ? '11px' : '14px',
-    fontWeight: 400,
-    backgroundColor: 'transparent',
-    '&:not(:first-of-type)': {
-      paddingLeft: isMobile ? '2px' : '8px'
-    }
-  }
-}));
-
-const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
+const ChartBox = ({ isDark, sparkline, id, isMobile }) => {
   const BASE_URL = process.env.API_URL;
   const { ref, inView } = useInView({
     triggerOnce: true,
@@ -250,25 +21,14 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
   });
 
   return (
-    <Box ref={ref}>
+    <div ref={ref}>
       {inView ? (
         sparkline ? (
-          <Box
-            sx={{
-              width: isMobile ? '80px' : '180px',
-              height: isMobile ? '30px' : '60px',
-              borderRadius: '12px',
-              overflow: 'hidden',
-              border: `1px solid ${darkMode ? 'rgba(145, 158, 171, 0.06)' : 'rgba(145, 158, 171, 0.12)'}`,
-              backgroundColor: 'transparent',
-              position: 'relative',
-              transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-              '&:hover': {
-                transform: 'scale(1.02)',
-                borderColor: darkMode ? 'rgba(145, 158, 171, 0.24)' : 'rgba(145, 158, 171, 0.48)'
-              }
-            }}
-          >
+          <div className={cn(
+            'overflow-hidden rounded-xl border-[1.5px] transition-all hover:scale-[1.02]',
+            isMobile ? 'w-20 h-[30px]' : 'w-[180px] h-[60px]',
+            isDark ? 'border-white/5 hover:border-white/20' : 'border-gray-200 hover:border-gray-400'
+          )}>
             <Sparkline
               url={`${BASE_URL}/sparkline/${sparkline}?period=24h`}
               showGradient={true}
@@ -285,47 +45,28 @@ const ChartBox = ({ darkMode, sparkline, id, isMobile }) => {
                 devicePixelRatio: window.devicePixelRatio || 1
               }}
             />
-          </Box>
+          </div>
         ) : (
-          <Box
-            sx={{
-              width: isMobile ? '80px' : '180px',
-              height: isMobile ? '30px' : '60px',
-              borderRadius: '12px',
-              border: `1px solid ${darkMode ? 'rgba(145, 158, 171, 0.06)' : 'rgba(145, 158, 171, 0.12)'}`,
-              backgroundColor: 'transparent',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              opacity: 0.5
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: darkMode ? '#919EAB' : '#637381',
-                fontSize: '11px',
-                fontWeight: 400
-              }}
-            >
+          <div className={cn(
+            'flex items-center justify-center rounded-xl border-[1.5px] opacity-50',
+            isMobile ? 'w-20 h-[30px]' : 'w-[180px] h-[60px]',
+            isDark ? 'border-white/5' : 'border-gray-200'
+          )}>
+            <span className={cn(
+              'text-[11px] font-normal',
+              isDark ? 'text-white/40' : 'text-gray-400'
+            )}>
               No Chart Data
-            </Typography>
-          </Box>
+            </span>
+          </div>
         )
       ) : (
-        <Box
-          sx={{
-            width: isMobile ? '80px' : '180px',
-            height: isMobile ? '30px' : '60px',
-            borderRadius: '12px',
-            backgroundColor: 'transparent',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        />
+        <div className={cn(
+          'flex items-center justify-center rounded-xl',
+          isMobile ? 'w-20 h-[30px]' : 'w-[180px] h-[60px]'
+        )} />
       )}
-    </Box>
+    </div>
   );
 };
 
@@ -336,97 +77,19 @@ function truncate(str, n) {
 
 export default function PairsList({ token, pairs }) {
   const BASE_URL = process.env.API_URL;
-  const { darkMode } = useContext(AppContext);
-  const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  const [isMobile, setIsMobile] = useState(false);
   const { name, exch, pro7d, pro24h, md5, slug } = token;
   let user = token.user;
   if (!user) user = name;
 
-  const tableRef = useRef(null);
-  const [scrollLeft, setScrollLeft] = useState(0);
-
   useEffect(() => {
-    // Throttled scroll handler to prevent excessive reflows
-    let rafId = null;
-
-    const handleScroll = () => {
-      if (rafId) return; // Already scheduled
-
-      rafId = requestAnimationFrame(() => {
-        if (tableRef?.current) {
-          setScrollLeft(tableRef.current.scrollLeft > 0);
-        }
-        rafId = null;
-      });
-    };
-
-    const currentRef = tableRef?.current;
-    if (currentRef) {
-      currentRef.addEventListener('scroll', handleScroll, { passive: true });
-    }
-
-    return () => {
-      if (rafId) {
-        cancelAnimationFrame(rafId);
-      }
-      if (currentRef) {
-        currentRef.removeEventListener('scroll', handleScroll);
-      }
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
-
-  const stickyCellStyles = {
-    first: {
-      position: 'sticky',
-      zIndex: 1001,
-      left: 0,
-      background: 'transparent',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-      width: isMobile ? '40px' : '60px',
-      minWidth: isMobile ? '40px' : '60px',
-      padding: isMobile ? '8px 4px' : '16px 12px'
-    },
-    second: {
-      position: 'sticky',
-      zIndex: 1002,
-      left: isMobile ? '40px' : '60px',
-      background: 'transparent',
-      backdropFilter: 'none',
-      WebkitBackdropFilter: 'none',
-      padding: isMobile ? '8px 4px' : '16px 12px',
-      '&:before': scrollLeft
-        ? {
-            content: "''",
-            boxShadow: `inset 10px 0 8px -8px ${alpha(theme.palette.divider, 0.24)}`,
-            position: 'absolute',
-            top: '0',
-            right: '0',
-            bottom: '-1px',
-            width: '30px',
-            transform: 'translate(100%)',
-            transition: 'box-shadow .3s',
-            pointerEvents: 'none'
-          }
-        : {}
-    }
-  };
-
-  const headerCellStyles = {
-    fontSize: isMobile ? '11px' : '13px',
-    fontWeight: '400',
-    padding: isMobile ? '8px 4px' : '20px 12px',
-    height: 'auto',
-    whiteSpace: 'nowrap',
-    color: darkMode ? '#919EAB' : '#637381',
-    textTransform: 'uppercase',
-    letterSpacing: '0.02em',
-    borderBottom: 'none',
-    '&:not(:first-of-type)': {
-      paddingLeft: isMobile ? '4px' : '8px'
-    }
-  };
 
   const [page, setPage] = useState(1);
   const itemsPerPage = 10;
@@ -434,48 +97,23 @@ export default function PairsList({ token, pairs }) {
   const paginatedPairs = pairs.slice((page - 1) * itemsPerPage, page * itemsPerPage);
 
   return (
-    <Stack spacing={1}>
-      {/* Table Headers with integrated title */}
-      <Box
-        sx={{
-          display: 'grid',
-          gridTemplateColumns: {
-            xs: '1fr',
-            sm: '1fr 1fr',
-            md: '0.5fr 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr 0.5fr'
-          },
-          gap: 2,
-          p: 2,
-          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          backgroundColor: 'transparent',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          borderRadius: '8px 8px 0 0',
-          border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-          boxShadow: `
-            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`,
-          '& > *': {
-            fontWeight: 500,
-            color: theme.palette.text.secondary,
-            fontSize: '12px',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }
-        }}
-      >
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>#</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Pair</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>24h Chart</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Volume (24h)</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Trades</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Issuer</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}>Domain</Typography>
-        <Typography sx={{ display: { xs: 'none', md: 'block' } }}></Typography>
-      </Box>
+    <div className="space-y-2">
+      {/* Table Headers */}
+      <div className={cn(
+        'hidden md:grid grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1fr_1.5fr_1.5fr_0.5fr] gap-4 p-4 rounded-t-xl border-[1.5px]',
+        isDark ? 'border-white/10' : 'border-gray-200'
+      )}>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>#</span>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Pair</span>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>24h Chart</span>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Volume (24h)</span>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Trades</span>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Issuer</span>
+        <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Domain</span>
+        <span></span>
+      </div>
 
-      <Stack spacing={0.5}>
+      <div className="space-y-1">
         {paginatedPairs.map((row) => {
           const { id, pair, curr1, curr2, count } = row;
           const name1 = curr1.name;
@@ -490,24 +128,19 @@ export default function PairsList({ token, pairs }) {
           user1 = truncate(user1, 12);
           user2 = truncate(user2, 12);
 
-          // DEX URLs
           let xrpltoDexURL = `/token/${slug}/trade`;
 
-          // Use the MD5 values provided by the API
           let sparkline = '';
           let sparklineToken = null;
 
           if (id === 1) {
-            // For primary pair, show first token's chart
             sparkline = curr1.md5;
             sparklineToken = curr1;
           } else {
-            // For all other pairs, show the second token's chart
             if (curr2.currency !== 'XRP' && curr2.md5) {
               sparkline = curr2.md5;
               sparklineToken = curr2;
             } else if (curr1.currency !== 'XRP' && curr1.md5) {
-              // Fallback to curr1 if curr2 is XRP
               sparkline = curr1.md5;
               sparklineToken = curr1;
             }
@@ -516,36 +149,40 @@ export default function PairsList({ token, pairs }) {
           const volumePercentage = Math.min(100, Math.max(5, (Math.log10(count + 1) / 5) * 100));
 
           return (
-            <PairCard key={pair}>
-              <VolumeIndicator volume={volumePercentage} />
-              <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gridTemplateColumns: {
-                      xs: '1fr',
-                      sm: '1fr 1fr',
-                      md: '0.5fr 2fr 1.5fr 1.5fr 1fr 1.5fr 1.5fr 0.5fr'
-                    },
-                    gap: 1.5,
-                    alignItems: 'center'
-                  }}
-                >
+            <div
+              key={pair}
+              className={cn(
+                'relative rounded-xl border-[1.5px] overflow-hidden transition-all hover:-translate-y-0.5',
+                isDark
+                  ? 'border-white/10 hover:border-primary/30'
+                  : 'border-gray-200 hover:border-primary/30'
+              )}
+            >
+              {/* Volume Indicator */}
+              <div
+                className={cn(
+                  'absolute left-0 top-0 h-full rounded-xl transition-all',
+                  isDark ? 'bg-primary/5' : 'bg-primary/3'
+                )}
+                style={{ width: `${volumePercentage}%` }}
+              />
+
+              <div className="relative p-3">
+                <div className={cn(
+                  'grid gap-3 items-center',
+                  'grid-cols-1 sm:grid-cols-2',
+                  'md:grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1fr_1.5fr_1.5fr_0.5fr]'
+                )}>
                   {/* Rank */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <Typography
-                      variant="body2"
-                      fontWeight="600"
-                      color="text.primary"
-                      sx={{ fontSize: '14px' }}
-                    >
+                  <div className="hidden md:block">
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
                       {id}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
 
                   {/* Pair */}
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.75 }}>
-                    <Avatar
+                  <div className="flex items-center gap-1.5">
+                    <img
                       src={
                         curr1.md5
                           ? `https://s1.xrpl.to/token/${curr1.md5}`
@@ -553,24 +190,14 @@ export default function PairsList({ token, pairs }) {
                             ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8`
                             : undefined
                       }
-                      sx={{ width: 20, height: 20 }}
+                      alt={name1}
+                      className="w-5 h-5 rounded-full"
                     />
-                    <Typography
-                      variant="body2"
-                      fontWeight="600"
-                      color="primary.main"
-                      sx={{ fontSize: '14px' }}
-                    >
+                    <span className={cn('text-[14px] font-medium text-primary')}>
                       {name1}
-                    </Typography>
-                    <SwapHorizIcon
-                      sx={{
-                        width: '16px',
-                        height: '16px',
-                        color: theme.palette.text.secondary
-                      }}
-                    />
-                    <Avatar
+                    </span>
+                    <ArrowLeftRight size={16} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                    <img
                       src={
                         curr2.md5
                           ? `https://s1.xrpl.to/token/${curr2.md5}`
@@ -578,203 +205,170 @@ export default function PairsList({ token, pairs }) {
                             ? `https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8`
                             : undefined
                       }
-                      sx={{ width: 20, height: 20 }}
+                      alt={name2}
+                      className="w-5 h-5 rounded-full"
                     />
-                    <Typography
-                      variant="body2"
-                      fontWeight="600"
-                      color="primary.main"
-                      sx={{ fontSize: '14px' }}
-                    >
+                    <span className={cn('text-[14px] font-medium text-primary')}>
                       {name2}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
 
                   {/* Chart */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                  <div className="hidden md:block">
                     <ChartBox
-                      darkMode={darkMode}
+                      isDark={isDark}
                       sparkline={sparkline}
                       id={id}
                       isMobile={isMobile}
                     />
-                  </Box>
+                  </div>
 
                   {/* Volume */}
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
-                    >
+                  <div>
+                    <span className={cn('text-[11px] block md:hidden', isDark ? 'text-white/60' : 'text-gray-500')}>
                       Volume (24h)
-                    </Typography>
-                    <Stack spacing={0.5}>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          color="primary.main"
-                          sx={{ fontSize: '14px' }}
-                        >
+                    </span>
+                    <div className="space-y-0.5">
+                      <div className="flex items-center gap-1">
+                        <span className={cn('text-[14px] font-medium text-primary')}>
                           {fNumber(curr1.value)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="primary.main"
-                          sx={{ fontSize: '12px' }}
-                        >
+                        </span>
+                        <span className="text-[12px] text-primary">
                           {name1}
-                        </Typography>
-                      </Stack>
-                      <Stack direction="row" spacing={0.5} alignItems="center">
-                        <Typography
-                          variant="body2"
-                          fontWeight="600"
-                          color="primary.main"
-                          sx={{ fontSize: '14px' }}
-                        >
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className={cn('text-[14px] font-medium text-primary')}>
                           {fNumber(curr2.value)}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="primary.main"
-                          sx={{ fontSize: '12px' }}
-                        >
+                        </span>
+                        <span className="text-[12px] text-primary">
                           {name2}
-                        </Typography>
-                      </Stack>
-                    </Stack>
-                  </Box>
+                        </span>
+                      </div>
+                    </div>
+                  </div>
 
                   {/* Trades */}
-                  <Box>
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontSize: '11px', display: { xs: 'block', md: 'none' } }}
-                    >
+                  <div>
+                    <span className={cn('text-[11px] block md:hidden', isDark ? 'text-white/60' : 'text-gray-500')}>
                       Trades (24h)
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      fontWeight="600"
-                      color="text.primary"
-                      sx={{ fontSize: '14px' }}
-                    >
+                    </span>
+                    <span className={cn('text-[14px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
                       {fNumber(count)}
-                    </Typography>
-                  </Box>
+                    </span>
+                  </div>
 
                   {/* Issuer */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <Stack spacing={0.5}>
-                      {id === 1 && (
-                        <Link
-                          href={`https://bithomp.com/explorer/${curr1.issuer}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            textDecoration: 'none',
-                            color: 'primary.main',
-                            fontWeight: 400,
-                            fontSize: '13px',
-                            '&:hover': {
-                              textDecoration: 'underline',
-                              color: 'primary.dark'
-                            }
-                          }}
-                        >
-                          {user1}
-                        </Link>
-                      )}
-                      {curr2.issuer && curr2.issuer !== 'XRPL' && (
-                        <Link
-                          href={`https://bithomp.com/explorer/${curr2.issuer}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            textDecoration: 'none',
-                            color: 'primary.main',
-                            fontWeight: 400,
-                            fontSize: '13px',
-                            '&:hover': {
-                              textDecoration: 'underline',
-                              color: 'primary.dark'
-                            }
-                          }}
-                        >
-                          {user2}
-                        </Link>
-                      )}
-                    </Stack>
-                  </Box>
+                  <div className="hidden md:block space-y-0.5">
+                    {id === 1 && (
+                      <a
+                        href={`https://bithomp.com/explorer/${curr1.issuer}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-[13px] font-normal text-primary hover:underline"
+                      >
+                        {user1}
+                      </a>
+                    )}
+                    {curr2.issuer && curr2.issuer !== 'XRPL' && (
+                      <a
+                        href={`https://bithomp.com/explorer/${curr2.issuer}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-[13px] font-normal text-primary hover:underline"
+                      >
+                        {user2}
+                      </a>
+                    )}
+                  </div>
 
                   {/* Domain */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                    <Stack spacing={0.5}>
-                      {id === 1 && curr1.domain && (
-                        <Link
-                          href={`https://${curr1.domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            textDecoration: 'none',
-                            color: 'text.secondary',
-                            fontWeight: 400,
-                            fontSize: '13px',
-                            '&:hover': {
-                              textDecoration: 'underline',
-                              color: 'text.primary'
-                            }
-                          }}
-                        >
-                          {curr1.domain}
-                        </Link>
-                      )}
-                      {curr2.domain && (
-                        <Link
-                          href={`https://${curr2.domain}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            textDecoration: 'none',
-                            color: 'text.secondary',
-                            fontWeight: 400,
-                            fontSize: '13px',
-                            '&:hover': {
-                              textDecoration: 'underline',
-                              color: 'text.primary'
-                            }
-                          }}
-                        >
-                          {curr2.domain}
-                        </Link>
-                      )}
-                    </Stack>
-                  </Box>
+                  <div className="hidden md:block space-y-0.5">
+                    {id === 1 && curr1.domain && (
+                      <a
+                        href={`https://${curr1.domain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          'block text-[13px] font-normal hover:underline',
+                          isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                        )}
+                      >
+                        {curr1.domain}
+                      </a>
+                    )}
+                    {curr2.domain && (
+                      <a
+                        href={`https://${curr2.domain}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={cn(
+                          'block text-[13px] font-normal hover:underline',
+                          isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-900'
+                        )}
+                      >
+                        {curr2.domain}
+                      </a>
+                    )}
+                  </div>
 
-                  {/* Actions - Empty for now */}
-                  <Box sx={{ display: { xs: 'none', md: 'block' } }} />
-                </Box>
-              </CardContent>
-            </PairCard>
+                  {/* Actions - Empty */}
+                  <div className="hidden md:block" />
+                </div>
+              </div>
+            </div>
           );
         })}
-      </Stack>
+      </div>
 
+      {/* Pagination */}
       {totalPages > 1 && (
-        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-          <StyledPagination
-            count={totalPages}
-            page={page}
-            onChange={(e, newPage) => setPage(newPage)}
-            size="large"
-            showFirstButton
-            showLastButton
-          />
-        </Stack>
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <button
+            onClick={() => setPage(1)}
+            disabled={page === 1}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronsLeft size={16} />
+          </button>
+          <button
+            onClick={() => setPage(page - 1)}
+            disabled={page === 1}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className={cn('px-4 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => setPage(page + 1)}
+            disabled={page === totalPages}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronRight size={16} />
+          </button>
+          <button
+            onClick={() => setPage(totalPages)}
+            disabled={page === totalPages}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronsRight size={16} />
+          </button>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 }

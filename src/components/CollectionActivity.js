@@ -1,190 +1,12 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
-import {
-  Box,
-  Container,
-  Paper,
-  Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Stack,
-  Chip,
-  Skeleton,
-  Link,
-  IconButton,
-  Tooltip,
-  Avatar,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Divider,
-  CardMedia,
-  Button,
-  CircularProgress,
-  Card,
-  CardContent,
-  useTheme,
-  Grid,
-  MenuItem,
-  Pagination,
-  Select
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { tableCellClasses } from '@mui/material/TableCell';
-import { alpha } from '@mui/material/styles';
-import PaymentIcon from '@mui/icons-material/Payment';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
-import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
-import LocalOfferIcon from '@mui/icons-material/LocalOffer';
-import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import CollectionsIcon from '@mui/icons-material/Collections';
-import SellIcon from '@mui/icons-material/Sell';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { ExternalLink, ChevronDown } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 import { formatDateTime } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 
-// Styled components for ListToolbar
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  },
-  '& .MuiSelect-select': {
-    paddingRight: theme.spacing(4),
-    fontWeight: 500,
-    color: theme.palette.primary.main
-  },
-  '&:hover': {
-    backgroundColor: theme.palette.action.hover
-  }
-}));
-
-const StyledBox = styled(Box)(({ theme }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(1.5),
-  padding: theme.spacing(1, 1.5),
-  borderRadius: theme.shape.borderRadius,
-  backgroundColor: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  boxShadow: 'none'
-}));
-
-const StyledTypography = styled(Typography)(({ theme }) => ({
-  fontWeight: 500,
-  color: theme.palette.text.secondary
-}));
-
-const StyledPagination = styled(Pagination)(({ theme }) => ({
-  '& .MuiPaginationItem-root': {
-    color: theme.palette.text.primary,
-    borderRadius: '12px',
-    margin: '0 3px',
-    fontWeight: 400,
-    minWidth: '32px',
-    height: '32px',
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
-    },
-    '&.Mui-selected': {
-      backgroundColor: theme.palette.primary.main,
-      color: theme.palette.common.white,
-      fontWeight: 500,
-      '&:hover': {
-        backgroundColor: theme.palette.primary.dark
-      }
-    }
-  }
-}));
-
-// Styled components for AccountTransactions
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  [`&.${tableCellClasses.head}`]: {
-    backgroundColor: 'transparent',
-    color: theme.palette.text.secondary,
-    fontWeight: 400,
-    fontSize: '12px',
-    padding: '16px 16px',
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-    backdropFilter: 'blur(10px)',
-    position: 'sticky',
-    top: 0,
-    zIndex: 10,
-    letterSpacing: '0.3px',
-    textTransform: 'none'
-  },
-  [`&.${tableCellClasses.body}`]: {
-    fontSize: '13px',
-    padding: '14px 16px',
-    lineHeight: 1.6,
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
-    backgroundColor: 'transparent'
-  }
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  position: 'relative',
-  backgroundColor: 'transparent',
-  '&:nth-of-type(even)': {
-    backgroundColor: alpha(theme.palette.action.hover, 0.04)
-  },
-  '&:last-child td, &:last-child th': {
-    border: 0
-  }
-}));
-
-const CompactChip = styled(Chip)(({ theme }) => ({
-  height: '32px',
-  fontSize: '13px',
-  fontWeight: 500,
-  borderRadius: '12px',
-  letterSpacing: '0.3px',
-  '& .MuiChip-icon': {
-    fontSize: '18px'
-  }
-}));
-
-const CompactAccordion = styled(Accordion)(({ theme }) => ({
-  '&.MuiAccordion-root': {
-    marginBottom: '8px',
-    borderRadius: '12px',
-    background: 'transparent',
-    backdropFilter: 'blur(10px)',
-    border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-    boxShadow: 'none',
-    '&:before': {
-      display: 'none'
-    }
-  },
-  '& .MuiAccordionSummary-root': {
-    minHeight: '48px',
-    padding: '0 20px',
-    borderRadius: '12px',
-    backgroundColor: 'transparent',
-    '&.Mui-expanded': {
-      minHeight: '48px'
-    }
-  },
-  '& .MuiAccordionSummary-content': {
-    margin: '12px 0',
-    '&.Mui-expanded': {
-      margin: '12px 0'
-    }
-  },
-  '& .MuiAccordionDetails-root': {
-    padding: '16px 20px 20px',
-    borderTop: `1px solid ${alpha(theme.palette.divider, 0.04)}`,
-    backgroundColor: 'transparent'
-  }
-}));
-
 // ListToolbar Component
-function NftListToolbar({ count, rows, setRows, page, setPage }) {
-  const theme = useTheme();
+function NftListToolbar({ count, rows, setRows, page, setPage, isDark }) {
   const num = count / rows;
   let page_count = Math.floor(num);
   if (num % 1 != 0) page_count++;
@@ -215,45 +37,64 @@ function NftListToolbar({ count, rows, setRows, page, setPage }) {
     }
   };
 
+  const pages = [];
+  for (let i = 1; i <= page_count; i++) {
+    pages.push(i);
+  }
+
   return (
-    <Grid container spacing={2} alignItems="center" sx={{ mt: 2, mb: 2 }}>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <StyledTypography variant="body2">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mt-4 mb-4">
+      <div>
+        <p className="text-[13px] text-gray-500">
           Showing {start} - {end} out of {count}
-        </StyledTypography>
-      </Grid>
+        </p>
+      </div>
 
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Stack alignItems="center">
-          <StyledBox>
-            <StyledPagination
-              page={page + 1}
-              onChange={handleChangePage}
-              count={page_count}
-              size={theme.breakpoints.down('md') ? 'small' : 'medium'}
-            />
-          </StyledBox>
-        </Stack>
-      </Grid>
+      <div className="flex justify-center">
+        <div className={cn(
+          "flex items-center gap-2 rounded-xl border-[1.5px] p-2",
+          isDark ? "border-white/10" : "border-gray-200"
+        )}>
+          {pages.map((p) => (
+            <button
+              key={p}
+              onClick={(e) => handleChangePage(e, p)}
+              className={cn(
+                "rounded-lg px-3 py-1 text-[13px] font-normal min-w-[32px] h-[32px]",
+                page + 1 === p
+                  ? "bg-primary text-white"
+                  : isDark
+                  ? "hover:bg-white/5"
+                  : "hover:bg-gray-100"
+              )}
+            >
+              {p}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Stack
-          direction="row"
-          alignItems="center"
-          justifyContent="flex-end"
-          sx={{ width: '100%', pr: 1 }}
-        >
-          <StyledBox sx={{ maxWidth: '100%' }}>
-            <StyledTypography variant="body2">Show Rows</StyledTypography>
-            <CustomSelect value={rows} onChange={handleChangeRows}>
-              <MenuItem value={20}>20</MenuItem>
-              <MenuItem value={10}>10</MenuItem>
-              <MenuItem value={5}>5</MenuItem>
-            </CustomSelect>
-          </StyledBox>
-        </Stack>
-      </Grid>
-    </Grid>
+      <div className="flex justify-end">
+        <div className={cn(
+          "flex items-center gap-2 rounded-xl border-[1.5px] px-4 py-2",
+          isDark ? "border-white/10" : "border-gray-200"
+        )}>
+          <span className="text-[13px] text-gray-500">Show Rows</span>
+          <select
+            value={rows}
+            onChange={handleChangeRows}
+            className={cn(
+              "rounded-lg border-0 text-[13px] font-medium text-primary bg-transparent outline-none cursor-pointer",
+              isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+            )}
+          >
+            <option value={20}>20</option>
+            <option value={10}>10</option>
+            <option value={5}>5</option>
+          </select>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -264,24 +105,19 @@ const renderAddressLink = (address, displayText = null) => {
   const text = displayText || `${address.slice(0, 6)}...`;
 
   return (
-    <Link
+    <a
       href={`/profile/${address}`}
-      color="primary"
-      underline="hover"
-      sx={{
-        fontSize: 'inherit',
-        fontWeight: 500
-      }}
+      className="text-[13px] font-medium text-primary hover:underline"
     >
       {text}
-    </Link>
+    </a>
   );
 };
 
 // Main AccountTransactions Component
 export default function AccountTransactions({ creatorAccount, collectionSlug }) {
-  const theme = useTheme();
-  const { openSnackbar } = useContext(AppContext);
+  const { openSnackbar, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -289,6 +125,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [filterType, setFilterType] = useState('SALE');
+  const [expandedRows, setExpandedRows] = useState({});
 
   const fetchHistory = async () => {
     if (!collectionSlug) return;
@@ -317,12 +154,12 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   }, [collectionSlug, page, filterType]);
 
   const getTransactionColor = (type) => {
-    if (type === 'SALE') return 'success';
-    if (type.includes('BUY')) return 'primary';
-    if (type.includes('SELL')) return 'info';
-    if (type.includes('CANCEL')) return 'warning';
-    if (type === 'TRANSFER') return 'secondary';
-    return 'default';
+    if (type === 'SALE') return 'text-green-500 border-green-500/30 bg-green-500/10';
+    if (type.includes('BUY')) return 'text-blue-500 border-blue-500/30 bg-blue-500/10';
+    if (type.includes('SELL')) return 'text-cyan-500 border-cyan-500/30 bg-cyan-500/10';
+    if (type.includes('CANCEL')) return 'text-orange-500 border-orange-500/30 bg-orange-500/10';
+    if (type === 'TRANSFER') return 'text-gray-500 border-gray-500/30 bg-gray-500/10';
+    return 'text-gray-500 border-gray-500/30 bg-gray-500/10';
   };
 
   const formatDate = (timestamp) => {
@@ -337,272 +174,269 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
     return date.toLocaleDateString();
   };
 
+  const toggleExpanded = (idx) => {
+    setExpandedRows(prev => ({
+      ...prev,
+      [idx]: !prev[idx]
+    }));
+  };
+
   if (!collectionSlug) {
     return (
-      <Container
-        maxWidth={false}
-        sx={{
-          pl: { xs: 2, sm: 0 },
-          pr: { xs: 2, sm: 0 },
-          maxWidth: '2000px'
-        }}
-      >
-        <Card
-          sx={{
-            p: 4,
-            mb: 3,
-            borderRadius: '0',
-            background: 'transparent',
-            backdropFilter: 'blur(10px)',
-            border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-            boxShadow: 'none',
-            textAlign: 'center'
-          }}
-        >
-          <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 400 }}>
-            No creator account available
-          </Typography>
-        </Card>
-      </Container>
+      <div className="max-w-[2000px] mx-auto px-4 sm:px-0">
+        <div className={cn(
+          "rounded-xl border-[1.5px] p-8 mb-6 text-center",
+          isDark ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+        )}>
+          <p className="text-[15px] text-gray-500">No creator account available</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Container
-      maxWidth={false}
-      sx={{
-        pl: { xs: 2, sm: 0 },
-        pr: { xs: 2, sm: 0 },
-        maxWidth: '2000px'
-      }}
-    >
-      <Box sx={{ mb: 3 }}>
+    <div className="max-w-[2000px] mx-auto px-4 sm:px-0">
+      <div className="mb-6">
+        {/* Filter Chips */}
+        <div className="mb-4 px-4">
+          <div className="flex flex-wrap gap-2">
+            {['ALL', 'SALE', 'CREATE_BUY_OFFER', 'CREATE_SELL_OFFER', 'CANCEL_BUY_OFFER', 'TRANSFER'].map(type => (
+              <button
+                key={type}
+                onClick={() => setFilterType(type === 'ALL' ? '' : type)}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-3 py-1 text-[11px] font-normal capitalize transition-colors",
+                  (type === 'ALL' && !filterType) || filterType === type
+                    ? "border-primary/50 text-primary bg-primary/10"
+                    : isDark
+                    ? "border-white/15 text-gray-400 hover:bg-white/5 hover:border-primary/30"
+                    : "border-gray-300 text-gray-600 hover:bg-gray-100 hover:border-primary/30"
+                )}
+              >
+                {type === 'ALL' ? 'All' : type.replace(/_/g, ' ').toLowerCase()}
+              </button>
+            ))}
+          </div>
+        </div>
 
-          <Box sx={{ mb: 2.5, px: 2 }}>
-            <Stack direction="row" spacing={0.8} flexWrap="wrap" useFlexGap>
-              {['ALL', 'SALE', 'CREATE_BUY_OFFER', 'CREATE_SELL_OFFER', 'CANCEL_BUY_OFFER', 'TRANSFER'].map(type => (
-                <Chip
-                  key={type}
-                  label={type === 'ALL' ? 'All' : type.replace(/_/g, ' ').toLowerCase()}
-                  onClick={() => setFilterType(type === 'ALL' ? '' : type)}
-                  variant="outlined"
-                  size="small"
-                  sx={{
-                    fontSize: '11px',
-                    height: '26px',
-                    fontWeight: 400,
-                    borderRadius: '12px',
-                    textTransform: 'capitalize',
-                    borderColor: (type === 'ALL' && !filterType) || filterType === type
-                      ? alpha(theme.palette.primary.main, 0.5)
-                      : alpha(theme.palette.divider, 0.2),
-                    color: (type === 'ALL' && !filterType) || filterType === type
-                      ? theme.palette.primary.main
-                      : 'text.secondary',
-                    backgroundColor: (type === 'ALL' && !filterType) || filterType === type
-                      ? alpha(theme.palette.primary.main, 0.1)
-                      : 'transparent',
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.08),
-                      borderColor: alpha(theme.palette.primary.main, 0.3)
-                    }
-                  }}
+        {/* Content */}
+        <div>
+          {loading ? (
+            <div className="p-4">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "mb-2 h-12 rounded-lg animate-pulse",
+                    isDark ? "bg-white/5" : "bg-gray-200"
+                  )}
                 />
               ))}
-            </Stack>
-          </Box>
-
-          <Box sx={{ p: 0 }}>
-            {loading ? (
-              <Box sx={{ p: 2 }}>
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} variant="rectangular" height={50} sx={{ mb: 1, borderRadius: '6px' }} />
-                ))}
-              </Box>
-            ) : error ? (
-              <Box
-                sx={{
-                  p: 6,
-                  textAlign: 'center',
-                  background: 'transparent'
-                }}
-              >
-                <Typography variant="h6" color="error.main" sx={{ fontWeight: 500, mb: 1 }}>
-                  {error}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Please try refreshing the page or check back later
-                </Typography>
-              </Box>
-            ) : transactions.length === 0 ? (
-              <Box
-                sx={{
-                  p: 6,
-                  textAlign: 'center',
-                  background: 'transparent'
-                }}
-              >
-                <Typography variant="h6" sx={{ fontWeight: 500, mb: 1 }}>
-                  No Transactions Found
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  This collection hasn't had any recent activity
-                </Typography>
-              </Box>
-            ) : (
-              <>
-                <Box
-                  sx={{
-                    overflow: 'auto',
-                    maxHeight: { xs: '400px', sm: '600px', md: 'none' },
-                    '&::-webkit-scrollbar': {
-                      width: '8px',
-                      height: '8px'
-                    },
-                    '&::-webkit-scrollbar-track': {
-                      backgroundColor: 'transparent',
-                      borderRadius: '4px'
-                    },
-                    '&::-webkit-scrollbar-thumb': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.4),
-                      borderRadius: '4px'
-                    }
-                  }}
-                >
-                  <Table
-                    stickyHeader
-                    size="medium"
-                    sx={{
-                      minWidth: { xs: '600px', sm: '700px', md: '100%' }
-                    }}
-                  >
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>Type</StyledTableCell>
-                        <StyledTableCell>NFT</StyledTableCell>
-                        <StyledTableCell>Price</StyledTableCell>
-                        <StyledTableCell>Fees</StyledTableCell>
-                        <StyledTableCell>From</StyledTableCell>
-                        <StyledTableCell>To</StyledTableCell>
-                        <StyledTableCell>Origin</StyledTableCell>
-                        <StyledTableCell>Date</StyledTableCell>
-                        <StyledTableCell align="center">Tx</StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {transactions.map((item, idx) => (
-                        <StyledTableRow key={item.hash || idx}>
-                          <StyledTableCell>
-                            <Chip
-                              label={item.type.replace(/_/g, ' ')}
-                              variant="outlined"
-                              size="small"
-                              sx={{
-                                fontSize: '10px',
-                                height: '22px',
-                                fontWeight: 400,
-                                borderRadius: '6px',
-                                borderColor: alpha(theme.palette[getTransactionColor(item.type)]?.main || theme.palette.divider, 0.3),
-                                color: alpha(theme.palette[getTransactionColor(item.type)]?.main || theme.palette.text.secondary, 0.9),
-                                backgroundColor: alpha(theme.palette[getTransactionColor(item.type)]?.main || theme.palette.divider, 0.08),
-                                borderWidth: '1px',
-                                textTransform: 'capitalize'
-                              }}
-                            />
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.NFTokenID ? (
-                              <Link href={`/nft/${item.NFTokenID}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
-                                {item.NFTokenID.slice(0,8)}...{item.NFTokenID.slice(-6)}
-                              </Link>
-                            ) : '-'}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.costXRP || item.amountXRP ? (
-                              <Typography variant="caption" sx={{ fontSize: '11px', color: '#00AB55', fontWeight: 500 }}>
-                                ✕{item.costXRP || item.amountXRP}
-                              </Typography>
-                            ) : '-'}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.brokerFeeXRP || item.royaltyAmountXRP ? (
-                              <Box sx={{ display: 'flex', gap: 0.8, alignItems: 'center', flexWrap: 'wrap' }}>
-                                {item.brokerFeeXRP && (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                                    <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: alpha(theme.palette.warning.main, 0.9) }} />
-                                    <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
-                                      {item.brokerFeeXRP}
-                                    </Typography>
-                                  </Box>
-                                )}
-                                {item.royaltyAmountXRP && (
-                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.4 }}>
-                                    <Box sx={{ width: 4, height: 4, borderRadius: '50%', bgcolor: alpha(theme.palette.info.main, 0.9) }} />
-                                    <Typography variant="caption" sx={{ fontSize: '10px', color: 'text.secondary' }}>
-                                      {item.royaltyAmountXRP}
-                                    </Typography>
-                                  </Box>
-                                )}
-                              </Box>
-                            ) : '-'}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.seller || item.account ? (
-                              <Link href={`/profile/${item.seller || item.account}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
-                                {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
-                              </Link>
-                            ) : '-'}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.buyer || item.destination ? (
-                              <Link href={`/profile/${item.buyer || item.destination}`} underline="none" color="inherit" sx={{ fontSize: '11px', color: 'text.secondary', '&:hover': { color: 'primary.main' } }}>
-                                {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
-                              </Link>
-                            ) : '-'}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.origin ? (
-                              <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                                {item.origin === 'XRPL' && (item.broker === 'rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC' || item.SourceTag === 101102979) ? 'XRP Cafe' : item.origin}
-                              </Typography>
-                            ) : '-'}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            <Typography variant="caption" sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                              {formatDate(item.time)}
-                            </Typography>
-                          </StyledTableCell>
-                          <StyledTableCell align="center">
-                            <IconButton
-                              size="small"
-                              sx={{ p: 0.4 }}
-                              onClick={() => window.open(`/tx/${item.hash}`, '_blank')}
+            </div>
+          ) : error ? (
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-12 text-center",
+              isDark ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+            )}>
+              <p className="text-[15px] font-medium text-red-500 mb-2">{error}</p>
+              <p className="text-[13px] text-gray-500">
+                Please try refreshing the page or check back later
+              </p>
+            </div>
+          ) : transactions.length === 0 ? (
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-12 text-center",
+              isDark ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+            )}>
+              <p className="text-[15px] font-medium mb-2">No Transactions Found</p>
+              <p className="text-[13px] text-gray-500">
+                This collection hasn't had any recent activity
+              </p>
+            </div>
+          ) : (
+            <>
+              <div className={cn(
+                "overflow-x-auto rounded-xl border-[1.5px]",
+                isDark ? "border-white/10" : "border-gray-200"
+              )}>
+                <table className="w-full min-w-[700px]">
+                  <thead className={cn(
+                    "sticky top-0 z-10",
+                    isDark ? "bg-black/50 backdrop-blur-lg" : "bg-gray-50/50 backdrop-blur-lg"
+                  )}>
+                    <tr>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>Type</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>NFT</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>Price</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>Fees</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>From</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>To</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>Origin</th>
+                      <th className={cn(
+                        "px-4 py-3 text-left text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>Date</th>
+                      <th className={cn(
+                        "px-4 py-3 text-center text-[11px] font-medium uppercase tracking-wide",
+                        isDark ? "text-gray-400 border-b border-white/5" : "text-gray-600 border-b border-gray-200"
+                      )}>Tx</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {transactions.map((item, idx) => (
+                      <tr
+                        key={item.hash || idx}
+                        className={cn(
+                          "transition-colors",
+                          isDark
+                            ? "border-b border-white/5 hover:bg-white/5"
+                            : "border-b border-gray-100 hover:bg-gray-50"
+                        )}
+                      >
+                        <td className="px-4 py-3">
+                          <span className={cn(
+                            "inline-block rounded-lg border-[1.5px] px-2 py-1 text-[10px] font-normal capitalize",
+                            getTransactionColor(item.type)
+                          )}>
+                            {item.type.replace(/_/g, ' ')}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.NFTokenID ? (
+                            <a
+                              href={`/nft/${item.NFTokenID}`}
+                              className="text-[11px] text-gray-500 hover:text-primary"
                             >
-                              <OpenInNewIcon sx={{ fontSize: '13px', color: 'text.secondary' }} />
-                            </IconButton>
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </Box>
+                              {item.NFTokenID.slice(0,8)}...{item.NFTokenID.slice(-6)}
+                            </a>
+                          ) : (
+                            <span className="text-[11px] text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.costXRP || item.amountXRP ? (
+                            <span className="text-[11px] text-green-500 font-medium">
+                              ✕{item.costXRP || item.amountXRP}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.brokerFeeXRP || item.royaltyAmountXRP ? (
+                            <div className="flex gap-2 items-center flex-wrap">
+                              {item.brokerFeeXRP && (
+                                <div className="flex items-center gap-1">
+                                  <div className="w-1 h-1 rounded-full bg-orange-500" />
+                                  <span className="text-[10px] text-gray-500">
+                                    {item.brokerFeeXRP}
+                                  </span>
+                                </div>
+                              )}
+                              {item.royaltyAmountXRP && (
+                                <div className="flex items-center gap-1">
+                                  <div className="w-1 h-1 rounded-full bg-blue-500" />
+                                  <span className="text-[10px] text-gray-500">
+                                    {item.royaltyAmountXRP}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-[11px] text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.seller || item.account ? (
+                            <a
+                              href={`/profile/${item.seller || item.account}`}
+                              className="text-[11px] text-gray-500 hover:text-primary"
+                            >
+                              {(item.seller || item.account).slice(0,6)}...{(item.seller || item.account).slice(-4)}
+                            </a>
+                          ) : (
+                            <span className="text-[11px] text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.buyer || item.destination ? (
+                            <a
+                              href={`/profile/${item.buyer || item.destination}`}
+                              className="text-[11px] text-gray-500 hover:text-primary"
+                            >
+                              {(item.buyer || item.destination).slice(0,6)}...{(item.buyer || item.destination).slice(-4)}
+                            </a>
+                          ) : (
+                            <span className="text-[11px] text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          {item.origin ? (
+                            <span className="text-[11px] text-gray-500">
+                              {item.origin === 'XRPL' && (item.broker === 'rpx9JThQ2y37FaGeeJP7PXDUVEXY3PHZSC' || item.SourceTag === 101102979) ? 'XRP Cafe' : item.origin}
+                            </span>
+                          ) : (
+                            <span className="text-[11px] text-gray-500">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-[11px] text-gray-500">
+                            {formatDate(item.time)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <button
+                            onClick={() => window.open(`/tx/${item.hash}`, '_blank')}
+                            className="p-1 hover:text-primary transition-colors"
+                          >
+                            <ExternalLink size={13} className="text-gray-500" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
 
-                {/* Pagination */}
-                {total > 20 && (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
-                    <Pagination
-                      page={page + 1}
-                      count={Math.ceil(total / 20)}
-                      onChange={(e, newPage) => setPage(newPage - 1)}
-                      color="primary"
-                    />
-                  </Box>
-                )}
-              </>
-            )}
-          </Box>
-      </Box>
-    </Container>
+              {/* Pagination */}
+              {total > 20 && (
+                <div className="flex justify-center p-6">
+                  <NftListToolbar
+                    count={total}
+                    rows={20}
+                    setRows={() => {}}
+                    page={page}
+                    setPage={setPage}
+                    isDark={isDark}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

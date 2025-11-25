@@ -1,142 +1,25 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Decimal from 'decimal.js-light';
+import { X, Send } from 'lucide-react';
 
-// Material
-import {
-  alpha,
-  useTheme,
-  useMediaQuery,
-  styled,
-  Backdrop,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Select,
-  Stack,
-  Typography,
-  TextField,
-  CircularProgress,
-  Avatar,
-  Divider,
-  Box
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import SendIcon from '@mui/icons-material/Send';
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Loader
 import { PulseLoader } from '../components/Spinners';
 
 // Utils
-// Constants
-const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
-
-// Components
-
+import { cn } from 'src/utils/cn';
 import { isValidClassicAddress } from 'ripple-address-codec';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch, useSelector } from 'react-redux';
 
-// ----------------------------------------------------------------------
-const StyledDialog = styled(Dialog)(({ theme }) => ({
-  '& .MuiDialog-paper': {
-    margin: 0,
-    width: '100%',
-    maxWidth: 'sm',
-    borderRadius: theme.shape.borderRadius
-  },
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
-  }
-}));
-
-const StyledDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
-
-const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
-  padding: theme.spacing(4)
-}));
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-  '& .MuiOutlinedInput-root': {
-    borderRadius: 12,
-    '&.Mui-focused': {
-      boxShadow: `0 0 0 2px ${alpha(theme.palette.primary.main, 0.2)}`
-    }
-  }
-}));
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: 25,
-  padding: theme.spacing(1.5, 4),
-  textTransform: 'none',
-  fontWeight: 400
-}));
-
-const StyledBackdrop = styled(Backdrop)(({ theme }) => ({
-  color: '#000',
-  zIndex: theme.zIndex.drawer + 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.6)',
-  backdropFilter: 'blur(4px)',
-  WebkitBackdropFilter: 'blur(4px)'
-}));
-
-const NFTPreview = styled('div')(({ theme }) => ({
-  width: '100%',
-  marginBottom: theme.spacing(3),
-  borderRadius: 12,
-  overflow: 'hidden',
-  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  '& img': {
-    width: '100%',
-    height: 'auto',
-    display: 'block',
-    objectFit: 'contain'
-  }
-}));
-
-const NFTName = styled(Typography)(({ theme }) => ({
-  textAlign: 'center',
-  fontWeight: 400,
-  color: theme.palette.text.primary,
-  marginBottom: theme.spacing(3),
-  marginTop: theme.spacing(-1)
-}));
-
 export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
-  const theme = useTheme();
   const BASE_URL = 'https://api.xrpl.to/api';
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const dispatch = useDispatch();
   const isProcessing = useSelector(selectProcess);
@@ -146,7 +29,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
   const accountToken = accountProfile?.token;
 
   const [destination, setDestination] = useState('');
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -154,18 +36,6 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
     var isRunning = false;
     var counter = 150;
     var dispatchTimer = null;
-
-    // async function getDispatchResult() {
-    //   try {
-    //     // const ret = await axios.get(MISSING_ENDPOINT, {
-    //     //   headers: { 'x-access-token': accountToken }
-    //     // });
-    //     // const res = ret.data.data.response;
-    //     // const dispatched_result = res.dispatched_result;
-
-    //     return dispatched_result;
-    //   } catch (err) {}
-    // }
 
     const startInterval = () => {
       let times = 0;
@@ -196,82 +66,10 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
       handleScanQRClose();
     };
 
-    // async function getPayload() {
-    //   if (isRunning) return;
-    //   isRunning = true;
-    //   try {
-    //     // const ret = await axios.get(MISSING_ENDPOINT, {
-    //     //   headers: { 'x-access-token': accountToken }
-    //     // });
-    //     // const resolved_at = ret.data?.resolved_at;
-    //     if (resolved_at) {
-    //       startInterval();
-    //       return;
-    //     }
-    //   } catch (err) {
-    //   }
-    //   isRunning = false;
-    //   counter--;
-    //   if (counter <= 0) {
-    //     openSnackbar('Create Offer timeout!', 'error');
-    //     handleScanQRClose();
-    //   }
-    // }
-    // if (condition) {  // TODO: Add proper condition
-    //   timer = setInterval(getPayload, 2000);
-    // }
-    return () => {
-      // if (timer) {
-      //   clearInterval(timer);
-      // }
-    };
-  }, []); // Added missing useEffect closing
+    return () => {};
+  }, []);
 
-  // Legacy Xaman transfer function - commented out due to broken implementation
-  // const onTransferNFTXumm = async () => {
-  //   if (!account || !accountToken) {
-  //     openSnackbar('Please login', 'error');
-  //     return;
-  //   }
-
-  //   setLoading(true);
-  //   try {
-  //     const user_token = accountProfile?.user_token;
-  //     const wallet_type = accountProfile?.wallet_type;
-  //
-  //     const NFTokenID = nft.NFTokenID;
-  //     const owner = nft.account;
-
-  //     const transferTxData = {
-  //       TransactionType: 'NFTokenCreateOffer',
-  //       Account: account,
-  //       NFTokenID,
-  //       Amount: '0',
-  //       Flags: 1,
-  //       Destination: destination,
-  //       Memos: configureMemos(
-  //         'XRPNFT-nft-create-sell-offer',
-  //         '',
-  //         `https://xrpnft.com/nft/${NFTokenID}`
-  //       )
-  //     };
-
-  //     if (wallet_type === 'device') {
-  //       // Device authentication required for NFT operations
-  //       openSnackbar('Device authentication for NFT transfers coming soon', 'info');
-  //     } else {
-  //       openSnackbar('Device authentication required', 'error');
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //     openSnackbar('Network error!', 'error');
-  //     dispatch(updateProcess(0));
-  //   }
-  //   setLoading(false);
-  // };
-
-  const handleScanQRClose = () => {
-  };
+  const handleScanQRClose = () => {};
 
   const handleClose = () => {
     setOpen(false);
@@ -298,121 +96,132 @@ export default function TransferDialog({ open, setOpen, nft, nftImageUrl }) {
 
   const isLoading = loading || isProcessing === 1;
 
+  if (!open) return null;
+
   return (
     <>
-      <Backdrop sx={{ color: '#000', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={isLoading}>
-        <PulseLoader color={'#FF4842'} size={10} />
-      </Backdrop>
+      {/* Backdrop */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <PulseLoader color={'#FF4842'} size={10} />
+        </div>
+      )}
 
-      <StyledDialog
-        fullScreen={fullScreen}
-        onClose={!isLoading ? handleClose : undefined}
-        open={open}
-        disableScrollLock
-        disablePortal={false}
-        keepMounted
-        TransitionProps={{
-          enter: true,
-          exit: true
-        }}
-      >
-        <StyledDialogTitle onClose={!isLoading ? handleClose : undefined}>
-          <Typography variant="h6" component="span">Transfer NFT</Typography>
-        </StyledDialogTitle>
+      {/* Dialog */}
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div
+          className="absolute inset-0 bg-black/50"
+          onClick={!isLoading ? handleClose : undefined}
+        />
 
-        <Divider />
+        <div
+          className={cn(
+            'relative w-full max-w-md rounded-xl',
+            isDark ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'
+          )}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-white/10 p-4">
+            <h2 className="text-[15px] font-normal">Transfer NFT</h2>
+            {!isLoading && (
+              <button
+                onClick={handleClose}
+                className={cn(
+                  'rounded-lg p-1.5',
+                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100'
+                )}
+              >
+                <X size={18} />
+              </button>
+            )}
+          </div>
 
-        <DialogContent>
-          <Box sx={{ p: 2 }}>
-            <Stack direction="row" spacing={2} alignItems="center" sx={{ mb: 3 }}>
+          {/* Content */}
+          <div className="p-6">
+            {/* NFT Preview */}
+            <div className="mb-6 flex items-center gap-4">
               {nftImageUrl && (
-                <Avatar
+                <img
                   src={nftImageUrl}
-                  variant="rounded"
-                  sx={{
-                    width: 64,
-                    height: 64,
-                    borderRadius: 1,
-                    boxShadow: (theme) => theme.shadows[1]
-                  }}
+                  alt={nft?.name}
+                  className="h-16 w-16 rounded-lg object-cover"
                 />
               )}
-              <Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 400 }}>
-                  {nft?.name}
-                </Typography>
+              <div>
+                <p className="text-[13px] font-normal">{nft?.name}</p>
                 {nft?.collection && (
-                  <Typography variant="body2" color="text.secondary">
+                  <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
                     Collection: {nft.collection}
-                  </Typography>
+                  </p>
                 )}
                 {nft?.rarity_rank && (
-                  <Typography variant="body2" color="text.secondary">
+                  <p className={cn('text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
                     Rank: {nft.rarity_rank} / {nft.total}
-                  </Typography>
+                  </p>
                 )}
-              </Box>
-            </Stack>
+              </div>
+            </div>
 
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ mb: 3, opacity: isLoading ? 0.7 : 1 }}
+            <p
+              className={cn(
+                'mb-6 text-[11px]',
+                isDark ? 'text-white/50' : 'text-gray-500',
+                isLoading && 'opacity-70'
+              )}
             >
               For this transfer to be completed, the recipient must accept it through their wallet.
-            </Typography>
+            </p>
 
-            <Box sx={{ mt: 3 }}>
-              <Typography variant="subtitle1" gutterBottom>
-                Destination Account{' '}
-                <Typography component="span" color="error">
-                  *
-                </Typography>
-              </Typography>
-
-              <TextField
-                fullWidth
-                variant="outlined"
+            {/* Destination Input */}
+            <div className="mb-6">
+              <label className="mb-2 block text-[13px] font-normal">
+                Destination Account <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
                 placeholder="Enter destination account"
-                onChange={handleChangeAccount}
                 value={destination}
+                onChange={handleChangeAccount}
                 onFocus={(event) => event.target.select()}
                 onKeyDown={(e) => e.stopPropagation()}
                 disabled={isLoading}
-                sx={{
-                  '& .MuiOutlinedInput-root': {
-                    borderRadius: 1
-                  }
-                }}
+                className={cn(
+                  'w-full rounded-lg border-[1.5px] px-4 py-2 text-[13px] outline-none transition-colors',
+                  isDark
+                    ? 'border-white/15 bg-white/5 placeholder:text-white/30 focus:border-primary'
+                    : 'border-gray-300 bg-white placeholder:text-gray-400 focus:border-primary',
+                  isLoading && 'cursor-not-allowed opacity-50'
+                )}
               />
-            </Box>
+            </div>
 
-            <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
-              <Button
-                variant="contained"
-                startIcon={
-                  isLoading ? (
-                    <CircularProgress disableShrink size={20} color="inherit" />
-                  ) : (
-                    <SendIcon />
-                  )
-                }
+            {/* Transfer Button */}
+            <div className="flex justify-center">
+              <button
                 onClick={handleTransferNFT}
                 disabled={isLoading || !destination}
-                sx={{
-                  minWidth: 200,
-                  borderRadius: 1,
-                  textTransform: 'none'
-                }}
+                className={cn(
+                  'flex min-w-[200px] items-center justify-center gap-2 rounded-lg border-[1.5px] px-6 py-2 text-[13px] font-normal transition-colors',
+                  isLoading || !destination
+                    ? isDark
+                      ? 'cursor-not-allowed border-white/10 bg-white/5 text-white/30'
+                      : 'cursor-not-allowed border-gray-200 bg-gray-100 text-gray-400'
+                    : isDark
+                      ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                      : 'border-primary bg-primary/5 text-primary hover:bg-primary/10'
+                )}
               >
+                {isLoading ? (
+                  <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  <Send size={16} />
+                )}
                 {handleMsg()}
-              </Button>
-            </Box>
-          </Box>
-        </DialogContent>
-      </StyledDialog>
-
-      {/* QRDialog removed - Xaman no longer used */}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

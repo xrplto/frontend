@@ -1,5 +1,4 @@
 import { useState, useEffect, useContext, useCallback, useMemo, memo } from 'react';
-import { Box, Container, styled as muiStyled, Toolbar } from '@mui/material';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
@@ -20,17 +19,17 @@ const currencySymbols = {
   XRP: '✕ '
 };
 
-const Wrapper = muiStyled(Box)(({ theme }) => `
+const Wrapper = styled.div`
   overflow: hidden;
   flex: 1;
   margin: 0;
   padding: 0;
 
-  ${theme.breakpoints.down('md')} {
+  @media (max-width: 768px) {
     margin: 0;
     padding: 0;
   }
-`);
+`;
 
 const Controls = styled.div`
   display: flex;
@@ -425,13 +424,13 @@ function AMMPoolsPage({ data }) {
 
   return (
     <Wrapper>
-      {!isMobile && <Toolbar />}
+      {!isMobile && <div className="h-6" />}
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         AMM Pools - XRPL Automated Market Maker Analytics
       </h1>
 
-      <Container maxWidth="xl" sx={{ mt: { xs: 0, md: -1 } }}>
+      <div className="mx-auto max-w-[1920px] px-4 mt-0 md:-mt-2">
         {summary && (
           <SummaryGrid>
             <SummaryCard darkMode={darkMode}>
@@ -573,7 +572,7 @@ function AMMPoolsPage({ data }) {
         </TableWrapper>
 
         {totalPages > 1 && (
-          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, mt: 3 }}>
+          <div className="flex items-center justify-center gap-2 mt-6">
             <Button
               darkMode={darkMode}
               disabled={currentPage === 0}
@@ -591,9 +590,9 @@ function AMMPoolsPage({ data }) {
             >
               Next
             </Button>
-          </Box>
+          </div>
         )}
-      </Container>
+      </div>
 
       <ScrollToTop />
       <Footer />

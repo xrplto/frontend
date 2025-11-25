@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react';
-import { Box, Container, Grid, styled, Toolbar, useMediaQuery } from '@mui/material';
+import { useState, useMemo, useEffect } from 'react';
+import styled from '@emotion/styled';
 import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/formatters';
+import { cn } from 'src/utils/cn';
 
 // Import all components directly
 import Header from 'src/components/Header';
@@ -10,79 +11,47 @@ import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
 import Logo from 'src/components/Logo';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
+const OverviewWrapper = styled.div`
+  overflow: hidden;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+
+  @media (max-width: 768px) {
     margin: 0;
     padding: 0;
-    
-    ${theme.breakpoints.down('md')} {
-      margin: 0;
-      padding: 0;
-    }
-`
-);
+  }
+`;
 
 function getInitialTokens(data) {
   if (data) return data.tokens;
   return [];
 }
 
-const MaintenanceMessage = styled(Box)(
-  ({ theme }) => `
-    text-align: center;
-    padding: 0;
-    background: transparent;
-    margin: 0;
-
-    h1 {
-      color: ${theme.palette.mode === 'dark' ? '#4285f4' : '#2563eb'};
-      font-size: 1.75rem;
-      font-weight: 400;
-      margin: ${theme.spacing(3)} 0 ${theme.spacing(1.5)} 0;
-      letter-spacing: -0.01em;
-    }
-
-    p {
-      color: ${theme.palette.text.secondary};
-      font-size: 0.95rem;
-      font-weight: 400;
-      margin: ${theme.spacing(0.5)} 0;
-      opacity: 0.7;
-    }
-`
-);
-
-function MaintenanceView({ isMobile }) {
+function MaintenanceView({ isDark }) {
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'transparent',
-        padding: 3
-      }}
-    >
-      <Box
-        sx={{
-          maxWidth: '400px',
-          width: '100%',
-          textAlign: 'center'
-        }}
-      >
+    <div className="min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="max-w-md w-full text-center">
         <Logo style={{ width: '120px', height: '42px', margin: '0 auto' }} />
-        <MaintenanceMessage>
-          <h1>Under Maintenance</h1>
-          <p>We're currently performing some updates to improve our service.</p>
-          <p>Please check back soon.</p>
-        </MaintenanceMessage>
-      </Box>
-    </Box>
+        <div className="text-center mt-6">
+          <h1 className={cn(
+            "text-3xl font-normal mb-4",
+            isDark ? "text-primary" : "text-blue-600"
+          )}>
+            Under Maintenance
+          </h1>
+          <p className={cn("text-base mb-2", isDark ? "text-white/70" : "text-gray-600")}>
+            We're currently performing some updates to improve our service.
+          </p>
+          <p className={cn("text-base", isDark ? "text-white/70" : "text-gray-600")}>
+            Please check back soon.
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -96,8 +65,17 @@ function Overview({ data }) {
     }
     return map;
   }, [tokens]);
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const [isMobile, setIsMobile] = useState(false);
   const router = useRouter();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 600);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const MAINTENANCE_MODE = false; // Set to false to show normal view
 
@@ -109,13 +87,13 @@ function Overview({ data }) {
   };
 
   if (MAINTENANCE_MODE) {
-    return <MaintenanceView isMobile={isMobile} />;
+    return <MaintenanceView isDark={isDark} />;
   }
 
   return (
     <OverviewWrapper>
-      {/* Only show Toolbar on desktop - remove on mobile to eliminate spacing */}
-      {!isMobile && <Toolbar id="back-to-top-anchor" />}
+      {/* Only show spacing on desktop - remove on mobile to eliminate spacing */}
+      {!isMobile && <div className="h-6" id="back-to-top-anchor" />}
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -124,27 +102,15 @@ function Overview({ data }) {
         XRPL Tokens Analytics & Trading Platform
       </h1>
 
-      <Container maxWidth={notificationPanelOpen ? false : "xl"}>
-        <Box
-          sx={{
-            width: '100%',
-            px: { xs: 0, sm: 0, md: 0 },
-            py: { xs: 0, sm: 0, md: 0 },
-            mt: { xs: 0, sm: 0, md: 0 },
-            mb: { xs: 0, sm: 0, md: 0 },
-            // Add negative margin on mobile to close any remaining gap
-            [(theme) => theme.breakpoints.down('md')]: {
-              marginTop: '-1px' // Pulls Summary closer to header
-            }
-          }}
-        >
+      <div className={notificationPanelOpen ? 'mx-auto px-0' : 'mx-auto max-w-[1920px] px-0 md:px-4'}>
+        <div className="w-full px-0 py-0 mt-0 mb-0 md:-mt-1">
           <Summary />
-        </Box>
-      </Container>
+        </div>
+      </div>
 
-      <Container maxWidth="xl">
-        <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid size={12}>
+      <div className="mx-auto max-w-[1920px] px-4">
+        <div className="flex flex-col">
+          <div className="w-full">
             {data && data.tags ? (
               <>
                 <TokenList tags={data.tags} tokens={tokens} tMap={tMap} setTokens={setTokens} />
@@ -152,12 +118,11 @@ function Overview({ data }) {
             ) : (
               <></>
             )}
-          </Grid>
-        </Grid>
-      </Container>
+          </div>
+        </div>
+      </div>
 
       <ScrollToTop />
-      {/* {isMobile ? <AppMenu /> : ''} */}
       <Footer />
     </OverviewWrapper>
   );

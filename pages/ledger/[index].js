@@ -1,23 +1,9 @@
 import { useRouter } from 'next/router';
 import axios from 'axios';
-import { useState } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  useTheme,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
-  Avatar
-} from '@mui/material';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { useState, useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { rippleTimeToISO8601 } from 'src/utils/parseUtils';
@@ -30,14 +16,22 @@ const AccountAvatar = ({ account }) => {
     setImgSrc(getHashIcon(account));
   };
 
-  return <Avatar src={imgSrc} onError={handleImageError} sx={{ width: 32, height: 32, mr: 1 }} />;
+  return (
+    <img
+      src={imgSrc}
+      onError={handleImageError}
+      alt={account}
+      className="mr-2 h-8 w-8 rounded-full"
+    />
+  );
 };
 
 const LedgerDetails = ({ ledgerData, error }) => {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   if (error) {
-    return <Typography color="error">{error}</Typography>;
+    return <p className="text-red-500">{error}</p>;
   }
 
   const { ledger } = ledgerData;
@@ -64,133 +58,135 @@ const LedgerDetails = ({ ledgerData, error }) => {
   );
 
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        p: { xs: 2, sm: 3, md: 4 },
-        borderRadius: '0',
-        background: 'transparent',
-        border: `1px solid ${theme.palette.divider}`
-      }}
-    >
-      <Typography variant="h5" gutterBottom>
+    <div className={cn(
+      'rounded-xl border-[1.5px] p-4 sm:p-6 md:p-8',
+      isDark ? 'border-white/10' : 'border-gray-200'
+    )}>
+      <h2 className={cn('mb-2 text-xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
         Ledger transactions #{ledger_index}
-      </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
+      </h2>
+      <p className={cn('mb-4 text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
         {closeTimeLocale}
-      </Typography>
+      </p>
 
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', my: 2 }}>
-        <IconButton aria-label="Previous ledger" onClick={() => (window.location.href = `/ledgers/${ledgerIndex - 1}`)}>
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h6" sx={{ mx: 2 }}>
+      <div className="my-4 flex items-center justify-center gap-4">
+        <button
+          onClick={() => (window.location.href = `/ledger/${ledgerIndex - 1}`)}
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-lg border-[1.5px] transition-colors',
+            isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+          )}
+        >
+          <ChevronLeft size={20} />
+        </button>
+        <span className={cn('text-lg font-medium', isDark ? 'text-white' : 'text-gray-900')}>
           #{ledgerIndex}
-        </Typography>
-        <IconButton aria-label="Next ledger" onClick={() => (window.location.href = `/ledgers/${ledgerIndex + 1}`)}>
-          <ArrowForwardIcon />
-        </IconButton>
-      </Box>
+        </span>
+        <button
+          onClick={() => (window.location.href = `/ledger/${ledgerIndex + 1}`)}
+          className={cn(
+            'flex h-10 w-10 items-center justify-center rounded-lg border-[1.5px] transition-colors',
+            isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+          )}
+        >
+          <ChevronRight size={20} />
+        </button>
+      </div>
 
-      <TableContainer>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Index</TableCell>
-              <TableCell>Type</TableCell>
-              <TableCell>Address</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Hash</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+      <div className="overflow-x-auto">
+        <table className="w-full">
+          <thead>
+            <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Index</th>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Type</th>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Address</th>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Status</th>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Hash</th>
+            </tr>
+          </thead>
+          <tbody>
             {sortedTransactions.map((tx) => (
-              <TableRow key={tx.hash}>
-                <TableCell>{tx.metaData.TransactionIndex}</TableCell>
-                <TableCell>{tx.TransactionType}</TableCell>
-                <TableCell>
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              <tr
+                key={tx.hash}
+                className={cn('border-b transition-colors', isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50')}
+              >
+                <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                  {tx.metaData.TransactionIndex}
+                </td>
+                <td className={cn('px-4 py-3 text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                  {tx.TransactionType}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center">
                     <AccountAvatar account={tx.Account} />
-                    <Typography
-                      variant="body2"
+                    <span
                       onClick={() => (window.location.href = `/profile/${tx.Account}`)}
-                      sx={{
-                        color: 'primary.main',
-                        textDecoration: 'none',
-                        cursor: 'pointer',
-                        '&:hover': { textDecoration: 'underline' }
-                      }}
+                      className="cursor-pointer text-[13px] text-primary hover:underline"
                     >
                       {shortenAddress(tx.Account)}
-                    </Typography>
-                  </Box>
-                </TableCell>
-                <TableCell>
-                  <Typography
-                    variant="body2"
-                    color={
-                      tx.metaData.TransactionResult === 'tesSUCCESS' ? 'success.main' : 'error.main'
-                    }
-                  >
+                    </span>
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <span className={cn(
+                    'text-[13px]',
+                    tx.metaData.TransactionResult === 'tesSUCCESS' ? 'text-green-500' : 'text-red-500'
+                  )}>
                     {tx.metaData.TransactionResult}
-                  </Typography>
-                </TableCell>
-                <TableCell>
-                  <Typography
-                    variant="body2"
+                  </span>
+                </td>
+                <td className="px-4 py-3">
+                  <span
                     onClick={() => (window.location.href = `/tx/${tx.hash}`)}
-                    sx={{
-                      color: 'primary.main',
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      '&:hover': { textDecoration: 'underline' }
-                    }}
+                    className="cursor-pointer text-[13px] text-primary hover:underline"
                   >
                     {shortenHash(tx.hash)}
-                  </Typography>
-                </TableCell>
-              </TableRow>
+                  </span>
+                </td>
+              </tr>
             ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
+          </tbody>
+        </table>
+      </div>
 
-      <Box sx={{ pt: 3, mt: 3, borderTop: `1px solid ${theme.palette.divider}` }}>
-        <Typography variant="body2" color="text.secondary">
+      <div className={cn('mt-6 border-t pt-6', isDark ? 'border-white/10' : 'border-gray-200')}>
+        <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
           Ledger Unix close time: {close_time}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </p>
+        <p className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
           Ledger UTC close time: {closeTimeISO}
-        </Typography>
-      </Box>
-    </Paper>
+        </p>
+      </div>
+    </div>
   );
 };
 
 const LedgerPage = ({ ledgerData, error }) => {
   const router = useRouter();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   if (router.isFallback) {
     return <div>Loading...</div>;
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <Container maxWidth="lg" sx={{ flex: 1, py: 4 }}>
-        <Box mb={4}>
-          <Typography variant="h4" component="h1" gutterBottom>
+      <div className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
+        <div className="mb-6">
+          <h1 className={cn('text-2xl font-medium', isDark ? 'text-white' : 'text-gray-900')}>
             Ledger Details
-          </Typography>
-        </Box>
+          </h1>
+        </div>
         {error ? (
-          <Typography color="error">{error}</Typography>
+          <p className="text-red-500">{error}</p>
         ) : (
           <LedgerDetails ledgerData={ledgerData} />
         )}
-      </Container>
+      </div>
       <Footer />
-    </Box>
+    </div>
   );
 };
 

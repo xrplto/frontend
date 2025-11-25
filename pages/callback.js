@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { CircularProgress, Box, Typography, Button, alpha } from '@mui/material';
+import { Loader2 } from 'lucide-react';
+import { cn } from 'src/utils/cn';
 
 const OAuthCallback = () => {
   const router = useRouter();
@@ -490,83 +491,47 @@ const OAuthCallback = () => {
 
   if (errorState) {
     return (
-      <Box
-        display="flex"
-        flexDirection="column"
-        alignItems="center"
-        justifyContent="center"
-        minHeight="100vh"
-        sx={{ px: 2 }}
-      >
-        <Typography variant="h5" sx={{ fontWeight: 400, mb: 1 }}>
+      <div className="flex flex-col items-center justify-center min-h-screen px-4">
+        <h2 className="text-2xl font-normal mb-2">
           {errorState.title}
-        </Typography>
-        <Typography variant="body1" sx={{ color: 'text.secondary', mb: 4, textAlign: 'center' }}>
+        </h2>
+        <p className="text-center text-gray-600 mb-8">
           {errorState.message}
-        </Typography>
-        <Box sx={{ display: 'flex', gap: 1.5 }}>
-          <Button
-            variant="outlined"
+        </p>
+        <div className="flex gap-3">
+          <button
             onClick={handleRetry}
-            sx={{
-              py: 1.5,
-              px: 3,
-              fontSize: '15px',
-              fontWeight: 400,
-              textTransform: 'none',
-              borderRadius: '12px',
-              borderWidth: '1.5px',
-              borderColor: (theme) => alpha(theme.palette.divider, 0.2),
-              '&:hover': {
-                borderWidth: '1.5px',
-                borderColor: '#4285f4',
-                backgroundColor: (theme) => alpha('#4285f4', 0.04)
-              }
-            }}
+            className={cn(
+              "px-6 py-3 rounded-xl border-[1.5px] text-[15px] font-normal transition-all",
+              "border-gray-200 text-primary hover:border-primary hover:bg-primary/5"
+            )}
           >
             Try Again
-          </Button>
-          <Button
-            variant="outlined"
+          </button>
+          <button
             onClick={handleGoHome}
-            sx={{
-              py: 1.5,
-              px: 3,
-              fontSize: '15px',
-              fontWeight: 400,
-              textTransform: 'none',
-              borderRadius: '12px',
-              borderWidth: '1.5px',
-              borderColor: (theme) => alpha(theme.palette.divider, 0.2),
-              '&:hover': {
-                borderWidth: '1.5px',
-                backgroundColor: (theme) => alpha(theme.palette.text.primary, 0.04)
-              }
-            }}
+            className={cn(
+              "px-6 py-3 rounded-xl border-[1.5px] text-[15px] font-normal transition-all",
+              "border-gray-200 hover:bg-gray-100"
+            )}
           >
             Go Home
-          </Button>
-        </Box>
-      </Box>
+          </button>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="100vh"
-    >
-      <CircularProgress size={60} />
-      <Typography variant="h6" sx={{ mt: 3, fontWeight: 400 }}>
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <Loader2 size={60} className="animate-spin text-primary" />
+      <h2 className="mt-6 text-xl font-normal">
         Authenticating...
-      </Typography>
-      <Typography variant="body2" sx={{ mt: 1, color: 'text.secondary' }}>
+      </h2>
+      <p className="mt-2 text-sm text-gray-600">
         Please wait while we complete your login
-      </Typography>
-    </Box>
+      </p>
+    </div>
   );
 };
 

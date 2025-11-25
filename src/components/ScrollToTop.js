@@ -1,9 +1,7 @@
-import Box from '@mui/material/Box';
-import Zoom from '@mui/material/Zoom';
-import useScrollTrigger from '@mui/material/useScrollTrigger';
 import PropTypes from 'prop-types';
-import { useEffect, useState } from 'react';
-import { alpha, useTheme } from '@mui/material/styles';
+import { useEffect, useState, useContext } from 'react';
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
 
 ScrollToTop.propTypes = {
   window: PropTypes.func
@@ -11,14 +9,10 @@ ScrollToTop.propTypes = {
 
 export default function ScrollToTop(props) {
   const { window } = props;
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [scrollProgress, setScrollProgress] = useState(0);
-
-  const trigger = useScrollTrigger({
-    target: window ? window() : undefined,
-    disableHysteresis: true,
-    threshold: 100
-  });
+  const [trigger, setTrigger] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -26,6 +20,7 @@ export default function ScrollToTop(props) {
       const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
       const scrolled = height > 0 ? (winScroll / height) * 100 : 0;
       setScrollProgress(scrolled);
+      setTrigger(winScroll > 100);
     };
 
     if (typeof globalThis.window !== 'undefined') {
@@ -50,66 +45,29 @@ export default function ScrollToTop(props) {
     }
   };
 
+  if (!trigger) {
+    return null;
+  }
+
   return (
-    <Zoom in={trigger}>
-      <Box
-        onClick={handleClick}
-        role="presentation"
-        sx={{
-          position: 'fixed',
-          bottom: 20,
-          right: 20,
-          zIndex: 1200,
-          width: 42,
-          height: 42,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          backgroundColor: theme.palette.mode === 'dark'
-            ? alpha('#ffffff', 0.04)
-            : alpha('#000000', 0.04),
-          border: `1.5px solid ${
-            theme.palette.mode === 'dark'
-              ? alpha('#ffffff', 0.08)
-              : alpha('#000000', 0.08)
-          }`,
-          borderRadius: '12px',
-          cursor: 'pointer',
-          fontSize: '16px',
-          fontWeight: 400,
-          color: theme.palette.mode === 'dark'
-            ? alpha('#ffffff', 0.4)
-            : alpha('#000000', 0.4),
-          backdropFilter: 'blur(8px)',
-          WebkitBackdropFilter: 'blur(8px)',
-          overflow: 'hidden',
-          '&:hover': {
-            backgroundColor: theme.palette.mode === 'dark'
-              ? alpha('#ffffff', 0.04)
-              : alpha('#000000', 0.08),
-            borderColor: theme.palette.mode === 'dark'
-              ? alpha('#ffffff', 0.08)
-              : alpha('#000000', 0.08),
-            color: theme.palette.mode === 'dark'
-              ? alpha('#ffffff', 0.6)
-              : alpha('#000000', 0.6)
-          },
-          '&::before': {
-            content: '""',
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: `${scrollProgress}%`,
-            backgroundColor: theme.palette.mode === 'dark'
-              ? alpha('#10b981', 0.08)
-              : alpha('#4285f4', 0.08),
-            pointerEvents: 'none'
-          }
-        }}
-      >
-        ↑
-      </Box>
-    </Zoom>
+    <div
+      onClick={handleClick}
+      role="presentation"
+      className={cn(
+        "fixed bottom-5 right-5 z-[1200] w-[42px] h-[42px] flex items-center justify-center",
+        "rounded-xl cursor-pointer text-base font-normal overflow-hidden border-[1.5px]",
+        "backdrop-blur-md transition-all duration-300",
+        isDark
+          ? "bg-white/[0.04] border-white/[0.08] text-white/40 hover:bg-white/[0.04] hover:border-white/[0.08] hover:text-white/60"
+          : "bg-black/[0.04] border-black/[0.08] text-black/40 hover:bg-black/[0.08] hover:border-black/[0.08] hover:text-black/60"
+      )}
+      style={{
+        background: `linear-gradient(to top, ${
+          isDark ? 'rgba(16, 185, 129, 0.08)' : 'rgba(66, 133, 244, 0.08)'
+        } ${scrollProgress}%, transparent ${scrollProgress}%)`
+      }}
+    >
+      ↑
+    </div>
   );
 }

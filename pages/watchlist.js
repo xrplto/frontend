@@ -2,9 +2,6 @@ import axios from 'axios';
 import { performance } from 'perf_hooks';
 import { useState, useEffect } from 'react';
 
-// Material
-import { Box, Container, Grid, styled, Toolbar } from '@mui/material';
-
 // Context
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
@@ -16,16 +13,6 @@ import ScrollToTop from 'src/components/ScrollToTop';
 
 import TokenList from 'src/TokenList';
 import { SummaryWatchList } from 'src/TokenList/Summary';
-
-// overflow: scroll;
-// overflow: auto;
-// overflow: hidden;
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
-`
-);
 
 function Overview({ data }) {
   const [tokens, setTokens] = useState([]);
@@ -40,19 +27,19 @@ function Overview({ data }) {
   const account = accountProfile?.account;
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex min-h-screen flex-col overflow-hidden">
+      <div id="back-to-top-anchor" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         Watchlist XRPL Tokens
       </h1>
 
-      <Container maxWidth="xl">
-        <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid size={{ xs: 12, md: 12 }} lg={8}>
+      <div className="mx-auto w-full max-w-[1920px] px-6">
+        <div className="flex flex-col gap-6">
+          <div className="w-full lg:w-2/3">
             <SummaryWatchList />
-          </Grid>
-          <Grid size={{ xs: 12, md: 12 }} lg={12}>
+          </div>
+          <div className="w-full">
             {account && (
               <TokenList
                 showWatchList={true}
@@ -62,14 +49,14 @@ function Overview({ data }) {
                 setTokens={setTokens}
               />
             )}
-          </Grid>
-        </Grid>
-      </Container>
+          </div>
+        </div>
+      </div>
 
       <ScrollToTop />
 
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 

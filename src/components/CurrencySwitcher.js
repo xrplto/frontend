@@ -1,19 +1,14 @@
 import React, { useState, useEffect, useContext } from 'react';
-import {
-  Box,
-  IconButton,
-  Menu,
-  MenuItem,
-  alpha,
-  Typography,
-  styled,
-  Fade
-} from '@mui/material';
+import { Check, ChevronDown } from 'lucide-react';
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
+
 // Constants
 const currencyConfig = {
   availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
   activeFiatCurrency: 'XRP'
 };
+
 const currencyIcons = {
   USD: '💵',
   EUR: '💶',
@@ -21,114 +16,14 @@ const currencyIcons = {
   CNH: '🈷️',
   XRP: '✕'
 };
-import { AppContext } from 'src/AppContext';
-import CheckIcon from '@mui/icons-material/Check';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
-const StyledButton = styled('button')(({ theme, open }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  gap: theme.spacing(0.5),
-  padding: '6px 8px',
-  background: theme.palette.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.04)'
-    : 'rgba(0, 0, 0, 0.02)',
-  border: `1px solid ${theme.palette.mode === 'dark'
-    ? 'rgba(255, 255, 255, 0.08)'
-    : 'rgba(0, 0, 0, 0.08)'}`,
-  borderRadius: '6px',
-  cursor: 'pointer',
-  fontFamily: 'inherit',
-  fontSize: '11px',
-  fontWeight: 400,
-  color: theme.palette.text.primary,
-  minWidth: '60px',
-  height: '32px',
-  position: 'relative',
-  '&:hover': {
-    background: theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.06)'
-      : 'rgba(0, 0, 0, 0.04)',
-    borderColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.12)'
-      : 'rgba(0, 0, 0, 0.12)',
-  },
-  '&:focus': {
-    outline: `2px solid ${theme.palette.primary.main}`,
-    outlineOffset: '2px',
-  },
-  '& .expand-icon': {
-    fontSize: '14px',
-    opacity: 0.7,
-    transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
-  }
-}));
-
-const StyledMenu = styled(Menu)(({ theme }) => ({
-  '& .MuiPaper-root': {
-    marginTop: '4px',
-    borderRadius: '12px',
-    minWidth: '120px',
-    maxWidth: '140px',
-    border: `1px solid ${theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.12)'
-      : 'rgba(0, 0, 0, 0.12)'}`,
-    background: theme.palette.mode === 'dark'
-      ? 'rgba(0, 0, 0, 0.95)'
-      : 'rgba(255, 255, 255, 0.95)',
-    backdropFilter: 'blur(12px)',
-    boxShadow: 'none',
-    '& .MuiList-root': {
-      padding: '4px'
-    }
-  }
-}));
-
-const StyledMenuItem = styled(MenuItem)(({ theme, selected }) => ({
-  borderRadius: '6px',
-  padding: '8px 10px',
-  minHeight: '36px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: '8px',
-  margin: '1px 0',
-  fontSize: '11px',
-  background: selected
-    ? theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.08)'
-      : 'rgba(0, 0, 0, 0.05)'
-    : 'transparent',
-  '&:hover': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.06)'
-      : 'rgba(0, 0, 0, 0.04)',
-  },
-  '&.Mui-selected': {
-    backgroundColor: theme.palette.mode === 'dark'
-      ? 'rgba(255, 255, 255, 0.08)'
-      : 'rgba(0, 0, 0, 0.05)',
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark'
-        ? 'rgba(255, 255, 255, 0.1)'
-        : 'rgba(0, 0, 0, 0.06)',
-    }
-  }
-}));
-
-const CurrencyIcon = styled('span')({
-  display: 'flex',
-  alignItems: 'center',
-  fontSize: '14px',
-  lineHeight: 1
-});
-
-export default function CurrencySwithcer() {
-  const { activeFiatCurrency, toggleFiatCurrency } = useContext(AppContext);
+export default function CurrencySwitcher() {
+  const { activeFiatCurrency, toggleFiatCurrency, themeName } = useContext(AppContext);
   const [activeCurrency, setActiveCurrency] = useState(activeFiatCurrency);
   const { availableFiatCurrencies } = currencyConfig;
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   useEffect(() => {
     const defaultIndex = availableFiatCurrencies?.indexOf(activeFiatCurrency);
@@ -152,67 +47,77 @@ export default function CurrencySwithcer() {
   };
 
   return (
-    <Box>
-      <StyledButton
-        open={open}
+    <div className="relative">
+      <button
         onClick={handleClick}
         aria-controls={open ? 'currency-menu' : undefined}
         aria-haspopup="true"
         aria-expanded={open ? 'true' : undefined}
         aria-label="Select currency"
+        className={cn(
+          "flex items-center gap-1 px-2 py-1.5 rounded-md cursor-pointer border-[1.5px] min-w-[60px] h-8 text-xs font-normal",
+          isDark
+            ? "bg-white/[0.04] border-white/[0.08] text-white hover:bg-white/[0.06] hover:border-white/[0.12]"
+            : "bg-black/[0.02] border-black/[0.08] text-gray-900 hover:bg-black/[0.04] hover:border-black/[0.12]"
+        )}
       >
-        <CurrencyIcon>{currencyIcons[activeCurrency]}</CurrencyIcon>
-        <span style={{ fontWeight: 500, letterSpacing: '0.02em' }}>
-          {activeCurrency}
-        </span>
-        <ExpandMoreIcon className="expand-icon" />
-      </StyledButton>
-      <StyledMenu
-        id="currency-menu"
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        TransitionComponent={Fade}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'center'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'center'
-        }}
-      >
-        {availableFiatCurrencies.map((option) => (
-          <StyledMenuItem
-            key={option}
-            onClick={() => handleChange(option)}
-            selected={option === activeCurrency}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CurrencyIcon>{currencyIcons[option]}</CurrencyIcon>
-              <Typography
-                variant="body2"
-                sx={{
-                  fontWeight: option === activeCurrency ? 600 : 400,
-                  fontSize: '11px',
-                  color: 'text.primary'
-                }}
-              >
-                {option}
-              </Typography>
-            </Box>
-            {option === activeCurrency && (
-              <CheckIcon
-                sx={{
-                  fontSize: 14,
-                  color: 'text.secondary',
-                  opacity: 0.7
-                }}
-              />
-            )}
-          </StyledMenuItem>
-        ))}
-      </StyledMenu>
-    </Box>
+        <span className="text-sm">{currencyIcons[activeCurrency]}</span>
+        <span className="font-medium tracking-wide">{activeCurrency}</span>
+        <ChevronDown
+          size={14}
+          className={cn(
+            "opacity-70 transition-transform",
+            open && "rotate-180"
+          )}
+        />
+      </button>
+
+      {anchorEl && (
+        <>
+          <div
+            className="fixed inset-0 z-40"
+            onClick={handleClose}
+          />
+          <div className={cn(
+            "absolute mt-1 min-w-[120px] max-w-[140px] rounded-xl border-[1.5px] z-50",
+            isDark
+              ? "bg-black/95 border-white/[0.12] backdrop-blur-xl"
+              : "bg-white/95 border-gray-200 backdrop-blur-xl"
+          )}>
+            <div className="p-1">
+              {availableFiatCurrencies.map((option) => (
+                <button
+                  key={option}
+                  onClick={() => handleChange(option)}
+                  className={cn(
+                    "w-full rounded-lg px-2.5 py-2 min-h-9 flex items-center justify-between gap-2 border-none cursor-pointer my-0.5",
+                    option === activeCurrency
+                      ? isDark
+                        ? "bg-white/[0.08] hover:bg-white/[0.1]"
+                        : "bg-black/[0.05] hover:bg-black/[0.06]"
+                      : isDark
+                      ? "bg-transparent hover:bg-white/[0.06]"
+                      : "bg-transparent hover:bg-black/[0.04]"
+                  )}
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm flex items-center">{currencyIcons[option]}</span>
+                    <span className={cn(
+                      "text-xs",
+                      option === activeCurrency ? "font-semibold" : "font-normal"
+                    )}>
+                      {option}
+                    </span>
+                  </div>
+                  {option === activeCurrency && (
+                    <Check size={14} className="opacity-70" />
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }

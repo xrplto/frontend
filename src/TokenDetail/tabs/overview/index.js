@@ -2,9 +2,6 @@ import axios from 'axios';
 import React, { memo, useCallback, useMemo, useRef } from 'react';
 import { useState, useEffect, useContext } from 'react';
 
-// Material
-import { Grid, Stack, useTheme, useMediaQuery, Typography, Paper, Box } from '@mui/material';
-
 // Context
 import { AppContext } from 'src/AppContext';
 import PriceChart from './PriceChartAdvanced';
@@ -13,12 +10,12 @@ import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
 import Swap from './Swap';
+import { cn } from 'src/utils/cn';
 
 const Overview = memo(
   ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
-    const isTablet = useMediaQuery(theme.breakpoints.down('md'));
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 640;
+    const isTablet = typeof window !== 'undefined' && window.innerWidth < 960;
     const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile, setLoading, openSnackbar, themeName } = useContext(AppContext);
     const isDark = themeName === 'XrplToDarkTheme';
@@ -110,77 +107,62 @@ const Overview = memo(
     if (!user) user = token.name;
 
     return (
-      <>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: { xs: 'column', md: 'row' },
-            alignItems: 'flex-start',
-            gap: { xs: 0.3, md: 1 }
-          }}
-        >
-          <Box sx={{ flex: { md: '0 0 72%' }, maxWidth: { md: '72%' }, width: '100%' }}>
-            <PriceChart token={token} />
-            {!isMobile && !isTablet && (
-              <Box sx={{ mt: 0.5 }}>
-                <TradingHistory
-                  tokenId={token.md5}
-                  amm={token.AMM}
-                  token={token}
-                  pairs={pairs}
-                  onTransactionClick={onTransactionClick}
-                  isDark={isDark}
+      <div className={cn(
+        "flex flex-col md:flex-row items-start",
+        isMobile ? "gap-1" : "gap-2"
+      )}>
+        <div className="w-full md:flex-[0_0_68%] md:max-w-[68%]">
+          <PriceChart token={token} />
+          {!isMobile && !isTablet && (
+            <div className="mt-1">
+              <TradingHistory
+                tokenId={token.md5}
+                amm={token.AMM}
+                token={token}
+                pairs={pairs}
+                onTransactionClick={onTransactionClick}
+                isDark={isDark}
+              />
+            </div>
+          )}
+        </div>
+        <div className={cn(
+          "w-full md:flex-[0_0_32%] md:max-w-[32%]",
+          orderBookOpen ? "md:pr-1" : "md:pr-2"
+        )}>
+          <Swap
+            token={token}
+            onOrderBookToggle={onOrderBookToggle}
+            orderBookOpen={orderBookOpen}
+            onOrderBookData={onOrderBookData}
+          />
+          <PriceStatistics token={token} isDark={isDark} />
+          <Description
+            token={token}
+            showEditor={showEditor}
+            setShowEditor={setShowEditor}
+            description={description}
+            onApplyDescription={onApplyDescription}
+            isDark={isDark}
+            mdEditor={
+              showEditor ? (
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  className={cn(
+                    "w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary",
+                    isDark
+                      ? "border-white/20 bg-white/5 text-white placeholder-white/40"
+                      : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
+                  )}
+                  placeholder="Enter description..."
                 />
-              </Box>
-            )}
-          </Box>
-          <Box
-            sx={{
-              flex: { md: '0 0 28%' },
-              maxWidth: { md: '28%' },
-              width: '100%',
-              pr: orderBookOpen ? { md: 0.5 } : { md: 0.75 }
-            }}
-          >
-            <Swap
-              token={token}
-              onOrderBookToggle={onOrderBookToggle}
-              orderBookOpen={orderBookOpen}
-              onOrderBookData={onOrderBookData}
-            />
-            <PriceStatistics token={token} isDark={isDark} />
-            <Description
-              token={token}
-              showEditor={showEditor}
-              setShowEditor={setShowEditor}
-              description={description}
-              onApplyDescription={onApplyDescription}
-              isDark={isDark}
-              mdEditor={
-                showEditor ? (
-                  <textarea
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    style={{
-                      width: '100%',
-                      height: '300px',
-                      padding: '8px',
-                      borderRadius: '4px',
-                      border: isDark ? '1.5px solid rgba(255,255,255,0.2)' : '1.5px solid #ccc',
-                      background: isDark ? 'rgba(255,255,255,0.05)' : '#fff',
-                      color: isDark ? '#fff' : '#000',
-                      fontFamily: 'monospace',
-                      fontSize: '12px'
-                    }}
-                    placeholder="Enter description..."
-                  />
-                ) : null
-              }
-            />
-            <TrendingTokens />
-          </Box>
-        </Box>
-      </>
+              ) : null
+            }
+          />
+          <TrendingTokens />
+        </div>
+      </div>
     );
   }
 );

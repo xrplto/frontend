@@ -1,27 +1,15 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-import { useState, useEffect } from 'react';
-
-// Material
-import { Box, Container, Grid, styled, Toolbar } from '@mui/material';
+import { useState, useEffect, useContext } from 'react';
 
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
+import { AppContext } from 'src/AppContext';
 
 import TokenList from 'src/TokenList';
 import { SummaryTag } from 'src/TokenList/Summary';
-
-// overflow: scroll;
-// overflow: auto;
-// overflow: hidden;
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
-`
-);
 
 function getInitialTokens(data) {
   if (data) return data.tokens;
@@ -29,6 +17,8 @@ function getInitialTokens(data) {
 }
 
 function Overview({ data }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [tokens, setTokens] = useState(() => getInitialTokens(data));
 
   const tMap = new Map();
@@ -37,41 +27,39 @@ function Overview({ data }) {
   }
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex-1 overflow-hidden">
+      <div id="back-to-top-anchor" className="h-16" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {data?.tagName || 'Tagged'} XRPL Tokens
       </h1>
 
-      <Container maxWidth="xl">
-        <Grid container direction="row" justifyContent="left" alignItems="stretch" spacing={3}>
-          <Grid size={{ xs: 12, md: 12 }} lg={8}>
-            <SummaryTag tagName={data.tagName} />
-          </Grid>
-          <Grid size={{ xs: 12, md: 12 }} lg={12}>
-            <TokenList
-              tag={data.tag}
-              tagName={data.tagName}
-              tags={data.tags}
-              tokens={tokens}
-              tMap={tMap}
-              setTokens={setTokens}
-            />
-          </Grid>
-        </Grid>
-      </Container>
+      <div className="mx-auto max-w-7xl px-4">
+        <div className="mb-6">
+          <SummaryTag tagName={data.tagName} />
+        </div>
+        <div>
+          <TokenList
+            tag={data.tag}
+            tagName={data.tagName}
+            tags={data.tags}
+            tokens={tokens}
+            tMap={tMap}
+            setTokens={setTokens}
+          />
+        </div>
+      </div>
 
       <ScrollToTop />
 
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 
 export default Overview;
 
-const BASE_URL = process.env.API_URL;
+const BASE_URL = 'https://api.xrpl.to/api';
 
 export async function getServerSideProps(ctx) {
   // https://api.xrpl.to/api/tokens?tag=collectables-and-nfts&start=0&limit=20&sortBy=vol24hxrp&sortType=desc&filter=

@@ -1,23 +1,10 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Typography,
-  CircularProgress,
-  Pagination,
-  Chip,
-  Link,
-  Stack,
-  styled,
-  useTheme,
-  alpha
-} from '@mui/material';
+import React, { useState, useEffect, useContext } from 'react';
+import styled from '@emotion/styled';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { Loader2, ChevronsLeft, ChevronsRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+
 // Constants
 const getTokenImageUrl = (issuer, currency) => {
   return `https://xrpl.to/api/token_logo/${issuer}/${currency}`;
@@ -31,82 +18,20 @@ const decodeCurrency = (currency) => {
   }
 };
 
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  backgroundColor: 'transparent',
-  backdropFilter: 'none',
-  WebkitBackdropFilter: 'none',
-  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-  borderRadius: '12px',
-  boxShadow: `
-    0 8px 32px ${alpha(theme.palette.common.black, 0.12)},
-    0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-    inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-}));
-
-const RankBadge = styled(Box)(({ theme, rank }) => ({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 20,
-  height: 20,
-  borderRadius: '4px',
-  fontWeight: 400,
-  fontSize: '13px',
-  flexShrink: 0,
-  background:
-    rank === 1
-      ? alpha('#FFD700', 0.15)
-      : rank === 2
-        ? alpha('#C0C0C0', 0.15)
-        : rank === 3
-          ? alpha('#CD7F32', 0.15)
-          : alpha(theme.palette.action.selected, 0.3),
-  color: rank === 1 ? '#FFD700' : rank === 2 ? '#8B8B8B' : rank === 3 ? '#CD7F32' : theme.palette.text.secondary,
-  border: `1px solid ${rank === 1 ? alpha('#FFD700', 0.3) : rank === 2 ? alpha('#C0C0C0', 0.3) : rank === 3 ? alpha('#CD7F32', 0.3) : alpha(theme.palette.divider, 0.2)}`
-}));
-
-const StyledPagination = styled(Pagination)(({ theme }) => ({
-  '& .MuiPaginationItem-root': {
-    color: theme.palette.text.primary,
-    borderRadius: '12px',
-    margin: '0 3px',
-    fontWeight: 400,
-    minWidth: '32px',
-    height: '32px',
-    '&:hover': {
-      backgroundColor: theme.palette.mode === 'dark' ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.04)'
-    }
-  },
-  '& .Mui-selected': {
-    backgroundColor: `${theme.palette.primary.main} !important`,
-    color: '#fff !important',
-    fontWeight: 500,
-    borderRadius: '12px',
-    '&:hover': {
-      backgroundColor: `${theme.palette.primary.dark} !important`
-    }
-  }
-}));
-
 const formatNumber = (num) => {
   if (!num || num === 0) return '0';
-
   const value = parseFloat(num);
-
-  if (value >= 1e9) {
-    return (value / 1e9).toFixed(2) + 'B';
-  } else if (value >= 1e6) {
-    return (value / 1e6).toFixed(2) + 'M';
-  } else if (value >= 1e3) {
-    return (value / 1e3).toFixed(2) + 'K';
-  } else if (value < 1) {
-    return value.toFixed(4);
-  }
-
+  if (value >= 1e9) return (value / 1e9).toFixed(2) + 'B';
+  if (value >= 1e6) return (value / 1e6).toFixed(2) + 'M';
+  if (value >= 1e3) return (value / 1e3).toFixed(2) + 'K';
+  if (value < 1) return value.toFixed(4);
   return value.toFixed(2);
 };
 
 const RichList = ({ token, amm }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   const [richList, setRichList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -114,10 +39,8 @@ const RichList = ({ token, amm }) => {
   const [totalHolders, setTotalHolders] = useState(0);
   const [totalTrustlines, setTotalTrustlines] = useState(0);
   const [totalSupply, setTotalSupply] = useState(0);
-  const theme = useTheme();
   const limit = 20;
 
-  // Use AMM from prop or from token object
   const ammAccount = amm || token?.AMM;
 
   useEffect(() => {
@@ -136,18 +59,10 @@ const RichList = ({ token, amm }) => {
 
         if (data.result === 'success') {
           setRichList(data.richList || []);
-
-          // data.length is the total number of actual holders (balance > 0)
-          // This is different from trustlines which includes accounts with 0 balance
           const actualHolders = data.length || data.richList?.length || 0;
           setTotalHolders(actualHolders);
-
-          // Get trustlines from token object if available
-          // Check both trustlines and holders fields as they might be used interchangeably
           const trustlineCount = token?.trustlines || token?.holders || 0;
           setTotalTrustlines(trustlineCount);
-
-          // Calculate total supply from token or sum of holdings
           const supply =
             token.supply ||
             token.total_supply ||
@@ -165,81 +80,60 @@ const RichList = ({ token, amm }) => {
     };
 
     fetchRichList();
-  }, [token?.md5, page]); // Only refetch when token ID or page changes
+  }, [token?.md5, page]);
 
-  const handlePageChange = (event, newPage) => {
+  const handlePageChange = (newPage) => {
     setPage(newPage);
   };
 
   if (loading) {
     return (
-      <Box display="flex" justifyContent="center" p={4}>
-        <CircularProgress size={40} thickness={4} />
-      </Box>
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
     );
   }
 
   if (!richList || richList.length === 0) {
     return (
-      <Box
-        sx={{
-          textAlign: 'center',
-          py: 6,
-          backgroundColor: 'transparent',
-          backdropFilter: 'none',
-          WebkitBackdropFilter: 'none',
-          borderRadius: '12px',
-          border: `1px dashed ${alpha(theme.palette.divider, 0.3)}`,
-          boxShadow: `
-            0 8px 32px ${alpha(theme.palette.common.black, 0.12)}, 
-            0 1px 2px ${alpha(theme.palette.common.black, 0.04)},
-            inset 0 1px 1px ${alpha(theme.palette.common.white, 0.1)}`
-        }}
-      >
-        <Typography variant="h6" color="text.secondary" gutterBottom>
+      <div className={cn(
+        'rounded-xl border-[1.5px] border-dashed py-12 text-center',
+        isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
+      )}>
+        <h3 className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>
           No Holder Data Available
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
+        </h3>
+        <p className={cn('text-sm', isDark ? 'text-white/40' : 'text-gray-400')}>
           Rich list data will appear here when available
-        </Typography>
-      </Box>
+        </p>
+      </div>
     );
   }
 
+  const getRankStyle = (rank) => {
+    if (rank === 1) return 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30';
+    if (rank === 2) return 'bg-gray-400/15 text-gray-400 border-gray-400/30';
+    if (rank === 3) return 'bg-orange-600/15 text-orange-600 border-orange-600/30';
+    return isDark ? 'bg-white/10 text-white/60 border-white/20' : 'bg-gray-100 text-gray-600 border-gray-200';
+  };
+
   return (
-    <Stack spacing={2}>
-      <StyledTableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>
-                <Typography variant="subtitle2" fontWeight={500}>
-                  Rank
-                </Typography>
-              </TableCell>
-              <TableCell>
-                <Typography variant="subtitle2" fontWeight={500}>
-                  Address
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight={500}>
-                  Balance
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight={500}>
-                  % of Supply
-                </Typography>
-              </TableCell>
-              <TableCell align="right">
-                <Typography variant="subtitle2" fontWeight={500}>
-                  24h Change
-                </Typography>
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
+    <div className="space-y-4">
+      <div className={cn(
+        'overflow-hidden rounded-xl border-[1.5px]',
+        isDark ? 'border-white/10' : 'border-gray-200'
+      )}>
+        <table className="w-full">
+          <thead>
+            <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Rank</th>
+              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Address</th>
+              <th className={cn('px-4 py-3 text-right text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Balance</th>
+              <th className={cn('px-4 py-3 text-right text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>% of Supply</th>
+              <th className={cn('px-4 py-3 text-right text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>24h Change</th>
+            </tr>
+          </thead>
+          <tbody>
             {richList.map((holder, index) => {
               const rank = holder.id || (page - 1) * limit + index + 1;
               const percentOfSupply =
@@ -249,110 +143,77 @@ const RichList = ({ token, amm }) => {
                   : '0');
 
               return (
-                <TableRow
+                <tr
                   key={holder.account || index}
-                  sx={{
-                    '&:hover': {
-                      backgroundColor: alpha(theme.palette.primary.main, 0.05)
-                    }
-                  }}
+                  className={cn(
+                    'border-b transition-colors',
+                    isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50'
+                  )}
                 >
-                  <TableCell>
-                    <RankBadge rank={rank}>{rank}</RankBadge>
-                  </TableCell>
-                  <TableCell>
-                    <Link
-                      href={`/profile/${holder.account}`}
-                      sx={{
-                        textDecoration: 'none',
-                        color: 'primary.main',
-                        fontWeight: 400,
-                        '&:hover': {
-                          textDecoration: 'underline',
-                          color: 'primary.dark'
-                        }
-                      }}
-                    >
-                      <Typography variant="body2" component="span">
+                  <td className="px-4 py-3">
+                    <span className={cn(
+                      'inline-flex h-5 w-5 items-center justify-center rounded text-[13px] font-normal border',
+                      getRankStyle(rank)
+                    )}>
+                      {rank}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/profile/${holder.account}`}
+                        className="text-[13px] font-normal text-primary hover:underline"
+                      >
                         {holder.account
                           ? `${holder.account.slice(0, 6)}...${holder.account.slice(-6)}`
                           : 'Unknown'}
-                      </Typography>
-                    </Link>
-                    {holder.freeze && (
-                      <Chip
-                        label="Frozen"
-                        size="small"
-                        sx={{ ml: 1 }}
-                        variant="outlined"
-                        color="error"
-                      />
-                    )}
-                    {ammAccount && holder.account === ammAccount && (
-                      <Chip
-                        label="AMM"
-                        size="small"
-                        sx={{ ml: 1 }}
-                        variant="filled"
-                        color="primary"
-                      />
-                    )}
-                    {token.issuer && holder.account === token.issuer && (
-                      <Chip
-                        label={
-                          token.creator && holder.account === token.creator
-                            ? 'Issuer/Creator'
-                            : 'Issuer'
-                        }
-                        size="small"
-                        sx={{ ml: 1 }}
-                        variant="filled"
-                        color="secondary"
-                      />
-                    )}
-                    {token.creator &&
-                      holder.account === token.creator &&
-                      holder.account !== token.issuer && (
-                        <Chip
-                          label="Creator"
-                          size="small"
-                          sx={{ ml: 1 }}
-                          variant="filled"
-                          color="info"
-                        />
+                      </Link>
+                      {holder.freeze && (
+                        <span className="rounded border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-500">
+                          Frozen
+                        </span>
                       )}
-                  </TableCell>
-                  <TableCell align="right">
-                    <Stack
-                      direction="row"
-                      alignItems="center"
-                      justifyContent="flex-end"
-                      spacing={1}
-                    >
+                      {ammAccount && holder.account === ammAccount && (
+                        <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] text-white">
+                          AMM
+                        </span>
+                      )}
+                      {token.issuer && holder.account === token.issuer && (
+                        <span className={cn(
+                          'rounded px-1.5 py-0.5 text-[10px]',
+                          isDark ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
+                        )}>
+                          {token.creator && holder.account === token.creator ? 'Issuer/Creator' : 'Issuer'}
+                        </span>
+                      )}
+                      {token.creator && holder.account === token.creator && holder.account !== token.issuer && (
+                        <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px] text-blue-500">
+                          Creator
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-2">
                       <img
                         src={getTokenImageUrl(token.issuer, token.currency)}
                         alt={decodeCurrency(token.currency)}
-                        style={{ width: 16, height: 16, borderRadius: '50%' }}
+                        className="h-4 w-4 rounded-full"
                       />
-                      <Typography variant="body2" fontWeight="600">
+                      <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
                         {formatNumber(holder.balance)}
-                      </Typography>
-                    </Stack>
-                  </TableCell>
-                  <TableCell align="right">
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        color:
-                          parseFloat(percentOfSupply) > 10
-                            ? theme.palette.warning.main
-                            : theme.palette.text.primary
-                      }}
-                    >
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <span className={cn(
+                      'text-[13px]',
+                      parseFloat(percentOfSupply) > 10 ? 'text-yellow-500' : isDark ? 'text-white' : 'text-gray-900'
+                    )}>
                       {percentOfSupply}%
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
                     {holder.balance24h !== undefined && holder.balance24h !== null ? (
                       (() => {
                         const change = parseFloat(holder.balance) - parseFloat(holder.balance24h);
@@ -363,47 +224,73 @@ const RichList = ({ token, amm }) => {
                         const isPositive = change >= 0;
 
                         return (
-                          <Typography
-                            variant="body2"
-                            fontWeight="600"
-                            sx={{
-                              color: isPositive
-                                ? theme.palette.success.main
-                                : theme.palette.error.main
-                            }}
-                          >
-                            {isPositive ? '▲' : '▼'} {formatNumber(Math.abs(change))} (
-                            {isPositive ? '+' : ''}
-                            {changePercent}%)
-                          </Typography>
+                          <span className={cn(
+                            'text-[13px] font-medium',
+                            isPositive ? 'text-green-500' : 'text-red-500'
+                          )}>
+                            {isPositive ? '▲' : '▼'} {formatNumber(Math.abs(change))} ({isPositive ? '+' : ''}{changePercent}%)
+                          </span>
                         );
                       })()
                     ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        -
-                      </Typography>
+                      <span className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>-</span>
                     )}
-                  </TableCell>
-                </TableRow>
+                  </td>
+                </tr>
               );
             })}
-          </TableBody>
-        </Table>
-      </StyledTableContainer>
+          </tbody>
+        </table>
+      </div>
 
       {totalPages > 1 && (
-        <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-          <StyledPagination
-            count={totalPages}
-            page={page}
-            onChange={handlePageChange}
-            size="large"
-            showFirstButton
-            showLastButton
-          />
-        </Stack>
+        <div className="flex items-center justify-center gap-2 pt-4">
+          <button
+            onClick={() => handlePageChange(1)}
+            disabled={page === 1}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronsLeft size={16} />
+          </button>
+          <button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronLeft size={16} />
+          </button>
+          <span className={cn('px-4 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
+            Page {page} of {totalPages}
+          </span>
+          <button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronRight size={16} />
+          </button>
+          <button
+            onClick={() => handlePageChange(totalPages)}
+            disabled={page === totalPages}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+            )}
+          >
+            <ChevronsRight size={16} />
+          </button>
+        </div>
       )}
-    </Stack>
+    </div>
   );
 };
 

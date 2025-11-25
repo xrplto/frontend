@@ -5,16 +5,14 @@ import { useRouter } from 'next/router';
 import ThemeProvider from 'src/theme/ThemeProvider';
 import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
-import { CssBaseline, styled } from '@mui/material';
 import { ContextProvider, AppContext } from 'src/AppContext';
 import { useContext, useEffect, useState } from 'react';
 import './zMain.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import { SnackbarProvider } from 'notistack';
-import { Alert, Slide, Snackbar } from '@mui/material';
 import { inter, jetbrainsMono } from 'src/theme/fonts';
+import { cn } from 'src/utils/cn';
 
 // Polyfills for Safari iOS compatibility
 if (typeof window !== 'undefined') {
@@ -77,26 +75,6 @@ const jsonLdSchema = {
 
 const clientSideEmotionCache = createEmotionCache();
 
-// Inline ProgressBar styled components
-const ProgressBarContainer = styled('div')(({ theme, show }) => ({
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  height: '3px',
-  zIndex: 9999,
-  opacity: show ? 1 : 0,
-  transition: 'opacity 0.2s ease-in-out'
-}));
-
-const ProgressBarFill = styled('div')(({ theme, progress }) => ({
-  height: '100%',
-  backgroundColor: theme.palette.primary.main,
-  width: `${progress}%`,
-  transition: 'width 0.3s ease-out',
-  boxShadow: `0 0 10px ${theme.palette.primary.main}`
-}));
-
 // Inline ProgressBar component
 function AppProgressBar({ router }) {
   const [progress, setProgress] = useState(0);
@@ -155,9 +133,17 @@ function AppProgressBar({ router }) {
   }, [show, progress]);
 
   return (
-    <ProgressBarContainer show={show}>
-      <ProgressBarFill progress={progress} />
-    </ProgressBarContainer>
+    <div
+      className={cn(
+        'fixed left-0 right-0 top-0 z-[9999] h-[3px] transition-opacity duration-200',
+        show ? 'opacity-100' : 'opacity-0'
+      )}
+    >
+      <div
+        className="h-full bg-primary transition-[width] duration-300"
+        style={{ width: `${progress}%` }}
+      />
+    </div>
   );
 }
 
@@ -183,10 +169,35 @@ function AppPageLayout({ children }) {
   );
 }
 
-// Slide transition component for Snackbar
-const SlideTransition = React.forwardRef(function SlideTransition(props, ref) {
-  return <Slide {...props} direction="left" ref={ref} />;
-});
+// Custom Toast notification component
+function Toast({ isOpen, msg, variant, onClose }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
+  const colors = {
+    success: { bg: 'bg-green-500', border: 'border-green-500', text: 'text-green-50' },
+    error: { bg: 'bg-red-500', border: 'border-red-500', text: 'text-red-50' },
+    warning: { bg: 'bg-yellow-500', border: 'border-yellow-500', text: 'text-yellow-50' },
+    info: { bg: 'bg-blue-500', border: 'border-blue-500', text: 'text-blue-50' }
+  };
+
+  const color = colors[variant] || colors.info;
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed right-4 top-20 z-[9999] animate-[slideInRight_0.3s_ease-out]">
+      <div className={cn('flex items-center gap-3 rounded-xl border-[1.5px] px-4 py-3 shadow-lg', color.bg, color.border)}>
+        <span className={cn('text-sm font-normal', color.text)}>{msg}</span>
+        <button onClick={onClose} className={cn('ml-2 hover:opacity-80', color.text)}>
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
@@ -313,35 +324,11 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
         <ContextProvider data={data} openSnackbar={openSnackbar}>
           <AppProgressBar router={router} />
           <ThemeProvider>
-              <SnackbarProvider
-                maxSnack={2}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'center'
-                }}
-              >
-                <CssBaseline />
-                <AppPageLayout>
-                  <Component {...pageProps} />
-                </AppPageLayout>
-                {/* Inline Snackbar component (previously XSnackbar) */}
-                <Snackbar
-                  open={isOpen}
-                  autoHideDuration={2000}
-                  onClose={(event, reason) => {
-                    if (reason === 'clickaway') return;
-                    closeSnackbar();
-                  }}
-                  anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                  TransitionComponent={SlideTransition}
-                  key="key_self_snackbar"
-                >
-                  <Alert onClose={closeSnackbar} severity={variant} sx={{ width: '100%' }}>
-                    {msg}
-                  </Alert>
-                </Snackbar>
-                <TransactionAlert />
-              </SnackbarProvider>
+            <AppPageLayout>
+              <Component {...pageProps} />
+            </AppPageLayout>
+            <Toast isOpen={isOpen} msg={msg} variant={variant} onClose={closeSnackbar} />
+            <TransactionAlert />
           </ThemeProvider>
         </ContextProvider>
       </div>

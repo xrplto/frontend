@@ -1,67 +1,42 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
-import { FadeLoader } from '../components/Spinners';
+import { useState, useEffect, useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { CheckCircle, X, Repeat, Clock } from 'lucide-react';
+import { FadeLoader, PuffLoader, PulseLoader } from '../components/Spinners';
 import Decimal from 'decimal.js-light';
 
-// Material
-import {
-  useTheme,
-  Backdrop,
-  Divider,
-  IconButton,
-  Link,
-  Stack,
-  Tooltip,
-  Typography,
-  Paper,
-  Avatar
-} from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import HighlightOffIcon from '@mui/icons-material/HighlightOff';
-import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
-import AccessTimeIcon from '@mui/icons-material/AccessTime';
-
-// Loader
-import { PuffLoader, PulseLoader } from '../components/Spinners';
-
 // Utils
-// import { checkExpiration, getUnixTimeEpochFromRippleEpoch } from 'src/utils/parse';
-import { checkExpiration } from 'src/utils/formatters';
-import { formatDateTime } from 'src/utils/formatters';
+import { checkExpiration, formatDateTime } from 'src/utils/formatters';
 import { normalizeAmount } from 'src/utils/parseUtils';
-
-// Context
-import { useContext } from 'react';
-import { AppContext } from 'src/AppContext';
 
 // Components
 import CountdownTimer from './CountDownTimer';
-
 import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 
 export default function OffersList({ nft, offers, handleAcceptOffer, handleCancelOffer, isSell }) {
-  const theme = useTheme();
-  const { accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
   const isOwner = accountLogin === nft.account;
-
   const [loading, setLoading] = useState(false);
 
   return (
-    <Paper
-      elevation={3}
-      sx={{ p: 3, borderRadius: 2, backgroundColor: theme.palette.background.paper }}
+    <div
+      className={cn(
+        "rounded-xl border-[1.5px] p-4",
+        isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+      )}
     >
       {offers && offers.length === 0 && (
-        <Typography variant="body2" align="center" color="text.secondary" sx={{ my: 2 }}>
+        <div className="my-4 text-center text-[13px] font-normal text-gray-500">
           No offers available at the moment
-        </Typography>
+        </div>
       )}
 
-      <Stack spacing={2}>
+      <div className="flex flex-col gap-4">
         {offers.map((offer, idx) => {
           const price = normalizeAmount(offer.amount);
           let priceAmount = price.amount;
@@ -73,56 +48,73 @@ export default function OffersList({ nft, offers, handleAcceptOffer, handleCance
           const expired = checkExpiration(offer.expiration);
 
           return (
-            <Paper key={offer.nft_offer_index} elevation={1} sx={{ p: 2, borderRadius: 1 }}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <Avatar sx={{ bgcolor: theme.palette.primary.main }}>
-                    {offer.owner.charAt(0).toUpperCase()}
-                  </Avatar>
-                  <Stack>
-                    <Typography variant="h6" color="primary.main">
+            <div
+              key={offer.nft_offer_index}
+              className={cn(
+                "rounded-lg border-[1.5px] p-3",
+                isDark ? "border-white/10" : "border-gray-200"
+              )}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-full text-[15px] font-normal uppercase",
+                      isDark ? "bg-primary/10 text-primary" : "bg-primary/20 text-primary"
+                    )}
+                  >
+                    {offer.owner.charAt(0)}
+                  </div>
+                  <div>
+                    <div className="text-[15px] font-normal text-primary">
                       {priceAmount} {price.name}
-                    </Typography>
-                    <Link
+                    </div>
+                    <a
                       href={`https://xrpl.to/profile/${offer.owner}`}
                       rel="noreferrer noopener nofollow"
-                      color="text.secondary"
-                      underline="hover"
+                      className={cn(
+                        "break-all text-[11px] font-normal hover:underline",
+                        isDark ? "text-white/60" : "text-gray-600"
+                      )}
                     >
-                      <Typography variant="body2" noWrap>
-                        {offer.owner}
-                      </Typography>
-                    </Link>
-                  </Stack>
-                </Stack>
+                      {offer.owner}
+                    </a>
+                  </div>
+                </div>
 
-                {/* Action buttons */}
-                <Stack direction="row" spacing={1}>
-                  {/* ... existing action button logic ... */}
-                </Stack>
-              </Stack>
+                {/* Action buttons placeholder */}
+                <div className="flex gap-2">
+                  {/* Add action buttons here based on your logic */}
+                </div>
+              </div>
 
               {offer.destination && (
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                  <TransferWithinAStationIcon color="action" fontSize="small" />
-                  <Typography variant="body2" color="text.secondary">
+                <div className="mt-2 flex items-center gap-2">
+                  <Repeat size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                  <div className={cn(
+                    "text-[11px] font-normal",
+                    isDark ? "text-white/60" : "text-gray-600"
+                  )}>
                     {offer.destination}
-                  </Typography>
-                </Stack>
+                  </div>
+                </div>
               )}
 
               {offer.expiration && (
-                <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 1 }}>
-                  <AccessTimeIcon color="action" fontSize="small" />
-                  <Typography variant="body2" color="text.secondary">
+                <div className="mt-2 flex items-center gap-2">
+                  <Clock size={14} className={isDark ? "text-white/40" : "text-gray-400"} />
+                  <div className={cn(
+                    "text-[11px] font-normal",
+                    isDark ? "text-white/60" : "text-gray-600"
+                  )}>
                     {expired ? 'Expired' : 'Expires'} on {formatDateTime(offer.expiration * 1000)}
-                  </Typography>
-                </Stack>
+                  </div>
+                </div>
               )}
-            </Paper>
+            </div>
           );
         })}
-      </Stack>
-    </Paper>
+      </div>
+    </div>
   );
 }

@@ -1,12 +1,10 @@
 import { useContext, useState, useMemo } from 'react';
-import { Box, useTheme } from '@mui/material';
 import Image from 'next/image';
-
+import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 
 function Logo({ style }) {
-  const { darkMode } = useContext(AppContext);
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
   const [imageError, setImageError] = useState(false);
 
   // Memoize logo paths - removed query string to avoid Next.js localPatterns warning
@@ -18,42 +16,26 @@ function Logo({ style }) {
     []
   );
 
-  // Use theme.palette.mode as primary check, fallback to darkMode
-  const isDark = theme.palette.mode === 'dark' || darkMode;
+  const isDark = themeName === 'XrplToDarkTheme';
   const img = isDark ? img_white : img_black;
-
-  const logoStyle = {
-    paddingLeft: 0,
-    paddingRight: 0,
-    paddingTop: 0,
-    margin: 0,
-    display: 'inline-flex',
-    cursor: 'pointer',
-    position: 'relative',
-    width: '100px',
-    height: '36px',
-    ...style
-  };
 
   const handleImageError = () => {
     setImageError(true);
   };
 
   return (
-    <Box style={logoStyle} onClick={() => (window.location.href = '/')}>
+    <div
+      className="inline-flex cursor-pointer relative w-[100px] h-9"
+      style={style}
+      onClick={() => (window.location.href = '/')}
+    >
       {imageError ? (
-        <Box
-          sx={{
-            width: '100px',
-            height: '36px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            color: isDark ? 'white' : 'black'
-          }}
-        >
+        <div className={cn(
+          "w-[100px] h-9 flex items-center justify-center",
+          isDark ? "text-white" : "text-black"
+        )}>
           XRPL.to
-        </Box>
+        </div>
       ) : (
         <Image
           src={img}
@@ -69,7 +51,7 @@ function Logo({ style }) {
           priority
         />
       )}
-    </Box>
+    </div>
   );
 }
 

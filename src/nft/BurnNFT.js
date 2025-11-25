@@ -1,29 +1,21 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
-
-// Material
-import { useTheme, Backdrop, Button } from '@mui/material';
-
-// Iconify
-import DeleteIcon from '@mui/icons-material/Delete';
-
-// Context
-import { useContext } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { Trash2 } from 'lucide-react';
 
 // Loader
 import { PulseLoader } from '../components/Spinners';
 
 // Components
-// QRDialog removed - Xaman no longer used
 import ConfirmBurnDialog from './ConfirmBurnDialog';
 import { updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 import { useDispatch } from 'react-redux';
 import { configureMemos } from 'src/utils/parseUtils';
 
-// ----------------------------------------------------------------------
 export default function BurnNFT({ nft, onHandleBurn }) {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const BASE_URL = 'https://api.xrpl.to/api';
 
   const dispatch = useDispatch();
@@ -31,17 +23,11 @@ export default function BurnNFT({ nft, onHandleBurn }) {
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
 
-
   const [loading, setLoading] = useState(false);
-
   const [openConfirm, setOpenConfirm] = useState(false);
 
   const { flag = 0, account = '', NFTokenID = '' } = nft || {};
-
-  // const isBurnable = (flag & 0x00000001) > 0;
   const isBurnable = accountLogin === account && account !== '';
-
-  // Legacy Xaman functionality removed
 
   const onBurnNFTXumm = async () => {
     if (!accountLogin || !accountToken) {
@@ -63,7 +49,6 @@ export default function BurnNFT({ nft, onHandleBurn }) {
       };
 
       if (wallet_type === 'device') {
-        // Device authentication required for NFT operations
         openSnackbar('Device authentication for NFT burn coming soon', 'info');
       } else {
         openSnackbar('Device authentication required', 'error');
@@ -76,33 +61,34 @@ export default function BurnNFT({ nft, onHandleBurn }) {
     setLoading(false);
   };
 
-
   const handleBurnNFT = () => {
     setOpenConfirm(true);
-    // onBurnNFTXumm();
   };
 
   return (
     <>
-      <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
-        <PulseLoader color={'#FF4842'} size={10} />
-      </Backdrop>
+      {loading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
+          <PulseLoader color="#FF4842" size={10} />
+        </div>
+      )}
 
       <ConfirmBurnDialog open={openConfirm} setOpen={setOpenConfirm} onContinue={onBurnNFTXumm} />
 
-      <Button
-        variant="outlined"
-        fullWidth
-        // sx={{ minWidth: 150 }}
-        color="warning"
-        startIcon={<DeleteIcon />}
-        onClick={() => handleBurnNFT()}
-        disabled={!accountLogin || !isBurnable || !nft} // Added !nft check
+      <button
+        className={cn(
+          "flex w-full items-center justify-center gap-2 rounded-xl border-[1.5px] px-4 py-[10px] text-[13px] font-normal transition-colors",
+          "disabled:cursor-not-allowed disabled:opacity-50",
+          isDark
+            ? "border-orange-500/50 text-orange-500 hover:bg-orange-500/5"
+            : "border-orange-600 text-orange-600 hover:bg-orange-50"
+        )}
+        onClick={handleBurnNFT}
+        disabled={!accountLogin || !isBurnable || !nft}
       >
+        <Trash2 size={14} />
         Burn
-      </Button>
-
-      {/* QRDialog removed - Xaman no longer used */}
+      </button>
     </>
   );
 }

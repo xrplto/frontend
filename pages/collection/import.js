@@ -1,5 +1,4 @@
-// Material
-import { Box, Container, styled, Toolbar } from '@mui/material';
+import styled from '@emotion/styled';
 
 // Context
 import { useContext } from 'react';
@@ -11,12 +10,9 @@ import Footer from 'src/components/Footer';
 import ImportCollection from 'src/NFTCollection/import';
 import ScrollToTop from 'src/components/ScrollToTop';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: hidden;
-        flex: 1;
-`
-);
+const OverviewWrapper = styled.div`
+  flex: 1;
+`;
 
 export default function Overview({ data }) {
   const { darkMode, accountProfile, openSnackbar } = useContext(AppContext);
@@ -25,11 +21,11 @@ export default function Overview({ data }) {
 
   return (
     <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+      <div className="h-16" id="back-to-top-anchor" />
 
       <Header />
 
-      <Container maxWidth="sm">{isAdmin && <ImportCollection />}</Container>
+      <div className="mx-auto max-w-2xl px-4">{isAdmin && <ImportCollection />}</div>
 
       <ScrollToTop />
 

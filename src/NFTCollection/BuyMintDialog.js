@@ -1,88 +1,11 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Decimal from 'decimal.js-light';
-
-// Material
-import {
-  alpha,
-  useTheme,
-  useMediaQuery,
-  styled,
-  Avatar,
-  Backdrop,
-  Button,
-  Checkbox,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  FormControlLabel,
-  IconButton,
-  InputAdornment,
-  Link,
-  MenuItem,
-  Select,
-  Stack,
-  Tooltip,
-  Typography,
-  TextField
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-
-// Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
-
-// Components
-// QRDialog removed - Xaman no longer used
-
-// Loader
+import { cn } from 'src/utils/cn';
+import { X, ShoppingCart } from 'lucide-react';
 import { PulseLoader } from '../components/Spinners';
-
-// Utils
 import { fNumber } from 'src/utils/formatters';
-
-// ----------------------------------------------------------------------
-const BuyDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
-  }
-}));
-
-const BuyDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
-
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  }
-}));
 
 function GetNum(amount) {
   let num = 0;
@@ -102,20 +25,9 @@ export default function BuyMintDialog({
   setMints,
   setXrpBalance
 }) {
-  // "costs": [
-  //     {
-  //         "md5": "0413ca7cfc258dfaf698c02fe304e607",
-  //         "name": "SOLO",
-  //         "issuer": "rsoLo2S1kiGeCcn6hCUXVrCpGMWLrRrLZz",
-  //         "currency": "534F4C4F00000000000000000000000000000000",
-  //         "ext": "jpg",
-  //         "exch": 0.29431199670355546,
-  //         "cost": "100"
-  //     }
-  // ]
-  const theme = useTheme();
   const BASE_URL = 'https://api.xrpl.to/api';
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const { accountProfile, openSnackbar } = useContext(AppContext);
   const account = accountProfile?.account;
@@ -131,17 +43,6 @@ export default function BuyMintDialog({
   const [disclaimer, setDisclaimer] = useState(false);
 
   const [cost, setCost] = useState(costs[0]);
-  // {
-  //     "md5": "xrp",
-  //     "name": "XRP",
-  //     "issuer": "XRPL",
-  //     "currency": "XRP",
-  //     "ext": "png",
-  //     "exch": "1",
-  //     "cost": "1"
-  // },
-
-  // const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
   let canApprove = false;
   const amt = GetNum(quantity);
@@ -175,8 +76,7 @@ export default function BuyMintDialog({
 
           return;
         }
-      } catch (err) {
-      }
+      } catch (err) {}
       isRunning = false;
       counter--;
       if (counter <= 0) {
@@ -197,49 +97,6 @@ export default function BuyMintDialog({
   const onPaymentXumm = async () => {
     openSnackbar('Xaman no longer supported', 'info');
     return; // Function disabled
-    if (!account || !accountToken) {
-      openSnackbar('Please login', 'error');
-      return;
-    }
-    /*{
-            "TransactionType" : "Payment",
-            "Account" : "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
-            "Destination" : "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-            "Amount" : {
-               "currency" : "USD",
-               "value" : "1",
-               "issuer" : "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn"
-            },
-            "Fee": "12",
-            "Flags": 2147483648,
-            "Sequence": 2,
-        }*/
-
-    setLoading(true);
-    try {
-      const user_token = accountProfile?.user_token;
-
-      const body = { account, md5: cost.md5, quantity, cid, user_token };
-
-      const res = await axios.post(`${BASE_URL}/spin/buymint`, body, {
-        headers: { 'x-access-token': accountToken }
-      });
-
-      if (res.status === 200) {
-        const uuid = res.data.data.uuid;
-        const qrlink = res.data.data.qrUrl;
-        const nextlink = res.data.data.next;
-
-        setUuid(uuid);
-        setQrUrl(qrlink);
-        setNextUrl(nextlink);
-        setOpenScanQR(true);
-      }
-    } catch (err) {
-      console.error(err);
-      openSnackbar('Network error!', 'error');
-    }
-    setLoading(false);
   };
 
   const handleScanQRClose = () => {
@@ -262,15 +119,9 @@ export default function BuyMintDialog({
     } catch (e) {}
   };
 
-  const isNumber = (num) => {
-    return /^[0-9.,]*$/.test(num.toString());
-  };
-
   const handleApprove = (e) => {
     if (quantity > 0) {
-      // onPaymentXumm(); // Xumm removed
       openSnackbar('Device authentication required', 'info');
-      // openSnackbar('Comming soon!', 'success');
     } else {
       openSnackbar('Invalid value!', 'error');
     }
@@ -293,123 +144,184 @@ export default function BuyMintDialog({
     if (newCost) setCost(newCost);
   };
 
+  if (!open) return null;
+
   return (
     <>
-      <Backdrop sx={{ color: '#000', zIndex: 1303 }} open={loading}>
-        <PulseLoader color={'#FF4842'} size={10} />
-      </Backdrop>
+      {/* Loading Backdrop */}
+      {loading && (
+        <div className="fixed inset-0 z-[1303] flex items-center justify-center bg-black/50">
+          <PulseLoader color={'#FF4842'} size={10} />
+        </div>
+      )}
 
-      <BuyDialog
-        fullScreen={fullScreen}
-        onClose={handleClose}
-        open={open}
-        // sx={{zIndex: 1302}}
-        hideBackdrop={true}
-        disableScrollLock
-        disablePortal
-        keepMounted
-      >
-        <BuyDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          <Typography variant="p4">Buy Mint</Typography>
-        </BuyDialogTitle>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-[1302] bg-black/50"
+        style={{ backdropFilter: 'blur(1px)' }}
+        onClick={handleClose}
+      />
 
-        <DialogContent>
-          <Stack sx={{ pl: 1, pr: 1 }}>
-            <Typography variant="body2" sx={{ mt: 0 }}>
-              To power up the spinner, you need at least 1 or more Mints. This will enable you to
-              purchase NFTs {type === 'random' ? 'randomly' : 'sequentially'} selected from this
-              collection.
-            </Typography>
-            <Typography variant="body2" sx={{ mt: 2 }}>
-              Mints purchased for this collection cannot be used on other collections.
-            </Typography>
+      {/* Dialog */}
+      <div className="fixed inset-0 z-[1302] flex items-center justify-center p-4 overflow-y-auto">
+        <div
+          className={cn(
+            'w-full max-w-md rounded-xl border-[1.5px] my-8',
+            isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-2 border-b border-white/10">
+            <h3 className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+              Buy Mint
+            </h3>
+            <button
+              onClick={handleClose}
+              className={cn(
+                'p-1 rounded-lg',
+                isDark ? 'hover:bg-white/5 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
+              )}
+            >
+              <X size={20} />
+            </button>
+          </div>
 
-            <Stack spacing={2} sx={{ mt: 2 }}>
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Typography variant="subtitle1">Cost</Typography>
-                <CustomSelect id="select_cost" value={cost.md5} onChange={handleChangeCost}>
-                  {costs.map((cost, idx) => (
-                    <MenuItem key={cost.md5} value={cost.md5}>
-                      <Stack direction="row" alignItems="center">
-                        <Avatar
-                          alt={cost.name}
-                          src={`https://s1.xrpl.to/token/${cost.md5}`}
-                          sx={{ width: 28, height: 28, mr: 1 }}
-                        />
-                        <Typography variant="body1" color="#EB5757">
-                          {cost.amount} {cost.name}
-                        </Typography>
-                      </Stack>
-                    </MenuItem>
-                  ))}
-                </CustomSelect>
-              </Stack>
-            </Stack>
+          {/* Content */}
+          <div className="p-2">
+            <div className="px-1 pr-1">
+              <p
+                className={cn(
+                  'text-[13px] font-normal mt-0',
+                  isDark ? 'text-white' : 'text-gray-900'
+                )}
+              >
+                To power up the spinner, you need at least 1 or more Mints. This will enable you to
+                purchase NFTs {type === 'random' ? 'randomly' : 'sequentially'} selected from this
+                collection.
+              </p>
+              <p
+                className={cn(
+                  'text-[13px] font-normal mt-2',
+                  isDark ? 'text-white' : 'text-gray-900'
+                )}
+              >
+                Mints purchased for this collection cannot be used on other collections.
+              </p>
 
-            <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
-              <Typography variant="subtitle1">
-                Quantity <Typography variant="caption">*</Typography>
-              </Typography>
-              <TextField
-                id="input-with-sx2"
-                variant="standard"
-                value={quantity}
-                autoComplete="new-password"
-                onFocus={(event) => event.target.select()}
-                onChange={handleChangeQuantity}
-                onKeyDown={(e) => e.stopPropagation()}
-                margin="dense"
-                inputProps={{
-                  autoComplete: 'off',
-                  style: { textAlign: 'center' }
-                }}
-              />
-            </Stack>
+              <div className="flex flex-col gap-2 mt-2">
+                <div className="flex flex-row gap-2 items-center">
+                  <span
+                    className={cn(
+                      'text-[13px] font-medium',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
+                    Cost
+                  </span>
+                  <select
+                    id="select_cost"
+                    value={cost.md5}
+                    onChange={handleChangeCost}
+                    className={cn(
+                      'rounded-lg border-[1.5px] px-2 py-1 text-[13px] font-normal',
+                      isDark
+                        ? 'bg-black border-white/15 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    )}
+                  >
+                    {costs.map((cost, idx) => (
+                      <option key={cost.md5} value={cost.md5}>
+                        {cost.amount} {cost.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
 
-            <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
-              <Typography variant="subtitle2">Total {cost.name} Required</Typography>
-              <Typography variant="subtitle2" color="#33C2FF">
-                {fNumber(cost.amount * quantity)} {cost.name}
-              </Typography>
-            </Stack>
+              <div className="flex flex-row gap-2 mt-2 items-center">
+                <span
+                  className={cn(
+                    'text-[13px] font-medium',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  Quantity <span className="text-[11px] text-[#EB5757]">*</span>
+                </span>
+                <input
+                  type="text"
+                  id="input-with-sx2"
+                  value={quantity}
+                  autoComplete="new-password"
+                  onChange={handleChangeQuantity}
+                  onFocus={(event) => event.target.select()}
+                  onKeyDown={(e) => e.stopPropagation()}
+                  className={cn(
+                    'w-20 rounded-lg border-[1.5px] px-3 py-1 text-center text-[13px] font-normal',
+                    isDark
+                      ? 'bg-black border-white/15 text-white placeholder:text-gray-500'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                  )}
+                />
+              </div>
 
-            <FormControlLabel
-              sx={{ mt: 3 }}
-              control={<Checkbox checked={disclaimer} onChange={handleChangeDisclaimer} />}
-              label={
-                <Typography variant="caption">
+              <div className="flex flex-row gap-2 mt-3">
+                <span
+                  className={cn(
+                    'text-[13px] font-medium',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  Total {cost.name} Required
+                </span>
+                <span className="text-[13px] font-medium text-[#33C2FF]">
+                  {fNumber(cost.amount * quantity)} {cost.name}
+                </span>
+              </div>
+
+              <div className="mt-3 flex items-start gap-2">
+                <input
+                  type="checkbox"
+                  checked={disclaimer}
+                  onChange={handleChangeDisclaimer}
+                  className="mt-1"
+                  id="disclaimer-checkbox"
+                />
+                <label
+                  htmlFor="disclaimer-checkbox"
+                  className={cn('text-[11px] font-normal', isDark ? 'text-white' : 'text-gray-900')}
+                >
                   I understand that I will be purchasing{' '}
-                  <Typography variant="caption" color="#33C2FF">
-                    {quantity} Mints
-                  </Typography>{' '}
+                  <span className="text-[11px] font-normal text-[#33C2FF]">{quantity} Mints</span>{' '}
                   with total{' '}
-                  <Typography variant="caption" color="#33C2FF">
+                  <span className="text-[11px] font-normal text-[#33C2FF]">
                     {fNumber(cost.amount * quantity)} {cost.name}
-                  </Typography>
+                  </span>
                   . Each Mint will mint the NFT on XRPL and transfer it to my wallet address which
                   is{' '}
-                  <Typography variant="caption" color="#33C2FF">
-                    {account}
-                  </Typography>
-                </Typography>
-              }
-            />
+                  <span className="text-[11px] font-normal text-[#33C2FF]">{account}</span>
+                </label>
+              </div>
 
-            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3, mb: 4 }}>
-              <Button
-                variant="outlined"
-                onClick={handleApprove}
-                color="primary"
-                disabled={!canApprove}
-              >
-                Approve in My Wallet
-              </Button>
-            </Stack>
-          </Stack>
-        </DialogContent>
-      </BuyDialog>
-
-      {/* QRDialog removed - Xaman no longer used */}
+              <div className="flex flex-row gap-2 justify-center mt-3 mb-4">
+                <button
+                  className={cn(
+                    'rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal',
+                    isDark
+                      ? 'border-white/15 hover:bg-primary/5 text-white'
+                      : 'border-gray-300 hover:bg-gray-100 text-gray-900',
+                    !canApprove && 'opacity-50 cursor-not-allowed'
+                  )}
+                  onClick={handleApprove}
+                  disabled={!canApprove}
+                >
+                  Approve in My Wallet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

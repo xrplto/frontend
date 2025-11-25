@@ -1,9 +1,8 @@
 import { useState, useContext, useEffect, useRef } from 'react';
-import { Box, Container, Typography, Button, Card, CardContent, Alert, CircularProgress, Link, TextField, Dialog, DialogContent, DialogTitle } from '@mui/material';
-import { Warning as WarningIcon, OpenInNew as OpenInNewIcon } from '@mui/icons-material';
-import { styled } from '@mui/material/styles';
+import { Loader2, AlertTriangle, ExternalLink, Info } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useRouter } from 'next/router';
+import { cn } from 'src/utils/cn';
 
 // Lazy load heavy dependencies
 let startRegistration, startAuthentication, Wallet, CryptoJS;
@@ -16,22 +15,6 @@ const base64urlEncode = (buffer) => {
     .replace(/=/g, '');
 };
 
-// PIN Input Field styling
-const PinField = styled(TextField)(({ theme }) => ({
-  '& input': {
-    textAlign: 'center',
-    fontSize: '24px',
-    fontWeight: 500,
-    padding: '12px 0',
-    width: '48px',
-    height: '48px',
-  },
-  '& .MuiOutlinedInput-root': {
-    width: '48px',
-    height: '48px',
-  }
-}));
-
 const DeviceLoginPage = () => {
   const [status, setStatus] = useState('idle');
   const [error, setError] = useState('');
@@ -42,8 +25,9 @@ const DeviceLoginPage = () => {
   const [pendingPasskeyId, setPendingPasskeyId] = useState(null);
   const [pins, setPins] = useState(['', '', '', '', '', '']);
   const inputRefs = useRef([]);
-  const { doLogIn } = useContext(AppContext);
+  const { doLogIn, themeName } = useContext(AppContext);
   const router = useRouter();
+  const isDark = themeName === 'XrplToDarkTheme';
 
   // Lazy load heavy dependencies
   const loadDependencies = async () => {
@@ -202,26 +186,21 @@ const DeviceLoginPage = () => {
     }
   };
 
-
   const generateWallet = (passkeyId, userSecret, accountIndex = 0) => {
-    // Secure wallet generation using PBKDF2 with high iterations (2025 standard)
-    // Combines passkey ID + user secret + account index for strong entropy
     if (!userSecret || userSecret.length < 6) {
       throw new Error('PIN must be at least 6 characters');
     }
 
-    // Use PBKDF2 with 600k iterations (OWASP 2025 recommendation)
     const seed = CryptoJS.PBKDF2(
       `xrpl-passkey-${passkeyId}-${userSecret}-${accountIndex}`,
-      `salt-${passkeyId}`, // Unique salt per passkey
+      `salt-${passkeyId}`,
       {
-        keySize: 256/32,      // 256-bit key
-        iterations: 10000,   // Lower iterations since passkey provides hardware security
+        keySize: 256/32,
+        iterations: 10000,
         hasher: CryptoJS.algo.SHA512
       }
     );
 
-    // Convert to valid entropy for wallet generation
     const seedHex = seed.toString();
     const entropy = [];
     for (let i = 0; i < 32; i++) {
@@ -229,16 +208,12 @@ const DeviceLoginPage = () => {
     }
 
     const wallet = Wallet.fromEntropy(entropy);
-    wallet.seed = seedHex; // Store seed for vault
+    wallet.seed = seedHex;
     return wallet;
   };
 
-
   const discoverAllAccounts = async (passkeyId, userSecret) => {
     const accounts = [];
-
-    // For now, just generate the first account for simplicity
-    // Can be extended to discover multiple accounts if needed
     const wallet = generateWallet(passkeyId, userSecret, 0);
     accounts.push({
       account: wallet.address,
@@ -256,15 +231,12 @@ const DeviceLoginPage = () => {
       setStatus('registering');
       setError('');
 
-      // Load dependencies first
       await loadDependencies();
 
-      // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn not supported in this browser');
       }
 
-      // Check if platform authenticator is available (Windows Hello, Touch ID, etc.)
       const available = await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
       if (!available) {
         setError('setup_required');
@@ -272,7 +244,6 @@ const DeviceLoginPage = () => {
         return;
       }
 
-      // Generate random values and encode as base64url
       const userIdBuffer = crypto.getRandomValues(new Uint8Array(32));
       const challengeBuffer = crypto.getRandomValues(new Uint8Array(32));
       const userId = base64urlEncode(userIdBuffer);
@@ -300,8 +271,6 @@ const DeviceLoginPage = () => {
           },
         });
       } catch (innerErr) {
-        // Handle specific passkey setup errors
-
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
           setError('Passkeys not supported on this device or browser.');
         } else if (innerErr.message?.includes('InvalidStateError') || innerErr.message?.includes('saving')) {
@@ -315,9 +284,7 @@ const DeviceLoginPage = () => {
         return;
       }
 
-
       if (registrationResponse.id) {
-        // Show PIN dialog for creation
         setPendingPasskeyId(registrationResponse.id);
         setPinMode('create');
         setShowPinDialog(true);
@@ -326,7 +293,6 @@ const DeviceLoginPage = () => {
     } catch (err) {
       console.error('Registration error:', err);
 
-      // Handle WebAuthnError and DOMException
       const errorName = err.name || err.cause?.name;
       const errorMessage = err.message || err.cause?.message || '';
 
@@ -346,10 +312,8 @@ const DeviceLoginPage = () => {
       setStatus('authenticating');
       setError('');
 
-      // Load dependencies first
       await loadDependencies();
 
-      // Check if WebAuthn is supported
       if (!window.PublicKeyCredential) {
         throw new Error('WebAuthn not supported in this browser');
       }
@@ -365,8 +329,6 @@ const DeviceLoginPage = () => {
           userVerification: 'required'
         });
       } catch (innerErr) {
-        // Handle specific authentication errors
-
         if (innerErr.message?.includes('NotSupportedError') || innerErr.message?.includes('not supported')) {
           setError('Passkeys not supported on this device or browser.');
         } else if (innerErr.message?.includes('InvalidStateError')) {
@@ -381,12 +343,10 @@ const DeviceLoginPage = () => {
       }
 
       if (authResponse.id) {
-        // Try to retrieve stored PIN from cache
         const storage = new (await import('src/utils/encryptedWalletStorage')).UnifiedWalletStorage();
         let userSecret = await storage.getWalletCredential(authResponse.id);
 
         if (!userSecret) {
-          // No stored PIN, show dialog
           setPendingPasskeyId(authResponse.id);
           setPinMode('verify');
           setShowPinDialog(true);
@@ -394,13 +354,11 @@ const DeviceLoginPage = () => {
           return;
         }
 
-        // PIN exists, complete authentication
         await completeAuthentication(authResponse.id, userSecret);
       }
     } catch (err) {
       console.error('Authentication error:', err);
 
-      // Handle WebAuthnError and DOMException
       const errorName = err.name || err.cause?.name;
       const errorMessage = err.message || err.cause?.message || '';
 
@@ -415,185 +373,199 @@ const DeviceLoginPage = () => {
     }
   };
 
-  // Preload dependencies when component mounts
   useEffect(() => {
     loadDependencies();
   }, []);
 
-  // Since we're zero-localStorage, always treat as potential first-time setup
-  const hasRegisteredPasskey = false;
-
   return (
     <>
-      <Container maxWidth="sm" sx={{ py: 4 }}>
-        <Card sx={{ textAlign: 'center' }}>
-          <CardContent sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom>
-            Passkeys Login
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
-            Use your device's biometric authentication to securely access your XRPL wallet
-          </Typography>
+      <div className="mx-auto max-w-2xl px-4 py-8">
+        <div className={cn(
+          "rounded-2xl border-[1.5px] text-center",
+          isDark ? "bg-gray-900/50 border-white/10" : "bg-white border-gray-200"
+        )}>
+          <div className="p-8">
+            <h1 className="text-3xl font-normal mb-3">Passkeys Login</h1>
+            <p className={cn("text-base mb-4", isDark ? "text-white/70" : "text-gray-600")}>
+              Use your device's biometric authentication to securely access your XRPL wallet
+            </p>
 
-          <Alert severity="info" sx={{ mb: 3, textAlign: 'left' }}>
-            <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 1 }}>
-              <WarningIcon sx={{ fontSize: 20, mt: 0.25 }} />
-              <Box>
-                <Typography variant="body2" sx={{ fontWeight: 400, mb: 0.5 }}>
-                  Important: One Passkey = One Set of Wallets
-                </Typography>
-                <Typography variant="caption" sx={{ display: 'block', opacity: 0.9 }}>
+            <div className={cn(
+              "flex items-start gap-2 p-4 rounded-xl border-[1.5px] mb-6 text-left",
+              "bg-blue-500/5 border-blue-500/20"
+            )}>
+              <Info size={20} className="text-blue-500 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-normal mb-1">Important: One Passkey = One Set of Wallets</p>
+                <p className="text-xs opacity-90">
                   Each passkey creates different XRPL accounts. Use the same passkey across devices to access the same wallets.
-                </Typography>
-              </Box>
-            </Box>
-          </Alert>
+                </p>
+              </div>
+            </div>
 
-          {error && (
-            <Alert severity={error === 'setup_required' ? 'info' : 'error'} sx={{ mb: 2 }}>
-              {error === 'setup_required' ? (
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    <strong>Windows Hello Setup Required</strong>
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1.5 }}>
-                    Please enable Windows Hello, Touch ID, or Face ID to use passkeys login:
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1 }}>
-                    1. Go to <strong>Settings → Accounts → Sign-in options</strong>
-                  </Typography>
-                  <Typography variant="body2" sx={{ mb: 1.5 }}>
-                    2. Set up PIN, Fingerprint, or Face recognition
-                  </Typography>
-                  <Link
-                    href="https://www.microsoft.com/en-us/windows/tips/windows-hello"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5 }}
-                  >
-                    Learn how to set up Windows Hello
-                    <OpenInNewIcon fontSize="small" />
-                  </Link>
-                </Box>
-              ) : (
-                error
-              )}
-            </Alert>
-          )}
+            {error && (
+              <div className={cn(
+                "p-4 rounded-xl border-[1.5px] mb-4 text-left",
+                error === 'setup_required'
+                  ? "bg-blue-500/5 border-blue-500/20"
+                  : "bg-red-500/5 border-red-500/20"
+              )}>
+                {error === 'setup_required' ? (
+                  <div>
+                    <p className="text-sm font-semibold mb-2">Windows Hello Setup Required</p>
+                    <p className="text-sm mb-2">
+                      Please enable Windows Hello, Touch ID, or Face ID to use passkeys login:
+                    </p>
+                    <p className="text-sm mb-1">1. Go to <strong>Settings → Accounts → Sign-in options</strong></p>
+                    <p className="text-sm mb-3">2. Set up PIN, Fingerprint, or Face recognition</p>
+                    <a
+                      href="https://www.microsoft.com/en-us/windows/tips/windows-hello"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                    >
+                      Learn how to set up Windows Hello
+                      <ExternalLink size={14} />
+                    </a>
+                  </div>
+                ) : (
+                  <p className="text-sm text-red-500">{error}</p>
+                )}
+              </div>
+            )}
 
-          {status === 'success' && walletInfo && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                Wallet Created Successfully!
-              </Typography>
-              <Typography variant="body2" sx={{ wordBreak: 'break-all', mb: 1 }}>
-                <strong>Address:</strong> {walletInfo.address}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Your wallet is secured with your PIN. Window closes in 10 seconds.
-              </Typography>
-            </Alert>
-          )}
+            {status === 'success' && walletInfo && (
+              <div className={cn(
+                "p-4 rounded-xl border-[1.5px] mb-4 text-left",
+                "bg-green-500/5 border-green-500/20"
+              )}>
+                <p className="text-sm font-semibold mb-2">Wallet Created Successfully!</p>
+                <p className="text-sm break-all mb-1"><strong>Address:</strong> {walletInfo.address}</p>
+                <p className={cn("text-xs", isDark ? "text-white/60" : "text-gray-600")}>
+                  Your wallet is secured with your PIN. Window closes in 10 seconds.
+                </p>
+              </div>
+            )}
 
-          {isLoadingDeps && (
-            <Alert severity="info" sx={{ mb: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <CircularProgress size={16} />
-                <Typography variant="body2">Loading security modules...</Typography>
-              </Box>
-            </Alert>
-          )}
+            {isLoadingDeps && (
+              <div className={cn(
+                "flex items-center gap-2 p-3 rounded-xl border-[1.5px] mb-4",
+                "bg-blue-500/5 border-blue-500/20"
+              )}>
+                <Loader2 size={16} className="animate-spin text-primary" />
+                <p className="text-sm">Loading security modules...</p>
+              </div>
+            )}
 
-          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <Button
-              variant="contained"
-              size="large"
-              onClick={handleAuthenticate}
-              disabled={status !== 'idle' || isLoadingDeps}
-              startIcon={status === 'authenticating' || status === 'discovering' ? <CircularProgress size={20} /> : null}
-            >
-              {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In with Existing Passkey'}
-            </Button>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={handleAuthenticate}
+                disabled={status !== 'idle' || isLoadingDeps}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-base font-normal transition-all",
+                  "bg-primary text-white hover:opacity-90",
+                  (status !== 'idle' || isLoadingDeps) && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                {(status === 'authenticating' || status === 'discovering') && <Loader2 size={20} className="animate-spin" />}
+                {status === 'authenticating' ? 'Authenticating...' : status === 'discovering' ? 'Discovering accounts...' : 'Sign In with Existing Passkey'}
+              </button>
 
-            <Button
-              variant="outlined"
-              size="large"
-              onClick={handleRegister}
-              disabled={status !== 'idle' || isLoadingDeps}
-              startIcon={status === 'registering' ? <CircularProgress size={20} /> : null}
-              sx={{
-                borderColor: 'warning.main',
-                color: 'warning.main',
-                '&:hover': {
-                  borderColor: 'warning.dark',
-                  backgroundColor: 'warning.light',
-                  opacity: 0.1
-                }
-              }}
-            >
-              {status === 'registering' ? 'Creating passkey...' : 'Create New Passkey'}
-            </Button>
+              <button
+                onClick={handleRegister}
+                disabled={status !== 'idle' || isLoadingDeps}
+                className={cn(
+                  "flex items-center justify-center gap-2 px-6 py-3 rounded-xl border-[1.5px] text-base font-normal transition-all",
+                  "border-yellow-500 text-yellow-500 hover:bg-yellow-500/10",
+                  (status !== 'idle' || isLoadingDeps) && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                {status === 'registering' && <Loader2 size={20} className="animate-spin" />}
+                {status === 'registering' ? 'Creating passkey...' : 'Create New Passkey'}
+              </button>
 
-            <Typography variant="caption" color="text.secondary" sx={{ textAlign: 'center', mt: 1 }}>
-              First time? Use "Create New Passkey" • Returning? Use "Sign In with Existing Passkey"
-            </Typography>
+              <p className={cn("text-xs text-center mt-2", isDark ? "text-white/60" : "text-gray-600")}>
+                First time? Use "Create New Passkey" • Returning? Use "Sign In with Existing Passkey"
+              </p>
+            </div>
 
-          </Box>
+            <p className={cn("text-xs mt-4", isDark ? "text-white/60" : "text-gray-600")}>
+              Your private keys are generated locally and never leave your device
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
-            Your private keys are generated locally and never leave your device
-          </Typography>
-        </CardContent>
-      </Card>
-    </Container>
-
-    {/* PIN Input Dialog */}
-    <Dialog open={showPinDialog} onClose={() => setShowPinDialog(false)} maxWidth="xs" fullWidth>
-      <DialogTitle sx={{ textAlign: 'center', pb: 1 }}>
-        {pinMode === 'create' ? 'Create Your PIN' : 'Enter Your PIN'}
-      </DialogTitle>
-      <DialogContent sx={{ textAlign: 'center', pt: 2 }}>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-          {pinMode === 'create'
-            ? 'Create a 6-digit PIN to secure your wallet'
-            : 'Enter your 6-digit PIN to access your wallet'}
-        </Typography>
-
-        <Box sx={{ display: 'flex', gap: 1, justifyContent: 'center', mb: 2 }}>
-          {pins.map((pin, index) => (
-            <PinField
-              key={index}
-              inputRef={el => inputRefs.current[index] = el}
-              value={pin}
-              onChange={(e) => handlePinChange(index, e.target.value)}
-              onKeyDown={(e) => handlePinKeyDown(index, e)}
-              type="text"
-              inputProps={{
-                maxLength: 1,
-                autoComplete: 'off',
-                inputMode: 'numeric',
-                pattern: '[0-9]*'
-              }}
-              variant="outlined"
-              autoFocus={index === 0}
-            />
-          ))}
-        </Box>
-
-        <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center', mt: 3 }}>
-          <Button variant="outlined" onClick={() => setShowPinDialog(false)}>
-            Cancel
-          </Button>
-          <Button
-            variant="contained"
-            onClick={handlePinSubmit}
-            disabled={pins.some(p => !p)}
+      {/* PIN Input Dialog */}
+      {showPinDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowPinDialog(false)}>
+          <div
+            className={cn(
+              "max-w-md w-full mx-4 rounded-2xl border-[1.5px] p-6",
+              isDark ? "bg-gray-900 border-white/10" : "bg-white border-gray-200"
+            )}
+            onClick={e => e.stopPropagation()}
           >
-            {pinMode === 'create' ? 'Create PIN' : 'Unlock'}
-          </Button>
-        </Box>
-      </DialogContent>
-    </Dialog>
+            <h2 className="text-xl font-semibold text-center mb-2">
+              {pinMode === 'create' ? 'Create Your PIN' : 'Enter Your PIN'}
+            </h2>
+            <p className={cn("text-sm text-center mb-6", isDark ? "text-white/60" : "text-gray-600")}>
+              {pinMode === 'create'
+                ? 'Create a 6-digit PIN to secure your wallet'
+                : 'Enter your 6-digit PIN to access your wallet'}
+            </p>
+
+            <div className="flex gap-2 justify-center mb-6">
+              {pins.map((pin, index) => (
+                <input
+                  key={index}
+                  ref={el => inputRefs.current[index] = el}
+                  value={pin}
+                  onChange={(e) => handlePinChange(index, e.target.value)}
+                  onKeyDown={(e) => handlePinKeyDown(index, e)}
+                  type="text"
+                  maxLength={1}
+                  autoComplete="off"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoFocus={index === 0}
+                  className={cn(
+                    "w-12 h-12 text-center text-2xl font-medium rounded-lg border-[1.5px]",
+                    isDark
+                      ? "bg-gray-800 border-white/15 text-white"
+                      : "bg-white border-gray-300 text-gray-900"
+                  )}
+                />
+              ))}
+            </div>
+
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={() => setShowPinDialog(false)}
+                className={cn(
+                  "px-6 py-2 rounded-lg border-[1.5px] text-sm font-normal transition-all",
+                  isDark
+                    ? "border-white/15 hover:bg-white/5"
+                    : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePinSubmit}
+                disabled={pins.some(p => !p)}
+                className={cn(
+                  "px-6 py-2 rounded-lg text-sm font-normal transition-all",
+                  "bg-primary text-white hover:opacity-90",
+                  pins.some(p => !p) && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                {pinMode === 'create' ? 'Create PIN' : 'Unlock'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

@@ -1,40 +1,40 @@
-// Material
-import { Link, Stack, Typography } from '@mui/material';
-
-// Iconify icons
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { ChevronRight } from 'lucide-react';
 
 export default function CollectionBreadcrumb({ collection, nftName, nftId }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <Stack
-      direction="row"
-      spacing={1}
-      sx={{ mt: 2, mb: 2 }}
-      alignItems="center"
-      color={'text.secondary'}
+    <div
+      className={cn(
+        'mt-2 mb-2 flex flex-row items-center gap-1',
+        isDark ? 'text-gray-400' : 'text-gray-600'
+      )}
     >
-      <Link underline="none" color="inherit" href="/collections" rel="noreferrer noopener nofollow">
-        <Typography variant="link_cascade" color="primary">
-          NFTs
-        </Typography>
-      </Link>
-      <ChevronRightIcon sx={{ width: '12px', height: '12px', mt: 0.4 }} />
-      <Link
-        underline="none"
-        color="inherit"
+      <a
+        href="/collections"
+        rel="noreferrer noopener nofollow"
+        className="text-primary hover:underline text-[13px] font-normal"
+      >
+        NFTs
+      </a>
+      <ChevronRight size={12} className="mt-0.5" />
+      <a
         href={`/collection/${collection.collection.slug || ''}`}
         rel="noreferrer noopener nofollow"
+        className="text-primary hover:underline text-[13px] font-normal"
       >
-        <Typography variant="link_cascade" color="primary">
-          {collection.collection.name}
-        </Typography>
-      </Link>
+        {collection.collection.name}
+      </a>
       {nftName && (
         <>
-          <ChevronRightIcon sx={{ width: '12px', height: '12px', mt: 0.4 }} />
-          <Typography variant="link_cascade">{nftName}</Typography>
+          <ChevronRight size={12} className="mt-0.5" />
+          <span className="text-[13px] font-normal">{nftName}</span>
         </>
       )}
-    </Stack>
+    </div>
   );
 }

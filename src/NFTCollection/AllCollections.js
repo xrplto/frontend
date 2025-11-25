@@ -1,15 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import styled from '@emotion/styled';
-import { Stack, Typography, Box, Container } from '@mui/material';
 import CollectionList from './CollectionList';
 import { fVolume, fIntNumber } from 'src/utils/formatters';
+import { AppContext } from 'src/AppContext';
 // Constants
 const CollectionListType = {
   ALL: 'ALL',
   FEATURED: 'FEATURED',
   TRENDING: 'TRENDING'
 };
-import { useTheme } from '@mui/material/styles';
 
 // Styled Components - matching Summary.js
 const Grid = styled.div`
@@ -45,10 +44,10 @@ const MetricBox = styled.div`
   align-items: flex-start;
   border-radius: 12px;
   background: ${(props) =>
-    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
+    props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   border: 1.5px solid
     ${(props) =>
-      props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+      props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
   @media (max-width: 600px) {
     padding: 8px 8px;
@@ -64,7 +63,7 @@ const MetricTitle = styled.span`
   font-size: 0.75rem;
   font-weight: 400;
   color: ${(props) =>
-    props.theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
+    props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(33, 43, 54, 0.7)'};
   margin-bottom: 6px;
   letter-spacing: 0.02em;
   line-height: 1.2;
@@ -80,7 +79,7 @@ const MetricTitle = styled.span`
 const MetricValue = styled.span`
   font-size: 1.15rem;
   font-weight: 500;
-  color: ${(props) => props.theme?.palette?.text?.primary || '#212B36'};
+  color: ${(props) => (props.isDark ? '#ffffff' : '#212B36')};
   line-height: 1.1;
   margin-bottom: 2px;
   font-family: inherit;
@@ -96,10 +95,7 @@ const MetricValue = styled.span`
 
 const PercentageChange = styled.span`
   font-size: 0.85rem;
-  color: ${(props) =>
-    props.isPositive
-      ? props.theme?.palette?.success?.main || '#4caf50'
-      : props.theme?.palette?.error?.main || '#f44336'};
+  color: ${(props) => (props.isPositive ? '#4caf50' : '#f44336')};
   display: inline-flex;
   align-items: flex-start;
   gap: 3px;
@@ -124,207 +120,209 @@ const formatNumberWithDecimals = (num) => {
 };
 
 function Collections({ initialCollections, initialTotal, initialGlobalMetrics }) {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [globalMetrics, setGlobalMetrics] = useState(initialGlobalMetrics);
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
 
   return (
-    <Box
-      sx={{
+    <div
+      style={{
         flex: 1,
-        py: { xs: 2, sm: 3, md: 4 },
+        paddingTop: isMobile ? '16px' : '32px',
+        paddingBottom: isMobile ? '16px' : '32px',
         backgroundColor: 'transparent',
         minHeight: '100vh',
         position: 'relative'
       }}
     >
       {/* Global Metrics Section */}
-      <Container maxWidth="xl" sx={{ px: { xs: 2, sm: 3 }, mb: 2 }}>
+      <div style={{ maxWidth: '1600px', margin: '0 auto', padding: isMobile ? '0 16px' : '0 24px', marginBottom: '16px' }}>
         {globalMetrics && (
-          <Box sx={{ width: '100%' }}>
+          <div style={{ width: '100%' }}>
             <Grid cols={6} mdCols={3} spacing="10px">
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Volume</MetricTitle>
+              <MetricBox isDark={isDark}>
+                <MetricTitle isDark={isDark}>Volume</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>24h</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       ✕ {formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Total</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       ✕ {formatNumberWithDecimals(globalMetrics.totalVolume || 0)}
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
 
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Activity</MetricTitle>
+              <MetricBox isDark={isDark}>
+                <MetricTitle isDark={isDark}>Activity</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Sales</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.total24hSales || 0)}
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Transfers</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.total24hTransfers || 0)}
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
 
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Traders</MetricTitle>
+              <MetricBox isDark={isDark}>
+                <MetricTitle isDark={isDark}>Traders</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Active</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.activeTraders24h || 0)}
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Balance</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       ✕ {formatNumberWithDecimals(globalMetrics.totalLiquidity24h || 0)}
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
 
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Collections</MetricTitle>
+              <MetricBox isDark={isDark}>
+                <MetricTitle isDark={isDark}>Collections</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Active</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.activeCollections24h || 0)}
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Total</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.totalCollections || 0)}
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
 
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Mints & Burns</MetricTitle>
+              <MetricBox isDark={isDark}>
+                <MetricTitle isDark={isDark}>Mints & Burns</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Mints</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.total24hMints || 0)}
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Burns</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.total24hBurns || 0)}
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
 
-              <MetricBox theme={theme}>
-                <MetricTitle theme={theme}>Fees</MetricTitle>
+              <MetricBox isDark={isDark}>
+                <MetricTitle isDark={isDark}>Fees</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Broker</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       ✕ {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)}
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
                     <span style={{
                       fontSize: '0.6rem',
-                      color: theme?.palette?.mode === 'dark' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
+                      color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
                     }}>Royalty</span>
-                    <MetricValue theme={theme} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
+                    <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       ✕ {formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)}
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
             </Grid>
-          </Box>
+          </div>
         )}
-      </Container>
+      </div>
 
-      <Stack
-        sx={{
+      <div
+        style={{
           minHeight: '50vh',
-          px: { xs: 1, sm: 3, md: 4 },
+          padding: isMobile ? '0 8px' : '0 24px',
           position: 'relative',
           zIndex: 1
         }}
       >
-        <Box
-          sx={{
+        <div
+          style={{
             borderRadius: '0',
             background: 'transparent',
             backdropFilter: 'none',
@@ -340,9 +338,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
             initialCollections={initialCollections}
             initialTotal={initialTotal}
           />
-        </Box>
-      </Stack>
-    </Box>
+        </div>
+      </div>
+    </div>
   );
 }
 

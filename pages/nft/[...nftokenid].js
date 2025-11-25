@@ -1,9 +1,6 @@
 import React, { lazy, Suspense } from 'react';
 import axios from 'axios';
-import dynamic from 'next/dynamic';
-
-// Material
-import { Box, Container, styled, Toolbar, CircularProgress } from '@mui/material';
+import { cn } from 'src/utils/cn';
 
 // Utils
 import { getNftCoverUrl } from 'src/utils/parseUtils';
@@ -19,18 +16,11 @@ import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
-// const DynamicTokenDetail = dynamic(() => import('src/detail'));
 import { AppContext } from 'src/AppContext';
 
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-    overflow: hidden;
-    flex: 1;
-`
-);
-
 export default function Overview({ nft }) {
-  const { darkMode } = useContext(AppContext);
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const dispatch = useDispatch();
 
   // Add WebSocket connection
@@ -61,39 +51,32 @@ export default function Overview({ nft }) {
   const nftId = nft?.nft?.NFTokenID;
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex-1 overflow-hidden">
+      <div id="back-to-top-anchor" className="h-16" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {nftName} NFT on XRPL
       </h1>
 
-      <Container maxWidth="xl">
+      <div className="mx-auto max-w-7xl px-4">
         {collectionData && (
           <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
         )}
         <Suspense
           fallback={
-            <Box
-              sx={{
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                minHeight: 400
-              }}
-            >
-              <CircularProgress />
-            </Box>
+            <div className="flex min-h-[400px] items-center justify-center">
+              <div className={cn("h-10 w-10 animate-spin rounded-full border-4 border-t-transparent", isDark ? "border-primary" : "border-primary")} />
+            </div>
           }
         >
           <TokenDetail nft={nft.nft} />
         </Suspense>
-      </Container>
+      </div>
 
       <ScrollToTop />
 
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 

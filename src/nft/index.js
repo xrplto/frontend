@@ -1,5 +1,6 @@
-// Material
-import { useMediaQuery, Grid, useTheme, Box } from '@mui/material';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 
 // Constants
 const NFToken = {
@@ -13,23 +14,25 @@ import NFTActions from './NFTActions';
 import NFTActionsBulk from '../NFTCollection/NFTActionsBulk';
 
 export default function Detail({ nft }) {
-  const theme = useTheme();
-
-  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const { status, costs } = nft;
 
   return (
-    <Grid container columnSpacing={2} rowSpacing={2} sx={{ mb: 0, maxWidth: '1300px', mx: 'auto' }} alignItems="flex-start">
-      <Grid size={{ xs: 12, md: 4 }}>
+    <div className={cn(
+      "grid gap-4 mb-0 max-w-[1300px] mx-auto items-start",
+      "grid-cols-1 md:grid-cols-12"
+    )}>
+      <div className="md:col-span-4">
         <NFTDetails nft={nft} />
-      </Grid>
-      <Grid size={{ xs: 12, md: 8 }}>
+      </div>
+      <div className="md:col-span-8">
         {status === NFToken.SELL_WITH_MINT_BULK ? (
           <NFTActionsBulk nft={nft} />
         ) : (
           <NFTActions nft={nft} />
         )}
-      </Grid>
-    </Grid>
+      </div>
+    </div>
   );
 }

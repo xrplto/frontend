@@ -2,43 +2,11 @@ import React from 'react';
 import axios from 'axios';
 import { useState, useEffect, useRef } from 'react';
 
-// Material
-import {
-  styled,
-  Avatar,
-  Button,
-  Card,
-  Divider,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  IconButton,
-  InputAdornment,
-  Link,
-  ListItemButton,
-  MenuItem,
-  OutlinedInput,
-  Radio,
-  RadioGroup,
-  Select,
-  Stack,
-  TextField,
-  ToggleButton,
-  ToggleButtonGroup,
-  Tooltip,
-  Typography,
-  CircularProgress
-} from '@mui/material';
-import ImageIcon from '@mui/icons-material/Image';
-import SendIcon from '@mui/icons-material/Send';
-import CloseIcon from '@mui/icons-material/Close';
-import CancelIcon from '@mui/icons-material/Cancel';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import HighlightOffOutlinedIcon from '@mui/icons-material/HighlightOffOutlined';
-import PermIdentityIcon from '@mui/icons-material/PermIdentity';
+// Emotion styled
+import styled from '@emotion/styled';
 
-// Iconify
-import ImportExportIcon from '@mui/icons-material/ImportExport';
+// Lucide Icons
+import { Image as ImageIcon, Send as SendIcon, X as CloseIcon, XCircle as CancelIcon, PlusCircle as AddCircleIcon, XOctagon as HighlightOffOutlinedIcon, User as PermIdentityIcon, ArrowDownUp as ImportExportIcon } from 'lucide-react';
 
 // Loader
 import { ClipLoader } from '../components/Spinners';
@@ -204,11 +172,12 @@ const CATEGORIES = [
   { title: 'Metaverse', icon: '🌐' }
 ];
 
-// Components
-// FormControl, FormHelperText, InputAdornment, OutlinedInput moved to main imports
-import ErrorIcon from '@mui/icons-material/Error';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+// Lucide Icons continued
+import { AlertCircle as ErrorIcon, CheckCircle as CheckCircleIcon } from 'lucide-react';
 import AddCostDialog from './AddCostDialog';
+
+// Import cn utility
+import { cn } from 'src/utils/cn';
 
 const CardWrapper = styled('div')(
   ({ theme }) => `

@@ -1,40 +1,20 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import useWebSocket from 'react-use-websocket';
 
-// Material UI imports
-import {
-  styled,
-  Container,
-  Box,
-  Toolbar
-} from '@mui/material';
-
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Utils
 import { processOrderbookOffers } from 'src/utils/parseUtils';
+import { cn } from 'src/utils/cn';
 
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Swap from 'src/components/SwapInterface';
-
-const Root = styled('div')(({ theme }) => ({
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100vh',
-  overflow: 'hidden',
-  position: 'fixed',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0
-}));
 
 // Default tokens with correct md5 hashes
 const XRP_TOKEN = {
@@ -56,7 +36,8 @@ const DEFAULT_PAIR = {
 
 function SwapPage({ data }) {
   const WSS_URL = 'wss://s1.ripple.com';
-  const { accountProfile } = useContext(AppContext);
+  const { accountProfile, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   // Prevent body scroll
   useEffect(() => {
@@ -146,8 +127,8 @@ function SwapPage({ data }) {
   };
 
   return (
-    <Root>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex flex-col h-screen overflow-hidden fixed top-0 left-0 right-0 bottom-0">
+      <div id="back-to-top-anchor" className="h-16" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
@@ -166,34 +147,20 @@ function SwapPage({ data }) {
         Swap XRPL Tokens
       </h1>
 
-      <Container maxWidth={notificationPanelOpen ? false : "lg"} sx={{ flex: 1, display: 'flex', overflow: 'hidden', py: 0, px: { xs: 1, sm: 2 } }}>
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 1,
-            overflow: 'hidden',
-            width: '100%'
-          }}
-        >
-          <Box sx={{ width: '100%', maxWidth: '1200px' }}>
-            <Swap
-              pair={pair}
-              setPair={setPair}
-              revert={revert}
-              setRevert={setRevert}
-              bids={bids}
-              asks={asks}
-            />
-          </Box>
-        </Box>
-      </Container>
+      <div className="flex-1 flex items-center justify-center overflow-hidden px-4">
+        <Swap
+          pair={pair}
+          setPair={setPair}
+          revert={revert}
+          setRevert={setRevert}
+          bids={bids}
+          asks={asks}
+        />
+      </div>
 
       <Footer />
       <ScrollToTop />
-    </Root>
+    </div>
   );
 }
 

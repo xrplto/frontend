@@ -1,65 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import Decimal from 'decimal.js-light';
-
-// Material
-import {
-  alpha,
-  useTheme,
-  useMediaQuery,
-  styled,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-  Typography,
-  TextField,
-  Box
-} from '@mui/material';
-
-import { Close as CloseIcon, AddCircle as AddCircleIcon } from '@mui/icons-material';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { X, PlusCircle } from 'lucide-react';
 
 // Constants
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
-
-// Components
-
-// ----------------------------------------------------------------------
-const AddDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
-  }
-}));
-
-const AddDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
 
 function GetNum(amount) {
   let num = 0;
@@ -71,16 +17,11 @@ function GetNum(amount) {
 }
 
 export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const [token, setToken] = useState(XRP_TOKEN);
   const [amount, setAmount] = useState('');
-
-  // useEffect(() => {
-  //     setName('');
-  //     setValue('');
-  // }, []);
 
   const handleClose = () => {
     setOpen(false);
@@ -104,94 +45,116 @@ export default function AddCostDialog({ open, setOpen, openSnackbar, onAddCost }
     }
   };
 
+  if (!open) return null;
+
   return (
     <>
-      <AddDialog
-        fullScreen={fullScreen}
-        onClose={handleClose}
-        open={open}
-        // sx={{zIndex: 1302}}
-        maxWidth="xs"
-        // hideBackdrop={true}
-      >
-        <AddDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          <Typography variant="p4">Add Cost per Mint</Typography>
-        </AddDialogTitle>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-[1300] bg-black/50"
+        style={{ backdropFilter: 'blur(1px)' }}
+        onClick={handleClose}
+      />
 
-        <DialogContent>
-          <Stack sx={{ pl: 1, pr: 1 }}>
-            {/* <Typography variant="p5" sx={{mt: 0}}></Typography> */}
-            {/* <Typography variant="p6" sx={{mt: 2}}></Typography> */}
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                p: 2,
-                border: `1px solid ${alpha(theme.palette.divider, 0.12)}`,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.background.paper, 0.5)
-              }}
+      {/* Dialog */}
+      <div className="fixed inset-0 z-[1301] flex items-center justify-center p-4">
+        <div
+          className={cn(
+            'w-full max-w-xs rounded-xl border-[1.5px]',
+            isDark ? 'bg-black border-white/10' : 'bg-white border-gray-200'
+          )}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between p-2 border-b border-white/10">
+            <h3 className={cn('text-[15px] font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+              Add Cost per Mint
+            </h3>
+            <button
+              onClick={handleClose}
+              className={cn(
+                'p-1 rounded-lg',
+                isDark ? 'hover:bg-white/5 text-gray-400' : 'hover:bg-gray-100 text-gray-600'
+              )}
             >
-              <Typography variant="subtitle2" sx={{ fontWeight: 400 }}>
-                {token?.name || 'XRP'}
-              </Typography>
-            </Box>
+              <X size={20} />
+            </button>
+          </div>
 
-            <Stack spacing={2} sx={{ mt: 3 }}>
-              <Typography variant="p2">
-                Cost <Typography variant="s2">*</Typography>
-              </Typography>
-
-              <Stack direction="row" spacing={2} alignItems="center">
-                <TextField
-                  id="id_txt_costamountpermint"
-                  // autoFocus
-                  variant="outlined"
-                  placeholder=""
-                  onChange={handleChangeAmount}
-                  autoComplete="new-password"
-                  value={amount}
-                  onFocus={(event) => {
-                    event.target.select();
-                  }}
-                  onKeyDown={(e) => e.stopPropagation()}
-                  // sx={{width: 100}}
-                />
-                <Typography variant="p2">{token?.name}</Typography>
-              </Stack>
-            </Stack>
-
-            {/* <Stack direction="row" spacing={2} sx={{mt: 3}}>
-                            <TextField
-                                id="outlined-size-name"
-                                label="Name"
-                                value={name}
-                                size="small"
-                                onChange={handleChangeName}
-                            />
-
-                            <TextField
-                                id="outlined-size-value"
-                                label="Value"
-                                value={value}
-                                size="small"
-                                onChange={handleChangeValue}
-                            />
-                        </Stack> */}
-
-            <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3, mb: 3 }}>
-              <Button
-                variant="outlined"
-                startIcon={<AddCircleIcon />}
-                size="small"
-                onClick={handleAddCost}
+          {/* Content */}
+          <div className="p-2">
+            <div className="px-1">
+              <div
+                className={cn(
+                  'flex items-center p-2 border-[1.5px] rounded-lg',
+                  isDark
+                    ? 'border-white/10 bg-white/[0.02]'
+                    : 'border-gray-200 bg-gray-50/50'
+                )}
               >
-                Add
-              </Button>
-            </Stack>
-          </Stack>
-        </DialogContent>
-      </AddDialog>
+                <span
+                  className={cn(
+                    'text-[13px] font-normal',
+                    isDark ? 'text-white' : 'text-gray-900'
+                  )}
+                >
+                  {token?.name || 'XRP'}
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-2 mt-3">
+                <div className="text-[15px] font-normal">
+                  Cost <span className="text-[13px] font-medium text-[#EB5757]">*</span>
+                </div>
+
+                <div className="flex flex-row gap-2 items-center">
+                  <input
+                    type="text"
+                    id="id_txt_costamountpermint"
+                    className={cn(
+                      'flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal',
+                      isDark
+                        ? 'bg-black border-white/15 text-white placeholder:text-gray-500'
+                        : 'bg-white border-gray-300 text-gray-900 placeholder:text-gray-400'
+                    )}
+                    placeholder=""
+                    value={amount}
+                    autoComplete="new-password"
+                    onChange={handleChangeAmount}
+                    onFocus={(event) => {
+                      event.target.select();
+                    }}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  />
+                  <span
+                    className={cn(
+                      'text-[15px] font-normal',
+                      isDark ? 'text-white' : 'text-gray-900'
+                    )}
+                  >
+                    {token?.name}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex flex-row gap-2 justify-center mt-3 mb-3">
+                <button
+                  className={cn(
+                    'flex items-center gap-2 rounded-lg border-[1.5px] px-3 py-1.5 text-[13px] font-normal',
+                    isDark
+                      ? 'border-white/15 hover:bg-primary/5 text-white'
+                      : 'border-gray-300 hover:bg-gray-100 text-gray-900'
+                  )}
+                  onClick={handleAddCost}
+                >
+                  <PlusCircle size={16} />
+                  Add
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 }

@@ -1,6 +1,3 @@
-// Material
-import { styled, Box, Container, Toolbar } from '@mui/material';
-
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
@@ -9,17 +6,6 @@ import ScrollToTop from 'src/components/ScrollToTop';
 import useWebSocket from 'react-use-websocket';
 import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
-
-// overflow: scroll;
-// overflow: auto;
-// overflow: hidden;
-
-const OverviewWrapper = styled(Box)(
-  ({ theme }) => `
-        // overflow: hidden;
-        flex: 1;
-`
-);
 
 export default function Overview({ collections, total, globalMetrics }) {
   const dispatch = useDispatch();
@@ -39,25 +25,25 @@ export default function Overview({ collections, total, globalMetrics }) {
   });
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="flex-1 overflow-hidden">
+      <div id="back-to-top-anchor" className="h-6" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         NFT Collections on XRPL
       </h1>
 
-      <Container maxWidth="xl">
+      <div className="max-w-screen-2xl mx-auto w-full px-4">
         <AllCollections
           initialCollections={collections}
           initialTotal={total}
           initialGlobalMetrics={globalMetrics}
         />
-      </Container>
+      </div>
 
       <ScrollToTop />
 
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 

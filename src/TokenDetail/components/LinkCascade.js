@@ -1,83 +1,55 @@
-// Material
-import { Link, Stack, Typography } from '@mui/material';
-
-// Material UI icons
-import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-// ---------------------------------------------------
+import { useContext } from 'react';
+import { ChevronRight } from 'lucide-react';
+import Link from 'next/link';
+import { cn } from 'src/utils/cn';
+import { AppContext } from 'src/AppContext';
 
 export default function LinkCascade({ token, tabID, tabLabels }) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <Stack
-      direction="row"
-      spacing={0.75}
-      sx={{
-        mb: 1,
-        mt: 0,
-        px: 0,
-        py: 0.25,
-        backgroundColor: 'transparent',
-        borderRadius: '12px'
-      }}
-      alignItems="center"
-      color={'text.secondary'}
-    >
-      <Link underline="none" color="inherit" href={`/`} rel="noreferrer noopener nofollow">
-        <Typography
-          sx={{
-            fontSize: '13px',
-            fontWeight: 400,
-            color: 'primary.main',
-            opacity: 0.8,
-            '&:hover': { opacity: 1 }
-          }}
-        >
-          Tokens
-        </Typography>
+    <div className={cn("flex items-center gap-2 mb-2 py-1")}>
+      <Link
+        href="/"
+        className={cn(
+          "text-[13px] font-normal text-primary no-underline opacity-80 hover:opacity-100 transition-opacity"
+        )}
+      >
+        Tokens
       </Link>
-      <ChevronRightIcon sx={{ fontSize: 16, opacity: 0.4 }} />
+      <ChevronRight size={16} className="opacity-40" />
 
       {tabID > 0 ? (
         <>
           <Link
-            underline="none"
-            color="inherit"
             href={`/token/${token.slug}`}
-            rel="noreferrer noopener nofollow"
+            className={cn(
+              "text-[13px] font-normal text-primary no-underline opacity-80 hover:opacity-100 transition-opacity"
+            )}
           >
-            <Typography
-              sx={{
-                fontSize: '13px',
-                fontWeight: 400,
-                color: 'primary.main',
-                opacity: 0.8,
-                '&:hover': { opacity: 1 }
-              }}
-            >
-              {token.name}
-            </Typography>
+            {token.name}
           </Link>
-          <ChevronRightIcon sx={{ fontSize: 16, opacity: 0.4 }} />
-          <Typography
-            sx={{
-              fontSize: '13px',
-              fontWeight: 400,
-              opacity: 0.7
-            }}
+          <ChevronRight size={16} className="opacity-40" />
+          <span
+            className={cn(
+              "text-[13px] font-normal opacity-70",
+              isDark ? "text-white" : "text-gray-900"
+            )}
           >
             {tabLabels[tabID]}
-          </Typography>
+          </span>
         </>
       ) : (
-        <Typography
-          sx={{
-            fontSize: '13px',
-            fontWeight: 400,
-            opacity: 0.9
-          }}
+        <span
+          className={cn(
+            "text-[13px] font-normal opacity-90",
+            isDark ? "text-white" : "text-gray-900"
+          )}
         >
           {token.name}
-        </Typography>
+        </span>
       )}
-    </Stack>
+    </div>
   );
 }

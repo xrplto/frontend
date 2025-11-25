@@ -1,72 +1,11 @@
-// Material
-import {
-  useTheme,
-  useMediaQuery,
-  styled,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  Stack,
-  Typography
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
-import { alpha } from '@mui/material/styles';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-
-// ----------------------------------------------------------------------
-const ConfirmDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
-  }
-}));
-
-const StyledDialogContent = styled(DialogContent)(({ theme }) => ({
-  background: `linear-gradient(145deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.paper, 0.95)})`,
-  backdropFilter: 'blur(10px)',
-  borderRadius: theme.shape.borderRadius,
-  padding: theme.spacing(4)
-}));
-
-const WarningIcon = styled(LocalFireDepartmentIcon)(({ theme }) => ({
-  fontSize: 48,
-  color: theme.palette.error.main
-}));
-
-const ConfirmDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
+import { Flame, X } from 'lucide-react';
 
 export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const handleClose = () => {
     setOpen(false);
@@ -81,49 +20,70 @@ export default function ConfirmBurnDialog({ open, setOpen, onContinue }) {
     setOpen(false);
   };
 
+  if (!open) return null;
+
   return (
-    <ConfirmDialog
-      fullScreen={fullScreen}
-      onClose={handleClose}
-      open={open}
-      // sx={{zIndex: 1302}}
-      maxWidth="xs"
-      hideBackdrop={true}
-      disableScrollLock
-      disablePortal
-      keepMounted
-      PaperProps={{
-        style: {
-          borderRadius: 16,
-          boxShadow: '0 8px 32px 0 rgba(31, 38, 135, 0.37)'
-        }
-      }}
-    >
-      <StyledDialogContent>
-        <Stack spacing={3} alignItems="center">
-          <WarningIcon />
-          <Typography variant="h5" fontWeight={500} textAlign="center">
-            Confirm NFT Burn
-          </Typography>
-          <Typography variant="body1" textAlign="center">
-            Are you absolutely certain you want to burn this NFT? This action cannot be undone.
-          </Typography>
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 2 }}>
-            <Button variant="outlined" onClick={handleNo} color="primary" size="large">
-              Cancel
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleYes}
-              color="error"
-              size="large"
-              startIcon={<LocalFireDepartmentIcon />}
-            >
-              Burn NFT
-            </Button>
-          </Stack>
-        </Stack>
-      </StyledDialogContent>
-    </ConfirmDialog>
+    <>
+      <div className="fixed inset-0 z-50 bg-black/50" onClick={handleClose} />
+      <div className="fixed left-1/2 top-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2">
+        <div
+          className={cn(
+            "rounded-xl border-[1.5px] p-6",
+            isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+          )}
+        >
+          <button
+            onClick={handleClose}
+            className={cn(
+              "absolute right-4 top-4 rounded-lg p-1",
+              isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+            )}
+          >
+            <X size={20} />
+          </button>
+
+          <div className="flex flex-col items-center gap-4">
+            <div className="rounded-full bg-red-500/10 p-4">
+              <Flame size={48} className="text-red-500" />
+            </div>
+
+            <h2 className={cn(
+              "text-center text-[18px] font-normal",
+              isDark ? "text-white" : "text-gray-900"
+            )}>
+              Confirm NFT Burn
+            </h2>
+
+            <p className={cn(
+              "text-center text-[13px] font-normal",
+              isDark ? "text-white/60" : "text-gray-600"
+            )}>
+              Are you absolutely certain you want to burn this NFT? This action cannot be undone.
+            </p>
+
+            <div className="mt-4 flex gap-3">
+              <button
+                onClick={handleNo}
+                className={cn(
+                  "rounded-lg border-[1.5px] px-6 py-2 text-[13px] font-normal",
+                  isDark
+                    ? "border-white/15 hover:bg-white/5"
+                    : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleYes}
+                className="flex items-center gap-2 rounded-lg bg-red-500 px-6 py-2 text-[13px] font-normal text-white hover:bg-red-600"
+              >
+                <Flame size={14} />
+                Burn NFT
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

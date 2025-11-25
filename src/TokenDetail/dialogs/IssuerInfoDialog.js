@@ -1,99 +1,17 @@
 import Decimal from 'decimal.js-light';
-
-// Material
-import {
-  useTheme,
-  useMediaQuery,
-  styled,
-  Avatar,
-  Backdrop,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Link,
-  Stack,
-  Table,
-  TableBody,
-  TableRow,
-  TableCell,
-  Tooltip,
-  Typography,
-  TextField,
-  alpha
-} from '@mui/material';
-import { tableCellClasses } from '@mui/material/TableCell';
-
-import CloseIcon from '@mui/icons-material/Close';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useContext } from 'react';
+import { X, Copy } from 'lucide-react';
 
 // Context
-import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 
 // Utils
+import { cn } from 'src/utils/cn';
 import { fNumber } from 'src/utils/formatters';
 
-// Components
-
-// ----------------------------------------------------------------------
-const IssuerDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
-  '& .MuiBackdrop-root': {
-    backgroundColor: alpha(theme.palette.background.default, 0.85)
-  },
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(3),
-    minWidth: { xs: '100%', sm: 400 },
-    backgroundColor: theme.palette.background.default
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1),
-    backgroundColor: theme.palette.background.default
-  },
-  '& .MuiPaper-root': {
-    borderRadius: theme.spacing(2),
-    backgroundColor: theme.palette.background.paper,
-    backgroundImage: 'none',
-    border: `1px solid ${alpha(theme.palette.divider, 0.3)}`
-  }
-}));
-
-const IssuerInfoDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle
-      sx={{ m: 0, p: 2, backgroundColor: (theme) => theme.palette.background.paper }}
-      {...other}
-    >
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
-
 export default function IssuerInfoDialog({ open, setOpen, token }) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  const { accountProfile, openSnackbar } = useContext(AppContext);
+  const { themeName, openSnackbar } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   const { issuer, name, user, currency, md5, ext, issuer_info } = token;
 
@@ -105,194 +23,180 @@ export default function IssuerInfoDialog({ open, setOpen, token }) {
     setOpen(false);
   };
 
+  const copyToClipboard = (text, label) => {
+    navigator.clipboard.writeText(text).then(() => {
+      openSnackbar(`${label} copied!`, 'success');
+    });
+  };
+
+  if (!open) return null;
+
   return (
-    <>
-      <IssuerDialog fullScreen={fullScreen} onClose={handleClose} open={open} sx={{ zIndex: 1302 }}>
-        <IssuerInfoDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          <Stack direction="row" alignItems="center">
-            <Avatar
-              alt={`${user} ${name} Logo`}
+    <div className="fixed inset-0 z-[1302] flex items-center justify-center bg-black/85 backdrop-blur-sm p-4">
+      <div className={cn(
+        'relative w-full max-w-md rounded-xl border-[1.5px] overflow-hidden',
+        isDark ? 'border-white/30 bg-black' : 'border-gray-200 bg-white'
+      )}>
+        {/* Dialog Title */}
+        <div className={cn(
+          'flex items-center justify-between p-4',
+          isDark ? 'bg-black' : 'bg-white'
+        )}>
+          <div className="flex items-center gap-2">
+            <img
               src={imgUrl}
-              variant="rounded"
-              sx={{
-                mr: 1,
-                width: 40,
-                height: 40,
-                borderRadius: 2
-              }}
+              alt={`${user} ${name} Logo`}
+              className="w-10 h-10 rounded-lg object-cover"
             />
-            <Stack>
-              <Typography variant="token" color="primary">
-                {name}
-              </Typography>
-              <Typography variant="caption">{user}</Typography>
-            </Stack>
-          </Stack>
-        </IssuerInfoDialogTitle>
+            <div>
+              <p className="text-primary text-[15px] font-normal">{name}</p>
+              <p className={cn('text-[12px]', isDark ? 'text-white/60' : 'text-gray-500')}>{user}</p>
+            </div>
+          </div>
+          <button
+            onClick={handleClose}
+            className={cn(
+              'flex h-8 w-8 items-center justify-center rounded-lg transition-colors',
+              isDark ? 'text-white/60 hover:text-white' : 'text-gray-500 hover:text-gray-700'
+            )}
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-        <DialogContent>
-          <Stack spacing={2.5} sx={{ px: 1 }}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
-                Issuer:
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={0.5} sx={{ flex: 1 }}>
-                <Link
-                  underline="hover"
-                  target="_blank"
-                  href={`https://bithomp.com/explorer/${issuer}`}
-                  rel="noreferrer noopener nofollow"
-                  sx={{
-                    flex: 1,
-                    fontFamily: 'monospace',
-                    bgcolor: (theme) => alpha(theme.palette.action.selected, 0.08),
-                    p: 0.5,
-                    borderRadius: 0.5,
-                    color: 'text.secondary',
-                    '&:hover': {
-                      color: 'primary.main'
-                    }
-                  }}
-                >
-                  <Typography variant="body2" noWrap>
-                    {issuer}
-                  </Typography>
-                </Link>
-                <Tooltip title="Copy address">
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(issuer).then(() => {
-                        openSnackbar('Address copied!', 'success');
-                      });
-                    }}
-                  >
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Stack>
-
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
-                Currency:
-              </Typography>
-              <Stack direction="row" alignItems="center" spacing={0.5}>
-                <Typography
-                  variant="body2"
-                  noWrap
-                  sx={{
-                    fontWeight: 400,
-                    color: 'primary.main',
-                    bgcolor: (theme) => alpha(theme.palette.action.selected, 0.08),
-                    p: 0.5,
-                    borderRadius: 0.5
-                  }}
-                >
-                  {currency}
-                </Typography>
-                <Tooltip title="Copy currency code">
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      navigator.clipboard.writeText(currency).then(() => {
-                        openSnackbar('Currency code copied!', 'success');
-                      });
-                    }}
-                  >
-                    <ContentCopyIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </Stack>
-
-            {info.blackholed && (
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                sx={{
-                  bgcolor: (theme) => alpha(theme.palette.error.main, 0.1),
-                  p: 1.5,
-                  borderRadius: 1
-                }}
+        {/* Dialog Content */}
+        <div className={cn(
+          'p-4 space-y-4',
+          isDark ? 'bg-black' : 'bg-gray-50'
+        )}>
+          {/* Issuer */}
+          <div className="flex items-center gap-2">
+            <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+              Issuer:
+            </span>
+            <div className="flex items-center gap-1 flex-1 min-w-0">
+              <a
+                href={`https://bithomp.com/explorer/${issuer}`}
+                target="_blank"
+                rel="noreferrer noopener nofollow"
+                className={cn(
+                  'flex-1 font-mono text-[13px] px-2 py-1 rounded truncate transition-colors',
+                  isDark
+                    ? 'bg-white/5 text-white/60 hover:text-primary'
+                    : 'bg-gray-100 text-gray-600 hover:text-primary'
+                )}
               >
-                <Typography variant="body2" color="error.main">
-                  This account is BLACKHOLED. It can not issue more tokens.
-                </Typography>
-              </Stack>
-            )}
+                {issuer}
+              </a>
+              <button
+                onClick={() => copyToClipboard(issuer, 'Address')}
+                className={cn(
+                  'flex-shrink-0 p-1 rounded transition-colors',
+                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                )}
+                title="Copy address"
+              >
+                <Copy size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+              </button>
+            </div>
+          </div>
 
-            {info.domain && (
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
-                  Domain:
-                </Typography>
-                <Link
-                  underline="hover"
-                  color="inherit"
-                  target="_blank"
-                  href={
-                    info.domain.startsWith('https://') ? `${info.domain}` : `https://${info.domain}`
-                  }
-                  rel="noreferrer noopener nofollow"
-                  sx={{
-                    color: 'primary.main',
-                    '&:hover': {
-                      opacity: 0.8
-                    }
-                  }}
-                >
-                  <Typography variant="body2">{info.domain}</Typography>
-                </Link>
-              </Stack>
-            )}
+          {/* Currency */}
+          <div className="flex items-center gap-2">
+            <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+              Currency:
+            </span>
+            <div className="flex items-center gap-1">
+              <span className={cn(
+                'text-[13px] font-normal text-primary px-2 py-1 rounded',
+                isDark ? 'bg-white/5' : 'bg-gray-100'
+              )}>
+                {currency}
+              </span>
+              <button
+                onClick={() => copyToClipboard(currency, 'Currency code')}
+                className={cn(
+                  'p-1 rounded transition-colors',
+                  isDark ? 'hover:bg-white/10' : 'hover:bg-gray-200'
+                )}
+                title="Copy currency code"
+              >
+                <Copy size={14} className={isDark ? 'text-white/60' : 'text-gray-500'} />
+              </button>
+            </div>
+          </div>
 
-            {Object.entries({
-              tickSize: 'Tick Size',
-              globalFreeze: 'Global Freeze',
-              requireAuth: 'Token Auth',
-              disableMaster: 'Disable Master',
-              depositAuth: 'Deposit Auth',
-              requireDestTag: 'Destination Tag',
-              disallowXRP: 'Receiving XRP',
-              transferRate: 'Transfer Fee',
-              noFreeze: 'No Freeze',
-              defaultRipple: 'Rippling'
-            }).map(
-              ([key, label]) =>
-                info[key] && (
-                  <Stack key={key} direction="row" spacing={1} alignItems="center">
-                    <Typography variant="subtitle2" noWrap sx={{ color: 'text.secondary' }}>
-                      {label}:
-                    </Typography>
-                    <Typography variant="body2" sx={{ color: 'text.primary' }}>
-                      {key === 'transferRate'
-                        ? `${fNumber(new Decimal(info[key]).sub(1).mul(100).toNumber())}%`
-                        : key === 'tickSize'
-                          ? info[key]
-                          : key === 'globalFreeze'
-                            ? 'Freeze'
-                            : key === 'requireAuth'
-                              ? 'Required'
-                              : key === 'disableMaster'
-                                ? 'Disallowed'
-                                : key === 'depositAuth'
-                                  ? 'Enabled'
-                                  : key === 'requireDestTag'
-                                    ? 'Required'
-                                    : key === 'disallowXRP'
-                                      ? 'Disabled'
-                                      : key === 'noFreeze'
-                                        ? 'True'
-                                        : 'Enabled'}
-                    </Typography>
-                  </Stack>
-                )
-            )}
-          </Stack>
-        </DialogContent>
-      </IssuerDialog>
-    </>
+          {/* Blackholed Warning */}
+          {info.blackholed && (
+            <div className="p-3 rounded-lg bg-red-500/10">
+              <p className="text-[13px] text-red-500">
+                This account is BLACKHOLED. It can not issue more tokens.
+              </p>
+            </div>
+          )}
+
+          {/* Domain */}
+          {info.domain && (
+            <div className="flex items-center gap-2">
+              <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+                Domain:
+              </span>
+              <a
+                href={info.domain.startsWith('https://') ? info.domain : `https://${info.domain}`}
+                target="_blank"
+                rel="noreferrer noopener nofollow"
+                className="text-[13px] text-primary hover:opacity-80 transition-opacity"
+              >
+                {info.domain}
+              </a>
+            </div>
+          )}
+
+          {/* Other Info Fields */}
+          {Object.entries({
+            tickSize: 'Tick Size',
+            globalFreeze: 'Global Freeze',
+            requireAuth: 'Token Auth',
+            disableMaster: 'Disable Master',
+            depositAuth: 'Deposit Auth',
+            requireDestTag: 'Destination Tag',
+            disallowXRP: 'Receiving XRP',
+            transferRate: 'Transfer Fee',
+            noFreeze: 'No Freeze',
+            defaultRipple: 'Rippling'
+          }).map(
+            ([key, label]) =>
+              info[key] && (
+                <div key={key} className="flex items-center gap-2">
+                  <span className={cn('text-[13px] font-normal', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    {label}:
+                  </span>
+                  <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                    {key === 'transferRate'
+                      ? `${fNumber(new Decimal(info[key]).sub(1).mul(100).toNumber())}%`
+                      : key === 'tickSize'
+                        ? info[key]
+                        : key === 'globalFreeze'
+                          ? 'Freeze'
+                          : key === 'requireAuth'
+                            ? 'Required'
+                            : key === 'disableMaster'
+                              ? 'Disallowed'
+                              : key === 'depositAuth'
+                                ? 'Enabled'
+                                : key === 'requireDestTag'
+                                  ? 'Required'
+                                  : key === 'disallowXRP'
+                                    ? 'Disabled'
+                                    : key === 'noFreeze'
+                                      ? 'True'
+                                      : 'Enabled'}
+                  </span>
+                </div>
+              )
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

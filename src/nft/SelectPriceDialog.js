@@ -1,82 +1,11 @@
 import axios from 'axios';
-import { useState, useEffect } from 'react';
+import { useState, useContext } from 'react';
 import Decimal from 'decimal.js-light';
-
-// Material
-import {
-  alpha,
-  useTheme,
-  useMediaQuery,
-  styled,
-  Backdrop,
-  Button,
-  Dialog,
-  DialogContent,
-  DialogTitle,
-  Divider,
-  IconButton,
-  Link,
-  ListItemButton,
-  Select,
-  Stack,
-  Typography,
-  TextField
-} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import AddCircleIcon from '@mui/icons-material/AddCircle';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import TransferWithinAStationIcon from '@mui/icons-material/TransferWithinAStation';
-
-// Context
-import { useContext } from 'react';
+import { X, CheckCircle, ArrowRight } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
-
-// Utils
 import { normalizeAmount } from 'src/utils/parseUtils';
-import { formatDateTime } from 'src/utils/formatters';
-import { checkExpiration } from 'src/utils/formatters';
-
-// ----------------------------------------------------------------------
-const PriceDialog = styled(Dialog)(({ theme }) => ({
-  backdropFilter: 'blur(1px)',
-  WebkitBackdropFilter: 'blur(1px)', // Fix on Mobile
-  '& .MuiDialogContent-root': {
-    padding: theme.spacing(2)
-  },
-  '& .MuiDialogActions-root': {
-    padding: theme.spacing(1)
-  }
-}));
-
-const PriceDialogTitle = (props) => {
-  const { children, onClose, ...other } = props;
-
-  return (
-    <DialogTitle sx={{ m: 0, p: 2 }} {...other}>
-      {children}
-      {onClose ? (
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          sx={{
-            position: 'absolute',
-            right: 8,
-            top: 8,
-            color: (theme) => theme.palette.grey[500]
-          }}
-        >
-          <CloseIcon />
-        </IconButton>
-      ) : null}
-    </DialogTitle>
-  );
-};
-
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border: 'none'
-  }
-}));
+import { formatDateTime, checkExpiration } from 'src/utils/formatters';
+import { cn } from 'src/utils/cn';
 
 function GetNum(amount) {
   let num = 0;
@@ -88,9 +17,8 @@ function GetNum(amount) {
 }
 
 export default function SelectPriceDialog({ open, setOpen, offers, handleAccept }) {
-  const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const { accountProfile, openSnackbar } = useContext(AppContext);
 
   const [offer, setOffer] = useState(null);
@@ -114,28 +42,34 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
     setOffer(offers[index]);
   };
 
-  return (
-    <>
-      <PriceDialog
-        fullScreen={fullScreen}
-        onClose={handleClose}
-        open={open}
-        maxWidth="xs"
-        fullWidth
-        // sx={{zIndex: 1302}}
-        hideBackdrop={true}
-        disableScrollLock
-        disablePortal
-        keepMounted
-      >
-        <PriceDialogTitle id="customized-dialog-title" onClose={handleClose}>
-          <Stack direction="row" spacing={1}>
-            <CheckCircleOutlineIcon />
-            <Typography variant="s10">Checkout</Typography>
-          </Stack>
-        </PriceDialogTitle>
+  if (!open) return null;
 
-        <DialogContent>
+  return (
+    <div className="fixed inset-0 z-[1302] flex items-center justify-center p-4">
+      <div className="absolute inset-0 backdrop-blur-sm" onClick={handleClose} />
+
+      <div
+        className={cn(
+          'relative w-full max-w-xs rounded-xl',
+          isDark ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'
+        )}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-white/10 p-4">
+          <div className="flex items-center gap-2">
+            <CheckCircle size={18} />
+            <h2 className="text-[15px] font-normal">Checkout</h2>
+          </div>
+          <button
+            onClick={handleClose}
+            className={cn('rounded-lg p-1.5', isDark ? 'hover:bg-white/10' : 'hover:bg-gray-100')}
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="p-4">
           {offers.map((offer, idx) => {
             const price = normalizeAmount(offer.amount);
             let priceAmount = price.amount;
@@ -144,79 +78,81 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
               priceAmount = new Decimal(price.amount).toDP(2, Decimal.ROUND_DOWN).toNumber();
             }
 
-            // let expired = false;
             const expired = checkExpiration(offer.expiration);
 
-            // if (offer.expiration) {
-            //     const now = Date.now();
-            //     const expire = (offer.expiration > 946684800 ? offer.expiration: offer.expiration + 946684800) * 1000;
-
-            //     if (expire < now)
-            //         expired = true;
-            // }
-
             return (
-              <Stack key={offer.nft_offer_index}>
-                {idx > 0 && <Divider sx={{ mt: 1, mb: 1 }} />}
-                <ListItemButton
-                  selected={selectedIndex === idx}
+              <div key={offer.nft_offer_index}>
+                {idx > 0 && (
+                  <div
+                    className={cn(
+                      'my-2 h-px',
+                      isDark ? 'bg-white/10' : 'bg-gray-200'
+                    )}
+                  />
+                )}
+                <button
                   onClick={(event) => handleListItemClick(event, idx)}
-                  sx={{ pt: 2, pb: 2 }}
+                  className={cn(
+                    'w-full rounded-lg p-4 text-left transition-colors',
+                    selectedIndex === idx
+                      ? isDark
+                        ? 'bg-primary/10'
+                        : 'bg-primary/5'
+                      : isDark
+                        ? 'hover:bg-white/5'
+                        : 'hover:bg-gray-50'
+                  )}
                 >
-                  <Stack spacing={1}>
-                    <Stack direction="row" spacing={2} alignItems="center">
-                      <Typography variant="s9" color="#33C2FF" noWrap>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <p className="text-[15px] font-normal text-primary">
                         {priceAmount} {price.name}
-                      </Typography>
-                      <Stack>
-                        {/* <Typography variant='s8' style={{ wordBreak: "break-all" }}> {offer.owner}</Typography> */}
-                        {offer.destination && (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            {/* <Typography variant='s4'>Destination</Typography> */}
-                            <TransferWithinAStationIcon />
-                            <Typography variant="s6">{offer.destination}</Typography>
-                          </Stack>
+                      </p>
+                    </div>
+                    {offer.destination && (
+                      <div className="flex items-center gap-2">
+                        <ArrowRight size={14} />
+                        <p
+                          className={cn(
+                            'text-[11px]',
+                            isDark ? 'text-white/50' : 'text-gray-500'
+                          )}
+                        >
+                          {offer.destination}
+                        </p>
+                      </div>
+                    )}
+                    {offer.expiration && (
+                      <p
+                        className={cn(
+                          'text-[11px]',
+                          isDark ? 'text-white/50' : 'text-gray-500'
                         )}
-
-                        {offer.expiration && (
-                          <Stack direction="row" spacing={1} alignItems="center">
-                            <Typography variant="s7">
-                              {expired ? 'Expired' : 'Expires'} on{' '}
-                              {formatDateTime(offer.expiration * 1000)}
-                            </Typography>
-                          </Stack>
-                        )}
-                      </Stack>
-                    </Stack>
-
-                    {/* {offer.expiration ?
-                                            <Stack direction="row" alignItems="center">
-                                                <Typography variant='s4'>Expires by {new Date(getUnixTimeEpochFromRippleEpoch(offer.expiration)).toLocaleString()}</Typography>
-                                                <CountdownTimer targetDate={getUnixTimeEpochFromRippleEpoch(offer.expiration)} />
-                                            </Stack>
-                                            :
-                                            <Stack direction="row" alignItems="center">
-                                                <Typography variant='s16'>No Expiration</Typography>
-                                            </Stack>
-                                        } */}
-                  </Stack>
-                </ListItemButton>
-              </Stack>
+                      >
+                        {expired ? 'Expired' : 'Expires'} on {formatDateTime(offer.expiration * 1000)}
+                      </p>
+                    )}
+                  </div>
+                </button>
+              </div>
             );
           })}
 
-          <Stack direction="row" spacing={2} justifyContent="center" sx={{ mt: 3, mb: 4 }}>
-            <Button
-              variant="outlined"
+          <div className="mt-6 flex justify-center">
+            <button
               onClick={handleOK}
-              color="primary"
-              // size='medium'
+              className={cn(
+                'rounded-lg border-[1.5px] px-8 py-2 text-[13px] font-normal transition-colors',
+                isDark
+                  ? 'border-primary bg-primary/10 text-primary hover:bg-primary/20'
+                  : 'border-primary bg-primary/5 text-primary hover:bg-primary/10'
+              )}
             >
               OK
-            </Button>
-          </Stack>
-        </DialogContent>
-      </PriceDialog>
-    </>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

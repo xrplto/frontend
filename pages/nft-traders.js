@@ -1,82 +1,82 @@
-import { useState } from 'react';
-import {
-  Box,
-  Container,
-  Typography,
-  Stack,
-  Card,
-  CardContent,
-  CircularProgress,
-  Link,
-  Chip,
-  useTheme,
-  Toolbar,
-  Pagination,
-  styled,
-  alpha
-} from '@mui/material';
+import { useState, useContext } from 'react';
 import axios from 'axios';
 import { useRouter } from 'next/router';
+import { AppContext } from 'src/AppContext';
+import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import { TrendingUp, TrendingDown, ArrowDown, Loader2 } from 'lucide-react';
 import { fNumber, formatDistanceToNowStrict } from 'src/utils/formatters';
-import Avatar from '@mui/material/Avatar';
-import AvatarGroup from '@mui/material/AvatarGroup';
-import Tooltip from '@mui/material/Tooltip';
+import Link from 'next/link';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
-const OverviewWrapper = styled(Box)(({ theme }) => `
-  overflow: hidden;
-  flex: 1;
-  margin: 0;
-  padding: 0;
-`);
+// Simple Pagination Component
+function SimplePagination({ currentPage, totalPages, onPageChange, isDark }) {
+  const pages = [];
+  const maxVisible = 7;
 
-const TraderCard = styled(Card)(({ theme }) => ({
-  marginBottom: theme.spacing(1.5),
-  borderRadius: '12px',
-  backgroundColor: 'transparent',
-  border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-  transition: 'all 0.2s ease',
-  '&:hover': {
-    borderColor: alpha('#4285f4', 0.3),
-    backgroundColor: alpha('#4285f4', 0.02)
-  }
-}));
+  let startPage = Math.max(1, currentPage - Math.floor(maxVisible / 2));
+  let endPage = Math.min(totalPages, startPage + maxVisible - 1);
 
-const StyledPagination = styled(Pagination)(({ theme }) => ({
-  '& .MuiPaginationItem-root': {
-    color: theme.palette.text.primary,
-    borderRadius: '12px',
-    margin: '0 3px',
-    fontWeight: 400,
-    minWidth: '32px',
-    height: '32px',
-    border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-    '&:hover': {
-      backgroundColor: alpha('#4285f4', 0.04),
-      borderColor: '#4285f4'
-    }
-  },
-  '& .Mui-selected': {
-    backgroundColor: `${theme.palette.primary.main} !important`,
-    color: '#fff !important',
-    fontWeight: 400,
-    borderColor: `${theme.palette.primary.main} !important`,
-    '&:hover': {
-      backgroundColor: `${theme.palette.primary.dark} !important`
-    }
+  if (endPage - startPage < maxVisible - 1) {
+    startPage = Math.max(1, endPage - maxVisible + 1);
   }
-}));
+
+  for (let i = startPage; i <= endPage; i++) {
+    pages.push(i);
+  }
+
+  return (
+    <div className="flex items-center justify-center gap-2">
+      <button
+        onClick={() => onPageChange(1)}
+        disabled={currentPage === 1}
+        className={cn(
+          "px-3 py-2 rounded-lg border-[1.5px] text-[13px] font-normal min-w-[32px] h-[32px]",
+          isDark ? "border-white/15" : "border-gray-300",
+          currentPage === 1 ? "opacity-50 cursor-not-allowed" : "hover:border-primary hover:bg-primary/5"
+        )}
+      >
+        First
+      </button>
+
+      {pages.map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          className={cn(
+            "px-3 py-2 rounded-lg border-[1.5px] text-[13px] font-normal min-w-[32px] h-[32px]",
+            page === currentPage
+              ? "bg-primary text-white border-primary"
+              : isDark
+              ? "border-white/15 hover:border-primary hover:bg-primary/5"
+              : "border-gray-300 hover:bg-gray-100"
+          )}
+        >
+          {page}
+        </button>
+      ))}
+
+      <button
+        onClick={() => onPageChange(totalPages)}
+        disabled={currentPage === totalPages}
+        className={cn(
+          "px-3 py-2 rounded-lg border-[1.5px] text-[13px] font-normal min-w-[32px] h-[32px]",
+          isDark ? "border-white/15" : "border-gray-300",
+          currentPage === totalPages ? "opacity-50 cursor-not-allowed" : "hover:border-primary hover:bg-primary/5"
+        )}
+      >
+        Last
+      </button>
+    </div>
+  );
+}
 
 export default function TradersPage({ traders = [], sortBy = 'balance', globalMetrics = null }) {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const router = useRouter();
   const [page, setPage] = useState(0);
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
@@ -92,504 +92,320 @@ export default function TradersPage({ traders = [], sortBy = 'balance', globalMe
   const loading = false;
 
   return (
-    <OverviewWrapper>
-      <Toolbar id="back-to-top-anchor" />
+    <div className="overflow-hidden flex-1">
+      <div id="back-to-top-anchor" className="h-6" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
 
-      <Container maxWidth="xl" sx={{ py: 4 }}>
-        <Typography
-          variant="h4"
-          sx={{
-            mb: 1,
-            fontWeight: 400,
-            fontSize: '1.75rem',
-            color: theme.palette.text.primary
-          }}
-        >
+      <div className="max-w-screen-2xl mx-auto w-full px-4 py-8">
+        <h1 className={cn(
+          "text-[28px] font-normal mb-2",
+          isDark ? "text-white" : "text-gray-900"
+        )}>
           NFT Traders
-        </Typography>
-        <Typography
-          variant="body2"
-          sx={{
-            mb: 2,
-            color: alpha(theme.palette.text.secondary, 0.7),
-            fontSize: '0.95rem'
-          }}
-        >
+        </h1>
+        <p className={cn(
+          "text-[15px] mb-4",
+          isDark ? "text-white/60" : "text-gray-600"
+        )}>
           Active NFT traders (24h) - Click column headers to sort
-        </Typography>
+        </p>
 
         {globalMetrics && (
-          <Box
-            sx={{
-              display: 'grid',
-              gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(6, 1fr)' },
-              gap: 2,
-              mb: 4
-            }}
-          >
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4 mb-8">
+            <div className={cn(
+              "p-4 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
                 Active Traders
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.activeTraders24h)}
-              </Typography>
-            </Box>
+              </div>
+              <div className="text-[17px] font-normal mt-1">{fNumber(globalMetrics.activeTraders24h)}</div>
+            </div>
 
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+            <div className={cn(
+              "p-4 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
                 Total Balance
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.totalLiquidity24h)} XRP
-              </Typography>
-            </Box>
+              </div>
+              <div className="text-[17px] font-normal mt-1">{fNumber(globalMetrics.totalLiquidity24h)} XRP</div>
+            </div>
 
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+            <div className={cn(
+              "p-4 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
                 24h Volume
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.total24hVolume)} XRP
-              </Typography>
-            </Box>
+              </div>
+              <div className="text-[17px] font-normal mt-1">{fNumber(globalMetrics.total24hVolume)} XRP</div>
+            </div>
 
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+            <div className={cn(
+              "p-4 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
                 24h Trades
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.total24hSales)}
-              </Typography>
-            </Box>
+              </div>
+              <div className="text-[17px] font-normal mt-1">{fNumber(globalMetrics.total24hSales)}</div>
+            </div>
 
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+            <div className={cn(
+              "p-4 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
                 24h Mints
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.total24hMints)}
-              </Typography>
-            </Box>
+              </div>
+              <div className="text-[17px] font-normal mt-1">{fNumber(globalMetrics.total24hMints)}</div>
+            </div>
 
-            <Box
-              sx={{
-                p: 2,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.75rem' }}>
+            <div className={cn(
+              "p-4 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>
                 24h Burns
-              </Typography>
-              <Typography variant="h6" sx={{ fontWeight: 400, fontSize: '1.1rem', mt: 0.5 }}>
-                {fNumber(globalMetrics.total24hBurns)}
-              </Typography>
-            </Box>
-          </Box>
+              </div>
+              <div className="text-[17px] font-normal mt-1">{fNumber(globalMetrics.total24hBurns)}</div>
+            </div>
+          </div>
         )}
 
         {loading ? (
-          <Box display="flex" justifyContent="center" py={8}>
-            <CircularProgress size={40} thickness={4} />
-          </Box>
+          <div className="flex justify-center py-16">
+            <Loader2 className="animate-spin" size={40} />
+          </div>
         ) : traders.length === 0 ? (
-          <Box
-            sx={{
-              textAlign: 'center',
-              py: 8,
-              backgroundColor: 'transparent',
-              borderRadius: '12px',
-              border: `1.5px dashed ${alpha(theme.palette.divider, 0.3)}`
-            }}
-          >
-            <Typography variant="h6" color="text.secondary" gutterBottom>
+          <div className={cn(
+            "text-center py-16 rounded-xl border-[1.5px] border-dashed",
+            isDark ? "border-white/20" : "border-gray-300"
+          )}>
+            <h3 className={cn("text-lg font-normal mb-2", isDark ? "text-white/60" : "text-gray-600")}>
               No Traders Data
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
+            </h3>
+            <p className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>
               Trader data will appear here when available
-            </Typography>
-          </Box>
+            </p>
+          </div>
         ) : (
           <>
-            {/* Header */}
-            <Box
-              sx={{
-                display: 'grid',
-                gridTemplateColumns: {
-                  xs: '1fr',
-                  md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 1.2fr 2fr'
-                },
-                gap: 2,
-                p: 2,
-                mb: 1,
-                borderRadius: '12px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.2)}`,
-                backgroundColor: 'transparent'
-              }}
-            >
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>#</Typography>
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Trader</Typography>
+            {/* Header Row */}
+            <div className={cn(
+              "hidden md:grid grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1.5fr_1.5fr_1fr_1.2fr_2fr] gap-4 p-4 mb-2 rounded-xl border-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>#</div>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide", isDark ? "text-white/60" : "text-gray-600")}>Trader</div>
 
-              <Box
+              <div
                 onClick={() => handleSortChange('balance')}
-                sx={{
-                  display: { xs: 'none', md: 'flex' },
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  '&:hover': { color: '#4285f4' }
-                }}
+                className={cn(
+                  "flex items-center justify-end gap-1 cursor-pointer text-[11px] font-medium uppercase tracking-wide",
+                  sortBy === 'balance' ? "text-primary" : isDark ? "text-white/60 hover:text-primary" : "text-gray-600 hover:text-primary"
+                )}
               >
-                <Typography sx={{ fontWeight: 400, color: sortBy === 'balance' ? '#4285f4' : alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  XRP Balance
-                </Typography>
-                {sortBy === 'balance' && <ArrowDownwardIcon sx={{ fontSize: 14, color: '#4285f4' }} />}
-              </Box>
+                XRP Balance
+                {sortBy === 'balance' && <ArrowDown size={14} className="text-primary" />}
+              </div>
 
-              <Box
+              <div
                 onClick={() => handleSortChange('buyVolume')}
-                sx={{
-                  display: { xs: 'none', md: 'flex' },
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  '&:hover': { color: '#4285f4' }
-                }}
+                className={cn(
+                  "flex items-center justify-end gap-1 cursor-pointer text-[11px] font-medium uppercase tracking-wide",
+                  sortBy === 'buyVolume' ? "text-primary" : isDark ? "text-white/60 hover:text-primary" : "text-gray-600 hover:text-primary"
+                )}
               >
-                <Typography sx={{ fontWeight: 400, color: sortBy === 'buyVolume' ? '#4285f4' : alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Buy Volume
-                </Typography>
-                {sortBy === 'buyVolume' && <ArrowDownwardIcon sx={{ fontSize: 14, color: '#4285f4' }} />}
-              </Box>
+                Buy Volume
+                {sortBy === 'buyVolume' && <ArrowDown size={14} className="text-primary" />}
+              </div>
 
-              <Box
+              <div
                 onClick={() => handleSortChange('sellVolume')}
-                sx={{
-                  display: { xs: 'none', md: 'flex' },
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  '&:hover': { color: '#4285f4' }
-                }}
+                className={cn(
+                  "flex items-center justify-end gap-1 cursor-pointer text-[11px] font-medium uppercase tracking-wide",
+                  sortBy === 'sellVolume' ? "text-primary" : isDark ? "text-white/60 hover:text-primary" : "text-gray-600 hover:text-primary"
+                )}
               >
-                <Typography sx={{ fontWeight: 400, color: sortBy === 'sellVolume' ? '#4285f4' : alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Sell Volume
-                </Typography>
-                {sortBy === 'sellVolume' && <ArrowDownwardIcon sx={{ fontSize: 14, color: '#4285f4' }} />}
-              </Box>
+                Sell Volume
+                {sortBy === 'sellVolume' && <ArrowDown size={14} className="text-primary" />}
+              </div>
 
-              <Box
+              <div
                 onClick={() => handleSortChange('totalVolume')}
-                sx={{
-                  display: { xs: 'none', md: 'flex' },
-                  alignItems: 'center',
-                  justifyContent: 'flex-end',
-                  gap: 0.5,
-                  cursor: 'pointer',
-                  '&:hover': { color: '#4285f4' }
-                }}
+                className={cn(
+                  "flex items-center justify-end gap-1 cursor-pointer text-[11px] font-medium uppercase tracking-wide",
+                  sortBy === 'totalVolume' ? "text-primary" : isDark ? "text-white/60 hover:text-primary" : "text-gray-600 hover:text-primary"
+                )}
               >
-                <Typography sx={{ fontWeight: 400, color: sortBy === 'totalVolume' ? '#4285f4' : alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                  Total Volume
-                </Typography>
-                {sortBy === 'totalVolume' && <ArrowDownwardIcon sx={{ fontSize: 14, color: '#4285f4' }} />}
-              </Box>
+                Total Volume
+                {sortBy === 'totalVolume' && <ArrowDown size={14} className="text-primary" />}
+              </div>
 
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Collections</Typography>
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Last Active</Typography>
-              <Typography sx={{ display: { xs: 'none', md: 'block' }, fontWeight: 400, color: alpha(theme.palette.text.secondary, 0.7), fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.5px', textAlign: 'right' }}>Marketplaces</Typography>
-            </Box>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide text-right", isDark ? "text-white/60" : "text-gray-600")}>Collections</div>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide text-right", isDark ? "text-white/60" : "text-gray-600")}>Last Active</div>
+              <div className={cn("text-[11px] font-medium uppercase tracking-wide text-right", isDark ? "text-white/60" : "text-gray-600")}>Marketplaces</div>
+            </div>
 
-            {/* Traders List */}
-            <Stack spacing={0}>
+            {/* Trader Cards */}
+            <div className="space-y-3">
               {paginatedTraders.map((trader, index) => (
-                <TraderCard key={trader._id || trader.address || index}>
-                  <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                    <Box
-                      sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                          xs: '1fr',
-                          md: '0.5fr 2fr 1.5fr 1.5fr 1.5fr 1.5fr 1fr 1.2fr 2fr'
-                        },
-                        gap: 2,
-                        alignItems: 'center'
-                      }}
-                    >
-                      {/* Rank */}
-                      <Box sx={{ display: { xs: 'none', md: 'block' } }}>
-                        <Typography variant="body2" fontWeight="400" color="text.primary">
-                          {page * rowsPerPage + index + 1}
-                        </Typography>
-                      </Box>
+                <div
+                  key={trader._id || trader.address || index}
+                  className={cn(
+                    "p-4 rounded-xl border-[1.5px] transition-all",
+                    isDark
+                      ? "border-white/10 hover:border-primary/30 hover:bg-primary/[0.02]"
+                      : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
+                  )}
+                >
+                  <div className="grid grid-cols-1 md:grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1.5fr_1.5fr_1fr_1.2fr_2fr] gap-4 items-center">
+                    {/* Rank */}
+                    <div className="hidden md:block text-[13px] font-normal">
+                      {page * rowsPerPage + index + 1}
+                    </div>
 
-                      {/* Address */}
-                      <Box>
-                        <Link
-                          href={`/profile/${trader._id || trader.address}`}
-                          sx={{
-                            textDecoration: 'none',
-                            color: '#4285f4',
-                            fontWeight: 400,
-                            fontSize: '0.95rem',
-                            '&:hover': {
-                              textDecoration: 'underline'
-                            }
-                          }}
-                        >
-                          {(trader._id || trader.address)
-                            ? `${(trader._id || trader.address).slice(0, 6)}...${(trader._id || trader.address).slice(-4)}`
-                            : 'Unknown'}
-                        </Link>
-                      </Box>
+                    {/* Address */}
+                    <div>
+                      <Link
+                        href={`/profile/${trader._id || trader.address}`}
+                        className="text-primary text-[15px] font-normal hover:underline"
+                      >
+                        {(trader._id || trader.address)
+                          ? `${(trader._id || trader.address).slice(0, 6)}...${(trader._id || trader.address).slice(-4)}`
+                          : 'Unknown'}
+                      </Link>
+                    </div>
 
-                      {/* XRP Balance */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          XRP Balance
-                        </Typography>
-                        <Stack direction="row" spacing={0.5} alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
-                          <Typography variant="body2" fontWeight="400" color="text.primary">
-                            {fNumber(trader.balance || 0)}
-                          </Typography>
-                          {trader.traderType && (
-                            <Chip
-                              label={trader.traderType}
-                              size="small"
-                              sx={{
-                                height: '18px',
-                                fontSize: '0.65rem',
-                                fontWeight: 400,
-                                borderRadius: '4px',
-                                backgroundColor: trader.traderType === 'buyer'
-                                  ? alpha(theme.palette.primary.main, 0.1)
-                                  : trader.traderType === 'seller'
-                                  ? alpha('#F44336', 0.1)
-                                  : alpha(theme.palette.warning.main, 0.1),
-                                color: trader.traderType === 'buyer'
-                                  ? theme.palette.primary.main
-                                  : trader.traderType === 'seller'
-                                  ? '#F44336'
-                                  : theme.palette.warning.main,
-                                border: `1px solid ${trader.traderType === 'buyer'
-                                  ? alpha(theme.palette.primary.main, 0.3)
-                                  : trader.traderType === 'seller'
-                                  ? alpha('#F44336', 0.3)
-                                  : alpha(theme.palette.warning.main, 0.3)}`
-                              }}
-                            />
-                          )}
-                        </Stack>
-                      </Box>
-
-                      {/* Buy Volume */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          Buy Volume
-                        </Typography>
-                        <Stack direction="row" spacing={0.5} alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
-                          <TrendingUpIcon sx={{ color: theme.palette.primary.main, fontSize: 14 }} />
-                          <Typography variant="body2" fontWeight="400" color="text.primary">
-                            {fNumber(trader.buyVolume || 0)}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                            ({trader.buyCount || 0})
-                          </Typography>
-                        </Stack>
-                      </Box>
-
-                      {/* Sell Volume */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          Sell Volume
-                        </Typography>
-                        <Stack direction="row" spacing={0.5} alignItems="center" justifyContent={{ xs: 'flex-start', md: 'flex-end' }}>
-                          <TrendingDownIcon sx={{ color: '#F44336', fontSize: 14 }} />
-                          <Typography variant="body2" fontWeight="400" color="text.primary">
-                            {fNumber(trader.sellVolume || 0)}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                            ({trader.sellCount || 0})
-                          </Typography>
-                        </Stack>
-                      </Box>
-
-                      {/* Total Volume */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          Total Volume
-                        </Typography>
-                        <Typography variant="body2" fontWeight="400" color="text.primary">
-                          {fNumber(trader.totalVolume || 0)}
-                        </Typography>
-                      </Box>
-
-                      {/* Collections */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          Collections
-                        </Typography>
-                        {Array.isArray(trader.collectionsInfo) && trader.collectionsInfo.length > 0 ? (
-                          <Box sx={{ display: 'flex', justifyContent: { xs: 'flex-start', md: 'flex-end' }, alignItems: 'center', gap: 0.5 }}>
-                            <AvatarGroup max={3} sx={{ '& .MuiAvatar-root': { width: 24, height: 24, fontSize: '0.7rem', border: '1.5px solid' } }}>
-                              {trader.collectionsInfo.map((col) => (
-                                <Tooltip key={col._id} title={col.name} arrow>
-                                  <Avatar
-                                    src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
-                                    sx={{ width: 24, height: 24 }}
-                                  />
-                                </Tooltip>
-                              ))}
-                            </AvatarGroup>
-                            <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>
-                              {trader.collectionsInfo.length}
-                            </Typography>
-                          </Box>
-                        ) : (
-                          <Typography variant="body2" fontWeight="400" color="text.primary">
-                            {trader.collectionsTraded || 0}
-                          </Typography>
+                    {/* XRP Balance */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">XRP Balance</div>
+                      <div className="flex items-center gap-2 md:justify-end">
+                        <span className="text-[13px] font-normal">{fNumber(trader.balance || 0)}</span>
+                        {trader.traderType && (
+                          <span className={cn(
+                            "px-2 py-0.5 rounded text-[11px] font-normal border",
+                            trader.traderType === 'buyer'
+                              ? "bg-primary/10 text-primary border-primary/30"
+                              : trader.traderType === 'seller'
+                              ? "bg-red-500/10 text-red-500 border-red-500/30"
+                              : "bg-yellow-500/10 text-yellow-500 border-yellow-500/30"
+                          )}>
+                            {trader.traderType}
+                          </span>
                         )}
-                      </Box>
+                      </div>
+                    </div>
 
-                      {/* Last Active */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          Last Active
-                        </Typography>
-                        <Typography variant="body2" fontWeight="400" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
-                          {trader.lastActive ? formatDistanceToNowStrict(new Date(trader.lastActive), { addSuffix: true }) : '-'}
-                        </Typography>
-                      </Box>
+                    {/* Buy Volume */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">Buy Volume</div>
+                      <div className="flex items-center gap-2 md:justify-end">
+                        <TrendingUp size={14} className="text-primary" />
+                        <span className="text-[13px] font-normal">{fNumber(trader.buyVolume || 0)}</span>
+                        <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                          ({trader.buyCount || 0})
+                        </span>
+                      </div>
+                    </div>
 
-                      {/* Marketplaces */}
-                      <Box sx={{ textAlign: { xs: 'left', md: 'right' } }}>
-                        <Typography
-                          variant="body2"
-                          color="text.secondary"
-                          sx={{ fontSize: '0.7rem', display: { xs: 'block', md: 'none' }, mb: 0.5 }}
-                        >
-                          Marketplaces
-                        </Typography>
-                        {Array.isArray(trader.marketplaces) && trader.marketplaces.length > 0 ? (
-                          <Stack direction="row" spacing={0.5} justifyContent={{ xs: 'flex-start', md: 'flex-end' }} flexWrap="wrap" gap={0.5}>
-                            {trader.marketplaces.map((mp, idx) => (
-                              <Chip
-                                key={idx}
-                                label={mp}
-                                size="small"
-                                sx={{
-                                  height: '20px',
-                                  fontSize: '0.7rem',
-                                  fontWeight: 400,
-                                  borderRadius: '6px',
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.1),
-                                  color: theme.palette.primary.main,
-                                  border: `1px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                                }}
+                    {/* Sell Volume */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">Sell Volume</div>
+                      <div className="flex items-center gap-2 md:justify-end">
+                        <TrendingDown size={14} className="text-red-500" />
+                        <span className="text-[13px] font-normal">{fNumber(trader.sellVolume || 0)}</span>
+                        <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                          ({trader.sellCount || 0})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Total Volume */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">Total Volume</div>
+                      <span className="text-[13px] font-normal">{fNumber(trader.totalVolume || 0)}</span>
+                    </div>
+
+                    {/* Collections */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">Collections</div>
+                      {Array.isArray(trader.collectionsInfo) && trader.collectionsInfo.length > 0 ? (
+                        <div className="flex items-center gap-2 md:justify-end">
+                          <div className="flex -space-x-2">
+                            {trader.collectionsInfo.slice(0, 3).map((col) => (
+                              <img
+                                key={col._id}
+                                src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`}
+                                alt={col.name}
+                                title={col.name}
+                                className="w-6 h-6 rounded-full border-2 border-current"
                               />
                             ))}
-                          </Stack>
-                        ) : (
-                          <Typography variant="body2" fontWeight="400" color="text.secondary">
-                            -
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </CardContent>
-                </TraderCard>
+                          </div>
+                          <span className={cn("text-[11px]", isDark ? "text-white/60" : "text-gray-600")}>
+                            {trader.collectionsInfo.length}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-[13px] font-normal">{trader.collectionsTraded || 0}</span>
+                      )}
+                    </div>
+
+                    {/* Last Active */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">Last Active</div>
+                      <span className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>
+                        {trader.lastActive ? formatDistanceToNowStrict(new Date(trader.lastActive), { addSuffix: true }) : '-'}
+                      </span>
+                    </div>
+
+                    {/* Marketplaces */}
+                    <div className="text-left md:text-right">
+                      <div className="md:hidden text-[11px] font-medium uppercase tracking-wide text-white/60 mb-1">Marketplaces</div>
+                      {Array.isArray(trader.marketplaces) && trader.marketplaces.length > 0 ? (
+                        <div className="flex flex-wrap gap-1 md:justify-end">
+                          {trader.marketplaces.map((mp, idx) => (
+                            <span
+                              key={idx}
+                              className="px-2 py-0.5 rounded-md text-[11px] font-normal bg-primary/10 text-primary border border-primary/30"
+                            >
+                              {mp}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className={cn("text-[13px]", isDark ? "text-white/60" : "text-gray-600")}>-</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
               ))}
-            </Stack>
+            </div>
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <Stack direction="row" justifyContent="center" sx={{ mt: 4 }}>
-                <StyledPagination
-                  count={totalPages}
-                  page={page + 1}
-                  onChange={(e, newPage) => setPage(newPage - 1)}
-                  size="large"
-                  showFirstButton
-                  showLastButton
+              <div className="mt-8">
+                <SimplePagination
+                  currentPage={page + 1}
+                  totalPages={totalPages}
+                  onPageChange={(newPage) => setPage(newPage - 1)}
+                  isDark={isDark}
                 />
-              </Stack>
+              </div>
             )}
           </>
         )}
-      </Container>
+      </div>
 
       <ScrollToTop />
       <Footer />
-    </OverviewWrapper>
+    </div>
   );
 }
 

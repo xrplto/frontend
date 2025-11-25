@@ -6,55 +6,32 @@ const SwiperSlide = dynamic(() => import('swiper/react').then((mod) => mod.Swipe
   ssr: false
 });
 import { Navigation, Pagination } from 'swiper/modules';
+import Link from 'next/link';
 
-// Material
+// Icons
 import {
-  Box,
-  Typography,
-  Stack,
-  Divider,
-  IconButton,
-  Link,
-  Tooltip,
-  Chip,
-  useTheme,
-  useMediaQuery,
-  Grid,
-  Paper,
-  Card,
-  CardMedia,
-  Modal,
-  Avatar,
-  CircularProgress
-} from '@mui/material';
-import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
-import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import CloseIcon from '@mui/icons-material/Close';
-import ShareIcon from '@mui/icons-material/Share';
-import { styled, alpha } from '@mui/material/styles';
-
-// Iconify
-import InfoIcon from '@mui/icons-material/Info';
+  Copy,
+  Calendar,
+  Info,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  Share,
+  Loader2
+} from 'lucide-react';
 
 // Context
 import { AppContext } from 'src/AppContext';
 
 // Utils
+import { cn } from 'src/utils/cn';
+
+// More Utils
 import { fVolume, fNumber } from 'src/utils/formatters';
 import { convertHexToString, parseNFTokenID, getNftFilesUrls } from 'src/utils/parseUtils';
 
 // Components
-// Removed import of Flags.js - component inlined below
 import Tabs from './Tabs';
-
-// Material UI Icons for Flags component
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
-import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 
 // Translation function
 function t(key) {
@@ -76,21 +53,22 @@ function t(key) {
 
 // Arrow component for carousel navigation
 function Arrow(props) {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <IconButton
+    <button
       onClick={props.onClick}
       disabled={props.disabled}
-      sx={{
-        position: 'absolute',
-        top: '50%',
-        transform: 'translateY(-50%)',
-        [props.left ? 'left' : 'right']: 8,
-        color: 'white',
-        backgroundColor: 'rgba(0, 0, 0, 0.5)'
-      }}
+      className={cn(
+        "absolute top-1/2 -translate-y-1/2 p-2 rounded-lg",
+        props.left ? "left-2" : "right-2",
+        "text-white bg-black/50 hover:bg-black/70",
+        "disabled:opacity-30 disabled:cursor-not-allowed"
+      )}
     >
-      {props.left ? <ArrowBackIosNewIcon /> : <ArrowForwardIosIcon />}
-    </IconButton>
+      {props.left ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
+    </button>
   );
 }
 
@@ -137,83 +115,12 @@ function getProperties(meta) {
   return properties;
 }
 
-// Styled components
-const Container = styled(Box)(({ theme }) => ({
-  width: '100%',
-  maxWidth: '768px',
-  padding: 0,
-  boxSizing: 'border-box',
-  [theme.breakpoints.down('sm')]: {
-    maxWidth: '100%'
-  }
-}));
-
-const SectionTitle = styled(Typography)(({ theme }) => ({
-  fontSize: '11px',
-  fontWeight: 400,
-  color: theme.palette.text.secondary,
-  marginBottom: theme.spacing(0.5),
-  textTransform: 'uppercase',
-  letterSpacing: '0.03em'
-}));
-
-const Label = styled(Typography)(({ theme }) => ({
-  fontSize: '13px',
-  color: theme.palette.text.secondary,
-  marginBottom: 2,
-  lineHeight: 1.2
-}));
-
-const Value = styled(Typography)(({ theme }) => ({
-  fontSize: '12px',
-  color: theme.palette.text.primary,
-  wordBreak: 'break-all',
-  lineHeight: 1.3
-}));
-
-const CopyButton = styled(IconButton)(({ theme }) => ({
-  padding: 2,
-  marginLeft: theme.spacing(0.25),
-  '& .MuiSvgIcon-root': {
-    fontSize: '12px'
-  }
-}));
-
-const CompactChip = styled(Chip)(({ theme }) => ({
-  height: 18,
-  fontSize: '13px',
-  '& .MuiChip-icon': {
-    fontSize: '12px'
-  },
-  '& .MuiChip-label': {
-    padding: '0 6px'
-  }
-}));
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  borderRadius: theme.spacing(2),
-  overflow: 'hidden',
-  boxShadow: theme.shadows[4],
-  backgroundColor: theme.palette.background.paper,
-  width: '100%'
-}));
-
-const MediaContainer = styled(Box)(({ theme }) => ({
-  position: 'relative',
-  width: '100%',
-  aspectRatio: '1 / 1',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor:
-    theme.palette.mode === 'dark' ? theme.palette.grey[900] : theme.palette.grey[100],
-  overflow: 'hidden'
-}));
+// No styled components needed - using Tailwind
 
 // NFT Preview Component (embedded)
 const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails = false }) {
-  const { darkMode } = useContext(AppContext);
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const noImg = '/static/nft_no_image.webp';
 
   // Slider state
@@ -290,30 +197,17 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const loadingImage = () => {
     if (errored) {
       return (
-        <Box
-          sx={{
-            width: '100%',
-            height: '100%',
-            aspectRatio: '1 / 1',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            bgcolor: (theme) => alpha(theme.palette.common.black, 0.7),
-            position: 'absolute',
-            top: 0,
-            left: 0
-          }}
-        >
-          <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70">
+          <span className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
             Image unavailable
-          </Typography>
-        </Box>
+          </span>
+        </div>
       );
     } else if (!loaded) {
       return (
-        <Box sx={{ textAlign: 'center', py: 5 }}>
-          <CircularProgress size={24} />
-        </Box>
+        <div className="text-center py-5">
+          <Loader2 size={24} className="animate-spin text-primary" />
+        </div>
       );
     }
   };
@@ -345,31 +239,16 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
             : fullSizeUrl;
 
     return (
-      <Box
+      <div
         onClick={() => !errored && handleOpenImage(fullSizeUrl)}
-        sx={{
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          position: 'relative',
-          cursor: errored ? 'default' : 'pointer'
-        }}
+        className={cn(
+          "w-full h-full flex items-center justify-center relative",
+          errored ? "cursor-default" : "cursor-pointer"
+        )}
       >
         {loadingImage()}
         <img
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'contain',
-            maxWidth: '100%',
-            maxHeight: '100%',
-            display: loaded ? 'block' : 'none',
-            position: 'absolute',
-            top: 0,
-            left: 0
-          }}
+          className={cn("absolute top-0 left-0 w-full h-full object-contain", loaded ? "block" : "hidden")}
           onLoad={() => {
             setLoaded(true);
             setErrored(false);
@@ -379,120 +258,92 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           alt={NFTName}
           fetchpriority={thumbnailUrl?.includes('ipfs.io') ? 'low' : 'auto'}
         />
-      </Box>
+      </div>
     );
   };
 
   return (
-    <StyledCard>
+    <div className={cn("rounded-xl overflow-hidden w-full", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
 
       {/* Tabs */}
       {contentTabList.length > 1 && (
-        <Box sx={{ px: 2, pb: 1, borderBottom: 1, borderColor: 'divider' }}>
+        <div className={cn("px-4 pb-2 border-b-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
           <Tabs tabList={contentTabList} tab={contentTab} setTab={setContentTab} name="content" />
-        </Box>
+        </div>
       )}
 
       {/* Media */}
-      <MediaContainer>
+      <div className={cn("relative w-full aspect-square flex items-center justify-center overflow-hidden", isDark ? "bg-gray-900" : "bg-gray-100")}>
         {/* IPFS Debug Badge */}
         {isIPFS && (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: 8,
-              left: 8,
-              zIndex: 10,
-              px: 1,
-              py: 0.5,
-              borderRadius: '4px',
-              backgroundColor: alpha('#ff9800', 0.9),
-              color: '#fff',
-              fontSize: '0.75rem',
-              fontWeight: 500
-            }}
-          >
+          <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-orange-500/90 text-white text-[11px] font-medium">
             IPFS
-          </Box>
+          </div>
         )}
 
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
             {renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
-            <Modal
-              open={openImage}
-              onClose={() => setOpenImage(false)}
-            >
-              <Box
-                sx={{
-                  position: 'relative',
-                  maxWidth: '90vw',
-                  maxHeight: '90vh',
-                  outline: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
+            {openImage && (
+              <div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+                onClick={() => setOpenImage(false)}
               >
-                <img
-                  src={selectedImageUrl}
-                  alt={NFTName}
-                  style={{ maxWidth: '90vw', maxHeight: '90vh', objectFit: 'contain' }}
-                  fetchpriority={selectedImageUrl?.includes('ipfs.io') ? 'low' : 'auto'}
-                />
-                <IconButton
-                  onClick={() => setOpenImage(false)}
-                  sx={{ position: 'absolute', top: 10, right: 10, color: 'white' }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-            </Modal>
+                <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+                  <img
+                    src={selectedImageUrl}
+                    alt={NFTName}
+                    className="max-w-[90vw] max-h-[90vh] object-contain"
+                    fetchpriority={selectedImageUrl?.includes('ipfs.io') ? 'low' : 'auto'}
+                  />
+                  <button
+                    onClick={() => setOpenImage(false)}
+                    className="absolute top-2 right-2 p-2 text-white hover:bg-white/20 rounded-lg"
+                  >
+                    <X size={24} />
+                  </button>
+                </div>
+              </div>
+            )}
           </>
         )}
 
         {videoUrl && contentTab === 'video' && (
-          <Box sx={{ p: 2 }}>
+          <div className="p-4">
             <video
               playsInline
               muted
               autoPlay
               loop
               controls
-              style={{ width: '100%', height: '100%', maxHeight: '100%', objectFit: 'contain' }}
+              className="w-full h-full max-h-full object-contain"
             >
               <source src={videoUrl[currentSlide]?.cachedUrl} type="video/mp4" />
             </video>
-          </Box>
+          </div>
         )}
-      </MediaContainer>
+      </div>
 
       {/* Footer */}
       {showDetails && (
-        <Box sx={{ p: 2, borderTop: 1, borderColor: 'divider', bgcolor: 'background.default' }}>
-          <Stack direction="row" justifyContent="space-between" alignItems="center" spacing={2}>
-            <Stack direction="row" spacing={2}>
+        <div className={cn("p-4 border-t-[1.5px]", isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white")}>
+          <div className="flex justify-between items-center gap-4">
+            <div className="flex gap-4">
               {nft?.transferFee && (
-                <Chip
-                  label={`${(nft.transferFee / 1000).toFixed(1)}% Fee`}
-                  size="small"
-                  variant="filled"
-                  sx={{ bgcolor: 'action.selected' }}
-                />
+                <span className={cn("rounded px-2 py-0.5 text-[11px] font-normal", isDark ? "bg-white/10" : "bg-gray-200")}>
+                  {(nft.transferFee / 1000).toFixed(1)}% Fee
+                </span>
               )}
               {nft?.volume > 0 && (
-                <Chip
-                  label={`${fVolume(nft.volume)} XRP Vol`}
-                  size="small"
-                  variant="filled"
-                  sx={{ bgcolor: 'action.selected' }}
-                />
+                <span className={cn("rounded px-2 py-0.5 text-[11px] font-normal", isDark ? "bg-white/10" : "bg-gray-200")}>
+                  {fVolume(nft.volume)} XRP Vol
+                </span>
               )}
-            </Stack>
-          </Stack>
-        </Box>
+            </div>
+          </div>
+        </div>
       )}
-    </StyledCard>
+    </div>
   );
 });
 

@@ -1,81 +1,29 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
-
-// Material
-import {
-  useTheme,
-  useMediaQuery,
-  Box,
-  Link,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Typography,
-  Paper,
-  Chip,
-  Skeleton,
-  Button
-} from '@mui/material';
-import { styled, alpha } from '@mui/material/styles';
+import { Loader2 } from 'lucide-react';
 
 // Context
 import { AppContext } from 'src/AppContext';
 
 // Utils
+import { cn } from 'src/utils/cn';
+
+// Utils
 import { normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { fNumber } from 'src/utils/formatters';
 
-// Styled components
-const StyledPaper = styled(Paper)(({ theme }) => ({
-  borderRadius: '12px',
-  overflow: 'hidden',
-  border: `1px solid ${alpha(theme.palette.divider, 0.15)}`,
-  background: 'transparent'
-}));
-
-const StyledTableHead = styled(TableHead)(({ theme }) => ({
-  '& .MuiTableCell-head': {
-    color: alpha(theme.palette.text.secondary, 0.7),
-    fontWeight: 400,
-    fontSize: '0.8rem',
-    padding: theme.spacing(1.2, 1.5),
-    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-  }
-}));
-
-const StyledTableRow = styled(TableRow)(({ theme }) => ({
-  '&:last-child td': {
-    borderBottom: 'none'
-  }
-}));
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  padding: theme.spacing(1.2, 1.5),
-  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.06)}`,
-  fontSize: '0.9rem'
-}));
-
-const TransactionCard = styled(Paper)(({ theme }) => ({
-  padding: theme.spacing(1.5),
-  borderRadius: '12px',
-  backgroundColor: 'transparent',
-  border: `1px solid ${alpha(theme.palette.divider, 0.12)}`
-}));
-
-const getTypeColor = (type, theme) => {
+// Helper functions
+const getTypeColor = (type) => {
   const colors = {
     SALE: '#10b981',
     MINT: '#8b5cf6',
     TRANSFER: '#3b82f6',
-    CREATE_BUY_OFFER: alpha(theme.palette.text.secondary, 0.4),
-    CREATE_SELL_OFFER: alpha(theme.palette.text.secondary, 0.4),
-    CANCEL_BUY_OFFER: alpha(theme.palette.text.secondary, 0.3),
-    CANCEL_SELL_OFFER: alpha(theme.palette.text.secondary, 0.3)
+    CREATE_BUY_OFFER: 'rgb(156, 163, 175)',
+    CREATE_SELL_OFFER: 'rgb(156, 163, 175)',
+    CANCEL_BUY_OFFER: 'rgb(156, 163, 175)',
+    CANCEL_SELL_OFFER: 'rgb(156, 163, 175)'
   };
-  return colors[type] || alpha(theme.palette.text.secondary, 0.5);
+  return colors[type] || 'rgb(156, 163, 175)';
 };
 
 const getTypeLabel = (type) => {
@@ -90,34 +38,6 @@ const getTypeLabel = (type) => {
   };
   return labels[type] || type;
 };
-
-const TypeChip = styled(Chip, {
-  shouldForwardProp: (prop) => prop !== 'transactionType'
-})(({ theme, transactionType }) => ({
-  height: 22,
-  fontSize: '0.75rem',
-  fontWeight: 400,
-  backgroundColor: alpha(getTypeColor(transactionType, theme), 0.08),
-  color: getTypeColor(transactionType, theme),
-  border: 'none',
-  '& .MuiChip-label': {
-    padding: '0 10px'
-  }
-}));
-
-const AddressLink = styled(Link)(({ theme }) => ({
-  color: alpha(theme.palette.text.primary, 0.8),
-  textDecoration: 'none',
-  fontFamily: 'monospace',
-  fontSize: '0.85rem'
-}));
-
-const PriceText = styled(Typography)(({ theme }) => ({
-  fontWeight: 400,
-  fontSize: '0.9rem',
-  color: theme.palette.text.primary,
-  fontFamily: 'monospace'
-}));
 
 function formatAddress(address) {
   if (!address) return '';
@@ -148,30 +68,46 @@ function formatDate(dateString) {
 }
 
 // Components extracted to avoid nested component definitions
-const LoadingSkeleton = () => (
-  <Stack spacing={2} sx={{ p: 2 }}>
+const LoadingSkeleton = ({ isDark }) => (
+  <div className="p-4 space-y-4">
     {[1, 2, 3].map((item) => (
-      <Skeleton key={item} variant="rectangular" height={60} sx={{ borderRadius: 1 }} />
+      <div
+        key={item}
+        className={cn(
+          "h-16 rounded-lg animate-pulse",
+          isDark ? "bg-white/5" : "bg-gray-200"
+        )}
+      />
     ))}
-  </Stack>
+  </div>
 );
 
-const EmptyState = () => (
-  <Stack alignItems="center" justifyContent="center" sx={{ py: 6 }}>
-    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
+const EmptyState = ({ isDark }) => (
+  <div className="flex items-center justify-center py-12">
+    <p className={cn(
+      "text-[13px]",
+      isDark ? "text-white/60" : "text-gray-500"
+    )}>
       No transaction history
-    </Typography>
-  </Stack>
+    </p>
+  </div>
 );
 
 export default function HistoryList({ nft }) {
-  const theme = useTheme();
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { sync } = useContext(AppContext);
+  const { sync, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
   const [hists, setHists] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showAll, setShowAll] = useState(false);
-  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     function getHistories() {
@@ -209,17 +145,23 @@ export default function HistoryList({ nft }) {
 
   if (loading) {
     return (
-      <StyledPaper elevation={0}>
-        <LoadingSkeleton />
-      </StyledPaper>
+      <div className={cn(
+        "rounded-xl border-[1.5px] overflow-hidden",
+        isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+      )}>
+        <LoadingSkeleton isDark={isDark} />
+      </div>
     );
   }
 
   if (!hists || hists.length === 0) {
     return (
-      <StyledPaper elevation={0}>
-        <EmptyState />
-      </StyledPaper>
+      <div className={cn(
+        "rounded-xl border-[1.5px] overflow-hidden",
+        isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+      )}>
+        <EmptyState isDark={isDark} />
+      </div>
     );
   }
 
@@ -227,66 +169,198 @@ export default function HistoryList({ nft }) {
   const hasMoreTransactions = hists.length > filteredHists.length;
 
   return (
-    <Stack spacing={1.5}>
+    <div className="space-y-3">
       {hasMoreTransactions && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <Button
-            variant="outlined"
-            size="small"
+        <div className="flex justify-end">
+          <button
             onClick={() => setShowAll(!showAll)}
-            sx={{
-              py: 0.5,
-              px: 1.5,
-              fontSize: '0.8rem',
-              fontWeight: 400,
-              textTransform: 'none',
-              borderColor: alpha(theme.palette.divider, 0.2),
-              borderRadius: '8px',
-              color: alpha(theme.palette.text.secondary, 0.7),
-              backgroundColor: 'transparent'
-            }}
+            className={cn(
+              "py-1 px-3 text-[13px] font-normal rounded-lg border-[1.5px]",
+              isDark
+                ? "border-white/15 text-white/60 hover:border-primary hover:bg-primary/5"
+                : "border-gray-300 text-gray-600 hover:bg-gray-100"
+            )}
           >
             {showAll ? 'Show Key Events' : 'Show All'}
-          </Button>
-        </Box>
+          </button>
+        </div>
       )}
-      <StyledPaper elevation={0}>
+      <div className={cn(
+        "rounded-xl border-[1.5px] overflow-hidden",
+        isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+      )}>
       {isMobile ? (
         // Mobile view - Cards
-        <Stack spacing={1} sx={{ p: 1.5 }}>
-          {sortedHists.map((row, index) => (
-            <TransactionCard key={row.uuid} elevation={0}>
-                <Stack spacing={1.2}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <TypeChip
-                      label={getTypeLabel(row.type)}
-                      size="small"
-                      transactionType={row.type}
-                    />
-                    <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.75rem' }}>
-                      {formatDate(row.time)}
-                    </Typography>
-                  </Stack>
+        <div className="p-3 space-y-2">
+          {sortedHists.map((row) => (
+            <div
+              key={row.uuid}
+              className={cn(
+                "p-3 rounded-xl border-[1.5px]",
+                isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+              )}
+            >
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span
+                    className="text-[12px] font-normal px-2 py-1 rounded-lg"
+                    style={{
+                      backgroundColor: `${getTypeColor(row.type)}15`,
+                      color: getTypeColor(row.type)
+                    }}
+                  >
+                    {getTypeLabel(row.type)}
+                  </span>
+                  <span className={cn(
+                    "text-[12px]",
+                    isDark ? "text-white/60" : "text-gray-500"
+                  )}>
+                    {formatDate(row.time)}
+                  </span>
+                </div>
 
-                  <Stack spacing={0.8}>
+                <div className="space-y-1.5">
+                  {row.seller && row.buyer ? (
+                    <div className="text-[13px]">
+                      <a
+                        href={`/profile/${row.seller}`}
+                        className={cn(
+                          "font-mono hover:underline",
+                          isDark ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        {formatAddress(row.seller)}
+                      </a>
+                      <span className={cn(
+                        "mx-1",
+                        isDark ? "text-white/40" : "text-gray-400"
+                      )}>→</span>
+                      <a
+                        href={`/profile/${row.buyer}`}
+                        className={cn(
+                          "font-mono hover:underline",
+                          isDark ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        {formatAddress(row.buyer)}
+                      </a>
+                    </div>
+                  ) : (
+                    <a
+                      href={`/profile/${row.account}`}
+                      className={cn(
+                        "font-mono text-[13px] hover:underline",
+                        isDark ? "text-white/80" : "text-gray-700"
+                      )}
+                    >
+                      {formatAddress(row.account)}
+                    </a>
+                  )}
+
+                  {row.type === 'SALE' && (row.cost || row.costXRP) && (
+                    <div className="font-mono text-[14px]">
+                      {row.costXRP ? (
+                        <>{fNumber(row.costXRP)} XRP</>
+                      ) : (
+                        <>
+                          {fNumber(row.cost.amount)} {normalizeCurrencyCode(row.cost.currency)}
+                        </>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      ) : (
+        // Desktop view - Table
+        <div className="overflow-x-auto w-full">
+          <table className="w-full">
+            <thead>
+              <tr className={cn(
+                "border-b-[1.5px]",
+                isDark ? "border-white/10" : "border-gray-200"
+              )}>
+                <th className={cn(
+                  "text-left py-2.5 px-3 text-[11px] font-medium uppercase tracking-wide w-[100px]",
+                  isDark ? "text-white/60" : "text-gray-500"
+                )}>Type</th>
+                <th className={cn(
+                  "text-left py-2.5 px-3 text-[11px] font-medium uppercase tracking-wide min-w-[280px]",
+                  isDark ? "text-white/60" : "text-gray-500"
+                )}>From / To</th>
+                <th className={cn(
+                  "text-right py-2.5 px-3 text-[11px] font-medium uppercase tracking-wide w-[140px]",
+                  isDark ? "text-white/60" : "text-gray-500"
+                )}>Price</th>
+                <th className={cn(
+                  "text-right py-2.5 px-3 text-[11px] font-medium uppercase tracking-wide w-[90px]",
+                  isDark ? "text-white/60" : "text-gray-500"
+                )}>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedHists.map((row) => (
+                <tr
+                  key={row.uuid}
+                  className={cn(
+                    "border-b-[1.5px]",
+                    isDark ? "border-white/5" : "border-gray-100"
+                  )}
+                >
+                  <td className="py-2.5 px-3">
+                    <span
+                      className="text-[12px] font-normal px-2 py-1 rounded-lg inline-block"
+                      style={{
+                        backgroundColor: `${getTypeColor(row.type)}15`,
+                        color: getTypeColor(row.type)
+                      }}
+                    >
+                      {getTypeLabel(row.type)}
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-3">
                     {row.seller && row.buyer ? (
-                      <Box sx={{ fontSize: '0.8rem' }}>
-                        <AddressLink href={`/profile/${row.seller}`}>
+                      <div>
+                        <a
+                          href={`/profile/${row.seller}`}
+                          className={cn(
+                            "font-mono text-[13px] hover:underline",
+                            isDark ? "text-white/80" : "text-gray-700"
+                          )}
+                        >
                           {formatAddress(row.seller)}
-                        </AddressLink>
-                        <Typography component="span" sx={{ mx: 0.5, color: alpha(theme.palette.text.secondary, 0.5) }}>→</Typography>
-                        <AddressLink href={`/profile/${row.buyer}`}>
+                        </a>
+                        <span className={cn(
+                          "mx-1 text-[12px]",
+                          isDark ? "text-white/40" : "text-gray-400"
+                        )}>→</span>
+                        <a
+                          href={`/profile/${row.buyer}`}
+                          className={cn(
+                            "font-mono text-[13px] hover:underline",
+                            isDark ? "text-white/80" : "text-gray-700"
+                          )}
+                        >
                           {formatAddress(row.buyer)}
-                        </AddressLink>
-                      </Box>
+                        </a>
+                      </div>
                     ) : (
-                      <AddressLink href={`/profile/${row.account}`}>
+                      <a
+                        href={`/profile/${row.account}`}
+                        className={cn(
+                          "font-mono text-[13px] hover:underline",
+                          isDark ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
                         {formatAddress(row.account)}
-                      </AddressLink>
+                      </a>
                     )}
-
-                    {row.type === 'SALE' && (row.cost || row.costXRP) && (
-                      <PriceText variant="body2">
+                  </td>
+                  <td className="py-2.5 px-3 text-right">
+                    {row.type === 'SALE' && (row.cost || row.costXRP) ? (
+                      <div className="font-mono text-[14px]">
                         {row.costXRP ? (
                           <>{fNumber(row.costXRP)} XRP</>
                         ) : (
@@ -294,75 +368,29 @@ export default function HistoryList({ nft }) {
                             {fNumber(row.cost.amount)} {normalizeCurrencyCode(row.cost.currency)}
                           </>
                         )}
-                      </PriceText>
+                      </div>
+                    ) : (
+                      <span className={cn(
+                        "text-[13px]",
+                        isDark ? "text-white/60" : "text-gray-500"
+                      )}>
+                        —
+                      </span>
                     )}
-                  </Stack>
-                </Stack>
-            </TransactionCard>
-          ))}
-        </Stack>
-      ) : (
-        // Desktop view - Table
-        <Box sx={{ overflowX: 'auto', width: '100%' }}>
-          <Table size="small" sx={{ width: '100%' }}>
-            <StyledTableHead>
-              <TableRow>
-                <StyledTableCell sx={{ width: '100px' }}>Type</StyledTableCell>
-                <StyledTableCell sx={{ width: 'auto', minWidth: '280px' }}>From / To</StyledTableCell>
-                <StyledTableCell align="right" sx={{ width: '140px' }}>Price</StyledTableCell>
-                <StyledTableCell align="right" sx={{ width: '90px' }}>Date</StyledTableCell>
-              </TableRow>
-            </StyledTableHead>
-            <TableBody>
-              {sortedHists.map((row, index) => (
-                  <StyledTableRow key={row.uuid}>
-                    <StyledTableCell>
-                      <TypeChip
-                        label={getTypeLabel(row.type)}
-                        size="small"
-                        transactionType={row.type}
-                      />
-                    </StyledTableCell>
-                    <StyledTableCell>
-                      {row.seller && row.buyer ? (
-                        <Box>
-                          <AddressLink href={`/profile/${row.seller}`}>{formatAddress(row.seller)}</AddressLink>
-                          <Typography component="span" sx={{ mx: 0.5, color: alpha(theme.palette.text.secondary, 0.5), fontSize: '0.75rem' }}>→</Typography>
-                          <AddressLink href={`/profile/${row.buyer}`}>{formatAddress(row.buyer)}</AddressLink>
-                        </Box>
-                      ) : (
-                        <AddressLink href={`/profile/${row.account}`}>{formatAddress(row.account)}</AddressLink>
-                      )}
-                    </StyledTableCell>
-                    <StyledTableCell align="right">
-                      {row.type === 'SALE' && (row.cost || row.costXRP) ? (
-                        <PriceText>
-                          {row.costXRP ? (
-                            <>{fNumber(row.costXRP)} XRP</>
-                          ) : (
-                            <>
-                              {fNumber(row.cost.amount)} {normalizeCurrencyCode(row.cost.currency)}
-                            </>
-                          )}
-                        </PriceText>
-                      ) : (
-                        <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.85rem' }}>
-                          —
-                        </Typography>
-                      )}
-                    </StyledTableCell>
-                    <StyledTableCell align="right">
-                      <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.8rem' }}>
-                        {formatDate(row.time)}
-                      </Typography>
-                    </StyledTableCell>
-                  </StyledTableRow>
+                  </td>
+                  <td className={cn(
+                    "py-2.5 px-3 text-right text-[13px]",
+                    isDark ? "text-white/60" : "text-gray-500"
+                  )}>
+                    {formatDate(row.time)}
+                  </td>
+                </tr>
               ))}
-            </TableBody>
-          </Table>
-        </Box>
+            </tbody>
+          </table>
+        </div>
       )}
-      </StyledPaper>
-    </Stack>
+      </div>
+    </div>
   );
 }

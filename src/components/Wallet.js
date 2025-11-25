@@ -10,34 +10,25 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = (...args) => isDev && console.log(...args);
 const devError = (...args) => isDev && console.error(...args);
 
-// Material
+// Icons
 import {
-  alpha,
-  styled,
-  Avatar,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Checkbox,
-  Divider,
-  FormControlLabel,
-  Link,
-  MenuItem,
-  Dialog,
-  DialogContent,
-  Stack,
-  Tooltip,
-  Typography,
-  useTheme,
-  Chip,
-  Fade
-} from '@mui/material';
-import Alert from '@mui/material/Alert';
-import TextField from '@mui/material/TextField';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
-import { Visibility, VisibilityOff, LockOutlined, SecurityOutlined, Fingerprint, Google, X, Email } from '@mui/icons-material';
+  Eye,
+  EyeOff,
+  Lock,
+  Shield,
+  Fingerprint as FingerprintIcon,
+  Mail,
+  X as XIcon,
+  ChevronDown,
+  Copy,
+  QrCode,
+  Download,
+  Trash2,
+  Plus,
+  AlertCircle,
+  CheckCircle,
+  Info
+} from 'lucide-react';
 
 // Context
 import { useContext } from 'react';
@@ -48,6 +39,7 @@ import { AppContext } from 'src/AppContext';
 // Utils
 import { getHashIcon } from 'src/utils/formatters';
 import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
+import { cn } from 'src/utils/cn';
 
 // Base64url encoding helper
 const base64urlEncode = (buffer) => {
@@ -75,41 +67,302 @@ const generateRandomWallet = () => {
 
 // Removed PinField component - now using password for all authentication methods
 
-const ActiveIndicator = styled(Box)(({ theme }) => ({
-  width: 6,
-  height: 6,
-  borderRadius: '50%',
-  flexShrink: 0,
-  background: theme.palette.success.main
-}));
+// ============================================
+// MUI Replacement Components (Tailwind-based)
+// ============================================
 
-const TokenImage = styled(Image)(({ theme }) => ({
-  borderRadius: '50%',
-  overflow: 'hidden'
-}));
+// Simple alpha utility
+const alpha = (color, opacity) => {
+  if (!color) return `rgba(0,0,0,${opacity})`;
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  if (color.startsWith('rgb(')) {
+    return color.replace('rgb(', 'rgba(').replace(')', `, ${opacity})`);
+  }
+  if (color.startsWith('rgba(')) {
+    return color.replace(/,\s*[\d.]+\)$/, `, ${opacity})`);
+  }
+  return color;
+};
 
-const StyledPopoverPaper = styled(Box)(({ theme }) => ({
-  background: theme.palette.background.paper,
-  border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-  borderRadius: 10,
-  boxShadow: 'none',
-  overflow: 'hidden',
-  position: 'relative'
-}));
+// Dialog component
+const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) => {
+  if (!open) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-start justify-end" onClick={onClose}>
+      <div
+        className="mt-[60px] mr-3 w-[320px] max-w-[320px] rounded-xl bg-transparent"
+        onClick={e => e.stopPropagation()}
+        style={sx?.['& .MuiDialog-paper'] || {}}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
 
-const BalanceCard = styled(Card)(({ theme }) => ({
-  background: 'transparent',
-  border: 'none',
-  borderRadius: 12,
-  boxShadow: 'none'
-}));
+const DialogContent = ({ children, sx }) => (
+  <div style={{ padding: sx?.p === 0 ? 0 : 16 }}>{children}</div>
+);
 
-const ReserveCard = styled(Box)(({ theme }) => ({
-  background: 'transparent',
-  border: 'none',
-  borderRadius: 12,
-  padding: theme.spacing(2)
-}));
+// StyledPopoverPaper component
+const StyledPopoverPaper = ({ children }) => (
+  <div className="rounded-xl border border-white/10 bg-[#1a1a1a] shadow-xl">
+    {children}
+  </div>
+);
+
+// Box component
+const Box = ({ children, component, sx, onClick, className, ...props }) => {
+  const Component = component || 'div';
+  const style = sx ? convertSxToStyle(sx) : {};
+  return <Component style={style} onClick={onClick} className={className} {...props}>{children}</Component>;
+};
+
+// Stack component
+const Stack = ({ children, direction = 'column', spacing = 0, alignItems, justifyContent, sx, ...props }) => {
+  const style = {
+    display: 'flex',
+    flexDirection: direction === 'row' ? 'row' : 'column',
+    gap: spacing * 8,
+    alignItems,
+    justifyContent,
+    ...convertSxToStyle(sx || {})
+  };
+  return <div style={style} {...props}>{children}</div>;
+};
+
+// Typography component
+const Typography = ({ children, variant, sx, onClick, ...props }) => {
+  const style = convertSxToStyle(sx || {});
+  return <span style={style} onClick={onClick} {...props}>{children}</span>;
+};
+
+// Button component
+const Button = ({ children, variant = 'text', size, fullWidth, disabled, onClick, sx, startIcon, ...props }) => {
+  const baseStyle = {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    padding: size === 'small' ? '4px 10px' : '8px 16px',
+    borderRadius: 8,
+    fontSize: 14,
+    fontWeight: 400,
+    cursor: disabled ? 'not-allowed' : 'pointer',
+    opacity: disabled ? 0.5 : 1,
+    width: fullWidth ? '100%' : 'auto',
+    border: variant === 'outlined' ? '1px solid rgba(255,255,255,0.2)' : 'none',
+    background: variant === 'contained' ? '#4285f4' : 'transparent',
+    color: variant === 'contained' ? '#fff' : '#4285f4',
+    ...convertSxToStyle(sx || {})
+  };
+  return (
+    <button style={baseStyle} disabled={disabled} onClick={onClick} {...props}>
+      {startIcon}
+      {children}
+    </button>
+  );
+};
+
+// TextField component
+const TextField = ({ label, placeholder, value, onChange, onKeyDown, onKeyPress, type = 'text', fullWidth, disabled, autoFocus, autoComplete, multiline, rows, size, helperText, error, InputProps, inputProps, sx, FormHelperTextProps, ...props }) => {
+  const [focused, setFocused] = useState(false);
+  const inputStyle = {
+    width: fullWidth ? '100%' : 'auto',
+    padding: size === 'small' ? '8px 12px' : '12px 14px',
+    fontSize: 14,
+    borderRadius: 8,
+    border: '1px solid rgba(255,255,255,0.2)',
+    background: 'transparent',
+    color: '#fff',
+    outline: 'none',
+    fontFamily: inputProps?.style?.fontFamily || 'inherit',
+    ...convertSxToStyle(sx?.['& .MuiInputBase-input'] || {})
+  };
+  return (
+    <div style={{ width: fullWidth ? '100%' : 'auto' }}>
+      {label && <label style={{ display: 'block', marginBottom: 4, fontSize: 12, opacity: 0.7 }}>{label}</label>}
+      <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+        {multiline ? (
+          <textarea
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            onKeyPress={onKeyPress}
+            disabled={disabled}
+            autoFocus={autoFocus}
+            autoComplete={autoComplete}
+            rows={rows}
+            style={inputStyle}
+            {...inputProps}
+          />
+        ) : (
+          <input
+            type={type}
+            placeholder={placeholder}
+            value={value}
+            onChange={onChange}
+            onKeyDown={onKeyDown}
+            onKeyPress={onKeyPress}
+            disabled={disabled}
+            autoFocus={autoFocus}
+            autoComplete={autoComplete}
+            style={{ ...inputStyle, paddingRight: InputProps?.endAdornment ? 40 : 12 }}
+            {...inputProps}
+          />
+        )}
+        {InputProps?.endAdornment && (
+          <div style={{ position: 'absolute', right: 8 }}>{InputProps.endAdornment}</div>
+        )}
+      </div>
+      {helperText && <div style={{ marginTop: 4, fontSize: 11, opacity: 0.7 }} {...FormHelperTextProps}>{helperText}</div>}
+    </div>
+  );
+};
+
+// Alert component
+const Alert = ({ children, severity = 'info', icon, onClose, sx }) => {
+  const colors = {
+    error: { bg: 'rgba(244,67,54,0.1)', border: '#f44336', icon: '⚠️' },
+    warning: { bg: 'rgba(255,152,0,0.1)', border: '#ff9800', icon: '⚠️' },
+    info: { bg: 'rgba(33,150,243,0.1)', border: '#2196f3', icon: 'ℹ️' },
+    success: { bg: 'rgba(76,175,80,0.1)', border: '#4caf50', icon: '✓' }
+  };
+  const c = colors[severity];
+  return (
+    <div style={{
+      padding: '12px 16px',
+      borderRadius: 8,
+      background: c.bg,
+      borderLeft: `3px solid ${c.border}`,
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: 8,
+      ...convertSxToStyle(sx || {})
+    }}>
+      {icon !== false && <span>{icon || c.icon}</span>}
+      <div style={{ flex: 1 }}>{children}</div>
+      {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', opacity: 0.7 }}>×</button>}
+    </div>
+  );
+};
+
+// IconButton component
+const IconButton = ({ children, onClick, size, disabled, edge, sx, ...props }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    style={{
+      background: 'transparent',
+      border: 'none',
+      cursor: disabled ? 'not-allowed' : 'pointer',
+      padding: size === 'small' ? 4 : 8,
+      borderRadius: '50%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      opacity: disabled ? 0.5 : 1,
+      ...convertSxToStyle(sx || {})
+    }}
+    {...props}
+  >
+    {children}
+  </button>
+);
+
+// InputAdornment component
+const InputAdornment = ({ children, position }) => (
+  <div style={{ display: 'flex', alignItems: 'center' }}>{children}</div>
+);
+
+// FormControlLabel component
+const FormControlLabel = ({ control, label }) => (
+  <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8, cursor: 'pointer' }}>
+    {control}
+    {label}
+  </label>
+);
+
+// Checkbox component
+const Checkbox = ({ checked, onChange, size }) => (
+  <input
+    type="checkbox"
+    checked={checked}
+    onChange={onChange}
+    style={{ width: size === 'small' ? 14 : 18, height: size === 'small' ? 14 : 18, cursor: 'pointer' }}
+  />
+);
+
+// Visibility icons (replacing MUI icons)
+const Visibility = () => <Eye size={18} />;
+const VisibilityOff = () => <EyeOff size={18} />;
+
+// Social icons (replacing MUI icons)
+const Google = ({ sx }) => (
+  <svg style={{ width: sx?.fontSize || 18, height: sx?.fontSize || 18, marginRight: sx?.mr ? sx.mr * 8 : 0 }} viewBox="0 0 24 24">
+    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+  </svg>
+);
+
+const Email = ({ sx }) => (
+  <Mail size={sx?.fontSize || 18} style={{ marginRight: sx?.mr ? sx.mr * 8 : 0 }} />
+);
+
+// X (Twitter) icon - using the imported XIcon from lucide but renamed
+const X = ({ sx }) => (
+  <XIcon size={sx?.fontSize || 18} style={{ marginRight: sx?.mr ? sx.mr * 8 : 0 }} />
+);
+
+// SecurityOutlined icon (for Passkeys)
+const SecurityOutlined = ({ sx }) => (
+  <Shield size={sx?.fontSize || 18} style={{ marginRight: sx?.mr ? sx.mr * 8 : 0 }} />
+);
+
+// Helper to convert MUI sx prop to inline styles
+const convertSxToStyle = (sx) => {
+  if (!sx) return {};
+  const style = {};
+  Object.entries(sx).forEach(([key, value]) => {
+    if (key.startsWith('&') || key.startsWith('.')) return; // Skip pseudo-selectors
+    if (typeof value === 'number') {
+      // Convert spacing values (multiply by 8)
+      if (['p', 'px', 'py', 'pt', 'pb', 'pl', 'pr', 'm', 'mx', 'my', 'mt', 'mb', 'ml', 'mr', 'gap'].includes(key)) {
+        const pixels = value * 8;
+        if (key === 'p') { style.padding = pixels; }
+        else if (key === 'px') { style.paddingLeft = pixels; style.paddingRight = pixels; }
+        else if (key === 'py') { style.paddingTop = pixels; style.paddingBottom = pixels; }
+        else if (key === 'pt') { style.paddingTop = pixels; }
+        else if (key === 'pb') { style.paddingBottom = pixels; }
+        else if (key === 'pl') { style.paddingLeft = pixels; }
+        else if (key === 'pr') { style.paddingRight = pixels; }
+        else if (key === 'm') { style.margin = pixels; }
+        else if (key === 'mx') { style.marginLeft = pixels; style.marginRight = pixels; }
+        else if (key === 'my') { style.marginTop = pixels; style.marginBottom = pixels; }
+        else if (key === 'mt') { style.marginTop = pixels; }
+        else if (key === 'mb') { style.marginBottom = pixels; }
+        else if (key === 'ml') { style.marginLeft = pixels; }
+        else if (key === 'mr') { style.marginRight = pixels; }
+        else if (key === 'gap') { style.gap = pixels; }
+      } else {
+        style[key] = value;
+      }
+    } else {
+      style[key] = value;
+    }
+  });
+  return style;
+};
+
+// Converted styled components to regular components with Tailwind
 
 // function truncate(str, n) {
 //   if (!str) return '';
@@ -731,48 +984,47 @@ const WalletContent = ({
 export const ConnectWallet = ({
   text = 'Connect',
   fullWidth = true,
-  py = 1.5,
-  fontSize = '0.95rem',
-  sx = {},
   ...otherProps
 }) => {
-  const { setOpenWalletModal } = useContext(AppContext);
+  const { setOpenWalletModal, themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
 
   return (
-    <Button
-      variant="outlined"
+    <button
       onClick={() => setOpenWalletModal(true)}
-      fullWidth={fullWidth}
-      sx={{
-        mt: 0,
-        mb: 0,
-        py: py,
-        fontWeight: 400,
-        borderRadius: '12px',
-        borderWidth: '1.5px',
-        borderColor: '#4285f4',
-        color: '#4285f4',
-        backgroundColor: 'transparent',
-        textTransform: 'none',
-        fontSize: fontSize,
-        '&:hover': {
-          borderColor: '#4285f4',
-          backgroundColor: alpha('#4285f4', 0.04),
-          borderWidth: '1.5px'
-        },
-        ...sx // Allow custom overrides
-      }}
+      className={cn(
+        'my-2 rounded-xl border-[1.5px] px-4 py-2 text-[0.9rem] font-medium transition-all duration-150',
+        fullWidth ? 'w-full' : 'w-auto',
+        isDark
+          ? 'border-primary/40 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
+          : 'border-primary/40 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
+      )}
       {...otherProps}
     >
       {text}
-    </Button>
+    </button>
   );
 };
 
 export default function Wallet({ style, embedded = false, onClose, buttonOnly = false }) {
-  const theme = useTheme();
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
+  // Create a simple theme object to replace MUI's useTheme
+  const theme = {
+    palette: {
+      divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)',
+      success: { main: '#4caf50' },
+      warning: { main: '#ff9800', dark: '#f57c00' },
+      error: { main: '#f44336' },
+      primary: { main: '#4285f4' },
+      text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+      background: { default: isDark ? '#121212' : '#fff', paper: isDark ? '#1e1e1e' : '#fff' },
+      action: { hover: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)', disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)' }
+    },
+    spacing: (...args) => args.map(v => v * 8).join('px ') + 'px'
+  };
   // Translation removed - using hardcoded English text
-  // const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // Helper to sync profiles to localStorage (profiles are NOT stored in IndexedDB)
   const syncProfilesToIndexedDB = async (profilesArray) => {
@@ -2696,54 +2948,33 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             ? `Wallet menu for ${truncateAccount(accountProfile.account)}`
             : 'Connect wallet'
         }
-        style={{
-          background: 'transparent',
-          border: `1.5px solid ${accountProfile ? alpha(theme.palette.divider, 0.2) : '#4285f4'}`,
-          borderRadius: '12px',
-          height: accountProfile ? '36px' : '32px',
-          padding: accountProfile ? '0 14px' : '0 16px',
-          minWidth: accountProfile ? '110px' : '100%',
-          color: '#4285f4',
-          fontSize: '0.95rem',
-          fontWeight: '400',
-          fontFamily: 'inherit',
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 1,
-          outline: 'none'
-        }}
-        onMouseEnter={(e) => {
-          e.target.style.borderColor = '#4285f4';
-          e.target.style.background = alpha('#4285f4', 0.04);
-        }}
-        onMouseLeave={(e) => {
-          e.target.style.borderColor = accountProfile ? alpha(theme.palette.divider, 0.2) : '#4285f4';
-          e.target.style.background = 'transparent';
-        }}
+        className={cn(
+          'flex items-center justify-center gap-2 rounded-xl border-[1.5px] font-normal transition-all duration-150',
+          accountProfile
+            ? 'h-8 min-w-[110px] px-3'
+            : 'h-8 px-4',
+          isDark
+            ? accountProfile
+              ? 'border-white/15 text-white hover:border-primary hover:bg-primary/5'
+              : 'border-primary/40 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
+            : accountProfile
+              ? 'border-gray-300 text-gray-900 hover:border-primary hover:bg-primary/5'
+              : 'border-primary/40 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
+        )}
         title={accountProfile ? 'Account Details' : 'Connect Wallet'}
       >
-{accountProfile ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            <div style={{
-              width: '6px',
-              height: '6px',
-              borderRadius: '50%',
-              background: accountsActivation[accountLogin] === false
-                ? '#ef5350'
-                : '#4caf50'
-            }} />
-            <span style={{
-              fontFamily: 'monospace',
-              fontSize: '13px',
-              fontWeight: 400
-            }}>
+        {accountProfile ? (
+          <>
+            <div className={cn(
+              'h-1.5 w-1.5 rounded-full',
+              accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-green-500'
+            )} />
+            <span className="font-mono text-[13px]">
               {truncateAccount(accountLogin, 6)}
             </span>
-          </div>
+          </>
         ) : (
-          <span style={{ fontSize: '0.95rem', fontWeight: 400 }}>Connect</span>
+          <span className="text-[0.9rem] font-medium">Connect</span>
         )}
       </button>
 
@@ -3244,145 +3475,80 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                 }}>
                   {!showDeviceLogin ? (
                     <>
-                      {/* Social Options - Ordered from easiest to hardest */}
-                      <Stack spacing={1}>
-                        {/* Google - Easiest (one-click) */}
-                        <Button
-                          variant="outlined"
-                          fullWidth
+                      {/* Social Options */}
+                      <div className="flex flex-col gap-2">
+                        {/* Google */}
+                        <button
                           onClick={handleGoogleConnect}
-                          sx={{
-                            py: 1.5,
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            textTransform: 'none',
-                            borderRadius: '12px',
-                            borderWidth: '1px',
-                            borderColor: alpha(theme.palette.divider, 0.2),
-                            color: theme.palette.text.primary,
-                            backgroundColor: 'transparent',
-                            justifyContent: 'flex-start',
-                            '&:hover': {
-                              borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.4),
-                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
-                            }
-                          }}
+                          className={cn(
+                            'flex w-full items-center gap-3 rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal transition-all',
+                            isDark
+                              ? 'border-white/10 text-white hover:border-white/20 hover:bg-white/[0.02]'
+                              : 'border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50'
+                          )}
                         >
-                          <Google sx={{ fontSize: '18px', mr: 1.5 }} />
+                          <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                          </svg>
                           Google
-                        </Button>
+                        </button>
 
-                        {/* Email - Easy (verification code) */}
-                        <Button
-                          variant="outlined"
-                          fullWidth
+                        {/* Email */}
+                        <button
                           onClick={handleEmailConnect}
-                          sx={{
-                            py: 1.5,
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            textTransform: 'none',
-                            borderRadius: '12px',
-                            borderWidth: '1px',
-                            borderColor: alpha(theme.palette.divider, 0.2),
-                            color: theme.palette.text.primary,
-                            backgroundColor: 'transparent',
-                            justifyContent: 'flex-start',
-                            '&:hover': {
-                              borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.4),
-                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
-                            }
-                          }}
+                          className={cn(
+                            'flex w-full items-center gap-3 rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal transition-all',
+                            isDark
+                              ? 'border-white/10 text-white hover:border-white/20 hover:bg-white/[0.02]'
+                              : 'border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50'
+                          )}
                         >
-                          <Email sx={{ fontSize: '18px', mr: 1.5 }} />
+                          <Mail size={18} className="opacity-70" />
                           Email
-                        </Button>
+                        </button>
 
-                        {/* Twitter/X - Moderate (OAuth redirect) */}
-                        <Button
-                          variant="outlined"
-                          fullWidth
+                        {/* Twitter/X */}
+                        <button
                           onClick={handleXConnect}
-                          sx={{
-                            py: 1.5,
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            textTransform: 'none',
-                            borderRadius: '12px',
-                            borderWidth: '1px',
-                            borderColor: alpha(theme.palette.divider, 0.2),
-                            color: theme.palette.text.primary,
-                            backgroundColor: 'transparent',
-                            justifyContent: 'flex-start',
-                            '&:hover': {
-                              borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.4),
-                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
-                            }
-                          }}
+                          className={cn(
+                            'flex w-full items-center gap-3 rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal transition-all',
+                            isDark
+                              ? 'border-white/10 text-white hover:border-white/20 hover:bg-white/[0.02]'
+                              : 'border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50'
+                          )}
                         >
-                          <X sx={{ fontSize: '18px', mr: 1.5 }} />
+                          <XIcon size={18} className="opacity-70" />
                           Twitter
-                        </Button>
+                        </button>
 
-                        {/* Discord - OAuth */}
-                        <Button
-                          variant="outlined"
-                          fullWidth
+                        {/* Discord */}
+                        <button
                           onClick={handleDiscordConnect}
-                          sx={{
-                            py: 1.5,
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            textTransform: 'none',
-                            borderRadius: '12px',
-                            borderWidth: '1px',
-                            borderColor: alpha(theme.palette.divider, 0.2),
-                            color: theme.palette.text.primary,
-                            backgroundColor: 'transparent',
-                            justifyContent: 'flex-start',
-                            '&:hover': {
-                              borderWidth: '1px',
-                              borderColor: alpha(theme.palette.divider, 0.4),
-                              backgroundColor: alpha(theme.palette.action.hover, 0.04)
-                            }
-                          }}
+                          className={cn(
+                            'flex w-full items-center gap-3 rounded-xl border-[1.5px] px-4 py-3 text-[14px] font-normal transition-all',
+                            isDark
+                              ? 'border-white/10 text-white hover:border-white/20 hover:bg-white/[0.02]'
+                              : 'border-gray-200 text-gray-900 hover:border-gray-300 hover:bg-gray-50'
+                          )}
                         >
-                          <Box component="svg" sx={{ width: '1.1rem', height: '1.1rem', mr: 1.5 }} viewBox="0 0 24 24">
-                            <path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
-                          </Box>
+                          <svg className="h-[18px] w-[18px] opacity-70" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
+                          </svg>
                           Discord
-                        </Button>
-                      </Stack>
+                        </button>
+                      </div>
 
-                      {/* Passkeys - Most secure but requires device setup */}
-                      <Button
-                        variant="contained"
+                      {/* Passkeys - Most secure */}
+                      <button
                         onClick={() => setShowDeviceLogin(true)}
-                        fullWidth
-                        sx={{
-                          mt: 1.5,
-                          mb: 1.5,
-                          py: 2,
-                          fontSize: '14px',
-                          fontWeight: 400,
-                          textTransform: 'none',
-                          borderRadius: '12px',
-                          backgroundColor: theme.palette.primary.main,
-                          color: '#fff',
-                          boxShadow: 'none',
-                          justifyContent: 'flex-start',
-                          '&:hover': {
-                            backgroundColor: theme.palette.primary.dark,
-                            boxShadow: 'none'
-                          }
-                        }}
+                        className="mt-3 mb-3 flex w-full items-center gap-3 rounded-xl bg-primary px-4 py-3.5 text-[14px] font-normal text-white transition-all hover:bg-primary/90"
                       >
-                        <SecurityOutlined sx={{ fontSize: '18px', mr: 1.5 }} />
+                        <Shield size={18} />
                         Passkeys
-                      </Button>
+                      </button>
 
                       {/* Email Verification UI */}
                       {showEmailVerification && (
@@ -3524,33 +3690,20 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       )}
 
                       {/* Footer */}
-                      <Box sx={{ mt: 2, pt: 2, borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}` }}>
-                        <Typography variant="caption" sx={{
-                          fontSize: '11px',
-                          color: alpha(theme.palette.text.secondary, 0.4),
-                          display: 'block',
-                          textAlign: 'center',
-                          mb: 1
-                        }}>
+                      <div className={cn(
+                        'mt-2 border-t pt-3 pb-1 text-center',
+                        isDark ? 'border-white/5' : 'border-gray-100'
+                      )}>
+                        <span className="text-[11px] opacity-40">
                           Encrypted and stored locally
-                        </Typography>
-                        <Button
-                          size="small"
+                        </span>
+                        <button
                           onClick={handleDeleteIndexedDB}
-                          sx={{
-                            fontSize: '13px',
-                            color: alpha(theme.palette.error.main, 0.6),
-                            textTransform: 'none',
-                            display: 'block',
-                            margin: '0 auto',
-                            '&:hover': {
-                              color: theme.palette.error.main
-                            }
-                          }}
+                          className="mt-1 block w-full text-[11px] text-red-500/50 hover:text-red-500"
                         >
                           [Debug] Clear IndexedDB
-                        </Button>
-                      </Box>
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <>

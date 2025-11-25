@@ -1,8 +1,5 @@
 import { useContext, useState, useEffect, useCallback, memo } from 'react';
 
-// Material
-import { Box, Divider, useTheme, useMediaQuery } from '@mui/material';
-
 // Components
 import { AppContext } from 'src/AppContext';
 import Overview from './tabs/overview';
@@ -10,6 +7,7 @@ import LinkCascade from './components/LinkCascade';
 import TokenSummary from './components/TokenSummary';
 import CreatorTransactionsDialog from './dialogs/CreatorTransactionsDialog';
 import TransactionDetailsPanel from './dialogs/TransactionDetailsPanel';
+import { cn } from 'src/utils/cn';
 
 const TokenDetail = memo(
   ({
@@ -22,9 +20,9 @@ const TokenDetail = memo(
     orderBookOpen,
     notificationPanelOpen
   }) => {
-    const { darkMode } = useContext(AppContext);
-    const theme = useTheme();
-    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+    const { themeName } = useContext(AppContext);
+    const isDark = themeName === 'XrplToDarkTheme';
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
     const [creatorTxOpen, setCreatorTxOpen] = useState(creatorPanelOpen || false);
     const [latestCreatorTx, setLatestCreatorTx] = useState(null);
     const [selectedTxHash, setSelectedTxHash] = useState(null);
@@ -112,7 +110,7 @@ const TokenDetail = memo(
     // No separate OrderBook panel anymore; handled inside TransactionDetailsPanel
 
     return (
-      <Box sx={{ position: 'relative', display: 'flex', flexDirection: 'row' }}>
+      <div className="relative flex flex-row">
         {/* Creator Transactions Panel - Always render but conditionally show */}
         {!isMobile && token?.creator && (
           <CreatorTransactionsDialog
@@ -122,39 +120,23 @@ const TokenDetail = memo(
             tokenName={token?.name}
             onLatestTransaction={setLatestCreatorTx}
             onSelectTransaction={handleSelectTransaction}
+            isDark={isDark}
           />
         )}
 
         {/* Main Content Area */}
-        <Box
-          sx={{
-            flex: 1,
-            minWidth: 0, // Prevent content overflow
-            pr: {
-              md: txDetailsOpen
-                ? (panelMode === 'orderbook' ? '280px' : '256px')
-                : notificationPanelOpen ? '320px' : 0,
-              lg: txDetailsOpen
-                ? (panelMode === 'orderbook' ? '300px' : '272px')
-                : notificationPanelOpen ? '360px' : 0,
-              xl: txDetailsOpen
-                ? (panelMode === 'orderbook' ? '320px' : '288px')
-                : notificationPanelOpen ? '380px' : 0
-            },
-            pl: {
-              md: creatorTxOpen ? '240px' : 0,
-              lg: creatorTxOpen ? '256px' : 0,
-              xl: creatorTxOpen ? '272px' : 0
-            }
-          }}
+        <div
+          className={cn(
+            "flex-1 min-w-0",
+            !isMobile && txDetailsOpen && panelMode === 'orderbook' && "md:pr-[280px] lg:pr-[300px] xl:pr-[320px]",
+            !isMobile && txDetailsOpen && panelMode !== 'orderbook' && "md:pr-[256px] lg:pr-[272px] xl:pr-[288px]",
+            !isMobile && !txDetailsOpen && notificationPanelOpen && "md:pr-[320px] lg:pr-[360px] xl:pr-[380px]",
+            !isMobile && creatorTxOpen && "md:pl-[240px] lg:pl-[256px] xl:pl-[272px]"
+          )}
         >
           {!isMobile && <LinkCascade token={token} />}
 
-          <Box
-            sx={{
-              pr: 0
-            }}
-          >
+          <div className="pr-0">
             <TokenSummary
               token={token}
               onCreatorTxToggle={handleCreatorTxToggle}
@@ -162,10 +144,13 @@ const TokenDetail = memo(
               latestCreatorTx={latestCreatorTx}
               setLatestCreatorTx={setLatestCreatorTx}
             />
-          </Box>
+          </div>
 
           {!isMobile && (
-            <Divider orientation="horizontal" sx={{ mt: 0.5, mb: 0.5 }} variant="middle" flexItem />
+            <hr className={cn(
+              "my-1 mx-4 border-t-[1.5px]",
+              isDark ? "border-white/10" : "border-gray-200"
+            )} />
           )}
 
           <div id="back-to-top-tab-anchor" />
@@ -177,7 +162,7 @@ const TokenDetail = memo(
             orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
             onOrderBookData={(data) => setOrderBookData((prev) => ({ ...prev, ...data }))}
           />
-        </Box>
+        </div>
 
         {/* Transaction Details Panel - Right Sidebar (Closest to content) */}
         {!isMobile && (
@@ -198,7 +183,7 @@ const TokenDetail = memo(
         )}
 
         {/* OrderBook now renders inside TransactionDetailsPanel (mode === 'orderbook') */}
-      </Box>
+      </div>
     );
   }
 );

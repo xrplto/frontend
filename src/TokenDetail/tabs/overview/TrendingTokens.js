@@ -35,7 +35,7 @@ const alpha = (color, opacity) => {
 const Container = styled('div')(({ isDark }) => ({
   borderRadius: '12px',
   background: 'transparent',
-  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
   boxShadow: 'none',
   position: 'relative',
   overflow: 'hidden',
@@ -43,34 +43,34 @@ const Container = styled('div')(({ isDark }) => ({
   marginBottom: '6px',
   '&:hover': {
     boxShadow: 'none',
-    borderColor: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)',
-    background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'
+    borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
+    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
   }
 }));
 
 const TokenCard = styled('div')(({ isDark }) => ({
   background: 'transparent',
   backdropFilter: 'none',
-  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
   borderRadius: '10px',
-  padding: '6px 10px',
+  padding: '8px 10px',
   cursor: 'pointer',
   boxShadow: 'none',
   '&:hover': {
-    background: alpha('#147DFE', 0.03),
-    borderColor: alpha('#147DFE', 0.2)
+    background: alpha('#4285f4', 0.04),
+    borderColor: alpha('#4285f4', 0.2)
   }
 }));
 
 const RankBadge = styled('div')(({ isDark, rank }) => {
   const getRankColors = () => {
-    if (rank === 1) return { bg: alpha('#FFD700', 0.12), color: '#FFD700', border: alpha('#FFD700', 0.4) };
-    if (rank === 2) return { bg: alpha('#C0C0C0', 0.12), color: '#C0C0C0', border: alpha('#C0C0C0', 0.4) };
-    if (rank === 3) return { bg: alpha('#CD7F32', 0.12), color: '#CD7F32', border: alpha('#CD7F32', 0.4) };
+    if (rank === 1) return { bg: alpha('#FFD700', 0.1), color: '#FFD700', border: alpha('#FFD700', 0.3) };
+    if (rank === 2) return { bg: alpha('#C0C0C0', 0.1), color: '#C0C0C0', border: alpha('#C0C0C0', 0.3) };
+    if (rank === 3) return { bg: alpha('#CD7F32', 0.1), color: '#CD7F32', border: alpha('#CD7F32', 0.3) };
     return {
-      bg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-      color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)',
-      border: isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'
+      bg: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
+      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
+      border: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'
     };
   };
   const colors = getRankColors();
@@ -81,13 +81,13 @@ const RankBadge = styled('div')(({ isDark, rank }) => {
     justifyContent: 'center',
     width: 22,
     height: 22,
-    borderRadius: '6px',
-    fontWeight: 500,
-    fontSize: '11px',
+    borderRadius: '8px',
+    fontWeight: 400,
+    fontSize: '10px',
     flexShrink: 0,
     background: colors.bg,
     color: colors.color,
-    border: `1px solid ${colors.border}`,
+    border: `1.5px solid ${colors.border}`,
     '@media (max-width: 600px)': {
       width: 20,
       height: 20,
@@ -103,10 +103,10 @@ const StatsBox = styled('div')({
   minWidth: '60px',
   textAlign: 'right',
   '& .value': {
-    fontSize: '12px',
+    fontSize: '11px',
     fontWeight: 400,
     lineHeight: 1.3,
-    letterSpacing: '-0.02em',
+    letterSpacing: '-0.01em',
     textAlign: 'right',
     width: '100%'
   }
@@ -130,7 +130,7 @@ const Link = styled('a')(({ isDark }) => ({
     textDecoration: 'none'
   },
   '&:focus-visible': {
-    outline: '2px solid #147DFE',
+    outline: '2px solid #4285f4',
     outlineOffset: '2px',
     borderRadius: '12px'
   }
@@ -138,9 +138,9 @@ const Link = styled('a')(({ isDark }) => ({
 
 const Button = styled('button')(({ isDark }) => ({
   textTransform: 'none',
-  fontSize: '12px',
+  fontSize: '11px',
   fontWeight: 400,
-  color: '#147DFE',
+  color: '#4285f4',
   padding: '4px 8px',
   minHeight: 'auto',
   background: 'transparent',
@@ -150,10 +150,10 @@ const Button = styled('button')(({ isDark }) => ({
   alignItems: 'center',
   gap: '4px',
   '&:hover': {
-    backgroundColor: alpha('#147DFE', 0.04)
+    backgroundColor: alpha('#4285f4', 0.04)
   },
   '&:focus-visible': {
-    outline: '2px solid #147DFE',
+    outline: '2px solid #4285f4',
     outlineOffset: '2px'
   }
 }));
@@ -162,17 +162,17 @@ const Typography = styled('span')(({ variant, color, sx = {}, isDark }) => {
   const baseStyles = {};
 
   if (variant === 'h6') {
-    baseStyles.fontSize = '0.75rem';
+    baseStyles.fontSize = '11px';
     baseStyles.fontWeight = 400;
   } else if (variant === 'body2') {
-    baseStyles.fontSize = '13px';
+    baseStyles.fontSize = '12px';
     baseStyles.fontWeight = 400;
   } else if (variant === 'caption') {
     baseStyles.fontSize = '10px';
   }
 
   if (color === 'text.secondary') {
-    baseStyles.opacity = 0.7;
+    baseStyles.opacity = 0.6;
   }
 
   baseStyles.color = isDark ? '#FFFFFF' : '#212B36';
@@ -181,23 +181,24 @@ const Typography = styled('span')(({ variant, color, sx = {}, isDark }) => {
 });
 
 const Chip = styled('span')(({ isDark }) => ({
-  height: 14,
+  height: 16,
   fontSize: '9px',
   backgroundColor: alpha('#4caf50', 0.08),
   color: '#4caf50',
   fontWeight: 400,
-  padding: '0 4px',
-  borderRadius: '4px',
+  padding: '0 6px',
+  borderRadius: '6px',
+  border: `1.5px solid ${alpha('#4caf50', 0.15)}`,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center'
 }));
 
 const Avatar = styled('div')(({ isDark }) => ({
-  width: 32,
-  height: 32,
-  fontSize: '14px',
-  border: `1px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+  width: 28,
+  height: 28,
+  fontSize: '12px',
+  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
@@ -227,13 +228,13 @@ const Skeleton = ({ variant, width, height, sx = {} }) => {
 
 const Alert = styled('div')(({ severity, isDark }) => ({
   background: 'transparent',
-  border: `1.5px solid ${severity === 'error' ? alpha('#f44336', 0.2) : alpha('#147DFE', 0.2)}`,
-  borderRadius: '12px',
-  padding: '12px',
+  border: `1.5px solid ${severity === 'error' ? alpha('#f44336', 0.2) : alpha('#4285f4', 0.2)}`,
+  borderRadius: '10px',
+  padding: '10px 12px',
   display: 'flex',
   alignItems: 'center',
   gap: '8px',
-  color: severity === 'error' ? '#f44336' : '#147DFE'
+  color: severity === 'error' ? '#f44336' : '#4285f4'
 }));
 
 const BASE_URL = 'https://api.xrpl.to/api';
@@ -388,20 +389,19 @@ const TrendingTokens = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: isMobile ? '6px' : '8px',
-          borderBottom: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          paddingBottom: '6px'
+          padding: '6px 10px',
+          borderBottom: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
         }}
       >
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography variant="h6" isDark={darkMode} style={{ fontWeight: 400, fontSize: '0.75rem' }}>
+          <Typography variant="h6" isDark={darkMode} style={{ fontWeight: 400, fontSize: '11px', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Trending Tokens
           </Typography>
           <Chip isDark={darkMode}>LIVE</Chip>
         </Stack>
         <Button isDark={darkMode} as="a" href="/trending" aria-label="View all trending tokens">
           View All
-          <span style={{ fontSize: 11 }}>→</span>
+          <span style={{ fontSize: 10 }}>→</span>
         </Button>
       </Box>
 
@@ -412,12 +412,12 @@ const TrendingTokens = () => {
           alignItems: 'center',
           gap: '8px',
           marginBottom: '4px',
-          padding: '0 10px',
+          padding: '4px 10px',
           opacity: 0.5
         }}
       >
         <Box style={{ width: 22 }} />
-        <Box style={{ width: 32 }} />
+        <Box style={{ width: 28 }} />
         <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '6px' }}>
           <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
             Token
@@ -426,7 +426,7 @@ const TrendingTokens = () => {
         <Box
           style={{
             display: 'grid',
-            gridTemplateColumns: '75px 60px 70px 70px',
+            gridTemplateColumns: '70px 55px 65px 65px',
             gap: '8px',
             marginLeft: 'auto'
           }}
@@ -454,12 +454,12 @@ const TrendingTokens = () => {
             alignItems: 'center',
             gap: '6px',
             marginBottom: '4px',
-            padding: '0 6px',
+            padding: '4px 8px',
             opacity: 0.5
           }}
         >
-          <Box style={{ width: 22 }} />
-          <Box style={{ width: 32 }} />
+          <Box style={{ width: 20 }} />
+          <Box style={{ width: 28 }} />
           <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '4px' }}>
             <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
               Token
@@ -468,7 +468,7 @@ const TrendingTokens = () => {
           <Box
             style={{
               display: 'grid',
-              gridTemplateColumns: '60px 70px',
+              gridTemplateColumns: '55px 65px',
               gap: '8px',
               marginLeft: 'auto'
             }}
@@ -531,7 +531,7 @@ const TrendingTokens = () => {
                         variant="body2"
                         isDark={darkMode}
                         style={{
-                          fontSize: '13px',
+                          fontSize: '12px',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -577,7 +577,7 @@ const TrendingTokens = () => {
                   <Box
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: isMobile ? '60px 70px' : '75px 60px 70px 70px',
+                      gridTemplateColumns: isMobile ? '55px 65px' : '70px 55px 65px 65px',
                       gap: '8px',
                       marginLeft: 'auto'
                     }}
