@@ -57,6 +57,12 @@ const Card = styled.div`
     max-width: 100vw;
     max-height: 100vh;
     background: ${props.isDark ? '#000000' : '#ffffff'};
+    overflow-y: auto;
+    border: none;
+    &:hover {
+      border-color: transparent;
+      background: ${props.isDark ? '#000000' : '#ffffff'};
+    }
   `}
 `;
 
@@ -128,9 +134,9 @@ const Button = styled.button`
 `;
 
 const IconButton = styled.button`
-  padding: ${props => props.size === 'small' ? '8px' : '8px'};
+  padding: ${props => props.size === 'small' ? '5px' : '6px'};
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-  border-radius: 8px;
+  border-radius: 6px;
   background: transparent;
   cursor: pointer;
   color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
@@ -141,8 +147,8 @@ const IconButton = styled.button`
     background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'};
   }
   & svg {
-    width: ${props => props.isMobile ? '16px' : '20px'};
-    height: ${props => props.isMobile ? '16px' : '20px'};
+    width: ${props => props.isMobile ? '14px' : '16px'};
+    height: ${props => props.isMobile ? '14px' : '16px'};
   }
 `;
 
@@ -1148,7 +1154,18 @@ const PriceChartAdvanced = memo(({ token }) => {
   }, [data, holderData, chartType, isDark, range, isMobile]);
 
   const handleFullscreen = useCallback(() => {
-    setIsFullscreen((prev) => !prev);
+    setIsFullscreen((prev) => {
+      const next = !prev;
+      document.body.style.overflow = next ? 'hidden' : '';
+      return next;
+    });
+  }, []);
+
+  // Cleanup body overflow on unmount
+  useEffect(() => {
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, []);
 
   return (
