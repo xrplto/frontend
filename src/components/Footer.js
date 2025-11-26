@@ -59,7 +59,7 @@ const Root = styled.footer`
   width: 100%;
   border-top: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
   background-color: transparent;
-  margin-top: 12px;
+  margin-top: 0;
 `;
 
 const Link = styled.a`
@@ -177,7 +177,7 @@ function Footer() {
 
   return (
     <Root isDark={isDark}>
-      <Container px="32px" py="14px" pb="20px">
+      <Container px="32px" py="10px" pb="12px">
         <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <NextLink href="/" style={{ display: 'inline-flex', textDecoration: 'none' }}>

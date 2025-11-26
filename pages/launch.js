@@ -1,304 +1,17 @@
 import React, { useState, useRef, useContext, useEffect } from 'react';
-import styled from '@emotion/styled';
 import axios from 'axios';
 import * as xrpl from 'xrpl';
 import { AppContext } from 'src/AppContext';
-import { ConnectWallet } from 'src/components/Wallet';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
-import { Twitter, Send, Globe, Upload, CheckCircle, Info, Copy, ExternalLink, Wallet as WalletIcon } from 'lucide-react';
+import { Twitter, Send, Globe, Upload, CheckCircle, Info, Copy, ExternalLink, Loader2 } from 'lucide-react';
 
-// Styled components
-const PageWrapper = styled.div`
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-`;
-
-const Container = styled.div`
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 40px 24px;
-  width: 100%;
-  flex: 1;
-`;
-
-const PageTitle = styled.h1`
-  font-size: 1.5rem;
-  font-weight: 400;
-  margin-bottom: 6px;
-`;
-
-const Subtitle = styled.p`
-  font-size: 0.88rem;
-  opacity: 0.6;
-  margin-bottom: 28px;
-`;
-
-const ProgressContainer = styled.div`
-  margin-bottom: 24px;
-`;
-
-const StepIndicator = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 8px;
-`;
-
-const Step = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: ${props => props.active ? '#4285f4' : 'rgba(150, 150, 150, 0.4)'};
-  font-weight: 400;
-`;
-
-const Card = styled.div`
-  padding: 20px;
-  background: transparent;
-  border: 1.5px solid rgba(150, 150, 150, 0.15);
-  border-radius: 12px;
-  margin-bottom: 14px;
-`;
-
-const SectionHeader = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-`;
-
-const SectionTitle = styled.h3`
-  font-size: 0.95rem;
-  font-weight: 400;
-`;
-
-const Label = styled.label`
-  display: block;
-  font-size: 0.95rem;
-  font-weight: 400;
-  opacity: 0.7;
-  margin-bottom: 8px;
-`;
-
-const UploadBox = styled.div`
-  border: 1.5px dashed ${props => props.hasFile ? 'rgba(16, 185, 129, 0.4)' : 'rgba(150, 150, 150, 0.25)'};
-  border-radius: 12px;
-  padding: 36px 20px;
-  text-align: center;
-  cursor: pointer;
-  background: transparent;
-  position: relative;
-
-  &:hover {
-    border-color: ${props => props.hasFile ? 'rgba(16, 185, 129, 0.6)' : 'rgba(66, 133, 244, 0.4)'};
-    background: rgba(66, 133, 244, 0.02);
-  }
-
-  &.dragging {
-    border-color: #4285f4;
-    background: rgba(66, 133, 244, 0.04);
-  }
-`;
-
-const ImagePreview = styled.img`
-  max-width: 120px;
-  max-height: 120px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  object-fit: cover;
-`;
-
-const HiddenInput = styled.input`
-  display: none;
-`;
-
-const InfoText = styled.div`
-  font-size: 0.85rem;
-  opacity: 0.7;
-  margin-top: 12px;
-  line-height: 1.5;
-`;
-
-const WarningBox = styled.div`
-  background: rgba(245, 158, 11, 0.08);
-  border: 1.5px solid rgba(245, 158, 11, 0.3);
-  border-radius: 8px;
-  padding: 16px;
-  margin-top: 24px;
-`;
-
-const WarningText = styled.p`
-  font-size: 0.9rem;
-  color: #f59e0b;
-  margin: 0;
-  font-weight: 400;
-`;
-
-const StyledInput = styled.input`
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  border-radius: 8px;
-  border: 1.5px solid ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.15)'};
-  background: transparent;
-  font-family: inherit;
-
-  &:hover {
-    border-color: ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.25)'};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.error ? '#ef4444' : '#4285f4'};
-  }
-
-  &::placeholder {
-    opacity: 0.5;
-  }
-`;
-
-const StyledTextarea = styled.textarea`
-  width: 100%;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  border-radius: 8px;
-  border: 1.5px solid ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.15)'};
-  background: transparent;
-  font-family: inherit;
-  resize: vertical;
-
-  &:hover {
-    border-color: ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.25)'};
-  }
-
-  &:focus {
-    outline: none;
-    border-color: ${props => props.error ? '#ef4444' : '#4285f4'};
-  }
-
-  &::placeholder {
-    opacity: 0.5;
-  }
-`;
-
-const InputWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
-const InputLabel = styled.label`
-  font-size: 0.92rem;
-  opacity: 0.7;
-`;
-
-const HelperText = styled.div`
-  font-size: 0.75rem;
-  margin-top: 4px;
-  opacity: 0.7;
-  color: ${props => props.error ? '#ef4444' : 'inherit'};
-`;
-
-const CharCounter = styled.span`
-  font-size: 0.75rem;
-  color: ${props => props.error ? '#ef4444' : 'rgba(150, 150, 150, 0.5)'};
-`;
-
-const StyledButton = styled.button`
-  padding: ${props => props.size === 'small' ? '6px 12px' : '12px 24px'};
-  font-size: ${props => props.size === 'small' ? '13px' : '15px'};
-  font-weight: 400;
-  border-radius: ${props => props.size === 'small' ? '8px' : '12px'};
-  border: 1.5px solid ${props => props.variant === 'contained' ? '#4285f4' : 'rgba(66, 133, 244, 0.2)'};
-  background: ${props => props.variant === 'contained' ? '#4285f4' : 'transparent'};
-  color: ${props => props.variant === 'contained' ? '#fff' : '#4285f4'};
-  cursor: pointer;
-  transition: all 0.2s;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: ${props => props.fullWidth ? '100%' : 'auto'};
-
-  &:hover:not(:disabled) {
-    background: ${props => props.variant === 'contained' ? '#3367d6' : 'rgba(66, 133, 244, 0.04)'};
-    border-color: #4285f4;
-  }
-
-  &:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-`;
-
-const AlertBox = styled.div`
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1.5px solid ${props =>
-    props.severity === 'error' ? 'rgba(239, 68, 68, 0.3)' :
-    props.severity === 'warning' ? 'rgba(245, 158, 11, 0.3)' :
-    props.severity === 'success' ? 'rgba(16, 185, 129, 0.3)' :
-    'rgba(66, 133, 244, 0.3)'
-  };
-  background: ${props =>
-    props.severity === 'error' ? 'rgba(239, 68, 68, 0.08)' :
-    props.severity === 'warning' ? 'rgba(245, 158, 11, 0.08)' :
-    props.severity === 'success' ? 'rgba(16, 185, 129, 0.08)' :
-    'rgba(66, 133, 244, 0.08)'
-  };
-  color: ${props =>
-    props.severity === 'error' ? '#ef4444' :
-    props.severity === 'warning' ? '#f59e0b' :
-    props.severity === 'success' ? '#10b981' :
-    '#4285f4'
-  };
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  font-size: 14px;
-`;
-
-const ProgressBar = styled.div`
-  height: ${props => props.height || '3px'};
-  background: rgba(150, 150, 150, 0.2);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    width: ${props => props.value || 0}%;
-    background: #4285f4;
-    transition: width 0.3s ease;
-  }
-`;
-
-const Spinner = styled.div`
-  width: ${props => props.size === 'small' ? '16px' : '24px'};
-  height: ${props => props.size === 'small' ? '16px' : '24px'};
-  border: 2px solid rgba(66, 133, 244, 0.2);
-  border-top-color: #4285f4;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-`;
-
-// Simple InputField component
-const InputField = ({ label, value, onChange, placeholder, error, helperText, counter, counterError, isDark, multiline, rows, type = 'text', min, max, className, required }) => (
+// Reusable InputField component
+const InputField = ({ label, value, onChange, placeholder, error, helperText, counter, counterError, isDark, multiline, rows, type = 'text', min, max, className }) => (
   <div className={cn("flex-1", className)}>
-    <label className="block text-[13px] opacity-70 mb-2">{label}</label>
+    <label className="block text-[12px] opacity-60 mb-1.5">{label}</label>
     {multiline ? (
       <textarea
         value={value}
@@ -306,9 +19,9 @@ const InputField = ({ label, value, onChange, placeholder, error, helperText, co
         placeholder={placeholder}
         rows={rows || 3}
         className={cn(
-          "w-full px-3 py-2 rounded-lg border-[1.5px] text-[14px] bg-transparent resize-none",
-          error ? "border-red-500/50" : isDark ? "border-white/15" : "border-gray-300",
-          "focus:outline-none focus:border-[#4285f4]"
+          "w-full px-3 py-2.5 rounded-lg border text-[14px] bg-transparent resize-none transition-colors",
+          error ? "border-red-500/40" : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300",
+          "focus:outline-none focus:border-[#4285f4] placeholder:opacity-40"
         )}
       />
     ) : (
@@ -320,17 +33,59 @@ const InputField = ({ label, value, onChange, placeholder, error, helperText, co
         min={min}
         max={max}
         className={cn(
-          "w-full px-3 py-2 rounded-lg border-[1.5px] text-[14px] bg-transparent",
-          error ? "border-red-500/50" : isDark ? "border-white/15" : "border-gray-300",
-          "focus:outline-none focus:border-[#4285f4]"
+          "w-full px-3 py-2.5 rounded-lg border text-[14px] bg-transparent transition-colors",
+          error ? "border-red-500/40" : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300",
+          "focus:outline-none focus:border-[#4285f4] placeholder:opacity-40"
         )}
       />
     )}
-    <div className="flex justify-between mt-1">
-      <span className={cn("text-[12px] opacity-70", error && "text-red-500")}>{helperText}</span>
-      {counter && <span className={cn("text-[12px]", counterError ? "text-red-500" : "opacity-50")}>{counter}</span>}
-    </div>
+    {(helperText || counter) && (
+      <div className="flex justify-between mt-1">
+        <span className={cn("text-[11px] opacity-50", error && "text-red-500 opacity-100")}>{helperText}</span>
+        {counter && <span className={cn("text-[11px]", counterError ? "text-red-500" : "opacity-40")}>{counter}</span>}
+      </div>
+    )}
   </div>
+);
+
+// Reusable Button component
+const Button = ({ children, onClick, disabled, variant = 'outline', size = 'default', fullWidth, className }) => (
+  <button
+    onClick={onClick}
+    disabled={disabled}
+    className={cn(
+      "rounded-lg font-normal transition-colors flex items-center justify-center gap-2",
+      size === 'small' ? "px-3 py-1.5 text-[13px]" : "px-5 py-3 text-[14px]",
+      variant === 'primary'
+        ? "bg-[#4285f4] text-white border border-[#4285f4] hover:bg-[#3b78e7]"
+        : "bg-transparent text-[#4285f4] border border-[#4285f4]/20 hover:border-[#4285f4]/40 hover:bg-[#4285f4]/5",
+      fullWidth && "w-full",
+      disabled && "opacity-40 cursor-not-allowed",
+      className
+    )}
+  >
+    {children}
+  </button>
+);
+
+// Alert component
+const Alert = ({ severity = 'info', children, className }) => {
+  const styles = {
+    error: "border-red-500/20 bg-red-500/5 text-red-400",
+    warning: "border-yellow-500/20 bg-yellow-500/5 text-yellow-500",
+    success: "border-green-500/20 bg-green-500/5 text-green-400",
+    info: "border-[#4285f4]/20 bg-[#4285f4]/5 text-[#4285f4]"
+  };
+  return (
+    <div className={cn("p-3 rounded-lg border flex items-start gap-3 text-[13px]", styles[severity], className)}>
+      {children}
+    </div>
+  );
+};
+
+// Spinner component
+const Spinner = ({ size = 24 }) => (
+  <Loader2 size={size} className="animate-spin text-[#4285f4]" />
 );
 
 function CreatePage() {
@@ -619,6 +374,7 @@ function CreatePage() {
 
     // Show summary first
     setShowSummary(true);
+    window.scrollTo(0, 0);
   };
 
   const confirmLaunch = async () => {
@@ -653,10 +409,13 @@ function CreatePage() {
         user: formData.tokenName // e.g., "Dogecoin" (creator/team name - same as display name)
       };
 
-      // Conditionally required
-      if (walletAddress) {
-        payload.userAddress = walletAddress;
+      // Required field - userAddress
+      if (!walletAddress) {
+        setLaunchError('Please connect a wallet or enter your wallet address first');
+        setLaunchStep('error');
+        return;
       }
+      payload.userAddress = walletAddress;
 
       // Optional fields
       if (formData.userCheckPercent > 0) {
@@ -700,6 +459,7 @@ function CreatePage() {
       }
 
       setLaunchStep('funding');
+      window.scrollTo(0, 0);
 
     } catch (error) {
       const errorMsg = typeof error.response?.data?.error === 'string'
@@ -862,692 +622,508 @@ function CreatePage() {
   }, [launchStep, sessionData?.sessionId]);
 
   return (
-    <PageWrapper>
+    <div className="min-h-screen flex flex-col">
       <Header />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-        Launch Token on XRPL
-      </h1>
+      <h1 className="sr-only">Launch Token on XRPL</h1>
 
+      {/* Main Form */}
       {!launchStep && !showSummary && (
-      <Container>
-        <PageTitle>Launch Token</PageTitle>
-        <Subtitle>Deploy your token on the XRP Ledger</Subtitle>
+      <div className="max-w-[640px] mx-auto px-5 py-10 w-full flex-1">
+        <div className="mb-8">
+          <h2 className="text-xl font-normal mb-1">Launch Token</h2>
+          <p className="text-[13px] opacity-50">Deploy your token on the XRP Ledger</p>
+        </div>
 
-        <ProgressContainer>
-          <StepIndicator>
-            <Step active={true}>
-              <span>1. Basic Info</span>
-            </Step>
-            <Step active={formData.twitter || formData.telegram || formData.website}>
-              <span>2. Socials</span>
-            </Step>
-            <Step active={formData.image}>
-              <span>3. Media</span>
-            </Step>
-          </StepIndicator>
-          <div className="h-[3px] w-full bg-gray-200/20 relative">
-            <div
-              className="h-full bg-[#4285f4] transition-all"
-              style={{ width: `${(getCompletionStatus() / 5) * 100}%` }}
-            />
+        {/* Progress */}
+        <div className="mb-6">
+          <div className="flex justify-between mb-2">
+            {['Basic Info', 'Socials', 'Media'].map((step, i) => (
+              <span key={step} className={cn(
+                "text-[12px]",
+                (i === 0 || (i === 1 && (formData.twitter || formData.telegram || formData.website)) || (i === 2 && formData.image))
+                  ? "text-[#4285f4]" : "opacity-30"
+              )}>{i + 1}. {step}</span>
+            ))}
           </div>
-        </ProgressContainer>
+          <div className={cn("h-1 rounded-full", isDark ? "bg-white/10" : "bg-gray-200")}>
+            <div className="h-full bg-[#4285f4] rounded-full transition-all" style={{ width: `${(getCompletionStatus() / 5) * 100}%` }} />
+          </div>
+        </div>
 
-        <Card>
-          <SectionHeader>
-            <SectionTitle>Token Information</SectionTitle>
-            <span className="text-[12px] opacity-50">Required</span>
-          </SectionHeader>
+        {/* Token Information */}
+        <div className={cn("rounded-xl border p-5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-[14px] font-normal">Token Information</h3>
+            <span className="text-[11px] opacity-40">Required</span>
+          </div>
 
           <div className="space-y-4">
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <InputField
-                label="Name your token"
-                placeholder="My Awesome Token"
+                label="Token name"
+                placeholder="My Token"
                 value={formData.tokenName}
                 onChange={handleInputChange('tokenName')}
                 error={errors.tokenName}
-                helperText={errors.tokenName || 'Required'}
+                helperText={errors.tokenName}
                 counter={`${formData.tokenName.length}/50`}
                 counterError={formData.tokenName.length > 50}
                 isDark={isDark}
-                required
               />
               <InputField
-                label="Token ticker"
-                placeholder="TICKER"
+                label="Ticker"
+                placeholder="TKN"
                 value={formData.ticker}
                 onChange={handleInputChange('ticker')}
                 error={errors.ticker}
-                helperText={errors.ticker || 'Required'}
+                helperText={errors.ticker}
                 counter={`${formData.ticker.length}/15`}
                 counterError={formData.ticker.length < 3 || formData.ticker.length > 15}
                 isDark={isDark}
-                className="min-w-[200px]"
-                required
+                className="max-w-[140px]"
               />
             </div>
 
             <InputField
-              label="Write a short description"
-              placeholder="Tell people what makes your token special..."
+              label="Description"
+              placeholder="What makes your token special..."
               value={formData.description}
               onChange={handleInputChange('description')}
               error={errors.description}
-              helperText={errors.description || 'Optional'}
               counter={`${formData.description.length}/500`}
               counterError={formData.description.length > 500}
               isDark={isDark}
               multiline
-              rows={3}
+              rows={2}
             />
 
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <InputField
                 label="Total supply"
                 type="number"
-                placeholder="1000000000"
                 value={formData.tokenSupply}
                 onChange={handleInputChange('tokenSupply')}
-                helperText="Required"
                 isDark={isDark}
                 min={1}
-                required
               />
               <InputField
-                label="Creator allocation (%)"
+                label="Your allocation %"
                 type="number"
                 placeholder="0-30"
                 value={formData.userCheckPercent === 0 ? '' : formData.userCheckPercent}
                 onChange={handleInputChange('userCheckPercent')}
-                helperText={`You receive: ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens`}
+                helperText={formData.userCheckPercent > 0 ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens` : null}
                 isDark={isDark}
-                className="min-w-[220px]"
+                className="max-w-[140px]"
                 min={0}
                 max={30}
               />
             </div>
 
             {formData.userCheckPercent === 0 && (
-              <div className="mt-2 p-3 rounded-lg border-[1.5px] border-yellow-500/20 bg-yellow-500/5 text-[14px]">
-                You will not receive any tokens. 100% goes to AMM pool.
-              </div>
+              <Alert severity="warning">100% of tokens will go to the AMM pool</Alert>
             )}
 
-            <div className="flex items-center gap-2">
+            <label className="flex items-center gap-2 cursor-pointer text-[13px]">
               <input
                 type="checkbox"
-                id="antiSnipe"
                 checked={formData.antiSnipe}
                 onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
-                className="w-[18px] h-[18px] cursor-pointer"
+                className="w-4 h-4 rounded"
               />
-              <label htmlFor="antiSnipe" className="cursor-pointer text-[15px]">
-                Enable anti-snipe mode (RequireAuth)
-              </label>
-            </div>
+              Anti-snipe mode (RequireAuth)
+            </label>
           </div>
-        </Card>
+        </div>
 
-        <Card>
-          <SectionHeader>
-            <SectionTitle>Initial Liquidity</SectionTitle>
-            <span className="text-[12px] opacity-50">Required</span>
-          </SectionHeader>
-
+        {/* Liquidity */}
+        <div className={cn("rounded-xl border p-5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-[14px] font-normal">Initial Liquidity</h3>
+            <span className="text-[11px] opacity-40">Required</span>
+          </div>
           <InputField
-            label="XRP for AMM pool (min 10)"
+            label="XRP for AMM pool"
             type="number"
             value={formData.ammXrpAmount}
             onChange={handleInputChange('ammXrpAmount')}
             error={formData.ammXrpAmount < 10}
-            helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : 'Required'}
+            helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : null}
             isDark={isDark}
             min={10}
           />
-        </Card>
+        </div>
 
-        <Card>
-          <SectionHeader>
-            <SectionTitle>Social Links</SectionTitle>
-            <span className="text-[12px] opacity-50">Optional</span>
-          </SectionHeader>
-
-          <div className="space-y-4">
+        {/* Social Links */}
+        <div className={cn("rounded-xl border p-5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-[14px] font-normal">Social Links</h3>
+            <span className="text-[11px] opacity-40">Optional</span>
+          </div>
+          <div className="space-y-3">
             <InputField
               label="Website"
               placeholder="https://example.com"
               value={formData.website}
               onChange={handleInputChange('website')}
               error={errors.website}
-              helperText={errors.website || 'Optional'}
+              helperText={errors.website}
               isDark={isDark}
             />
-
-            <div className="flex gap-4">
+            <div className="flex gap-3">
               <InputField
                 label="Telegram"
-                placeholder="t.me/yourchannel"
+                placeholder="t.me/channel"
                 value={formData.telegram}
                 onChange={handleInputChange('telegram')}
-                helperText="Optional"
                 isDark={isDark}
               />
               <InputField
                 label="Twitter/X"
-                placeholder="@yourhandle"
+                placeholder="@handle"
                 value={formData.twitter}
                 onChange={handleInputChange('twitter')}
-                helperText="Optional"
                 isDark={isDark}
               />
             </div>
           </div>
-        </Card>
+        </div>
 
-        <Card>
-          <SectionHeader>
-            <SectionTitle>Token Image</SectionTitle>
-            <span className="text-[12px] opacity-50">Recommended</span>
-          </SectionHeader>
+        {/* Token Image */}
+        <div className={cn("rounded-xl border p-5 mb-6", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-[14px] font-normal">Token Image</h3>
+            <span className="text-[11px] opacity-40">Recommended</span>
+          </div>
 
-          <UploadBox
-              hasFile={!!formData.image}
-              className={dragging ? 'dragging' : ''}
-              onClick={handleUploadClick}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-            >
-              {imagePreview ? (
-                <>
-                  <ImagePreview src={imagePreview} alt="Preview" />
-                  <p className="text-green-500 font-normal">{fileName}</p>
-                  <p className="text-[13px] opacity-60 mt-1">Click to replace</p>
-                </>
-              ) : (
-                <>
-                  <Upload size={38} className="opacity-20 mb-4" />
-                  <p className="text-[14px] opacity-70 mb-1">{fileName || 'Drop image here or click to browse'}</p>
-                  <p className="text-[13px] opacity-40">PNG, JPG, GIF, WEBP • Max 15MB</p>
-                </>
-              )}
-            </UploadBox>
-
-          {errors.file && (
-            <p className="text-red-500 text-[12px] mt-2">{errors.file}</p>
-          )}
-
-          <HiddenInput
-            ref={fileInputRef}
-            type="file"
-            accept=".jpg,.jpeg,.gif,.png,.webp,image/jpeg,image/png,image/gif,image/webp"
-            onChange={handleFileInputChange}
-          />
-
-          <p className="text-[12px] opacity-50 mt-3 leading-relaxed">
-            PNG, JPG, GIF, WEBP • 1000×1000px recommended • Max 15MB
-          </p>
-        </Card>
-
-        {!launchStep && (
-          <StyledButton
-            fullWidth
-            disabled={!isFormValid()}
-            onClick={handleSubmit}
+          <div
+            onClick={handleUploadClick}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            className={cn(
+              "border border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+              dragging ? "border-[#4285f4] bg-[#4285f4]/5" : imagePreview ? "border-green-500/30" : isDark ? "border-white/15 hover:border-white/25" : "border-gray-300 hover:border-gray-400"
+            )}
           >
-            {isFormValid() ? 'Launch Token' : `Complete Required Fields (${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 10 ? 1 : 0)} remaining)`}
-          </StyledButton>
-        )}
-      </Container>
+            {imagePreview ? (
+              <div className="flex flex-col items-center">
+                <img src={imagePreview} alt="Preview" className="w-20 h-20 rounded-lg object-cover mb-2" />
+                <p className="text-green-500 text-[13px]">{fileName}</p>
+                <p className="text-[11px] opacity-50 mt-1">Click to replace</p>
+              </div>
+            ) : (
+              <>
+                <Upload size={28} className="mx-auto opacity-20 mb-3" />
+                <p className="text-[13px] opacity-60">Drop image or click to browse</p>
+                <p className="text-[11px] opacity-40 mt-1">PNG, JPG, GIF, WEBP • Max 15MB</p>
+              </>
+            )}
+          </div>
+          {errors.file && <p className="text-red-500 text-[11px] mt-2">{errors.file}</p>}
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInputChange} className="hidden" />
+        </div>
+
+        {/* Submit */}
+        <Button
+          fullWidth
+          variant={isFormValid() ? 'primary' : 'outline'}
+          disabled={!isFormValid()}
+          onClick={handleSubmit}
+        >
+          {isFormValid() ? 'Launch Token' : `Complete ${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 10 ? 1 : 0)} required fields`}
+        </Button>
+      </div>
       )}
 
       {/* Summary Confirmation */}
       {showSummary && (
-        <Container>
-          <PageTitle>Review Token Details</PageTitle>
-          <Subtitle>Confirm your token settings before launch</Subtitle>
+        <div className="max-w-[640px] mx-auto px-5 py-10 w-full flex-1">
+          <div className="mb-6">
+            <h2 className="text-xl font-normal mb-1">Review Details</h2>
+            <p className="text-[13px] opacity-50">Confirm before launching</p>
+          </div>
 
-          <Card>
-            {/* Header with Image */}
-            {imagePreview && (
-              <div className="text-center p-6 border-b border-white/10">
-                <img
-                  src={imagePreview}
-                  alt="Token"
-                  className="max-w-[160px] max-h-[160px] rounded-xl border-[1.5px] border-white/10 mx-auto"
-                />
+          <div className={cn("rounded-xl border overflow-hidden", isDark ? "border-white/10" : "border-gray-200")}>
+            {/* Header */}
+            <div className={cn("p-5 flex items-center gap-4", isDark ? "border-b border-white/10" : "border-b border-gray-200")}>
+              {imagePreview && <img src={imagePreview} alt="Token" className="w-14 h-14 rounded-lg object-cover" />}
+              <div>
+                <h3 className="text-lg font-normal">{formData.tokenName}</h3>
+                <span className="text-[13px] opacity-60">{formData.ticker}</span>
               </div>
-            )}
+            </div>
 
-            {/* Token Info Grid */}
-            <div className="p-6 space-y-5">
-              {/* Name & Ticker Row */}
-              <div className="flex gap-6">
-                <div className="flex-1">
-                  <p className="text-[11px] uppercase tracking-wide opacity-70">Token Name</p>
-                  <p className="text-lg mt-1">{formData.tokenName}</p>
-                </div>
-                <div className="flex-1">
-                  <p className="text-[11px] uppercase tracking-wide opacity-70">Ticker</p>
-                  <p className="text-lg mt-1">{formData.ticker}</p>
-                </div>
-              </div>
-
-              {/* Description */}
+            {/* Details */}
+            <div className="p-5 space-y-4">
               {formData.description && (
-                <div className="p-4 rounded-lg border-[1.5px] border-white/10">
-                  <p className="text-[11px] uppercase tracking-wide opacity-70">Description</p>
-                  <p className="text-[14px] mt-2 leading-relaxed">{formData.description}</p>
-                </div>
+                <p className="text-[13px] opacity-70 leading-relaxed">{formData.description}</p>
               )}
 
               {/* Social Links */}
               {(formData.website || formData.twitter || formData.telegram) && (
-                <div className="p-4 rounded-lg border-[1.5px] border-blue-500/15 bg-blue-500/5">
-                  <p className="text-[11px] uppercase tracking-wide opacity-70 mb-2">Social Links</p>
-                  <div className="space-y-2">
-                    {formData.website && (
-                      <div className="flex items-center gap-2">
-                        <Globe size={16} className="opacity-50" />
-                        <span className="text-[14px]">{formData.website}</span>
-                      </div>
-                    )}
-                    {formData.twitter && (
-                      <div className="flex items-center gap-2">
-                        <Twitter size={16} className="opacity-50" />
-                        <span className="text-[14px]">{formData.twitter}</span>
-                      </div>
-                    )}
-                    {formData.telegram && (
-                      <div className="flex items-center gap-2">
-                        <Send size={16} className="opacity-50" />
-                        <span className="text-[14px]">{formData.telegram}</span>
-                      </div>
-                    )}
-                  </div>
+                <div className="flex flex-wrap gap-3 text-[12px]">
+                  {formData.website && <span className="flex items-center gap-1 opacity-60"><Globe size={12} /> {formData.website}</span>}
+                  {formData.twitter && <span className="flex items-center gap-1 opacity-60"><Twitter size={12} /> {formData.twitter}</span>}
+                  {formData.telegram && <span className="flex items-center gap-1 opacity-60"><Send size={12} /> {formData.telegram}</span>}
                 </div>
               )}
 
-              {/* Token Economics */}
-              <div className="p-4 rounded-lg border-[1.5px] border-green-500/15 bg-green-500/5">
-                <p className="text-[11px] uppercase tracking-wide opacity-70 mb-3">Token Economics</p>
-                <div className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[14px] opacity-80">Total Supply</span>
-                    <span>{formData.tokenSupply.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[14px] opacity-80">AMM Pool</span>
-                    <span>
-                      {formData.userCheckPercent === 0
-                        ? formData.tokenSupply.toLocaleString()
-                        : Math.floor(formData.tokenSupply * 0.5).toLocaleString()
-                      } {formData.ticker}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[14px] opacity-80">Initial XRP</span>
-                    <span>{formData.ammXrpAmount} XRP</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[14px] opacity-80">Your Allocation</span>
-                    <span className={formData.userCheckPercent === 0 ? 'opacity-60' : 'text-green-500'}>
-                      {formData.userCheckPercent > 0
-                        ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} (${formData.userCheckPercent}%)`
-                        : '0 tokens (0%)'
-                      }
-                    </span>
-                  </div>
-                  {formData.userCheckPercent === 0 && (
-                    <AlertBox severity="warning">
-                      You will not receive any tokens. 100% goes to AMM pool.
-                    </AlertBox>
-                  )}
+              {/* Economics */}
+              <div className={cn("p-4 rounded-lg space-y-2 text-[13px]", isDark ? "bg-white/5" : "bg-gray-50")}>
+                <div className="flex justify-between"><span className="opacity-60">Supply</span><span>{formData.tokenSupply.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="opacity-60">AMM Liquidity</span><span>{formData.ammXrpAmount} XRP</span></div>
+                <div className="flex justify-between">
+                  <span className="opacity-60">Your Allocation</span>
+                  <span className={formData.userCheckPercent > 0 ? "text-green-500" : "opacity-50"}>
+                    {formData.userCheckPercent > 0 ? `${formData.userCheckPercent}% (${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()})` : 'None'}
+                  </span>
                 </div>
               </div>
 
-              {/* Anti-snipe Badge */}
-              {formData.antiSnipe && (
-                <AlertBox severity="info">
-                  <Info size={16} />
-                  Anti-snipe protection enabled (RequireAuth)
-                </AlertBox>
-              )}
+              {formData.userCheckPercent === 0 && <Alert severity="warning">100% goes to AMM pool</Alert>}
+              {formData.antiSnipe && <Alert severity="info"><Info size={14} /> Anti-snipe enabled</Alert>}
+
+              {/* Wallet Address */}
+              <div className={cn("p-4 rounded-lg", isDark ? "bg-white/5" : "bg-gray-50")}>
+                <p className="text-[12px] opacity-60 mb-2">Your wallet address (required)</p>
+                <div className="flex items-center gap-2">
+                  {accountProfile && <CheckCircle size={14} className="text-green-500 flex-shrink-0" />}
+                  <input
+                    type="text"
+                    placeholder="rXXX..."
+                    value={userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '')}
+                    onChange={(e) => setUserWallet(e.target.value)}
+                    disabled={!!accountProfile}
+                    className={cn(
+                      "flex-1 px-3 py-2 rounded-lg border text-[13px] bg-transparent",
+                      isDark ? "border-white/10" : "border-gray-200"
+                    )}
+                  />
+                </div>
+                <p className="text-[11px] opacity-40 mt-1">
+                  {accountProfile ? "Connected wallet" : "Enter your XRPL address to receive tokens"}
+                </p>
+              </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="p-6 pt-4 border-t border-white/10 flex gap-3">
-              <StyledButton fullWidth onClick={() => setShowSummary(false)}>
-                Back to Edit
-              </StyledButton>
-              <StyledButton fullWidth variant="contained" onClick={confirmLaunch}>
-                Confirm & Launch
-              </StyledButton>
+            {/* Actions */}
+            <div className={cn("p-5 flex gap-3", isDark ? "border-t border-white/10" : "border-t border-gray-200")}>
+              <Button fullWidth onClick={() => setShowSummary(false)}>Edit</Button>
+              <Button
+                fullWidth
+                variant="primary"
+                onClick={confirmLaunch}
+                disabled={!accountProfile && !userWallet}
+              >
+                {!accountProfile && !userWallet ? 'Enter wallet address' : 'Launch'}
+              </Button>
             </div>
-          </Card>
-        </Container>
+          </div>
+        </div>
       )}
 
-      {/* Launch Status - Full page view */}
+      {/* Launch Status */}
       {launchStep && (
-        <Container>
-          <PageTitle>
-            {launchStep === 'initializing' && 'Initializing Token Launch'}
-            {launchStep === 'funding' && 'Fund Issuer Account'}
-            {launchStep === 'processing' && 'Creating Your Token'}
-            {launchStep === 'completed' && 'Token Launch Complete!'}
+        <div className="max-w-[640px] mx-auto px-5 py-4 w-full flex-1">
+          <h2 className="text-lg font-normal mb-3">
+            {launchStep === 'initializing' && 'Initializing...'}
+            {launchStep === 'funding' && 'Fund Issuer'}
+            {launchStep === 'processing' && 'Creating Token'}
+            {launchStep === 'completed' && 'Launch Complete'}
             {launchStep === 'error' && 'Launch Failed'}
-          </PageTitle>
+          </h2>
 
-          <Card>
+          <div className={cn("rounded-xl border p-4", isDark ? "border-white/10" : "border-gray-200")}>
           {launchStep === 'initializing' && (
-            <div className="text-center py-6">
+            <div className="text-center py-8">
               <Spinner />
-              <p className="mt-4">Setting up token parameters...</p>
+              <p className="mt-4 text-[13px] opacity-60">Setting up...</p>
             </div>
           )}
 
           {launchStep === 'funding' && sessionData && (
-            <div className="space-y-4">
-              <AlertBox severity={fundingProgress > 0 ? "info" : "warning"}>
-                <Info size={16} />
-                <div className="flex-1">
-                  <strong>{fundingProgress === 100 ? 'Funding Complete!' : 'Waiting for issuer account funding...'}</strong>
-                  <p className="text-[12px] mt-1 opacity-80">
-                    {fundingProgress === 100
-                      ? 'Proceeding with token creation...'
-                      : `The issuer account needs at least ${fundingAmount.required} XRP to continue (Testnet requirement)`}
-                  </p>
-                  {fundingBalance > 0 && fundingProgress < 100 && (
-                    <p className="text-[12px] mt-1 text-yellow-500">
-                      Partially funded - need {fundingAmount.required - fundingBalance} more XRP
-                    </p>
-                  )}
-                  <div className="mt-3">
-                    <div className="flex justify-between items-center mb-1 text-[12px]">
-                      <span>Balance: {fundingBalance} / {fundingAmount.required} XRP</span>
-                      {fundingProgress > 0 && (
-                        <span className={fundingProgress === 100 ? 'text-green-500' : ''}>
-                          {Math.round(fundingProgress)}%
-                        </span>
-                      )}
-                    </div>
-                    <ProgressBar value={fundingProgress} height="8px" />
-                  </div>
-                </div>
-              </AlertBox>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between text-[12px]">
+                <span className={fundingProgress === 100 ? 'text-green-500' : 'text-yellow-500'}>
+                  {fundingProgress === 100 ? 'Funded!' : 'Awaiting funding'}
+                </span>
+                <span className="opacity-60">{fundingBalance} / {fundingAmount.required} XRP</span>
+              </div>
+              <div className={cn("h-1.5 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
+                <div className="h-full bg-[#4285f4] transition-all" style={{ width: `${fundingProgress}%` }} />
+              </div>
 
-              <div className="p-4 rounded-lg border-[1.5px] border-white/10 space-y-4">
+              <div className={cn("p-3 rounded-lg space-y-3", isDark ? "bg-white/5" : "bg-gray-50")}>
                 <div>
-                  <p className="text-[12px] opacity-70 mb-2">
-                    1. Fund this issuer address with {fundingAmount.required}+ XRP:
-                  </p>
+                  <p className="text-[11px] opacity-50 mb-1">Fund this address:</p>
                   <div className="flex items-center gap-2">
-                    <code className="flex-1 p-2 rounded-lg bg-white/5 text-[13px] font-mono">
+                    <code className={cn("flex-1 p-2 rounded text-[11px] font-mono truncate", isDark ? "bg-black/30" : "bg-white")}>
                       {sessionData?.issuerAddress || 'Loading...'}
                     </code>
                     {sessionData?.issuerAddress && (
-                      <StyledButton
-                        size="small"
-                        onClick={() => {
-                          navigator.clipboard.writeText(sessionData.issuerAddress);
-                          openSnackbar?.('Address copied!', 'success');
-                        }}
-                      >
+                      <Button size="small" onClick={() => { navigator.clipboard.writeText(sessionData.issuerAddress); openSnackbar?.('Copied!', 'success'); }}>
                         <Copy size={14} />
-                      </StyledButton>
+                      </Button>
                     )}
                   </div>
                 </div>
 
-                <a
-                  href={`https://faucet.altnet.rippletest.net/?destination=${sessionData.issuerAddress}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-[#4285f4] text-white text-[15px]"
-                >
-                  Open Testnet Faucet
-                  <ExternalLink size={16} />
-                </a>
-
                 <div>
-                  <p className="text-[12px] opacity-70 mb-2">
-                    2. Your wallet address (for receiving tokens):
-                  </p>
+                  <p className="text-[11px] opacity-50 mb-1">Your wallet: {accountProfile && <span className="text-green-500">Connected</span>}</p>
                   <div className="flex items-center gap-2">
-                    {accountProfile && <CheckCircle size={16} className="text-green-500" />}
+                    {accountProfile && <CheckCircle size={14} className="text-green-500" />}
                     <input
                       type="text"
-                      placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                      placeholder="rXXX..."
                       value={userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '')}
                       onChange={(e) => setUserWallet(e.target.value)}
                       disabled={!!accountProfile}
-                      className={cn(
-                        "flex-1 px-3 py-2 rounded-lg border-[1.5px] text-[14px] bg-transparent",
-                        isDark ? "border-white/15" : "border-gray-300"
-                      )}
+                      className={cn("flex-1 px-2 py-1.5 rounded-lg border text-[12px] bg-transparent", isDark ? "border-white/10" : "border-gray-200")}
                     />
                   </div>
-                  <p className="text-[11px] opacity-50 mt-1">
-                    {accountProfile ? "Using connected wallet" : "Enter your wallet address"}
-                  </p>
                 </div>
               </div>
 
-              {/* Debug Info (collapsible) */}
-              <details open>
-                <summary className="cursor-pointer text-[13px] opacity-70">
-                  Session Debug Info
-                </summary>
-                <div className="mt-2 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
-                  <pre className="font-mono text-[11px] whitespace-pre-wrap">
-                    Session ID: {sessionData?.sessionId || 'N/A'}{'\n'}
-                    Status: {sessionData?.status || 'awaiting_funding'}{'\n'}
-                    Issuer: {sessionData?.issuerAddress || 'N/A'}{'\n'}
-                    {sessionData?.holderAddress && `Holder: ${sessionData.holderAddress}\n`}
-                    {sessionData?.ammAddress && `AMM: ${sessionData.ammAddress}\n`}
-                    {sessionData?.message && `Message: ${sessionData.message}\n`}
-                    Funding: {fundingBalance} / {fundingAmount.required} XRP ({Math.round(fundingProgress)}%)
-                  </pre>
-                </div>
-              </details>
+              <Button
+                fullWidth
+                onClick={async () => {
+                  if (!sessionData?.sessionId) return;
+                  try {
+                    const walletAddress = userWallet || accountProfile?.account || accountProfile?.address;
+                    await axios.delete(`https://api.xrpl.to/api/launch-token/${sessionData.sessionId}`, {
+                      data: { refundAddress: walletAddress }
+                    });
+                    openSnackbar?.('Launch cancelled', 'success');
+                  } catch (error) {
+                    openSnackbar?.(error.response?.data?.error || 'Cancel failed', 'error');
+                  }
+                  resetLaunchState();
+                }}
+              >
+                Cancel
+              </Button>
             </div>
           )}
 
           {launchStep === 'processing' && (
-            <div className="space-y-6">
-              <div className="text-center py-4">
+            <div className="space-y-4">
+              <div className="text-center py-6">
                 <Spinner />
-                <h3 className="text-lg mt-4 mb-1">Processing token launch...</h3>
-                <p className="text-[13px] opacity-60">This may take a few moments</p>
+                <p className="mt-3 text-[14px]">Processing...</p>
+                <p className="text-[12px] opacity-50">This may take a moment</p>
               </div>
 
-              {/* Current Step Alert */}
               {sessionData?.status && (
-                <AlertBox severity="info">
-                  <Info size={16} />
-                  <span>
-                    Current Step: {
-                      sessionData.status === 'funded' ? 'Funding received, starting launch...' :
-                      sessionData.status === 'configuring_issuer' ? 'Configuring issuer account...' :
-                      sessionData.status === 'creating_trustline' ? 'Creating trustline...' :
-                      sessionData.status === 'sending_tokens' ? 'Minting tokens...' :
-                      sessionData.status === 'creating_checks' ? 'Creating user check...' :
-                      sessionData.status === 'creating_amm' ? 'Creating AMM pool...' :
-                      sessionData.status === 'scheduling_blackhole' ? 'Finalizing and blackholing...' :
-                      'Processing...'
-                    }
-                  </span>
-                </AlertBox>
+                <Alert severity="info">
+                  <Info size={14} />
+                  {sessionData.status === 'funded' ? 'Starting launch...' :
+                   sessionData.status === 'configuring_issuer' ? 'Configuring issuer...' :
+                   sessionData.status === 'creating_trustline' ? 'Creating trustline...' :
+                   sessionData.status === 'sending_tokens' ? 'Minting tokens...' :
+                   sessionData.status === 'creating_checks' ? 'Creating check...' :
+                   sessionData.status === 'creating_amm' ? 'Creating AMM...' :
+                   sessionData.status === 'scheduling_blackhole' ? 'Finalizing...' : 'Processing...'}
+                </Alert>
               )}
 
-              {/* Progress Steps List */}
-              <div className="p-4 rounded-lg border-[1.5px] border-white/10 space-y-2">
-                <p className="text-[14px] opacity-80">• Setting up issuer account</p>
-                <p className="text-[14px] opacity-80">• Creating trustlines</p>
-                <p className="text-[14px] opacity-80">• Distributing tokens</p>
-                <p className="text-[14px] opacity-80">• Creating AMM pool</p>
-                <p className="text-[14px] opacity-80">• Blackholing accounts</p>
-              </div>
-
-              {/* Insufficient Funding Warning */}
               {launchLogs.some(log => log.message?.includes('Insufficient')) && (
-                <AlertBox severity="error">
-                  <strong>Insufficient Funding!</strong>
-                  <p className="text-[12px] mt-1">The issuer account needs more XRP. Please add at least 15 XRP to continue.</p>
-                </AlertBox>
+                <Alert severity="error">Insufficient funding - add more XRP</Alert>
               )}
 
-              {/* Debug Logs Toggle */}
-              <div className="text-center">
-                <button
-                  onClick={() => setShowDebugPanel(!showDebugPanel)}
-                  className="text-[14px] text-[#4285f4]"
-                >
-                  {showDebugPanel ? 'Hide' : 'Show'} Debug Logs ({launchLogs.length})
-                </button>
-              </div>
+              <button onClick={() => setShowDebugPanel(!showDebugPanel)} className="text-[12px] text-[#4285f4] w-full">
+                {showDebugPanel ? 'Hide' : 'Show'} logs ({launchLogs.length})
+              </button>
 
-              {/* Debug Logs Panel */}
               {showDebugPanel && launchLogs.length > 0 && (
-                <div className="p-4 max-h-[300px] overflow-auto bg-black/50 rounded-lg border-[1.5px] border-white/10 font-mono">
+                <div className={cn("p-3 max-h-[200px] overflow-auto rounded-lg font-mono text-[10px]", isDark ? "bg-black/50" : "bg-gray-100")}>
                   {launchLogs.map((log, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "text-[12px] leading-relaxed",
-                        log.level === 'error' ? 'text-red-500' :
-                        log.level === 'warn' ? 'text-yellow-500' :
-                        log.level === 'success' ? 'text-green-500' :
-                        'text-white/70'
-                      )}
-                    >
-                      <span className="opacity-50">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                      {' '}
-                      <span>[{log.level?.toUpperCase() || 'LOG'}]</span>
-                      {' '}
-                      {log.message}
+                    <div key={idx} className={cn(
+                      log.level === 'error' ? 'text-red-500' :
+                      log.level === 'warn' ? 'text-yellow-500' :
+                      log.level === 'success' ? 'text-green-500' : 'opacity-70'
+                    )}>
+                      [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
                     </div>
                   ))}
                 </div>
-              )}
-
-              {/* Session ID */}
-              {sessionData?.sessionId && (
-                <p className="text-center text-[12px] opacity-60">
-                  Session ID: {sessionData.sessionId}
-                </p>
               )}
             </div>
           )}
 
           {launchStep === 'completed' && sessionData && (
             <div className="space-y-4">
-              <AlertBox severity="success">
-                <CheckCircle size={16} />
-                Your token has been successfully launched on XRPL Testnet!
-              </AlertBox>
+              <Alert severity="success">
+                <CheckCircle size={14} />
+                Token launched on XRPL Testnet!
+              </Alert>
 
-              <div className="p-4 rounded-lg bg-green-500/5 border-[1.5px] border-green-500/20 space-y-2">
-                <p><strong>Token:</strong> {formData.tokenName} ({formData.ticker})</p>
-                <p><strong>Total Supply:</strong> {formData.tokenSupply.toLocaleString()}</p>
-                <p><strong>AMM Pool:</strong> {Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker} / {formData.ammXrpAmount} XRP</p>
+              <div className={cn("p-4 rounded-lg space-y-2 text-[13px]", isDark ? "bg-white/5" : "bg-gray-50")}>
+                <div className="flex justify-between"><span className="opacity-60">Token</span><span>{formData.tokenName} ({formData.ticker})</span></div>
+                <div className="flex justify-between"><span className="opacity-60">Supply</span><span>{formData.tokenSupply.toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="opacity-60">AMM Pool</span><span>{formData.ammXrpAmount} XRP</span></div>
               </div>
 
               {(sessionData.data?.userCheckId || sessionData.userCheckId) && (
-                <div className={cn(
-                  "p-4 rounded-lg border-[1.5px]",
-                  checkClaimed ? "bg-green-500/5 border-green-500/20" : "bg-blue-500/5 border-blue-500/20"
-                )}>
-                  <p className="font-medium mb-2">
-                    {checkClaimed ? 'Tokens Claimed' : 'Claim Your Tokens'}
-                  </p>
-                  <p className="text-[13px] opacity-80 mb-3">
+                <div className={cn("p-4 rounded-lg border", checkClaimed ? "border-green-500/20 bg-green-500/5" : "border-[#4285f4]/20 bg-[#4285f4]/5")}>
+                  <p className="text-[14px] font-medium mb-2">{checkClaimed ? 'Claimed' : 'Claim Tokens'}</p>
+                  <p className="text-[12px] opacity-70 mb-3">
                     {checkClaimed
-                      ? `You have successfully claimed ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} tokens`
-                      : `You have ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} tokens available to claim`
+                      ? `Claimed ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker}`
+                      : `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} available`
                     }
                   </p>
                   {!checkClaimed && (
-                    <AlertBox severity="info">
-                      <Info size={16} />
-                      {accountProfile
-                        ? 'Click the button below to claim your tokens. You will need to sign a CheckCash transaction.'
-                        : 'Connect your wallet to claim your tokens. You need to sign a CheckCash transaction.'
-                      }
-                    </AlertBox>
+                    <Alert severity="info" className="mb-3">
+                      <Info size={14} />
+                      {accountProfile ? 'Sign a CheckCash transaction to claim' : 'Connect wallet to claim'}
+                    </Alert>
                   )}
-                  {checkClaimed && (
-                    <AlertBox severity="success">
-                      <CheckCircle size={16} />
-                      Your tokens have been successfully claimed and are now in your wallet.
-                    </AlertBox>
-                  )}
-                  <StyledButton
-                    variant="contained"
+                  {checkClaimed && <Alert severity="success"><CheckCircle size={14} /> Tokens claimed!</Alert>}
+                  <Button
+                    variant="primary"
                     fullWidth
                     disabled={!accountProfile || checkClaimed || claiming}
                     onClick={async () => {
                       if (!accountProfile?.account) {
-                        openSnackbar?.('Please connect your wallet', 'error');
+                        openSnackbar?.('Connect your wallet', 'error');
                         return;
                       }
-
                       setClaiming(true);
                       try {
                         const ticker = formData.ticker || sessionData.currencyCode || sessionData.data?.currencyCode;
                         const supply = formData.tokenSupply || sessionData.tokenSupply || sessionData.data?.tokenSupply;
                         const checkPercent = formData.userCheckPercent || sessionData.userCheckPercent || sessionData.data?.userCheckPercent || 0;
-
                         if (!ticker) {
-                          openSnackbar?.('Currency code not found. Please try launching again.', 'error');
+                          openSnackbar?.('Currency code not found', 'error');
                           setClaiming(false);
                           return;
                         }
-
                         let wallet;
                         const walletStorage = new UnifiedWalletStorage();
-
                         if (accountProfile.seed) {
                           wallet = xrpl.Wallet.fromSeed(accountProfile.seed);
                         } else if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-                          const password = prompt('Enter your wallet password to sign the transaction:');
-                          if (!password) {
-                            setClaiming(false);
-                            return;
-                          }
+                          const password = prompt('Enter wallet password:');
+                          if (!password) { setClaiming(false); return; }
                           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
                           const walletData = await walletStorage.findWalletBySocialId(walletId, password);
-                          if (!walletData || !walletData.seed) {
-                            openSnackbar?.('Incorrect password or wallet not found', 'error');
-                            setClaiming(false);
-                            return;
-                          }
+                          if (!walletData?.seed) { openSnackbar?.('Incorrect password', 'error'); setClaiming(false); return; }
                           wallet = xrpl.Wallet.fromSeed(walletData.seed);
                         } else if (accountProfile.wallet_type === 'device') {
-                          const password = prompt('Enter your wallet password to sign the transaction:');
-                          if (!password) {
-                            setClaiming(false);
-                            return;
-                          }
+                          const password = prompt('Enter wallet password:');
+                          if (!password) { setClaiming(false); return; }
                           const wallets = await walletStorage.getWallets(password);
                           const walletData = wallets.find(w => w.address === accountProfile.account);
-                          if (!walletData || !walletData.seed) {
-                            openSnackbar?.('Incorrect password or wallet not found', 'error');
-                            setClaiming(false);
-                            return;
-                          }
+                          if (!walletData?.seed) { openSnackbar?.('Incorrect password', 'error'); setClaiming(false); return; }
                           wallet = xrpl.Wallet.fromSeed(walletData.seed);
                         } else {
                           openSnackbar?.('Wallet type not supported', 'error');
                           setClaiming(false);
                           return;
                         }
-
                         const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
                         await client.connect();
-
                         const checkCashTx = {
                           TransactionType: 'CheckCash',
                           Account: wallet.address,
@@ -1558,114 +1134,71 @@ function CreatePage() {
                             value: String(Math.floor(supply * (checkPercent / 100)))
                           }
                         };
-
                         const tx = await client.submitAndWait(checkCashTx, { autofill: true, wallet });
                         await client.disconnect();
-
                         if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
                           setCheckClaimed(true);
                           localStorage.removeItem('tokenLaunchSession');
-                          openSnackbar?.('Tokens claimed successfully!', 'success');
+                          openSnackbar?.('Tokens claimed!', 'success');
                         } else {
-                          openSnackbar?.('Failed to claim tokens: ' + tx.result.meta.TransactionResult, 'error');
+                          openSnackbar?.('Failed: ' + tx.result.meta.TransactionResult, 'error');
                         }
                       } catch (error) {
-                        console.error('Cash check error:', error);
                         if (error.message.includes('tecNO_ENTRY')) {
                           setCheckClaimed(true);
-                          openSnackbar?.('Check already claimed or expired', 'warning');
-                        } else if (error.message.includes('Incorrect password')) {
-                          openSnackbar?.('Incorrect password. Please try again.', 'error');
+                          openSnackbar?.('Already claimed', 'warning');
                         } else {
-                          openSnackbar?.('Error cashing check: ' + error.message, 'error');
+                          openSnackbar?.('Error: ' + error.message, 'error');
                         }
                       } finally {
                         setClaiming(false);
                       }
                     }}
-                    className="mt-3"
+                    className="mt-2"
                   >
-                    {claiming ? 'Claiming...' : checkClaimed ? 'Already Claimed' : accountProfile ? 'Cash Check & Claim Tokens' : 'Connect Wallet to Claim'}
-                  </StyledButton>
-                  <p className="text-[11px] opacity-50 mt-2">
-                    Check ID: {(sessionData.data?.userCheckId || sessionData.userCheckId)?.substring(0, 16)}...
-                  </p>
+                    {claiming ? 'Claiming...' : checkClaimed ? 'Claimed' : accountProfile ? 'Claim Tokens' : 'Connect Wallet'}
+                  </Button>
+                  <p className="text-[10px] opacity-40 mt-2">ID: {(sessionData.data?.userCheckId || sessionData.userCheckId)?.substring(0, 16)}...</p>
                 </div>
               )}
 
               <div className="flex gap-2">
-                <StyledButton size="small" fullWidth onClick={() => openInExplorer(sessionData.issuerAddress)}>
-                  View Issuer <ExternalLink size={14} className="ml-1" />
-                </StyledButton>
-                <StyledButton size="small" fullWidth onClick={() => openInExplorer(sessionData.ammAddress)}>
-                  View AMM <ExternalLink size={14} className="ml-1" />
-                </StyledButton>
+                <Button size="small" fullWidth onClick={() => openInExplorer(sessionData.issuerAddress)}>Issuer <ExternalLink size={12} /></Button>
+                <Button size="small" fullWidth onClick={() => openInExplorer(sessionData.ammAddress)}>AMM <ExternalLink size={12} /></Button>
               </div>
 
-              <StyledButton
-                variant="contained"
-                fullWidth
-                onClick={() => {
-                  resetLaunchState();
-                  setFormData({
-                    tokenName: '',
-                    ticker: '',
-                    description: '',
-                    twitter: '',
-                    telegram: '',
-                    website: '',
-                    image: null,
-                    ammXrpAmount: 10,
-                    tokenSupply: 1000000000,
-                    userCheckPercent: 0,
-                    antiSnipe: false
-                  });
-                  setFileName('');
-                  setImagePreview('');
-                }}
-              >
+              <Button variant="primary" fullWidth onClick={() => {
+                resetLaunchState();
+                setFormData({ tokenName: '', ticker: '', description: '', twitter: '', telegram: '', website: '', image: null, ammXrpAmount: 10, tokenSupply: 1000000000, userCheckPercent: 0, antiSnipe: false });
+                setFileName('');
+                setImagePreview('');
+              }}>
                 Done
-              </StyledButton>
+              </Button>
             </div>
           )}
 
           {launchStep === 'error' && (
             <div className="space-y-4">
-              <AlertBox severity="error">
-                {launchError || 'An error occurred during token launch'}
-              </AlertBox>
-
+              <Alert severity="error">{launchError || 'An error occurred'}</Alert>
               {launchLogs.length > 0 && (
-                <div className="p-3 max-h-[300px] overflow-auto rounded-lg border-[1.5px] border-white/10">
-                  <p className="text-[12px] font-medium mb-2">Error Logs:</p>
+                <div className={cn("p-3 max-h-[200px] overflow-auto rounded-lg font-mono text-[10px]", isDark ? "bg-black/30" : "bg-gray-100")}>
                   {launchLogs.map((log, idx) => (
-                    <div
-                      key={idx}
-                      className={cn(
-                        "p-1 rounded text-[11px] font-mono",
-                        log.level === 'error' ? 'bg-red-500/5 text-red-500' :
-                        log.level === 'warn' ? 'bg-yellow-500/5 text-yellow-500' :
-                        'opacity-70'
-                      )}
-                    >
-                      <span className="opacity-60">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
-                      {' '}{log.message}
+                    <div key={idx} className={cn(log.level === 'error' ? 'text-red-500' : log.level === 'warn' ? 'text-yellow-500' : 'opacity-60')}>
+                      [{new Date(log.timestamp).toLocaleTimeString()}] {log.message}
                     </div>
                   ))}
                 </div>
               )}
-
-              <StyledButton fullWidth onClick={() => resetLaunchState()}>
-                Close
-              </StyledButton>
+              <Button fullWidth onClick={resetLaunchState}>Close</Button>
             </div>
           )}
-          </Card>
-        </Container>
+          </div>
+        </div>
       )}
 
       <Footer />
-    </PageWrapper>
+    </div>
   );
 }
 
