@@ -401,13 +401,12 @@ const PriceChartAdvanced = memo(({ token }) => {
           dataRef.current = limitedData;
           setLastUpdate(new Date());
 
+          // Calculate ATH mcap from OHLC high price × supply
           const allTimeHigh = Math.max(...processedData.map((d) => d.high));
-          const currentPrice = processedData[processedData.length - 1].close;
-          const percentFromATH = (((currentPrice - allTimeHigh) / allTimeHigh) * 100).toFixed(2);
-
-          // Calculate ATH market cap: ATH price * supply
-          const supply = token.amount || 0;
+          const supply = parseFloat(token.amount) || 0;
           const athMcap = allTimeHigh * supply;
+          const currentMcap = token.marketcap || 0;
+          const percentFromATH = athMcap > 0 ? (((currentMcap - athMcap) / athMcap) * 100).toFixed(2) : 0;
 
           setAthData({
             price: allTimeHigh,
