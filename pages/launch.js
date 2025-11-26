@@ -646,7 +646,7 @@ function CreatePage() {
         </div>
 
         {/* Token Information */}
-        <div className={cn("rounded-xl border p-4 mb-3", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-[13px] font-normal">Token Information</h3>
             <span className="text-[10px] opacity-40">Required</span>
@@ -732,31 +732,32 @@ function CreatePage() {
           </div>
         </div>
 
-        {/* Liquidity */}
-        <div className={cn("rounded-xl border p-4 mb-3", isDark ? "border-white/10" : "border-gray-200")}>
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-[13px] font-normal">Initial Liquidity</h3>
-            <span className="text-[10px] opacity-40">Required</span>
+        {/* Liquidity + Social Links - Combined Row */}
+        <div className="flex gap-4 mb-4">
+          <div className={cn("rounded-xl border p-4 flex-1", isDark ? "border-white/10" : "border-gray-200")}>
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-[13px] font-normal">Initial Liquidity</h3>
+              <span className="text-[10px] opacity-40">Required</span>
+            </div>
+            <InputField
+              label="XRP for AMM pool"
+              type="number"
+              value={formData.ammXrpAmount}
+              onChange={handleInputChange('ammXrpAmount')}
+              error={formData.ammXrpAmount < 10}
+              helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : null}
+              isDark={isDark}
+              min={10}
+            />
           </div>
-          <InputField
-            label="XRP for AMM pool"
-            type="number"
-            value={formData.ammXrpAmount}
-            onChange={handleInputChange('ammXrpAmount')}
-            error={formData.ammXrpAmount < 10}
-            helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : null}
-            isDark={isDark}
-            min={10}
-          />
-        </div>
 
-        {/* Social Links */}
-        <div className={cn("rounded-xl border p-4 mb-3", isDark ? "border-white/10" : "border-gray-200")}>
+          {/* Social Links */}
+          <div className={cn("rounded-xl border p-4 flex-[2]", isDark ? "border-white/10" : "border-gray-200")}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-[13px] font-normal">Social Links</h3>
             <span className="text-[10px] opacity-40">Optional</span>
           </div>
-          <div className="flex gap-3">
+          <div className="space-y-2">
             <InputField
               label="Website"
               placeholder="https://example.com"
@@ -766,27 +767,53 @@ function CreatePage() {
               helperText={errors.website}
               isDark={isDark}
             />
-            <InputField
-              label="Telegram"
-              placeholder="t.me/channel"
-              value={formData.telegram}
-              onChange={handleInputChange('telegram')}
-              isDark={isDark}
-              className="max-w-[120px]"
-            />
-            <InputField
-              label="Twitter/X"
-              placeholder="@handle"
-              value={formData.twitter}
-              onChange={handleInputChange('twitter')}
-              isDark={isDark}
-              className="max-w-[120px]"
-            />
+            <div className="flex gap-3">
+              <InputField
+                label="Telegram"
+                placeholder="t.me/channel"
+                value={formData.telegram}
+                onChange={handleInputChange('telegram')}
+                isDark={isDark}
+              />
+              <InputField
+                label="Twitter/X"
+                placeholder="@handle"
+                value={formData.twitter}
+                onChange={handleInputChange('twitter')}
+                isDark={isDark}
+              />
+            </div>
+          </div>
           </div>
         </div>
 
+        {/* Cost Summary */}
+        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="text-[13px] font-normal">Cost Breakdown</h3>
+            <span className="text-[13px] font-medium text-[#4285f4]">
+              ~{Math.ceil(9 + formData.ammXrpAmount)} XRP
+            </span>
+          </div>
+          <div className="space-y-1 text-[11px]">
+            <div className="flex justify-between opacity-60">
+              <span>Platform fee</span><span>5 XRP</span>
+            </div>
+            <div className="flex justify-between opacity-60">
+              <span>Account reserves</span><span>~2.4 XRP</span>
+            </div>
+            <div className="flex justify-between opacity-60">
+              <span>AMM liquidity</span><span>{formData.ammXrpAmount} XRP</span>
+            </div>
+            <div className="flex justify-between opacity-60">
+              <span>Tx fees + buffer</span><span>~1.4 XRP</span>
+            </div>
+          </div>
+          <p className="text-[10px] opacity-40 mt-2">Excess XRP refunded after launch</p>
+        </div>
+
         {/* Token Image */}
-        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("rounded-xl border p-4 mb-5", isDark ? "border-white/10" : "border-gray-200")}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-[13px] font-normal">Token Image</h3>
             <span className="text-[10px] opacity-40">Recommended</span>
