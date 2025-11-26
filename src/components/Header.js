@@ -232,7 +232,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   ];
 
   const analyticsItems = [
-    { path: '/market-metrics', name: 'Market Metrics', icon: <Trophy size={16} className="text-orange-500" /> },
     { path: '/rsi-analysis', name: 'RSI Analysis', icon: <TrendingUp size={16} className="text-blue-500" /> },
     { path: '/amm-pools', name: 'AMM Pools', icon: <Waves size={16} className="text-cyan-500" /> },
     ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist', icon: <Star size={16} className="text-yellow-500" /> }] : [])

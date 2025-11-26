@@ -22,12 +22,12 @@ import Decimal from 'decimal.js-light';
 const Controls = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-bottom: 20px;
-  padding: 20px;
+  gap: 14px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
   background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.95)'};
   border-radius: 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   width: 100%;
 `;
 
@@ -100,30 +100,30 @@ const ActiveFilters = styled.div`
 const FilterChip = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 8px;
-  background: ${p => p.darkMode ? 'rgba(33,150,243,0.15)' : 'rgba(33,150,243,0.1)'};
+  gap: 4px;
+  padding: 4px 10px;
+  background: ${p => p.darkMode ? 'rgba(33,150,243,0.1)' : 'rgba(33,150,243,0.08)'};
   color: #2196f3;
-  border-radius: 12px;
-  font-size: 12px;
+  border-radius: 6px;
+  font-size: 11px;
   font-weight: 400;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
 
   &:hover {
-    background: ${p => p.darkMode ? 'rgba(33,150,243,0.25)' : 'rgba(33,150,243,0.2)'};
+    background: ${p => p.darkMode ? 'rgba(33,150,243,0.18)' : 'rgba(33,150,243,0.15)'};
   }
 
   &::after {
     content: '×';
-    font-size: 14px;
-    font-weight: bold;
-    opacity: 0.7;
+    font-size: 12px;
+    font-weight: 500;
+    opacity: 0.6;
+    margin-left: 2px;
   }
 
   @media (max-width: 768px) {
-    padding: 6px 10px;
-    font-size: 11px;
+    padding: 5px 10px;
   }
 `;
 
@@ -149,74 +149,82 @@ const SearchInput = styled.input`
 `;
 
 const Button = styled.button`
-  padding: 10px 18px;
-  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : 'rgba(145,158,171,0.15)'};
-  border-radius: 12px;
-  background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
-  color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
+  padding: 8px 14px;
+  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.25)' : p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
+  background: ${p => p.selected ? 'rgba(33,150,243,0.08)' : 'transparent'};
+  color: ${p => p.selected ? '#2196f3' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
   cursor: pointer;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 400;
-  transition: all 0.2s;
+  transition: all 0.15s;
 
   &:hover {
-    background: ${p => p.selected ? 'rgba(33,150,243,0.15)' : p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'};
+    border-color: ${p => p.selected ? 'rgba(33,150,243,0.35)' : p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+    background: ${p => p.selected ? 'rgba(33,150,243,0.12)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'};
   }
 `;
 
 const Select = styled.select`
-  padding: 10px 16px;
-  padding-right: 32px;
-  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.3)' : p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
-  border-radius: 12px;
-  background: ${p => p.selected ? 'rgba(33,150,243,0.1)' : p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
-  color: ${p => p.selected ? '#2196f3' : p.darkMode ? '#fff' : '#333'};
-  font-size: 14px;
-  font-weight: ${p => p.selected ? '600' : '400'};
+  padding: 8px 14px;
+  padding-right: 30px;
+  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.25)' : p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
+  background: ${p => p.selected ? 'rgba(33,150,243,0.08)' : p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'};
+  color: ${p => p.selected ? '#2196f3' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+  font-size: 13px;
+  font-weight: 400;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  background-size: 16px;
-  transition: all 0.2s;
+  background-position: right 8px center;
+  background-size: 14px;
+  transition: all 0.15s;
 
   &:hover {
-    border-color: ${p => p.selected ? 'rgba(33,150,243,0.4)' : p.darkMode ? 'rgba(255,255,255,0.25)' : 'rgba(145,158,171,0.3)'};
+    border-color: ${p => p.selected ? 'rgba(33,150,243,0.35)' : p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
   }
 `;
 
 const FilterInput = styled.input`
   padding: 8px 12px;
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(145,158,171,0.2)'};
+  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   border-radius: 8px;
-  background: ${p => p.darkMode ? 'rgba(17,24,39,0.8)' : 'rgba(255,255,255,0.95)'};
-  color: ${p => p.darkMode ? '#fff' : '#333'};
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'};
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'};
   font-size: 13px;
   width: 100px;
+  transition: all 0.15s;
 
   &::placeholder {
-    color: ${p => p.darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+    color: ${p => p.darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'};
+  }
+
+  &:focus {
+    outline: none;
+    border-color: rgba(33,150,243,0.35);
   }
 `;
 
 const Label = styled.span`
-  font-size: 13px;
-  color: ${p => p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
-  font-weight: 400;
+  font-size: 11px;
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.45)'};
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   white-space: nowrap;
 `;
 
 const HeatMap = styled.div`
   width: 100%;
-  height: 350px;
-  background: ${p => p.darkMode ? '#1a1a1a' : '#fff'};
+  height: 320px;
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : '#fff'};
   border-radius: 12px;
   border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   margin-bottom: 20px;
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 `;
 
 const Canvas = styled.canvas`
@@ -227,18 +235,17 @@ const Canvas = styled.canvas`
 
 const CustomTooltip = styled.div`
   position: fixed;
-  background: ${p => p.darkMode ? 'rgba(17,24,39,0.95)' : 'rgba(255,255,255,0.95)'};
-  border: 1.5px solid ${p => p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  background: ${p => p.darkMode ? 'rgba(0,0,0,0.9)' : 'rgba(255,255,255,0.95)'};
+  border: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'};
   border-radius: 8px;
-  padding: 8px 12px;
+  padding: 10px 14px;
   font-size: 12px;
   color: ${p => p.darkMode ? '#fff' : '#333'};
   pointer-events: none;
   z-index: 1000;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  backdrop-filter: blur(8px);
   white-space: nowrap;
-  transform: translate(10px, -50%);
+  transform: translate(12px, -50%);
 `;
 
 const TableWrapper = styled.div`
@@ -257,21 +264,21 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  padding: 16px;
+  padding: 14px 16px;
   text-align: ${p => p.align || 'left'};
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 500;
+  font-size: 11px;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: ${p => p.darkMode ? '#bbb' : '#666'};
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-  border-bottom: 2px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  letter-spacing: 0.5px;
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  border-bottom: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   cursor: ${p => p.sortable ? 'pointer' : 'default'};
+  white-space: nowrap;
 
   &:hover {
     ${p => p.sortable && `
-      color: ${p.darkMode ? '#fff' : '#000'};
-      background: ${p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+      color: ${p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'};
     `}
   }
 `;
@@ -331,22 +338,18 @@ const RSIBadge = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px 12px;
-  border-radius: 8px;
-  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-weight: 500;
   font-size: 13px;
-  min-width: 50px;
+  min-width: 48px;
   background: ${p => p.bg};
   color: ${p => p.color};
-  border: 1.5px solid ${p => p.border};
 `;
 
 const PriceChange = styled.span`
-  color: ${p => p.positive ? '#4caf50' : '#f44336'};
-  font-weight: 600;
-  padding: 4px 8px;
-  border-radius: 6px;
-  background: ${p => p.positive ? 'rgba(76,175,80,0.1)' : 'rgba(244,67,54,0.1)'};
+  color: ${p => p.positive ? '#22c55e' : '#ef4444'};
+  font-weight: 500;
   font-size: 13px;
 `;
 
@@ -674,41 +677,9 @@ function RSIAnalysisPage({ data }) {
         ctx.fillStyle = color;
         ctx.fill();
 
-        ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+        ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)';
         ctx.lineWidth = 1;
         ctx.stroke();
-
-        // Add token name as flag
-        if (token.name) {
-          const flagX = x + size + 8;
-          const flagY = y - 2;
-
-          // Flag background
-          ctx.font = '11px Arial';
-          ctx.textAlign = 'left';
-          const textWidth = ctx.measureText(token.name.substring(0, 12)).width;
-
-          ctx.fillStyle = darkMode ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.9)';
-          ctx.fillRect(flagX - 2, flagY - 8, textWidth + 6, 16);
-
-          // Flag border
-          ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
-          ctx.lineWidth = 0.5;
-          ctx.strokeRect(flagX - 2, flagY - 8, textWidth + 6, 16);
-
-          // Flag text
-          ctx.fillStyle = darkMode ? '#fff' : '#333';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(token.name.substring(0, 12), flagX, flagY);
-
-          // Connector line
-          ctx.strokeStyle = darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)';
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(x + size, y);
-          ctx.lineTo(flagX - 2, flagY);
-          ctx.stroke();
-        }
       });
     }
 
@@ -759,7 +730,7 @@ function RSIAnalysisPage({ data }) {
         RSI Analysis for XRPL Tokens
       </h1>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="container mx-auto max-w-[1600px] px-4">
         <Controls darkMode={darkMode}>
               <ControlRow>
                 <MobileSection>
@@ -883,13 +854,14 @@ function RSIAnalysisPage({ data }) {
               />
               <div style={{
                 position: 'absolute',
-                top: '20px',
+                top: '16px',
                 left: '20px',
-                fontSize: '18px',
-                fontWeight: '600',
-                color: darkMode ? '#fff' : '#000'
+                fontSize: '14px',
+                fontWeight: '500',
+                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+                letterSpacing: '0.3px'
               }}>
-                RSI Heatmap - {params.timeframe.toUpperCase()}
+                RSI Heatmap · {params.timeframe.toUpperCase()}
               </div>
               {tooltip.visible && tooltip.data && (
                 <CustomTooltip
