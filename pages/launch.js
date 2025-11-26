@@ -11,15 +11,15 @@ import { Twitter, Send, Globe, Upload, CheckCircle, Info, Copy, ExternalLink, Lo
 // Reusable InputField component
 const InputField = ({ label, value, onChange, placeholder, error, helperText, counter, counterError, isDark, multiline, rows, type = 'text', min, max, className }) => (
   <div className={cn("flex-1", className)}>
-    <label className="block text-[12px] opacity-60 mb-1.5">{label}</label>
+    <label className="block text-[11px] opacity-60 mb-1">{label}</label>
     {multiline ? (
       <textarea
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        rows={rows || 3}
+        rows={rows || 2}
         className={cn(
-          "w-full px-3 py-2.5 rounded-lg border text-[14px] bg-transparent resize-none transition-colors",
+          "w-full px-2.5 py-2 rounded-lg border text-[13px] bg-transparent resize-none transition-colors",
           error ? "border-red-500/40" : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300",
           "focus:outline-none focus:border-[#4285f4] placeholder:opacity-40"
         )}
@@ -33,16 +33,16 @@ const InputField = ({ label, value, onChange, placeholder, error, helperText, co
         min={min}
         max={max}
         className={cn(
-          "w-full px-3 py-2.5 rounded-lg border text-[14px] bg-transparent transition-colors",
+          "w-full px-2.5 py-2 rounded-lg border text-[13px] bg-transparent transition-colors",
           error ? "border-red-500/40" : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300",
           "focus:outline-none focus:border-[#4285f4] placeholder:opacity-40"
         )}
       />
     )}
     {(helperText || counter) && (
-      <div className="flex justify-between mt-1">
-        <span className={cn("text-[11px] opacity-50", error && "text-red-500 opacity-100")}>{helperText}</span>
-        {counter && <span className={cn("text-[11px]", counterError ? "text-red-500" : "opacity-40")}>{counter}</span>}
+      <div className="flex justify-between mt-0.5">
+        <span className={cn("text-[10px] opacity-50", error && "text-red-500 opacity-100")}>{helperText}</span>
+        {counter && <span className={cn("text-[10px]", counterError ? "text-red-500" : "opacity-40")}>{counter}</span>}
       </div>
     )}
   </div>
@@ -55,7 +55,7 @@ const Button = ({ children, onClick, disabled, variant = 'outline', size = 'defa
     disabled={disabled}
     className={cn(
       "rounded-lg font-normal transition-colors flex items-center justify-center gap-2",
-      size === 'small' ? "px-3 py-1.5 text-[13px]" : "px-5 py-3 text-[14px]",
+      size === 'small' ? "px-3 py-1.5 text-[12px]" : "px-4 py-2.5 text-[13px]",
       variant === 'primary'
         ? "bg-[#4285f4] text-white border border-[#4285f4] hover:bg-[#3b78e7]"
         : "bg-transparent text-[#4285f4] border border-[#4285f4]/20 hover:border-[#4285f4]/40 hover:bg-[#4285f4]/5",
@@ -77,7 +77,7 @@ const Alert = ({ severity = 'info', children, className }) => {
     info: "border-[#4285f4]/20 bg-[#4285f4]/5 text-[#4285f4]"
   };
   return (
-    <div className={cn("p-3 rounded-lg border flex items-start gap-3 text-[13px]", styles[severity], className)}>
+    <div className={cn("px-3 py-2 rounded-lg border flex items-start gap-2 text-[12px]", styles[severity], className)}>
       {children}
     </div>
   );
@@ -628,36 +628,31 @@ function CreatePage() {
 
       {/* Main Form */}
       {!launchStep && !showSummary && (
-      <div className="max-w-[640px] mx-auto px-5 py-10 w-full flex-1">
-        <div className="mb-8">
-          <h2 className="text-xl font-normal mb-1">Launch Token</h2>
-          <p className="text-[13px] opacity-50">Deploy your token on the XRP Ledger</p>
-        </div>
-
-        {/* Progress */}
-        <div className="mb-6">
-          <div className="flex justify-between mb-2">
-            {['Basic Info', 'Socials', 'Media'].map((step, i) => (
-              <span key={step} className={cn(
-                "text-[12px]",
-                (i === 0 || (i === 1 && (formData.twitter || formData.telegram || formData.website)) || (i === 2 && formData.image))
-                  ? "text-[#4285f4]" : "opacity-30"
-              )}>{i + 1}. {step}</span>
-            ))}
+      <div className="max-w-[640px] mx-auto px-5 py-6 w-full flex-1">
+        <div className="mb-4 flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-normal mb-0.5">Launch Token</h2>
+            <p className="text-[12px] opacity-50">Deploy your token on the XRP Ledger</p>
           </div>
-          <div className={cn("h-1 rounded-full", isDark ? "bg-white/10" : "bg-gray-200")}>
-            <div className="h-full bg-[#4285f4] rounded-full transition-all" style={{ width: `${(getCompletionStatus() / 5) * 100}%` }} />
+          <div className="flex items-center gap-2">
+            {['Basic', 'Social', 'Media'].map((step, i) => (
+              <span key={step} className={cn(
+                "text-[11px] px-2 py-0.5 rounded",
+                (i === 0 || (i === 1 && (formData.twitter || formData.telegram || formData.website)) || (i === 2 && formData.image))
+                  ? "text-[#4285f4] bg-[#4285f4]/10" : "opacity-30"
+              )}>{step}</span>
+            ))}
           </div>
         </div>
 
         {/* Token Information */}
-        <div className={cn("rounded-xl border p-5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[14px] font-normal">Token Information</h3>
-            <span className="text-[11px] opacity-40">Required</span>
+        <div className={cn("rounded-xl border p-4 mb-3", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-[13px] font-normal">Token Information</h3>
+            <span className="text-[10px] opacity-40">Required</span>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex gap-3">
               <InputField
                 label="Token name"
@@ -720,27 +715,28 @@ function CreatePage() {
               />
             </div>
 
-            {formData.userCheckPercent === 0 && (
-              <Alert severity="warning">100% of tokens will go to the AMM pool</Alert>
-            )}
-
-            <label className="flex items-center gap-2 cursor-pointer text-[13px]">
-              <input
-                type="checkbox"
-                checked={formData.antiSnipe}
-                onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
-                className="w-4 h-4 rounded"
-              />
-              Anti-snipe mode (RequireAuth)
-            </label>
+            <div className="flex items-center gap-4">
+              {formData.userCheckPercent === 0 && (
+                <span className="text-[11px] text-yellow-500">100% goes to AMM</span>
+              )}
+              <label className="flex items-center gap-2 cursor-pointer text-[12px] ml-auto">
+                <input
+                  type="checkbox"
+                  checked={formData.antiSnipe}
+                  onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
+                  className="w-3.5 h-3.5 rounded"
+                />
+                Anti-snipe
+              </label>
+            </div>
           </div>
         </div>
 
         {/* Liquidity */}
-        <div className={cn("rounded-xl border p-5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[14px] font-normal">Initial Liquidity</h3>
-            <span className="text-[11px] opacity-40">Required</span>
+        <div className={cn("rounded-xl border p-4 mb-3", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-[13px] font-normal">Initial Liquidity</h3>
+            <span className="text-[10px] opacity-40">Required</span>
           </div>
           <InputField
             label="XRP for AMM pool"
@@ -755,12 +751,12 @@ function CreatePage() {
         </div>
 
         {/* Social Links */}
-        <div className={cn("rounded-xl border p-5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[14px] font-normal">Social Links</h3>
-            <span className="text-[11px] opacity-40">Optional</span>
+        <div className={cn("rounded-xl border p-4 mb-3", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-[13px] font-normal">Social Links</h3>
+            <span className="text-[10px] opacity-40">Optional</span>
           </div>
-          <div className="space-y-3">
+          <div className="flex gap-3">
             <InputField
               label="Website"
               placeholder="https://example.com"
@@ -770,30 +766,30 @@ function CreatePage() {
               helperText={errors.website}
               isDark={isDark}
             />
-            <div className="flex gap-3">
-              <InputField
-                label="Telegram"
-                placeholder="t.me/channel"
-                value={formData.telegram}
-                onChange={handleInputChange('telegram')}
-                isDark={isDark}
-              />
-              <InputField
-                label="Twitter/X"
-                placeholder="@handle"
-                value={formData.twitter}
-                onChange={handleInputChange('twitter')}
-                isDark={isDark}
-              />
-            </div>
+            <InputField
+              label="Telegram"
+              placeholder="t.me/channel"
+              value={formData.telegram}
+              onChange={handleInputChange('telegram')}
+              isDark={isDark}
+              className="max-w-[120px]"
+            />
+            <InputField
+              label="Twitter/X"
+              placeholder="@handle"
+              value={formData.twitter}
+              onChange={handleInputChange('twitter')}
+              isDark={isDark}
+              className="max-w-[120px]"
+            />
           </div>
         </div>
 
         {/* Token Image */}
-        <div className={cn("rounded-xl border p-5 mb-6", isDark ? "border-white/10" : "border-gray-200")}>
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-[14px] font-normal">Token Image</h3>
-            <span className="text-[11px] opacity-40">Recommended</span>
+        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className="flex justify-between items-center mb-3">
+            <h3 className="text-[13px] font-normal">Token Image</h3>
+            <span className="text-[10px] opacity-40">Recommended</span>
           </div>
 
           <div
@@ -802,25 +798,29 @@ function CreatePage() {
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={cn(
-              "border border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors",
+              "border border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
               dragging ? "border-[#4285f4] bg-[#4285f4]/5" : imagePreview ? "border-green-500/30" : isDark ? "border-white/15 hover:border-white/25" : "border-gray-300 hover:border-gray-400"
             )}
           >
             {imagePreview ? (
-              <div className="flex flex-col items-center">
-                <img src={imagePreview} alt="Preview" className="w-20 h-20 rounded-lg object-cover mb-2" />
-                <p className="text-green-500 text-[13px]">{fileName}</p>
-                <p className="text-[11px] opacity-50 mt-1">Click to replace</p>
+              <div className="flex items-center gap-3 justify-center">
+                <img src={imagePreview} alt="Preview" className="w-12 h-12 rounded-lg object-cover" />
+                <div className="text-left">
+                  <p className="text-green-500 text-[12px]">{fileName}</p>
+                  <p className="text-[10px] opacity-50">Click to replace</p>
+                </div>
               </div>
             ) : (
-              <>
-                <Upload size={28} className="mx-auto opacity-20 mb-3" />
-                <p className="text-[13px] opacity-60">Drop image or click to browse</p>
-                <p className="text-[11px] opacity-40 mt-1">PNG, JPG, GIF, WEBP • Max 15MB</p>
-              </>
+              <div className="flex items-center gap-3 justify-center">
+                <Upload size={20} className="opacity-20" />
+                <div className="text-left">
+                  <p className="text-[12px] opacity-60">Drop image or click to browse</p>
+                  <p className="text-[10px] opacity-40">PNG, JPG, GIF, WEBP • Max 15MB</p>
+                </div>
+              </div>
             )}
           </div>
-          {errors.file && <p className="text-red-500 text-[11px] mt-2">{errors.file}</p>}
+          {errors.file && <p className="text-red-500 text-[10px] mt-1">{errors.file}</p>}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInputChange} className="hidden" />
         </div>
 
