@@ -256,7 +256,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
           onError={() => setErrored(true)}
           src={thumbnailUrl}
           alt={NFTName}
-          fetchpriority={thumbnailUrl?.includes('ipfs.io') ? 'low' : 'auto'}
+          fetchPriority={thumbnailUrl?.includes('ipfs.io') ? 'low' : 'auto'}
         />
       </div>
     );

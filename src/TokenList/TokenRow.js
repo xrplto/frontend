@@ -1053,7 +1053,7 @@ const DesktopTokenRow = ({
                 <StyledCell
                   key="sparkline"
                   align="right"
-                  darkMode={darkMode}
+                  isDark={darkMode}
                   style={{ minWidth: '280px', paddingLeft: '16px' }}
                 >
                   {sparklineUrl ? (
@@ -1223,7 +1223,7 @@ const FTokenRow = memo(
     customColumns = [],
     rows = 50
   }) {
-    const BASE_URL = process.env.API_URL;
+    const BASE_URL = 'https://api.xrpl.to/api';
     const { accountProfile } = useContext(AppContext);
     const isAdmin = accountProfile && accountProfile.account && accountProfile.admin;
 

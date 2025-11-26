@@ -104,10 +104,15 @@ const FooterLink = ({ href, children, isDark }) => {
     );
   }
   return (
-    <NextLink href={href} passHref legacyBehavior>
-      <Link isDark={isDark}>
-        {children}
-      </Link>
+    <NextLink href={href} className={`footer-link ${isDark ? 'dark' : 'light'}`} style={{
+      textDecoration: 'none',
+      color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
+      fontSize: '0.95rem',
+      fontWeight: 400,
+      padding: '4px 8px',
+      borderRadius: '8px'
+    }}>
+      {children}
     </NextLink>
   );
 };
@@ -175,10 +180,8 @@ function Footer() {
       <Container px="32px" py="14px" pb="20px">
         <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
           <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <NextLink href="/" passHref legacyBehavior>
-              <Link isDark={isDark} style={{ display: 'inline-flex' }}>
-                <Logo alt="XRPL.to" style={{ width: '70px', height: 'auto' }} />
-              </Link>
+            <NextLink href="/" style={{ display: 'inline-flex', textDecoration: 'none' }}>
+              <Logo alt="XRPL.to" style={{ width: '70px', height: 'auto' }} />
             </NextLink>
             <Typography
               variant="body2"

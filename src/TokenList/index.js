@@ -185,7 +185,7 @@ function TokenListComponent({
 
   // Enable WebSocket for real-time updates
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const BASE_URL = process.env.API_URL;
+  const BASE_URL = 'https://api.xrpl.to/api';
 
   const [filterName, setFilterName] = useState('');
   const [search, setSearch] = useState('');
@@ -1128,7 +1128,7 @@ function TokenListComponent({
               viewMode={viewMode}
               customColumns={customColumns}
             />
-            <StyledTableBody isMobile={isMobile}>
+            <StyledTableBody isMobile={isMobile} darkMode={darkMode}>
               {deferredTokens.map((row, idx) => (
                 <MemoizedTokenRow
                   key={row.md5}

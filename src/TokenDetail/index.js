@@ -93,6 +93,11 @@ const TokenDetail = memo(
       });
     }, [onTransactionPanelToggle]);
 
+    // Handle orderbook data updates from Swap component
+    const handleOrderBookData = useCallback((data) => {
+      setOrderBookData((prev) => ({ ...prev, ...data }));
+    }, []);
+
     // Handle orderbook panel toggle - batched updates
     const handleOrderBookToggle = useCallback(() => {
       const isOpen = txDetailsOpen && panelMode === 'orderbook';
@@ -160,7 +165,7 @@ const TokenDetail = memo(
             onTransactionClick={handleSelectTransaction}
             onOrderBookToggle={handleOrderBookToggle}
             orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
-            onOrderBookData={(data) => setOrderBookData((prev) => ({ ...prev, ...data }))}
+            onOrderBookData={handleOrderBookData}
           />
         </div>
 

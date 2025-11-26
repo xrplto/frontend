@@ -386,8 +386,19 @@ const NFTGrid = React.memo(({ collection }) => {
       .then((res) => {
         const newNfts = res.data.nfts || [];
         setHasMore(newNfts.length === limit);
-        setNfts((prev) => (page === 0 ? newNfts : [...prev, ...newNfts]));
-        setDeletingNfts((prev) => (page === 0 ? newNfts : [...prev, ...newNfts]));
+        setNfts((prev) => {
+          if (page === 0) return newNfts;
+          // Deduplicate by NFTokenID to prevent duplicate key warnings
+          const existingIds = new Set(prev.map((n) => n.NFTokenID));
+          const uniqueNew = newNfts.filter((n) => !existingIds.has(n.NFTokenID));
+          return [...prev, ...uniqueNew];
+        });
+        setDeletingNfts((prev) => {
+          if (page === 0) return newNfts;
+          const existingIds = new Set(prev.map((n) => n.NFTokenID));
+          const uniqueNew = newNfts.filter((n) => !existingIds.has(n.NFTokenID));
+          return [...prev, ...uniqueNew];
+        });
       })
       .catch((err) => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
