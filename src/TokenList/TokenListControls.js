@@ -339,7 +339,7 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'pro5m',
-    label: '5M %',
+    label: '5M',
     align: 'right',
     width: '7%',
     order: true,
@@ -349,7 +349,7 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'pro1h',
-    label: '1H %',
+    label: '1H',
     align: 'right',
     width: '7%',
     order: true,
@@ -359,7 +359,7 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'pro24h',
-    label: '24H %',
+    label: '24H',
     align: 'right',
     width: '7%',
     order: true,
@@ -369,7 +369,7 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'pro7d',
-    label: '7D %',
+    label: '7D',
     align: 'right',
     width: '7%',
     order: true,
@@ -379,33 +379,33 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'vol24hxrp',
-    label: 'VOLUME',
+    label: 'VOL',
     align: 'right',
     width: '8%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '24h volume in XRP'
+    tooltip: '24h volume'
   },
   {
     id: 'dateon',
-    label: 'CREATED',
+    label: 'AGE',
     align: 'right',
     width: '8%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Token creation date'
+    tooltip: 'Token age'
   },
   {
     id: 'vol24htx',
-    label: 'TRADES',
+    label: 'TXS',
     align: 'right',
     width: '7%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '24h trade count'
+    tooltip: '24h trades'
   },
   {
     id: 'tvl',
@@ -419,38 +419,38 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'marketcap',
-    label: 'MARKET CAP',
+    label: 'MCAP',
     align: 'right',
     width: '10%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Market capitalization'
+    tooltip: 'Market cap'
   },
   {
     id: 'holders',
-    label: 'HOLDERS',
+    label: 'HLDR',
     align: 'right',
     width: '10%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Number of holders'
+    tooltip: 'Holders'
   },
   {
     id: 'origin',
-    label: 'ORIGIN',
+    label: 'SRC',
     align: 'right',
     width: '13%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Token origin',
+    tooltip: 'Origin',
     style: { paddingRight: '16px' }
   },
   {
     id: 'historyGraph',
-    label: 'LAST 24H',
+    label: 'CHART',
     align: 'right',
     width: '15%',
     order: false,
@@ -500,15 +500,15 @@ export const TokenListHead = memo(function TokenListHead({
         marketCap: 'MCAP',
         tvl: 'TVL',
         holders: 'HLDR',
-        trades: 'TRDS',
-        supply: 'SUPP',
+        trades: 'TXS',
+        supply: 'SUPPLY',
         created: 'AGE',
-        origin: 'ORIG',
-        pro5m: '5M%',
-        pro1h: '1H%',
-        pro24h: '24H%',
-        pro7d: '7D%',
-        pro30d: '30D%'
+        origin: 'SRC',
+        pro5m: '5M',
+        pro1h: '1H',
+        pro24h: '24H',
+        pro7d: '7D',
+        pro30d: '30D'
       };
 
       // Always use customColumns when available, regardless of viewMode
@@ -590,7 +590,7 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'pro1h',
-            label: '1H %',
+            label: '1H',
             align: 'right',
             width: '8%',
             order: true,
@@ -598,7 +598,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro24h',
-            label: '24H %',
+            label: '24H',
             align: 'right',
             width: '8%',
             order: true,
@@ -606,7 +606,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro7d',
-            label: '7D %',
+            label: '7D',
             align: 'right',
             width: '8%',
             order: true,
@@ -614,7 +614,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro30d',
-            label: '30D %',
+            label: '30D',
             align: 'right',
             width: '8%',
             order: true,
@@ -622,7 +622,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol24hxrp',
-            label: 'VOL 24H',
+            label: 'VOL',
             align: 'right',
             width: '10%',
             order: true,
@@ -630,13 +630,13 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol7d',
-            label: 'VOL 7D',
+            label: 'V7D',
             align: 'right',
             width: '10%',
             order: true,
-            tooltip: '7d volume estimate'
+            tooltip: '7d volume'
           },
-          { id: 'historyGraph', label: 'SPARKLINE', align: 'center', width: '15%', order: false }
+          { id: 'historyGraph', label: 'CHART', align: 'center', width: '15%', order: false }
         ];
 
       case 'marketData':
@@ -645,15 +645,15 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'marketcap',
-            label: 'MARKET CAP',
+            label: 'MCAP',
             align: 'right',
             width: '12%',
             order: true,
-            tooltip: 'Market capitalization'
+            tooltip: 'Market cap'
           },
           {
             id: 'vol24hxrp',
-            label: 'VOLUME',
+            label: 'VOL',
             align: 'right',
             width: '10%',
             order: true,
@@ -669,11 +669,11 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'holders',
-            label: 'HOLDERS',
+            label: 'HLDR',
             align: 'right',
             width: '10%',
             order: true,
-            tooltip: 'Number of holders'
+            tooltip: 'Holders'
           },
           {
             id: 'supply',
@@ -685,11 +685,11 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'origin',
-            label: 'ORIGIN',
+            label: 'SRC',
             align: 'right',
             width: '10%',
             order: true,
-            tooltip: 'Token origin'
+            tooltip: 'Origin'
           }
         ];
 
@@ -699,7 +699,7 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'pro5m',
-            label: '5M %',
+            label: '5M',
             align: 'right',
             width: '8%',
             order: true,
@@ -707,7 +707,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro1h',
-            label: '1H %',
+            label: '1H',
             align: 'right',
             width: '8%',
             order: true,
@@ -715,7 +715,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro24h',
-            label: '24H %',
+            label: '24H',
             align: 'right',
             width: '8%',
             order: true,
@@ -723,7 +723,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro7d',
-            label: '7D %',
+            label: '7D',
             align: 'right',
             width: '8%',
             order: true,
@@ -731,13 +731,13 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'vol24hxrp',
-            label: 'VOLUME',
+            label: 'VOL',
             align: 'right',
             width: '10%',
             order: true,
             tooltip: '24h volume'
           },
-          { id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false }
+          { id: 'historyGraph', label: 'CHART', align: 'center', width: '15%', order: false }
         ];
 
       case 'trader':
@@ -746,15 +746,15 @@ export const TokenListHead = memo(function TokenListHead({
           { id: 'exch', label: 'PRICE', align: 'right', width: '10%', order: true },
           {
             id: 'vol24htx',
-            label: 'TRADES',
+            label: 'TXS',
             align: 'right',
             width: '10%',
             order: true,
-            tooltip: '24h trade count'
+            tooltip: '24h trades'
           },
           {
             id: 'vol24hxrp',
-            label: 'VOLUME',
+            label: 'VOL',
             align: 'right',
             width: '10%',
             order: true,
@@ -762,7 +762,7 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'pro24h',
-            label: '24H %',
+            label: '24H',
             align: 'right',
             width: '8%',
             order: true,
@@ -778,13 +778,13 @@ export const TokenListHead = memo(function TokenListHead({
           },
           {
             id: 'dateon',
-            label: 'CREATED',
+            label: 'AGE',
             align: 'right',
             width: '10%',
             order: true,
-            tooltip: 'Token creation date'
+            tooltip: 'Token age'
           },
-          { id: 'historyGraph', label: 'LAST 24H', align: 'center', width: '15%', order: false }
+          { id: 'historyGraph', label: 'CHART', align: 'center', width: '15%', order: false }
         ];
 
       case 'custom':
@@ -847,7 +847,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro5m':
               customHeaders.push({
                 id: 'pro5m',
-                label: '5M %',
+                label: '5M',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -858,7 +858,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro1h':
               customHeaders.push({
                 id: 'pro1h',
-                label: '1H %',
+                label: '1H',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -869,7 +869,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro24h':
               customHeaders.push({
                 id: 'pro24h',
-                label: '24H %',
+                label: '24H',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -880,7 +880,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro7d':
               customHeaders.push({
                 id: 'pro7d',
-                label: '7D %',
+                label: '7D',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -891,7 +891,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'pro30d':
               customHeaders.push({
                 id: 'pro30d',
-                label: '30D %',
+                label: '30D',
                 align: 'right',
                 width: '90px',
                 order: true,
@@ -902,7 +902,7 @@ export const TokenListHead = memo(function TokenListHead({
             case 'volume24h':
               customHeaders.push({
                 id: 'vol24hxrp',
-                label: 'VOLUME 24H',
+                label: 'VOL',
                 align: 'right',
                 width: '130px',
                 order: true,
@@ -913,22 +913,22 @@ export const TokenListHead = memo(function TokenListHead({
             case 'volume7d':
               customHeaders.push({
                 id: 'vol7d',
-                label: 'VOLUME 7D',
+                label: 'V7D',
                 align: 'right',
                 width: '130px',
                 order: true,
-                tooltip: '7d volume estimate',
+                tooltip: '7d volume',
                 style: extraStyle
               });
               break;
             case 'marketCap':
               customHeaders.push({
                 id: 'marketcap',
-                label: 'MARKET CAP',
+                label: 'MCAP',
                 align: 'right',
                 width: '140px',
                 order: true,
-                tooltip: 'Market capitalization',
+                tooltip: 'Market cap',
                 style: extraStyle
               });
               break;
@@ -946,33 +946,33 @@ export const TokenListHead = memo(function TokenListHead({
             case 'holders':
               customHeaders.push({
                 id: 'holders',
-                label: 'HOLDERS',
+                label: 'HLDR',
                 align: 'right',
                 width: '100px',
                 order: true,
-                tooltip: 'Number of holders',
+                tooltip: 'Holders',
                 style: extraStyle
               });
               break;
             case 'trades':
               customHeaders.push({
                 id: 'vol24htx',
-                label: 'TRADES',
+                label: 'TXS',
                 align: 'right',
                 width: '100px',
                 order: true,
-                tooltip: '24h trade count',
+                tooltip: '24h trades',
                 style: extraStyle
               });
               break;
             case 'created':
               customHeaders.push({
                 id: 'dateon',
-                label: 'CREATED',
+                label: 'AGE',
                 align: 'right',
                 width: '100px',
                 order: true,
-                tooltip: 'Token creation date',
+                tooltip: 'Token age',
                 style: extraStyle
               });
               break;
@@ -990,18 +990,18 @@ export const TokenListHead = memo(function TokenListHead({
             case 'origin':
               customHeaders.push({
                 id: 'origin',
-                label: 'ORIGIN',
+                label: 'SRC',
                 align: 'right',
                 width: '90px',
                 order: true,
-                tooltip: 'Token origin',
+                tooltip: 'Origin',
                 style: extraStyle
               });
               break;
             case 'sparkline':
               customHeaders.push({
                 id: 'historyGraph',
-                label: 'LAST 24H',
+                label: 'CHART',
                 align: 'right',
                 width: '15%',
                 order: false,

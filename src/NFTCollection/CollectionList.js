@@ -579,23 +579,23 @@ const StyledTableHead = styled.thead`
 
 const StyledTableCell = styled.th`
   font-weight: 500;
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)')};
-  padding: 14px 12px;
-  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)')};
+  padding: 10px 8px;
+  border-bottom: 1px solid ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
   white-space: ${(props) => (props.isCollectionColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
   min-width: ${(props) => (props.isCollectionColumn ? '250px' : props.width || 'auto')};
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
-  font-family: var(--font-inter), -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: inherit;
 
   &:hover {
     color: ${(props) =>
-      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)') : 'inherit'};
+      props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)') : 'inherit'};
   }
 `;
 
@@ -622,26 +622,26 @@ const MobileContainer = styled.div`
 // Table Head Configuration
 const TABLE_HEAD_MOBILE = [
   { id: 'name', label: 'COLLECTION', align: 'left', width: '40%', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '20%', order: true },
-  { id: 'floor1dPercent', label: '24H %', align: 'right', width: '20%', order: true },
-  { id: 'totalVolume', label: 'VOL', align: 'right', width: '20%', order: true }
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '20%', order: true, tooltip: 'Floor price' },
+  { id: 'floor1dPercent', label: '24H', align: 'right', width: '20%', order: true, tooltip: '24h floor change' },
+  { id: 'totalVolume', label: 'VOL', align: 'right', width: '20%', order: true, tooltip: 'Total volume' }
 ];
 
 const TABLE_HEAD_DESKTOP = [
   { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
   { id: 'name', label: 'COLLECTION', align: 'left', width: '250px', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true },
-  { id: 'floor1dPercent', label: 'FLOOR 24H %', align: 'right', width: '10%', order: true },
-  { id: 'totalVol24h', label: 'VOLUME (24H)', align: 'right', width: '12%', order: true },
-  { id: 'totalVolume', label: 'TOTAL VOLUME', align: 'right', width: '12%', order: true },
-  { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: '10%', order: true },
-  { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: '12%', order: true },
-  { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true },
-  { id: 'owners', label: 'OWNERS', align: 'right', width: '8%', order: true },
-  { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true },
-  { id: 'origin', label: 'ORIGIN', align: 'right', width: '8%', order: true },
-  { id: 'created', label: 'CREATED', align: 'right', width: '8%', order: true },
-  { id: 'sparkline', label: '30D SALES', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' } }
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true, tooltip: 'Floor price' },
+  { id: 'floor1dPercent', label: '24H', align: 'right', width: '10%', order: true, tooltip: '24h floor change' },
+  { id: 'totalVol24h', label: 'VOL', align: 'right', width: '12%', order: true, tooltip: '24h volume' },
+  { id: 'totalVolume', label: 'TVOL', align: 'right', width: '12%', order: true, tooltip: 'Total volume' },
+  { id: 'sales24h', label: 'SALES', align: 'right', width: '10%', order: true, tooltip: '24h sales' },
+  { id: 'marketcap.amount', label: 'MCAP', align: 'right', width: '12%', order: true, tooltip: 'Market cap' },
+  { id: 'listedCount', label: 'LIST', align: 'right', width: '8%', order: true, tooltip: 'Listed count' },
+  { id: 'owners', label: 'OWN', align: 'right', width: '8%', order: true, tooltip: 'Owners' },
+  { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true, tooltip: 'Total supply' },
+  { id: 'origin', label: 'SRC', align: 'right', width: '8%', order: true, tooltip: 'Origin' },
+  { id: 'created', label: 'AGE', align: 'right', width: '8%', order: true, tooltip: 'Created date' },
+  { id: 'sparkline', label: 'CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' }, tooltip: '30d sales' }
 ];
 
 // ListHead Component
@@ -1213,7 +1213,7 @@ export default function CollectionList({ type, category, onGlobalMetrics, initia
               FLOOR
             </HeaderCell>
             <HeaderCell flex={0.9} align="right" sortable={false}>
-              24H %
+              24H
             </HeaderCell>
             <HeaderCell flex={1} align="right" sortable={false}>
               VOL

@@ -4149,16 +4149,16 @@ const TxPage = ({ txData, error }) => {
         <div className="mb-8">
           <h1 className="text-3xl font-normal mb-2">
             Transaction Details
-          </Typography>
-        </Box>
+          </h1>
+        </div>
         {error ? (
-          <Typography color="error">{error}</Typography>
+          <p className="text-red-500">{error}</p>
         ) : (
           <TransactionDetails txData={txData} />
         )}
-      </Container>
+      </div>
       <Footer />
-    </Box>
+    </div>
   );
 };
 

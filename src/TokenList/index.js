@@ -1021,15 +1021,15 @@ function TokenListComponent({
                   marketCap: 'MCAP',
                   tvl: 'TVL',
                   holders: 'HLDR',
-                  trades: 'TRDS',
-                  supply: 'SUPP',
+                  trades: 'TXS',
+                  supply: 'SUPPLY',
                   created: 'AGE',
-                  origin: 'ORIG',
-                  pro5m: '5M%',
-                  pro1h: '1H%',
-                  pro24h: '24H%',
-                  pro7d: '7D%',
-                  pro30d: '30D%'
+                  origin: 'SRC',
+                  pro5m: '5M',
+                  pro1h: '1H',
+                  pro24h: '24H',
+                  pro7d: '7D',
+                  pro30d: '30D'
                 };
                 return labels[col] || 'DATA';
               })()}
@@ -1076,15 +1076,15 @@ function TokenListComponent({
                   marketCap: 'MCAP',
                   tvl: 'TVL',
                   holders: 'HLDR',
-                  trades: 'TRDS',
-                  supply: 'SUPP',
+                  trades: 'TXS',
+                  supply: 'SUPPLY',
                   created: 'AGE',
-                  origin: 'ORIG',
-                  pro5m: '5M%',
-                  pro1h: '1H%',
-                  pro24h: '24H%',
-                  pro7d: '7D%',
-                  pro30d: '30D%'
+                  origin: 'SRC',
+                  pro5m: '5M',
+                  pro1h: '1H',
+                  pro24h: '24H',
+                  pro7d: '7D',
+                  pro30d: '30D'
                 };
                 return labels[col] || 'VALUE';
               })()}

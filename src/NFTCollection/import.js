@@ -5,6 +5,30 @@ import { useState, useEffect, useRef } from 'react';
 // Emotion styled
 import styled from '@emotion/styled';
 
+// Simple styled replacements for MUI components
+const Stack = styled('div')`
+  display: flex;
+  flex-direction: ${props => props.direction === 'row' ? 'row' : 'column'};
+  gap: ${props => props.spacing ? `${props.spacing * 8}px` : '0'};
+  align-items: ${props => props.alignItems || 'stretch'};
+  justify-content: ${props => props.justifyContent || 'flex-start'};
+  margin-bottom: ${props => props.mb ? `${props.mb * 8}px` : '0'};
+  margin-top: ${props => props.mt ? `${props.mt * 8}px` : '0'};
+`;
+
+const Typography = styled('span')`
+  display: block;
+  font-size: ${props => {
+    const v = props.variant;
+    if (v === 'p3' || v === 'p4') return '13px';
+    if (v === 'd4') return '14px';
+    if (v === 's2') return '12px';
+    if (v === 'h4') return '20px';
+    return '14px';
+  }};
+  color: ${props => props.color === 'error' ? '#f44336' : 'inherit'};
+`;
+
 // Lucide Icons
 import { Image as ImageIcon, Send as SendIcon, X as CloseIcon, XCircle as CancelIcon, PlusCircle as AddCircleIcon, XOctagon as HighlightOffOutlinedIcon, User as PermIdentityIcon, ArrowDownUp as ImportExportIcon } from 'lucide-react';
 
@@ -252,11 +276,20 @@ const CardOverlayCircle = styled('div')(
 `
 );
 
-const CustomSelect = styled(Select)(({ theme }) => ({
-  '& .MuiOutlinedInput-notchedOutline': {
-    border_left: 'none'
+const CustomSelect = styled('select')`
+  width: 100%;
+  padding: 12px 16px;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  cursor: pointer;
+  &:focus {
+    outline: none;
+    border-color: #4285f4;
   }
-}));
+`;
 
 export default function ImportCollection() {
   const BASE_URL = 'https://api.xrpl.to/api';
@@ -857,16 +890,12 @@ export default function ImportCollection() {
         <CustomSelect
           id="select_category"
           value={category}
-          onChange={handleChangeCategory}
-          MenuProps={{ disableScrollLock: true }}
+          onChange={(e) => handleChangeCategory({ target: { value: e.target.value } })}
         >
           {CATEGORIES.map((cat) => (
-            <MenuItem key={cat.title} value={cat.title} sx={{ pt: 2, pb: 2 }}>
-              <Stack direction="row" spacing={1} alignItems="center">
-                {cat.icon}
-                <Typography variant="d4">{cat.title}</Typography>
-              </Stack>
-            </MenuItem>
+            <option key={cat.title} value={cat.title}>
+              {cat.title}
+            </option>
           ))}
         </CustomSelect>
       </Stack>

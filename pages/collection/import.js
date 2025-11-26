@@ -7,7 +7,7 @@ import { AppContext } from 'src/AppContext';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import ImportCollection from 'src/NFTCollection/Import';
+import ImportCollection from 'src/NFTCollection/import';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`

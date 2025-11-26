@@ -86,19 +86,20 @@ const StyledTableHead = styled.thead`
 
 const StyledTh = styled.th`
   font-weight: 500;
-  font-size: 11px;
-  letter-spacing: 0.02em;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)')};
-  padding: 12px 10px;
-  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+  color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)')};
+  padding: 10px 8px;
+  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
   text-align: ${({ align }) => align || 'left'};
   width: ${({ width }) => width || 'auto'};
   cursor: ${({ sortable }) => (sortable ? 'pointer' : 'default')};
   white-space: nowrap;
+  font-family: inherit;
 
   &:hover {
-    color: ${({ sortable, darkMode }) => (sortable ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'))};
+    color: ${({ sortable, darkMode }) => (sortable ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'))};
   }
 `;
 
@@ -217,14 +218,14 @@ const EmptyState = styled.div`
 
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '50px' },
-  { id: 'trader', label: 'Trader', align: 'left', width: '180px' },
-  { id: 'balance', label: 'Balance', align: 'right', width: '100px', sortable: true },
-  { id: 'buyVolume', label: 'Buy Vol', align: 'right', width: '100px', sortable: true },
-  { id: 'sellVolume', label: 'Sell Vol', align: 'right', width: '100px', sortable: true },
-  { id: 'totalVolume', label: 'Total Vol', align: 'right', width: '100px', sortable: true },
-  { id: 'collections', label: 'NFTs', align: 'right', width: '80px' },
-  { id: 'lastActive', label: 'Active', align: 'right', width: '90px' },
-  { id: 'marketplaces', label: 'Markets', align: 'right', width: '120px' },
+  { id: 'trader', label: 'TRADER', align: 'left', width: '180px' },
+  { id: 'balance', label: 'BAL', align: 'right', width: '100px', sortable: true, tooltip: 'Balance' },
+  { id: 'buyVolume', label: 'BUY', align: 'right', width: '100px', sortable: true, tooltip: 'Buy volume' },
+  { id: 'sellVolume', label: 'SELL', align: 'right', width: '100px', sortable: true, tooltip: 'Sell volume' },
+  { id: 'totalVolume', label: 'VOL', align: 'right', width: '100px', sortable: true, tooltip: 'Total volume' },
+  { id: 'collections', label: 'NFTS', align: 'right', width: '80px', tooltip: 'NFT count' },
+  { id: 'lastActive', label: 'AGE', align: 'right', width: '90px', tooltip: 'Last active' },
+  { id: 'marketplaces', label: 'MKT', align: 'right', width: '120px', tooltip: 'Marketplaces' },
 ];
 
 export default function TradersPage({ traders = [], sortBy = 'totalVolume', globalMetrics = null }) {

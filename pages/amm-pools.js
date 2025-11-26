@@ -182,21 +182,22 @@ const Table = styled.table`
 `;
 
 const Th = styled.th`
-  padding: 16px;
+  padding: 10px 8px;
   text-align: ${p => p.align || 'left'};
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 500;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
-  color: ${p => p.darkMode ? '#bbb' : '#666'};
-  background: ${p => p.darkMode ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-  border-bottom: 2px solid ${p => p.darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  letter-spacing: 0.03em;
+  color: ${p => p.darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'};
+  background: ${p => p.darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'};
+  border-bottom: 1px solid ${p => p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
   cursor: ${p => p.sortable ? 'pointer' : 'default'};
+  white-space: nowrap;
+  font-family: inherit;
 
   &:hover {
     ${p => p.sortable && `
-      color: ${p.darkMode ? '#fff' : '#000'};
-      background: ${p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
+      color: ${p.darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'};
     `}
   }
 `;
@@ -497,15 +498,15 @@ function AMMPoolsPage({ data }) {
             <thead>
               <tr>
                 <Th darkMode={darkMode}>#</Th>
-                <Th darkMode={darkMode}>Pool</Th>
-                <Th darkMode={darkMode} align="right">Fee</Th>
-                <Th darkMode={darkMode} align="right">Liquidity</Th>
-                <Th darkMode={darkMode} align="right">24h Volume</Th>
-                <Th darkMode={darkMode} align="right">7d Volume</Th>
-                <Th darkMode={darkMode} align="right">24h Fees</Th>
-                <Th darkMode={darkMode} align="right">7d Fees</Th>
-                <Th darkMode={darkMode} align="center">24h APY</Th>
-                <Th darkMode={darkMode} align="center">7d APY</Th>
+                <Th darkMode={darkMode}>POOL</Th>
+                <Th darkMode={darkMode} align="right">FEE</Th>
+                <Th darkMode={darkMode} align="right">LIQ</Th>
+                <Th darkMode={darkMode} align="right">VOL</Th>
+                <Th darkMode={darkMode} align="right">V7D</Th>
+                <Th darkMode={darkMode} align="right">FEES</Th>
+                <Th darkMode={darkMode} align="right">F7D</Th>
+                <Th darkMode={darkMode} align="center">APY</Th>
+                <Th darkMode={darkMode} align="center">A7D</Th>
               </tr>
             </thead>
             <tbody>
