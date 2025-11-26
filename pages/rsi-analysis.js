@@ -730,7 +730,7 @@ function RSIAnalysisPage({ data }) {
         RSI Analysis for XRPL Tokens
       </h1>
 
-      <div className="container mx-auto max-w-[1600px] px-4">
+      <div className="mx-auto max-w-[1920px] px-4">
         <Controls darkMode={darkMode}>
               <ControlRow>
                 <MobileSection>

@@ -367,7 +367,7 @@ const WalletSetupPage = () => {
             {isCreating ? (
               <>
                 <Loader2 className="animate-spin" size={16} />
-                {error.startsWith('Creating') ? error.replace('Creating wallets...', '') : 'Creating...'}
+                Creating...
               </>
             ) : (
               importMethod === 'new' ? 'Create Wallet' : 'Import Wallet'
@@ -378,10 +378,10 @@ const WalletSetupPage = () => {
         <div className={cn(
           "mt-6 rounded-lg border-[1.5px] p-3 text-[11px]",
           isDark
-            ? "border-blue-500/20 bg-blue-500/10 text-blue-400"
-            : "border-blue-500/20 bg-blue-50 text-blue-700"
+            ? "border-amber-500/20 bg-amber-500/10 text-amber-400"
+            : "border-amber-500/20 bg-amber-50 text-amber-700"
         )}>
-          <strong>Important:</strong> You don't create a wallet for each provider - you'll have 25 wallets to access with this {oauthData.provider} account and password combination.
+          <strong>Important:</strong> Back up your wallet after creation. XRPL.to cannot recover lost wallets or passwords.
         </div>
       </div>
     </div>
