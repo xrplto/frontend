@@ -449,30 +449,38 @@ const Menu = styled.div`
   position: fixed;
   z-index: 1300;
   display: ${props => props.open ? 'block' : 'none'};
+  top: ${props => props.top}px;
+  left: ${props => props.left}px;
 `;
 
 const MenuPaper = styled.div`
-  min-width: 120px;
-  border-radius: 12px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  margin-top: 4px;
+  min-width: 130px;
+  border-radius: 8px;
+  border: 1px solid ${props => props.isDark ? 'rgba(76, 175, 80, 0.2)' : 'rgba(76, 175, 80, 0.15)'};
+  background: ${props => props.isDark ? 'rgba(20, 20, 20, 0.98)' : '#ffffff'};
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
   overflow: hidden;
+  backdrop-filter: blur(8px);
+  padding: 4px;
 `;
 
 const MenuItem = styled.button`
   width: 100%;
-  padding: 8px 16px;
+  padding: 8px 12px;
   border: none;
+  border-radius: 6px;
   background: transparent;
-  font-size: 14px;
+  font-size: 13px;
   text-align: left;
   cursor: pointer;
-  color: ${props => props.isDark ? '#fff' : '#000'};
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.85)' : '#333'};
+  display: flex;
+  align-items: center;
+  gap: 8px;
 
   &:hover {
-    background: rgba(76, 175, 80, 0.08);
+    background: rgba(76, 175, 80, 0.12);
+    color: #4caf50;
   }
 `;
 
@@ -1062,15 +1070,12 @@ const SearchToolbar = memo(function SearchToolbar({
             }}
             onClick={() => setGainersMenuAnchor(null)}
           />
-          <Menu open={Boolean(gainersMenuAnchor)}>
-            <MenuPaper
-              isDark={darkMode}
-              style={{
-                position: 'absolute',
-                top: gainersMenuAnchor?.getBoundingClientRect().bottom + 4,
-                left: gainersMenuAnchor?.getBoundingClientRect().left
-              }}
-            >
+          <Menu
+            open={Boolean(gainersMenuAnchor)}
+            top={gainersMenuAnchor?.getBoundingClientRect().bottom + 4}
+            left={gainersMenuAnchor?.getBoundingClientRect().left}
+          >
+            <MenuPaper isDark={darkMode}>
               <MenuItem
                 isDark={darkMode}
                 onClick={() => {

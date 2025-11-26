@@ -35,10 +35,8 @@ const txCache = new LRUCache({
 export const clearTransactionCache = (hash) => {
   if (hash) {
     txCache.delete(hash);
-    console.log(`Cleared cache for transaction: ${hash}`);
   } else {
     txCache.clear();
-    console.log('Cleared entire transaction cache');
   }
 };
 
@@ -4179,7 +4177,6 @@ export async function getServerSideProps(context) {
   // Check cache first
   const cachedData = txCache.get(hash);
   if (cachedData) {
-    console.log(`Cache hit for transaction: ${hash}`);
     // Set cache headers for browser caching
     context.res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');
     return {
@@ -4251,7 +4248,6 @@ export async function getServerSideProps(context) {
 
     // Cache the successful response
     txCache.set(hash, txData);
-    console.log(`Cached transaction: ${hash}`);
 
     // Set cache headers for browser caching
     context.res.setHeader('Cache-Control', 'public, s-maxage=3600, stale-while-revalidate=86400');

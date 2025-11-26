@@ -92,7 +92,7 @@ export async function getServerSideProps(ctx) {
 
     data = { nft: res.data };
   } catch (e) {
-    console.log(e);
+    // Error fetching NFT
   }
   let ret = {};
   const nft = data?.nft;

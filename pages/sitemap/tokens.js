@@ -159,7 +159,6 @@ export const getServerSideProps = async (ctx) => {
     ogp.desc =
       "Discover XRPL tokens with ease! XRPL.to's Tokens Sitemap provides a streamlined overview of all available tokens on the XRP Ledger for easy access and exploration.";
 
-    console.log(`3. sitemap/token.xml count: ${count} took: ${dt}ms [${time}]`);
     return {
       props: {
         tokens: slugs,
@@ -174,7 +173,6 @@ export const getServerSideProps = async (ctx) => {
       }
     };
   } catch (e) {
-    console.log(e);
     return {
       props: {
         tokens: [],

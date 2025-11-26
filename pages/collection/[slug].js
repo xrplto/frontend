@@ -97,7 +97,6 @@ export async function getServerSideProps(ctx) {
 
     const t2 = performance.now();
     const dt = (t2 - t1).toFixed(2);
-    console.log(`SSR: Collection ${slug} loaded in ${dt}ms with ${data.initialNfts.length} NFTs`);
   } catch (error) {
     console.error('SSR Error:', error.message, error.response?.data);
     return {

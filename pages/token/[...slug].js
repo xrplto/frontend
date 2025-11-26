@@ -152,13 +152,8 @@ export async function getStaticProps({ params }) {
     const t2 = typeof performance !== 'undefined' ? performance.now() : Date.now();
     const dt = (t2 - t1).toFixed(2);
 
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`2. getStaticProps slug: ${slug}${tab ? `/${tab}` : ''} took: ${dt}ms`);
-    }
   } catch (e) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(e);
-    }
+    // Error during getStaticProps
   }
   let ret = {};
   if (data && data.token) {

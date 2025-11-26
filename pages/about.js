@@ -499,7 +499,6 @@ export async function getStaticProps() {
     // var dt = (t2 - t1).toFixed(2);
     // console.log(`2. getStaticProps fiats: ${data.fiats.length} took: ${dt}ms`);
   } catch (e) {
-    console.log(e);
   }
   let ret = {};
   if (data) {

@@ -134,12 +134,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   // Listen for storage changes (e.g., from OAuth callback updating profiles)
   useEffect(() => {
     const handleStorageChange = () => {
-      console.log('🔄 Storage changed - reloading profiles');
       const storedProfiles = localStorage.getItem('profiles');
       if (storedProfiles) {
         const newProfiles = JSON.parse(storedProfiles);
         if (newProfiles.length > profiles.length) {
-          console.log('📦 New profiles detected:', newProfiles.length);
           setProfiles(newProfiles);
         }
       }
@@ -152,22 +150,18 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   useEffect(() => {
     const loadStoredData = async () => {
       try {
-        console.log('═══ APP INIT: Decrypting seeds and migrations ═══');
-
         // Handle encrypted profile migration (if exists)
         const encryptedProfile = localStorage.getItem(KEY_ACCOUNT_PROFILE + '_enc');
         if (encryptedProfile) {
-          console.log('Migrating encrypted profile to plain...');
           try {
             const profile = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILE);
             if (profile) {
               localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(profile));
               localStorage.removeItem(KEY_ACCOUNT_PROFILE + '_enc');
               setAccountProfile(profile);
-              console.log('✅ Profile migration complete');
             }
           } catch (err) {
-            console.error('⚠️ Crypto operation failed:', err.message);
+            // Crypto operation failed
           }
         }
 
@@ -184,34 +178,29 @@ function ContextProviderInner({ children, data, openSnackbar }) {
                 const updatedProfile = { ...accountProfile, seed: wallet.seed };
                 setAccountProfile(updatedProfile);
                 localStorage.setItem(KEY_ACCOUNT_PROFILE, JSON.stringify(updatedProfile));
-                console.log('✅ Seed decrypted on load');
               }
             }
           } catch (err) {
-            console.log('⚠️ Could not decrypt seed on load:', err.message);
+            // Could not decrypt seed on load
           }
         }
 
         // Handle encrypted profiles migration (if exists)
         const encryptedProfiles = localStorage.getItem('account_profiles_2_enc');
         if (encryptedProfiles) {
-          console.log('Migrating encrypted profiles...');
           try {
             const migratedProfiles = await walletStorage.getSecureItem(KEY_ACCOUNT_PROFILES);
             if (migratedProfiles) {
               localStorage.setItem('profiles', JSON.stringify(migratedProfiles));
               localStorage.removeItem('account_profiles_2_enc');
               setProfiles(migratedProfiles);
-              console.log('✅ Profiles migration complete');
             }
           } catch (err) {
-            console.error('⚠️ Crypto operation failed:', err.message);
+            // Crypto operation failed
           }
         }
-
-        console.log('═══ APP INIT COMPLETE ═══');
       } catch (error) {
-        console.error('💥 APP INIT ERROR:', error);
+        // App init error
       }
     };
     loadStoredData();
@@ -242,11 +231,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
           const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, profileWithTimestamp.account || profileWithTimestamp.address);
           if (wallet?.seed) {
             profileWithTimestamp.seed = wallet.seed;
-            console.log('✅ Seed included in login profile');
           }
         }
       } catch (err) {
-        console.log('⚠️ Could not decrypt seed during login:', err.message);
+        // Could not decrypt seed during login
       }
     }
 

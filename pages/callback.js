@@ -12,7 +12,6 @@ const OAuthCallback = () => {
     const handleCallback = async () => {
       // Prevent double-submission
       if (sessionStorage.getItem('callback_processing') === 'true') {
-        console.log('Callback already processing, ignoring...');
         return;
       }
       sessionStorage.setItem('callback_processing', 'true');
@@ -45,8 +44,6 @@ const OAuthCallback = () => {
       // Handle Discord OAuth callback
       if (code && !oauth_token && !token) {
         try {
-          console.log('Processing Discord OAuth callback');
-
           const response = await fetch('https://api.xrpl.to/api/oauth/discord/exchange', {
             method: 'POST',
             headers: {
@@ -100,8 +97,6 @@ const OAuthCallback = () => {
           if (!storedTokenSecret) {
             throw new Error('OAuth token secret not found in session');
           }
-
-          console.log('Exchanging OAuth 1.0a tokens for access token');
 
           // Step 2: Exchange for access token
           const response = await fetch('https://api.xrpl.to/api/oauth/twitter/oauth1/access', {
@@ -177,16 +172,6 @@ const OAuthCallback = () => {
           const codeVerifier = sessionStorage.getItem('twitter_verifier');
           const redirectUri = sessionStorage.getItem('twitter_redirect_uri');
 
-          // Debug logging
-          console.log('OAuth Exchange Debug:', {
-            code: code ? `${code.substring(0, 10)}...` : 'missing',
-            state: state ? 'exists' : 'missing',
-            savedState: savedState ? 'exists' : 'missing',
-            verifier: codeVerifier ? 'exists' : 'missing',
-            redirectUri: redirectUri || 'missing',
-            stateMatch: state === savedState
-          });
-
           if (!codeVerifier) {
             throw new Error('Session expired - code verifier missing');
           }
@@ -208,14 +193,6 @@ const OAuthCallback = () => {
               currentOrigin: window.location.origin
             });
           }
-
-          console.log('Sending to backend:', {
-            code: code ? `${code.substring(0, 10)}...` : 'missing',
-            state: state ? `${state.substring(0, 10)}...` : 'missing',
-            codeVerifier: codeVerifier ? `${codeVerifier.substring(0, 10)}...` : 'missing',
-            redirectUri,
-            expectedRedirectUri
-          });
 
           // Add timeout to the request
           const controller = new AbortController();
@@ -393,7 +370,6 @@ const OAuthCallback = () => {
         };
 
         // Handle social login
-        console.log('Calling handleSocialLogin from callback.js');
         const result = await walletStorage.handleSocialLogin(
           {
             id: payload?.id || payload?.sub || 'unknown',
@@ -406,10 +382,7 @@ const OAuthCallback = () => {
           backend
         );
 
-        console.log('handleSocialLogin result in callback:', result);
-
         if (result.requiresPassword) {
-          console.log('Password required - redirecting to wallet-setup page');
           // Store token temporarily for password setup
           sessionStorage.setItem('oauth_temp_token', jwtToken);
           sessionStorage.setItem('oauth_temp_provider', provider);
@@ -427,7 +400,6 @@ const OAuthCallback = () => {
 
           // Store ALL wallets in profiles
           if (result.allWallets && result.allWallets.length > 0) {
-            console.log('📦 Storing', result.allWallets.length, 'wallets to profiles');
 
             const allProfiles = result.allWallets.map(w => ({
               account: w.address,
@@ -446,10 +418,7 @@ const OAuthCallback = () => {
 
             // Store password for provider (enables auto-loading)
             const walletId = `${provider}_${payload?.id || payload?.sub}`;
-            const existingPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-            if (existingPassword) {
-              console.log('✅ Password already exists for provider:', walletId);
-            }
+            await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
             // Notify AppContext that profiles were updated
             window.dispatchEvent(new Event('storage-updated'));

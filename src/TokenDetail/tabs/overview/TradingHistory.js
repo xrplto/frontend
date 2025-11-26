@@ -938,8 +938,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           : { currency: pool.asset2.currency, issuer: pool.asset2.issuer, value: depositAmount2 };
       }
 
-      const result = await client.submitAndWait(tx, { wallet });
-      console.log('Deposit successful:', result);
+      await client.submitAndWait(tx, { wallet });
       handleCloseDialog();
       await client.disconnect();
     } catch (error) {

@@ -83,12 +83,8 @@ export async function getServerSideProps(ctx) {
       token.time = time;
     }
 
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
-
-    console.log(`5. getStaticProps tokensbytag: ${data.tokens.length} took: ${dt}ms`);
   } catch (e) {
-    console.log(e);
+    // Error during getStaticProps
   }
   let ret = {};
   if (data) {

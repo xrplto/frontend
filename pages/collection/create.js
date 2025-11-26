@@ -3,7 +3,7 @@ import styled from '@emotion/styled';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import CreateCollection from 'src/NFTCollection/create';
+import CreateCollection from 'src/NFTCollection/Create';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`

@@ -11,8 +11,8 @@ if (typeof window !== 'undefined') {
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
-const devLog = (...args) => isDev && console.log(...args);
-const devError = (...args) => isDev && console.error(...args);
+const devLog = () => {};
+const devError = () => {};
 
 export class UnifiedWalletStorage {
   constructor() {
@@ -174,7 +174,6 @@ export class UnifiedWalletStorage {
 
   async getProviderPassword(providerId) {
     try {
-      console.log('[getProviderPassword] Looking for password with ID:', `__pwd__${providerId}`);
       const db = await this.initDB();
 
       return new Promise(async (resolve) => {
@@ -183,36 +182,24 @@ export class UnifiedWalletStorage {
         const request = store.get(`__pwd__${providerId}`);
 
         request.onsuccess = async () => {
-          console.log('[getProviderPassword] Request result:', {
-            found: !!request.result,
-            hasData: !!request.result?.data,
-            dataLength: request.result?.data?.length
-          });
-
           if (request.result && request.result.data) {
             try {
               const decrypted = await this.decryptFromLocalStorage(request.result.data);
-              console.log('[getProviderPassword] ✅ Password decrypted successfully for:', providerId);
               devLog('Password retrieved from IndexedDB for provider:', providerId);
               resolve(decrypted);
             } catch (decryptError) {
-              console.error('[getProviderPassword] ❌ Decryption failed:', decryptError);
-              console.error('[getProviderPassword] Device fingerprint may have changed');
               resolve(null);
             }
           } else {
-            console.log('[getProviderPassword] ❌ No password record found for:', providerId);
             devLog('No password found in IndexedDB for provider:', providerId);
             resolve(null);
           }
         };
         request.onerror = () => {
-          console.error('[getProviderPassword] IndexedDB error:', request.error);
           resolve(null);
         };
       });
     } catch (error) {
-      console.error('[getProviderPassword] Exception:', error);
       devError('Error getting provider password:', error);
       return null;
     }

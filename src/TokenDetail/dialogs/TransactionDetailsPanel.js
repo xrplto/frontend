@@ -269,31 +269,6 @@ const TransactionDetailsPanel = memo(
             ...txResponse.result.tx_json
           };
 
-          console.log('=== TRANSACTION RESPONSE ===');
-          console.log('Full response:', JSON.stringify(txResponse.result, null, 2));
-          console.log('Transaction type:', flattenedResult.TransactionType);
-          console.log('Account (From):', flattenedResult.Account);
-          console.log('Destination (To):', flattenedResult.Destination);
-          console.log('Amount:', flattenedResult.Amount);
-          console.log('Date:', flattenedResult.date);
-          console.log('Date type:', typeof flattenedResult.date);
-          console.log('Fee:', flattenedResult.Fee);
-          console.log('Ledger Index:', flattenedResult.ledger_index);
-          console.log('Meta:', flattenedResult.meta);
-          console.log('Transaction Result:', flattenedResult.meta?.TransactionResult);
-          console.log('Delivered Amount:', flattenedResult.meta?.delivered_amount);
-          console.log('DeliveredAmount:', flattenedResult.meta?.DeliveredAmount);
-          console.log('Source Tag:', flattenedResult.SourceTag);
-          console.log('Memos:', flattenedResult.Memos);
-          console.log('NFTokenID:', flattenedResult.NFTokenID);
-          console.log('TakerGets:', flattenedResult.TakerGets);
-          console.log('TakerPays:', flattenedResult.TakerPays);
-          console.log('LimitAmount:', flattenedResult.LimitAmount);
-          console.log('SendMax:', flattenedResult.SendMax);
-          console.log('Affected Nodes:', flattenedResult.meta?.AffectedNodes);
-          console.log('Close Time ISO:', flattenedResult.close_time_iso);
-          console.log('========================');
-
           setTransaction(flattenedResult);
         } else {
           setError('Transaction not found');

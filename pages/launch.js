@@ -372,21 +372,12 @@ function CreatePage() {
   // Decrypt seed on mount if OAuth wallet
   useEffect(() => {
     const decryptSeed = async () => {
-      console.log('[DEBUG] Decrypt seed effect triggered', {
-        hasProfile: !!accountProfile,
-        walletType: accountProfile?.wallet_type,
-        provider: accountProfile?.provider,
-        providerId: accountProfile?.provider_id,
-        hasSeedInProfile: !!accountProfile?.seed
-      });
-
       if (!accountProfile) {
         setDecryptedSeed(null);
         return;
       }
 
       if (accountProfile.seed) {
-        console.log('[DEBUG] Seed already in profile');
         setDecryptedSeed(accountProfile.seed);
         return;
       }
@@ -395,50 +386,28 @@ function CreatePage() {
         try {
           const walletStorage = new UnifiedWalletStorage();
           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          console.log('[DEBUG] Looking for wallet with ID:', walletId);
 
           const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          console.log('[DEBUG] Stored password found:', !!storedPassword);
 
           if (storedPassword) {
-            console.log('[DEBUG] Attempting to decrypt wallet...');
             try {
               // Pass known address for fast lookup (only decrypts 1 wallet instead of 25!)
               const wallet = await walletStorage.findWalletBySocialId(walletId, storedPassword, accountProfile.account || accountProfile.address);
-              console.log('[DEBUG] Wallet decrypted:', {
-                found: !!wallet,
-                hasSeed: !!wallet?.seed,
-                address: wallet?.address
-              });
 
               if (wallet?.seed) {
                 setDecryptedSeed(wallet.seed);
-                console.log('[DEBUG] ✅ Seed decrypted successfully');
-              } else {
-                console.log('[DEBUG] ❌ Wallet found but no seed');
               }
             } catch (walletError) {
-              console.error('[DEBUG] ❌ Failed to decrypt wallet with stored password:', walletError);
               // Password exists but decryption failed - likely device fingerprint changed
               // Don't set decryptedSeed, user will need to use the manual "Decrypt" button
             }
-          } else {
-            console.log('[DEBUG] ❌ No stored password found for key:', `wallet_pwd_${walletId}`);
-            console.log('[DEBUG] 💡 User may need to re-login to restore password');
           }
         } catch (error) {
-          console.error('[DEBUG] ❌ Failed to decrypt seed:', error);
-          console.error('[DEBUG] Error details:', {
-            message: error.message,
-            stack: error.stack
-          });
+          // Failed to decrypt seed
         }
       } else if (accountProfile.wallet_type === 'device') {
-        console.log('[DEBUG] Device wallet - seed requires password prompt');
         // Device wallets always require password on-demand
         setDecryptedSeed(null);
-      } else {
-        console.log('[DEBUG] Unknown wallet type:', accountProfile.wallet_type);
       }
     };
 
@@ -626,7 +595,6 @@ function CreatePage() {
       const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
       return response.data;
     } catch (error) {
-      console.error('Failed to check funding status:', error);
       return null;
     }
   };
@@ -637,7 +605,6 @@ function CreatePage() {
       const response = await axios.get(`https://api.xrpl.to/api/launch-token/status/${sessionId}`);
       return response.data;
     } catch (error) {
-      console.error('Failed to poll launch status:', error);
       return null;
     }
   };
@@ -671,7 +638,7 @@ function CreatePage() {
         try {
           imageData = await fileToBase64(formData.image);
         } catch (error) {
-          console.error('[ERROR] Failed to convert image to base64:', error);
+          // Failed to convert image
         }
       }
 
@@ -701,8 +668,6 @@ function CreatePage() {
       if (formData.twitter) payload.twitter = formData.twitter;
       if (imageData) payload.imageData = imageData;
       if (formData.antiSnipe) payload.antiSnipe = true;
-
-      console.log('[DEBUG] Launch payload:', { ...payload, imageData: imageData ? `${imageData.substring(0, 50)}...` : null });
 
       // Step 1: Initialize token launch
       const response = await axios.post('https://api.xrpl.to/api/launch-token', payload);
@@ -737,7 +702,6 @@ function CreatePage() {
       setLaunchStep('funding');
 
     } catch (error) {
-      console.error('Launch error:', error);
       const errorMsg = typeof error.response?.data?.error === 'string'
         ? error.response.data.error
         : error.response?.data?.error?.message || 'Failed to initialize token launch';
@@ -761,15 +725,12 @@ function CreatePage() {
 
     try {
       // Send continue request with user address
-      const response = await axios.post('https://api.xrpl.to/api/launch-token/continue', {
+      await axios.post('https://api.xrpl.to/api/launch-token/continue', {
         sessionId: sessionData.sessionId,
         userAddress: walletAddress
       });
 
-      console.log('Continue request sent');
-
     } catch (error) {
-      console.error('Continue error:', error);
       const errorMsg = typeof error.response?.data?.error === 'string'
         ? error.response.data.error
         : error.response?.data?.error?.message || 'Failed to continue launch';
@@ -783,7 +744,6 @@ function CreatePage() {
       const response = await axios.get('https://api.xrpl.to/api/launch-token/debug');
       return response.data;
     } catch (error) {
-      console.error('Failed to fetch debug info:', error);
       return null;
     }
   };
@@ -798,7 +758,6 @@ function CreatePage() {
 
   // Reset all state when closing
   const resetLaunchState = () => {
-    console.log('[DEBUG] Resetting launch state');
     localStorage.removeItem('tokenLaunchSession');
     setLaunchStep('');
     setLaunchError('');
@@ -814,33 +773,20 @@ function CreatePage() {
     if (launchStep !== 'funding' || !sessionData?.sessionId) return;
 
     const pollInterval = setInterval(async () => {
-      console.log('[POLL] Checking funding status for session:', sessionData.sessionId);
       const status = await checkFundingStatus(sessionData.sessionId);
 
       if (!status) {
-        console.log('[POLL] No status received');
         return;
       }
 
-      console.log('[POLL] Status received:', status);
-
       // Update logs if available
       if (status.logs && status.logs.length > 0) {
-        console.log('[POLL] Updating logs, count:', status.logs.length);
         setLaunchLogs(status.logs);
       }
 
       // Check funding status
       if (status.fundingStatus) {
-        const { currentBalance, requiredBalance, sufficient, partiallyFunded, message } = status.fundingStatus;
-
-        console.log('[POLL] Funding status:', {
-          currentBalance,
-          requiredBalance,
-          sufficient,
-          partiallyFunded,
-          message
-        });
+        const { currentBalance, requiredBalance, sufficient, partiallyFunded } = status.fundingStatus;
 
         // Update balance states
         setFundingBalance(currentBalance);
@@ -850,10 +796,8 @@ function CreatePage() {
           // Partial funding - show warning
           const progress = (currentBalance / requiredBalance) * 100;
           setFundingProgress(progress);
-          console.log('[POLL] Partial funding detected:', currentBalance, '/', requiredBalance, 'XRP (', Math.round(progress), '%)');
         } else if (sufficient) {
           // Fully funded - just show progress, backend handles continuation
-          console.log('[POLL] ✅ Fully funded! Backend will continue automatically...');
           setFundingProgress(100);
           setLaunchLogs(prev => [...prev, {
             timestamp: new Date().toISOString(),
@@ -867,7 +811,6 @@ function CreatePage() {
       if (['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
         // Backend is processing - transition to processing view
         if (launchStep === 'funding') {
-          console.log('[POLL] Status changed to processing:', status.status);
           setLaunchStep('processing');
         }
       }

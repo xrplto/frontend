@@ -10,7 +10,7 @@ import { AppContext } from 'src/AppContext';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import EditCollection from 'src/NFTCollection/edit';
+import EditCollection from 'src/NFTCollection/Edit';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`
@@ -47,7 +47,7 @@ export default function Overview({ data }) {
           }
         })
         .catch((err) => {
-          console.log('Error on getting a collection!!!', err);
+          // Error getting collection
         })
         .then(function () {
           // always executed
@@ -95,9 +95,8 @@ export async function getServerSideProps(ctx) {
     var t2 = performance.now();
     var dt = (t2 - t1).toFixed(2);
 
-    console.log(`4. getServerSideProps(collection/edit) slug: ${slug} took: ${dt}ms`);
   } catch (e) {
-    console.log(e);
+    // Error during getServerSideProps
   }
   let ret = {};
   if (data && data.collection) {

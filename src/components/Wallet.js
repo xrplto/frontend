@@ -7,8 +7,8 @@ let startRegistration, startAuthentication, CryptoJS, scrypt, base64URLStringToB
 
 // Development logging helper
 const isDev = process.env.NODE_ENV === 'development';
-const devLog = (...args) => isDev && console.log(...args);
-const devError = (...args) => isDev && console.error(...args);
+const devLog = () => {};
+const devError = () => {};
 
 // Icons
 import {
@@ -1277,7 +1277,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const hasPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
       if (hasPassword && profiles.length > 0) {
-        console.log('✅ Wallets already loaded - skipping OAuth callback processing');
         await walletStorage.setSecureItem('jwt', jwtToken);
         await walletStorage.setSecureItem('authMethod', 'google');
         await walletStorage.setSecureItem('user', payload);
@@ -1337,8 +1336,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         await walletStorage.setSecureItem('user', payload);
 
         if (result.wallet) {
-          console.log('🔍 OAuth result.allWallets:', result.allWallets ? result.allWallets.length : 'NONE');
-
           // Load ALL wallets for this provider into profiles
           if (result.allWallets && result.allWallets.length > 0) {
             const allProfiles = [];
@@ -1357,12 +1354,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
               allProfiles.push(walletProfile);
             });
 
-            console.log('✅ Setting', allProfiles.length, 'profiles for OAuth');
             setProfiles(allProfiles);
             await syncProfilesToIndexedDB(allProfiles);
             doLogIn(result.wallet, allProfiles);
           } else {
-            console.log('❌ No allWallets - using single wallet');
             doLogIn(result.wallet, profiles);
           }
           openSnackbar('Google connect successful!', 'success');
@@ -1588,9 +1583,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
 
   // Handle OAuth password setup
   const handleOAuthPasswordSetup = async () => {
-    console.log('🔧 [DEBUG] handleOAuthPasswordSetup called');
-    console.log('🔧 [DEBUG] importMethod:', importMethod);
-
     // Validate password
     if (importMethod === 'new') {
       if (oauthPassword.length < 8) {
@@ -1611,21 +1603,17 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     }
 
     setOAuthPasswordError('');
-    console.log('🔧 [DEBUG] Password validation passed');
 
     // Handle different import methods
     if (importMethod === 'import' && importFile) {
-      console.log('🔧 [DEBUG] Redirecting to handleImportWallet');
       await handleImportWallet();
       return;
     } else if (importMethod === 'seed' && importSeed) {
-      console.log('🔧 [DEBUG] Redirecting to handleImportSeed');
       await handleImportSeed();
       return;
     }
 
     setIsCreatingWallet(true);
-    console.log('🔧 [DEBUG] Creating new wallet...');
 
     try {
       // Get OAuth data from session
@@ -1634,18 +1622,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const userStr = sessionStorage.getItem('oauth_temp_user');
       const action = sessionStorage.getItem('oauth_action');
 
-      console.log('🔧 [DEBUG] OAuth session data:');
-      console.log('  - token:', token ? 'EXISTS' : 'MISSING');
-      console.log('  - provider:', provider);
-      console.log('  - action:', action);
-      console.log('  - user:', userStr ? 'EXISTS' : 'MISSING');
-
       if (!provider || !userStr) {
         throw new Error('Missing OAuth data');
       }
 
       const user = JSON.parse(userStr);
-      console.log('🔧 [DEBUG] Parsed user:', user);
 
       // For existing email users logging in, we don't need token/action
       if (provider === 'email' && !token && !action) {
@@ -1699,14 +1680,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         const result = { success: true, wallet: wallets[0] };
 
         // Clear temporary session data IMMEDIATELY
-        console.log('🔧 [DEBUG] Clearing OAuth session data NOW...');
         sessionStorage.removeItem('oauth_temp_token');
         sessionStorage.removeItem('oauth_temp_provider');
         sessionStorage.removeItem('oauth_temp_user');
         sessionStorage.removeItem('oauth_action');
-        console.log('🔧 [DEBUG] OAuth session cleared. Verifying...');
-        console.log('  - oauth_temp_token:', sessionStorage.getItem('oauth_temp_token'));
-        console.log('  - oauth_temp_provider:', sessionStorage.getItem('oauth_temp_provider'));
 
         // Store permanent auth data
         await walletStorage.setSecureItem('jwt', token);
@@ -1716,7 +1693,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         // Store password for provider (enables auto-loading all wallets on re-login)
         const walletId = `${provider}_${user.id}`;
         await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, oauthPassword);
-        console.log('Password saved for provider:', walletId);
 
         // Mark wallet as needing backup (new wallet)
         if (action === 'create') {
@@ -1731,14 +1707,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           }
         });
 
-        console.log('🔧 [DEBUG] Wallet creation SUCCESS!');
-        console.log('🔧 [DEBUG] Created', wallets.length, 'wallets');
-        console.log('🔧 [DEBUG] Logging in with first wallet:', result.wallet.address);
-
         // Login with first wallet
         doLogIn(result.wallet, allProfiles);
-
-        console.log('🔧 [DEBUG] Closing dialogs and cleaning up...');
 
         // Close dialogs
         setShowOAuthPasswordSetup(false);
@@ -1749,7 +1719,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         setOAuthPassword('');
         setOAuthConfirmPassword('');
 
-        console.log('🔧 [DEBUG] All dialogs closed, showing success message');
         openSnackbar(`Wallet created successfully!`, 'success');
       } else {
         throw new Error('Failed to setup wallet');
@@ -2430,24 +2399,15 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     // Check if we need to show OAuth password setup
     const oauthToken = sessionStorage.getItem('oauth_temp_token');
     const oauthProvider = sessionStorage.getItem('oauth_temp_provider');
-    const oauthAction = sessionStorage.getItem('oauth_action');
-
-    console.log('🔧 [MOUNT] OAuth session check:');
-    console.log('  - oauthToken:', oauthToken ? 'EXISTS' : 'NONE');
-    console.log('  - oauthProvider:', oauthProvider);
-    console.log('  - oauthAction:', oauthAction);
-    console.log('  - accountProfile:', accountProfile ? accountProfile.account : 'NONE');
 
     if (oauthToken && oauthProvider) {
       // User came from OAuth and needs password setup
       // BUT: Only show if user is not already logged in
       if (!accountProfile) {
-        console.log('🔧 [MOUNT] OAuth password required - redirecting to /wallet-setup');
         // Redirect to dedicated setup page instead of showing modal
         window.location.href = '/wallet-setup';
         return;
       } else {
-        console.log('🔧 [MOUNT] User already logged in, clearing stale OAuth session data');
         sessionStorage.removeItem('oauth_temp_token');
         sessionStorage.removeItem('oauth_temp_provider');
         sessionStorage.removeItem('oauth_temp_user');
@@ -2458,10 +2418,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       // BUT: Only if user is NOT already logged in
       sessionStorage.removeItem('wallet_modal_open');
       if (!accountProfile) {
-        console.log('🔧 [MOUNT] Reopening wallet modal (user not logged in)');
         setOpenWalletModal(true);
-      } else {
-        console.log('🔧 [MOUNT] User already logged in, NOT reopening wallet modal');
       }
     }
 
@@ -2839,10 +2796,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
       const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
-      console.log('Password check - Provider:', accountProfile.provider);
-      console.log('Password check - Stored:', !!storedPassword);
-      console.log('Password check - Match:', storedPassword === newAccountPassword);
-
       if (!storedPassword || storedPassword !== newAccountPassword) {
         openSnackbar('Incorrect password', 'error');
         setNewAccountPassword('');
@@ -2850,8 +2803,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
 
       // Password verified - create new wallet with SAME auth type
-      console.log('=== CREATING NEW ACCOUNT ===');
-      console.log('Current profile:', accountProfile);
       const wallet = generateRandomWallet();
 
       const walletData = {
@@ -2868,17 +2819,13 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         seed: wallet.seed
       };
 
-      console.log('New wallet data:', { ...walletData, seed: '[HIDDEN]' });
-
       // Store encrypted with same password
       await walletStorage.storeWallet(walletData, newAccountPassword);
-      console.log('Wallet stored in IndexedDB');
 
       // For OAuth wallets, ensure password is stored for provider
       if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
         const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
         await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, newAccountPassword);
-        console.log('Password stored for provider:', walletId);
       }
 
       // Update profiles
@@ -2890,16 +2837,11 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
 
       // Close and switch
-      console.log('=== NEW ACCOUNT CREATED ===');
-      console.log('New wallet address:', walletData.address);
-      console.log('All profiles after creation:', allProfiles.map(p => p.account));
       setShowNewAccountFlow(false);
       setNewAccountPassword('');
       setOpen(false);
       requestAnimationFrame(() => {
-        console.log('Logging in to new account...');
         doLogIn(walletData, allProfiles);
-        console.log('Login called');
       });
 
       openSnackbar(`Account ${allProfiles.length} of 25 created`, 'success');
@@ -2913,15 +2855,6 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const accountLogo = accountProfile?.logo;
   const accountTotalXrp = accountProfile?.xrp;
   // const isAdmin = accountProfile?.admin;
-
-  // Debug: Log when accountProfile changes
-  useEffect(() => {
-    console.log('🔄 accountProfile changed:', {
-      account: accountProfile?.account,
-      wallet_type: accountProfile?.wallet_type,
-      profilesCount: profiles.length
-    });
-  }, [accountProfile, profiles.length]);
 
   let logoImageUrl = null;
   if (accountProfile) {
@@ -3028,22 +2961,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     profiles={profiles}
                     onClose={() => setOpen(false)}
                     onAccountSwitch={(account) => {
-                      console.log('=== ACCOUNT SWITCH START ===');
-                      console.log('Switching from:', accountProfile?.account);
-                      console.log('Switching to:', account);
-                      console.log('Current profiles:', profiles.map(p => p.account));
                       if (account !== accountProfile?.account) {
-                        console.log('Closing modal...');
                         setOpen(false);
                         requestAnimationFrame(() => {
-                          console.log('Calling setActiveProfile...');
                           setActiveProfile(account);
-                          console.log('setActiveProfile called');
                         });
-                      } else {
-                        console.log('Same account - no switch needed');
                       }
-                      console.log('=== ACCOUNT SWITCH END ===');
                     }}
                     onLogout={() => {
                       handleLogout();

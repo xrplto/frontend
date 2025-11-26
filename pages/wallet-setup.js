@@ -31,21 +31,13 @@ const WalletSetupPage = () => {
   const [oauthData, setOauthData] = useState(null);
 
   useEffect(() => {
-    console.log('🔧 [SETUP PAGE] Mounted');
-
     // Get OAuth data from sessionStorage
     const token = sessionStorage.getItem('oauth_temp_token');
     const provider = sessionStorage.getItem('oauth_temp_provider');
     const userStr = sessionStorage.getItem('oauth_temp_user');
     const action = sessionStorage.getItem('oauth_action');
 
-    console.log('🔧 [SETUP PAGE] OAuth session data:');
-    console.log('  - token:', token ? 'EXISTS' : 'MISSING');
-    console.log('  - provider:', provider);
-    console.log('  - action:', action);
-
     if (!token || !provider || !userStr) {
-      console.log('🔧 [SETUP PAGE] Missing OAuth data, redirecting to home');
       openSnackbar('No OAuth session found. Please sign in again.', 'error');
       router.push('/');
       return;
@@ -56,8 +48,6 @@ const WalletSetupPage = () => {
   }, []);
 
   const handleCreateWallet = async () => {
-    console.log('🔧 [SETUP PAGE] handleCreateWallet called');
-
     // Validate password
     if (importMethod === 'new') {
       if (password.length < 8) {
@@ -105,10 +95,7 @@ const WalletSetupPage = () => {
 
       setError(''); // Clear progress
 
-      console.log('🔧 [SETUP PAGE] Wallets created successfully');
-
       // Clear OAuth session data
-      console.log('🔧 [SETUP PAGE] Clearing OAuth session data');
       sessionStorage.removeItem('oauth_temp_token');
       sessionStorage.removeItem('oauth_temp_provider');
       sessionStorage.removeItem('oauth_temp_user');
@@ -122,7 +109,6 @@ const WalletSetupPage = () => {
       // Store password for provider
       const walletId = `${provider}_${user.id}`;
       await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
-      console.log('🔧 [SETUP PAGE] Password saved for provider:', walletId);
 
       // Mark wallet as needing backup
       if (action === 'create') {
@@ -142,7 +128,6 @@ const WalletSetupPage = () => {
       // Login with first wallet
       doLogIn(wallets[0], allProfiles);
 
-      console.log('🔧 [SETUP PAGE] Login complete, redirecting to home');
       openSnackbar(`Wallet created successfully!`, 'success');
 
       // Redirect to home
@@ -151,7 +136,6 @@ const WalletSetupPage = () => {
       }, 1000);
 
     } catch (err) {
-      console.error('🔧 [SETUP PAGE] Error:', err);
       setError(err.message || 'Failed to create wallet');
     } finally {
       setIsCreating(false);

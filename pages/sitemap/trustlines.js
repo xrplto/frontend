@@ -159,7 +159,6 @@ export const getServerSideProps = async (ctx) => {
     ogp.desc =
       "Navigate XRPL tokens easily with XRPL.to's Token Trustlines Sitemap – a user-friendly guide for managing your trustlines and exploring new tokens!";
 
-    console.log(`3. sitemap/token.xml count: ${count} took: ${dt}ms [${time}]`);
     return {
       props: {
         tokens: slugs,
@@ -174,7 +173,6 @@ export const getServerSideProps = async (ctx) => {
       }
     };
   } catch (e) {
-    console.log(e);
     return {
       props: {
         tokens: [],

@@ -329,9 +329,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         const apiRange = range;
         const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?range=${apiRange}&interval=${chartInterval}&vs_currency=${activeFiatCurrency}`;
 
-        console.log('Fetching chart data:', { range: apiRange, interval: chartInterval, endpoint });
         const response = await axios.get(endpoint, { signal: requestController.signal });
-        console.log('Chart response:', { length: response.data?.ohlc?.length, data: response.data });
 
         if (mounted && response.data?.ohlc && response.data.ohlc.length > 0) {
           const processedData = response.data.ohlc
