@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useContext } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
-import { Copy, Menu, X, CheckCircle, Code, Search } from 'lucide-react';
+import { Copy, Menu, X, CheckCircle, Code, Search, Loader2 } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
@@ -114,237 +114,180 @@ const ApiDocsPage = () => {
 
       case 'tokens':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
-              Tokens
-            </Typography>
+          <div>
+            <h2 className="text-2xl font-normal mb-6 text-primary">Tokens</h2>
 
-            <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                  <Chip label="GET" color="primary" size="small" />
-                  <Typography variant="h6" sx={{ fontFamily: '"Roboto Mono", monospace' }}>
-                    /api/tokens
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Get paginated list of tokens with sorting and filtering
-                </Typography>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10 bg-primary/5" : "border-gray-200 bg-primary/5"
+            )}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-primary text-white">GET</span>
+                <code className="text-lg font-mono">/api/tokens</code>
+              </div>
+              <p className="text-[13px] mb-4">Get paginated list of tokens with sorting and filtering</p>
 
-                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 400 }}>
-                  Parameters
-                </Typography>
-                <TableContainer component={Paper}>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Name</TableCell>
-                        <TableCell>Type</TableCell>
-                        <TableCell>Default</TableCell>
-                        <TableCell>Description</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      <TableRow>
-                        <TableCell>
-                          <code>limit</code>
-                        </TableCell>
-                        <TableCell>number</TableCell>
-                        <TableCell>20</TableCell>
-                        <TableCell>Results per page (1-100)</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>sortBy</code>
-                        </TableCell>
-                        <TableCell>string</TableCell>
-                        <TableCell>vol24hxrp</TableCell>
-                        <TableCell>Sort field</TableCell>
-                      </TableRow>
-                      <TableRow>
-                        <TableCell>
-                          <code>filter</code>
-                        </TableCell>
-                        <TableCell>string</TableCell>
-                        <TableCell>-</TableCell>
-                        <TableCell>Search filter</TableCell>
-                      </TableRow>
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+              <p className="text-[13px] font-medium mb-2">Parameters</p>
+              <div className={cn(
+                "rounded-lg overflow-hidden border-[1.5px]",
+                isDark ? "border-white/10" : "border-gray-200"
+              )}>
+                <table className="w-full text-[13px]">
+                  <thead className={isDark ? "bg-white/5" : "bg-gray-50"}>
+                    <tr>
+                      <th className="text-left px-4 py-2 font-medium">Name</th>
+                      <th className="text-left px-4 py-2 font-medium">Type</th>
+                      <th className="text-left px-4 py-2 font-medium">Default</th>
+                      <th className="text-left px-4 py-2 font-medium">Description</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <td className="px-4 py-2"><code>limit</code></td>
+                      <td className="px-4 py-2">number</td>
+                      <td className="px-4 py-2">20</td>
+                      <td className="px-4 py-2">Results per page (1-100)</td>
+                    </tr>
+                    <tr className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <td className="px-4 py-2"><code>sortBy</code></td>
+                      <td className="px-4 py-2">string</td>
+                      <td className="px-4 py-2">vol24hxrp</td>
+                      <td className="px-4 py-2">Sort field</td>
+                    </tr>
+                    <tr className={isDark ? "border-t border-white/10" : "border-t border-gray-200"}>
+                      <td className="px-4 py-2"><code>filter</code></td>
+                      <td className="px-4 py-2">string</td>
+                      <td className="px-4 py-2">-</td>
+                      <td className="px-4 py-2">Search filter</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
 
-                <Typography variant="subtitle2" sx={{ mb: 1, mt: 2, fontWeight: 400 }}>
-                  Example
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>
-                    GET https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc
-                  </code>
-                </Paper>
+              <p className="text-[13px] font-medium mb-2 mt-4">Example</p>
+              <div className={cn("p-4 rounded-lg", isDark ? "bg-black/30" : "bg-gray-100")}>
+                <code className="text-[13px]">GET https://api.xrpl.to/api/tokens?limit=10&sortBy=vol24hxrp&sortType=desc</code>
+              </div>
 
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleTryApi('/api/tokens?limit=10')}
-                    startIcon={<CodeIcon />}
-                  >
-                    Try It Now
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
+              <button
+                onClick={() => handleTryApi('/api/tokens?limit=10')}
+                className={cn(
+                  "mt-4 flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                <Code size={14} />
+                Try It Now
+              </button>
+            </div>
 
-            <Card sx={{ mb: 3 }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                  <Chip label="GET" color="primary" size="small" />
-                  <Typography variant="h6" sx={{ fontFamily: '"Roboto Mono", monospace' }}>
-                    /api/trending
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Get trending tokens
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>GET https://api.xrpl.to/api/trending?limit=10</code>
-                </Paper>
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleTryApi('/api/trending?limit=10')}
-                    startIcon={<CodeIcon />}
-                  >
-                    Try It Now
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10" : "border-gray-200"
+            )}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-primary text-white">GET</span>
+                <code className="text-lg font-mono">/api/trending</code>
+              </div>
+              <p className="text-[13px] mb-4">Get trending tokens</p>
+              <div className={cn("p-4 rounded-lg", isDark ? "bg-black/30" : "bg-gray-100")}>
+                <code className="text-[13px]">GET https://api.xrpl.to/api/trending?limit=10</code>
+              </div>
+              <button
+                onClick={() => handleTryApi('/api/trending?limit=10')}
+                className={cn(
+                  "mt-4 flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                <Code size={14} />
+                Try It Now
+              </button>
+            </div>
+          </div>
         );
 
       case 'token-details':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
-              Token Details
-            </Typography>
+          <div>
+            <h2 className="text-2xl font-normal mb-6 text-primary">Token Details</h2>
 
-            <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                  <Chip label="GET" color="primary" size="small" />
-                  <Typography variant="h6" sx={{ fontFamily: '"Roboto Mono", monospace' }}>
-                    /api/token/{`{identifier}`}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Get detailed token information
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>GET https://api.xrpl.to/api/token/solo</code>
-                </Paper>
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleTryApi('/api/token/solo')}
-                    startIcon={<CodeIcon />}
-                  >
-                    Try It Now
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10 bg-primary/5" : "border-gray-200 bg-primary/5"
+            )}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-primary text-white">GET</span>
+                <code className="text-lg font-mono">/api/token/{`{identifier}`}</code>
+              </div>
+              <p className="text-[13px] mb-4">Get detailed token information</p>
+              <div className={cn("p-4 rounded-lg", isDark ? "bg-black/30" : "bg-gray-100")}>
+                <code className="text-[13px]">GET https://api.xrpl.to/api/token/solo</code>
+              </div>
+              <button
+                onClick={() => handleTryApi('/api/token/solo')}
+                className={cn(
+                  "mt-4 flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                <Code size={14} />
+                Try It Now
+              </button>
+            </div>
+          </div>
         );
 
       case 'trading':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
-              Trading
-            </Typography>
+          <div>
+            <h2 className="text-2xl font-normal mb-6 text-primary">Trading</h2>
 
-            <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                  <Chip label="GET" color="primary" size="small" />
-                  <Typography variant="h6" sx={{ fontFamily: '"Roboto Mono", monospace' }}>
-                    /api/history
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Get trading history
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>GET https://api.xrpl.to/api/history?limit=10</code>
-                </Paper>
-                <Box sx={{ mt: 2 }}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleTryApi('/api/history?limit=10')}
-                    startIcon={<CodeIcon />}
-                  >
-                    Try It Now
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Box>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10 bg-primary/5" : "border-gray-200 bg-primary/5"
+            )}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-primary text-white">GET</span>
+                <code className="text-lg font-mono">/api/history</code>
+              </div>
+              <p className="text-[13px] mb-4">Get trading history</p>
+              <div className={cn("p-4 rounded-lg", isDark ? "bg-black/30" : "bg-gray-100")}>
+                <code className="text-[13px]">GET https://api.xrpl.to/api/history?limit=10</code>
+              </div>
+              <button
+                onClick={() => handleTryApi('/api/history?limit=10')}
+                className={cn(
+                  "mt-4 flex items-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal",
+                  isDark ? "border-white/15 hover:border-primary hover:bg-primary/5" : "border-gray-300 hover:bg-gray-100"
+                )}
+              >
+                <Code size={14} />
+                Try It Now
+              </button>
+            </div>
+          </div>
         );
 
       case 'accounts':
         return (
-          <Box>
-            <Typography variant="h4" sx={{ mb: 3, color: theme.palette.primary.main }}>
-              Accounts
-            </Typography>
+          <div>
+            <h2 className="text-2xl font-normal mb-6 text-primary">Accounts</h2>
 
-            <Card sx={{ mb: 3, background: alpha(theme.palette.primary.main, 0.02) }}>
-              <CardContent>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 1 }}>
-                  <Chip label="GET" color="primary" size="small" />
-                  <Typography variant="h6" sx={{ fontFamily: '"Roboto Mono", monospace' }}>
-                    /api/account/balance/{`{address}`}
-                  </Typography>
-                </Box>
-                <Typography variant="body2" sx={{ mb: 2 }}>
-                  Get account balances
-                </Typography>
-                <Paper
-                  sx={{
-                    p: 2,
-                    backgroundColor: theme.palette.mode === 'dark' ? '#1e1e1e' : '#f8f9fa'
-                  }}
-                >
-                  <code>GET https://api.xrpl.to/api/account/balance/rAccount123...</code>
-                </Paper>
-              </CardContent>
-            </Card>
-          </Box>
+            <div className={cn(
+              "rounded-xl border-[1.5px] p-6 mb-6",
+              isDark ? "border-white/10 bg-primary/5" : "border-gray-200 bg-primary/5"
+            )}>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="px-2 py-1 text-xs font-medium rounded bg-primary text-white">GET</span>
+                <code className="text-lg font-mono">/api/account/balance/{`{address}`}</code>
+              </div>
+              <p className="text-[13px] mb-4">Get account balances</p>
+              <div className={cn("p-4 rounded-lg", isDark ? "bg-black/30" : "bg-gray-100")}>
+                <code className="text-[13px]">GET https://api.xrpl.to/api/account/balance/rAccount123...</code>
+              </div>
+            </div>
+          </div>
         );
 
       case 'errors':

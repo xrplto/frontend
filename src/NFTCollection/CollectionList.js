@@ -385,84 +385,81 @@ const StyledToolbar = styled.div`
 const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  min-height: 48px;
-  border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  box-shadow: none;
+  gap: 4px;
+  padding: 6px 10px;
+  min-height: 36px;
+  border-radius: 8px;
+  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
 
   @media (max-width: 900px) {
     width: 100%;
     justify-content: center;
-    padding: 6px 10px;
-    gap: 4px;
+    padding: 4px 8px;
+    gap: 2px;
   }
 `;
 
 const RowsSelector = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  min-height: 48px;
-  border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  box-shadow: none;
+  gap: 4px;
+  padding: 6px 10px;
+  min-height: 36px;
+  border-radius: 8px;
+  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: center;
-    padding: 6px 10px;
-    gap: 4px;
+    padding: 4px 8px;
+    gap: 2px;
   }
 `;
 
 const InfoBox = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
-  padding: 8px 14px;
-  min-height: 48px;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
-  box-shadow: none;
+  padding: 6px 10px;
+  min-height: 36px;
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  border-radius: 8px;
+  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: flex-start;
-    gap: 4px;
-    padding: 6px 10px;
+    gap: 2px;
+    padding: 4px 8px;
   }
 `;
 
 const Chip = styled.span`
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 400;
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)')};
-  border-radius: 6px;
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  border-radius: 5px;
   color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
 `;
 
 const Text = styled.span`
-  font-size: 13px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
   color: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)')};
   font-weight: ${(props) => props.fontWeight || 400};
 `;
 
 const NavButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -483,9 +480,9 @@ const NavButton = styled.button`
 `;
 
 const PageButton = styled.button`
-  min-width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 5px;
   border: none;
   background: ${(props) => (props.selected ? '#4285f4' : 'transparent')};
   color: ${(props) =>
@@ -494,9 +491,9 @@ const PageButton = styled.button`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
+  padding: 0 4px;
   margin: 0;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: ${(props) => (props.selected ? 500 : 400)};
   font-variant-numeric: tabular-nums;
 
@@ -520,14 +517,14 @@ const SelectButton = styled.button`
   background: transparent;
   border: none;
   color: #4285f4;
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 500;
+  font-size: 11px;
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
   gap: 2px;
-  min-width: 40px;
+  min-width: 36px;
 
   &:hover {
     background: rgba(66, 133, 244, 0.04);
@@ -542,24 +539,23 @@ const SelectMenu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.02)' : '#ffffff')};
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)')};
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background: ${({ darkMode }) => (darkMode ? 'rgba(20, 20, 20, 0.98)' : '#ffffff')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)')};
+  border-radius: 5px;
   z-index: 1000;
-  min-width: 60px;
+  min-width: 50px;
   backdrop-filter: blur(10px);
 `;
 
 const SelectOption = styled.button`
   display: block;
   width: 100%;
-  padding: 6px 12px;
+  padding: 4px 10px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ darkMode }) => (darkMode ? '#ffffff' : '#212B36')};
 
   &:hover {
@@ -1056,13 +1052,13 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
       <CenterBox>
         <PaginationContainer darkMode={darkMode}>
           <NavButton onClick={handleFirstPage} disabled={page === 0} title="First page" darkMode={darkMode}>
-            <ChevronsLeft size={14} />
+            <ChevronsLeft size={12} />
           </NavButton>
 
           {getPageNumbers().map((pageNum, idx) => {
             if (pageNum === '...') {
               return (
-                <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>
+                <span key={`ellipsis-${idx}`} style={{ padding: '0 2px', fontSize: '11px' }}>
                   ...
                 </span>
               );
@@ -1075,18 +1071,18 @@ const ListToolbar = memo(function ListToolbar({ rows, setRows, page, setPage, to
           })}
 
           <NavButton onClick={handleLastPage} disabled={page === page_count - 1} title="Last page" darkMode={darkMode}>
-            <ChevronsRight size={14} />
+            <ChevronsRight size={12} />
           </NavButton>
         </PaginationContainer>
       </CenterBox>
 
       <RowsSelector darkMode={darkMode}>
-        <List size={14} />
+        <List size={12} />
         <Text darkMode={darkMode}>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
             {rows}
-            <ChevronDown size={16} />
+            <ChevronDown size={12} />
           </SelectButton>
           {selectOpen && (
             <SelectMenu darkMode={darkMode}>

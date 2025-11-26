@@ -501,35 +501,35 @@ function NewsPage() {
             {/* Pagination */}
             {totalCount > 0 && (
               <div className="mt-4 flex flex-col flex-wrap items-center justify-between gap-4 sm:flex-row">
-                <div className={cn("flex flex-wrap items-center gap-2 rounded-xl border-[1.5px] px-4 py-2", isDark ? "border-white/15 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
-                  <span className={cn("rounded-md border-[1.5px] px-2 py-0.5 text-[13px] font-medium tabular-nums", isDark ? "border-white/15 text-white" : "border-gray-300 text-gray-700")}>
+                <div className={cn("flex flex-wrap items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-white/8 bg-transparent" : "border-black/8 bg-white")}>
+                  <span className={cn("rounded px-2 py-0.5 text-[11px] font-normal tabular-nums border", isDark ? "border-white/8 text-white" : "border-black/8 text-gray-700")}>
                     {`${(currentPage - 1) * itemsPerPage + 1}-${Math.min(currentPage * itemsPerPage, totalCount)} of ${totalCount.toLocaleString()}`}
                   </span>
-                  <span className={cn("text-[13px] tabular-nums", isDark ? "text-gray-400" : "text-gray-600")}>articles</span>
+                  <span className={cn("text-[11px] tabular-nums", isDark ? "text-gray-400" : "text-gray-600")}>articles</span>
                   {searchQuery && (
                     <>
-                      <span className={cn("text-[13px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>for</span>
-                      <span className={cn("text-[13px] font-semibold", isDark ? "text-white" : "text-gray-900")}>"{searchQuery}"</span>
+                      <span className={cn("text-[11px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>for</span>
+                      <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>"{searchQuery}"</span>
                     </>
                   )}
                   {selectedSource && !searchQuery && (
                     <>
-                      <span className={cn("text-[13px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>from</span>
-                      <span className={cn("text-[13px] font-semibold", isDark ? "text-white" : "text-gray-900")}>{selectedSource}</span>
+                      <span className={cn("text-[11px] font-normal", isDark ? "text-gray-400" : "text-gray-600")}>from</span>
+                      <span className={cn("text-[11px] font-medium", isDark ? "text-white" : "text-gray-900")}>{selectedSource}</span>
                     </>
                   )}
                 </div>
 
                 {totalPages > 1 && (
                   <div className="flex flex-1 justify-center">
-                    <div className={cn("flex items-center gap-1.5 rounded-xl border-[1.5px] px-3 py-1.5", isDark ? "border-white/15 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                    <div className={cn("flex items-center gap-1 rounded-lg border px-2.5 py-1.5 min-h-[36px]", isDark ? "border-white/8 bg-transparent" : "border-black/8 bg-white")}>
                       <button
                         onClick={() => handlePageChange(null, 1)}
                         disabled={currentPage === 1}
                         title="First page"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
+                        className="inline-flex h-[26px] w-[26px] items-center justify-center rounded disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
                       >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                         </svg>
                       </button>
@@ -559,14 +559,14 @@ function NewsPage() {
                         }
                         return pages.map((pageNum, idx) => {
                           if (pageNum === '...') {
-                            return <span key={`ellipsis-${idx}`} className={cn("px-1 text-[13px] tabular-nums", isDark ? "text-gray-400" : "text-gray-500")}>...</span>;
+                            return <span key={`ellipsis-${idx}`} className={cn("px-0.5 text-[11px] tabular-nums", isDark ? "text-gray-400" : "text-gray-500")}>...</span>;
                           }
                           return (
                             <button
                               key={pageNum}
                               onClick={() => handlePageChange(null, pageNum)}
                               className={cn(
-                                'inline-flex min-w-[24px] items-center justify-center rounded-lg px-1.5 py-0 text-[13px] tabular-nums',
+                                'inline-flex min-w-[22px] h-[22px] items-center justify-center rounded px-1 text-[11px] tabular-nums',
                                 pageNum === currentPage
                                   ? 'bg-primary font-medium text-white hover:bg-primary-600'
                                   : isDark ? 'font-normal hover:bg-primary/8' : 'font-normal text-gray-700 hover:bg-gray-200'
@@ -582,9 +582,9 @@ function NewsPage() {
                         onClick={() => handlePageChange(null, totalPages)}
                         disabled={currentPage === totalPages}
                         title="Last page"
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
+                        className="inline-flex h-[26px] w-[26px] items-center justify-center rounded disabled:cursor-not-allowed disabled:opacity-30 enabled:hover:bg-primary/8"
                       >
-                        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                         </svg>
                       </button>

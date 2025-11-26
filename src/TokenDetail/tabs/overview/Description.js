@@ -7,29 +7,24 @@ import { AppContext } from 'src/AppContext';
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
 
 const Card = styled.div`
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   width: 100%;
   margin-bottom: 6px;
-  &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  }
 `;
 
 const CardHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 10px;
-  border-bottom: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  padding: 8px 10px 4px;
 `;
 
 const Title = styled.div`
-  font-size: 11px;
-  font-weight: 400;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)'};
+  font-size: 10px;
+  font-weight: 500;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)'};
   text-transform: uppercase;
   letter-spacing: 0.5px;
 `;
@@ -40,36 +35,34 @@ const Actions = styled.div`
 `;
 
 const IconButton = styled.button`
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
-  border-radius: 8px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 6px;
   padding: 4px;
   background: transparent;
   cursor: pointer;
-  color: ${props => props.isError ? '#f44336' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+  color: ${props => props.isError ? '#ef4444' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   display: flex;
   align-items: center;
   &:hover {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
-    border-color: ${props => props.isError ? '#f44336' : '#4285f4'};
-    color: ${props => props.isError ? '#f44336' : '#4285f4'};
+    border-color: ${props => props.isError ? '#ef4444' : '#3b82f6'};
+    color: ${props => props.isError ? '#ef4444' : '#3b82f6'};
   }
 `;
 
 const Content = styled.div`
-  padding: 8px 10px;
+  padding: 4px 10px 10px;
   position: relative;
   overflow: ${props => props.expanded ? 'visible' : 'hidden'};
-  max-height: ${props => props.expanded ? 'none' : '60px'};
-  transition: max-height 0.3s ease;
+  max-height: ${props => props.expanded ? 'none' : '56px'};
 `;
 
 const Typography = styled.div`
-  font-size: ${props => props.variant === 'h6' ? '13px' : props.variant === 'subtitle1' ? '12px' : props.variant === 'subtitle2' ? '11px' : '11px'};
-  font-weight: ${props => props.variant?.startsWith('h') ? 400 : 400};
-  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') : (props.isDark ? '#FFFFFF' : '#212B36')};
-  margin-bottom: ${props => props.paragraph ? '4px' : props.gutterBottom ? '8px' : 0};
+  font-size: ${props => props.variant === 'h6' ? '12px' : props.variant === 'subtitle1' ? '11px' : props.variant === 'subtitle2' ? '11px' : '12px'};
+  font-weight: 400;
+  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
+  margin-bottom: ${props => props.paragraph ? '4px' : props.gutterBottom ? '6px' : 0};
   margin-top: ${props => props.gutterBottom ? '4px' : 0};
-  line-height: ${props => props.lineHeight || 1.4};
+  line-height: 1.5;
   font-style: ${props => props.fontStyle || 'normal'};
 `;
 

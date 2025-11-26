@@ -33,44 +33,34 @@ const alpha = (color, opacity) => {
 };
 
 const Container = styled('div')(({ isDark }) => ({
-  borderRadius: '12px',
+  borderRadius: '10px',
   background: 'transparent',
-  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-  boxShadow: 'none',
+  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
-  marginBottom: '6px',
-  '&:hover': {
-    boxShadow: 'none',
-    borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
-  }
+  marginBottom: '6px'
 }));
 
 const TokenCard = styled('div')(({ isDark }) => ({
   background: 'transparent',
-  backdropFilter: 'none',
-  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
-  borderRadius: '10px',
-  padding: '8px 10px',
+  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+  borderRadius: '8px',
+  padding: '6px 8px',
   cursor: 'pointer',
-  boxShadow: 'none',
   '&:hover': {
-    background: alpha('#4285f4', 0.04),
-    borderColor: alpha('#4285f4', 0.2)
+    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
   }
 }));
 
 const RankBadge = styled('div')(({ isDark, rank }) => {
   const getRankColors = () => {
-    if (rank === 1) return { bg: alpha('#FFD700', 0.1), color: '#FFD700', border: alpha('#FFD700', 0.3) };
-    if (rank === 2) return { bg: alpha('#C0C0C0', 0.1), color: '#C0C0C0', border: alpha('#C0C0C0', 0.3) };
-    if (rank === 3) return { bg: alpha('#CD7F32', 0.1), color: '#CD7F32', border: alpha('#CD7F32', 0.3) };
+    if (rank === 1) return { bg: 'rgba(234,179,8,0.15)', color: '#eab308' };
+    if (rank === 2) return { bg: 'rgba(156,163,175,0.15)', color: '#9ca3af' };
+    if (rank === 3) return { bg: 'rgba(249,115,22,0.15)', color: '#f97316' };
     return {
-      bg: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)',
-      color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-      border: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'
+      bg: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
+      color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
     };
   };
   const colors = getRankColors();
@@ -79,20 +69,14 @@ const RankBadge = styled('div')(({ isDark, rank }) => {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    width: 22,
-    height: 22,
-    borderRadius: '8px',
-    fontWeight: 400,
+    width: 20,
+    height: 20,
+    borderRadius: '6px',
+    fontWeight: 500,
     fontSize: '10px',
     flexShrink: 0,
     background: colors.bg,
-    color: colors.color,
-    border: `1.5px solid ${colors.border}`,
-    '@media (max-width: 600px)': {
-      width: 20,
-      height: 20,
-      fontSize: '10px'
-    }
+    color: colors.color
   };
 });
 
@@ -140,7 +124,7 @@ const Button = styled('button')(({ isDark }) => ({
   textTransform: 'none',
   fontSize: '11px',
   fontWeight: 400,
-  color: '#4285f4',
+  color: '#3b82f6',
   padding: '4px 8px',
   minHeight: 'auto',
   background: 'transparent',
@@ -148,13 +132,8 @@ const Button = styled('button')(({ isDark }) => ({
   cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: '4px',
   '&:hover': {
-    backgroundColor: alpha('#4285f4', 0.04)
-  },
-  '&:focus-visible': {
-    outline: '2px solid #4285f4',
-    outlineOffset: '2px'
+    color: '#60a5fa'
   }
 }));
 
@@ -181,24 +160,22 @@ const Typography = styled('span')(({ variant, color, sx = {}, isDark }) => {
 });
 
 const Chip = styled('span')(({ isDark }) => ({
-  height: 16,
-  fontSize: '9px',
-  backgroundColor: alpha('#4caf50', 0.08),
-  color: '#4caf50',
-  fontWeight: 400,
-  padding: '0 6px',
-  borderRadius: '6px',
-  border: `1.5px solid ${alpha('#4caf50', 0.15)}`,
+  height: 14,
+  fontSize: '8px',
+  backgroundColor: 'rgba(34,197,94,0.15)',
+  color: '#22c55e',
+  fontWeight: 500,
+  padding: '0 5px',
+  borderRadius: '4px',
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center'
 }));
 
 const Avatar = styled('div')(({ isDark }) => ({
-  width: 28,
-  height: 28,
-  fontSize: '12px',
-  border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+  width: 24,
+  height: 24,
+  fontSize: '10px',
   borderRadius: '50%',
   display: 'flex',
   alignItems: 'center',
@@ -385,23 +362,20 @@ const TrendingTokens = () => {
       {/* Header */}
       <Box
         style={{
-          marginBottom: '6px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '6px 10px',
-          borderBottom: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`
+          padding: '8px 10px 4px'
         }}
       >
         <Stack direction="row" alignItems="center" spacing={0.5}>
-          <Typography variant="h6" isDark={darkMode} style={{ fontWeight: 400, fontSize: '11px', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+          <Typography variant="h6" isDark={darkMode} style={{ fontWeight: 500, fontSize: '10px', color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             Trending Tokens
           </Typography>
           <Chip isDark={darkMode}>LIVE</Chip>
         </Stack>
         <Button isDark={darkMode} as="a" href="/trending" aria-label="View all trending tokens">
-          View All
-          <span style={{ fontSize: 10 }}>→</span>
+          View All→
         </Button>
       </Box>
 
@@ -411,15 +385,13 @@ const TrendingTokens = () => {
           display: isMobile ? 'none' : 'flex',
           alignItems: 'center',
           gap: '8px',
-          marginBottom: '4px',
-          padding: '4px 10px',
-          opacity: 0.5
+          padding: '2px 10px 6px'
         }}
       >
-        <Box style={{ width: 22 }} />
-        <Box style={{ width: 28 }} />
+        <Box style={{ width: 20 }} />
+        <Box style={{ width: 24 }} />
         <Box style={{ flex: '1 1 auto', minWidth: 0, marginLeft: '6px' }}>
-          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 500, letterSpacing: '0.5px', color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
             Token
           </Typography>
         </Box>
@@ -431,16 +403,16 @@ const TrendingTokens = () => {
             marginLeft: 'auto'
           }}
         >
-          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 500, letterSpacing: '0.5px', textAlign: 'right', color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
             Price
           </Typography>
-          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 500, letterSpacing: '0.5px', textAlign: 'right', color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
             24h %
           </Typography>
-          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 500, letterSpacing: '0.5px', textAlign: 'right', color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
             MCap
           </Typography>
-          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 400, letterSpacing: '0.5px', textAlign: 'right' }}>
+          <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 500, letterSpacing: '0.5px', textAlign: 'right', color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
             Volume
           </Typography>
         </Box>
@@ -484,7 +456,7 @@ const TrendingTokens = () => {
       )}
 
       {/* Token List */}
-      <Stack spacing={0.5} sx={{ padding: isMobile ? '6px' : '8px', paddingBottom: isMobile ? '6px' : '8px' }}>
+      <Stack spacing={0.25} sx={{ padding: '6px 8px 8px' }}>
         {trendingList.slice(0, isMobile ? 5 : 15).map((token, index) => {
           const rank = index + 1;
           const priceChange = token.pro24h || 0;
@@ -592,7 +564,7 @@ const TrendingTokens = () => {
                       <Box
                         className="value"
                         style={{
-                          color: isPositive ? '#4caf50' : '#f44336'
+                          color: isPositive ? '#22c55e' : '#ef4444'
                         }}
                       >
                         {isPositive ? '+' : ''}

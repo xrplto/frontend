@@ -50,7 +50,7 @@ const Tooltip = styled.div`
 
 export default function Watch({ token }) {
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { accountProfile, openSnackbar, setLoading, themeName } = useContext(AppContext);
+  const { accountProfile, openSnackbar, setLoading, themeName, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [watchList, setWatchList] = useState([]);
@@ -78,7 +78,7 @@ export default function Watch({ token }) {
     const accountToken = accountProfile?.token;
 
     if (!account || !accountToken) {
-      openSnackbar('Please login!', 'error');
+      setOpenWalletModal(true);
       return;
     }
 

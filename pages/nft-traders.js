@@ -168,18 +168,19 @@ const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 4px;
   margin-top: 16px;
-  padding: 8px 14px;
-  border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : '#fff')};
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  padding: 6px 10px;
+  min-height: 36px;
+  border-radius: 8px;
+  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
 `;
 
 const NavButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
   border: none;
   background: transparent;
   cursor: pointer;
@@ -193,16 +194,16 @@ const NavButton = styled.button`
 `;
 
 const PageButton = styled.button`
-  min-width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 5px;
   border: none;
   background: ${({ selected }) => (selected ? '#4285f4' : 'transparent')};
   color: ${({ selected, darkMode }) => (selected ? '#fff' : (darkMode ? '#fff' : '#212B36'))};
   cursor: pointer;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: ${({ selected }) => (selected ? 500 : 400)};
-  padding: 0 6px;
+  padding: 0 4px;
 
   &:hover:not(:disabled) { background: ${({ selected }) => (selected ? '#1976D2' : 'rgba(66,133,244,0.08)')}; }
 `;
@@ -403,11 +404,11 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
             {totalPages > 1 && (
               <PaginationContainer darkMode={darkMode}>
                 <NavButton darkMode={darkMode} onClick={() => setPage(0)} disabled={page === 0}>
-                  <ChevronsLeft size={14} />
+                  <ChevronsLeft size={12} />
                 </NavButton>
                 {getPageNumbers().map((p, i) =>
                   p === '...' ? (
-                    <span key={`e${i}`} style={{ padding: '0 4px', fontSize: 12 }}>...</span>
+                    <span key={`e${i}`} style={{ padding: '0 2px', fontSize: 11 }}>...</span>
                   ) : (
                     <PageButton key={p} selected={p === page + 1} darkMode={darkMode} onClick={() => setPage(p - 1)}>
                       {p}
@@ -415,7 +416,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                   )
                 )}
                 <NavButton darkMode={darkMode} onClick={() => setPage(totalPages - 1)} disabled={page === totalPages - 1}>
-                  <ChevronsRight size={14} />
+                  <ChevronsRight size={12} />
                 </NavButton>
               </PaginationContainer>
             )}

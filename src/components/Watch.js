@@ -10,7 +10,7 @@ import { AppContext } from 'src/AppContext';
 // ----------------------------------------------------------------------
 export default function Watch({ collection }) {
   const BASE_URL = 'https://api.xrpl.to/api'; //process.env.API_URL;
-  const { themeName, accountProfile, openSnackbar, setLoading } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar, setLoading, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [watchList, setWatchList] = useState([]);
@@ -58,7 +58,7 @@ export default function Watch({ collection }) {
     const accountToken = accountProfile?.token;
 
     if (!account || !accountToken) {
-      openSnackbar('Please login!', 'error');
+      setOpenWalletModal(true);
       return;
     }
 

@@ -21,18 +21,12 @@ const Spinner = styled(Loader2)`
   }
 `;
 const Typography = styled.div`
-  font-size: ${props =>
-    props.variant === 'h6' ? '1.25rem' :
-    props.variant === 'body2' ? '0.875rem' :
-    props.variant === 'caption' ? '0.75rem' : '1rem'};
+  font-size: ${props => props.variant === 'h6' ? '14px' : props.variant === 'caption' ? '11px' : '12px'};
   font-weight: ${props => props.fontWeight || 400};
   color: ${props =>
-    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') :
-    props.color === 'text.primary' ? (props.isDark ? '#FFFFFF' : '#212B36') :
-    props.color === 'primary.main' ? '#147DFE' :
-    props.color === 'success.main' ? '#4caf50' :
-    props.isDark ? '#FFFFFF !important' : '#212B36 !important'};
-  opacity: ${props => props.opacity || 1};
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)') :
+    props.color === 'success.main' ? '#22c55e' :
+    (props.isDark ? '#fff' : '#1a1a1a')};
 `;
 
 // Constants
@@ -98,67 +92,44 @@ const highlightAnimation = (isDark) => `
 
 // Styled components with improved design
 const LiveIndicator = styled.div`
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 4px;
   padding: 2px 6px;
-  border-radius: 12px;
-  background-color: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  border-radius: 4px;
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)'};
 `;
 
 const LiveCircle = styled.div`
-  width: 8px;
-  height: 8px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background-color: #147DFE;
+  background: #3b82f6;
   animation: pulse 2s infinite;
   @keyframes pulse {
-    0% {
-      transform: scale(0.95);
-      opacity: 0.8;
-    }
-    50% {
-      transform: scale(1.1);
-      opacity: 1;
-    }
-    100% {
-      transform: scale(0.95);
-      opacity: 0.8;
-    }
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
   }
 `;
 
 const Card = styled.div`
-  margin-bottom: 1px;
-  border-radius: 0;
   background: transparent;
-  border: none;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
   position: relative;
-  overflow: hidden;
-  animation: ${props => props.isNew ? 'highlight 1s ease-in-out' : 'none'};
-  &:hover {
-    background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  }
+  animation: ${props => props.isNew ? 'highlight 0.8s ease-out' : 'none'};
+  &:hover { background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}; }
   ${props => props.isNew && highlightAnimation(props.isDark)}
 `;
 
 const CardContent = styled.div`
-  padding: 6px 8px;
+  padding: 8px 0;
 `;
 
 const TradeTypeChip = styled.div`
-  font-size: 13px;
-  height: 20px;
-  font-weight: 400;
-  border-radius: 4px;
-  background: transparent;
-  color: ${props => props.tradetype === 'BUY' ? '#4caf50' : '#f44336'};
-  border: none;
-  padding: 0 6px;
-  display: inline-flex;
-  align-items: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: ${props => props.tradetype === 'BUY' ? '#22c55e' : '#ef4444'};
+  width: 32px;
 `;
 
 const VolumeIndicator = styled.div`
@@ -167,35 +138,30 @@ const VolumeIndicator = styled.div`
   top: 0;
   height: 100%;
   width: ${props => props.volume}%;
-  background: ${props => props.isDark ? 'rgba(33, 150, 243, 0.04)' : 'rgba(33, 150, 243, 0.02)'};
-  transition: width 0.3s ease-in-out;
-  border-radius: 12px;
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.04)' : 'rgba(59,130,246,0.03)'};
+  transition: width 0.2s;
 `;
 
 const Pagination = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 2px;
 `;
 
 const PaginationButton = styled.button`
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
-  background: ${props => props.selected ? '#147DFE' : 'transparent'};
-  border: 1.5px solid ${props => props.selected ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')};
-  border-radius: 12px;
-  margin: 0 3px;
-  font-weight: ${props => props.selected ? 500 : 400};
-  min-width: 32px;
-  height: 32px;
+  color: ${props => props.selected ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+  background: ${props => props.selected ? '#3b82f6' : 'transparent'};
+  border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 400;
+  min-width: 28px;
+  height: 28px;
   cursor: pointer;
-  &:hover {
-    background-color: ${props => props.selected ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)')};
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  transition: border-color 0.15s;
+  &:hover { border-color: #3b82f6; }
+  &:disabled { opacity: 0.4; cursor: default; }
 `;
 
 const Table = styled.table`
@@ -206,24 +172,14 @@ const Table = styled.table`
 
 const TableHeader = styled.div`
   display: flex;
-  padding: 12px 8px;
-  background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  border-bottom: ${props => props.isDark ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)'};
-  border-radius: 12px 12px 0 0;
-  border: ${props => props.isDark ? '1.5px solid rgba(255,255,255,0.15)' : '1.5px solid rgba(0,0,0,0.15)'};
-
-  & > div,
-  & > div *,
-  & div,
-  & span {
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    text-transform: uppercase !important;
-    color: ${props => props.isDark ? '#FFFFFF !important' : '#000000 !important'};
-  }
-
-  & span[style*="color: #147DFE"] {
-    color: #147DFE !important;
+  padding: 10px 0;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  & > div {
+    font-size: 10px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   }
 `;
 
@@ -253,11 +209,9 @@ const TableContainer = styled.div`
 
 const Link = styled.a`
   text-decoration: none;
-  color: #147DFE;
-  font-weight: 400;
-  &:hover {
-    text-decoration: underline;
-  }
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
+  font-size: 11px;
+  &:hover { color: #3b82f6; }
 `;
 
 const Tooltip = ({ title, children, arrow }) => {
@@ -292,19 +246,17 @@ const Tooltip = ({ title, children, arrow }) => {
 };
 
 const IconButton = styled.button`
-  padding: ${props => props.size === 'small' ? '4px' : '8px'};
+  padding: 4px;
   background: transparent;
-  border: 1.5px solid transparent;
-  border-radius: 6px;
-  color: ${props => props.isDark ? '#147DFE' : '#147DFE'};
+  border: none;
+  border-radius: 4px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  &:hover {
-    background-color: ${props => props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)'};
-    border-color: ${props => props.isDark ? 'rgba(20,125,254,0.2)' : 'rgba(20,125,254,0.2)'};
-  }
+  transition: color 0.15s;
+  &:hover { color: #3b82f6; }
 `;
 
 const FormControlLabel = styled.label`
@@ -318,53 +270,44 @@ const FormControlLabel = styled.label`
 `;
 
 const Tabs = styled.div`
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   display: flex;
-  gap: 0;
+  gap: 4px;
+  margin-bottom: 12px;
 `;
 
 const Tab = styled.button`
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 400;
-  text-transform: none;
-  min-height: 36px;
-  padding: 8px 16px;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid ${props => props.selected ? '#147DFE' : 'transparent'};
-  color: ${props => props.selected ? '#147DFE' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
+  padding: 6px 12px;
+  background: ${props => props.selected ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
+  border: 1.5px solid ${props => props.selected ? '#3b82f6' : 'transparent'};
+  border-radius: 6px;
+  color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
   cursor: pointer;
-  &:hover {
-    color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
-  }
+  transition: all 0.15s;
+  &:hover { color: ${props => props.isDark ? '#fff' : '#1a1a1a'}; }
 `;
 
 const Button = styled.button`
-  padding: ${props => props.size === 'small' ? '4px 12px' : '12px 24px'};
-  font-size: ${props => props.size === 'small' ? '12px' : '14px'};
+  padding: ${props => props.size === 'small' ? '4px 10px' : '8px 16px'};
+  font-size: 11px;
   font-weight: 400;
-  text-transform: none;
-  border-radius: ${props => props.size === 'small' ? '8px' : '12px'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  border-radius: 6px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'};
   background: transparent;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#374151'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  &:hover {
-    border-color: #147DFE;
-    background-color: ${props => props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)'};
-  }
+  transition: border-color 0.15s;
+  &:hover { border-color: #3b82f6; }
 `;
 
 const Dialog = styled.div`
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0,0,0,0.5);
+  inset: 0;
+  background: rgba(0,0,0,0.8);
   display: ${props => props.open ? 'flex' : 'none'};
   align-items: center;
   justify-content: center;
@@ -372,11 +315,11 @@ const Dialog = styled.div`
 `;
 
 const DialogPaper = styled.div`
-  background: ${props => props.isDark ? '#1a1a1a' : '#ffffff'};
+  background: #000;
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 12px;
-  padding: 0;
-  max-width: ${props => props.maxWidth === 'sm' ? '600px' : '900px'};
-  width: 100%;
+  max-width: 400px;
+  width: 90%;
   max-height: 90vh;
   overflow: auto;
 `;
@@ -385,48 +328,47 @@ const DialogTitle = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 24px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  font-size: 1.25rem;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  font-size: 14px;
   font-weight: 500;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: #fff;
 `;
 
 const DialogContent = styled.div`
-  padding: 24px;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  padding: 20px;
+  color: #fff;
 `;
 
 const TextField = styled.input`
   width: 100%;
-  padding: 8px 12px;
-  font-size: 14px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+  padding: 10px 12px;
+  font-size: 13px;
+  border: 1px solid rgba(255,255,255,0.12);
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
-  &:focus {
-    outline: none;
-    border-color: #147DFE;
-  }
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  &:focus { outline: none; border-color: #3b82f6; }
+  &::placeholder { color: rgba(255,255,255,0.3); }
 `;
 
 const FormControl = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const RadioGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 `;
 
 const Radio = styled.input`
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   cursor: pointer;
+  accent-color: #3b82f6;
 `;
 
 // Helper functions
@@ -1032,129 +974,47 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       }
 
       return (
-        <Card
-          key={trade._id}
-          isNew={newTradeIds.has(trade._id)}
-          tradetype={isBuy ? 'BUY' : 'SELL'}
-          isDark={isDark}
-        >
+        <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
           <VolumeIndicator volume={volumePercentage} isDark={isDark} />
           <CardContent>
-            <Box
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '1fr 0.8fr 1.5fr 1.5fr 1fr 0.3fr',
-                gap: '8px',
-                alignItems: 'center'
-              }}
-            >
-              {/* Time and Type */}
+            <Box style={{ display: 'grid', gridTemplateColumns: '0.9fr 0.8fr 1.4fr 1.4fr 0.8fr 0.2fr', gap: '8px', alignItems: 'center' }}>
               <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  fontWeight="400"
-                  isDark={isDark}
-                  style={{
-                    width: '65px',
-                    fontSize: '12px',
-                    opacity: 0.7,
-                    flexShrink: 0
-                  }}
-                >
+                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', width: '52px' }}>
                   {formatRelativeTime(trade.time)}
-                </Typography>
-                <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>
-                  {isBuy ? 'BUY' : 'SELL'}
-                </TradeTypeChip>
+                </span>
+                <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
               </Box>
 
-              {/* Price */}
-              <Box>
-                <Typography
-                  variant="body2"
-                  fontWeight="500"
-                  color="text.primary"
-                  isDark={isDark}
-                  style={{ fontSize: '13px' }}
-                >
-                  {formatPrice(price)}
-                </Typography>
+              <span style={{ fontSize: '12px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                {formatPrice(price)}
+              </span>
+
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <img src={getTokenImageUrl(amountData.issuer, amountData.currency)} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%' }} />
+                <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                  {formatTradeValue(amountData.value)} <span style={{ opacity: 0.5 }}>{decodeCurrency(amountData.currency)}</span>
+                </span>
               </Box>
 
-              {/* Amount */}
-              <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <img
-                  src={getTokenImageUrl(amountData.issuer, amountData.currency)}
-                  alt={decodeCurrency(amountData.currency)}
-                  style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
-                />
-                <Typography
-                  variant="body2"
-                  fontWeight="500"
-                  color="text.primary"
-                  isDark={isDark}
-                  style={{ fontSize: '13px' }}
-                >
-                  {formatTradeValue(amountData.value)} {decodeCurrency(amountData.currency)}
-                </Typography>
-              </Box>
-
-              {/* Total */}
-              <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <img
-                  src={getTokenImageUrl(totalData.issuer, totalData.currency)}
-                  alt={decodeCurrency(totalData.currency)}
-                  style={{ width: '16px', height: '16px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }}
-                />
-                <Typography
-                  variant="body2"
-                  fontWeight="500"
-                  color="text.primary"
-                  isDark={isDark}
-                  style={{ fontSize: '13px' }}
-                >
-                  {formatTradeValue(totalData.value)} {decodeCurrency(totalData.currency)}
-                </Typography>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <img src={getTokenImageUrl(totalData.issuer, totalData.currency)} alt="" style={{ width: '14px', height: '14px', borderRadius: '50%' }} />
+                <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                  {formatTradeValue(totalData.value)} <span style={{ opacity: 0.5 }}>{decodeCurrency(totalData.currency)}</span>
+                </span>
                 {(() => {
                   const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
                   const { Icon, size, opacity } = getTradeSizeInfo(val);
-                  return <Icon size={size} style={{ opacity, color: '#147DFE' }} />;
+                  return <Icon size={size - 2} style={{ opacity: opacity * 0.6, color: '#3b82f6', marginLeft: '2px' }} />;
                 })()}
               </Box>
 
-              {/* Maker/Taker */}
-              <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Tooltip title={`Maker: ${trade.maker}\nTaker: ${trade.taker}`} arrow>
-                  <Link
-                    href={`/profile/${addressToShow}`}
-                  >
-                    <Typography
-                      variant="body2"
-                      fontWeight="400"
-                      isDark={isDark}
-                      style={{ fontSize: '12px', color: '#147DFE', opacity: 0.9 }}
-                    >
-                      {addressToShow
-                        ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}`
-                        : ''}
-                    </Typography>
-                  </Link>
-                </Tooltip>
-              </Box>
+              <Link href={`/profile/${addressToShow}`} isDark={isDark}>
+                {addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : ''}
+              </Link>
 
-              {/* Actions */}
-              <Box style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <Tooltip title="View Transaction" arrow>
-                  <IconButton
-                    size="small"
-                    onClick={() => handleTxClick(trade.hash)}
-                    isDark={isDark}
-                  >
-                    <ExternalLink size={14} />
-                  </IconButton>
-                </Tooltip>
-              </Box>
+              <IconButton onClick={() => handleTxClick(trade.hash)} isDark={isDark}>
+                <ExternalLink size={12} />
+              </IconButton>
             </Box>
           </CardContent>
         </Card>
@@ -1197,52 +1057,37 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   }
 
   return (
-    <Stack spacing={1} style={{ marginLeft: 0, marginRight: 0, width: '100%' }}>
-      <Box
-        style={{
-          borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between'
-        }}
-      >
+    <Stack spacing={1} style={{ width: '100%' }}>
+      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <Tabs isDark={isDark}>
-          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>Trading History</Tab>
-          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}>AMM Pools</Tab>
-          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}>Top Traders</Tab>
-          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Rich List</Tab>
+          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>Trades</Tab>
+          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}>Pools</Tab>
+          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}>Traders</Tab>
+          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Holders</Tab>
         </Tabs>
+        {tabValue === 0 && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+            <input type="checkbox" checked={xrpOnly} onChange={handleXrpOnlyChange} style={{ width: '12px', height: '12px', accentColor: '#3b82f6' }} />
+            XRP pairs
+          </label>
+        )}
       </Box>
 
       {tabValue === 0 && (
         <>
-          <Box style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-              <input type="checkbox" checked={xrpOnly} onChange={handleXrpOnlyChange} style={{ width: '14px', height: '14px', accentColor: '#147DFE' }} />
-              XRP Only
-            </label>
-          </Box>
-
-          <TableHeader isDark={isDark} style={{ padding: '8px' }}>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              TIME / TYPE
-              <div style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '4px',
-                padding: '1px 6px',
-                borderRadius: '8px',
-                border: isDark ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(0,0,0,0.15)'
-              }}>
-                <div style={{ width: '5px', height: '5px', borderRadius: '50%', backgroundColor: '#147DFE', animation: 'pulse 2s infinite' }}></div>
-                <span style={{ color: '#147DFE', fontSize: '9px', fontWeight: 500 }}>LIVE</span>
-              </div>
+          <TableHeader isDark={isDark}>
+            <div style={{ flex: '0.9', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              Time
+              <LiveIndicator isDark={isDark}>
+                <LiveCircle />
+                <span style={{ color: '#3b82f6', fontSize: '9px', fontWeight: 500 }}>LIVE</span>
+              </LiveIndicator>
             </div>
-            <div style={{ flex: '0.8' }}>PRICE</div>
-            <div style={{ flex: '1.5' }}>AMOUNT</div>
-            <div style={{ flex: '1.5' }}>TOTAL</div>
-            <div style={{ flex: 1 }}>BY</div>
-            <div style={{ flex: '0.3' }}></div>
+            <div style={{ flex: '0.8' }}>Price</div>
+            <div style={{ flex: '1.4' }}>Amount</div>
+            <div style={{ flex: '1.4' }}>Total</div>
+            <div style={{ flex: '0.8' }}>Account</div>
+            <div style={{ flex: '0.2' }}></div>
           </TableHeader>
 
           <Stack spacing={0.25}>
@@ -1272,119 +1117,92 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
 
       {tabValue === 1 && (
-        <Box style={{ marginTop: '16px' }}>
+        <Box>
           {ammLoading ? (
-            <Box style={{ display: 'flex', justifyContent: 'center', padding: '32px' }}>
-              <Spinner size={32} />
+            <Box style={{ display: 'flex', justifyContent: 'center', padding: '24px' }}>
+              <Spinner size={20} />
             </Box>
           ) : ammPools.length === 0 ? (
-            <Box style={{ textAlign: 'center', padding: '24px', border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`, borderRadius: '12px' }}>
-              <Typography variant="body2" color="text.secondary" isDark={isDark}>No AMM pools found</Typography>
+            <Box style={{ textAlign: 'center', padding: '20px', border: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px' }}>
+              <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No pools found</span>
             </Box>
           ) : (
-            <TableContainer isDark={isDark} style={{ borderRadius: '12px' }}>
-              <Table size="small" isDark={isDark}>
-                <TableHead>
-                  <TableRow isDark={isDark} style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)' }}>
-                    <TableCell style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Pool Pair</TableCell>
-                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Trading Fee</TableCell>
-                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>7d APY</TableCell>
-                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>7d Fees Earned</TableCell>
-                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>7d Volume</TableCell>
-                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Liquidity</TableCell>
-                    <TableCell align="right" style={{ fontWeight: 400, fontSize: '11px', opacity: 0.7, textTransform: 'uppercase', paddingTop: '12px', paddingBottom: '12px' }}>Action</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {ammPools.map((pool) => {
-                    const asset1 = pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
-                    const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
-                    const feePercent = pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-';
-                    return (
-                      <TableRow
-                        key={pool._id}
-                        isDark={isDark}
-                      >
-                        <TableCell style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Box style={{ display: 'flex', alignItems: 'center', marginRight: '4px' }}>
-                              <img
-                                src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)}
-                                alt={asset1}
-                                style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)' }}
-                              />
-                              <img
-                                src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)}
-                                alt={asset2}
-                                style={{ width: 20, height: 20, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.1)', marginLeft: -8 }}
-                              />
-                            </Box>
-                            <Typography variant="body2" fontWeight="500" isDark={isDark} style={{ fontSize: '13px' }}>
-                              {asset1}/{asset2}
-                            </Typography>
-                          </Box>
-                        </TableCell>
-                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px', opacity: 0.8 }}>
-                            {feePercent}%
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Typography
-                            variant="body2"
-                            color={pool.apy7d?.apy > 0 ? 'success.main' : 'text.secondary'}
-                            isDark={isDark}
-                            style={{ fontSize: '13px', fontWeight: pool.apy7d?.apy > 0 ? 500 : 400 }}
-                          >
-                            {pool.apy7d?.apy ? `${pool.apy7d.apy.toFixed(2)}%` : '-'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
-                            {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
-                            {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          {pool.apy7d?.liquidity > 0 ? (
-                            <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px' }}>
-                              {abbreviateNumber(pool.apy7d.liquidity)} XRP
-                            </Typography>
-                          ) : pool.currentLiquidity ? (
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
-                              <Typography variant="body2" isDark={isDark} style={{ fontSize: '12px', opacity: 0.8 }}>
-                                {abbreviateNumber(pool.currentLiquidity.asset1Amount)} {asset1}
-                              </Typography>
-                              <Typography variant="body2" isDark={isDark} style={{ fontSize: '12px', opacity: 0.8 }}>
-                                {abbreviateNumber(pool.currentLiquidity.asset2Amount)} {asset2}
-                              </Typography>
-                            </div>
-                          ) : (
-                            <Typography variant="body2" isDark={isDark} style={{ fontSize: '13px', opacity: 0.5 }}>-</Typography>
-                          )}
-                        </TableCell>
-                        <TableCell align="right" style={{ paddingTop: '12px', paddingBottom: '12px' }}>
-                          <Button
-                            size="small"
-                            onClick={() => handleAddLiquidity(pool)}
-                            style={{
-                              padding: '4px 12px'
-                            }}
-                            isDark={isDark}
-                          >
-                            <Plus size={12} /> Add
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
+              {/* Header */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 1fr 0.5fr', gap: '8px', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Pool</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fee</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>APY</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fees</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Volume</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Liquidity</span>
+                <span></span>
+              </div>
+              {/* Rows */}
+              {ammPools.map((pool) => {
+                const asset1 = pool.asset1?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset1?.currency);
+                const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
+                const feePercent = pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-';
+                const hasApy = pool.apy7d?.apy > 0;
+                return (
+                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 1fr 0.5fr', gap: '8px', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center' }}>
+                    {/* Pool pair */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <div style={{ display: 'flex' }}>
+                        <img src={getTokenImageUrl(pool.asset1.issuer, pool.asset1.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%' }} />
+                        <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }} />
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{asset1}/{asset2}</span>
+                    </div>
+                    {/* Fee */}
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', textAlign: 'right' }}>{feePercent}%</span>
+                    {/* APY */}
+                    <span style={{ fontSize: '11px', fontWeight: hasApy ? 500 : 400, color: hasApy ? '#22c55e' : (isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'), textAlign: 'right' }}>
+                      {hasApy ? `${pool.apy7d.apy.toFixed(1)}%` : '-'}
+                    </span>
+                    {/* Fees */}
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', textAlign: 'right' }}>
+                      {pool.apy7d?.fees > 0 ? abbreviateNumber(pool.apy7d.fees) : '-'}
+                    </span>
+                    {/* Volume */}
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', textAlign: 'right' }}>
+                      {pool.apy7d?.volume > 0 ? abbreviateNumber(pool.apy7d.volume) : '-'}
+                    </span>
+                    {/* Liquidity */}
+                    <div style={{ textAlign: 'right' }}>
+                      {pool.apy7d?.liquidity > 0 ? (
+                        <span style={{ fontSize: '11px', color: isDark ? '#fff' : '#1a1a1a' }}>{abbreviateNumber(pool.apy7d.liquidity)} <span style={{ opacity: 0.5 }}>XRP</span></span>
+                      ) : pool.currentLiquidity ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', lineHeight: 1.3 }}>
+                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{abbreviateNumber(pool.currentLiquidity.asset1Amount)} {asset1}</span>
+                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>{abbreviateNumber(pool.currentLiquidity.asset2Amount)} {asset2}</span>
+                        </div>
+                      ) : <span style={{ fontSize: '11px', opacity: 0.3 }}>-</span>}
+                    </div>
+                    {/* Action */}
+                    <button
+                      onClick={() => handleAddLiquidity(pool)}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '11px',
+                        fontWeight: 500,
+                        borderRadius: '6px',
+                        border: 'none',
+                        background: '#3b82f6',
+                        color: '#fff',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        marginLeft: 'auto'
+                      }}
+                    >
+                      <Plus size={12} /> Add
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </Box>
       )}
@@ -1469,17 +1287,22 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 </div>
               )}
 
-              <Button
+              <button
                 onClick={handleSubmitDeposit}
-                isDark={isDark}
                 style={{
                   padding: '12px 24px',
                   fontSize: '14px',
-                  width: '100%'
+                  fontWeight: 500,
+                  width: '100%',
+                  background: '#3b82f6',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer'
                 }}
               >
                 Add Liquidity
-              </Button>
+              </button>
             </Stack>
           )}
         </DialogContent>

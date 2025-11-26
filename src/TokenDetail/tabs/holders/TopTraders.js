@@ -201,75 +201,65 @@ export default function TopTraders({ token }) {
       ) : (
         <>
           {/* Table */}
-          <div className={cn(
-            'overflow-hidden rounded-xl border-[1.5px]',
-            isDark ? 'border-white/10' : 'border-gray-200'
-          )}>
+          <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
-                  <th className={cn('px-4 py-3 text-left text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>#</th>
-                  <th className={cn('px-4 py-3 text-left text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Trader</th>
-                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>P&L 24h</th>
-                  <th className={cn('hidden md:table-cell px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>P&L 7d</th>
-                  <th className={cn('hidden lg:table-cell px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Volume</th>
-                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Trades</th>
-                  <th className={cn('px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>ROI</th>
-                  <th className={cn('hidden md:table-cell px-4 py-3 text-right text-[11px] font-medium uppercase', isDark ? 'text-white/60' : 'text-gray-500')}>Last Trade</th>
+                <tr>
+                  <th className={cn('py-2 pr-3 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
+                  <th className={cn('py-2 px-3 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trader</th>
+                  <th className={cn('py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>P&L 24h</th>
+                  <th className={cn('hidden md:table-cell py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>P&L 7d</th>
+                  <th className={cn('hidden lg:table-cell py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Volume</th>
+                  <th className={cn('py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
+                  <th className={cn('py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
+                  <th className={cn('hidden md:table-cell py-2 pl-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Trade</th>
                 </tr>
               </thead>
               <tbody>
-
                 {paginatedTraders.map((trader, index) => (
                   <tr
                     key={trader.address + '-' + index}
                     className={cn(
-                      'border-b transition-colors',
-                      isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50'
+                      isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'
                     )}
                   >
-                    <td className="px-4 py-3">
-                      <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    <td className="py-2.5 pr-3">
+                      <span className={cn('text-[12px]', isDark ? 'text-white/40' : 'text-gray-400')}>
                         {page * rowsPerPage + index + 1}
                       </span>
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <Link href={`/profile/${trader.address}`} className="text-[13px] text-primary hover:underline">
-                          {`${trader.address.slice(0, 6)}...${trader.address.slice(-6)}`}
-                        </Link>
-                        {trader.AMM && (
-                          <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] text-white">AMM</span>
-                        )}
-                      </div>
+                    <td className="py-2.5 px-3">
+                      <Link href={`/profile/${trader.address}`} className={cn('text-[12px] font-mono hover:text-primary', isDark ? 'text-primary' : 'text-primary')}>
+                        {`${trader.address.slice(0, 6)}...${trader.address.slice(-6)}`}
+                      </Link>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={cn('text-[13px] font-medium', trader.profit24h >= 0 ? 'text-green-500' : 'text-red-500')}>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className={cn('text-[12px] font-medium', trader.profit24h >= 0 ? 'text-green-500' : 'text-red-500')}>
                         {trader.profit24h >= 0 ? '▲' : '▼'} {fNumber(Math.abs(trader.profit24h))}
                       </span>
                     </td>
-                    <td className="hidden md:table-cell px-4 py-3 text-right">
-                      <span className={cn('text-[13px] font-medium', trader.profit7d >= 0 ? 'text-green-500' : 'text-red-500')}>
+                    <td className="hidden md:table-cell py-2.5 px-3 text-right">
+                      <span className={cn('text-[12px] font-medium', trader.profit7d >= 0 ? 'text-green-500' : 'text-red-500')}>
                         {trader.profit7d >= 0 ? '▲' : '▼'} {fNumber(Math.abs(trader.profit7d))}
                       </span>
                     </td>
-                    <td className="hidden lg:table-cell px-4 py-3 text-right">
-                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                    <td className="hidden lg:table-cell py-2.5 px-3 text-right">
+                      <span className={cn('text-[12px]', isDark ? 'text-white/80' : 'text-gray-700')}>
                         {fNumber(trader.totalVolume)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={cn('text-[13px]', isDark ? 'text-white' : 'text-gray-900')}>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className={cn('text-[12px]', isDark ? 'text-white/80' : 'text-gray-700')}>
                         {fNumber(trader.totalTrades)}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className={cn('text-[13px] font-medium', trader.roi >= 0 ? 'text-green-500' : 'text-red-500')}>
+                    <td className="py-2.5 px-3 text-right">
+                      <span className={cn('text-[12px] font-medium', trader.roi >= 0 ? 'text-green-500' : 'text-red-500')}>
                         {fPercent(trader.roi)}
                       </span>
                     </td>
-                    <td className="hidden md:table-cell px-4 py-3 text-right">
-                      <span className={cn('text-[13px]', isDark ? 'text-white/60' : 'text-gray-500')}>
+                    <td className="hidden md:table-cell py-2.5 pl-3 text-right">
+                      <span className={cn('text-[12px]', isDark ? 'text-white/50' : 'text-gray-500')}>
                         {formatDate(trader.lastTradeDate)}
                       </span>
                     </td>
@@ -281,49 +271,49 @@ export default function TopTraders({ token }) {
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-1 pt-3">
               <button
                 onClick={() => setPage(0)}
                 disabled={page === 0}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-                  isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+                  'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+                  isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
                 )}
               >
-                <ChevronsLeft size={16} />
+                <ChevronsLeft size={14} />
               </button>
               <button
                 onClick={() => setPage(page - 1)}
                 disabled={page === 0}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-                  isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+                  'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+                  isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
                 )}
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={14} />
               </button>
-              <span className={cn('px-4 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-                Page {page + 1} of {totalPages}
+              <span className={cn('px-3 text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+                {page + 1} / {totalPages}
               </span>
               <button
                 onClick={() => setPage(page + 1)}
                 disabled={page === totalPages - 1}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-                  isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+                  'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+                  isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
                 )}
               >
-                <ChevronRight size={16} />
+                <ChevronRight size={14} />
               </button>
               <button
                 onClick={() => setPage(totalPages - 1)}
                 disabled={page === totalPages - 1}
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-                  isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+                  'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+                  isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
                 )}
               >
-                <ChevronsRight size={16} />
+                <ChevronsRight size={14} />
               </button>
             </div>
           )}

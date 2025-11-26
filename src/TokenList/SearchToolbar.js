@@ -18,24 +18,13 @@ function getTagValue(tags, tagName) {
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  border-radius: 12px;
-  border: 1.5px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)')};
-  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.01)' : 'rgba(0, 0, 0, 0.01)')};
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  box-shadow: 0 2px 8px 0 rgba(0, 0, 0, 0.04);
-  padding: 8px;
+  gap: 6px;
+  border-radius: 10px;
+  border: 1px solid
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+  background: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)')};
+  padding: 6px 8px;
   position: relative;
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${(props) =>
-      props.darkMode ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-    border-color: ${(props) =>
-      props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
-  }
 
   @media (max-width: 600px) {
     padding: 4px;
@@ -47,7 +36,7 @@ const Row = styled.div`
   display: flex;
   align-items: center;
   justify-content: ${(props) => (props.spaceBetween ? 'space-between' : 'flex-start')};
-  gap: 10px;
+  gap: 6px;
   flex-wrap: ${(props) => (props.noWrap ? 'nowrap' : 'wrap')};
   flex-direction: row;
   overflow-x: ${(props) => (props.noWrap ? 'auto' : 'hidden')};
@@ -55,7 +44,7 @@ const Row = styled.div`
   width: 100%;
 
   @media (max-width: 600px) {
-    gap: 2px;
+    gap: 3px;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
@@ -71,44 +60,34 @@ const Row = styled.div`
 const RowContent = styled.div`
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
   flex-wrap: wrap;
 
   @media (max-width: 600px) {
-    gap: 4px;
+    gap: 3px;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
+    scrollbar-width: none;
 
     &::-webkit-scrollbar {
-      height: 3px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: rgba(145, 158, 171, 0.15);
-      border-radius: 2px;
+      display: none;
     }
   }
 `;
 
 const RowsSelector = styled.select`
-  padding: 4px 8px;
-  border: 1.5px solid rgba(145, 158, 171, 0.24);
-  border-radius: 8px;
+  padding: 3px 6px;
+  border: 1px solid rgba(145, 158, 171, 0.15);
+  border-radius: 5px;
   background: ${(props) =>
-    props.darkMode ? 'rgba(17, 24, 39, 0.9)' : 'rgba(255, 255, 255, 1)'};
+    props.darkMode ? 'rgba(17, 24, 39, 0.8)' : 'rgba(255, 255, 255, 0.9)'};
   color: ${(props) => (props.darkMode ? '#fff' : '#1a1a1a')};
-  font-size: 0.75rem;
-  font-weight: 500;
+  font-size: 0.68rem;
+  font-weight: 400;
   cursor: pointer;
-  height: 32px;
-  min-width: 80px;
-  transition: all 0.3s ease;
+  height: 26px;
+  min-width: 70px;
   margin-left: ${(props) => (props.noMargin ? '0' : 'auto')};
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -116,36 +95,32 @@ const RowsSelector = styled.select`
   background-image: ${(props) =>
     `url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='${props.darkMode ? '%23fff' : '%23333'}' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e")`};
   background-repeat: no-repeat;
-  background-position: right 8px center;
-  background-size: 16px;
-  padding-right: 32px;
+  background-position: right 6px center;
+  background-size: 12px;
+  padding-right: 24px;
 
   &:hover {
-    background-color: ${(props) =>
-      props.darkMode ? 'rgba(17, 24, 39, 0.95)' : 'rgba(255, 255, 255, 1)'};
     border-color: rgba(33, 150, 243, 0.3);
   }
 
   &:focus {
     outline: none;
     border-color: rgba(33, 150, 243, 0.4);
-    box-shadow: 0 0 0 2px
-      ${(props) => (props.darkMode ? 'rgba(33, 150, 243, 0.1)' : 'rgba(33, 150, 243, 0.05)')};
   }
 
   option {
     background: ${(props) => (props.darkMode ? '#111827' : '#ffffff')};
     color: ${(props) => (props.darkMode ? '#fff' : '#333')};
-    padding: 8px;
+    padding: 6px;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
-    height: 28px;
-    min-width: 70px;
-    padding-right: 28px;
-    background-size: 14px;
-    background-position: right 6px center;
+    font-size: 0.65rem;
+    height: 24px;
+    min-width: 60px;
+    padding-right: 20px;
+    background-size: 10px;
+    background-position: right 4px center;
   }
 `;
 
@@ -248,26 +223,27 @@ const StyledIconButton = styled.button`
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 2px;
+  gap: 1px;
   flex-shrink: 0;
-  background: rgba(0, 0, 0, 0.02);
+  background: ${(props) => props.darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.03)'};
   padding: 2px;
-  border-radius: 6px;
+  border-radius: 5px;
 
   & > button {
     border-radius: 4px;
     border: none;
-    min-width: 36px;
-    height: 32px;
-    padding: 0 10px;
-    font-size: 0.8rem;
+    min-width: 32px;
+    height: 26px;
+    padding: 0 8px;
+    font-size: 0.7rem;
     font-weight: 400;
     background: transparent;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 4px;
+    gap: 3px;
+    color: inherit;
 
     &:hover {
       background: rgba(33, 150, 243, 0.08);
@@ -288,10 +264,10 @@ const ButtonGroup = styled.div`
     display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
 
     & > button {
-      min-width: 28px;
-      height: 28px;
-      padding: 0 6px;
-      font-size: 0.7rem;
+      min-width: 26px;
+      height: 24px;
+      padding: 0 5px;
+      font-size: 0.65rem;
       gap: 2px;
     }
   }
@@ -299,32 +275,33 @@ const ButtonGroup = styled.div`
 
 const Divider = styled.div`
   width: 1px;
-  height: 24px;
-  background: rgba(145, 158, 171, 0.08);
-  margin: 0 4px;
+  height: 18px;
+  background: rgba(145, 158, 171, 0.1);
+  margin: 0 6px;
   flex-shrink: 0;
 
   @media (max-width: 600px) {
     display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
-    margin: 0 2px;
+    margin: 0 3px;
+    height: 14px;
   }
 `;
 
 const Chip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 12px;
-  border: ${(props) => props.border || '1.5px solid'};
-  border-color: ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.2)'};
-  border-radius: 6px;
+  gap: 3px;
+  padding: 3px 8px;
+  border: 1px solid;
+  border-color: ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.15)'};
+  border-radius: 5px;
   background: ${(props) => props.background || 'transparent'};
   color: ${(props) => props.color || 'inherit'};
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
-  height: 32px;
+  height: 26px;
   flex-shrink: 0;
 
   &:hover {
@@ -333,9 +310,9 @@ const Chip = styled.button`
   }
 
   @media (max-width: 600px) {
-    padding: 2px 8px;
-    font-size: 0.7rem;
-    height: 28px;
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    height: 24px;
     gap: 2px;
     display: ${(props) => (props.hideOnMobile ? 'none' : 'inline-flex')};
   }
@@ -344,17 +321,17 @@ const Chip = styled.button`
 const TagChip = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border: 1.5px solid ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.15)'};
-  border-radius: 6px;
+  gap: 3px;
+  padding: 3px 8px;
+  border: 1px solid ${(props) => props.borderColor || 'rgba(145, 158, 171, 0.12)'};
+  border-radius: 5px;
   background: transparent;
   color: ${(props) => props.color || 'inherit'};
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
-  height: 28px;
+  height: 24px;
   flex-shrink: 0;
   opacity: ${(props) => (props.show ? 1 : 0)};
 
@@ -364,8 +341,8 @@ const TagChip = styled.button`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.65rem;
-    height: 24px;
+    font-size: 0.6rem;
+    height: 22px;
     padding: 2px 6px;
     gap: 2px;
   }
@@ -374,17 +351,17 @@ const TagChip = styled.button`
 const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border: 1.5px solid #4285f4;
-  border-radius: 6px;
+  gap: 3px;
+  padding: 3px 8px;
+  border: 1px solid #4285f4;
+  border-radius: 5px;
   background: transparent;
   color: #4285f4;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 400;
   cursor: pointer;
   white-space: nowrap;
-  height: 28px;
+  height: 24px;
   flex-shrink: 0;
 
   &:hover {
@@ -393,8 +370,8 @@ const AllTagsButton = styled.button`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.65rem;
-    height: 24px;
+    font-size: 0.6rem;
+    height: 22px;
     padding: 2px 6px;
     gap: 2px;
   }
@@ -957,62 +934,62 @@ const SearchToolbar = memo(function SearchToolbar({
 
           <Chip
             onClick={() => (window.location.href = '/trending')}
-            background={currentView === 'trending' ? 'rgba(255, 87, 34, 0.12)' : 'transparent'}
-            borderColor={currentView === 'trending' ? '#ff5722' : 'rgba(255, 87, 34, 0.3)'}
+            background={currentView === 'trending' ? 'rgba(255, 87, 34, 0.1)' : 'transparent'}
+            borderColor={currentView === 'trending' ? '#ff5722' : 'rgba(255, 87, 34, 0.25)'}
             color="#ff5722"
-            hoverBackground="rgba(255, 87, 34, 0.08)"
+            hoverBackground="rgba(255, 87, 34, 0.06)"
             hoverBorderColor="#ff5722"
           >
-            <Flame size={14} /> Hot
+            <Flame size={12} /> Hot
           </Chip>
 
           <Chip
             onClick={() => (window.location.href = '/spotlight')}
-            background={currentView === 'spotlight' ? 'rgba(33, 150, 243, 0.12)' : 'transparent'}
-            borderColor={currentView === 'spotlight' ? '#2196f3' : 'rgba(33, 150, 243, 0.3)'}
+            background={currentView === 'spotlight' ? 'rgba(33, 150, 243, 0.1)' : 'transparent'}
+            borderColor={currentView === 'spotlight' ? '#2196f3' : 'rgba(33, 150, 243, 0.25)'}
             color="#2196f3"
-            hoverBackground="rgba(33, 150, 243, 0.08)"
+            hoverBackground="rgba(33, 150, 243, 0.06)"
             hoverBorderColor="#2196f3"
           >
-            <Gem size={14} /> Gems
+            <Gem size={12} /> Gems
           </Chip>
 
           <Chip
             onClick={(e) => setGainersMenuAnchor(e.currentTarget)}
-            background={currentView === 'gainers' ? 'rgba(76, 175, 80, 0.12)' : 'transparent'}
-            borderColor={currentView === 'gainers' ? '#4caf50' : 'rgba(76, 175, 80, 0.3)'}
+            background={currentView === 'gainers' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'}
+            borderColor={currentView === 'gainers' ? '#4caf50' : 'rgba(76, 175, 80, 0.25)'}
             color="#4caf50"
-            hoverBackground="rgba(76, 175, 80, 0.08)"
+            hoverBackground="rgba(76, 175, 80, 0.06)"
             hoverBorderColor="#4caf50"
           >
-            <TrendingUp size={14} /> Gainers
+            <TrendingUp size={12} /> Gainers
           </Chip>
 
           <Chip
             onClick={() => (window.location.href = '/new')}
-            background={currentView === 'new' ? 'rgba(255, 152, 0, 0.12)' : 'transparent'}
-            borderColor={currentView === 'new' ? '#ff9800' : 'rgba(255, 152, 0, 0.3)'}
+            background={currentView === 'new' ? 'rgba(255, 152, 0, 0.1)' : 'transparent'}
+            borderColor={currentView === 'new' ? '#ff9800' : 'rgba(255, 152, 0, 0.25)'}
             color="#ff9800"
-            hoverBackground="rgba(255, 152, 0, 0.08)"
+            hoverBackground="rgba(255, 152, 0, 0.06)"
             hoverBorderColor="#ff9800"
           >
-            <Sparkles size={14} /> New
+            <Sparkles size={12} /> New
           </Chip>
 
           <Chip
             onClick={() => (window.location.href = '/most-viewed')}
-            background={currentView === 'most-viewed' ? 'rgba(156, 39, 176, 0.12)' : 'transparent'}
-            borderColor={currentView === 'most-viewed' ? '#9c27b0' : 'rgba(156, 39, 176, 0.3)'}
+            background={currentView === 'most-viewed' ? 'rgba(156, 39, 176, 0.1)' : 'transparent'}
+            borderColor={currentView === 'most-viewed' ? '#9c27b0' : 'rgba(156, 39, 176, 0.25)'}
             color="#9c27b0"
-            hoverBackground="rgba(156, 39, 176, 0.08)"
+            hoverBackground="rgba(156, 39, 176, 0.06)"
             hoverBorderColor="#9c27b0"
           >
-            <Eye size={14} /> Popular
+            <Eye size={12} /> Popular
           </Chip>
         </RowContent>
 
         {/* View mode and rows selectors on the right */}
-        <Stack style={{ marginLeft: 'auto', gap: '8px' }}>
+        <Stack style={{ marginLeft: 'auto', gap: '6px' }}>
           {/* View Mode Selector */}
           {setViewMode && (
             <>

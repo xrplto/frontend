@@ -15,11 +15,11 @@ import { fNumber } from 'src/utils/formatters';
 
 // Constants
 const currencySymbols = {
-  USD: '$ ',
-  EUR: '€ ',
-  JPY: '¥ ',
-  CNH: '¥ ',
-  XRP: '✕ '
+  USD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNH: '¥',
+  XRP: ''
 };
 
 // Components
@@ -165,23 +165,24 @@ const MetricValue = styled.span`
 `;
 
 const PercentageChange = styled.span`
-  font-size: 0.85rem;
-  color: ${(props) => props.isPositive ? '#4caf50' : '#f44336'};
+  font-size: 0.75rem;
+  color: ${(props) => props.isPositive ? '#10b981' : '#ef4444'};
   display: inline-flex;
-  align-items: flex-start;
-  gap: 3px;
-  font-weight: 400;
+  align-items: center;
+  gap: 2px;
+  font-weight: 500;
   font-family: inherit;
+  letter-spacing: -0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     gap: 1px;
     flex-shrink: 0;
     margin-top: auto;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
     gap: 1px;
     flex-shrink: 0;
     margin-top: auto;
@@ -946,7 +947,7 @@ export default function Summary() {
                   )}
                 </MetricValue>
                 <PercentageChange isPositive={(metrics.global?.gMarketcapPro || 0) >= 0}>
-                  {(metrics.global?.gMarketcapPro || 0) >= 0 ? '▲' : '▼'}
+                  {(metrics.global?.gMarketcapPro || 0) >= 0 ? '↑' : '↓'}
                   {Math.abs(metrics.global?.gMarketcapPro || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
@@ -962,7 +963,7 @@ export default function Summary() {
                   )}
                 </MetricValue>
                 <PercentageChange isPositive={(metrics.H24?.totalTVLPro || 0) >= 0}>
-                  {(metrics.H24?.totalTVLPro || 0) >= 0 ? '▲' : '▼'}
+                  {(metrics.H24?.totalTVLPro || 0) >= 0 ? '↑' : '↓'}
                   {Math.abs(metrics.H24?.totalTVLPro || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
@@ -1010,7 +1011,7 @@ export default function Summary() {
                   );
                 })()}
                 <PercentageChange isPositive={(metrics.global?.gDexVolumePro || 0) >= 0}>
-                  {(metrics.global?.gDexVolumePro || 0) >= 0 ? '▲' : '▼'}
+                  {(metrics.global?.gDexVolumePro || 0) >= 0 ? '↑' : '↓'}
                   {Math.abs(metrics.global?.gDexVolumePro || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
@@ -1024,19 +1025,18 @@ export default function Summary() {
                 <PercentageChange
                   isPositive={(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0}
                 >
-                  {(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0 ? '▲' : '▼'}
+                  {(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0) >= 0 ? '↑' : '↓'}
                   {Math.abs(metrics.H24?.xrpPro24h || metrics.XRPchange24h || 0).toFixed(2)}%
                 </PercentageChange>
               </MetricBox>
 
               <MetricBox isDark={darkMode}>
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
-                  <div style={{ flex: 1 }}>
-                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginBottom: '2px' }}>Sentiment</VolumePercentage>
+                <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px', width: '100%', marginTop: '4px' }}>
+                  <div>
                     <MetricValue
                       style={{
-                        fontSize: isMobile ? '0.75rem' : '16px',
+                        fontSize: isMobile ? '0.7rem' : '1.35rem',
                         color:
                           metrics.global?.sentimentScore >= 60
                             ? '#10b981'
@@ -1047,13 +1047,13 @@ export default function Summary() {
                     >
                       {(metrics.global?.sentimentScore || 0).toFixed(0)}
                     </MetricValue>
+                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px' }}>Sentiment</VolumePercentage>
                   </div>
-                  <div style={{ flex: 1 }}>
-                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginBottom: '2px' }}>RSI</VolumePercentage>
+                  <div>
                     <MetricValue
                       isDark={darkMode}
                       style={{
-                        fontSize: isMobile ? '0.75rem' : '16px',
+                        fontSize: isMobile ? '0.7rem' : '1.35rem',
                         color:
                           (metrics.global?.avgRSI || 50) <= 30
                             ? '#ef4444'
@@ -1064,6 +1064,7 @@ export default function Summary() {
                     >
                       {(metrics.global?.avgRSI || 50).toFixed(0)}
                     </MetricValue>
+                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px' }}>RSI</VolumePercentage>
                   </div>
                 </div>
               </MetricBox>

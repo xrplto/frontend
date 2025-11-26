@@ -117,26 +117,23 @@ const RichList = ({ token, amm }) => {
   }
 
   const getRankStyle = (rank) => {
-    if (rank === 1) return 'bg-yellow-500/15 text-yellow-500 border-yellow-500/30';
-    if (rank === 2) return 'bg-gray-400/15 text-gray-400 border-gray-400/30';
-    if (rank === 3) return 'bg-orange-600/15 text-orange-600 border-orange-600/30';
-    return isDark ? 'bg-white/10 text-white/60 border-white/20' : 'bg-gray-100 text-gray-600 border-gray-200';
+    if (rank === 1) return 'bg-yellow-500/15 text-yellow-500';
+    if (rank === 2) return 'bg-gray-400/15 text-gray-400';
+    if (rank === 3) return 'bg-orange-600/15 text-orange-500';
+    return isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500';
   };
 
   return (
-    <div className="space-y-4">
-      <div className={cn(
-        'overflow-hidden rounded-xl border-[1.5px]',
-        isDark ? 'border-white/10' : 'border-gray-200'
-      )}>
+    <div className="space-y-3">
+      <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Rank</th>
-              <th className={cn('px-4 py-3 text-left text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Address</th>
-              <th className={cn('px-4 py-3 text-right text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>Balance</th>
-              <th className={cn('px-4 py-3 text-right text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>% of Supply</th>
-              <th className={cn('px-4 py-3 text-right text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>24h Change</th>
+            <tr>
+              <th className={cn('py-2 pr-3 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Rank</th>
+              <th className={cn('py-2 px-3 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
+              <th className={cn('py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
+              <th className={cn('py-2 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>% of Supply</th>
+              <th className={cn('py-2 pl-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>24h Change</th>
             </tr>
           </thead>
           <tbody>
@@ -151,75 +148,72 @@ const RichList = ({ token, amm }) => {
               return (
                 <tr
                   key={holder.account || index}
-                  className={cn(
-                    'border-b transition-colors',
-                    isDark ? 'border-white/5 hover:bg-primary/5' : 'border-gray-100 hover:bg-gray-50'
-                  )}
+                  className={isDark ? 'hover:bg-white/[0.02]' : 'hover:bg-gray-50'}
                 >
-                  <td className="px-4 py-3">
+                  <td className="py-2.5 pr-3">
                     <span className={cn(
-                      'inline-flex h-5 w-5 items-center justify-center rounded text-[13px] font-normal border',
+                      'inline-flex h-5 w-5 items-center justify-center rounded text-[11px] font-medium',
                       getRankStyle(rank)
                     )}>
                       {rank}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2">
                       <Link
                         href={`/profile/${holder.account}`}
-                        className="text-[13px] font-normal text-primary hover:underline"
+                        className="text-[12px] font-mono text-primary hover:underline"
                       >
                         {holder.account
                           ? `${holder.account.slice(0, 6)}...${holder.account.slice(-6)}`
                           : 'Unknown'}
                       </Link>
                       {holder.freeze && (
-                        <span className="rounded border border-red-500/30 bg-red-500/10 px-1.5 py-0.5 text-[10px] text-red-500">
+                        <span className="rounded bg-red-500/15 px-1.5 py-0.5 text-[9px] font-medium text-red-500">
                           Frozen
                         </span>
                       )}
                       {ammAccount && holder.account === ammAccount && (
-                        <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] text-white">
+                        <span className="rounded bg-primary/20 px-1.5 py-0.5 text-[9px] font-medium text-primary">
                           AMM
                         </span>
                       )}
                       {token.issuer && holder.account === token.issuer && (
                         <span className={cn(
-                          'rounded px-1.5 py-0.5 text-[10px]',
-                          isDark ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-700'
+                          'rounded px-1.5 py-0.5 text-[9px] font-medium',
+                          isDark ? 'bg-white/15 text-white/80' : 'bg-gray-200 text-gray-600'
                         )}>
                           {token.creator && holder.account === token.creator ? 'Issuer/Creator' : 'Issuer'}
                         </span>
                       )}
                       {token.creator && holder.account === token.creator && holder.account !== token.issuer && (
-                        <span className="rounded bg-blue-500/20 px-1.5 py-0.5 text-[10px] text-blue-500">
+                        <span className="rounded bg-blue-500/15 px-1.5 py-0.5 text-[9px] font-medium text-blue-400">
                           Creator
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">
-                    <div className="flex items-center justify-end gap-2">
+                  <td className="py-2.5 px-3 text-right">
+                    <div className="flex items-center justify-end gap-1.5">
                       <img
                         src={getTokenImageUrl(token.issuer, token.currency)}
                         alt={decodeCurrency(token.currency)}
-                        className="h-4 w-4 rounded-full"
+                        className="h-3.5 w-3.5 rounded-full"
                       />
-                      <span className={cn('text-[13px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>
+                      <span className={cn('text-[12px]', isDark ? 'text-white/80' : 'text-gray-700')}>
                         {formatNumber(holder.balance)}
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="py-2.5 px-3 text-right">
                     <span className={cn(
-                      'text-[13px]',
-                      parseFloat(percentOfSupply) > 10 ? 'text-yellow-500' : isDark ? 'text-white' : 'text-gray-900'
+                      'text-[12px]',
+                      parseFloat(percentOfSupply) > 10 ? 'text-yellow-500' : isDark ? 'text-white/80' : 'text-gray-700'
                     )}>
                       {percentOfSupply}%
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="py-2.5 pl-3 text-right">
                     {holder.balance24h !== undefined && holder.balance24h !== null ? (
                       (() => {
                         const change = parseFloat(holder.balance) - parseFloat(holder.balance24h);
@@ -231,7 +225,7 @@ const RichList = ({ token, amm }) => {
 
                         return (
                           <span className={cn(
-                            'text-[13px] font-medium',
+                            'text-[12px] font-medium',
                             isPositive ? 'text-green-500' : 'text-red-500'
                           )}>
                             {isPositive ? '▲' : '▼'} {formatNumber(Math.abs(change))} ({isPositive ? '+' : ''}{changePercent}%)
@@ -239,7 +233,7 @@ const RichList = ({ token, amm }) => {
                         );
                       })()
                     ) : (
-                      <span className={cn('text-[13px]', isDark ? 'text-white/40' : 'text-gray-400')}>-</span>
+                      <span className={cn('text-[12px]', isDark ? 'text-white/30' : 'text-gray-300')}>-</span>
                     )}
                   </td>
                 </tr>
@@ -250,49 +244,49 @@ const RichList = ({ token, amm }) => {
       </div>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 pt-4">
+        <div className="flex items-center justify-center gap-1 pt-3">
           <button
             onClick={() => handlePageChange(1)}
             disabled={page === 1}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
-            <ChevronsLeft size={16} />
+            <ChevronsLeft size={14} />
           </button>
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
-            <ChevronLeft size={16} />
+            <ChevronLeft size={14} />
           </button>
-          <span className={cn('px-4 text-[13px]', isDark ? 'text-white/60' : 'text-gray-600')}>
-            Page {page} of {totalPages}
+          <span className={cn('px-3 text-[11px]', isDark ? 'text-white/50' : 'text-gray-500')}>
+            {page} / {totalPages}
           </span>
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
-            <ChevronRight size={16} />
+            <ChevronRight size={14} />
           </button>
           <button
             onClick={() => handlePageChange(totalPages)}
             disabled={page === totalPages}
             className={cn(
-              'flex h-8 w-8 items-center justify-center rounded-lg border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
+              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
-            <ChevronsRight size={16} />
+            <ChevronsRight size={14} />
           </button>
         </div>
       )}

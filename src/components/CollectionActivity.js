@@ -43,56 +43,58 @@ function NftListToolbar({ count, rows, setRows, page, setPage, isDark }) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center mt-4 mb-4">
-      <div>
-        <p className="text-[13px] text-gray-500">
-          Showing {start} - {end} out of {count}
-        </p>
+    <div className="flex items-center justify-between gap-4 mt-4 mb-4 flex-wrap">
+      <div className={cn(
+        "flex items-center gap-2 px-3 py-1.5 rounded-lg border min-h-[36px]",
+        isDark ? "border-white/8" : "border-black/8"
+      )}>
+        <span className={cn(
+          "text-[11px] px-2 py-0.5 rounded border",
+          isDark ? "border-white/8" : "border-black/8"
+        )}>
+          {start}-{end} of {count}
+        </span>
+        <span className="text-[11px] text-gray-500">items</span>
       </div>
 
-      <div className="flex justify-center">
-        <div className={cn(
-          "flex items-center gap-2 rounded-xl border-[1.5px] p-2",
-          isDark ? "border-white/10" : "border-gray-200"
-        )}>
-          {pages.map((p) => (
-            <button
-              key={p}
-              onClick={(e) => handleChangePage(e, p)}
-              className={cn(
-                "rounded-lg px-3 py-1 text-[13px] font-normal min-w-[32px] h-[32px]",
-                page + 1 === p
-                  ? "bg-primary text-white"
-                  : isDark
-                  ? "hover:bg-white/5"
-                  : "hover:bg-gray-100"
-              )}
-            >
-              {p}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex justify-end">
-        <div className={cn(
-          "flex items-center gap-2 rounded-xl border-[1.5px] px-4 py-2",
-          isDark ? "border-white/10" : "border-gray-200"
-        )}>
-          <span className="text-[13px] text-gray-500">Show Rows</span>
-          <select
-            value={rows}
-            onChange={handleChangeRows}
+      <div className={cn(
+        "flex items-center gap-1 px-2.5 py-1.5 rounded-lg border min-h-[36px]",
+        isDark ? "border-white/8" : "border-black/8"
+      )}>
+        {pages.map((p) => (
+          <button
+            key={p}
+            onClick={(e) => handleChangePage(e, p)}
             className={cn(
-              "rounded-lg border-0 text-[13px] font-medium text-primary bg-transparent outline-none cursor-pointer",
-              isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+              "rounded px-2 py-0.5 text-[11px] font-normal min-w-[22px] h-[22px]",
+              page + 1 === p
+                ? "bg-primary text-white"
+                : isDark
+                ? "hover:bg-primary/10"
+                : "hover:bg-primary/5"
             )}
           >
-            <option value={20}>20</option>
-            <option value={10}>10</option>
-            <option value={5}>5</option>
-          </select>
-        </div>
+            {p}
+          </button>
+        ))}
+      </div>
+
+      <div className={cn(
+        "flex items-center gap-2 px-3 py-1.5 rounded-lg border min-h-[36px]",
+        isDark ? "border-white/8" : "border-black/8"
+      )}>
+        <span className="text-[11px] text-gray-500">Rows</span>
+        <select
+          value={rows}
+          onChange={handleChangeRows}
+          className={cn(
+            "text-[11px] font-medium text-primary bg-transparent outline-none cursor-pointer border-0"
+          )}
+        >
+          <option value={20}>20</option>
+          <option value={10}>10</option>
+          <option value={5}>5</option>
+        </select>
       </div>
     </div>
   );

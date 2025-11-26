@@ -43,122 +43,74 @@ const alpha = (color, opacity) => {
 
 const Card = styled.div`
   width: 100%;
-  padding: ${props => props.isMobile ? '8px' : '12px'};
-  padding-right: ${props => props.isMobile ? '4px' : '12px'};
+  padding: ${props => props.isMobile ? '8px' : '16px'};
   background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
   border-radius: 12px;
-  overflow: hidden;
-  &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  }
   ${props => props.isFullscreen && `
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     z-index: 99999;
     border-radius: 0;
-    width: 100vw;
-    height: 100vh;
-    max-width: 100vw;
-    max-height: 100vh;
-    background: ${props.isDark ? '#000000' : '#ffffff'};
-    overflow-y: auto;
+    background: ${props.isDark ? '#000' : '#fff'};
     border: none;
-    &:hover {
-      border-color: transparent;
-      background: ${props.isDark ? '#000000' : '#ffffff'};
-    }
   `}
 `;
 
 const Box = styled.div``;
 
 const Typography = styled.span`
-  font-size: ${props => props.variant === 'h6' ? '14px' : props.variant === 'caption' ? '11px' : '13px'};
+  font-size: ${props => props.variant === 'h6' ? '13px' : '12px'};
   font-weight: ${props => props.fontWeight || 400};
   color: ${props =>
-    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)') :
-    props.color === 'text.primary' ? (props.isDark ? '#FFFFFF' : '#212B36') :
-    props.color === 'success.main' ? '#4caf50' :
-    props.color === 'warning.main' ? '#ff9800' :
-    props.color ? props.color :
-    (props.isDark ? '#FFFFFF' : '#212B36')
+    props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)') :
+    props.color === 'warning.main' ? '#f59e0b' :
+    (props.isDark ? '#fff' : '#1a1a1a')
   };
-  letter-spacing: ${props => props.letterSpacing || 'normal'};
-  text-transform: ${props => props.textTransform || 'none'};
-  opacity: ${props => props.opacity || 1};
-  user-select: ${props => props.userSelect || 'auto'};
-  font-family: ${props => props.fontFamily || 'inherit'};
-  line-height: ${props => props.lineHeight || 'normal'};
 `;
 
 const ButtonGroup = styled.div`
   display: flex;
-  gap: 0px;
-  & > button {
-    border-radius: 0;
-  }
-  & > button:first-of-type {
-    border-radius: 6px 0 0 6px;
-  }
-  & > button:last-of-type {
-    border-radius: 0 6px 6px 0;
-  }
-  & > button:not(:first-of-type) {
-    margin-left: -1px;
-  }
+  & > button { border-radius: 0; }
+  & > button:first-of-type { border-radius: 6px 0 0 6px; }
+  & > button:last-of-type { border-radius: 0 6px 6px 0; }
+  & > button:not(:first-of-type) { margin-left: -1px; }
 `;
 
 const Button = styled.button`
-  padding: ${props => props.isMobile ? '4px 6px' : '6px 10px'};
-  font-size: ${props => props.isMobile ? '11px' : '13px'};
+  padding: ${props => props.isMobile ? '4px 8px' : '5px 10px'};
+  font-size: ${props => props.isMobile ? '11px' : '12px'};
   min-width: ${props => props.minWidth || 'auto'};
-  height: ${props => props.isMobile ? '26px' : '30px'};
+  height: ${props => props.isMobile ? '26px' : '28px'};
   border-radius: 6px;
-  text-transform: none;
-  font-weight: ${props => props.isActive ? 600 : 400};
-  border: 1.5px solid ${props =>
-    props.isActive
-      ? '#147DFE'
-      : (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)')
-  };
-  background: ${props => props.isActive ? '#147DFE' : 'transparent'};
-  color: ${props => props.isActive ? '#FFFFFF' : (props.isDark ? '#FFFFFF' : '#212B36')};
+  font-weight: 400;
+  border: 1.5px solid ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
+  background: ${props => props.isActive ? '#3b82f6' : 'transparent'};
+  color: ${props => props.isActive ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.8)' : '#374151')};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: ${props => props.isMobile ? '2px' : '6px'};
+  gap: 4px;
+  transition: border-color 0.15s;
   &:hover {
-    background: ${props => props.isActive ? '#147DFE' : (props.isDark ? 'rgba(20,125,254,0.04)' : 'rgba(20,125,254,0.04)')};
-    border-color: ${props => props.isActive ? '#147DFE' : 'rgba(20,125,254,0.3)'};
+    border-color: ${props => props.isActive ? '#3b82f6' : '#3b82f6'};
   }
-  & svg {
-    width: ${props => props.isMobile ? '12px' : '16px'};
-    height: ${props => props.isMobile ? '12px' : '16px'};
-  }
+  & svg { width: 14px; height: 14px; }
 `;
 
 const IconButton = styled.button`
-  padding: ${props => props.size === 'small' ? '5px' : '6px'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  padding: 5px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'};
   border-radius: 6px;
   background: transparent;
   cursor: pointer;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : '#374151'};
   display: flex;
   align-items: center;
   justify-content: center;
-  &:hover {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)'};
-  }
-  & svg {
-    width: ${props => props.isMobile ? '14px' : '16px'};
-    height: ${props => props.isMobile ? '14px' : '16px'};
-  }
+  transition: border-color 0.15s;
+  &:hover { border-color: #3b82f6; }
+  & svg { width: 14px; height: 14px; }
 `;
 
 const Menu = styled.div`
@@ -166,33 +118,32 @@ const Menu = styled.div`
   top: 100%;
   right: 0;
   margin-top: 4px;
-  min-width: 180px;
-  background: ${props => props.isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  min-width: 160px;
+  background: ${props => props.isDark ? '#1a1a1a' : '#fff'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
   border-radius: 8px;
-  box-shadow: 0 4px 12px ${props => props.isDark ? 'rgba(0,0,0,0.5)' : 'rgba(0,0,0,0.1)'};
   z-index: 1000;
-  padding: 4px 0;
+  padding: 4px;
   display: ${props => props.open ? 'block' : 'none'};
 `;
 
 const MenuItem = styled.div`
-  padding: 8px 12px;
-  font-size: 14px;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
-  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
-  opacity: ${props => props.disabled ? 0.4 : 1};
-  font-weight: ${props => props.disabled && props.isHeader ? 500 : 400};
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(20,125,254,0.08)' : 'rgba(20,125,254,0.08)') : 'transparent'};
+  padding: 6px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#374151'};
+  cursor: ${props => props.disabled ? 'default' : 'pointer'};
+  opacity: ${props => props.disabled ? 0.5 : 1};
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
   &:hover {
-    background: ${props => props.disabled ? 'transparent' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)')};
+    background: ${props => props.disabled ? 'transparent' : (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
   }
 `;
 
 const Divider = styled.div`
   height: 1px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  margin: 4px 0;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};
+  margin: 4px;
 `;
 
 const Spinner = styled(Loader2)`
@@ -690,7 +641,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 140px; height: auto; position: absolute; display: none; padding: 8px; box-sizing: border-box; font-size: 12px; text-align: left; z-index: 1000; top: 12px; left: 12px; pointer-events: none; border-radius: 6px; font-family: inherit; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background: ${isDark ? 'rgba(20, 20, 20, 0.98)' : 'rgba(255, 255, 255, 0.98)'}; color: ${isDark ? '#FFFFFF' : '#212B36'}; border: 1.5px solid ${isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}; box-shadow: none`;
+    toolTip.style = `width: 130px; position: absolute; display: none; padding: 8px; font-size: 11px; z-index: 1000; top: 8px; left: 8px; pointer-events: none; border-radius: 6px; background: ${isDark ? '#1a1a1a' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove((param) => {
@@ -741,151 +692,84 @@ const PriceChartAdvanced = memo(({ token }) => {
           return actualPrice.toLocaleString();
         };
 
+        const row = (l, v, c) => `<div style="display:flex;justify-content:space-between;${c ? `color:${c}` : ''}"><span style="opacity:0.6">${l}</span><span>${v}</span></div>`;
+        const sep = `<div style="height:1px;background:${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};margin:4px 0"></div>`;
+
         if (chartType === 'candles') {
           const change = (((candle.close - candle.open) / candle.open) * 100).toFixed(2);
-          const changeColor =
-            candle.close >= candle.open
-              ? isDark
-                ? '#00E676'
-                : '#4CAF50'
-              : isDark
-                ? '#FF5252'
-                : '#F44336';
-
-          ohlcData = `
-            <div style="font-weight: 400; margin-bottom: 4px">${dateStr}</div>
-            <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
-            <div style="display: flex; justify-content: space-between"><span>O:</span><span>${symbol}${formatPrice(candle.open)}</span></div>
-            <div style="display: flex; justify-content: space-between"><span>H:</span><span>${symbol}${formatPrice(candle.high)}</span></div>
-            <div style="display: flex; justify-content: space-between"><span>L:</span><span>${symbol}${formatPrice(candle.low)}</span></div>
-            <div style="display: flex; justify-content: space-between; color: ${changeColor}"><span>C:</span><span>${symbol}${formatPrice(candle.close)}</span></div>
-            <div style="display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
-              <span>Vol:</span><span>${candle.volume.toLocaleString()}</span>
-            </div>
-            <div style="display: flex; justify-content: space-between; color: ${changeColor}">
-              <span>Chg:</span><span>${change}%</span>
-            </div>
-            ${
-              showRSIRef.current && rsiValuesRef.current[candle.time]
-                ? `
-              <div style=\"display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}; color: ${rsiValuesRef.current[candle.time] > 70 ? '#FF5252' : rsiValuesRef.current[candle.time] < 30 ? '#00E676' : 'inherit'}\">
-                <span>RSI:</span><span>${rsiValuesRef.current[candle.time].toFixed(2)}</span>
-              </div>
-            `
-                : ''
-            }
-          `;
+          const color = candle.close >= candle.open ? '#22c55e' : '#ef4444';
+          ohlcData = `<div style="opacity:0.6;margin-bottom:4px">${dateStr}</div>
+            ${row('O', symbol + formatPrice(candle.open))}
+            ${row('H', symbol + formatPrice(candle.high))}
+            ${row('L', symbol + formatPrice(candle.low))}
+            ${row('C', symbol + formatPrice(candle.close), color)}
+            ${sep}${row('Vol', candle.volume.toLocaleString())}
+            ${row('Chg', change + '%', color)}`;
         } else if (chartType === 'line') {
-          ohlcData = `
-            <div style="font-weight: 400; margin-bottom: 4px">${dateStr}</div>
-            <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
-            <div style="display: flex; justify-content: space-between"><span>Price:</span><span>${symbol}${formatPrice(candle.close || candle.value)}</span></div>
-            <div style="display: flex; justify-content: space-between"><span>Vol:</span><span>${(candle.volume || 0).toLocaleString()}</span></div>
-            ${
-              showRSIRef.current && rsiValuesRef.current[candle.time]
-                ? `
-              <div style=\"display: flex; justify-content: space-between; margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}; color: ${rsiValuesRef.current[candle.time] > 70 ? '#FF5252' : rsiValuesRef.current[candle.time] < 30 ? '#00E676' : 'inherit'}\">
-                <span>RSI:</span><span>${rsiValuesRef.current[candle.time].toFixed(2)}</span>
-              </div>
-            `
-                : ''
-            }
-          `;
+          ohlcData = `<div style="opacity:0.6;margin-bottom:4px">${dateStr}</div>
+            ${row('Price', symbol + formatPrice(candle.close || candle.value))}
+            ${row('Vol', (candle.volume || 0).toLocaleString())}`;
         } else if (chartType === 'holders') {
-          ohlcData = `
-            <div style="font-weight: 400; margin-bottom: 4px">${dateStr}</div>
-            <div style="font-size: 10px; color: #888; margin-bottom: 4px">TS: ${rawTimestamp}</div>
-            <div style="display: flex; justify-content: space-between"><span>Holders:</span><span>${candle.holders ? candle.holders.toLocaleString() : candle.value.toLocaleString()}</span></div>
-            ${
-              candle.top10 !== undefined
-                ? `
-              <div style="margin-top: 4px; padding-top: 4px; border-top: 1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}">
-                <div style="display: flex; justify-content: space-between"><span>Top 10:</span><span>${candle.top10.toFixed(2)}%</span></div>
-                <div style="display: flex; justify-content: space-between"><span>Top 20:</span><span>${candle.top20.toFixed(2)}%</span></div>
-                <div style="display: flex; justify-content: space-between"><span>Top 50:</span><span>${candle.top50.toFixed(2)}%</span></div>
-                <div style="display: flex; justify-content: space-between"><span>Top 100:</span><span>${candle.top100.toFixed(2)}%</span></div>
-              </div>
-            `
-                : ''
-            }
-          `;
+          ohlcData = `<div style="opacity:0.6;margin-bottom:4px">${dateStr}</div>
+            ${row('Holders', (candle.holders || candle.value).toLocaleString())}
+            ${candle.top10 !== undefined ? sep + row('Top 10', candle.top10.toFixed(1) + '%') + row('Top 20', candle.top20.toFixed(1) + '%') + row('Top 50', candle.top50.toFixed(1) + '%') : ''}`;
         }
       }
 
       if (ohlcData) {
         toolTip.innerHTML = ohlcData;
-        const x = Math.max(
-          0,
-          Math.min(chartContainerRef.current.clientWidth - 150, param.point.x - 50)
-        );
-        const y = 12;
-        toolTip.style.left = x + 'px';
-        toolTip.style.top = y + 'px';
+        toolTip.style.left = Math.max(0, Math.min(chartContainerRef.current.clientWidth - 140, param.point.x - 50)) + 'px';
+        toolTip.style.top = '8px';
       }
     });
 
     if (chartType === 'candles') {
       const candleSeries = chart.addSeries(CandlestickSeries, {
-        upColor: isDark ? '#00E676' : '#4CAF50',
-        downColor: isDark ? '#FF5252' : '#F44336',
-        borderUpColor: isDark ? '#00E676' : '#4CAF50',
-        borderDownColor: isDark ? '#FF5252' : '#F44336',
-        wickUpColor: isDark ? '#00E676' : '#4CAF50',
-        wickDownColor: isDark ? '#FF5252' : '#F44336',
-        borderVisible: true,
-        wickVisible: true
+        upColor: '#22c55e',
+        downColor: '#ef4444',
+        borderUpColor: '#22c55e',
+        borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e',
+        wickDownColor: '#ef4444'
       });
       candleSeriesRef.current = candleSeries;
     } else if (chartType === 'line') {
       const areaSeries = chart.addSeries(AreaSeries, {
-        lineColor: isDark ? '#2196F3' : '#147DFE',
-        topColor: isDark ? 'rgba(33, 150, 243, 0.4)' : 'rgba(20, 125, 254, 0.4)',
-        bottomColor: isDark ? 'rgba(33, 150, 243, 0.05)' : 'rgba(20, 125, 254, 0.05)',
+        lineColor: '#3b82f6',
+        topColor: 'rgba(59, 130, 246, 0.25)',
+        bottomColor: 'rgba(59, 130, 246, 0.02)',
         lineWidth: 2,
-        lineStyle: 0,
         crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 4,
-        crosshairMarkerBorderColor: '#147DFE',
-        crosshairMarkerBackgroundColor: isDark ? '#000000' : '#ffffff'
+        crosshairMarkerRadius: 3,
+        crosshairMarkerBorderColor: '#3b82f6',
+        crosshairMarkerBackgroundColor: isDark ? '#000' : '#fff'
       });
       lineSeriesRef.current = areaSeries;
     } else if (chartType === 'holders') {
       const holdersSeries = chart.addSeries(AreaSeries, {
-        lineColor: isDark ? '#E040FB' : '#9c27b0',
-        topColor: isDark ? 'rgba(224, 64, 251, 0.3)' : 'rgba(156, 39, 176, 0.4)',
-        bottomColor: isDark ? 'rgba(224, 64, 251, 0.05)' : 'rgba(156, 39, 176, 0.04)',
+        lineColor: '#a855f7',
+        topColor: 'rgba(168, 85, 247, 0.25)',
+        bottomColor: 'rgba(168, 85, 247, 0.02)',
         lineWidth: 2,
-        lineStyle: 0,
         crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 4,
-        crosshairMarkerBorderColor: '#9c27b0',
-        crosshairMarkerBackgroundColor: isDark ? '#000000' : '#ffffff'
+        crosshairMarkerRadius: 3,
+        crosshairMarkerBorderColor: '#a855f7',
+        crosshairMarkerBackgroundColor: isDark ? '#000' : '#fff'
       });
       lineSeriesRef.current = holdersSeries;
     }
 
     if (chartType !== 'holders') {
       const volumeSeries = chart.addSeries(HistogramSeries, {
-        color: isDark ? 'rgba(0, 230, 118, 0.6)' : 'rgba(76, 175, 80, 0.6)',
-        priceFormat: {
-          type: 'volume'
-        },
+        color: 'rgba(34, 197, 94, 0.4)',
+        priceFormat: { type: 'volume' },
         priceScaleId: 'volume',
-        scaleMargins: {
-          top: 0.75,
-          bottom: 0
-        },
+        scaleMargins: { top: 0.8, bottom: 0 },
         priceLineVisible: false,
         lastValueVisible: false
       });
       volumeSeriesRef.current = volumeSeries;
-
-      chart.priceScale('volume').applyOptions({
-        scaleMargins: {
-          top: 0.8,
-          bottom: 0
-        }
-      });
+      chart.priceScale('volume').applyOptions({ scaleMargins: { top: 0.85, bottom: 0 } });
     }
 
     const handleResize = () => {
@@ -1023,45 +907,32 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     if (chartType === 'candles' && !candleSeriesRef.current) {
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
-        upColor: isDark ? '#00E676' : '#4CAF50',
-        downColor: isDark ? '#FF5252' : '#F44336',
-        borderUpColor: isDark ? '#00E676' : '#4CAF50',
-        borderDownColor: isDark ? '#FF5252' : '#F44336',
-        wickUpColor: isDark ? '#00E676' : '#4CAF50',
-        wickDownColor: isDark ? '#FF5252' : '#F44336',
-        borderVisible: true,
-        wickVisible: true
+        upColor: '#22c55e',
+        downColor: '#ef4444',
+        borderUpColor: '#22c55e',
+        borderDownColor: '#ef4444',
+        wickUpColor: '#22c55e',
+        wickDownColor: '#ef4444'
       });
       candleSeriesRef.current = candleSeries;
     }
 
     if ((chartType === 'line' || chartType === 'holders') && !lineSeriesRef.current) {
-      const seriesOptions =
-        chartType === 'holders'
-          ? {
-              lineColor: '#9c27b0',
-              topColor: 'rgba(156, 39, 176, 0.56)',
-              bottomColor: 'rgba(156, 39, 176, 0.04)'
-            }
-          : {
-              lineColor: '#147DFE',
-              topColor: 'rgba(20, 125, 254, 0.5)',
-              bottomColor: 'rgba(20, 125, 254, 0.05)'
-            };
-
+      const isHolders = chartType === 'holders';
       const areaSeries = chartRef.current.addSeries(AreaSeries, {
-        ...seriesOptions,
+        lineColor: isHolders ? '#a855f7' : '#3b82f6',
+        topColor: isHolders ? 'rgba(168, 85, 247, 0.25)' : 'rgba(59, 130, 246, 0.25)',
+        bottomColor: isHolders ? 'rgba(168, 85, 247, 0.02)' : 'rgba(59, 130, 246, 0.02)',
         lineWidth: 2,
-        lineStyle: 0,
         crosshairMarkerVisible: true,
-        crosshairMarkerRadius: 4
+        crosshairMarkerRadius: 3
       });
       lineSeriesRef.current = areaSeries;
     }
 
     if (chartType !== 'holders' && !volumeSeriesRef.current) {
       const volumeSeries = chartRef.current.addSeries(HistogramSeries, {
-        color: '#26a69a',
+        color: 'rgba(34, 197, 94, 0.4)',
         priceFormat: { type: 'volume' },
         priceScaleId: 'volume',
         scaleMargins: { top: 0.85, bottom: 0 },
@@ -1069,13 +940,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         lastValueVisible: false
       });
       volumeSeriesRef.current = volumeSeries;
-
-      chartRef.current.priceScale('volume').applyOptions({
-        scaleMargins: {
-          top: 0.9,
-          bottom: 0
-        }
-      });
+      chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.9, bottom: 0 } });
     }
 
     const isRangeChange = lastChartTypeRef.current !== `${chartType}-${range}`;
@@ -1134,14 +999,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       const volumeData = data.map((d) => ({
         time: d.time,
         value: d.volume || 0,
-        color:
-          d.close >= d.open
-            ? isDark
-              ? 'rgba(0, 230, 118, 0.5)'
-              : 'rgba(76, 175, 80, 0.6)'
-            : isDark
-              ? 'rgba(255, 82, 82, 0.5)'
-              : 'rgba(244, 67, 54, 0.6)'
+        color: d.close >= d.open ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'
       }));
       if (isAutoUpdate && volumeData.length > 0) {
         const lastVolume = volumeData[volumeData.length - 1];
@@ -1183,145 +1041,48 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   return (
     <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen}>
-      <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+      <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
           <Typography variant="h6" isDark={isDark}>
-            {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} • {range} • {chartInterval}
+            {token.name} {chartType === 'holders' ? 'Holders' : `(${activeFiatCurrency})`}
           </Typography>
           {athData.athMcap > 0 && chartType !== 'holders' && (
             <Box style={{
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              padding: '4px 10px',
-              borderRadius: '8px',
-              border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
-              background: 'transparent'
+              padding: '3px 8px',
+              borderRadius: '6px',
+              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
             }}>
-              <Typography
-                isDark={isDark}
-                fontWeight={400}
-                style={{
-                  fontSize: '12px',
-                  color: athData.percentDown < 0 ? '#ef5350' : '#66bb6a',
-                  lineHeight: 1,
-                  fontFamily: 'monospace'
-                }}
-              >
+              <span style={{ fontSize: '11px', color: athData.percentDown < 0 ? '#ef4444' : '#22c55e', fontFamily: 'monospace' }}>
                 {athData.percentDown}%
-              </Typography>
-              <Typography
-                isDark={isDark}
-                style={{
-                  fontSize: '11px',
-                  fontWeight: 400,
-                  color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)',
-                  lineHeight: 1
-                }}
-              >
-                ATH MCap
-              </Typography>
-              <Typography
-                isDark={isDark}
-                fontWeight={400}
-                style={{
-                  fontSize: '12px',
-                  color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
-                  lineHeight: 1,
-                  fontFamily: 'monospace'
-                }}
-              >
+              </span>
+              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                ATH
+              </span>
+              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontFamily: 'monospace' }}>
                 {currencySymbols[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
-              </Typography>
+              </span>
             </Box>
           )}
-          <Box style={{
-            marginLeft: '16px',
-            minWidth: '140px',
-            display: 'inline-flex',
-            alignItems: 'center',
-            height: '20px',
-            position: 'relative'
-          }}>
-            {isUpdating ? (
-              <Box style={{
-                width: '6px',
-                height: '6px',
-                borderRadius: '50%',
-                background: '#4caf50'
-              }} />
-            ) : lastUpdate ? (
-              <Box style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '6px',
-                opacity: isUserZoomed ? 0.5 : 0.7
-              }}>
-                <Box style={{
-                  width: '4px',
-                  height: '4px',
-                  borderRadius: '50%',
-                  background: isUserZoomed ? '#ff9800' : '#4caf50',
-                  opacity: isUserZoomed ? 0.6 : 1
-                }} />
-                <Typography
-                  isDark={isDark}
-                  color="text.secondary"
-                  style={{
-                    fontSize: '13px',
-                    fontWeight: 400,
-                    letterSpacing: '0.03em',
-                    fontFamily: '"SF Mono", "Monaco", "Inconsolata", "Fira Code", monospace',
-                    userSelect: 'none'
-                  }}
-                >
-                  {lastUpdate.toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit',
-                    hour12: false
-                  })}
-                </Typography>
-                {isUserZoomed && (
-                  <Typography
-                    isDark={isDark}
-                    color="warning.main"
-                    style={{
-                      fontSize: '12px',
-                      fontWeight: 400,
-                      letterSpacing: '0.05em',
-                      textTransform: 'uppercase',
-                      opacity: 0.6
-                    }}
-                  >
-                    paused
-                  </Typography>
-                )}
-              </Box>
-            ) : null}
-          </Box>
+          {lastUpdate && (
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '4px', opacity: 0.5 }}>
+              <Box style={{ width: '4px', height: '4px', borderRadius: '50%', background: isUserZoomed ? '#f59e0b' : '#22c55e' }} />
+              <span style={{ fontSize: '11px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                {lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+              </span>
+              {isUserZoomed && <span style={{ fontSize: '10px', color: '#f59e0b', textTransform: 'uppercase' }}>paused</span>}
+            </Box>
+          )}
         </Box>
 
-        <Box style={{
-          display: 'flex',
-          gap: isMobile ? '4px' : '8px',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          position: 'relative'
-        }}>
+        <Box style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
           <ButtonGroup>
             {Object.entries(chartTypeIcons).map(([type, icon]) => (
-              <Button
-                key={type}
-                onClick={() => setChartType(type)}
-                isActive={chartType === type}
-                isMobile={isMobile}
-                isDark={isDark}
-              >
+              <Button key={type} onClick={() => setChartType(type)} isActive={chartType === type} isMobile={isMobile} isDark={isDark}>
                 {icon}
-                {type === 'holders'
-                  ? 'Holders'
-                  : type.charAt(0).toUpperCase() + type.slice(1)}
+                {!isMobile && (type === 'holders' ? 'Holders' : type.charAt(0).toUpperCase() + type.slice(1))}
               </Button>
             ))}
           </ButtonGroup>
@@ -1333,25 +1094,13 @@ const PriceChartAdvanced = memo(({ token }) => {
                 onClick={() => {
                   setRange(r);
                   setIsUserZoomed(false);
-
-                  const rangeDefaults = {
-                    '1D': '5m',
-                    '5D': '15m',
-                    '1M': '1h',
-                    '3M': '4h',
-                    '1Y': '1d',
-                    '5Y': '1d',
-                    'ALL': '1d'
-                  };
-                  const defaultInterval = rangeDefaults[r];
-                  if (defaultInterval) {
-                    setChartInterval(defaultInterval);
-                  }
+                  const defaults = { '1D': '5m', '5D': '15m', '1M': '1h', '3M': '4h', '1Y': '1d', '5Y': '1d', 'ALL': '1d' };
+                  if (defaults[r]) setChartInterval(defaults[r]);
                 }}
                 isActive={range === r}
                 isMobile={isMobile}
                 isDark={isDark}
-                minWidth={isMobile ? '26px' : '32px'}
+                minWidth={isMobile ? '24px' : '28px'}
               >
                 {r}
               </Button>
@@ -1359,82 +1108,37 @@ const PriceChartAdvanced = memo(({ token }) => {
           </ButtonGroup>
 
           <div style={{ position: 'relative' }}>
-            <IconButton
-              size="small"
-              onClick={() => setAnchorEl(anchorEl ? null : {})}
-              isMobile={isMobile}
-              isDark={isDark}
-              style={{ marginLeft: isMobile ? '4px' : '8px' }}
-            >
+            <IconButton onClick={() => setAnchorEl(anchorEl ? null : {})} isDark={isDark}>
               <MoreVertical />
             </IconButton>
 
             <Menu open={!!anchorEl} isDark={isDark}>
               {isMobile && (
                 <>
-                  <MenuItem
-                    onClick={() => {
-                      handleFullscreen();
-                      setAnchorEl(null);
-                    }}
-                    isDark={isDark}
-                  >
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      {isFullscreen ? <Minimize size={16} /> : <Maximize size={16} />}
-                      {isFullscreen ? 'Exit Fullscreen' : 'Fullscreen'}
+                  <MenuItem onClick={() => { handleFullscreen(); setAnchorEl(null); }} isDark={isDark}>
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
+                      {isFullscreen ? 'Exit' : 'Fullscreen'}
                     </Box>
                   </MenuItem>
                   <Divider isDark={isDark} />
                 </>
               )}
-              <MenuItem disabled isHeader isDark={isDark}>
+              <MenuItem disabled isDark={isDark} style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 Interval
               </MenuItem>
               {['1m', '5m', '15m', '30m', '1h', '4h', '1d'].map((int) => {
-                const validCombos = {
-                  '1D': ['1m', '5m', '15m', '30m', '1h'],
-                  '5D': ['5m', '15m', '30m', '1h', '4h'],
-                  '1M': ['15m', '30m', '1h', '4h', '1d'],
-                  '3M': ['30m', '1h', '4h', '1d'],
-                  '1Y': ['1h', '4h', '1d'],
-                  '5Y': ['4h', '1d'],
-                  'ALL': ['1d']
-                };
-
+                const validCombos = { '1D': ['1m', '5m', '15m', '30m', '1h'], '5D': ['5m', '15m', '30m', '1h', '4h'], '1M': ['15m', '30m', '1h', '4h', '1d'], '3M': ['30m', '1h', '4h', '1d'], '1Y': ['1h', '4h', '1d'], '5Y': ['4h', '1d'], 'ALL': ['1d'] };
                 const isValid = validCombos[range]?.includes(int);
-
                 return (
                   <MenuItem
                     key={int}
                     disabled={!isValid}
-                    onClick={() => {
-                      if (isValid) {
-                        setChartInterval(int);
-                        setAnchorEl(null);
-                      }
-                    }}
+                    onClick={() => { if (isValid) { setChartInterval(int); setAnchorEl(null); } }}
                     isActive={chartInterval === int}
                     isDark={isDark}
                   >
-                    <Box style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                      <Box style={{
-                        width: '16px',
-                        height: '16px',
-                        border: '2px solid',
-                        borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)',
-                        borderRadius: '50%',
-                        marginRight: '8px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        background: chartInterval === int ? '#147DFE' : 'transparent'
-                      }}>
-                        {chartInterval === int && (
-                          <Box style={{ width: '6px', height: '6px', background: 'white', borderRadius: '50%' }} />
-                        )}
-                      </Box>
-                      {int}
-                    </Box>
+                    {int}
                   </MenuItem>
                 );
               })}
@@ -1442,62 +1146,25 @@ const PriceChartAdvanced = memo(({ token }) => {
           </div>
 
           {!isMobile && (
-            <IconButton
-              size="small"
-              onClick={handleFullscreen}
-              isDark={isDark}
-              style={{ marginLeft: '8px' }}
-              title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
-            >
+            <IconButton onClick={handleFullscreen} isDark={isDark} title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
               {isFullscreen ? <Minimize /> : <Maximize />}
             </IconButton>
           )}
         </Box>
       </Box>
 
-      <Box style={{
-        position: 'relative',
-        height: isFullscreen ? 'calc(100vh - 120px)' : isMobile ? '380px' : '550px',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        marginRight: isMobile ? '-4px' : '0',
-        marginLeft: isMobile ? '-4px' : '0'
-      }}>
+      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '360px' : '500px', borderRadius: '8px', overflow: 'hidden' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
-        {(() => {
-          const hasChartData =
-            chartType === 'holders' ? holderData && holderData.length > 0 : data && data.length > 0;
-
-          if (loading && !chartRef.current) {
-            return (
-              <Box style={{
-                position: 'absolute',
-                inset: '0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                pointerEvents: 'none'
-              }}>
-                <Spinner size={24} color={isDark ? '#FFFFFF' : '#212B36'} />
-              </Box>
-            );
-          }
-
-          if (!hasChartData && !loading) {
-            return (
-              <Box style={{
-                position: 'absolute',
-                inset: '0',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <Typography color="text.secondary" isDark={isDark}>No data available</Typography>
-              </Box>
-            );
-          }
-          return null;
-        })()}
+        {loading && !chartRef.current && (
+          <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Spinner size={20} color={isDark ? '#fff' : '#1a1a1a'} />
+          </Box>
+        )}
+        {!loading && !(chartType === 'holders' ? holderData?.length : data?.length) && (
+          <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Typography color="text.secondary" isDark={isDark}>No data</Typography>
+          </Box>
+        )}
       </Box>
     </Card>
   );

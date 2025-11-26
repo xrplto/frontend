@@ -8,11 +8,11 @@ import { AppContext } from 'src/AppContext';
 
 // Constants
 const currencySymbols = {
-  USD: '$ ',
-  EUR: '€ ',
-  JPY: '¥ ',
-  CNH: '¥ ',
-  XRP: '✕ '
+  USD: '$',
+  EUR: '€',
+  JPY: '¥',
+  CNH: '¥',
+  XRP: ''
 };
 import Sparkline from 'src/components/Sparkline';
 
@@ -112,24 +112,24 @@ const OptimizedChart = memo(
 OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
   cursor: pointer;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)'};
+    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)'};
   }
 `;
 
 const StyledCell = styled.td`
-  padding: 12px 10px;
+  padding: 10px 8px;
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
-  font-size: 13px;
+  font-size: 12px;
   font-weight: ${(props) => props.fontWeight || 400};
   color: ${(props) => props.color || (props.isDark ? '#FFFFFF' : '#000000')};
   vertical-align: middle;
   width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isTokenColumn ? '250px' : 'auto')};
+  min-width: ${(props) => (props.isTokenColumn ? '220px' : 'auto')};
 `;
 
 // Mobile-specific flexbox components
@@ -180,8 +180,8 @@ const MobilePercentCell = styled.div`
 
 // Shared components with mobile/desktop variations
 const TokenImage = styled.div`
-  width: ${(props) => (props.isMobile ? '20px' : '28px')};
-  height: ${(props) => (props.isMobile ? '20px' : '28px')};
+  width: ${(props) => (props.isMobile ? '20px' : '24px')};
+  height: ${(props) => (props.isMobile ? '20px' : '24px')};
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
@@ -197,10 +197,10 @@ const TokenDetails = styled.div`
 `;
 
 const TokenName = styled.span`
-  font-weight: 600;
-  font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
+  font-weight: 500;
+  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
   color: ${(props) => props.isDark ? '#FFFFFF' : '#000000'};
-  max-width: ${(props) => (props.isMobile ? '100px' : '150px')};
+  max-width: ${(props) => (props.isMobile ? '100px' : '140px')};
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -223,15 +223,15 @@ const UserName = styled.span`
 `;
 
 const PriceText = styled.span`
-  font-weight: 600;
-  font-size: ${(props) => (props.isMobile ? '11px' : '14px')};
+  font-weight: 500;
+  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
   color: ${(props) => props.priceColor || (props.isDark ? '#FFFFFF' : '#000000')};
 `;
 
 const PercentText = styled.span`
-  font-weight: 600;
+  font-weight: 500;
   color: ${(props) => props.color};
-  font-size: ${(props) => (props.isMobile ? '11px' : '13px')};
+  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
 `;
 
 const truncate = (str, n) => {
@@ -434,10 +434,10 @@ const MobileTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? '#4CAF50' : '#2E7D32';
+      return darkMode ? '#10b981' : '#059669';
     return value < 0
-      ? darkMode ? '#EF5350' : '#C62828'
-      : darkMode ? '#4CAF50' : '#2E7D32';
+      ? darkMode ? '#ef4444' : '#dc2626'
+      : darkMode ? '#10b981' : '#059669';
   };
 
   const getMarketCapColor = (mcap) => {
@@ -457,7 +457,7 @@ const MobileTokenRow = ({
   };
 
   useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#EF5350' : token.bearbull === 1 ? '#4CAF50' : '');
+    setPriceColor(token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : '');
     const timer = setTimeout(() => setPriceColor(''), 1500);
     return () => clearTimeout(timer);
   }, [token.bearbull]);
@@ -595,10 +595,10 @@ const DesktopTokenRow = ({
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
-      return darkMode ? '#4CAF50' : '#2E7D32';
+      return darkMode ? '#10b981' : '#059669';
     return value < 0
-      ? darkMode ? '#EF5350' : '#C62828'
-      : darkMode ? '#4CAF50' : '#2E7D32';
+      ? darkMode ? '#ef4444' : '#dc2626'
+      : darkMode ? '#10b981' : '#059669';
   };
 
   const getMarketCapColor = (mcap) => {
@@ -618,7 +618,7 @@ const DesktopTokenRow = ({
   };
 
   useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#EF5350' : token.bearbull === 1 ? '#4CAF50' : '');
+    setPriceColor(token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : '');
     const timer = setTimeout(() => setPriceColor(''), 1500);
     return () => clearTimeout(timer);
   }, [token.bearbull]);
@@ -633,24 +633,24 @@ const DesktopTokenRow = ({
         isDark={darkMode}
         isTokenColumn={true}
         style={{
-          width: '250px',
-          minWidth: '250px',
-          maxWidth: '250px'
+          width: '220px',
+          minWidth: '220px',
+          maxWidth: '220px'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <TokenImage isDark={darkMode}>
             <OptimizedImage
               src={imgError ? '/static/alt.webp' : imgUrl}
               alt={name || 'Token'}
-              size={28}
+              size={24}
               onError={() => setImgError(true)}
               priority={false}
               md5={md5}
             />
           </TokenImage>
           <div style={{ minWidth: 0, flex: 1 }}>
-            <TokenName isDark={darkMode} title={name}>{truncate(name, 20)}</TokenName>
+            <TokenName isDark={darkMode} title={name}>{truncate(name, 18)}</TokenName>
             <UserName isDark={darkMode} title={user}>{truncate(user, 12)}</UserName>
           </div>
         </div>

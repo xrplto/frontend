@@ -399,11 +399,13 @@ const OverView = ({ account }) => {
               isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-50 border-gray-200"
             )}>
               <div className={cn(
-                "grid px-2 py-1 border-b",
+                "grid px-2 py-1.5 border-b",
                 isDark ? "border-white/[0.04]" : "border-gray-200"
-              )} style={{ gridTemplateColumns: '90px 1fr 80px' }}>
+              )} style={{ gridTemplateColumns: '100px 1fr 100px 70px 70px' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Type</span>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Details</span>
+                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Amount</span>
+                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Fee</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>When</span>
               </div>
               {filteredTxHistory.slice(0, 20).map((tx, idx) => {
@@ -565,14 +567,48 @@ const OverView = ({ account }) => {
                   actionDesc = txData.TransactionType.replace(/([A-Z])/g, ' $1').trim();
                 }
 
+                // Calculate amount for display
+                let amountDisplay = '—';
+                let amountColor = isDark ? 'text-white/50' : 'text-gray-500';
+
+                if (txData.TransactionType === 'Payment') {
+                  const isSender = txData.Account === account;
+                  if (meta?.delivered_amount) {
+                    if (typeof meta.delivered_amount === 'string') {
+                      const xrp = parseInt(meta.delivered_amount) / 1000000;
+                      amountDisplay = `${isSender ? '-' : '+'}${fCurrency5(xrp)} XRP`;
+                      amountColor = isSender ? 'text-[#ef4444]' : 'text-[#10b981]';
+                    } else {
+                      const val = parseFloat(meta.delivered_amount.value);
+                      const curr = decodeCurrency(meta.delivered_amount.currency);
+                      amountDisplay = `${isSender ? '-' : '+'}${fCurrency5(val)} ${curr}`;
+                      amountColor = isSender ? 'text-[#ef4444]' : 'text-[#10b981]';
+                    }
+                  } else if (txData.Amount) {
+                    if (typeof txData.Amount === 'string') {
+                      const xrp = parseInt(txData.Amount) / 1000000;
+                      amountDisplay = `${isSender ? '-' : '+'}${fCurrency5(xrp)} XRP`;
+                      amountColor = isSender ? 'text-[#ef4444]' : 'text-[#10b981]';
+                    }
+                  }
+                } else if (txData.TransactionType === 'OfferCreate') {
+                  if (offerDetails) {
+                    amountDisplay = offerDetails.split(' → ')[0];
+                  }
+                }
+
+                const fee = txData.Fee ? parseInt(txData.Fee) / 1000000 : 0;
+                const txHash = txData.hash || tx.hash;
+
                 return (
-                  <div
+                  <Link
                     key={idx}
+                    href={`/tx/${txHash}`}
                     className={cn(
-                      "grid px-2 py-1.5",
+                      "grid px-2 py-1.5 hover:bg-white/[0.02] transition-colors",
                       idx < 19 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100")
                     )}
-                    style={{ gridTemplateColumns: '90px 1fr 80px' }}
+                    style={{ gridTemplateColumns: '100px 1fr 100px 70px 70px' }}
                   >
                     <span className={cn(
                       "text-[11px]",
@@ -580,8 +616,8 @@ const OverView = ({ account }) => {
                     )}>
                       {txData.TransactionType}
                     </span>
-                    <div>
-                      <p className={cn("text-[12px]", actionColor)}>
+                    <div className="min-w-0">
+                      <p className={cn("text-[12px] truncate", actionColor)}>
                         {actionDesc}
                       </p>
                       {sourceLabel && (
@@ -590,10 +626,16 @@ const OverView = ({ account }) => {
                         </span>
                       )}
                     </div>
+                    <span className={cn("text-[11px] text-right font-medium", amountColor)}>
+                      {amountDisplay}
+                    </span>
+                    <span className={cn("text-[11px] text-right", isDark ? "text-white/30" : "text-gray-400")}>
+                      {fee > 0 ? `${fee.toFixed(6)}` : '—'}
+                    </span>
                     <span className={cn("text-[11px] text-right", isDark ? "text-white/40" : "text-gray-400")}>
                       {formatDistanceToNow(date, { addSuffix: false })}
                     </span>
-                  </div>
+                  </Link>
                 );
               })}
             </div>

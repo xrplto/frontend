@@ -136,21 +136,21 @@ const Box = styled.div`
 
 const Typography = styled.span`
   font-size: ${props => {
-    if (props.variant === 'h6') return '14px';
-    if (props.variant === 'subtitle1') return '16px';
-    if (props.variant === 'body2') return '14px';
-    if (props.variant === 'caption') return '12px';
-    return '14px';
+    if (props.variant === 'h6') return '13px';
+    if (props.variant === 'subtitle1') return '14px';
+    if (props.variant === 'body2') return '12px';
+    if (props.variant === 'caption') return '11px';
+    return '12px';
   }};
   font-weight: ${props => props.fontWeight || 400};
   line-height: ${props => props.lineHeight || 'normal'};
   color: ${props => {
-    if (props.color === 'textSecondary') return props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
-    if (props.color === 'primary') return '#4285f4';
-    if (props.color === 'error') return '#f44336';
-    if (props.color === 'warning.main') return '#ff9800';
-    if (props.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
-    return props.isDark ? '#FFFFFF' : '#212B36';
+    if (props.color === 'textSecondary') return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+    if (props.color === 'primary') return '#3b82f6';
+    if (props.color === 'error') return '#ef4444';
+    if (props.color === 'warning.main') return '#f59e0b';
+    if (props.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+    return props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36';
   }};
   ${props => props.sx && Object.entries(props.sx).map(([key, value]) => {
     if (key === 'fontSize') {
@@ -173,7 +173,7 @@ const Typography = styled.span`
 
 const Button = styled.button`
   padding: ${props => {
-    if (props.size === 'small') return '4px 8px';
+    if (props.size === 'small') return '3px 6px';
     if (props.sx?.px || props.sx?.py) {
       const px = props.sx.px;
       const py = props.sx.py;
@@ -182,7 +182,7 @@ const Button = styled.button`
       }
       return `${(py || 1) * 8}px ${(px || 2) * 8}px`;
     }
-    return '8px 16px';
+    return '6px 12px';
   }};
   font-size: ${props => {
     if (props.sx?.fontSize) {
@@ -191,8 +191,8 @@ const Button = styled.button`
       }
       return props.sx.fontSize;
     }
-    if (props.size === 'small') return '12px';
-    return '14px';
+    if (props.size === 'small') return '11px';
+    return '12px';
   }};
   min-width: ${props => props.sx?.minWidth || 'auto'};
   height: ${props => {
@@ -204,22 +204,22 @@ const Button = styled.button`
     }
     return 'auto';
   }};
-  border-radius: 8px;
+  border-radius: 6px;
   text-transform: ${props => props.sx?.textTransform || 'none'};
   font-weight: 400;
-  border: 1.5px solid ${props => {
-    if (props.variant === 'outlined') return props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)');
+  border: 1px solid ${props => {
+    if (props.variant === 'outlined') return props.sx?.borderColor || (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)');
     return 'transparent';
   }};
   background: ${props => {
     if (props.variant === 'outlined') return props.sx?.backgroundColor || 'transparent';
     if (props.variant === 'text') return 'transparent';
-    return '#4285f4';
+    return '#3b82f6';
   }};
   color: ${props => {
     if (props.variant === 'outlined' || props.variant === 'text') {
-      if (props.sx?.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)';
-      return props.sx?.color || '#4285f4';
+      if (props.sx?.color === 'text.secondary') return props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+      return props.sx?.color || '#3b82f6';
     }
     return '#FFFFFF';
   }};
@@ -230,13 +230,13 @@ const Button = styled.button`
   justify-content: center;
   &:hover {
     background: ${props => {
-      if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#4285f4';
-      if (props.variant === 'outlined' || props.variant === 'text') return props.isDark ? 'rgba(66,133,244,0.04)' : 'rgba(66,133,244,0.04)';
-      return '#357ae8';
+      if (props.disabled) return props.variant === 'outlined' ? 'transparent' : '#3b82f6';
+      if (props.variant === 'outlined' || props.variant === 'text') return 'rgba(59,130,246,0.05)';
+      return '#2563eb';
     }};
     border-color: ${props => {
-      if (props.disabled) return props.variant === 'outlined' ? (props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)') : 'transparent';
-      if (props.variant === 'outlined' || props.variant === 'text') return '#4285f4';
+      if (props.disabled) return props.variant === 'outlined' ? (props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)') : 'transparent';
+      if (props.variant === 'outlined' || props.variant === 'text') return '#3b82f6';
       return 'transparent';
     }};
   }
@@ -297,14 +297,14 @@ const Input = styled.input`
 
 const IconButton = styled.button`
   padding: ${props => {
-    if (props.size === 'small') return '8px';
+    if (props.size === 'small') return '6px';
     if (props.sx?.padding) {
       if (typeof props.sx.padding === 'object') {
         return `${props.sx.padding.xs}`;
       }
       return props.sx.padding;
     }
-    return '12px';
+    return '8px';
   }};
   width: ${props => {
     if (props.sx?.width && typeof props.sx.width === 'object') {
@@ -325,7 +325,7 @@ const IconButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
   &:hover {
     background: ${props => props.sx?.['&:hover']?.backgroundColor || 'transparent'};
   }
@@ -352,17 +352,17 @@ const IconButton = styled.button`
 `;
 
 const Alert = styled.div`
-  padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 12px` : '8px 12px'};
-  border-radius: 10px;
-  border: 1.5px solid ${props => {
-    if (props.severity === 'error') return 'rgba(244, 67, 54, 0.3)';
-    if (props.severity === 'warning') return 'rgba(255, 152, 0, 0.3)';
-    return 'rgba(66, 133, 244, 0.3)';
+  padding: ${props => props.sx?.py ? `${props.sx.py * 8}px 10px` : '6px 10px'};
+  border-radius: 8px;
+  border: 1px solid ${props => {
+    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.2)';
+    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.2)';
+    return 'rgba(59, 130, 246, 0.2)';
   }};
   background: ${props => {
-    if (props.severity === 'error') return 'rgba(244, 67, 54, 0.08)';
-    if (props.severity === 'warning') return 'rgba(255, 152, 0, 0.08)';
-    return 'rgba(66, 133, 244, 0.08)';
+    if (props.severity === 'error') return 'rgba(239, 68, 68, 0.05)';
+    if (props.severity === 'warning') return 'rgba(245, 158, 11, 0.05)';
+    return 'rgba(59, 130, 246, 0.05)';
   }};
   margin-top: ${props => props.sx?.mt ? `${props.sx.mt * 8}px` : '0'};
 `;
@@ -370,46 +370,45 @@ const Alert = styled.div`
 const Tabs = styled.div`
   display: flex;
   width: fit-content;
-  gap: 4px;
-  padding: 4px;
-  border-radius: 10px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+  gap: 2px;
+  padding: 3px;
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
 `;
 
 const Tab = styled.button`
-  padding: 6px 14px;
-  font-size: 13px;
+  padding: 5px 12px;
+  font-size: 12px;
   text-transform: none;
   border: none;
-  border-radius: 8px;
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : '#fff') : 'transparent'};
-  color: ${props => props.isActive ? '#4285f4' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+  border-radius: 6px;
+  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.08)' : '#fff') : 'transparent'};
+  color: ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   font-weight: ${props => props.isActive ? 500 : 400};
-  transition: all 0.15s ease;
   &:hover {
-    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.1)' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)')};
+    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
   }
 `;
 
 const Select = styled.select`
   padding: ${props => {
-    if (props.sx?.['& .MuiSelect-select']?.py === 0) return '2px 8px';
-    return '6px 10px';
+    if (props.sx?.['& .MuiSelect-select']?.py === 0) return '2px 6px';
+    return '4px 8px';
   }};
-  font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '12px'};
+  font-size: ${props => props.sx?.fontSize || props.sx?.['& .MuiSelect-select']?.fontSize || '11px'};
   height: ${props => props.sx?.height || 'auto'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-  border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : '#ffffff'};
-  color: ${props => props.isDark ? '#FFFFFF' : '#212B36'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 6px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : '#ffffff'};
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#212B36'};
   cursor: pointer;
   outline: none;
 `;
 
 const MenuItem = styled.option`
-  padding: 6px 10px;
-  font-size: 12px;
+  padding: 4px 8px;
+  font-size: 11px;
 `;
 
 const Tooltip = ({ title, children }) => {
@@ -445,23 +444,19 @@ const Tooltip = ({ title, children }) => {
 
 const CurrencyContent = styled.div`
   box-sizing: border-box;
-  margin: 6px 0;
+  margin: 4px 0;
   display: flex;
   flex-direction: row;
-  padding: 14px 16px;
-  border-radius: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
   align-items: center;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   width: 100%;
   justify-content: space-between;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  transition: border-color 0.15s ease;
-  &:hover {
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-  }
   @media (max-width: 600px) {
-    padding: 12px 14px;
-    margin: 5px 0;
+    padding: 10px 12px;
+    margin: 3px 0;
   }
 `;
 
@@ -480,15 +475,15 @@ const OverviewWrapper = styled.div`
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
-  border-radius: 16px;
+  border-radius: 10px;
   display: flex;
-  padding: 16px;
+  padding: 12px;
   width: 100%;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.01)'};
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  background: transparent;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   @media (max-width: 600px) {
-    border-radius: 14px;
-    padding: 12px;
+    border-radius: 8px;
+    padding: 10px;
   }
 `;
 
@@ -510,18 +505,15 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${props => props.isDark ? '#0a0a0a' : '#ffffff'};
+  background: ${props => props.isDark ? '#000' : '#fff'};
   border-radius: 50%;
-  padding: 8px;
+  padding: 6px;
   z-index: 1;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  transition: all 0.15s ease;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   &:hover {
-    background: ${props => props.isDark ? 'rgba(66,133,244,0.08)' : 'rgba(66,133,244,0.08)'};
-    border-color: #4285f4;
-    transform: translate(-50%, -50%) scale(1.05);
+    border-color: #3b82f6;
     svg {
-      color: #4285f4 !important;
+      color: #3b82f6 !important;
     }
   }
 `;
@@ -531,56 +523,50 @@ const ExchangeButton = styled(Button)`
   max-width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 12px;
+  border-radius: 10px;
   background: transparent;
-  color: #4285f4;
-  font-weight: 500;
-  border: 1.5px solid #4285f4;
-  padding: 12px 20px;
-  font-size: 0.9rem;
+  color: #3b82f6;
+  font-weight: 400;
+  border: 1.5px solid #3b82f6;
+  padding: 10px 16px;
+  font-size: 13px;
   text-transform: none;
-  margin-top: 12px;
+  margin-top: 8px;
   margin-bottom: 4px;
-  transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(66,133,244,0.08);
-    border-color: #4285f4;
-  }
-
-  &:active {
-    background: rgba(66,133,244,0.12);
-    transform: scale(0.99);
+    background: rgba(59,130,246,0.05);
+    border-color: #3b82f6;
   }
 
   &:disabled {
     background: transparent;
     color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   }
 
   @media (max-width: 600px) {
-    padding: 11px 16px;
-    font-size: 0.85rem;
+    padding: 10px 14px;
+    font-size: 12px;
   }
 `;
 
 const TokenImage = styled(Image)`
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   object-fit: cover;
   @media (max-width: 600px) {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
   }
 `;
 
 const SummaryBox = styled.div`
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: transparent;
-  border-radius: 10px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  border-radius: 8px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   margin-top: 4px;
   margin-bottom: 4px;
 `;
@@ -1926,38 +1912,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Limit Order Settings */}
           {orderType === 'limit' && (
-            <Box sx={{ px: 1, py: 0.5 }}>
-              <Stack spacing={0.5}>
-                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                  Limit Price ({curr2.name} per {curr1.name})
-                </Typography>
-                <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                  <Input
-                    placeholder="0.00"
-                    fullWidth
-                    isDark={isDark}
-                    value={limitPrice}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val === '.') {
-                        setLimitPrice('0.');
-                        return;
-                      }
-                      if (!isNaN(Number(val)) || val === '') {
-                        setLimitPrice(val);
-                      }
-                    }}
-                    sx={{
-                      backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
-                      borderRadius: '6px',
-                      padding: '4px 8px',
-                      input: {
-                        fontSize: '14px',
-                        fontWeight: 400
-                      }
-                    }}
-                  />
-                  <Stack direction="row" spacing={0.25} alignItems="center" style={{ position: 'absolute', right: '8px' }}>
+            <Box sx={{ px: 0.5, py: 0.25 }}>
+              <Stack spacing={0.25}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between">
+                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
+                    Limit Price ({curr2.name} per {curr1.name})
+                  </Typography>
+                  <Stack direction="row" spacing={0.25} alignItems="center">
                     <Button
                       size="small"
                       variant="text"
@@ -1969,7 +1930,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         setLimitPrice(new Decimal(base).mul(0.99).toFixed(6));
                       }}
                       isDark={isDark}
-                      sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                      sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                     >
                       -1%
                     </Button>
@@ -1983,7 +1944,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         setLimitPrice(String(new Decimal(mid).toFixed(6)));
                       }}
                       isDark={isDark}
-                      sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                      sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                     >
                       Mid
                     </Button>
@@ -1998,21 +1959,46 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         setLimitPrice(new Decimal(base).mul(1.01).toFixed(6));
                       }}
                       isDark={isDark}
-                      sx={{ textTransform: 'none', fontSize: '11px', minHeight: '18px', px: 0.5, py: 0 }}
+                      sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                     >
                       +1%
                     </Button>
                   </Stack>
-                </div>
+                </Stack>
+                <Input
+                  placeholder="0.00"
+                  fullWidth
+                  isDark={isDark}
+                  value={limitPrice}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '.') {
+                      setLimitPrice('0.');
+                      return;
+                    }
+                    if (!isNaN(Number(val)) || val === '') {
+                      setLimitPrice(val);
+                    }
+                  }}
+                  sx={{
+                    backgroundColor: isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)',
+                    borderRadius: '6px',
+                    padding: '6px 10px',
+                    input: {
+                      fontSize: '13px',
+                      fontWeight: 400
+                    }
+                  }}
+                />
                 {bestBid != null && bestAsk != null && (
-                  <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="space-between" sx={{ flexWrap: 'wrap', mt: 0.5 }}>
-                    <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                  <Stack direction="row" alignItems="center" justifyContent="space-between">
+                    <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
                       {(() => {
                         const bb = Number(bestBid);
                         const ba = Number(bestAsk);
                         const mid = (bb + ba) / 2;
                         const spread = mid ? ((ba - bb) / mid) * 100 : null;
-                        return `Bid ${new Decimal(bb).toFixed(6)} · Ask ${new Decimal(ba).toFixed(6)}${spread != null ? ` · Spread ${new Decimal(spread).toFixed(2)}%` : ''}`;
+                        return `Bid ${new Decimal(bb).toFixed(6)} · Ask ${new Decimal(ba).toFixed(6)}${spread != null ? ` · ${new Decimal(spread).toFixed(2)}%` : ''}`;
                       })()}
                     </Typography>
                     <Stack direction="row" spacing={0.25}>
@@ -2022,7 +2008,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         disabled={!bids || bids.length === 0}
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
                         isDark={isDark}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '20px', px: 0.75, py: 0 }}
+                        sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                       >
                         Bid
                       </Button>
@@ -2032,7 +2018,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         disabled={!asks || asks.length === 0}
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
                         isDark={isDark}
-                        sx={{ textTransform: 'none', fontSize: '11px', minHeight: '20px', px: 0.75, py: 0 }}
+                        sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                       >
                         Ask
                       </Button>
@@ -2040,8 +2026,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </Stack>
                 )}
                 {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
-                  <Typography variant="caption" color="error" isDark={isDark} sx={{ fontSize: '11px' }}>
-                    Enter a valid limit price greater than 0.
+                  <Typography variant="caption" color="error" isDark={isDark} sx={{ fontSize: '10px' }}>
+                    Enter a valid limit price greater than 0
                   </Typography>
                 )}
                 {orderType === 'limit' &&
@@ -2049,8 +2035,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   (() => {
                     const baseMsg =
                       priceWarning.kind === 'buy'
-                        ? `Your buy price is ${new Decimal(priceWarning.pct).toFixed(2)}% above best ask (${new Decimal(priceWarning.ref).toFixed(6)}).`
-                        : `Your sell price is ${new Decimal(priceWarning.pct).toFixed(2)}% below best bid (${new Decimal(priceWarning.ref).toFixed(6)}).`;
+                        ? `Buy ${new Decimal(priceWarning.pct).toFixed(1)}% above ask`
+                        : `Sell ${new Decimal(priceWarning.pct).toFixed(1)}% below bid`;
                     const lp = Number(limitPrice);
                     const marketable =
                       priceWarning.kind === 'buy'
@@ -2058,14 +2044,13 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                         : bestBid != null && lp <= Number(bestBid);
                     if (marketable) {
                       return (
-                        <Alert severity="error" sx={{ mt: 0.5, py: 0.5 }}>
+                        <Alert severity="error" sx={{ mt: 0.25, py: 0.25 }}>
                           <Typography
                             variant="caption"
                             isDark={isDark}
-                            sx={{ fontSize: '11px', fontWeight: 400, color: 'error.main' }}
+                            sx={{ fontSize: '10px', fontWeight: 400, color: '#ef4444' }}
                           >
-                            Immediate execution! {baseMsg} This order will fill instantly at market.
-                            Review price and amount carefully.
+                            Instant fill! {baseMsg}
                           </Typography>
                         </Alert>
                       );
@@ -2074,7 +2059,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <Typography
                         variant="caption"
                         isDark={isDark}
-                        sx={{ fontSize: '11px', color: '#ff9800' }}
+                        sx={{ fontSize: '10px', color: '#f59e0b' }}
                       >
                         {baseMsg}
                       </Typography>
@@ -2082,11 +2067,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   })()}
 
                 {/* Order Expiration */}
-                <Stack direction="row" alignItems="center" justifyContent="space-between">
-                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
+                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
                     Expiration
                   </Typography>
-                  <Stack direction="row" spacing={0.5} alignItems="center">
+                  <Stack direction="row" spacing={0.25} alignItems="center">
                     <Select
                       value={orderExpiry}
                       onChange={(e) => {
@@ -2097,106 +2082,92 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       }}
                       isDark={isDark}
                       sx={{
-                        fontSize: '11px',
-                        height: '22px',
+                        fontSize: '10px',
+                        height: '20px',
                         '& .MuiSelect-select': {
                           py: 0,
-                          fontSize: '11px'
+                          fontSize: '10px'
                         }
                       }}
                     >
                       <MenuItem value="never">Never</MenuItem>
-                      <MenuItem value="1h">1 Hour</MenuItem>
-                      <MenuItem value="24h">24 Hours</MenuItem>
-                      <MenuItem value="7d">7 Days</MenuItem>
+                      <MenuItem value="1h">1h</MenuItem>
+                      <MenuItem value="24h">24h</MenuItem>
+                      <MenuItem value="7d">7d</MenuItem>
                       <MenuItem value="custom">Custom</MenuItem>
                     </Select>
                     {orderExpiry === 'custom' && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
                         <Input
                           value={expiryHours}
                           onChange={(e) => setExpiryHours(Number(e.target.value))}
                           type="number"
                           isDark={isDark}
                           sx={{
-                            width: '50px',
+                            width: '40px',
                             input: {
-                              fontSize: '11px',
+                              fontSize: '10px',
                               padding: '2px 4px',
-                              border: '1.5px solid rgba(0,0,0,0.2)',
-                              borderRadius: '3px'
+                              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
+                              borderRadius: '4px'
                             }
                           }}
                         />
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '13px' }}>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
                           hrs
                         </Typography>
                       </div>
                     )}
                   </Stack>
                 </Stack>
+
+                {/* Show/Hide Order Book - inline */}
+                <Stack direction="row" justifyContent="center" sx={{ mt: 0.5 }}>
+                  <Button
+                    size="small"
+                    variant="text"
+                    onClick={() => {
+                      if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
+                      else setShowOrderbook(!showOrderbook);
+                    }}
+                    isDark={isDark}
+                    sx={{
+                      fontSize: '10px',
+                      textTransform: 'none',
+                      py: 0.25,
+                      px: 0.75,
+                      minWidth: 0,
+                      color: 'text.secondary'
+                    }}
+                  >
+                    {(onOrderBookToggle ? orderBookOpen : showOrderbook) ? 'Hide' : 'Show'} Order Book
+                  </Button>
+                </Stack>
               </Stack>
             </Box>
-          )}
-
-          {/* Show/Hide Order Book */}
-          {orderType === 'limit' && (
-            <Stack direction="row" justifyContent="center" sx={{ px: 1, py: 0.75 }}>
-              <Button
-                size="small"
-                variant="text"
-                onClick={() => {
-                  if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
-                  else setShowOrderbook(!showOrderbook);
-                }}
-                isDark={isDark}
-                sx={{
-                  fontSize: '0.8rem',
-                  textTransform: 'none',
-                  py: 0.5,
-                  px: 1,
-                  minWidth: 0,
-                  color: 'text.secondary'
-                }}
-              >
-                {(onOrderBookToggle ? orderBookOpen : showOrderbook) ? 'Hide' : 'Show'} Order Book
-              </Button>
-            </Stack>
           )}
 
 
           {/* Order Summary */}
           {orderType === 'limit' && amount1 && amount2 && limitPrice && (
             <SummaryBox isDark={isDark}>
-              <Stack direction="row" spacing={1} sx={{ fontSize: '11px', flexWrap: 'wrap' }}>
-                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-                  <strong>{revert ? 'Buy' : 'Sell'}</strong> {amount1} {curr1.name}
-                </Typography>
-                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                  @ {limitPrice}
-                </Typography>
-                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-                  = {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
-                </Typography>
-                {orderExpiry !== 'never' && (
-                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                    · {expiryHours}h
-                  </Typography>
-                )}
-              </Stack>
+              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
+                <span style={{ fontWeight: 500 }}>{revert ? 'Buy' : 'Sell'}</span> {amount1} {curr1.name} @ {limitPrice} = {new Decimal(amount1 || 0).mul(limitPrice || 0).toFixed(6)} {curr2.name}
+                {orderExpiry !== 'never' && <span style={{ opacity: 0.6 }}> · {expiryHours}h</span>}
+              </Typography>
             </SummaryBox>
           )}
 
           {/* Connect Wallet - inside the swap card when not connected */}
           {!accountProfile?.account && (
-            <Box sx={{ mt: 2 }}>
+            <Box sx={{ mt: 1 }}>
               <ConnectWallet
                 text="Connect Wallet"
-                py={{ xs: 1.25, sm: 1 }}
-                fontSize={{ xs: '0.9rem', sm: '0.85rem' }}
+                py={{ xs: 1, sm: 0.75 }}
+                fontSize={{ xs: '12px', sm: '12px' }}
                 sx={{
-                  borderRadius: '12px',
-                  fontWeight: 500,
+                  borderRadius: '8px',
+                  fontWeight: 400,
                   width: '100%'
                 }}
               />
@@ -2205,11 +2176,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </ConverterFrame>
       </OverviewWrapper>
 
-      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.5, mb: 0.5, width: '100%' }}>
-        <PuffLoader color={isDark ? '#007B55' : '#5569ff'} size={14} />
-        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px' }}>
-          1 {curr1.name} ={' '}
-          {(() => {
+      <Stack direction="row" alignItems="center" spacing={0.5} sx={{ mt: 0.25, mb: 0.25, width: '100%' }}>
+        <PuffLoader color={isDark ? '#22c55e' : '#3b82f6'} size={12} />
+        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', opacity: 0.7 }}>
+          1 {curr1.name} = {(() => {
             if (amount1 && amount2 && parseFloat(amount1) > 0 && parseFloat(amount2) > 0) {
               return (parseFloat(amount2) / parseFloat(amount1)).toFixed(6);
             }
@@ -2222,8 +2192,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               rate = token1IsXRP && !token2IsXRP ? 1 / tokenExch2 : !token1IsXRP && token2IsXRP ? tokenExch1 : tokenExch1 / tokenExch2;
             }
             return rate.toFixed(6);
-          })()}{' '}
-          {curr2.name}
+          })()} {curr2.name}
         </Typography>
       </Stack>
 
@@ -2235,8 +2204,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             isDark={isDark}
             sx={{
               mt: 0,
-              height: { xs: '36px', sm: '32px' },
-              fontSize: { xs: '0.9rem', sm: '0.85rem' }
+              height: { xs: '32px', sm: '28px' },
+              fontSize: { xs: '12px', sm: '12px' }
             }}
             disabled={
               isProcessing === 1 ||
@@ -2247,8 +2216,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             {handleMsg()}
           </ExchangeButton>
           {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
-            <Alert severity="error" sx={{ mt: 1 }}>
-              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px' }}>
+            <Alert severity="error" sx={{ mt: 0.5 }}>
+              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
                 {errMsg}
               </Typography>
             </Alert>

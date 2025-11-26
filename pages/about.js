@@ -16,7 +16,7 @@ const PageWrapper = styled.div`
 `;
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
   padding: 0 24px;
   width: 100%;
@@ -25,303 +25,223 @@ const Container = styled.div`
 // Hero Section
 const HeroSection = styled.div`
   text-align: center;
-  padding: 80px 0;
+  padding: 40px 0 24px;
   position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(66, 133, 244, 0.1) 0%, transparent 70%);
-    animation: pulse 20s ease-in-out infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { transform: scale(1) rotate(0deg); }
-    50% { transform: scale(1.1) rotate(180deg); }
-  }
 `;
 
 const HeroTitle = styled.h1`
-  font-size: 3.5rem;
-  font-weight: 800;
-  margin-bottom: 24px;
-  position: relative;
-  z-index: 1;
-  background: linear-gradient(135deg, #147DFE 0%, #00D4FF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 2.5rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: ${props => props.isDark ? '#fff' : '#000'};
+  display: none;
 
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 `;
 
 const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
-  max-width: 600px;
-  margin: 0 auto 48px;
-  position: relative;
-  z-index: 1;
+  font-size: 14px;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
+  max-width: 500px;
+  margin: 0 auto 32px;
 `;
 
 // Stats Row
 const StatsRow = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  margin-bottom: 80px;
-  position: relative;
-  z-index: 1;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 32px;
+
+  @media (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 const StatCard = styled.div`
   text-align: center;
-  padding: 24px;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
-  backdrop-filter: blur(10px);
+  padding: 20px 16px;
+  background: transparent;
+  border-radius: 8px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
 `;
 
 const StatNumber = styled.h2`
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #4285f4;
-  margin-bottom: 8px;
+  font-size: 1.5rem;
+  font-weight: 500;
+  color: #3b82f6;
+  margin-bottom: 4px;
 `;
 
 const StatLabel = styled.p`
-  font-size: 0.9rem;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
+  font-size: 10px;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 `;
 
 // Features Section
 const FeaturesSection = styled.div`
-  margin: 80px 0;
+  margin: 32px 0;
 `;
 
 const SectionTitle = styled.h2`
   text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 48px;
-  color: ${props => props.isDark ? '#fff' : '#000'};
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : '#000'};
+  letter-spacing: 0.5px;
 `;
 
 const FeatureGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 32px;
-  margin-bottom: 80px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+
+  @media (max-width: 800px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  @media (max-width: 500px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
 const FeatureCard = styled.div`
   position: relative;
-  padding: 40px 32px;
-  background: ${props => props.isDark
-    ? 'rgba(255, 255, 255, 0.02)'
-    : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 12px;
-  transition: all 0.3s ease;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: ${props => props.gradient || 'linear-gradient(90deg, #147DFE, #00D4FF)'};
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-  }
+  padding: 16px;
+  background: transparent;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 8px;
 
   &:hover {
-    border-color: rgba(66, 133, 244, 0.3);
-
-    &::before {
-      transform: scaleX(1);
-    }
+    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'};
   }
 `;
 
 const FeatureIcon = styled.div`
-  width: 56px;
-  height: 56px;
-  margin-bottom: 24px;
+  width: 32px;
+  height: 32px;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: ${props => props.gradient || 'linear-gradient(135deg, #147DFE, #00D4FF)'};
-  border-radius: 12px;
-  color: white;
+  background: transparent;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
+  border-radius: 6px;
+  color: #3b82f6;
 
   svg {
-    width: 28px;
-    height: 28px;
+    width: 16px;
+    height: 16px;
   }
 `;
 
 const FeatureTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 12px;
-  color: ${props => props.isDark ? '#fff' : '#000'};
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : '#000'};
 `;
 
 const FeatureText = styled.p`
-  font-size: 1rem;
-  line-height: 1.6;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
+  font-size: 11px;
+  line-height: 1.5;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
 `;
 
 // Timeline Section
 const TimelineSection = styled.div`
-  margin: 80px 0;
-  position: relative;
+  margin: 32px 0;
 `;
 
 const Timeline = styled.div`
-  position: relative;
-  max-width: 800px;
-  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
 
-  &::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
-    transform: translateX(-50%);
+  @media (max-width: 700px) {
+    grid-template-columns: repeat(3, 1fr);
+  }
 
-    @media (max-width: 768px) {
-      left: 20px;
-    }
+  @media (max-width: 450px) {
+    grid-template-columns: repeat(2, 1fr);
   }
 `;
 
 const TimelineItem = styled.div`
   display: flex;
-  justify-content: ${props => props.align === 'right' ? 'flex-start' : 'flex-end'};
-  padding: 20px 0;
-  position: relative;
-
-  @media (max-width: 768px) {
-    justify-content: flex-start;
-    padding-left: 50px;
-  }
-
-  &::before {
-    content: '';
-    position: absolute;
-    left: 50%;
-    top: 30px;
-    width: 12px;
-    height: 12px;
-    background: #4285f4;
-    border-radius: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-
-    @media (max-width: 768px) {
-      left: 20px;
-    }
-  }
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 12px;
+  background: transparent;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 8px;
 `;
 
 const TimelineContent = styled.div`
-  width: 45%;
-  padding: 20px;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
-  border-radius: 12px;
-
-  @media (max-width: 768px) {
-    width: 100%;
-  }
+  text-align: center;
 `;
 
 const TimelineDate = styled.div`
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4285f4;
-  margin-bottom: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  color: #3b82f6;
+  margin-bottom: 2px;
 `;
 
 const TimelineText = styled.div`
-  font-size: 1rem;
+  font-size: 11px;
   color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
 `;
 
 // FAQ Components
 const FaqSection = styled.div`
-  margin-top: 64px;
-  border-top: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
-  padding-top: 48px;
+  margin-top: 32px;
+  border-top: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  padding-top: 32px;
 `;
 
 const FaqHeader = styled.div`
   text-align: center;
-  margin-bottom: 48px;
+  margin-bottom: 20px;
 `;
 
 const FaqTitle = styled.h2`
-  font-size: 2.5rem;
-  font-weight: 700;
-  background: linear-gradient(45deg, #147DFE, #2196F3);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 16px;
-
-  @media (min-width: 768px) {
-    font-size: 3rem;
-  }
+  font-size: 14px;
+  font-weight: 500;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : '#000'};
+  margin-bottom: 8px;
+  display: none;
 `;
 
 const FaqSubtitle = styled.h3`
-  font-size: 1.25rem;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
-  max-width: 600px;
+  font-size: 12px;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
   margin: 0 auto;
   font-weight: 400;
 `;
 
 const FaqList = styled.div`
-  max-width: 900px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 `;
 
 const AccordionItem = styled.div`
-  margin-bottom: 16px;
-  background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
-  border-radius: 12px;
+  background: transparent;
+  border: 1px solid ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 8px;
   overflow: hidden;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-
-  &:hover {
-    background: ${props => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
-    border-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
-  }
 `;
 
 const AccordionHeader = styled.button`
   width: 100%;
-  padding: 20px 24px;
+  padding: 14px 16px;
   background: transparent;
   border: none;
   text-align: left;
@@ -329,40 +249,39 @@ const AccordionHeader = styled.button`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: all 0.3s ease;
 
   &:hover {
-    background-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+    background-color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   }
 `;
 
 const QuestionText = styled.span`
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: ${props => props.isDark ? '#fff' : '#212B36'};
-  padding-right: 16px;
+  font-size: 12px;
+  font-weight: 500;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.9)' : '#212B36'};
+  padding-right: 12px;
   flex: 1;
 `;
 
 const ExpandIcon = styled.svg`
-  color: #4285f4;
-  transition: transform 0.3s ease;
+  color: #3b82f6;
   flex-shrink: 0;
   transform: ${props => props.expanded ? 'rotate(180deg)' : 'rotate(0deg)'};
+  transition: transform 0.2s ease;
 `;
 
 const AccordionContent = styled.div`
   max-height: ${props => props.expanded ? '500px' : '0'};
   overflow: hidden;
-  transition: max-height 0.3s ease;
+  transition: max-height 0.2s ease;
 `;
 
 const AnswerText = styled.p`
-  padding: 0 24px 24px;
+  padding: 0 16px 14px;
   margin: 0;
-  line-height: 1.7;
-  font-size: 1.05rem;
-  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)'};
+  line-height: 1.6;
+  font-size: 11px;
+  color: ${props => props.isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
 `;
 
 // Memoized FAQ Item Component
@@ -509,8 +428,8 @@ function AboutPage() {
             {features.map((feature, index) => {
               const IconComponent = feature.icon;
               return (
-                <FeatureCard key={index} isDark={isDark} gradient={feature.gradient}>
-                  <FeatureIcon gradient={feature.gradient}>
+                <FeatureCard key={index} isDark={isDark}>
+                  <FeatureIcon isDark={isDark}>
                     <IconComponent />
                   </FeatureIcon>
                   <FeatureTitle isDark={isDark}>{feature.title}</FeatureTitle>
@@ -524,10 +443,10 @@ function AboutPage() {
         {/* Timeline Section */}
         <TimelineSection>
           <SectionTitle isDark={isDark}>Our Journey</SectionTitle>
-          <Timeline isDark={isDark}>
+          <Timeline>
             {timelineData.map((item, index) => (
-              <TimelineItem key={index} align={index % 2 === 0 ? 'left' : 'right'}>
-                <TimelineContent isDark={isDark}>
+              <TimelineItem key={index} isDark={isDark}>
+                <TimelineContent>
                   <TimelineDate>{item.date}</TimelineDate>
                   <TimelineText isDark={isDark}>{item.event}</TimelineText>
                 </TimelineContent>

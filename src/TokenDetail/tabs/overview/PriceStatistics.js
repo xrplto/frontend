@@ -38,7 +38,7 @@ const TableBody = styled.tbody``;
 const TableRow = styled.tr``;
 const TableCell = styled.td`
   padding: ${props => props.padding || '4px 6px'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: none;
   text-align: ${props => props.align || 'left'};
 `;
 const Chip = styled.div`
@@ -142,8 +142,8 @@ const StyledTable = styled(Table)`
 `;
 
 const ModernTableCell = styled(TableCell)`
-  padding: 8px 12px;
-  border-bottom: ${props => props.isDark ? '1.5px solid rgba(255,255,255,0.08)' : '1.5px solid rgba(0,0,0,0.08)'};
+  padding: 6px 10px;
+  border-bottom: none;
 `;
 
 // Constants
@@ -279,9 +279,9 @@ export default function PriceStatistics({ token, isDark = false }) {
   return (
     <Box
       style={{
-        borderRadius: '12px',
+        borderRadius: '10px',
         background: 'transparent',
-        border: `1.5px solid ${isDark ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.15)"}`,
+        border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
         width: '100%',
         marginBottom: '6px'
       }}
@@ -329,17 +329,16 @@ export default function PriceStatistics({ token, isDark = false }) {
       {/* Header */}
       <Box
         style={{
-          padding: '6px 10px',
-          borderBottom: `1.5px solid ${isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"}`
+          padding: '8px 10px 4px'
         }}
       >
         <Typography
           variant="h6"
           isDark={isDark}
           style={{
-            fontSize: '11px',
-            fontWeight: 400,
-            color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(33,43,54,0.5)',
+            fontSize: '10px',
+            fontWeight: 500,
+            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)',
             letterSpacing: '0.5px',
             textTransform: 'uppercase'
           }}
@@ -358,8 +357,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
-                  fontSize: isMobile ? '12px' : '11px'
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                  fontSize: '11px'
                 }}
                 noWrap
               >
@@ -432,8 +431,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -519,8 +518,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
-                  fontSize: isMobile ? '12px' : '11px'
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                  fontSize: '11px'
                 }}
                 noWrap
               >
@@ -534,7 +533,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                 style={{
                   fontWeight: 400,
                   color: '#FF9800',
-                  fontSize: isMobile ? '12px' : '14px'
+                  fontSize: '12px'
                 }}
               >
                 {fNumber(voldivmarket)}
@@ -550,8 +549,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
-                  fontSize: isMobile ? '12px' : '11px'
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                  fontSize: '11px'
                 }}
                 noWrap
               >
@@ -564,8 +563,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: '#2E7D32',
-                  fontSize: isMobile ? '12px' : '14px'
+                  color: '#22c55e',
+                  fontSize: '12px'
                 }}
               >
                 {fNumber(dom || 0)} %
@@ -581,8 +580,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.75)" : "rgba(33,43,54,0.75)",
-                  fontSize: isMobile ? '12px' : '11px'
+                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                  fontSize: '11px'
                 }}
                 noWrap
               >
@@ -595,8 +594,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                 style={{
                   fontWeight: 400,
-                  color: '#2196F3',
-                  fontSize: isMobile ? '12px' : '14px'
+                  color: '#3b82f6',
+                  fontSize: '12px'
                 }}
               >
                 {currencySymbols[activeFiatCurrency]}{' '}
@@ -614,8 +613,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -629,7 +628,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                   style={{
                     fontWeight: 400,
                     color: '#FF9800',
-                    fontSize: isMobile ? '12px' : '14px'
+                    fontSize: '12px'
                   }}
                 >
                   {fNumber(amount)}
@@ -647,8 +646,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -661,8 +660,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: '#2196F3',
-                    fontSize: isMobile ? '12px' : '14px'
+                    color: '#3b82f6',
+                    fontSize: '12px'
                   }}
                 >
                   {fNumber(holders)}
@@ -680,8 +679,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "#FFFFFF" : "#212B36",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -694,8 +693,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: '#1976D2',
-                    fontSize: isMobile ? '12px' : '14px'
+                    color: '#3b82f6',
+                    fontSize: '12px'
                   }}
                 >
                   {fNumber(trustlines)}
@@ -713,8 +712,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -728,7 +727,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                   style={{
                     fontWeight: 400,
                     color: '#FF9800',
-                    fontSize: isMobile ? '12px' : '14px'
+                    fontSize: '12px'
                   }}
                 >
                   {fNumber(uniqueTraders24h)}
@@ -746,8 +745,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "#FFFFFF" : "#212B36",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -761,7 +760,7 @@ export default function PriceStatistics({ token, isDark = false }) {
                   style={{
                     fontWeight: 400,
                     color: '#F57C00',
-                    fontSize: isMobile ? '12px' : '14px'
+                    fontSize: '12px'
                   }}
                 >
                   {fNumber(vol24htx)}
@@ -779,8 +778,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >
@@ -793,8 +792,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: alpha("rgba(0,0,0,0.6)", 0.8),
-                    fontSize: isMobile ? '11px' : '14px'
+                    color: isDark ? "rgba(255,255,255,0.7)" : "rgba(0,0,0,0.6)",
+                    fontSize: '12px'
                   }}
                 >
                   {fDate(date || dateon)}
@@ -812,8 +811,8 @@ export default function PriceStatistics({ token, isDark = false }) {
                 variant="body2"
                   style={{
                     fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.85)" : "rgba(33,43,54,0.85)",
-                    fontSize: isMobile ? '13px' : '12px'
+                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
+                    fontSize: '11px'
                   }}
                   noWrap
                 >

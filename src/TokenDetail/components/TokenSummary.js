@@ -4,7 +4,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { Search, Link as LinkIconLucide, Unlink, TrendingUp, TrendingDown, Sparkles, ExternalLink, Star, Clock, Settings, Copy, Check } from 'lucide-react';
+import { Search, Link as LinkIconLucide, Unlink, TrendingUp, TrendingDown, Sparkles, ExternalLink, Star, Clock, Settings, Copy, Check, Loader2 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
@@ -98,7 +98,7 @@ const OriginIcon = ({ origin, isDark }) => {
 const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCreatorTx: propLatestCreatorTx, setLatestCreatorTx }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
   const metrics = useSelector(selectMetrics);
-  const { activeFiatCurrency, accountProfile, sync, themeName } = useContext(AppContext);
+  const { activeFiatCurrency, accountProfile, sync, themeName, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [isMobile, setIsMobile] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -112,12 +112,70 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
 
   const [prevPrice, setPrevPrice] = useState(null);
   const [priceColor, setPriceColor] = useState(null);
-  const [trustToken, setTrustToken] = useState(null);
   const [isRemove, setIsRemove] = useState(false);
   const [editToken, setEditToken] = useState(null);
+  const [trustStatus, setTrustStatus] = useState(null); // 'loading' | 'success' | 'error' | {message}
   const [fetchedCreatorTx, setFetchedCreatorTx] = useState(null);
 
   const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator } = token;
+
+  // Trustline handler
+  const handleSetTrust = async () => {
+    const showStatus = (msg, duration = 2500) => {
+      setTrustStatus(msg);
+      setTimeout(() => setTrustStatus(null), duration);
+    };
+
+    if (!accountProfile?.account) {
+      setOpenWalletModal(true);
+      return;
+    }
+    if (accountProfile.wallet_type !== 'device' && accountProfile.wallet_type !== 'oauth') {
+      showStatus('Unsupported wallet');
+      return;
+    }
+    setTrustStatus('loading');
+    try {
+      const { Client, Wallet } = await import('xrpl');
+      const CryptoJS = (await import('crypto-js')).default;
+
+      const entropyString = `passkey-wallet-${accountProfile.deviceKeyId}-${accountProfile.accountIndex}-`;
+      const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${accountProfile.deviceKeyId}`, {
+        keySize: 256/32,
+        iterations: 100000
+      }).toString();
+      const deviceWallet = new Wallet(seedHash.substring(0, 64));
+
+      const client = new Client('wss://s1.ripple.com');
+      await client.connect();
+
+      const tx = {
+        Account: accountProfile.account,
+        TransactionType: 'TrustSet',
+        LimitAmount: {
+          issuer,
+          currency,
+          value: isRemove ? '0' : '1000000000'
+        },
+        Flags: 0x00020000
+      };
+
+      const prepared = await client.autofill(tx);
+      const signed = deviceWallet.sign(prepared);
+      const result = await client.submitAndWait(signed.tx_blob);
+      await client.disconnect();
+
+      if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
+        setIsRemove(!isRemove);
+        showStatus(isRemove ? 'Removed!' : 'Trustline set!');
+      } else {
+        showStatus('Failed: ' + result.result?.meta?.TransactionResult);
+      }
+    } catch (err) {
+      console.error('Trustline error:', err);
+      showStatus(err.message?.slice(0, 30) || 'Error');
+    }
+  };
 
   // Price change animation
   useEffect(() => {
@@ -185,7 +243,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
     setTimeout(() => setCopied(false), 1500);
   };
 
-  // Trustline
+  // Check existing trustline
   useEffect(() => {
     if (!accountProfile) return;
     axios.get(`${BASE_URL}/account/lines/${accountProfile?.account}`).then((res) => {
@@ -194,9 +252,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         setIsRemove(!!tl);
       }
     }).catch(() => {});
-  }, [trustToken, accountProfile, sync, issuer, currency]);
-
-  const handleSetTrust = () => setTrustToken(token);
+  }, [accountProfile, sync, issuer, currency]);
 
   // Creator tx
   useEffect(() => {
@@ -334,9 +390,14 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 pl-2 border-l border-white/10">
-            <IconBtn onClick={handleSetTrust} disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5} isDark={isDark} title={isRemove ? 'Remove Trustline' : 'Set Trustline'}>
-              {isRemove ? <Unlink size={14} className="text-red-500" /> : <LinkIconLucide size={14} className="text-green-500" />}
+          <div className="flex items-center gap-1 pl-2 border-l border-white/10 relative">
+            {trustStatus && trustStatus !== 'loading' && (
+              <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
+                {trustStatus}
+              </div>
+            )}
+            <IconBtn onClick={handleSetTrust} disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'} isDark={isDark} title={isRemove ? 'Remove Trustline' : 'Set Trustline'}>
+              {trustStatus === 'loading' ? <Loader2 size={14} className="animate-spin text-primary" /> : isRemove ? <Unlink size={14} className="text-red-500" /> : <LinkIconLucide size={14} className="text-green-500" />}
             </IconBtn>
             <Share token={token} />
             <Watch token={token} />

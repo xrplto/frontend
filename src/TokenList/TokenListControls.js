@@ -16,29 +16,29 @@ const StyledTableHead = styled.thead`
 `;
 
 const StyledTableCell = styled.th`
-  font-weight: 600;
-  font-size: 0.7rem;
-  letter-spacing: 0.02em;
+  font-weight: 500;
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.4)')};
-  padding: ${(props) => (props.isMobile ? '14px 8px' : '14px 12px')};
+  color: ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.45)' : 'rgba(0, 0, 0, 0.4)')};
+  padding: ${(props) => (props.isMobile ? '10px 6px' : '10px 8px')};
   border-bottom: 1px solid
-    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)')};
+    ${(props) => (props.darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)')};
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   width: ${(props) => props.width || 'auto'};
-  min-width: ${(props) => (props.isTokenColumn ? '250px' : props.width || 'auto')};
+  min-width: ${(props) => (props.isTokenColumn ? '220px' : props.width || 'auto')};
   box-sizing: border-box;
   cursor: ${(props) => (props.sortable ? 'pointer' : 'default')};
   position: ${(props) => (props.sticky ? 'sticky' : 'relative')};
   left: ${(props) => props.left || 'unset'};
   z-index: ${(props) => (props.sticky ? 101 : 'auto')};
   background: ${(props) => (props.sticky ? (props.darkMode ? '#121212' : '#fff') : 'transparent')};
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: inherit;
   overflow: visible !important;
 
   &:hover {
-    color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)') : 'inherit')};
+    color: ${(props) => (props.sortable ? (props.darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)') : 'inherit')};
   }
 
   ${(props) =>
@@ -120,123 +120,120 @@ const StyledToolbar = styled.div`
 const PaginationContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  min-height: 48px;
-  border-radius: 12px;
+  gap: 4px;
+  padding: 6px 10px;
+  min-height: 36px;
+  border-radius: 8px;
   background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
-  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
-  box-shadow: none;
+  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
 
   @media (max-width: 900px) {
     width: 100%;
     justify-content: center;
-    padding: 6px 10px;
-    gap: 4px;
+    padding: 4px 8px;
+    gap: 2px;
   }
 `;
 
 const RowsSelector = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  min-height: 48px;
-  border-radius: 12px;
+  gap: 4px;
+  padding: 6px 10px;
+  min-height: 36px;
+  border-radius: 8px;
   background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
-  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
-  box-shadow: none;
+  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: center;
-    padding: 6px 10px;
-    gap: 4px;
+    padding: 4px 8px;
+    gap: 3px;
   }
 `;
 
 const InfoBox = styled.div`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   flex-wrap: wrap;
-  padding: 8px 14px;
-  min-height: 48px;
-  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
-  border-radius: 12px;
+  padding: 6px 10px;
+  min-height: 36px;
+  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 8px;
   background: ${({ isDark }) => isDark ? 'transparent' : '#fff'};
-  box-shadow: none;
 
   @media (max-width: 900px) {
     flex: 1;
     min-width: calc(50% - 8px);
     justify-content: flex-start;
-    gap: 4px;
-    padding: 6px 10px;
+    gap: 3px;
+    padding: 4px 8px;
   }
 `;
 
 const Chip = styled.span`
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   padding: 2px 6px;
-  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.12)'};
-  border-radius: 6px;
+  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)'};
+  border-radius: 4px;
   color: ${({ isDark }) => isDark ? '#fff' : '#000'};
 `;
 
 const Text = styled.span`
-  font-size: 13px;
+  font-size: 11px;
   font-variant-numeric: tabular-nums;
-  color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)'};
+  color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'};
   font-weight: ${(props) => props.fontWeight || 400};
 `;
 
 const NavButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
   border: none;
   background: transparent;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  color: ${({ isDark }) => isDark ? '#fff' : '#000'};
+  color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)'};
   padding: 0;
 
   &:hover:not(:disabled) {
-    background: ${({ isDark }) => isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.08)'};
+    background: ${({ isDark }) => isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
-    color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)'};
+    color: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'};
     cursor: not-allowed;
   }
 `;
 
 const PageButton = styled.button`
-  min-width: 24px;
-  height: 24px;
-  border-radius: 8px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 5px;
   border: none;
   background: ${(props) => props.selected ? '#4285f4' : 'transparent'};
-  color: ${(props) => props.selected ? 'white' : props.isDark ? '#fff' : '#000'};
+  color: ${(props) => props.selected ? 'white' : props.isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)'};
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 6px;
+  padding: 0 5px;
   margin: 0;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: ${(props) => (props.selected ? 500 : 400)};
   font-variant-numeric: tabular-nums;
 
   &:hover:not(:disabled) {
     background: ${(props) =>
-      props.selected ? '#1976D2' : props.isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.08)'};
+      props.selected ? '#3b7de8' : props.isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.08)'};
   }
 
   &:disabled {
@@ -254,20 +251,17 @@ const SelectButton = styled.button`
   background: transparent;
   border: none;
   color: #4285f4;
-  font-weight: 600;
-  font-size: 12px;
+  font-weight: 500;
+  font-size: 11px;
   cursor: pointer;
   padding: 0;
   display: flex;
   align-items: center;
-  gap: 2px;
-  min-width: 40px;
+  gap: 1px;
+  min-width: 36px;
 
   &:hover {
-    background: rgba(66, 133, 244, 0.04);
-    border-radius: 4px;
-    padding: 2px 4px;
-    margin: -2px -4px;
+    opacity: 0.8;
   }
 `;
 
@@ -277,27 +271,26 @@ const SelectMenu = styled.div`
   right: 0;
   margin-top: 4px;
   background: ${({ isDark }) => isDark ? '#1a1a1a' : '#fff'};
-  border: 1.5px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'};
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  border: 1px solid ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'};
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  min-width: 60px;
-  backdrop-filter: blur(10px);
+  min-width: 50px;
 `;
 
 const SelectOption = styled.button`
   display: block;
   width: 100%;
-  padding: 6px 12px;
+  padding: 5px 10px;
   border: none;
   background: transparent;
   text-align: left;
   cursor: pointer;
-  font-size: 12px;
+  font-size: 11px;
   color: ${({ isDark }) => isDark ? '#fff' : '#000'};
 
   &:hover {
-    background: ${({ isDark }) => isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
+    background: ${({ isDark }) => isDark ? 'rgba(66, 133, 244, 0.1)' : 'rgba(66, 133, 244, 0.06)'};
   }
 `;
 
@@ -1179,13 +1172,13 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
       <CenterBox>
         <PaginationContainer isDark={isDark}>
           <NavButton isDark={isDark} onClick={handleFirstPage} disabled={page === 0} title="First page">
-            <ChevronsLeft size={14} />
+            <ChevronsLeft size={12} />
           </NavButton>
 
           {getPageNumbers().map((pageNum, idx) => {
             if (pageNum === '...') {
               return (
-                <span key={`ellipsis-${idx}`} style={{ padding: '0 4px', fontSize: '12px' }}>
+                <span key={`ellipsis-${idx}`} style={{ padding: '0 2px', fontSize: '10px', opacity: 0.5 }}>
                   ...
                 </span>
               );
@@ -1203,18 +1196,18 @@ export const TokenListToolbar = memo(function TokenListToolbar({ rows, setRows, 
           })}
 
           <NavButton isDark={isDark} onClick={handleLastPage} disabled={page === page_count - 1} title="Last page">
-            <ChevronsRight size={14} />
+            <ChevronsRight size={12} />
           </NavButton>
         </PaginationContainer>
       </CenterBox>
 
       <RowsSelector isDark={isDark}>
-        <List size={14} />
+        <List size={12} />
         <Text isDark={isDark}>Rows</Text>
         <Select ref={selectRef}>
           <SelectButton onClick={() => setSelectOpen(!selectOpen)}>
             {rows}
-            <ChevronDown size={16} />
+            <ChevronDown size={12} />
           </SelectButton>
           {selectOpen && (
             <SelectMenu isDark={isDark}>
