@@ -40,29 +40,29 @@ const NavSearchBar = ({
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-xl border-[1.5px] px-4 py-2 h-9 w-[280px] cursor-pointer",
+        "flex items-center gap-2.5 rounded-lg border px-3 py-1.5 h-8 w-[240px] cursor-pointer transition-all duration-150",
         isDark
-          ? "bg-white/[0.02] border-white/20 hover:bg-primary/5 hover:border-primary/30"
-          : "bg-black/[0.02] border-gray-200 hover:bg-primary/5 hover:border-primary/30"
+          ? "bg-white/[0.04] border-white/10 hover:border-white/20"
+          : "bg-gray-50 border-gray-200 hover:border-gray-300"
       )}
       onClick={openModal}
       {...props}
     >
       <Search
-        size={18}
-        className={isDark ? "text-white/60" : "text-gray-500/60"}
+        size={15}
+        className={isDark ? "text-white/40" : "text-gray-400"}
       />
       <span className={cn(
-        "flex-1 text-sm font-normal",
-        isDark ? "text-white/70" : "text-gray-500/70"
+        "flex-1 text-[13px] font-normal",
+        isDark ? "text-white/40" : "text-gray-400"
       )}>
-        {placeholder || 'Search'}
+        Search XRPL Tokens
       </span>
       <div className={cn(
-        "flex items-center justify-center px-2 h-[22px] rounded-md border-[1.5px] text-xs font-normal font-mono",
+        "flex items-center justify-center w-5 h-5 rounded text-[11px] font-normal",
         isDark
-          ? "bg-white/[0.08] border-white/15 text-white/60"
-          : "bg-gray-100 border-gray-200 text-gray-500/60"
+          ? "bg-white/[0.06] text-white/30"
+          : "bg-gray-200/70 text-gray-400"
       )}>
         /
       </div>

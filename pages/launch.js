@@ -295,6 +295,44 @@ const Spinner = styled.div`
   }
 `;
 
+// Simple InputField component
+const InputField = ({ label, value, onChange, placeholder, error, helperText, counter, counterError, isDark, multiline, rows, type = 'text', min, max, className, required }) => (
+  <div className={cn("flex-1", className)}>
+    <label className="block text-[13px] opacity-70 mb-2">{label}</label>
+    {multiline ? (
+      <textarea
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        rows={rows || 3}
+        className={cn(
+          "w-full px-3 py-2 rounded-lg border-[1.5px] text-[14px] bg-transparent resize-none",
+          error ? "border-red-500/50" : isDark ? "border-white/15" : "border-gray-300",
+          "focus:outline-none focus:border-[#4285f4]"
+        )}
+      />
+    ) : (
+      <input
+        type={type}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        min={min}
+        max={max}
+        className={cn(
+          "w-full px-3 py-2 rounded-lg border-[1.5px] text-[14px] bg-transparent",
+          error ? "border-red-500/50" : isDark ? "border-white/15" : "border-gray-300",
+          "focus:outline-none focus:border-[#4285f4]"
+        )}
+      />
+    )}
+    <div className="flex justify-between mt-1">
+      <span className={cn("text-[12px] opacity-70", error && "text-red-500")}>{helperText}</span>
+      {counter && <span className={cn("text-[12px]", counterError ? "text-red-500" : "opacity-50")}>{counter}</span>}
+    </div>
+  </div>
+);
+
 function CreatePage() {
   const { themeName, accountProfile, openSnackbar } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
@@ -889,364 +927,188 @@ function CreatePage() {
 
       {!launchStep && !showSummary && (
       <Container>
-        <PageTitle theme={theme}>Launch Token</PageTitle>
-        <Subtitle theme={theme}>Deploy your token on the XRP Ledger</Subtitle>
-
-        {/* Debug Wallet Info */}
-        <Paper sx={{
-          mb: 3,
-          p: 2,
-          background: alpha(theme.palette.warning.main, 0.08),
-          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`
-        }}>
-          <Stack spacing={1.5}>
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <AccountBalanceWallet sx={{ color: theme.palette.warning.main }} />
-              <Typography variant="subtitle2" color="warning.main">
-                DEBUG INFO (Remove in Production)
-              </Typography>
-            </Stack>
-
-            {accountProfile ? (
-              <Box sx={{ pl: 1 }}>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Address:</strong> <code>{accountProfile.account || accountProfile.address || 'N/A'}</code>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Public Key:</strong> <code>{accountProfile.publicKey || 'N/A'}</code>
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Seed:</strong> <code style={{ color: theme.palette.error.main }}>
-                    {decryptedSeed || accountProfile.seed || accountProfile.secret || 'N/A'}
-                  </code>
-                  {!decryptedSeed && !accountProfile.seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') && (
-                    <Button
-                      size="small"
-                      onClick={async () => {
-                        const password = prompt('Enter your wallet password to decrypt seed:');
-                        if (!password) return;
-
-                        try {
-                          const walletStorage = new UnifiedWalletStorage();
-                          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-                          // Pass known address for fast lookup
-                          const wallet = await walletStorage.findWalletBySocialId(walletId, password, accountProfile.account || accountProfile.address);
-
-                          if (wallet?.seed) {
-                            setDecryptedSeed(wallet.seed);
-                            // Save password for future use
-                            await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
-                            openSnackbar?.('Seed decrypted and password saved!', 'success');
-                          } else {
-                            openSnackbar?.('Incorrect password or wallet not found', 'error');
-                          }
-                        } catch (error) {
-                          console.error('Decrypt error:', error);
-                          openSnackbar?.('Failed to decrypt: ' + error.message, 'error');
-                        }
-                      }}
-                      sx={{ ml: 1, fontSize: '11px', textTransform: 'none' }}
-                    >
-                      Decrypt
-                    </Button>
-                  )}
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Wallet Type:</strong> {accountProfile.wallet_type || 'Unknown'}
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Provider:</strong> {accountProfile.provider || 'N/A'}
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Provider ID:</strong> <code>{accountProfile.provider_id || accountProfile.socialId || 'N/A'}</code>
-                </Typography>
-                {accountProfile.email && (
-                  <Typography variant="body2" gutterBottom>
-                    <strong>Email:</strong> {accountProfile.email}
-                  </Typography>
-                )}
-                {accountProfile.username && (
-                  <Typography variant="body2" gutterBottom>
-                    <strong>Username:</strong> {accountProfile.username}
-                  </Typography>
-                )}
-                {accountProfile.deviceKeyId && (
-                  <Typography variant="body2" gutterBottom>
-                    <strong>Device Key ID:</strong> <code>{accountProfile.deviceKeyId}</code>
-                  </Typography>
-                )}
-                <Typography variant="body2" gutterBottom>
-                  <strong>XRP Balance:</strong> {accountProfile.xrp || '0'} XRP
-                </Typography>
-                <Typography variant="caption" display="block" sx={{ mt: 1, opacity: 0.7 }}>
-                  Full Profile: {JSON.stringify(accountProfile, null, 2).substring(0, 200)}...
-                </Typography>
-              </Box>
-            ) : (
-              <Box sx={{ pl: 1 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  No wallet connected
-                </Typography>
-                <ConnectWallet />
-              </Box>
-            )}
-          </Stack>
-        </Paper>
+        <PageTitle>Launch Token</PageTitle>
+        <Subtitle>Deploy your token on the XRP Ledger</Subtitle>
 
         <ProgressContainer>
           <StepIndicator>
-            <Step active={true} theme={theme}>
+            <Step active={true}>
               <span>1. Basic Info</span>
             </Step>
-            <Step active={formData.twitter || formData.telegram || formData.website} theme={theme}>
+            <Step active={formData.twitter || formData.telegram || formData.website}>
               <span>2. Socials</span>
             </Step>
-            <Step active={formData.image} theme={theme}>
+            <Step active={formData.image}>
               <span>3. Media</span>
             </Step>
           </StepIndicator>
-          <LinearProgress
-            variant="determinate"
-            value={(getCompletionStatus() / 5) * 100}
-            sx={{
-              height: 3,
-              borderRadius: 0,
-              backgroundColor: 'transparent',
-              position: 'relative',
-              '&::before': {
-                content: '""',
-                position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                height: '100%',
-                background: alpha(theme.palette.divider, 0.2)
-              },
-              '& .MuiLinearProgress-bar': {
-                borderRadius: 0,
-                background: '#4285f4'
-              }
-            }}
-          />
+          <div className="h-[3px] w-full bg-gray-200/20 relative">
+            <div
+              className="h-full bg-[#4285f4] transition-all"
+              style={{ width: `${(getCompletionStatus() / 5) * 100}%` }}
+            />
+          </div>
         </ProgressContainer>
 
-        <Card theme={theme}>
+        <Card>
           <SectionHeader>
-            <SectionTitle theme={theme}>Token Information</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
-              Required
-            </Typography>
+            <SectionTitle>Token Information</SectionTitle>
+            <span className="text-[12px] opacity-50">Required</span>
           </SectionHeader>
 
-          <Stack spacing={1.5}>
-            <Stack direction="row" spacing={1.5}>
-              <StyledTextField
-                theme={theme}
-                fullWidth
+          <div className="space-y-4">
+            <div className="flex gap-4">
+              <InputField
                 label="Name your token"
-                variant="outlined"
                 placeholder="My Awesome Token"
                 value={formData.tokenName}
                 onChange={handleInputChange('tokenName')}
-                error={!!errors.tokenName}
-                helperText={
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{errors.tokenName || 'Required'}</span>
-                    <CharCounter error={formData.tokenName.length > 50} theme={theme}>
-                      {formData.tokenName.length}/50
-                    </CharCounter>
-                  </Box>
-                }
-                size="small"
+                error={errors.tokenName}
+                helperText={errors.tokenName || 'Required'}
+                counter={`${formData.tokenName.length}/50`}
+                counterError={formData.tokenName.length > 50}
+                isDark={isDark}
                 required
               />
-
-              <StyledTextField
-                theme={theme}
+              <InputField
                 label="Token ticker"
-                variant="outlined"
                 placeholder="TICKER"
                 value={formData.ticker}
                 onChange={handleInputChange('ticker')}
-                error={!!errors.ticker}
-                helperText={
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <span>{errors.ticker || 'Required'}</span>
-                    <CharCounter error={formData.ticker.length < 3 || formData.ticker.length > 15} theme={theme}>
-                      {formData.ticker.length}/15
-                    </CharCounter>
-                  </Box>
-                }
-                size="small"
-                sx={{ minWidth: '200px' }}
+                error={errors.ticker}
+                helperText={errors.ticker || 'Required'}
+                counter={`${formData.ticker.length}/15`}
+                counterError={formData.ticker.length < 3 || formData.ticker.length > 15}
+                isDark={isDark}
+                className="min-w-[200px]"
                 required
               />
-            </Stack>
+            </div>
 
-            <StyledTextField
-              theme={theme}
-              fullWidth
+            <InputField
               label="Write a short description"
-              variant="outlined"
               placeholder="Tell people what makes your token special..."
-              multiline
-              rows={2.5}
               value={formData.description}
               onChange={handleInputChange('description')}
-              error={!!errors.description}
-              helperText={
-                <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <span>{errors.description || 'Optional'}</span>
-                  <CharCounter error={formData.description.length > 500} theme={theme}>
-                    {formData.description.length}/500
-                  </CharCounter>
-                </Box>
-              }
+              error={errors.description}
+              helperText={errors.description || 'Optional'}
+              counter={`${formData.description.length}/500`}
+              counterError={formData.description.length > 500}
+              isDark={isDark}
+              multiline
+              rows={3}
             />
 
-            <Stack direction="row" spacing={1.5}>
-              <StyledTextField
-                theme={theme}
-                fullWidth
+            <div className="flex gap-4">
+              <InputField
                 label="Total supply"
-                variant="outlined"
                 type="number"
                 placeholder="1000000000"
                 value={formData.tokenSupply}
                 onChange={handleInputChange('tokenSupply')}
                 helperText="Required"
-                size="small"
+                isDark={isDark}
+                min={1}
                 required
-                inputProps={{ min: 1, step: 1 }}
               />
-
-              <StyledTextField
-                theme={theme}
+              <InputField
                 label="Creator allocation (%)"
-                variant="outlined"
                 type="number"
                 placeholder="0-30"
                 value={formData.userCheckPercent === 0 ? '' : formData.userCheckPercent}
                 onChange={handleInputChange('userCheckPercent')}
                 helperText={`You receive: ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens`}
-                size="small"
-                sx={{ minWidth: '220px' }}
-                inputProps={{ min: 0, max: 30, step: 1 }}
+                isDark={isDark}
+                className="min-w-[220px]"
+                min={0}
+                max={30}
               />
-            </Stack>
+            </div>
 
             {formData.userCheckPercent === 0 && (
-              <Alert
-                severity="warning"
-                sx={{
-                  mt: 1,
-                  fontSize: '14px',
-                  borderRadius: '8px',
-                  border: `1.5px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                }}
-              >
+              <div className="mt-2 p-3 rounded-lg border-[1.5px] border-yellow-500/20 bg-yellow-500/5 text-[14px]">
                 You will not receive any tokens. 100% goes to AMM pool.
-              </Alert>
+              </div>
             )}
 
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 id="antiSnipe"
                 checked={formData.antiSnipe}
                 onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
-                style={{ width: 18, height: 18, cursor: 'pointer' }}
+                className="w-[18px] h-[18px] cursor-pointer"
               />
-              <label htmlFor="antiSnipe" style={{ cursor: 'pointer', fontSize: '15px' }}>
+              <label htmlFor="antiSnipe" className="cursor-pointer text-[15px]">
                 Enable anti-snipe mode (RequireAuth)
               </label>
-            </Box>
-          </Stack>
+            </div>
+          </div>
         </Card>
 
-        <Card theme={theme}>
+        <Card>
           <SectionHeader>
-            <SectionTitle theme={theme}>Initial Liquidity</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
-              Required
-            </Typography>
+            <SectionTitle>Initial Liquidity</SectionTitle>
+            <span className="text-[12px] opacity-50">Required</span>
           </SectionHeader>
 
-          <StyledTextField
-            theme={theme}
-            fullWidth
+          <InputField
             label="XRP for AMM pool (min 10)"
-            variant="outlined"
             type="number"
             value={formData.ammXrpAmount}
             onChange={handleInputChange('ammXrpAmount')}
             error={formData.ammXrpAmount < 10}
             helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : 'Required'}
-            size="small"
-            inputProps={{ min: 10, step: 1 }}
+            isDark={isDark}
+            min={10}
           />
         </Card>
 
-        <Card theme={theme}>
+        <Card>
           <SectionHeader>
-            <SectionTitle theme={theme}>Social Links</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
-              Optional
-            </Typography>
+            <SectionTitle>Social Links</SectionTitle>
+            <span className="text-[12px] opacity-50">Optional</span>
           </SectionHeader>
 
-          <Stack spacing={1.5}>
-            <StyledTextField
-              theme={theme}
-              fullWidth
+          <div className="space-y-4">
+            <InputField
               label="Website"
-              variant="outlined"
               placeholder="https://example.com"
               value={formData.website}
               onChange={handleInputChange('website')}
-              error={!!errors.website}
+              error={errors.website}
               helperText={errors.website || 'Optional'}
-              size="small"
+              isDark={isDark}
             />
 
-            <Stack direction="row" spacing={1.5}>
-              <StyledTextField
-                theme={theme}
-                fullWidth
+            <div className="flex gap-4">
+              <InputField
                 label="Telegram"
-                variant="outlined"
                 placeholder="t.me/yourchannel"
                 value={formData.telegram}
                 onChange={handleInputChange('telegram')}
                 helperText="Optional"
-                size="small"
+                isDark={isDark}
               />
-
-              <StyledTextField
-                theme={theme}
-                fullWidth
+              <InputField
                 label="Twitter/X"
-                variant="outlined"
                 placeholder="@yourhandle"
                 value={formData.twitter}
                 onChange={handleInputChange('twitter')}
                 helperText="Optional"
-                size="small"
+                isDark={isDark}
               />
-            </Stack>
-          </Stack>
+            </div>
+          </div>
         </Card>
 
-        <Card theme={theme}>
+        <Card>
           <SectionHeader>
-            <SectionTitle theme={theme}>Token Image</SectionTitle>
-            <Typography variant="caption" sx={{ fontSize: '12px', color: alpha(theme.palette.text.secondary, 0.5) }}>
-              Recommended
-            </Typography>
+            <SectionTitle>Token Image</SectionTitle>
+            <span className="text-[12px] opacity-50">Recommended</span>
           </SectionHeader>
 
           <UploadBox
-              theme={theme}
               hasFile={!!formData.image}
               className={dragging ? 'dragging' : ''}
               onClick={handleUploadClick}
@@ -1257,30 +1119,20 @@ function CreatePage() {
               {imagePreview ? (
                 <>
                   <ImagePreview src={imagePreview} alt="Preview" />
-                  <Typography variant="body2" sx={{ color: theme.palette.success.main, fontWeight: 400 }}>
-                    {fileName}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.6), mt: 0.5 }}>
-                    Click to replace
-                  </Typography>
+                  <p className="text-green-500 font-normal">{fileName}</p>
+                  <p className="text-[13px] opacity-60 mt-1">Click to replace</p>
                 </>
               ) : (
                 <>
-                  <CloudUpload sx={{ fontSize: 38, color: alpha(theme.palette.text.secondary, 0.2), mb: 1.5 }} />
-                  <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.7), mb: 0.5, fontWeight: 400, fontSize: '14px' }}>
-                    {fileName || 'Drop image here or click to browse'}
-                  </Typography>
-                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.4), fontSize: '13px' }}>
-                    PNG, JPG, GIF, WEBP • Max 15MB
-                  </Typography>
+                  <Upload size={38} className="opacity-20 mb-4" />
+                  <p className="text-[14px] opacity-70 mb-1">{fileName || 'Drop image here or click to browse'}</p>
+                  <p className="text-[13px] opacity-40">PNG, JPG, GIF, WEBP • Max 15MB</p>
                 </>
               )}
             </UploadBox>
 
           {errors.file && (
-            <Typography variant="caption" sx={{ color: theme.palette.error.main, mt: 1, display: 'block' }}>
-              {errors.file}
-            </Typography>
+            <p className="text-red-500 text-[12px] mt-2">{errors.file}</p>
           )}
 
           <HiddenInput
@@ -1290,46 +1142,19 @@ function CreatePage() {
             onChange={handleFileInputChange}
           />
 
-          <Typography variant="caption" sx={{
-            display: 'block',
-            mt: 1.5,
-            color: alpha(theme.palette.text.secondary, 0.5),
-            fontSize: '12px',
-            lineHeight: 1.5
-          }}>
+          <p className="text-[12px] opacity-50 mt-3 leading-relaxed">
             PNG, JPG, GIF, WEBP • 1000×1000px recommended • Max 15MB
-          </Typography>
+          </p>
         </Card>
 
         {!launchStep && (
-          <Button
-            variant="outlined"
+          <StyledButton
             fullWidth
             disabled={!isFormValid()}
             onClick={handleSubmit}
-            sx={{
-              py: 1.6,
-              fontSize: '15px',
-              fontWeight: 450,
-              textTransform: 'none',
-              borderColor: isFormValid() ? '#4285f4' : alpha(theme.palette.divider, 0.2),
-              borderRadius: '12px',
-              borderWidth: '1.5px',
-              color: isFormValid() ? '#4285f4' : alpha(theme.palette.text.secondary, 0.4),
-              backgroundColor: 'transparent',
-              '&:hover': {
-                borderColor: '#4285f4',
-                backgroundColor: alpha('#4285f4', 0.04),
-                borderWidth: '1.5px'
-              },
-              '&.Mui-disabled': {
-                borderColor: alpha(theme.palette.divider, 0.15),
-                color: alpha(theme.palette.text.secondary, 0.3)
-              }
-            }}
           >
             {isFormValid() ? 'Launch Token' : `Complete Required Fields (${4 - (formData.tokenName ? 1 : 0) - (formData.ticker ? 1 : 0) - (formData.tokenSupply > 0 ? 1 : 0) - (formData.ammXrpAmount >= 10 ? 1 : 0)} remaining)`}
-          </Button>
+          </StyledButton>
         )}
       </Container>
       )}
@@ -1337,254 +1162,134 @@ function CreatePage() {
       {/* Summary Confirmation */}
       {showSummary && (
         <Container>
-          <PageTitle theme={theme}>Review Token Details</PageTitle>
-          <Subtitle theme={theme}>Confirm your token settings before launch</Subtitle>
+          <PageTitle>Review Token Details</PageTitle>
+          <Subtitle>Confirm your token settings before launch</Subtitle>
 
-          <Paper sx={{
-            p: 0,
-            mt: 2,
-            overflow: 'hidden',
-            border: `1.5px solid ${alpha(theme.palette.divider, 0.12)}`
-          }}>
+          <Card>
             {/* Header with Image */}
             {imagePreview && (
-              <Box sx={{
-                textAlign: 'center',
-                p: 3,
-                bgcolor: alpha(theme.palette.primary.main, 0.02),
-                borderBottom: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
-              }}>
+              <div className="text-center p-6 border-b border-white/10">
                 <img
                   src={imagePreview}
                   alt="Token"
-                  style={{
-                    maxWidth: '160px',
-                    maxHeight: '160px',
-                    borderRadius: '12px',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`
-                  }}
+                  className="max-w-[160px] max-h-[160px] rounded-xl border-[1.5px] border-white/10 mx-auto"
                 />
-              </Box>
+              </div>
             )}
 
             {/* Token Info Grid */}
-            <Box sx={{ p: 3 }}>
-              <Stack spacing={2.5}>
-                {/* Name & Ticker Row */}
-                <Stack direction="row" spacing={3}>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Token Name
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 400 }}>
-                      {formData.tokenName}
-                    </Typography>
-                  </Box>
-                  <Box sx={{ flex: 1 }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Ticker
-                    </Typography>
-                    <Typography variant="h6" sx={{ mt: 0.5, fontWeight: 400 }}>
-                      {formData.ticker}
-                    </Typography>
-                  </Box>
-                </Stack>
+            <div className="p-6 space-y-5">
+              {/* Name & Ticker Row */}
+              <div className="flex gap-6">
+                <div className="flex-1">
+                  <p className="text-[11px] uppercase tracking-wide opacity-70">Token Name</p>
+                  <p className="text-lg mt-1">{formData.tokenName}</p>
+                </div>
+                <div className="flex-1">
+                  <p className="text-[11px] uppercase tracking-wide opacity-70">Ticker</p>
+                  <p className="text-lg mt-1">{formData.ticker}</p>
+                </div>
+              </div>
 
-                {/* Description */}
-                {formData.description && (
-                  <Box sx={{
-                    p: 2,
-                    bgcolor: alpha(theme.palette.background.default, 0.3),
-                    borderRadius: '8px',
-                    border: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
-                  }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Description
-                    </Typography>
-                    <Typography variant="body2" sx={{ mt: 0.8, lineHeight: 1.6 }}>
-                      {formData.description}
-                    </Typography>
-                  </Box>
-                )}
+              {/* Description */}
+              {formData.description && (
+                <div className="p-4 rounded-lg border-[1.5px] border-white/10">
+                  <p className="text-[11px] uppercase tracking-wide opacity-70">Description</p>
+                  <p className="text-[14px] mt-2 leading-relaxed">{formData.description}</p>
+                </div>
+              )}
 
-                {/* Social Links */}
-                {(formData.website || formData.twitter || formData.telegram) && (
-                  <Box sx={{
-                    p: 2,
-                    bgcolor: alpha(theme.palette.info.main, 0.03),
-                    borderRadius: '8px',
-                    border: `1.5px solid ${alpha(theme.palette.info.main, 0.15)}`
-                  }}>
-                    <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1 }}>
-                      Social Links
-                    </Typography>
-                    <Stack spacing={1}>
-                      {formData.website && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Language sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                          <Typography variant="body2" sx={{ fontSize: '14px' }}>
-                            {formData.website}
-                          </Typography>
-                        </Box>
-                      )}
-                      {formData.twitter && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Twitter sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                          <Typography variant="body2" sx={{ fontSize: '14px' }}>
-                            {formData.twitter}
-                          </Typography>
-                        </Box>
-                      )}
-                      {formData.telegram && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Telegram sx={{ fontSize: 16, color: alpha(theme.palette.text.secondary, 0.5) }} />
-                          <Typography variant="body2" sx={{ fontSize: '14px' }}>
-                            {formData.telegram}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Stack>
-                  </Box>
-                )}
-
-                {/* Token Economics */}
-                <Box sx={{
-                  p: 2,
-                  bgcolor: alpha(theme.palette.success.main, 0.03),
-                  borderRadius: '8px',
-                  border: `1.5px solid ${alpha(theme.palette.success.main, 0.15)}`
-                }}>
-                  <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7), fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 1.5 }}>
-                    Token Economics
-                  </Typography>
-                  <Stack spacing={1.5}>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
-                        Total Supply
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 400 }}>
-                        {formData.tokenSupply.toLocaleString()}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
-                        AMM Pool
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 400 }}>
-                        {formData.userCheckPercent === 0
-                          ? formData.tokenSupply.toLocaleString()
-                          : Math.floor(formData.tokenSupply * 0.5).toLocaleString()
-                        } {formData.ticker}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
-                        Initial XRP
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 400 }}>
-                        {formData.ammXrpAmount} XRP
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center">
-                      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.secondary, 0.8), fontSize: '14px' }}>
-                        Your Allocation
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 400, color: formData.userCheckPercent === 0 ? theme.palette.text.secondary : theme.palette.success.main }}>
-                        {formData.userCheckPercent > 0
-                          ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} (${formData.userCheckPercent}%)`
-                          : '0 tokens (0%)'
-                        }
-                      </Typography>
-                    </Stack>
-                    {formData.userCheckPercent === 0 && (
-                      <Alert
-                        severity="warning"
-                        sx={{
-                          mt: 1.5,
-                          fontSize: '14px',
-                          borderRadius: '8px',
-                          border: `1.5px solid ${alpha(theme.palette.warning.main, 0.2)}`
-                        }}
-                      >
-                        You will not receive any tokens. 100% goes to AMM pool.
-                      </Alert>
+              {/* Social Links */}
+              {(formData.website || formData.twitter || formData.telegram) && (
+                <div className="p-4 rounded-lg border-[1.5px] border-blue-500/15 bg-blue-500/5">
+                  <p className="text-[11px] uppercase tracking-wide opacity-70 mb-2">Social Links</p>
+                  <div className="space-y-2">
+                    {formData.website && (
+                      <div className="flex items-center gap-2">
+                        <Globe size={16} className="opacity-50" />
+                        <span className="text-[14px]">{formData.website}</span>
+                      </div>
                     )}
-                  </Stack>
-                </Box>
+                    {formData.twitter && (
+                      <div className="flex items-center gap-2">
+                        <Twitter size={16} className="opacity-50" />
+                        <span className="text-[14px]">{formData.twitter}</span>
+                      </div>
+                    )}
+                    {formData.telegram && (
+                      <div className="flex items-center gap-2">
+                        <Send size={16} className="opacity-50" />
+                        <span className="text-[14px]">{formData.telegram}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
-                {/* Anti-snipe Badge */}
-                {formData.antiSnipe && (
-                  <Alert
-                    severity="info"
-                    sx={{
-                      borderRadius: '8px',
-                      border: `1.5px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                      '& .MuiAlert-message': { fontSize: '14px' }
-                    }}
-                  >
-                    Anti-snipe protection enabled (RequireAuth)
-                  </Alert>
-                )}
-              </Stack>
-            </Box>
+              {/* Token Economics */}
+              <div className="p-4 rounded-lg border-[1.5px] border-green-500/15 bg-green-500/5">
+                <p className="text-[11px] uppercase tracking-wide opacity-70 mb-3">Token Economics</p>
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] opacity-80">Total Supply</span>
+                    <span>{formData.tokenSupply.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] opacity-80">AMM Pool</span>
+                    <span>
+                      {formData.userCheckPercent === 0
+                        ? formData.tokenSupply.toLocaleString()
+                        : Math.floor(formData.tokenSupply * 0.5).toLocaleString()
+                      } {formData.ticker}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] opacity-80">Initial XRP</span>
+                    <span>{formData.ammXrpAmount} XRP</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-[14px] opacity-80">Your Allocation</span>
+                    <span className={formData.userCheckPercent === 0 ? 'opacity-60' : 'text-green-500'}>
+                      {formData.userCheckPercent > 0
+                        ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} (${formData.userCheckPercent}%)`
+                        : '0 tokens (0%)'
+                      }
+                    </span>
+                  </div>
+                  {formData.userCheckPercent === 0 && (
+                    <AlertBox severity="warning">
+                      You will not receive any tokens. 100% goes to AMM pool.
+                    </AlertBox>
+                  )}
+                </div>
+              </div>
+
+              {/* Anti-snipe Badge */}
+              {formData.antiSnipe && (
+                <AlertBox severity="info">
+                  <Info size={16} />
+                  Anti-snipe protection enabled (RequireAuth)
+                </AlertBox>
+              )}
+            </div>
 
             {/* Action Buttons */}
-            <Box sx={{
-              p: 3,
-              pt: 2,
-              bgcolor: alpha(theme.palette.background.default, 0.2),
-              borderTop: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
-            }}>
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  onClick={() => setShowSummary(false)}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: '12px',
-                    borderWidth: '1.5px',
-                    fontSize: '15px',
-                    fontWeight: 400,
-                    textTransform: 'none',
-                    borderColor: alpha(theme.palette.divider, 0.2),
-                    '&:hover': {
-                      borderWidth: '1.5px',
-                      borderColor: alpha(theme.palette.divider, 0.3),
-                      backgroundColor: alpha(theme.palette.background.default, 0.3)
-                    }
-                  }}
-                >
-                  Back to Edit
-                </Button>
-                <Button
-                  variant="contained"
-                  fullWidth
-                  onClick={confirmLaunch}
-                  sx={{
-                    py: 1.5,
-                    borderRadius: '12px',
-                    fontSize: '15px',
-                    fontWeight: 400,
-                    textTransform: 'none',
-                    bgcolor: '#4285f4',
-                    '&:hover': {
-                      bgcolor: '#3367d6'
-                    }
-                  }}
-                >
-                  Confirm & Launch
-                </Button>
-              </Stack>
-            </Box>
-          </Paper>
+            <div className="p-6 pt-4 border-t border-white/10 flex gap-3">
+              <StyledButton fullWidth onClick={() => setShowSummary(false)}>
+                Back to Edit
+              </StyledButton>
+              <StyledButton fullWidth variant="contained" onClick={confirmLaunch}>
+                Confirm & Launch
+              </StyledButton>
+            </div>
+          </Card>
         </Container>
       )}
 
       {/* Launch Status - Full page view */}
       {launchStep && (
         <Container>
-          <PageTitle theme={theme}>
+          <PageTitle>
             {launchStep === 'initializing' && 'Initializing Token Launch'}
             {launchStep === 'funding' && 'Fund Issuer Account'}
             {launchStep === 'processing' && 'Creating Your Token'}
@@ -1592,147 +1297,108 @@ function CreatePage() {
             {launchStep === 'error' && 'Launch Failed'}
           </PageTitle>
 
-          <Paper sx={{ p: 3, mt: 2 }}>
+          <Card>
           {launchStep === 'initializing' && (
-            <Box sx={{ textAlign: 'center', py: 3 }}>
-              <CircularProgress sx={{ mb: 2 }} />
-              <Typography>Setting up token parameters...</Typography>
-            </Box>
+            <div className="text-center py-6">
+              <Spinner />
+              <p className="mt-4">Setting up token parameters...</p>
+            </div>
           )}
 
           {launchStep === 'funding' && sessionData && (
-            <Stack spacing={2}>
-              <Alert severity={fundingProgress > 0 ? "info" : "warning"} icon={<Info />}>
-                <Stack spacing={1}>
-                  <Box>
-                    <strong>{fundingProgress === 100 ? '✅ Funding Complete!' : 'Waiting for issuer account funding...'}</strong>
-                    <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                      {fundingProgress === 100
-                        ? 'Proceeding with token creation...'
-                        : `The issuer account needs at least ${fundingAmount.required} XRP to continue (Testnet requirement)`}
-                    </Typography>
-                    {fundingBalance > 0 && fundingProgress < 100 && (
-                      <Typography variant="caption" display="block" sx={{ mt: 0.5, color: 'warning.main', fontWeight: 400 }}>
-                        ⚠️ Partially funded - need {fundingAmount.required - fundingBalance} more XRP
-                      </Typography>
-                    )}
-                  </Box>
-
-                  <Box>
-                    <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                      <Typography variant="caption" fontWeight={400}>
-                        Balance: {fundingBalance} / {fundingAmount.required} XRP
-                      </Typography>
+            <div className="space-y-4">
+              <AlertBox severity={fundingProgress > 0 ? "info" : "warning"}>
+                <Info size={16} />
+                <div className="flex-1">
+                  <strong>{fundingProgress === 100 ? 'Funding Complete!' : 'Waiting for issuer account funding...'}</strong>
+                  <p className="text-[12px] mt-1 opacity-80">
+                    {fundingProgress === 100
+                      ? 'Proceeding with token creation...'
+                      : `The issuer account needs at least ${fundingAmount.required} XRP to continue (Testnet requirement)`}
+                  </p>
+                  {fundingBalance > 0 && fundingProgress < 100 && (
+                    <p className="text-[12px] mt-1 text-yellow-500">
+                      Partially funded - need {fundingAmount.required - fundingBalance} more XRP
+                    </p>
+                  )}
+                  <div className="mt-3">
+                    <div className="flex justify-between items-center mb-1 text-[12px]">
+                      <span>Balance: {fundingBalance} / {fundingAmount.required} XRP</span>
                       {fundingProgress > 0 && (
-                        <Typography variant="caption" fontWeight={600} color={fundingProgress === 100 ? 'success.main' : 'inherit'}>
+                        <span className={fundingProgress === 100 ? 'text-green-500' : ''}>
                           {Math.round(fundingProgress)}%
-                        </Typography>
+                        </span>
                       )}
-                    </Stack>
-                    {fundingProgress > 0 ? (
-                      <LinearProgress
-                        variant="determinate"
-                        value={fundingProgress}
-                        sx={{
-                          height: 8,
-                          borderRadius: 1,
-                          backgroundColor: alpha(theme.palette.divider, 0.1),
-                          '& .MuiLinearProgress-bar': {
-                            backgroundColor: fundingProgress === 100 ? theme.palette.success.main : theme.palette.primary.main,
-                            borderRadius: 1
-                          }
-                        }}
-                      />
-                    ) : (
-                      <LinearProgress
-                        variant="indeterminate"
-                        sx={{
-                          height: 4,
-                          borderRadius: 1
-                        }}
-                      />
-                    )}
-                  </Box>
-                </Stack>
-              </Alert>
+                    </div>
+                    <ProgressBar value={fundingProgress} height="8px" />
+                  </div>
+                </div>
+              </AlertBox>
 
-              <Paper sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.02), border: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-                <Stack spacing={2}>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
-                      1. Fund this issuer address with {fundingAmount.required}+ XRP:
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
-                      <Typography
-                        variant="body2"
-                        sx={{
-                          fontFamily: 'monospace',
-                          bgcolor: alpha(theme.palette.common.black, 0.04),
-                          p: 1,
-                          borderRadius: 1,
-                          flex: 1
+              <div className="p-4 rounded-lg border-[1.5px] border-white/10 space-y-4">
+                <div>
+                  <p className="text-[12px] opacity-70 mb-2">
+                    1. Fund this issuer address with {fundingAmount.required}+ XRP:
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <code className="flex-1 p-2 rounded-lg bg-white/5 text-[13px] font-mono">
+                      {sessionData?.issuerAddress || 'Loading...'}
+                    </code>
+                    {sessionData?.issuerAddress && (
+                      <StyledButton
+                        size="small"
+                        onClick={() => {
+                          navigator.clipboard.writeText(sessionData.issuerAddress);
+                          openSnackbar?.('Address copied!', 'success');
                         }}
                       >
-                        {sessionData?.issuerAddress || 'Loading...'}
-                      </Typography>
-                      {sessionData?.issuerAddress && (
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={() => {
-                            copyToClipboard(sessionData.issuerAddress);
-                            openSnackbar?.('Address copied!', 'success');
-                          }}
-                        >
-                          <ContentCopy fontSize="small" />
-                        </Button>
-                      )}
-                    </Box>
-                  </Box>
+                        <Copy size={14} />
+                      </StyledButton>
+                    )}
+                  </div>
+                </div>
 
-                  <Button
-                    variant="contained"
-                    href={`https://faucet.altnet.rippletest.net/?destination=${sessionData.issuerAddress}`}
-                    target="_blank"
-                    fullWidth
-                    size="large"
-                    sx={{ py: 1.5 }}
-                  >
-                    Open Testnet Faucet
-                    <OpenInNew sx={{ ml: 1, fontSize: 18 }} />
-                  </Button>
+                <a
+                  href={`https://faucet.altnet.rippletest.net/?destination=${sessionData.issuerAddress}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-[#4285f4] text-white text-[15px]"
+                >
+                  Open Testnet Faucet
+                  <ExternalLink size={16} />
+                </a>
 
-                  <Box>
-                    <Typography variant="caption" color="text.secondary" gutterBottom display="block">
-                      2. Your wallet address (for receiving tokens):
-                    </Typography>
-                    <TextField
-                      fullWidth
+                <div>
+                  <p className="text-[12px] opacity-70 mb-2">
+                    2. Your wallet address (for receiving tokens):
+                  </p>
+                  <div className="flex items-center gap-2">
+                    {accountProfile && <CheckCircle size={16} className="text-green-500" />}
+                    <input
+                      type="text"
                       placeholder="rXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                       value={userWallet || (accountProfile ? (accountProfile.account || accountProfile.address) : '')}
                       onChange={(e) => setUserWallet(e.target.value)}
-                      helperText={accountProfile ? "Using connected wallet" : "Enter your wallet address"}
-                      size="small"
                       disabled={!!accountProfile}
-                      InputProps={{
-                        startAdornment: accountProfile && (
-                          <InputAdornment position="start">
-                            <CheckCircle sx={{ color: 'success.main', fontSize: 18 }} />
-                          </InputAdornment>
-                        )
-                      }}
+                      className={cn(
+                        "flex-1 px-3 py-2 rounded-lg border-[1.5px] text-[14px] bg-transparent",
+                        isDark ? "border-white/15" : "border-gray-300"
+                      )}
                     />
-                  </Box>
-                </Stack>
-              </Paper>
+                  </div>
+                  <p className="text-[11px] opacity-50 mt-1">
+                    {accountProfile ? "Using connected wallet" : "Enter your wallet address"}
+                  </p>
+                </div>
+              </div>
 
               {/* Debug Info (collapsible) */}
               <details open>
-                <summary style={{ cursor: 'pointer', fontSize: '13px', color: theme.palette.text.secondary }}>
+                <summary className="cursor-pointer text-[13px] opacity-70">
                   Session Debug Info
                 </summary>
-                <Paper sx={{ mt: 1, p: 1.5, bgcolor: alpha(theme.palette.warning.main, 0.05) }}>
-                  <Typography variant="caption" sx={{ fontFamily: 'monospace', whiteSpace: 'pre-wrap', fontSize: '11px' }}>
+                <div className="mt-2 p-3 rounded-lg bg-yellow-500/5 border border-yellow-500/20">
+                  <pre className="font-mono text-[11px] whitespace-pre-wrap">
                     Session ID: {sessionData?.sessionId || 'N/A'}{'\n'}
                     Status: {sessionData?.status || 'awaiting_funding'}{'\n'}
                     Issuer: {sessionData?.issuerAddress || 'N/A'}{'\n'}
@@ -1740,36 +1406,25 @@ function CreatePage() {
                     {sessionData?.ammAddress && `AMM: ${sessionData.ammAddress}\n`}
                     {sessionData?.message && `Message: ${sessionData.message}\n`}
                     Funding: {fundingBalance} / {fundingAmount.required} XRP ({Math.round(fundingProgress)}%)
-                  </Typography>
-                </Paper>
+                  </pre>
+                </div>
               </details>
-            </Stack>
+            </div>
           )}
 
           {launchStep === 'processing' && (
-            <Stack spacing={3}>
-              <Box sx={{ textAlign: 'center', py: 2 }}>
-                <CircularProgress size={48} sx={{ mb: 2 }} />
-                <Typography variant="h6" sx={{ fontWeight: 400, mb: 0.5 }}>
-                  Processing token launch...
-                </Typography>
-                <Typography variant="caption" sx={{ color: alpha(theme.palette.text.secondary, 0.7) }}>
-                  This may take a few moments
-                </Typography>
-              </Box>
+            <div className="space-y-6">
+              <div className="text-center py-4">
+                <Spinner />
+                <h3 className="text-lg mt-4 mb-1">Processing token launch...</h3>
+                <p className="text-[13px] opacity-60">This may take a few moments</p>
+              </div>
 
               {/* Current Step Alert */}
               {sessionData?.status && (
-                <Alert
-                  severity="info"
-                  icon={<Info />}
-                  sx={{
-                    borderRadius: '8px',
-                    border: `1.5px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                    bgcolor: alpha(theme.palette.info.main, 0.05)
-                  }}
-                >
-                  <Typography variant="body2" sx={{ fontWeight: 400 }}>
+                <AlertBox severity="info">
+                  <Info size={16} />
+                  <span>
                     Current Step: {
                       sessionData.status === 'funded' ? 'Funding received, starting launch...' :
                       sessionData.status === 'configuring_issuer' ? 'Configuring issuer account...' :
@@ -1780,157 +1435,113 @@ function CreatePage() {
                       sessionData.status === 'scheduling_blackhole' ? 'Finalizing and blackholing...' :
                       'Processing...'
                     }
-                  </Typography>
-                </Alert>
+                  </span>
+                </AlertBox>
               )}
 
               {/* Progress Steps List */}
-              <Box sx={{
-                p: 2,
-                bgcolor: alpha(theme.palette.background.default, 0.3),
-                borderRadius: '8px',
-                border: `1.5px solid ${alpha(theme.palette.divider, 0.08)}`
-              }}>
-                <Stack spacing={1}>
-                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
-                    • Setting up issuer account
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
-                    • Creating trustlines
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
-                    • Distributing tokens
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
-                    • Creating AMM pool
-                  </Typography>
-                  <Typography variant="caption" sx={{ fontSize: '14px', color: alpha(theme.palette.text.secondary, 0.8) }}>
-                    • Blackholing accounts
-                  </Typography>
-                </Stack>
-              </Box>
+              <div className="p-4 rounded-lg border-[1.5px] border-white/10 space-y-2">
+                <p className="text-[14px] opacity-80">• Setting up issuer account</p>
+                <p className="text-[14px] opacity-80">• Creating trustlines</p>
+                <p className="text-[14px] opacity-80">• Distributing tokens</p>
+                <p className="text-[14px] opacity-80">• Creating AMM pool</p>
+                <p className="text-[14px] opacity-80">• Blackholing accounts</p>
+              </div>
 
               {/* Insufficient Funding Warning */}
               {launchLogs.some(log => log.message?.includes('Insufficient')) && (
-                <Alert severity="error" sx={{ borderRadius: '8px' }}>
-                  <Typography variant="body2" sx={{ fontWeight: 400 }}>
-                    Insufficient Funding!
-                  </Typography>
-                  <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                    The issuer account needs more XRP. Please add at least 15 XRP to continue.
-                  </Typography>
-                </Alert>
+                <AlertBox severity="error">
+                  <strong>Insufficient Funding!</strong>
+                  <p className="text-[12px] mt-1">The issuer account needs more XRP. Please add at least 15 XRP to continue.</p>
+                </AlertBox>
               )}
 
               {/* Debug Logs Toggle */}
-              <Box sx={{ textAlign: 'center' }}>
-                <Button
-                  size="small"
+              <div className="text-center">
+                <button
                   onClick={() => setShowDebugPanel(!showDebugPanel)}
-                  sx={{
-                    fontSize: '14px',
-                    textTransform: 'none',
-                    color: theme.palette.primary.main
-                  }}
+                  className="text-[14px] text-[#4285f4]"
                 >
                   {showDebugPanel ? 'Hide' : 'Show'} Debug Logs ({launchLogs.length})
-                </Button>
-              </Box>
+                </button>
+              </div>
 
               {/* Debug Logs Panel */}
               {showDebugPanel && launchLogs.length > 0 && (
-                <Paper sx={{
-                  p: 2,
-                  maxHeight: 300,
-                  overflow: 'auto',
-                  bgcolor: theme.palette.mode === 'dark' ? '#0a0a0a' : '#1a1a1a',
-                  border: `1.5px solid ${alpha(theme.palette.divider, 0.1)}`,
-                  borderRadius: '8px',
-                  fontFamily: 'monospace'
-                }}>
-                  <Stack spacing={0.3}>
-                    {launchLogs.map((log, idx) => (
-                      <Typography
-                        key={idx}
-                        variant="caption"
-                        sx={{
-                          fontFamily: 'monospace',
-                          fontSize: '12px',
-                          display: 'block',
-                          color: log.level === 'error' ? theme.palette.error.main :
-                                 log.level === 'warn' ? theme.palette.warning.main :
-                                 log.level === 'success' ? theme.palette.success.main :
-                                 alpha(theme.palette.common.white, 0.7),
-                          lineHeight: 1.8
-                        }}
-                      >
-                        <span style={{ opacity: 0.5 }}>
-                          [{new Date(log.timestamp).toLocaleTimeString()}]
-                        </span>
-                        {' '}
-                        <span style={{ fontWeight: 400 }}>
-                          [{log.level?.toUpperCase() || 'LOG'}]
-                        </span>
-                        {' '}
-                        {log.message}
-                      </Typography>
-                    ))}
-                  </Stack>
-                </Paper>
+                <div className="p-4 max-h-[300px] overflow-auto bg-black/50 rounded-lg border-[1.5px] border-white/10 font-mono">
+                  {launchLogs.map((log, idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "text-[12px] leading-relaxed",
+                        log.level === 'error' ? 'text-red-500' :
+                        log.level === 'warn' ? 'text-yellow-500' :
+                        log.level === 'success' ? 'text-green-500' :
+                        'text-white/70'
+                      )}
+                    >
+                      <span className="opacity-50">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                      {' '}
+                      <span>[{log.level?.toUpperCase() || 'LOG'}]</span>
+                      {' '}
+                      {log.message}
+                    </div>
+                  ))}
+                </div>
               )}
 
               {/* Session ID */}
               {sessionData?.sessionId && (
-                <Typography variant="caption" sx={{ textAlign: 'center', color: alpha(theme.palette.text.secondary, 0.6) }}>
+                <p className="text-center text-[12px] opacity-60">
                   Session ID: {sessionData.sessionId}
-                </Typography>
+                </p>
               )}
-            </Stack>
+            </div>
           )}
 
           {launchStep === 'completed' && sessionData && (
-            <Stack spacing={2}>
-              <Alert severity="success">
+            <div className="space-y-4">
+              <AlertBox severity="success">
+                <CheckCircle size={16} />
                 Your token has been successfully launched on XRPL Testnet!
-              </Alert>
+              </AlertBox>
 
-              <Box sx={{ p: 2, bgcolor: alpha(theme.palette.success.main, 0.05), borderRadius: 1 }}>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Token:</strong> {formData.tokenName} ({formData.ticker})
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>Total Supply:</strong> {formData.tokenSupply.toLocaleString()}
-                </Typography>
-                <Typography variant="body2" gutterBottom>
-                  <strong>AMM Pool:</strong> {Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker} / {formData.ammXrpAmount} XRP
-                </Typography>
-              </Box>
+              <div className="p-4 rounded-lg bg-green-500/5 border-[1.5px] border-green-500/20 space-y-2">
+                <p><strong>Token:</strong> {formData.tokenName} ({formData.ticker})</p>
+                <p><strong>Total Supply:</strong> {formData.tokenSupply.toLocaleString()}</p>
+                <p><strong>AMM Pool:</strong> {Math.floor(formData.tokenSupply * 0.5).toLocaleString()} {formData.ticker} / {formData.ammXrpAmount} XRP</p>
+              </div>
 
               {(sessionData.data?.userCheckId || sessionData.userCheckId) && (
-                <Paper sx={{ p: 2, bgcolor: checkClaimed ? alpha(theme.palette.success.main, 0.05) : alpha(theme.palette.info.main, 0.05), border: `1px solid ${checkClaimed ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.info.main, 0.2)}` }}>
-                  <Typography variant="body2" fontWeight={400} gutterBottom>
-                    {checkClaimed ? '✅ Tokens Claimed' : '💰 Claim Your Tokens'}
-                  </Typography>
-                  <Typography variant="caption" display="block" sx={{ mb: 2, color: alpha(theme.palette.text.secondary, 0.8) }}>
+                <div className={cn(
+                  "p-4 rounded-lg border-[1.5px]",
+                  checkClaimed ? "bg-green-500/5 border-green-500/20" : "bg-blue-500/5 border-blue-500/20"
+                )}>
+                  <p className="font-medium mb-2">
+                    {checkClaimed ? 'Tokens Claimed' : 'Claim Your Tokens'}
+                  </p>
+                  <p className="text-[13px] opacity-80 mb-3">
                     {checkClaimed
                       ? `You have successfully claimed ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} tokens`
                       : `You have ${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} ${formData.ticker} tokens available to claim`
                     }
-                  </Typography>
+                  </p>
                   {!checkClaimed && (
-                    <Alert severity="info" sx={{ mb: 2, fontSize: '14px' }}>
+                    <AlertBox severity="info">
+                      <Info size={16} />
                       {accountProfile
                         ? 'Click the button below to claim your tokens. You will need to sign a CheckCash transaction.'
                         : 'Connect your wallet to claim your tokens. You need to sign a CheckCash transaction.'
                       }
-                    </Alert>
+                    </AlertBox>
                   )}
                   {checkClaimed && (
-                    <Alert severity="success" sx={{ mb: 2, fontSize: '14px' }}>
+                    <AlertBox severity="success">
+                      <CheckCircle size={16} />
                       Your tokens have been successfully claimed and are now in your wallet.
-                    </Alert>
+                    </AlertBox>
                   )}
-                  <Button
+                  <StyledButton
                     variant="contained"
                     fullWidth
                     disabled={!accountProfile || checkClaimed || claiming}
@@ -1942,7 +1553,6 @@ function CreatePage() {
 
                       setClaiming(true);
                       try {
-                        // Get currency code from formData or sessionData
                         const ticker = formData.ticker || sessionData.currencyCode || sessionData.data?.currencyCode;
                         const supply = formData.tokenSupply || sessionData.tokenSupply || sessionData.data?.tokenSupply;
                         const checkPercent = formData.userCheckPercent || sessionData.userCheckPercent || sessionData.data?.userCheckPercent || 0;
@@ -1956,46 +1566,35 @@ function CreatePage() {
                         let wallet;
                         const walletStorage = new UnifiedWalletStorage();
 
-                        // Check if seed is already in profile (session)
                         if (accountProfile.seed) {
-                          // Seed available in session
                           wallet = xrpl.Wallet.fromSeed(accountProfile.seed);
                         } else if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
-                          // OAuth wallet - need password to decrypt seed
                           const password = prompt('Enter your wallet password to sign the transaction:');
                           if (!password) {
                             setClaiming(false);
                             return;
                           }
-
-                          // Find wallet by social ID
                           const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
                           const walletData = await walletStorage.findWalletBySocialId(walletId, password);
-
                           if (!walletData || !walletData.seed) {
                             openSnackbar?.('Incorrect password or wallet not found', 'error');
                             setClaiming(false);
                             return;
                           }
-
                           wallet = xrpl.Wallet.fromSeed(walletData.seed);
                         } else if (accountProfile.wallet_type === 'device') {
-                          // Device wallet - need password
                           const password = prompt('Enter your wallet password to sign the transaction:');
                           if (!password) {
                             setClaiming(false);
                             return;
                           }
-
                           const wallets = await walletStorage.getWallets(password);
                           const walletData = wallets.find(w => w.address === accountProfile.account);
-
                           if (!walletData || !walletData.seed) {
                             openSnackbar?.('Incorrect password or wallet not found', 'error');
                             setClaiming(false);
                             return;
                           }
-
                           wallet = xrpl.Wallet.fromSeed(walletData.seed);
                         } else {
                           openSnackbar?.('Wallet type not supported', 'error');
@@ -2006,7 +1605,7 @@ function CreatePage() {
                         const client = new xrpl.Client('wss://s.altnet.rippletest.net:51233');
                         await client.connect();
 
-                        const checkCash = {
+                        const checkCashTx = {
                           TransactionType: 'CheckCash',
                           Account: wallet.address,
                           CheckID: sessionData.data?.userCheckId || sessionData.userCheckId,
@@ -2017,7 +1616,7 @@ function CreatePage() {
                           }
                         };
 
-                        const tx = await client.submitAndWait(checkCash, { autofill: true, wallet });
+                        const tx = await client.submitAndWait(checkCashTx, { autofill: true, wallet });
                         await client.disconnect();
 
                         if (tx.result.meta.TransactionResult === 'tesSUCCESS') {
@@ -2041,42 +1640,30 @@ function CreatePage() {
                         setClaiming(false);
                       }
                     }}
+                    className="mt-3"
                   >
                     {claiming ? 'Claiming...' : checkClaimed ? 'Already Claimed' : accountProfile ? 'Cash Check & Claim Tokens' : 'Connect Wallet to Claim'}
-                  </Button>
-                  <Typography variant="caption" display="block" sx={{ mt: 1, color: alpha(theme.palette.text.secondary, 0.6) }}>
+                  </StyledButton>
+                  <p className="text-[11px] opacity-50 mt-2">
                     Check ID: {(sessionData.data?.userCheckId || sessionData.userCheckId)?.substring(0, 16)}...
-                  </Typography>
-                </Paper>
+                  </p>
+                </div>
               )}
 
-              <Stack direction="row" spacing={1}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => openInExplorer(sessionData.issuerAddress)}
-                  fullWidth
-                >
-                  View Issuer
-                  <OpenInNew sx={{ ml: 0.5, fontSize: 16 }} />
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => openInExplorer(sessionData.ammAddress)}
-                  fullWidth
-                >
-                  View AMM
-                  <OpenInNew sx={{ ml: 0.5, fontSize: 16 }} />
-                </Button>
-              </Stack>
+              <div className="flex gap-2">
+                <StyledButton size="small" fullWidth onClick={() => openInExplorer(sessionData.issuerAddress)}>
+                  View Issuer <ExternalLink size={14} className="ml-1" />
+                </StyledButton>
+                <StyledButton size="small" fullWidth onClick={() => openInExplorer(sessionData.ammAddress)}>
+                  View AMM <ExternalLink size={14} className="ml-1" />
+                </StyledButton>
+              </div>
 
-              <Button
+              <StyledButton
                 variant="contained"
                 fullWidth
                 onClick={() => {
                   resetLaunchState();
-                  // Reset form
                   setFormData({
                     tokenName: '',
                     ticker: '',
@@ -2084,74 +1671,53 @@ function CreatePage() {
                     twitter: '',
                     telegram: '',
                     website: '',
-                    image: null
+                    image: null,
+                    ammXrpAmount: 10,
+                    tokenSupply: 1000000000,
+                    userCheckPercent: 0,
+                    antiSnipe: false
                   });
                   setFileName('');
                   setImagePreview('');
                 }}
               >
                 Done
-              </Button>
-            </Stack>
+              </StyledButton>
+            </div>
           )}
 
           {launchStep === 'error' && (
-            <Stack spacing={2}>
-              <Alert severity="error">
+            <div className="space-y-4">
+              <AlertBox severity="error">
                 {launchError || 'An error occurred during token launch'}
-              </Alert>
+              </AlertBox>
 
-              {/* Show debug logs on error */}
               {launchLogs.length > 0 && (
-                <Paper sx={{
-                  p: 1.5,
-                  maxHeight: 300,
-                  overflow: 'auto',
-                  bgcolor: theme.palette.mode === 'dark' ? alpha(theme.palette.background.default, 0.6) : alpha(theme.palette.background.default, 0.9),
-                  border: `1px solid ${alpha(theme.palette.divider, 0.2)}`
-                }}>
-                  <Typography variant="caption" sx={{ display: 'block', mb: 1, fontWeight: 400 }}>
-                    Error Logs:
-                  </Typography>
-                  <Stack spacing={0.5}>
-                    {launchLogs.map((log, idx) => (
-                      <Box key={idx} sx={{
-                        p: 0.5,
-                        borderRadius: 0.5,
-                        bgcolor: log.level === 'error' ? alpha(theme.palette.error.main, 0.05) :
-                                 log.level === 'warn' ? alpha(theme.palette.warning.main, 0.05) :
-                                 'transparent'
-                      }}>
-                        <Typography variant="caption" sx={{
-                          fontFamily: 'monospace',
-                          fontSize: '11px',
-                          display: 'block',
-                          color: log.level === 'error' ? theme.palette.error.main :
-                                 log.level === 'warn' ? theme.palette.warning.main :
-                                 theme.palette.text.secondary
-                        }}>
-                          <span style={{ opacity: 0.6 }}>
-                            [{new Date(log.timestamp).toLocaleTimeString()}]
-                          </span>
-                          {' '}
-                          {log.message}
-                        </Typography>
-                      </Box>
-                    ))}
-                  </Stack>
-                </Paper>
+                <div className="p-3 max-h-[300px] overflow-auto rounded-lg border-[1.5px] border-white/10">
+                  <p className="text-[12px] font-medium mb-2">Error Logs:</p>
+                  {launchLogs.map((log, idx) => (
+                    <div
+                      key={idx}
+                      className={cn(
+                        "p-1 rounded text-[11px] font-mono",
+                        log.level === 'error' ? 'bg-red-500/5 text-red-500' :
+                        log.level === 'warn' ? 'bg-yellow-500/5 text-yellow-500' :
+                        'opacity-70'
+                      )}
+                    >
+                      <span className="opacity-60">[{new Date(log.timestamp).toLocaleTimeString()}]</span>
+                      {' '}{log.message}
+                    </div>
+                  ))}
+                </div>
               )}
 
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={() => resetLaunchState()}
-              >
+              <StyledButton fullWidth onClick={() => resetLaunchState()}>
                 Close
-              </Button>
-            </Stack>
+              </StyledButton>
+            </div>
           )}
-          </Paper>
+          </Card>
         </Container>
       )}
 
