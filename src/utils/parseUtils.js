@@ -2,7 +2,6 @@ import Decimal from 'decimal.js-light';
 import { encodeAccountID } from 'ripple-address-codec';
 const CryptoJS = require('crypto-js');
 
-const { omitBy } = require('lodash');
 // Removed ripple-keypairs for security (compromised in 2025)
 const { xAddressToClassicAddress } = require('ripple-address-codec');
 
@@ -186,7 +185,7 @@ function toRippledAmount(amount) {
 }
 
 function removeUndefined(obj) {
-  return omitBy(obj, (value) => value == null);
+  return Object.fromEntries(Object.entries(obj).filter(([, v]) => v != null));
 }
 
 /**
