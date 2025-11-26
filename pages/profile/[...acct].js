@@ -399,12 +399,11 @@ const OverView = ({ account }) => {
               isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-50 border-gray-200"
             )}>
               <div className={cn(
-                "grid gap-2 px-2 py-1 border-b",
+                "grid px-2 py-1 border-b",
                 isDark ? "border-white/[0.04]" : "border-gray-200"
-              )} style={{ gridTemplateColumns: '90px 2fr 100px 90px' }}>
+              )} style={{ gridTemplateColumns: '90px 1fr 80px' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Type</span>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Details</span>
-                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Amount</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>When</span>
               </div>
               {filteredTxHistory.slice(0, 20).map((tx, idx) => {
@@ -570,10 +569,10 @@ const OverView = ({ account }) => {
                   <div
                     key={idx}
                     className={cn(
-                      "grid gap-2 px-2 py-1",
+                      "grid px-2 py-1.5",
                       idx < 19 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100")
                     )}
-                    style={{ gridTemplateColumns: '90px 2fr 100px 90px' }}
+                    style={{ gridTemplateColumns: '90px 1fr 80px' }}
                   >
                     <span className={cn(
                       "text-[11px]",
@@ -591,25 +590,6 @@ const OverView = ({ account }) => {
                         </span>
                       )}
                     </div>
-                    <span className={cn("text-[12px] text-right", isDark ? "text-white/70" : "text-gray-700")}>
-                      {(() => {
-                        if (txData.TransactionType === 'OfferCreate' || txData.TransactionType === 'OfferCancel') return '—';
-
-                        let amt = meta?.delivered_amount || txData.DeliverMax || txData.Amount;
-                        if (!amt) return '—';
-
-                        if (typeof amt === 'string') {
-                          const xrp = parseInt(amt) / 1000000;
-                          if (xrp > 1e9) return '—';
-                          return `${fCurrency5(xrp)}`;
-                        }
-
-                        const val = parseFloat(amt.value);
-                        if (val > 1e12) return '—';
-                        const curr = decodeCurrency(amt.currency);
-                        return `${fCurrency5(val)} ${curr}`;
-                      })()}
-                    </span>
                     <span className={cn("text-[11px] text-right", isDark ? "text-white/40" : "text-gray-400")}>
                       {formatDistanceToNow(date, { addSuffix: false })}
                     </span>

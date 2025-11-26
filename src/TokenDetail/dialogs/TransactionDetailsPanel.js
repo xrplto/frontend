@@ -172,6 +172,7 @@ const useTheme = () => {
       success: { main: '#4caf50' },
       error: { main: '#f44336' },
       warning: { main: '#ff9800' },
+      info: { main: '#2196f3' },
       text: { primary: isDark ? '#fff' : '#212B36', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
       background: { default: isDark ? '#121212' : '#fff', paper: isDark ? '#1e1e1e' : '#fff' },
       divider: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'

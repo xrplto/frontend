@@ -43,29 +43,32 @@ const getIcon = (platform, size = 20) => {
   }
 };
 
-const getColor = (platform) => {
+const getIconColor = (platform) => {
   switch (platform) {
     case 'twitter':
-      return '#1DA1F2';
+      return '#000000';
     case 'facebook':
       return '#1877F2';
     case 'telegram':
-      return '#0088cc';
+      return '#229ED9';
     case 'whatsapp':
       return '#25D366';
     case 'linkedin':
       return '#0A66C2';
     case 'reddit':
-      return '#FF4500';
+      return '#FF5700';
     case 'email':
-      return '#DD4B39';
+      return '#6B7280';
     default:
-      return '#666';
+      return '#6B7280';
   }
 };
 
+// Background matching SearchModal: dark rgba(255,255,255,0.06), light rgba(0,0,0,0.06)
+const getBgColor = (isDark = true) => isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+
 // Share button component
-export const ShareButton = ({ platform, url, title, size = 40, round = true, ...props }) => {
+export const ShareButton = ({ platform, url, title, size = 40, round = true, isDark = true, ...props }) => {
   const shareUrls = getShareUrls(url, title);
   const shareUrl = shareUrls[platform];
 
@@ -75,7 +78,8 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
     }
   };
 
-  const bgColor = getColor(platform);
+  const iconColor = getIconColor(platform);
+  const bgColor = getBgColor(isDark);
 
   if (round) {
     return (
@@ -85,13 +89,13 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
         aria-label={`Share on ${platform}`}
         tabIndex={0}
         className={cn(
-          "flex items-center justify-center rounded-full cursor-pointer transition-transform hover:scale-110"
+          "flex items-center justify-center rounded-full cursor-pointer transition-all hover:scale-110"
         )}
         style={{
           width: size,
           height: size,
           backgroundColor: bgColor,
-          color: 'white'
+          color: iconColor
         }}
         {...props}
       >
@@ -104,8 +108,8 @@ export const ShareButton = ({ platform, url, title, size = 40, round = true, ...
     <button
       onClick={handleShare}
       aria-label={`Share on ${platform}`}
-      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-      style={{ color: bgColor }}
+      className="p-2 rounded-lg transition-colors"
+      style={{ color: iconColor, backgroundColor: bgColor }}
       {...props}
     >
       {getIcon(platform, 20)}
@@ -182,34 +186,34 @@ export const EmailShareButton = ({ children, subject, body, ...props }) => {
 };
 
 // Icon components for compatibility with react-share
-export const TwitterIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="twitter" size={size} round={round} url="" title="" />
+export const TwitterIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="twitter" size={size} round={round} isDark={isDark} url="" title="" />
 );
 
-export const FacebookIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="facebook" size={size} round={round} url="" title="" />
+export const FacebookIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="facebook" size={size} round={round} isDark={isDark} url="" title="" />
 );
 
-export const TelegramIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="telegram" size={size} round={round} url="" title="" />
+export const TelegramIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="telegram" size={size} round={round} isDark={isDark} url="" title="" />
 );
 
-export const WhatsAppIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="whatsapp" size={size} round={round} url="" title="" />
+export const WhatsAppIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="whatsapp" size={size} round={round} isDark={isDark} url="" title="" />
 );
 
 export const WhatsappIcon = WhatsAppIcon; // Alias for compatibility
 
-export const LinkedInIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="linkedin" size={size} round={round} url="" title="" />
+export const LinkedInIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="linkedin" size={size} round={round} isDark={isDark} url="" title="" />
 );
 
 export const LinkedinIcon = LinkedInIcon; // Alias for compatibility
 
-export const RedditIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="reddit" size={size} round={round} url="" title="" />
+export const RedditIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="reddit" size={size} round={round} isDark={isDark} url="" title="" />
 );
 
-export const EmailIcon = ({ size = 40, round = false }) => (
-  <ShareButton platform="email" size={size} round={round} url="" title="" />
+export const EmailIcon = ({ size = 40, round = false, isDark = true }) => (
+  <ShareButton platform="email" size={size} round={round} isDark={isDark} url="" title="" />
 );

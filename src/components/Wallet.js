@@ -111,7 +111,7 @@ const DialogContent = ({ children, sx }) => (
 
 // StyledPopoverPaper component
 const StyledPopoverPaper = ({ children }) => (
-  <div className="rounded-xl border border-white/10 bg-[#1a1a1a] shadow-xl">
+  <div className="rounded-xl border border-white/10 bg-[#0a0a0a] shadow-xl">
     {children}
   </div>
 );
@@ -1019,7 +1019,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       error: { main: '#f44336' },
       primary: { main: '#4285f4' },
       text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
-      background: { default: isDark ? '#121212' : '#fff', paper: isDark ? '#1e1e1e' : '#fff' },
+      background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#0a0a0a' : '#fff' },
       action: { hover: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)', disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)' }
     },
     spacing: (...args) => args.map(v => v * 8).join('px ') + 'px'

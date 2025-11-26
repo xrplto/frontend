@@ -448,7 +448,7 @@ function NewsPage() {
             />
 
             {/* News Grid */}
-            <div className="space-y-4">
+            <div className="space-y-3">
               {currentItems.length === 0 ? (
                 <p className={cn("py-16 text-center text-sm font-normal", isDark ? "text-gray-400/70" : "text-gray-500")}>
                   No news found at the moment
@@ -460,12 +460,12 @@ function NewsPage() {
                     className={cn("cursor-pointer rounded-xl border-[1.5px] bg-transparent p-4 sm:p-5", isDark ? "border-white/10 hover:border-white/20 hover:bg-white/[0.02]" : "border-gray-200 hover:border-gray-300 hover:bg-gray-50")}
                   >
                     <div className="mb-3 flex items-start justify-between">
-                      <p className={cn("pr-4 text-[15px] font-medium", isDark ? "text-white" : "text-gray-900")}>{extractTitle(article.title)}</p>
+                      <p className={cn("flex-1 pr-4 text-[15px] font-medium leading-snug", isDark ? "text-white" : "text-gray-900")}>{extractTitle(article.title)}</p>
                       <span
-                        className="rounded-md border px-2 py-1 text-[10px] font-normal capitalize"
+                        className="shrink-0 rounded-md border px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide"
                         style={{
                           borderColor: `${getSentimentColor(article.sentiment)}4D`,
-                          color: `${getSentimentColor(article.sentiment)}E6`,
+                          color: `${getSentimentColor(article.sentiment)}`,
                           backgroundColor: `${getSentimentColor(article.sentiment)}14`
                         }}
                       >
@@ -473,24 +473,24 @@ function NewsPage() {
                       </span>
                     </div>
 
-                    <p className={cn("mb-3 text-sm", isDark ? "text-gray-400" : "text-gray-600")}>{article.summary}</p>
+                    <p className={cn("mb-4 line-clamp-2 text-sm leading-relaxed", isDark ? "text-gray-400" : "text-gray-600")}>{article.summary}</p>
 
-                    <div className={cn("my-3 h-px", isDark ? "bg-white/10" : "bg-gray-200")} />
-
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                      <p className={cn("text-xs", isDark ? "text-gray-400" : "text-gray-500")}>
-                        {article.sourceName} •{' '}
-                        <time dateTime={article.pubDate}>
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className={cn("rounded-md px-2 py-0.5 text-[11px] font-medium", isDark ? "bg-white/5 text-gray-300" : "bg-gray-100 text-gray-600")}>
+                          {article.sourceName}
+                        </span>
+                        <span className={cn("text-[11px]", isDark ? "text-gray-500" : "text-gray-400")}>
                           {formatDistanceToNow(new Date(article.pubDate), { addSuffix: true })}
-                        </time>
-                      </p>
+                        </span>
+                      </div>
                       <a
                         href={article.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center text-sm font-normal text-primary hover:underline"
+                        className="text-[13px] font-medium text-primary hover:underline"
                       >
-                        Read full article →
+                        Read article →
                       </a>
                     </div>
                   </div>

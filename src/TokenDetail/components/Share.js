@@ -55,7 +55,7 @@ const Overlay = styled.div`
   left: 0;
   right: 0;
   bottom: 0;
-  background: ${props => props.isDark ? 'rgba(0,0,0,0.85)' : 'rgba(0,0,0,0.5)'};
+  background: ${props => props.isDark ? 'rgba(0,0,0,0.8)' : 'rgba(0,0,0,0.5)'};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -63,9 +63,9 @@ const Overlay = styled.div`
 `;
 
 const DialogBox = styled.div`
-  background: ${props => props.isDark ? '#1a1a1a' : '#fff'};
+  background: ${props => props.isDark ? '#0a0a0a' : '#fff'};
   border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : '#e5e7eb'};
   max-width: 400px;
   width: 90%;
   max-height: 90vh;
@@ -276,7 +276,7 @@ export default function Share({ token }) {
                 {socialPlatforms.map(({ Component, Icon, props }, i) => (
                   <SocialIconWrapper key={i}>
                     <Component {...props}>
-                      <Icon size={36} round />
+                      <Icon size={36} round isDark={isDark} />
                     </Component>
                   </SocialIconWrapper>
                 ))}
