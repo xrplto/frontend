@@ -22,6 +22,15 @@ const currencySymbols = {
   XRP: '✕ '
 };
 
+const formatMcap = (value) => {
+  if (!value || value === 0) return '0';
+  if (value >= 1e12) return (value / 1e12).toFixed(2) + 'T';
+  if (value >= 1e9) return (value / 1e9).toFixed(2) + 'B';
+  if (value >= 1e6) return (value / 1e6).toFixed(2) + 'M';
+  if (value >= 1e3) return (value / 1e3).toFixed(2) + 'K';
+  return value.toFixed(2);
+};
+
 const alpha = (color, opacity) => {
   if (color.startsWith('#')) {
     const r = parseInt(color.slice(1, 3), 16);
@@ -217,7 +226,7 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [athData, setAthData] = useState({ price: null, percentDown: null });
+  const [athData, setAthData] = useState({ price: null, percentDown: null, athMcap: null });
   const [rsiValues, setRsiValues] = useState({});
   const rsiValuesRef = useRef({});
   const [showRSI, setShowRSI] = useState(false);
@@ -396,9 +405,14 @@ const PriceChartAdvanced = memo(({ token }) => {
           const currentPrice = processedData[processedData.length - 1].close;
           const percentFromATH = (((currentPrice - allTimeHigh) / allTimeHigh) * 100).toFixed(2);
 
+          // Calculate ATH market cap: ATH price * supply
+          const supply = token.amount || 0;
+          const athMcap = allTimeHigh * supply;
+
           setAthData({
             price: allTimeHigh,
-            percentDown: percentFromATH
+            percentDown: percentFromATH,
+            athMcap: athMcap
           });
 
           const rsiData = calcRSI(processedData, 14);
@@ -1175,7 +1189,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           <Typography variant="h6" isDark={isDark}>
             {token.name} {chartType === 'holders' ? 'Holders' : `Price (${activeFiatCurrency})`} • {range} • {chartInterval}
           </Typography>
-          {athData.price && chartType !== 'holders' && (
+          {athData.athMcap > 0 && chartType !== 'holders' && (
             <Box style={{
               display: 'flex',
               alignItems: 'center',
@@ -1206,38 +1220,20 @@ const PriceChartAdvanced = memo(({ token }) => {
                   lineHeight: 1
                 }}
               >
-                ATH
+                ATH MCap
               </Typography>
-              {!isMobile && (
-                <>
-                  <Box style={{ width: '1px', height: '12px', background: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)' }} />
-                  <Typography
-                    isDark={isDark}
-                    style={{
-                      fontSize: '11px',
-                      fontWeight: 400,
-                      color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                      fontFamily: 'monospace',
-                      lineHeight: 1
-                    }}
-                  >
-                    {currencySymbols[activeFiatCurrency] || ''}
-                    {(() => {
-                      if (athData.price && athData.price < 0.001) {
-                        const str = athData.price.toFixed(15);
-                        const zeros = str.match(/0\.0*/)?.[0]?.length - 2 || 0;
-                        if (zeros >= 4) {
-                          const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
-                          return `0.0(${zeros})${significant.slice(0, 3)}`;
-                        }
-                      }
-                      return athData.price < 0.01
-                        ? athData.price.toFixed(6)
-                        : athData.price.toFixed(3);
-                    })()}
-                  </Typography>
-                </>
-              )}
+              <Typography
+                isDark={isDark}
+                fontWeight={400}
+                style={{
+                  fontSize: '12px',
+                  color: isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
+                  lineHeight: 1,
+                  fontFamily: 'monospace'
+                }}
+              >
+                {currencySymbols[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
+              </Typography>
             </Box>
           )}
           <Box style={{
