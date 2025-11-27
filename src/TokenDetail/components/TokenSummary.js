@@ -335,7 +335,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
             <Image src={tokenImageUrl} alt={name} width={36} height={36} priority unoptimized
               className="rounded-lg object-cover border border-primary/20"
               onError={(e) => { e.currentTarget.src = fallbackImageUrl; }} />
-            {verified && <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center text-[7px] text-black font-bold border border-white">✓</div>}
+            {verified && <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium">✓</div>}
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">

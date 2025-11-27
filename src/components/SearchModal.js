@@ -340,7 +340,7 @@ function SearchModal({ open, onClose }) {
                           <div className="flex-1 text-left">
                             <div className="flex items-center gap-1.5">
                               <p className={cn("truncate text-[13px] font-normal", theme.text)}>{collection.name}</p>
-                              {collection.verified === 'yes' && <span className="rounded bg-primary/80 px-1 py-0.5 text-[9px] font-normal text-white">Verified</span>}
+                              {collection.verified === 'yes' && <span className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium flex-shrink-0">✓</span>}
                             </div>
                             <p className="truncate text-[11px] text-gray-500">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
                           </div>
@@ -400,7 +400,7 @@ function SearchModal({ open, onClose }) {
                             <div className="flex-1 text-left">
                               <div className="flex items-center gap-1.5">
                                 <p className={cn('truncate text-[13px] font-normal', shouldHighlight ? 'text-primary' : theme.text)}>{token.user}</p>
-                                {token.verified && <span className="rounded bg-primary/80 px-1 py-0.5 text-[9px] font-normal text-white">Verified</span>}
+                                {token.verified && <span className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium flex-shrink-0">✓</span>}
                               </div>
                               <p className="truncate text-[11px] text-gray-500">{token.name}</p>
                             </div>
@@ -447,7 +447,7 @@ function SearchModal({ open, onClose }) {
                           <div className="flex-1 text-left">
                             <div className="flex items-center gap-1.5">
                               <p className={cn("truncate text-[13px] font-normal", theme.text)}>{collection.name}</p>
-                              {collection.verified === 'yes' && <span className="rounded bg-primary/80 px-1 py-0.5 text-[9px] font-normal text-white">Verified</span>}
+                              {collection.verified === 'yes' && <span className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium flex-shrink-0">✓</span>}
                             </div>
                             <p className="truncate text-[11px] text-gray-500">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
                           </div>

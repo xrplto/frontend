@@ -216,10 +216,10 @@ function CreatePage() {
           if (['success', 'completed'].includes(status.status)) {
             setLaunchStep('completed');
             setSessionData(prev => ({ ...prev, ...status }));
-          } else if (['failed', 'funding_timeout'].includes(status.status)) {
+          } else if (['failed', 'funding_timeout', 'cancelled'].includes(status.status)) {
             setLaunchStep('error');
             setLaunchError(status.error || 'Launch failed');
-          } else if (['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
+          } else if (['funded', 'configuring_issuer', 'registering_token', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
             setLaunchStep('processing');
             setSessionData(prev => ({ ...prev, ...status }));
           } else {
@@ -244,7 +244,7 @@ function CreatePage() {
         break;
       case 'ticker':
         if (!value) newErrors.ticker = 'Ticker is required';
-        else if (value.length < 3 || value.length > 15) newErrors.ticker = '3-15 characters';
+        else if (value.length < 1 || value.length > 20) newErrors.ticker = '1-20 characters';
         else if (!/^[A-Z0-9]+$/i.test(value)) newErrors.ticker = 'Only letters and numbers';
         else if (value.toUpperCase() === 'XRP') newErrors.ticker = 'XRP is reserved';
         else delete newErrors.ticker;
@@ -270,11 +270,11 @@ function CreatePage() {
     if (field === 'ticker') {
       value = value.toUpperCase();
     } else if (field === 'ammXrpAmount') {
-      value = parseInt(value) || 10;
+      value = parseInt(value) || 1;
     } else if (field === 'tokenSupply') {
       value = parseInt(value) || 1000000000;
     } else if (field === 'userCheckPercent') {
-      value = Math.min(30, Math.max(0, parseInt(value) || 0));
+      value = Math.min(90, Math.max(0, parseInt(value) || 0));
     }
 
     setFormData(prev => ({
@@ -351,7 +351,7 @@ function CreatePage() {
   };
 
   const isFormValid = () => {
-    return formData.tokenName && formData.ticker && formData.tokenSupply > 0 && formData.ammXrpAmount >= 10 && !Object.keys(errors).length;
+    return formData.tokenName && formData.ticker && formData.ticker.length >= 1 && formData.ticker.length <= 20 && formData.tokenSupply > 0 && formData.ammXrpAmount >= 1 && !Object.keys(errors).length;
   };
 
   const getCompletionStatus = () => {
@@ -533,8 +533,9 @@ function CreatePage() {
     navigator.clipboard.writeText(text);
   };
 
-  const openInExplorer = (address) => {
-    window.open(`https://testnet.xrpl.org/accounts/${address}`, '_blank');
+  const openInExplorer = (address, network) => {
+    const baseUrl = network === 'mainnet' ? 'https://xrpl.org' : 'https://testnet.xrpl.org';
+    window.open(`${baseUrl}/accounts/${address}`, '_blank');
   };
 
   // Reset all state when closing
@@ -589,7 +590,7 @@ function CreatePage() {
       }
 
       // Check if status changed to processing/success/failed/completed
-      if (['funded', 'configuring_issuer', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
+      if (['funded', 'configuring_issuer', 'registering_token', 'creating_trustline', 'sending_tokens', 'creating_checks', 'creating_amm', 'scheduling_blackhole'].includes(status.status)) {
         // Backend is processing - transition to processing view
         if (launchStep === 'funding') {
           setLaunchStep('processing');
@@ -693,8 +694,8 @@ function CreatePage() {
                 onChange={handleInputChange('ticker')}
                 error={errors.ticker}
                 helperText={errors.ticker}
-                counter={`${formData.ticker.length}/15`}
-                counterError={formData.ticker.length < 3 || formData.ticker.length > 15}
+                counter={`${formData.ticker.length}/20`}
+                counterError={formData.ticker.length < 1 || formData.ticker.length > 20}
                 isDark={isDark}
                 className="max-w-[140px]"
               />
@@ -725,14 +726,14 @@ function CreatePage() {
               <InputField
                 label="Your allocation %"
                 type="number"
-                placeholder="0-30"
+                placeholder="0-90"
                 value={formData.userCheckPercent === 0 ? '' : formData.userCheckPercent}
                 onChange={handleInputChange('userCheckPercent')}
                 helperText={formData.userCheckPercent > 0 ? `${Math.floor(formData.tokenSupply * (formData.userCheckPercent / 100)).toLocaleString()} tokens` : null}
                 isDark={isDark}
                 className="max-w-[140px]"
                 min={0}
-                max={30}
+                max={90}
               />
             </div>
 
@@ -742,16 +743,30 @@ function CreatePage() {
                 <span>You'll receive <strong>0 tokens</strong>. Set allocation above to reserve some for yourself.</span>
               </div>
             )}
-            <div className="flex items-center justify-end">
-              <label className="flex items-center gap-2 cursor-pointer text-[12px]">
-                <input
-                  type="checkbox"
-                  checked={formData.antiSnipe}
-                  onChange={(e) => setFormData(prev => ({ ...prev, antiSnipe: e.target.checked }))}
-                  className="w-3.5 h-3.5 rounded"
-                />
-                Anti-snipe
-              </label>
+
+            {/* Anti-snipe toggle */}
+            <div
+              onClick={() => setFormData(prev => ({ ...prev, antiSnipe: !prev.antiSnipe }))}
+              className={cn(
+                "flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors border",
+                formData.antiSnipe
+                  ? isDark ? "border-[#4285f4]/40 bg-[#4285f4]/10" : "border-[#4285f4]/30 bg-[#4285f4]/5"
+                  : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300"
+              )}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-[12px]">Anti-snipe protection</span>
+                <span className={cn("text-[10px] px-1.5 py-0.5 rounded", isDark ? "bg-white/10" : "bg-gray-100")}>5 min window</span>
+              </div>
+              <div className={cn(
+                "w-8 h-4 rounded-full transition-colors relative",
+                formData.antiSnipe ? "bg-[#4285f4]" : isDark ? "bg-white/20" : "bg-gray-300"
+              )}>
+                <div className={cn(
+                  "absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform",
+                  formData.antiSnipe ? "translate-x-4" : "translate-x-0.5"
+                )} />
+              </div>
             </div>
           </div>
         </div>
@@ -768,10 +783,10 @@ function CreatePage() {
               type="number"
               value={formData.ammXrpAmount}
               onChange={handleInputChange('ammXrpAmount')}
-              error={formData.ammXrpAmount < 10}
-              helperText={formData.ammXrpAmount < 10 ? 'Minimum 10 XRP' : null}
+              error={formData.ammXrpAmount < 1}
+              helperText={formData.ammXrpAmount < 1 ? 'Minimum 1 XRP' : null}
               isDark={isDark}
-              min={10}
+              min={1}
             />
           </div>
 
@@ -812,30 +827,21 @@ function CreatePage() {
         </div>
 
         {/* Cost Summary */}
-        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-[13px] font-normal">Cost Breakdown</h3>
-            <span className="text-[13px] font-medium text-[#4285f4]">
+        <div className={cn("rounded-xl border px-4 py-3 mb-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+          <div className="flex items-center justify-between text-[12px] mb-2">
+            <span className="opacity-60">Liquidity pool</span>
+            <span>{formData.ammXrpAmount} XRP</span>
+          </div>
+          <div className="flex items-center justify-between text-[12px] mb-2">
+            <span className="opacity-60">Protocol fees</span>
+            <span>{costBreakdown ? (costBreakdown.requiredFunding - formData.ammXrpAmount) : '~9'} XRP</span>
+          </div>
+          <div className={cn("flex items-center justify-between pt-2 border-t", isDark ? "border-white/10" : "border-gray-200")}>
+            <span className="text-[12px] opacity-60">Total</span>
+            <span className="text-[14px] font-medium text-[#4285f4]">
               {loadingCost ? '...' : `~${costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount)} XRP`}
             </span>
           </div>
-          <div className="space-y-1 text-[11px]">
-            <div className="flex justify-between opacity-60">
-              <span>Platform fee</span><span>{costBreakdown?.breakdown?.platformFee || 5} XRP</span>
-            </div>
-            <div className="flex justify-between opacity-60">
-              <span>Account reserves</span><span>{costBreakdown ? (costBreakdown.breakdown.issuerReserve + costBreakdown.breakdown.holderReserve + costBreakdown.breakdown.ownerReserves).toFixed(1) : '~2.4'} XRP</span>
-            </div>
-            <div className="flex justify-between opacity-60">
-              <span>AMM liquidity</span><span>{costBreakdown?.breakdown?.ammLiquidity || formData.ammXrpAmount} XRP</span>
-            </div>
-            <div className="flex justify-between opacity-60">
-              <span>Tx fees + buffer</span><span>{costBreakdown?.breakdown?.transactionFees || '~1.4'} XRP</span>
-            </div>
-          </div>
-          <p className="text-[10px] opacity-40 mt-2">
-            {costBreakdown?.antiSnipe && costBreakdown?.antiSnipeNote ? costBreakdown.antiSnipeNote : 'Excess XRP refunded after launch'}
-          </p>
         </div>
 
         {/* Token Image */}
@@ -1038,6 +1044,17 @@ function CreatePage() {
                 </div>
               </div>
 
+              {sessionData?.faucetUrl && (
+                <a
+                  href={sessionData.faucetUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 text-[12px] text-[#4285f4] hover:underline"
+                >
+                  Get testnet XRP from faucet <ExternalLink size={12} />
+                </a>
+              )}
+
               <Button
                 fullWidth
                 onClick={async () => {
@@ -1061,24 +1078,30 @@ function CreatePage() {
 
           {launchStep === 'processing' && (
             <div className="space-y-4">
-              <div className="text-center py-6">
-                <Spinner />
-                <p className="mt-3 text-[14px]">Processing...</p>
-                <p className="text-[12px] opacity-50">This may take a moment</p>
+              {/* Progress bar */}
+              <div className="space-y-2">
+                <div className="flex justify-between text-[11px]">
+                  <span className="opacity-60">{sessionData?.progressMessage || 'Processing...'}</span>
+                  <span className="text-[#4285f4]">{sessionData?.progress || 0}%</span>
+                </div>
+                <div className={cn("h-1.5 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
+                  <div className="h-full bg-[#4285f4] transition-all duration-500" style={{ width: `${sessionData?.progress || 0}%` }} />
+                </div>
               </div>
 
-              {sessionData?.status && (
-                <Alert severity="info">
-                  <Info size={14} />
-                  {sessionData.status === 'funded' ? 'Starting launch...' :
-                   sessionData.status === 'configuring_issuer' ? 'Configuring issuer...' :
-                   sessionData.status === 'creating_trustline' ? 'Creating trustline...' :
-                   sessionData.status === 'sending_tokens' ? 'Minting tokens...' :
-                   sessionData.status === 'creating_checks' ? 'Creating check...' :
-                   sessionData.status === 'creating_amm' ? 'Creating AMM...' :
-                   sessionData.status === 'scheduling_blackhole' ? 'Finalizing...' : 'Processing...'}
-                </Alert>
-              )}
+              <div className="text-center py-4">
+                <Spinner />
+                <p className="mt-3 text-[13px]">
+                  {sessionData?.status === 'funded' ? 'Starting launch...' :
+                   sessionData?.status === 'configuring_issuer' ? 'Configuring issuer...' :
+                   sessionData?.status === 'registering_token' ? 'Registering token...' :
+                   sessionData?.status === 'creating_trustline' ? 'Creating trustline...' :
+                   sessionData?.status === 'sending_tokens' ? 'Minting tokens...' :
+                   sessionData?.status === 'creating_checks' ? 'Creating check...' :
+                   sessionData?.status === 'creating_amm' ? 'Creating AMM pool...' :
+                   sessionData?.status === 'scheduling_blackhole' ? 'Finalizing...' : 'Processing...'}
+                </p>
+              </div>
 
               {launchLogs.some(log => log.message?.includes('Insufficient')) && (
                 <Alert severity="error">Insufficient funding - add more XRP</Alert>
@@ -1108,13 +1131,14 @@ function CreatePage() {
             <div className="space-y-4">
               <Alert severity="success">
                 <CheckCircle size={14} />
-                Token launched on XRPL Testnet!
+                Token launched on XRPL {sessionData.network === 'mainnet' ? 'Mainnet' : 'Testnet'}!
               </Alert>
 
               <div className={cn("p-4 rounded-lg space-y-2 text-[13px]", isDark ? "bg-white/5" : "bg-gray-50")}>
-                <div className="flex justify-between"><span className="opacity-60">Token</span><span>{formData.tokenName} ({formData.ticker})</span></div>
-                <div className="flex justify-between"><span className="opacity-60">Supply</span><span>{formData.tokenSupply.toLocaleString()}</span></div>
-                <div className="flex justify-between"><span className="opacity-60">AMM Pool</span><span>{formData.ammXrpAmount} XRP</span></div>
+                <div className="flex justify-between"><span className="opacity-60">Token</span><span>{sessionData.originalCurrencyCode || formData.tokenName} ({sessionData.currencyCode || formData.ticker})</span></div>
+                <div className="flex justify-between"><span className="opacity-60">Supply</span><span>{Number(sessionData.tokenSupply || formData.tokenSupply).toLocaleString()}</span></div>
+                <div className="flex justify-between"><span className="opacity-60">AMM Pool</span><span>{sessionData.ammXrpAmount || formData.ammXrpAmount} XRP</span></div>
+                <div className="flex justify-between"><span className="opacity-60">Issuer</span><span className="font-mono text-[11px]">{sessionData.issuer?.slice(0, 8)}...{sessionData.issuer?.slice(-4)}</span></div>
               </div>
 
               {(sessionData.data?.userCheckId || sessionData.userCheckId) && (
@@ -1216,8 +1240,10 @@ function CreatePage() {
               )}
 
               <div className="flex gap-2">
-                <Button size="small" fullWidth onClick={() => openInExplorer(sessionData.issuerAddress)}>Issuer <ExternalLink size={12} /></Button>
-                <Button size="small" fullWidth onClick={() => openInExplorer(sessionData.ammAddress)}>AMM <ExternalLink size={12} /></Button>
+                <Button size="small" fullWidth onClick={() => openInExplorer(sessionData.issuer || sessionData.issuerAddress, sessionData.network)}>Issuer <ExternalLink size={12} /></Button>
+                {(sessionData.ammAccount || sessionData.ammAddress) && (
+                  <Button size="small" fullWidth onClick={() => openInExplorer(sessionData.ammAccount || sessionData.ammAddress, sessionData.network)}>AMM <ExternalLink size={12} /></Button>
+                )}
               </div>
 
               <Button variant="primary" fullWidth onClick={() => {

@@ -721,7 +721,7 @@ export default function CollectionView({ collection }) {
                 className="rounded-lg object-cover border border-primary/20"
               />
               {verified === 'yes' && (
-                <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-amber-400 rounded-full flex items-center justify-center text-[7px] text-black font-bold border border-white">✓</div>
+                <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium">✓</div>
               )}
             </div>
             <div className="min-w-0">

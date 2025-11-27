@@ -515,8 +515,16 @@ const TrendingTokens = () => {
                       {token.verified && (
                         <span
                           style={{
-                            fontSize: 12,
-                            color: '#1976d2',
+                            width: 14,
+                            height: 14,
+                            background: '#4285f4',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontSize: 8,
+                            color: '#fff',
+                            fontWeight: 500,
                             flexShrink: 0
                           }}
                           title="Verified"
