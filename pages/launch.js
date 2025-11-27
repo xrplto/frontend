@@ -123,6 +123,8 @@ function CreatePage() {
   const [claiming, setClaiming] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
   const [decryptedSeed, setDecryptedSeed] = useState(null);
+  const [costBreakdown, setCostBreakdown] = useState(null);
+  const [loadingCost, setLoadingCost] = useState(false);
 
   // Decrypt seed on mount if OAuth wallet
   useEffect(() => {
@@ -168,6 +170,25 @@ function CreatePage() {
 
     decryptSeed();
   }, [accountProfile]);
+
+  // Fetch cost breakdown when ammXrpAmount or antiSnipe changes
+  useEffect(() => {
+    const fetchCost = async () => {
+      if (formData.ammXrpAmount < 1) return;
+      setLoadingCost(true);
+      try {
+        const res = await axios.get(`https://api.xrpl.to/api/launch-token/calculate-funding?ammXrpAmount=${formData.ammXrpAmount}&antiSnipe=${formData.antiSnipe}`);
+        setCostBreakdown(res.data);
+      } catch (e) {
+        // Fallback to estimate
+        setCostBreakdown(null);
+      } finally {
+        setLoadingCost(false);
+      }
+    };
+    const timeout = setTimeout(fetchCost, 300); // Debounce
+    return () => clearTimeout(timeout);
+  }, [formData.ammXrpAmount, formData.antiSnipe]);
 
   // Restore session from localStorage on mount
   useEffect(() => {
@@ -715,11 +736,14 @@ function CreatePage() {
               />
             </div>
 
-            <div className="flex items-center gap-4">
-              {formData.userCheckPercent === 0 && (
-                <span className="text-[11px] text-yellow-500">100% goes to AMM</span>
-              )}
-              <label className="flex items-center gap-2 cursor-pointer text-[12px] ml-auto">
+            {formData.userCheckPercent === 0 && (
+              <div className={cn("flex items-center gap-2 px-3 py-2 rounded-lg text-[11px]", isDark ? "bg-yellow-500/10 text-yellow-400" : "bg-yellow-50 text-yellow-700")}>
+                <Info size={14} className="flex-shrink-0" />
+                <span>You'll receive <strong>0 tokens</strong>. Set allocation above to reserve some for yourself.</span>
+              </div>
+            )}
+            <div className="flex items-center justify-end">
+              <label className="flex items-center gap-2 cursor-pointer text-[12px]">
                 <input
                   type="checkbox"
                   checked={formData.antiSnipe}
@@ -792,24 +816,26 @@ function CreatePage() {
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-[13px] font-normal">Cost Breakdown</h3>
             <span className="text-[13px] font-medium text-[#4285f4]">
-              ~{Math.ceil(9 + formData.ammXrpAmount)} XRP
+              {loadingCost ? '...' : `~${costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount)} XRP`}
             </span>
           </div>
           <div className="space-y-1 text-[11px]">
             <div className="flex justify-between opacity-60">
-              <span>Platform fee</span><span>5 XRP</span>
+              <span>Platform fee</span><span>{costBreakdown?.breakdown?.platformFee || 5} XRP</span>
             </div>
             <div className="flex justify-between opacity-60">
-              <span>Account reserves</span><span>~2.4 XRP</span>
+              <span>Account reserves</span><span>{costBreakdown ? (costBreakdown.breakdown.issuerReserve + costBreakdown.breakdown.holderReserve + costBreakdown.breakdown.ownerReserves).toFixed(1) : '~2.4'} XRP</span>
             </div>
             <div className="flex justify-between opacity-60">
-              <span>AMM liquidity</span><span>{formData.ammXrpAmount} XRP</span>
+              <span>AMM liquidity</span><span>{costBreakdown?.breakdown?.ammLiquidity || formData.ammXrpAmount} XRP</span>
             </div>
             <div className="flex justify-between opacity-60">
-              <span>Tx fees + buffer</span><span>~1.4 XRP</span>
+              <span>Tx fees + buffer</span><span>{costBreakdown?.breakdown?.transactionFees || '~1.4'} XRP</span>
             </div>
           </div>
-          <p className="text-[10px] opacity-40 mt-2">Excess XRP refunded after launch</p>
+          <p className="text-[10px] opacity-40 mt-2">
+            {costBreakdown?.antiSnipe && costBreakdown?.antiSnipeNote ? costBreakdown.antiSnipeNote : 'Excess XRP refunded after launch'}
+          </p>
         </div>
 
         {/* Token Image */}
