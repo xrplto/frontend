@@ -2,8 +2,7 @@ import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
 import { useState, useEffect, useContext } from 'react';
 import styled from '@emotion/styled';
-import { AlertTriangle, Lock, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon } from 'lucide-react';
-import IssuerInfoDialog from '../../dialogs/IssuerInfoDialog';
+import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { fNumber, fDate } from 'src/utils/formatters';
@@ -160,7 +159,6 @@ const currencySymbols = {
 export default function PriceStatistics({ token, isDark = false }) {
   const metrics = useSelector(selectMetrics);
   const { activeFiatCurrency, openSnackbar } = useContext(AppContext);
-  const [openIssuerInfo, setOpenIssuerInfo] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [creations, setCreations] = useState(0);
   const [openScamWarning, setOpenScamWarning] = useState(false);
@@ -173,21 +171,17 @@ export default function PriceStatistics({ token, isDark = false }) {
   }, []);
 
   const {
-    id,
     name,
     amount,
     exch,
-    maxMin24h = [0, 0],
     vol24hxrp,
     marketcap,
     dom,
     issuer,
-    issuer_info,
     creator,
     tags,
     social,
     origin,
-    holders,
     trustlines,
     uniqueTraders24h,
     vol24htx,
@@ -215,25 +209,10 @@ export default function PriceStatistics({ token, isDark = false }) {
     }
   }, [creator]);
 
-  const info = issuer_info || {};
-
-  function truncate(str, n) {
-    if (!str) return '';
-    const effectiveN = isMobile ? Math.floor(n * 0.7) : n; // Make truncation more aggressive on mobile
-    return str.length > effectiveN ? str.substr(0, effectiveN - 1) + '... ' : str;
-  }
-
-  let user = token.user;
-  if (!user) user = name;
-
   const voldivmarket =
     marketcap > 0 && vol24hxrp != null
       ? new Decimal(vol24hxrp || 0).div(marketcap || 1).toNumber()
       : 0;
-
-  const handleOpenIssuerInfo = () => {
-    setOpenIssuerInfo(true);
-  };
 
   // Create enhanced tags array that includes origin-based tags (same as UserDesc.js)
   const getOriginTag = (origin) => {
@@ -286,8 +265,6 @@ export default function PriceStatistics({ token, isDark = false }) {
         marginBottom: '6px'
       }}
     >
-      <IssuerInfoDialog open={openIssuerInfo} setOpen={setOpenIssuerInfo} token={token} />
-
       {/* Scam Warning Dialog */}
       {openScamWarning && (
         <Dialog open>
@@ -349,79 +326,6 @@ export default function PriceStatistics({ token, isDark = false }) {
 
       <StyledTable size="small" style={{ marginTop: '4px' }}>
         <TableBody>
-          {/* Issuer Row */}
-          <TableRow>
-            <ModernTableCell align="left">
-              <Typography
-                isDark={isDark}
-                variant="body2"
-                style={{
-                  fontWeight: 400,
-                  color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                  fontSize: '11px'
-                }}
-                noWrap
-              >
-                Issuer
-              </Typography>
-            </ModernTableCell>
-            <ModernTableCell align="left">
-              <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25} style={{ minWidth: 0, flex: 1 }}>
-                <Chip
-                  size="small"
-                  style={{
-                    paddingLeft: '8px',
-                    paddingRight: '8px',
-                    borderRadius: '8px',
-                    height: '26px',
-                    cursor: 'pointer',
-                    background: alpha('rgba(66,133,244,1)', 0.08),
-                    border: `1.5px solid ${alpha('rgba(66,133,244,1)', 0.15)}`,
-                    color: '#4285f4',
-                    fontWeight: 400,
-                    gap: '6px',
-                    minWidth: 0,
-                    maxWidth: isMobile ? '120px' : '200px',
-                    overflow: 'hidden'
-                  }}
-                  onClick={handleOpenIssuerInfo}
-                >
-                  <Typography
-                    variant="caption"
-                    style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
-                  >
-                    {issuer}
-                  </Typography>
-                  {info.blackholed && (
-                    <Tooltip title="Blackholed - Cannot issue more tokens">
-                      <Lock size={14} color="#2E7D32" />
-                    </Tooltip>
-                  )}
-                </Chip>
-                <Tooltip title="Copy issuer address">
-                  <IconButton
-                    onClick={() => {
-                      navigator.clipboard.writeText(issuer).then(() => {
-                        openSnackbar('Copied!', 'success');
-                      });
-                    }}
-                    size="small"
-                    style={{
-                      padding: '4px',
-                      width: '26px',
-                      height: '26px',
-                      borderRadius: '8px',
-                      background: 'transparent',
-                      border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`
-                    }}
-                  >
-                    <Copy size={isMobile ? 12 : 14} color="#4285f4" />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-            </ModernTableCell>
-          </TableRow>
-
           {/* Creator Row */}
           {creator && (
             <TableRow>
@@ -632,39 +536,6 @@ export default function PriceStatistics({ token, isDark = false }) {
                   }}
                 >
                   {fNumber(amount)}
-                </Typography>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
-
-          {/* Holders Row */}
-          {holders ? (
-            <TableRow>
-              <ModernTableCell align="left">
-                <Typography
-                  isDark={isDark}
-                variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Holders
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell align="left">
-                <Typography
-                  isDark={isDark}
-                variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: '#3b82f6',
-                    fontSize: '12px'
-                  }}
-                >
-                  {fNumber(holders)}
                 </Typography>
               </ModernTableCell>
             </TableRow>

@@ -177,7 +177,16 @@ const PriceChartAdvanced = memo(({ token }) => {
   const [anchorEl, setAnchorEl] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
-  const [athData, setAthData] = useState({ price: null, percentDown: null, athMcap: null });
+  // ATH from token prop (API /api/token endpoint), not from chart intervals
+  const athData = useMemo(() => {
+    if (token?.athMarketcap) {
+      const athMcap = token.athMarketcap;
+      const currentMcap = token.marketcap || 0;
+      const percentFromATH = athMcap > 0 ? (((currentMcap - athMcap) / athMcap) * 100).toFixed(2) : 0;
+      return { price: null, percentDown: percentFromATH, athMcap };
+    }
+    return { price: null, percentDown: null, athMcap: null };
+  }, [token?.athMarketcap, token?.marketcap]);
   const [rsiValues, setRsiValues] = useState({});
   const rsiValuesRef = useRef({});
   const [showRSI, setShowRSI] = useState(false);
@@ -349,19 +358,6 @@ const PriceChartAdvanced = memo(({ token }) => {
           setData(limitedData);
           dataRef.current = limitedData;
           setLastUpdate(new Date());
-
-          // Calculate ATH mcap from OHLC high price × supply
-          const allTimeHigh = Math.max(...processedData.map((d) => d.high));
-          const supply = parseFloat(token.amount) || 0;
-          const athMcap = allTimeHigh * supply;
-          const currentMcap = token.marketcap || 0;
-          const percentFromATH = athMcap > 0 ? (((currentMcap - athMcap) / athMcap) * 100).toFixed(2) : 0;
-
-          setAthData({
-            price: allTimeHigh,
-            percentDown: percentFromATH,
-            athMcap: athMcap
-          });
 
           const rsiData = calcRSI(processedData, 14);
           const rsiMap = {};
@@ -1048,19 +1044,17 @@ const PriceChartAdvanced = memo(({ token }) => {
             <Box style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '6px',
-              padding: '3px 8px',
-              borderRadius: '6px',
-              background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'
+              gap: '4px',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              background: isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'
             }}>
-              <span style={{ fontSize: '11px', color: athData.percentDown < 0 ? '#ef4444' : '#22c55e', fontFamily: 'monospace' }}>
-                {athData.percentDown}%
-              </span>
-              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
-                ATH
-              </span>
-              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>ATH</span>
+              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)', fontFamily: 'monospace' }}>
                 {currencySymbols[activeFiatCurrency] || ''}{formatMcap(athData.athMcap)}
+              </span>
+              <span style={{ fontSize: '10px', color: athData.percentDown < 0 ? '#ef4444' : '#22c55e', fontFamily: 'monospace' }}>
+                {athData.percentDown}%
               </span>
             </Box>
           )}

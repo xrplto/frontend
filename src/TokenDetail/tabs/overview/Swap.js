@@ -520,34 +520,28 @@ const ToggleContent = styled.div`
 
 const ExchangeButton = styled(Button)`
   width: 100%;
-  max-width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 10px;
-  background: transparent;
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
   color: #3b82f6;
   font-weight: 400;
   border: 1.5px solid #3b82f6;
-  padding: 10px 16px;
-  font-size: 13px;
+  padding: 8px 16px;
+  font-size: 12px;
   text-transform: none;
-  margin-top: 8px;
-  margin-bottom: 4px;
+  margin: 0;
+  letter-spacing: 0.3px;
 
   &:hover {
-    background: rgba(59,130,246,0.05);
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
     border-color: #3b82f6;
   }
 
   &:disabled {
-    background: transparent;
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
     color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
     border-color: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  }
-
-  @media (max-width: 600px) {
-    padding: 10px 14px;
-    font-size: 12px;
   }
 `;
 
@@ -2173,6 +2167,31 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
               />
             </Box>
           )}
+
+          {/* Exchange/Trustline Button - inside the swap card when connected */}
+          {accountProfile?.account && (
+            <Box sx={{ mt: 1 }}>
+              <ExchangeButton
+                variant="outlined"
+                onClick={handlePlaceOrder}
+                isDark={isDark}
+                disabled={
+                  isProcessing === 1 ||
+                  !isLoggedIn ||
+                  (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                }
+              >
+                {handleMsg()}
+              </ExchangeButton>
+              {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
+                <Alert severity="error" sx={{ mt: 0.5 }}>
+                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
+                    {errMsg}
+                  </Typography>
+                </Alert>
+              )}
+            </Box>
+          )}
         </ConverterFrame>
       </OverviewWrapper>
 
@@ -2196,34 +2215,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         </Typography>
       </Stack>
 
-      {accountProfile && accountProfile.account ? (
-        <Stack sx={{ width: '100%' }}>
-          <ExchangeButton
-            variant="outlined"
-            onClick={handlePlaceOrder}
-            isDark={isDark}
-            sx={{
-              mt: 0,
-              height: { xs: '32px', sm: '28px' },
-              fontSize: { xs: '12px', sm: '12px' }
-            }}
-            disabled={
-              isProcessing === 1 ||
-              !isLoggedIn ||
-              (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-            }
-          >
-            {handleMsg()}
-          </ExchangeButton>
-          {isLoggedIn && errMsg && !errMsg.toLowerCase().includes('trustline') && (
-            <Alert severity="error" sx={{ mt: 0.5 }}>
-              <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
-                {errMsg}
-              </Typography>
-            </Alert>
-          )}
-        </Stack>
-      ) : null}
 
       {!onOrderBookToggle && (
         <TransactionDetailsPanel
