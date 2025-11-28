@@ -570,23 +570,36 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
   // Fetch orderbook via REST API
   useEffect(() => {
-    if (!curr1 || !curr2) return;
+    if (!token1?.currency || !token2?.currency) return;
     const controller = new AbortController();
 
     async function fetchOrderbook() {
       try {
         const params = new URLSearchParams({
-          base_currency: curr1.currency,
-          quote_currency: curr2.currency,
+          base_currency: token1.currency,
+          quote_currency: token2.currency,
           limit: '60'
         });
-        if (curr1.currency !== 'XRP' && curr1.issuer) params.append('base_issuer', curr1.issuer);
-        if (curr2.currency !== 'XRP' && curr2.issuer) params.append('quote_issuer', curr2.issuer);
+        if (token1.currency !== 'XRP' && token1.issuer) params.append('base_issuer', token1.issuer);
+        if (token2.currency !== 'XRP' && token2.issuer) params.append('quote_issuer', token2.issuer);
 
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
         if (res.data?.success) {
-          setBids(processOrderbookOffers(res.data.bids || [], 'bids'));
-          setAsks(processOrderbookOffers(res.data.asks || [], 'asks'));
+          // API returns pre-processed data with price, amount, total as strings
+          const parseBids = (res.data.bids || []).map(b => ({
+            ...b,
+            price: parseFloat(b.price) || 0,
+            amount: parseFloat(b.amount) || 0,
+            total: parseFloat(b.total) || 0
+          }));
+          const parseAsks = (res.data.asks || []).map(a => ({
+            ...a,
+            price: parseFloat(a.price) || 0,
+            amount: parseFloat(a.amount) || 0,
+            total: parseFloat(a.total) || 0
+          }));
+          setBids(parseBids);
+          setAsks(parseAsks);
         }
       } catch (err) {
         if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
@@ -601,7 +614,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       controller.abort();
       clearInterval(timer);
     };
-  }, [curr1, curr2]);
+  }, [token1, token2]);
 
   // Token Selector Panel states
   const [panel1Open, setPanel1Open] = useState(false);
@@ -2373,874 +2386,571 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
 
       {/* Swap UI */}
       {!showTokenSelector && (
-        <div className="flex items-start justify-center gap-4 mx-auto">
-          {/* Swap Container */}
-          <div className={cn(
-            "w-full max-w-[460px] rounded-xl border-[1.5px] overflow-hidden flex-shrink-0",
-            darkMode ? "border-white/10 bg-white/[0.01]" : "border-gray-200 bg-white"
-                )}>
-                  {/* Header with Market/Limit Tabs */}
-                  <div className={cn(
-                    "flex items-center justify-between p-2 border-b",
-                    darkMode ? "border-white/5" : "border-gray-100"
-                  )}>
-                    <div className="flex gap-1">
-                      <button
-                        onClick={() => { setOrderType('market'); setShowOrders(false); }}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors",
-                          orderType === 'market'
-                            ? "bg-primary text-white"
-                            : darkMode ? "text-white/60 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
-                        )}
-                      >
-                        Market
-                      </button>
-                      <button
-                        onClick={() => { setOrderType('limit'); setShowOrders(false); }}
-                        className={cn(
-                          "px-3 py-1.5 rounded-lg text-[13px] font-normal transition-colors",
-                          orderType === 'limit'
-                            ? "bg-primary text-white"
-                            : darkMode ? "text-white/60 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
-                        )}
-                      >
-                        Limit
-                      </button>
-                    </div>
-                    <button
-                      onClick={handleShareUrl}
-                      aria-label="Share swap URL"
-                      className={cn(
-                        "p-1.5 rounded-lg transition-colors",
-                        darkMode ? "hover:bg-white/5" : "hover:bg-gray-100"
-                      )}
-                    >
-                      <Share2 size={16} className={darkMode ? "text-white/60" : "text-gray-400"} />
-                    </button>
-                  </div>
-
-                  <div className="p-4">
-                    {/* First Token - You Pay */}
-                    <div className={cn(
-                      "rounded-xl border-[1.5px] p-4 transition-colors",
-                      focusTop
-                        ? "border-primary/40"
-                        : darkMode ? "border-white/10" : "border-gray-200",
-                      darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
-                    )}>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className={cn(
-                          "text-[11px] font-normal uppercase tracking-wide",
-                          darkMode ? "text-white/50" : "text-gray-400"
-                        )}>
-                          You pay
-                        </span>
-                        {isLoggedIn && accountPairBalance && (
-                          <span className={cn(
-                            "text-[11px]",
-                            darkMode ? "text-white/40" : "text-gray-400"
-                          )}>
-                            Balance: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        {renderTokenSelector(token1, () => setPanel1Open(true), 'Select token')}
-                        <div className="flex-1 text-right">
-                          <input
-                            ref={amount1Ref}
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="0.00"
-                            value={amount1}
-                            onChange={handleChangeAmount1}
-                            onFocus={() => setFocusTop(true)}
-                            onBlur={() => setFocusTop(false)}
-                            className={cn(
-                              "w-full text-right text-2xl sm:text-3xl font-normal bg-transparent border-none outline-none",
-                              darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-300"
-                            )}
-                          />
-                          <span className={cn(
-                            "text-[11px] block mt-1",
-                            darkMode ? "text-white/40" : "text-gray-400"
-                          )}>
-                            {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : '\u00A0'}
-                          </span>
-                        </div>
-                      </div>
-                      {isLoggedIn && accountPairBalance && (revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value) > 0 && (
-                        <div className="flex gap-1.5 mt-3 justify-end">
-                          {[25, 50, 100].map((percent) => (
-                            <button
-                              key={percent}
-                              onClick={() => {
-                                const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
-                                const newAmount = percent === 100 ? balance.toString() : ((balance * percent) / 100).toFixed(6);
-                                handleChangeAmount1({ target: { value: newAmount } });
-                              }}
-                              className={cn(
-                                "px-2 py-0.5 rounded-md text-[10px] font-normal transition-colors",
-                                darkMode
-                                  ? "text-primary bg-primary/10 hover:bg-primary/20"
-                                  : "text-primary bg-primary/5 hover:bg-primary/10"
-                              )}
-                            >
-                              {percent}%
-                            </button>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Swap Toggle */}
-                    <div className="relative h-5 my-2 flex items-center justify-center">
-                      <button
-                        onClick={onRevertExchange}
-                        disabled={isSwitching}
-                        title="Switch currencies (Alt + S)"
-                        className={cn(
-                          "w-8 h-8 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                          darkMode
-                            ? "border-white/10 bg-black hover:border-primary hover:bg-primary hover:text-white"
-                            : "border-gray-200 bg-white hover:border-primary hover:bg-primary hover:text-white",
-                          isSwitching && "rotate-180"
-                        )}
-                      >
-                        <ArrowLeftRight size={16} />
-                      </button>
-                    </div>
-
-                    {/* Second Token - You Receive */}
-                    <div className={cn(
-                      "rounded-xl border-[1.5px] p-4 transition-colors",
-                      focusBottom
-                        ? "border-primary/40"
-                        : darkMode ? "border-white/10" : "border-gray-200",
-                      darkMode ? "bg-white/[0.02]" : "bg-gray-50/50"
-                    )}>
-                      <div className="flex items-center justify-between mb-3">
-                        <span className={cn(
-                          "text-[11px] font-normal uppercase tracking-wide",
-                          darkMode ? "text-white/50" : "text-gray-400"
-                        )}>
-                          You receive
-                        </span>
-                        {isLoggedIn && accountPairBalance && (
-                          <span className={cn(
-                            "text-[11px]",
-                            darkMode ? "text-white/40" : "text-gray-400"
-                          )}>
-                            Balance: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex items-center justify-between gap-4">
-                        {renderTokenSelector(token2, () => setPanel2Open(true), 'Select token')}
-                        <div className="flex-1 text-right">
-                          <input
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="0.00"
-                            value={amount1 === '' ? '' : amount2}
-                            onChange={handleChangeAmount2}
-                            onFocus={() => setFocusBottom(true)}
-                            onBlur={() => setFocusBottom(false)}
-                            className={cn(
-                              "w-full text-right text-2xl sm:text-3xl font-normal bg-transparent border-none outline-none",
-                              darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-300"
-                            )}
-                          />
-                          <span className={cn(
-                            "text-[11px] block mt-1",
-                            darkMode ? "text-white/40" : "text-gray-400"
-                          )}>
-                            {tokenPrice2 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}` : '\u00A0'}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* View Buttons - Shows only for Limit orders */}
-                    {orderType === 'limit' && (
-                      <Box sx={{ mt: 2, mb: 1 }}>
-                        <Stack direction="row" spacing={1}>
-                          <Button
-                            fullWidth
-                            size="small"
-                            variant="outlined"
-                            onClick={() => {
-                              setShowOrderbook(!showOrderbook);
-                            }}
-                            startIcon={
-                              showOrderbook ? (
-                                <ToggleOnIcon sx={{ width: 14, height: 14 }} />
-                              ) : (
-                                <ToggleOffIcon sx={{ width: 14, height: 14 }} />
-                              )
-                            }
-                            sx={{
-                              py: 0.5,
-                              fontSize: '10px',
-                              textTransform: 'none',
-                              borderColor: showOrderbook
-                                ? theme.palette.primary.main
-                                : alpha(theme.palette.divider, 0.2),
-                              color: showOrderbook
-                                ? theme.palette.primary.main
-                                : theme.palette.text.secondary,
-                              backgroundColor: showOrderbook
-                                ? alpha(theme.palette.primary.main, 0.04)
-                                : 'transparent',
-                              '&:hover': {
-                                borderColor: theme.palette.primary.main,
-                                backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                              }
-                            }}
-                          >
-                            {showOrderbook ? 'Hide' : 'Show'} Book
-                          </Button>
-                          {accountProfile?.account && (
-                            <Button
-                              fullWidth
-                              size="small"
-                              variant="outlined"
-                              onClick={() => setShowOrders(!showOrders)}
-                              startIcon={<ListIcon sx={{ width: 14, height: 14 }} />}
-                              sx={{
-                                py: 0.5,
-                                fontSize: '10px',
-                                textTransform: 'none',
-                                borderColor: showOrders
-                                  ? theme.palette.primary.main
-                                  : alpha(theme.palette.divider, 0.2),
-                                color: showOrders
-                                  ? theme.palette.primary.main
-                                  : theme.palette.text.secondary,
-                                backgroundColor: showOrders
-                                  ? alpha(theme.palette.primary.main, 0.04)
-                                  : 'transparent',
-                                '&:hover': {
-                                  borderColor: theme.palette.primary.main,
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.08)
-                                }
-                              }}
-                            >
-                              {showOrders ? 'Hide' : 'Show'} Orders
-                            </Button>
-                          )}
-                        </Stack>
-                      </Box>
-                    )}
-
-                    {/* Market Order UI - Slippage */}
-                    {orderType === 'market' && (
-                      <div className="mt-3 flex items-center justify-between px-1">
-                        <span className={cn("text-[11px]", darkMode ? "text-white/40" : "text-gray-400")}>
-                          Slippage
-                        </span>
-                        <div className="flex gap-1">
-                          {[0.5, 1, 3].map((val) => (
-                            <button
-                              key={val}
-                              onClick={() => setSlippage(val)}
-                              className={cn(
-                                "px-2 py-0.5 rounded-md text-[11px] font-normal transition-colors",
-                                slippage === val
-                                  ? "bg-primary text-white"
-                                  : darkMode
-                                    ? "text-white/60 hover:text-white hover:bg-white/5"
-                                    : "text-gray-500 hover:text-gray-900 hover:bg-gray-100"
-                              )}
-                            >
-                              {val}%
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Limit Order UI */}
-                    {orderType === 'limit' && (
-                      <Box
-                        sx={{
-                          mt: 1.5,
-                          mb: 1.5,
-                          p: 1,
-                          borderRadius: '12px',
-                          backgroundColor: alpha(theme.palette.background.paper, 0.2),
-                          border: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                        }}
-                      >
-                        <Stack spacing={1.5}>
-                          {/* Limit Price Input */}
-                          <Box>
-                            <Stack
-                              direction="row"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              sx={{ mb: 0.5 }}
-                            >
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  fontSize: '13px',
-                                  fontWeight: 400,
-                                  color: theme.palette.text.secondary,
-                                  textTransform: 'uppercase',
-                                  letterSpacing: '0.03em'
-                                }}
-                              >
-                                Limit Price
-                              </Typography>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  fontSize: '10px',
-                                  color: theme.palette.text.secondary,
-                                  opacity: 0.7
-                                }}
-                              >
-                                {token2.name || token2.currency} per{' '}
-                                {token1.name || token1.currency}
-                              </Typography>
-                            </Stack>
-                            <Input
-                              placeholder="0.00"
-                              fullWidth
-                              disableUnderline
-                              value={limitPrice}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === '.') {
-                                  setLimitPrice('0.');
-                                  return;
-                                }
-                                if (!isNaN(Number(val)) || val === '') {
-                                  setLimitPrice(val);
-                                }
-                              }}
-                              sx={{
-                                backgroundColor: alpha(theme.palette.background.default, 0.4),
-                                borderRadius: '12px',
-                                padding: '8px 12px',
-                                border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                                input: {
-                                  fontSize: '13px',
-                                  fontWeight: 400,
-                                  fontFamily:
-                                    'inherit'
-                                },
-                                '&:hover': {
-                                  borderColor: alpha(theme.palette.primary.main, 0.2)
-                                },
-                                '&:focus-within': {
-                                  borderColor: theme.palette.primary.main,
-                                  backgroundColor: alpha(theme.palette.background.default, 0.6)
-                                }
-                              }}
-                            />
-                          </Box>
-
-                          {/* Quick Price & Expiry - Inline */}
-                          <div className="flex items-center gap-2 mt-2">
-                            {bids[0] && (
-                              <button
-                                onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
-                                className="px-2 py-1 rounded-md text-[10px] text-green-500 bg-green-500/10 hover:bg-green-500/20 transition-colors"
-                              >
-                                Bid {bids[0].price.toFixed(4)}
-                              </button>
-                            )}
-                            {asks[0] && (
-                              <button
-                                onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
-                                className="px-2 py-1 rounded-md text-[10px] text-red-500 bg-red-500/10 hover:bg-red-500/20 transition-colors"
-                              >
-                                Ask {asks[0].price.toFixed(4)}
-                              </button>
-                            )}
-                            <div className="flex-1" />
-                            <div className="flex gap-1">
-                              {[{ value: 'never', label: '∞' }, { value: '1h', label: '1h' }, { value: '24h', label: '1d' }, { value: '7d', label: '7d' }].map((exp) => (
-                                <button
-                                  key={exp.value}
-                                  onClick={() => setOrderExpiry(exp.value)}
-                                  className={cn(
-                                    "px-2 py-1 rounded-md text-[10px] transition-colors",
-                                    orderExpiry === exp.value
-                                      ? "bg-primary text-white"
-                                      : darkMode ? "text-white/50 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
-                                  )}
-                                >
-                                  {exp.label}
-                                </button>
-                              ))}
-                            </div>
-                          </div>
-
-                          {/* Price difference indicator */}
-                          {limitPrice && parseFloat(limitPrice) > 0 && (() => {
-                            const limit = parseFloat(limitPrice);
-                            const currentPrice = !revert ? (asks[0]?.price || 0) : (bids[0]?.price || 0);
-                            if (currentPrice <= 0) return null;
-                            const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
-                            const isAbove = priceDiff > 0;
-                            return (
-                              <div className={cn(
-                                "mt-2 px-2 py-1.5 rounded-md text-[10px]",
-                                isAbove ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10"
-                              )}>
-                                {isAbove ? '↑' : '↓'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} {!revert ? 'ask' : 'bid'}
-                              </div>
-                            );
-                          })()}
-
-                          {/* Show Order Book Button */}
-                          <button
-                            onClick={() => setShowOrderbook(!showOrderbook)}
-                            className={cn(
-                              "w-full mt-2 py-1.5 rounded-md text-[11px] transition-colors",
-                              darkMode ? "text-white/50 hover:bg-white/5" : "text-gray-500 hover:bg-gray-100"
-                            )}
-                          >
-                            {showOrderbook ? 'Hide' : 'Show'} Order Book
-                          </button>
-                        </Stack>
-                      </Box>
-                    )}
-
-                    {/* User's Open Orders - Display when button is clicked */}
-                    {/* Commented out Orders component - file doesn't exist */}
-                    {/* {showOrders && accountProfile?.account && (
-                      <Box sx={{ mb: 2 }}>
-                        {
-                          <Box
-                            sx={{
-                              borderRadius: '12px',
-                              border: `1px solid ${alpha(theme.palette.divider, 0.08)}`,
-                              overflow: 'hidden',
-                              backgroundColor: alpha(theme.palette.background.paper, 0.04)
-                            }}
-                          >
-                            <Orders
-                              pair={{
-                                // For now, use a simple pair string format that the API might accept
-                                // The backend should handle both MD5 and string formats
-                                pair: `${curr1.currency}:${curr1.issuer || 'XRP'}/${curr2.currency}:${curr2.issuer || 'XRP'}`,
-                                curr1: {
-                                  ...curr1,
-                                  name: curr1.name || curr1.currency,
-                                  issuer:
-                                    curr1.issuer || (curr1.currency === 'XRP' ? undefined : ''),
-                                  currency: curr1.currency
-                                },
-                                curr2: {
-                                  ...curr2,
-                                  name: curr2.name || curr2.currency,
-                                  issuer:
-                                    curr2.issuer || (curr2.currency === 'XRP' ? undefined : ''),
-                                  currency: curr2.currency
-                                }
-                              }}
-                            />
-                          </Box>
-                        }
-                      </Box>
-                    )} */}
-
-                    {/* Transaction Summary */}
-                    {amount1 && amount2 && (
-                      <Box sx={{ mt: 2, mb: 1 }}>
-                        <Box
-                          sx={{
-                            p: 1,
-                            borderRadius: '12px',
-                            backgroundColor: alpha(theme.palette.background.paper, 0.04),
-                            border: `1px solid ${alpha(theme.palette.divider, 0.04)}`
-                          }}
-                        >
-                          <Stack
-                            direction="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            onClick={() => setShowOrderSummary(!showOrderSummary)}
-                            sx={{ cursor: 'pointer', mb: showOrderSummary ? 1 : 0 }}
-                          >
-                            <Typography
-                              variant="caption"
-                              sx={{ fontSize: '13px', color: theme.palette.text.secondary }}
-                            >
-                              ORDER SUMMARY
-                            </Typography>
-                            <InfoIcon
-                              icon={showOrderSummary ? 'mdi:chevron-up' : 'mdi:chevron-down'}
-                              width={16}
-                              height={16}
-                              style={{ color: theme.palette.text.secondary }}
-                            />
-                          </Stack>
-                          {showOrderSummary && (
-                            <Stack spacing={0.75}>
-                              {/* Sell Amount */}
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  fontSize="11px"
-                                >
-                                  {orderType === 'limit' ? 'Sell Order' : 'You Pay'}
-                                </Typography>
-                                <Typography variant="caption" fontWeight={400} fontSize="12px">
-                                  {amount1} {token1.name || token1.currency}
-                                </Typography>
-                              </Stack>
-
-                              {/* Buy Amount */}
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  fontSize="11px"
-                                >
-                                  {orderType === 'limit' ? 'To Buy' : 'You Receive'}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  fontWeight={400}
-                                  fontSize="12px"
-                                  color="primary.main"
-                                >
-                                  {orderType === 'limit' && limitPrice
-                                    ? (() => {
-                                        const limitPriceDecimal = new Decimal(limitPrice);
-                                        const amount1Decimal = new Decimal(amount1);
-                                        if (
-                                          token1.currency === 'XRP' &&
-                                          token2.currency !== 'XRP'
-                                        ) {
-                                          return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                                        } else if (
-                                          token1.currency !== 'XRP' &&
-                                          token2.currency === 'XRP'
-                                        ) {
-                                          return amount1Decimal.div(limitPriceDecimal).toFixed(6);
-                                        } else {
-                                          return amount1Decimal.mul(limitPriceDecimal).toFixed(6);
-                                        }
-                                      })()
-                                    : amount2}{' '}
-                                  {token2.name || token2.currency}
-                                </Typography>
-                              </Stack>
-
-                              {/* Rate */}
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  fontSize="11px"
-                                >
-                                  {orderType === 'limit'
-                                    ? `${token1.name} at Rate`
-                                    : 'Exchange Rate'}
-                                </Typography>
-                                <Typography variant="caption" fontWeight={400} fontSize="12px">
-                                  {orderType === 'limit' && limitPrice
-                                    ? `${limitPrice} ${token2.name || token2.currency}`
-                                    : (() => {
-                                        const token1IsXRP = token1?.currency === 'XRP';
-                                        const token2IsXRP = token2?.currency === 'XRP';
-
-                                        if (token1IsXRP && !token2IsXRP) {
-                                          return tokenExch2 > 0
-                                            ? `${(1 / tokenExch2).toFixed(6)} ${token2.name}`
-                                            : '0';
-                                        } else if (!token1IsXRP && token2IsXRP) {
-                                          return tokenExch1 > 0
-                                            ? `${tokenExch1.toFixed(6)} ${token2.name}`
-                                            : '0';
-                                        } else {
-                                          return tokenExch1 > 0 && tokenExch2 > 0
-                                            ? `${(tokenExch1 / tokenExch2).toFixed(6)} ${token2.name}`
-                                            : '0';
-                                        }
-                                      })()}
-                                </Typography>
-                              </Stack>
-
-                              {/* Order Type & Expiry for Limit Orders */}
-                              {orderType === 'limit' && (
-                                <>
-                                  <Stack
-                                    direction="row"
-                                    justifyContent="space-between"
-                                    alignItems="center"
-                                  >
-                                    <Typography
-                                      variant="caption"
-                                      color="text.secondary"
-                                      fontSize="11px"
-                                    >
-                                      Order Type
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      fontWeight={400}
-                                      fontSize="12px"
-                                    >
-                                      Limit Order
-                                    </Typography>
-                                  </Stack>
-                                  <Stack
-                                    direction="row"
-                                    justifyContent="space-between"
-                                    alignItems="center"
-                                  >
-                                    <Typography
-                                      variant="caption"
-                                      color="text.secondary"
-                                      fontSize="11px"
-                                    >
-                                      Expiry
-                                    </Typography>
-                                    <Typography
-                                      variant="caption"
-                                      fontWeight={400}
-                                      fontSize="12px"
-                                    >
-                                      {orderExpiry === 'never'
-                                        ? 'Never'
-                                        : orderExpiry === '1h'
-                                          ? '1 Hour'
-                                          : orderExpiry === '24h'
-                                            ? '1 Day'
-                                            : orderExpiry === '7d'
-                                              ? '7 Days'
-                                              : orderExpiry === '30d'
-                                                ? '30 Days'
-                                                : orderExpiry === 'custom'
-                                                  ? `${customExpiry} Hours`
-                                                  : 'Never'}
-                                    </Typography>
-                                  </Stack>
-                                </>
-                              )}
-
-                              {/* Slippage for Market Orders */}
-                              {orderType === 'market' && (
-                                <Stack
-                                  direction="row"
-                                  justifyContent="space-between"
-                                  alignItems="center"
-                                >
-                                  <Typography
-                                    variant="caption"
-                                    color="text.secondary"
-                                    fontSize="11px"
-                                  >
-                                    Max Slippage
-                                  </Typography>
-                                  <Typography variant="caption" fontWeight={400} fontSize="12px">
-                                    {slippage}%
-                                  </Typography>
-                                </Stack>
-                              )}
-
-                              {/* Platform Fee */}
-                              <Divider
-                                sx={{ my: 0.5, borderColor: alpha(theme.palette.divider, 0.04) }}
-                              />
-                              <Stack
-                                direction="row"
-                                justifyContent="space-between"
-                                alignItems="center"
-                              >
-                                <Typography
-                                  variant="caption"
-                                  color="text.secondary"
-                                  fontSize="11px"
-                                >
-                                  Network Fee
-                                </Typography>
-                                <Typography variant="caption" fontWeight={400} fontSize="12px">
-                                  ~0.000012 XRP
-                                </Typography>
-                              </Stack>
-                            </Stack>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-
-                    {/* Price Impact Row - Only show for market orders or limit orders that will execute immediately */}
-                    {amount1 &&
-                      amount2 &&
-                      (() => {
-                        // For limit orders, only show price impact if the order will execute immediately
-                        if (orderType === 'limit') {
-                          const limit = parseFloat(limitPrice);
-                          const bestAsk = asks[0]?.price || 0;
-                          const bestBid = bids[0]?.price || 0;
-                          const willExecute =
-                            (!revert && limit >= bestAsk && bestAsk > 0) ||
-                            (revert && limit <= bestBid && bestBid > 0);
-
-                          // Don't show price impact for limit orders that won't execute immediately
-                          if (!willExecute || !limit) {
-                            return null;
-                          }
-                        }
-
-                        return (
-                          <Stack
-                            direction="row"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            sx={{
-                              mt: 1,
-                              p: 1,
-                              borderRadius: '12px',
-                              backgroundColor: alpha(theme.palette.background.paper, 0.04),
-                              border: `1px solid ${alpha(theme.palette.divider, 0.04)}`
-                            }}
-                          >
-                            <Typography variant="caption" color="text.secondary" fontSize="11px">
-                              Price Impact
-                            </Typography>
-                            <Stack direction="row" alignItems="center" spacing={0.5}>
-                              <Typography
-                                variant="caption"
-                                sx={{
-                                  color: getPriceImpactColor(Math.abs(priceImpact)),
-                                  fontWeight: 400,
-                                  fontSize: '10px'
-                                }}
-                              >
-                                {priceImpact > 0 ? '+' : ''}
-                                {priceImpact}%
-                              </Typography>
-                              {Math.abs(priceImpact) > 5 && (
-                                <Tooltip
-                                  title={
-                                    Math.abs(priceImpact) > 10
-                                      ? 'Very high impact! Consider reducing size'
-                                      : 'High impact detected'
-                                  }
-                                  arrow
-                                >
-                                  <InfoIcon
-                                    icon="mdi:alert-circle"
-                                    width={14}
-                                    height={14}
-                                    style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}
-                                  />
-                                </Tooltip>
-                              )}
-                            </Stack>
-                          </Stack>
-                        );
-                      })()}
-
-                    {/* Action Button */}
-                    <div className="mt-4">
-                      {accountProfile && accountProfile.account ? (
-                        <button
-                          onClick={handlePlaceOrder}
-                          disabled={
-                            isProcessing === 1 ||
-                            !isLoggedIn ||
-                            (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-                          }
-                          className={cn(
-                            "w-full py-3 rounded-xl text-[14px] font-normal transition-colors border-[1.5px]",
-                            isProcessing === 1 || !isLoggedIn || (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
-                              ? darkMode
-                                ? "border-gray-700 bg-gray-800 text-gray-500 cursor-not-allowed"
-                                : "border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed"
-                              : "border-primary bg-primary text-white hover:bg-primary/90"
-                          )}
-                        >
-                          {handleMsg()}
-                        </button>
-                      ) : (
-                        <ConnectWallet text="Connect Wallet" fullWidth />
-                      )}
-                    </div>
-                  </div>
+        <div className="flex flex-col items-center gap-6 mx-auto w-full max-w-[900px]">
+          {/* Header with Market/Limit Tabs - Futuristic */}
+          <div className="flex items-center justify-between w-full px-2">
+            <div className="flex gap-1">
+              <button
+                onClick={() => { setOrderType('market'); setShowOrders(false); }}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-[13px] font-mono transition-colors",
+                  orderType === 'market'
+                    ? "bg-primary text-white"
+                    : darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                )}
+                style={{ border: `1px solid ${orderType === 'market' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+              >
+                Market
+              </button>
+              <button
+                onClick={() => { setOrderType('limit'); setShowOrders(false); }}
+                className={cn(
+                  "px-4 py-1.5 rounded-lg text-[13px] font-mono transition-colors",
+                  orderType === 'limit'
+                    ? "bg-primary text-white"
+                    : darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+                )}
+                style={{ border: `1px solid ${orderType === 'limit' ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+              >
+                Limit
+              </button>
+            </div>
+            <button
+              onClick={handleShareUrl}
+              aria-label="Share swap URL"
+              className={cn(
+                "p-2 rounded-lg transition-colors",
+                darkMode ? "text-primary/50 hover:bg-primary/10" : "text-primary/50 hover:bg-primary/10"
+              )}
+            >
+              <Share2 size={16} />
+            </button>
           </div>
 
-          {/* Orderbook on right side */}
-          {showOrderbook && orderType === 'limit' && (
+          {/* Horizontal Two-Card Layout - Futuristic Style */}
+          <div className="flex flex-col md:flex-row items-stretch justify-center gap-4 w-full">
+            {/* First Token Card - You Pay */}
             <div className={cn(
-              "w-[300px] flex-shrink-0 hidden md:block rounded-xl border-[1.5px] overflow-hidden",
-              darkMode ? "border-white/10 bg-black" : "border-gray-200 bg-white"
+              "flex-1 min-w-0 rounded-lg p-5 transition-all relative overflow-hidden",
+              focusTop ? "border-primary" : darkMode ? "border-primary/30" : "border-primary/20",
+              darkMode ? "bg-black/50" : "bg-gray-50"
+            )}
+            style={{
+              border: `1.5px solid ${focusTop ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+              clipPath: 'polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px))'
+            }}>
+              {/* Cyber corner accents */}
+              <div className="absolute top-0 left-0 w-12 h-[2px] bg-primary" />
+              <div className="absolute top-0 left-0 h-12 w-[2px] bg-primary" />
+              <div className="absolute top-0 right-0 w-6 h-[2px] bg-primary/50" style={{ transform: 'rotate(-45deg)', transformOrigin: 'right top', right: '8px', top: '8px' }} />
+              <div className="absolute bottom-0 right-0 w-12 h-[2px] bg-primary" />
+              <div className="absolute bottom-0 right-0 h-12 w-[2px] bg-primary" />
+              <div className="absolute bottom-0 left-0 w-6 h-[2px] bg-primary/50" style={{ transform: 'rotate(45deg)', transformOrigin: 'left bottom', left: '8px', bottom: '8px' }} />
+              {/* Token Display */}
+              <div className="flex flex-col items-center mb-4 relative z-10">
+                <button
+                  onClick={() => setPanel1Open(true)}
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all" />
+                    <img
+                      src={token1?.md5 ? `https://s1.xrpl.to/token/${token1.md5}` : '/static/alt.webp'}
+                      width={64}
+                      height={64}
+                      alt={token1?.name || 'Token'}
+                      className="rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
+                      onError={(e) => (e.target.src = '/static/alt.webp')}
+                    />
+                  </div>
+                  <span className={cn(
+                    "text-2xl font-normal tracking-wide",
+                    darkMode ? "text-primary" : "text-primary"
+                  )}>
+                    {token1?.name || token1?.currency || 'Select'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Amount Input */}
+              <div className={cn(
+                "rounded-lg p-3 transition-colors relative z-10",
+                darkMode ? "bg-white/5" : "bg-gray-100"
+              )}
+              style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+                <div className="flex items-center">
+                  <input
+                    ref={amount1Ref}
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={amount1}
+                    onChange={handleChangeAmount1}
+                    onFocus={() => setFocusTop(true)}
+                    onBlur={() => setFocusTop(false)}
+                    className={cn(
+                      "flex-1 text-left text-xl font-normal bg-transparent border-none outline-none font-mono",
+                      darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400"
+                    )}
+                  />
+                  <button
+                    onClick={() => setPanel1Open(true)}
+                    className={cn(
+                      "flex items-center gap-1 px-3 py-1.5 rounded text-[13px] font-normal transition-colors",
+                      darkMode ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-gray-200 text-primary hover:bg-gray-300"
+                    )}
+                  >
+                    {token1?.name || token1?.currency || 'Select'}
+                    <ChevronDown size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Balance & USD value */}
+              <div className="flex items-center justify-between mt-3 relative z-10">
+                <span className={cn("text-[11px] font-mono", darkMode ? "text-white/40" : "text-gray-500")}>
+                  {tokenPrice1 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice1)}` : '\u00A0'}
+                </span>
+                {isLoggedIn && accountPairBalance && (
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-[11px]", darkMode ? "text-white/40" : "text-gray-500")}>
+                      Bal: {fNumber(revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value)}
+                    </span>
+                    <button
+                      onClick={() => {
+                        const balance = revert ? accountPairBalance?.curr2.value : accountPairBalance?.curr1.value;
+                        handleChangeAmount1({ target: { value: balance.toString() } });
+                      }}
+                      className="px-2 py-0.5 rounded text-[10px] font-medium text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
+                    >
+                      MAX
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Swap Toggle Button - Center */}
+            <div className="flex items-center justify-center md:self-center relative">
+              {/* Dashed line connectors */}
+              <div className="hidden md:block absolute left-[-20px] top-1/2 w-5 border-t border-dashed border-primary/30" />
+              <div className="hidden md:block absolute right-[-20px] top-1/2 w-5 border-t border-dashed border-primary/30" />
+              <button
+                onClick={onRevertExchange}
+                disabled={isSwitching}
+                title="Switch currencies (Alt + S)"
+                className={cn(
+                  "w-12 h-12 rounded-lg flex items-center justify-center transition-all",
+                  darkMode ? "bg-white/5 hover:bg-primary" : "bg-gray-100 hover:bg-primary",
+                  "hover:text-white border border-primary/30 hover:border-primary",
+                  isSwitching && "rotate-180"
+                )}
+              >
+                <ArrowLeftRight size={20} className={darkMode ? "text-primary" : "text-primary"} />
+              </button>
+            </div>
+
+            {/* Second Token Card - You Receive */}
+            <div className={cn(
+              "flex-1 min-w-0 rounded-lg p-5 transition-all relative overflow-hidden",
+              focusBottom ? "border-primary" : darkMode ? "border-primary/30" : "border-primary/20",
+              darkMode ? "bg-black/50" : "bg-gray-50"
+            )}
+            style={{
+              border: `1.5px solid ${focusBottom ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+              clipPath: 'polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px)'
+            }}>
+              {/* Cyber corner accents */}
+              <div className="absolute top-0 right-0 w-12 h-[2px] bg-primary" />
+              <div className="absolute top-0 right-0 h-12 w-[2px] bg-primary" />
+              <div className="absolute top-0 left-0 w-6 h-[2px] bg-primary/50" style={{ transform: 'rotate(45deg)', transformOrigin: 'left top', left: '8px', top: '8px' }} />
+              <div className="absolute bottom-0 left-0 w-12 h-[2px] bg-primary" />
+              <div className="absolute bottom-0 left-0 h-12 w-[2px] bg-primary" />
+              <div className="absolute bottom-0 right-0 w-6 h-[2px] bg-primary/50" style={{ transform: 'rotate(-45deg)', transformOrigin: 'right bottom', right: '8px', bottom: '8px' }} />
+              {/* Token Display */}
+              <div className="flex flex-col items-center mb-4 relative z-10">
+                <button
+                  onClick={() => setPanel2Open(true)}
+                  className="flex items-center gap-4 group"
+                >
+                  <div className="relative">
+                    <div className="absolute inset-0 rounded-full bg-primary/20 blur-md group-hover:bg-primary/30 transition-all" />
+                    <img
+                      src={token2?.md5 ? `https://s1.xrpl.to/token/${token2.md5}` : '/static/alt.webp'}
+                      width={64}
+                      height={64}
+                      alt={token2?.name || 'Token'}
+                      className="rounded-full border-2 border-primary/30 relative z-10 group-hover:border-primary transition-all"
+                      onError={(e) => (e.target.src = '/static/alt.webp')}
+                    />
+                  </div>
+                  <span className={cn(
+                    "text-2xl font-normal tracking-wide",
+                    darkMode ? "text-primary" : "text-primary"
+                  )}>
+                    {token2?.name || token2?.currency || 'Select'}
+                  </span>
+                </button>
+              </div>
+
+              {/* Amount Input */}
+              <div className={cn(
+                "rounded-lg p-3 transition-colors relative z-10",
+                darkMode ? "bg-white/5" : "bg-gray-100"
+              )}
+              style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+                <div className="flex items-center">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={amount1 === '' ? '' : amount2}
+                    onChange={handleChangeAmount2}
+                    onFocus={() => setFocusBottom(true)}
+                    onBlur={() => setFocusBottom(false)}
+                    className={cn(
+                      "flex-1 text-left text-xl font-normal bg-transparent border-none outline-none font-mono",
+                      darkMode ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400"
+                    )}
+                  />
+                  <button
+                    onClick={() => setPanel2Open(true)}
+                    className={cn(
+                      "flex items-center gap-1 px-3 py-1.5 rounded text-[13px] font-normal transition-colors",
+                      darkMode ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-gray-200 text-primary hover:bg-gray-300"
+                    )}
+                  >
+                    {token2?.name || token2?.currency || 'Select'}
+                    <ChevronDown size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Balance info */}
+              <div className="flex items-center justify-between mt-3 relative z-10">
+                <span className={cn("text-[11px]", darkMode ? "text-primary/50" : "text-primary/50")}>
+                  {tokenPrice2 > 0 ? `≈ ${currencySymbols[activeFiatCurrency]}${fNumber(tokenPrice2)}` : '\u00A0'}
+                </span>
+                {isLoggedIn && accountPairBalance && (
+                  <span className={cn("text-[11px]", darkMode ? "text-primary/50" : "text-primary/50")}>
+                    Bal: {fNumber(revert ? accountPairBalance?.curr1.value : accountPairBalance?.curr2.value)}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Exchange Rate Display - Futuristic */}
+          {tokenExch1 > 0 || tokenExch2 > 0 ? (
+            <div className={cn("text-center text-[14px] font-mono tracking-wide", darkMode ? "text-primary/70" : "text-primary/70")}>
+              1 {token1?.name || token1?.currency} = {(() => {
+                const t1IsXRP = token1?.currency === 'XRP';
+                const t2IsXRP = token2?.currency === 'XRP';
+                if (t1IsXRP && !t2IsXRP) return tokenExch2 > 0 ? (1 / tokenExch2).toFixed(4) : '0';
+                if (!t1IsXRP && t2IsXRP) return tokenExch1 > 0 ? tokenExch1.toFixed(4) : '0';
+                return tokenExch1 > 0 && tokenExch2 > 0 ? (tokenExch1 / tokenExch2).toFixed(4) : '0';
+              })()} {token2?.name || token2?.currency}
+            </div>
+          ) : null}
+
+          {/* Bottom Controls Container - Futuristic */}
+          <div className={cn(
+            "w-full max-w-[500px] rounded-lg p-4 relative",
+            darkMode ? "bg-black/50" : "bg-gray-50"
+          )}
+          style={{ border: `1.5px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+            {/* Market Order UI - Slippage */}
+            {orderType === 'market' && (
+              <div className="flex items-center justify-between mb-4">
+                <span className={cn("text-[11px] uppercase tracking-wide", darkMode ? "text-primary/50" : "text-primary/50")}>
+                  Slippage
+                </span>
+                <div className="flex gap-1">
+                  {[0.5, 1, 3].map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => setSlippage(val)}
+                      className={cn(
+                        "px-3 py-1 rounded text-[11px] font-mono transition-colors",
+                        slippage === val
+                          ? "bg-primary text-white"
+                          : darkMode
+                            ? "text-primary/60 hover:text-primary hover:bg-primary/10"
+                            : "text-primary/60 hover:text-primary hover:bg-primary/10"
+                      )}
+                    >
+                      {val}%
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Limit Order UI - Futuristic */}
+            {orderType === 'limit' && (
+              <div className="space-y-4 mb-4">
+                {/* Limit Price Section */}
+                <div className={cn(
+                  "rounded-lg p-4",
+                  darkMode ? "bg-white/5" : "bg-gray-100"
+                )}
+                style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className={cn("text-[11px] uppercase tracking-wide font-mono", darkMode ? "text-primary/60" : "text-primary/60")}>
+                      Limit Price
+                    </span>
+                    <span className={cn("text-[10px] font-mono", darkMode ? "text-primary/40" : "text-primary/40")}>
+                      {token2?.name || token2?.currency} / {token1?.name || token1?.currency}
+                    </span>
+                  </div>
+
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    placeholder="0.00"
+                    value={limitPrice}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '.') { setLimitPrice('0.'); return; }
+                      if (!isNaN(Number(val)) || val === '') setLimitPrice(val);
+                    }}
+                    className={cn(
+                      "w-full px-4 py-3 rounded-lg text-[20px] font-mono bg-transparent outline-none transition-colors text-center",
+                      darkMode
+                        ? "text-white placeholder:text-white/20"
+                        : "text-gray-900 placeholder:text-gray-400"
+                    )}
+                    style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'}` }}
+                  />
+
+                  {/* Quick Price Buttons */}
+                  <div className="flex items-center justify-center gap-2 mt-3">
+                    {bids[0] && (
+                      <button
+                        onClick={() => setLimitPrice(bids[0].price.toFixed(6))}
+                        className={cn(
+                          "flex-1 px-3 py-2 rounded-lg text-[11px] font-normal transition-colors border-[1.5px]",
+                          "border-green-500/20 text-green-500 bg-green-500/5 hover:bg-green-500/10"
+                        )}
+                      >
+                        <span className="block text-[9px] uppercase tracking-wide opacity-60 mb-0.5">Best Bid</span>
+                        {bids[0].price.toFixed(4)}
+                      </button>
+                    )}
+                    {asks[0] && (
+                      <button
+                        onClick={() => setLimitPrice(asks[0].price.toFixed(6))}
+                        className={cn(
+                          "flex-1 px-3 py-2 rounded-lg text-[11px] font-normal transition-colors border-[1.5px]",
+                          "border-red-500/20 text-red-500 bg-red-500/5 hover:bg-red-500/10"
+                        )}
+                      >
+                        <span className="block text-[9px] uppercase tracking-wide opacity-60 mb-0.5">Best Ask</span>
+                        {asks[0].price.toFixed(4)}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Price difference indicator */}
+                  {limitPrice && parseFloat(limitPrice) > 0 && (() => {
+                    const limit = parseFloat(limitPrice);
+                    const currentPrice = !revert ? (asks[0]?.price || 0) : (bids[0]?.price || 0);
+                    if (currentPrice <= 0) return null;
+                    const priceDiff = ((limit - currentPrice) / currentPrice) * 100;
+                    const isAbove = priceDiff > 0;
+                    return (
+                      <div className={cn(
+                        "mt-3 px-3 py-2 rounded-lg text-[11px] text-center",
+                        isAbove ? "text-red-500 bg-red-500/10" : "text-green-500 bg-green-500/10"
+                      )}>
+                        {isAbove ? '↑' : '↓'} {Math.abs(priceDiff).toFixed(2)}% {isAbove ? 'above' : 'below'} market
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Order Expiration Section - Futuristic */}
+                <div className={cn(
+                  "rounded-lg p-4",
+                  darkMode ? "bg-white/5" : "bg-gray-100"
+                )}
+                style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+                  <span className={cn("text-[11px] uppercase tracking-wide font-mono block mb-3", darkMode ? "text-primary/60" : "text-primary/60")}>
+                    Order Expires In
+                  </span>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[
+                      { value: 'never', label: 'Never', desc: '∞' },
+                      { value: '1h', label: '1 Hour', desc: '1h' },
+                      { value: '24h', label: '1 Day', desc: '24h' },
+                      { value: '7d', label: '7 Days', desc: '7d' }
+                    ].map((exp) => (
+                      <button
+                        key={exp.value}
+                        onClick={() => setOrderExpiry(exp.value)}
+                        className={cn(
+                          "px-2 py-2.5 rounded-lg text-center transition-colors font-mono",
+                          orderExpiry === exp.value
+                            ? "bg-primary text-white"
+                            : darkMode
+                              ? "text-primary/50 hover:text-primary hover:bg-primary/10"
+                              : "text-primary/50 hover:text-primary hover:bg-primary/10"
+                        )}
+                        style={{ border: `1px solid ${orderExpiry === exp.value ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                      >
+                        <span className="block text-[13px] font-normal">{exp.desc}</span>
+                        <span className={cn("block text-[9px] mt-0.5", orderExpiry === exp.value ? "opacity-80" : "opacity-50")}>{exp.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Toggle Order Book - Futuristic */}
+                <button
+                  onClick={() => setShowOrderbook(!showOrderbook)}
+                  className={cn(
+                    "w-full py-2.5 rounded-lg text-[12px] font-mono transition-colors flex items-center justify-center gap-2",
+                    showOrderbook
+                      ? "bg-primary/10 text-primary"
+                      : darkMode
+                        ? "text-primary/50 hover:text-primary hover:bg-primary/10"
+                        : "text-primary/50 hover:text-primary hover:bg-primary/10"
+                  )}
+                  style={{ border: `1px solid ${showOrderbook ? 'var(--primary)' : darkMode ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}
+                >
+                  <List size={14} />
+                  {showOrderbook ? 'Hide Order Book' : 'Show Order Book'}
+                </button>
+              </div>
+            )}
+
+            {/* Price Impact - Futuristic */}
+            {amount1 && amount2 && Math.abs(priceImpact) > 0.01 && (
+              <div className={cn(
+                "flex items-center justify-between mb-4 px-3 py-2 rounded-lg",
+                darkMode ? "bg-white/5" : "bg-gray-100"
+              )}
+              style={{ border: `1px solid ${darkMode ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'}` }}>
+                <span className={cn("text-[11px] font-mono", darkMode ? "text-primary/50" : "text-primary/50")}>
+                  Price Impact
+                </span>
+                <span className="text-[11px] font-mono" style={{ color: getPriceImpactColor(Math.abs(priceImpact)) }}>
+                  {priceImpact > 0 ? '+' : ''}{priceImpact}%
+                </span>
+              </div>
+            )}
+
+            {/* Network Fee */}
+            <div className={cn(
+              "flex items-center justify-between mb-4 text-[11px]",
+              darkMode ? "text-white/40" : "text-gray-500"
             )}>
+              <span>Network Fee</span>
+              <span>~0.000012 XRP</span>
+            </div>
+
+            {/* Action Button */}
+            {accountProfile && accountProfile.account ? (
+              <button
+                onClick={handlePlaceOrder}
+                disabled={
+                  isProcessing === 1 ||
+                  !isLoggedIn ||
+                  (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                }
+                className={cn(
+                  "w-full py-3.5 rounded-lg text-[15px] font-medium transition-all",
+                  isProcessing === 1 || !isLoggedIn || (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
+                    ? darkMode
+                      ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/10"
+                      : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                    : "bg-primary text-white hover:brightness-110 border border-primary shadow-[0_0_20px_rgba(66,133,244,0.3)]"
+                )}
+              >
+                {handleMsg()}
+              </button>
+            ) : (
+              <ConnectWallet text="Connect Wallet" fullWidth />
+            )}
+          </div>
+
+          {/* Orderbook Panel - Futuristic */}
+          {showOrderbook && (
+            <div className={cn(
+              "w-full max-w-[500px] rounded-lg overflow-hidden relative",
+              darkMode ? "bg-black/50" : "bg-gray-50"
+            )}
+            style={{
+              border: `1.5px solid ${darkMode ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'}`,
+              clipPath: 'polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))'
+            }}>
+              {/* Cyber corner accents */}
+              <div className="absolute top-0 left-0 w-8 h-[2px] bg-primary" />
+              <div className="absolute top-0 left-0 h-8 w-[2px] bg-primary" />
+              <div className="absolute bottom-0 right-0 w-8 h-[2px] bg-primary" />
+              <div className="absolute bottom-0 right-0 h-8 w-[2px] bg-primary" />
+
               <div className={cn(
-                "px-3 py-2 border-b text-[12px] font-normal",
-                darkMode ? "border-white/10 text-white/70" : "border-gray-100 text-gray-600"
+                "px-3 py-2 border-b text-[12px] font-mono flex items-center justify-between",
+                darkMode ? "border-primary/20 text-primary/70" : "border-primary/15 text-primary/70"
               )}>
-                Order Book
+                <span className="uppercase tracking-wide">Order Book</span>
+                <button onClick={() => setShowOrderbook(false)} className="text-[10px] text-primary hover:text-primary/80">Hide</button>
               </div>
-              <div className="flex text-[10px] px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                <span className={cn("flex-1", darkMode ? "text-white/40" : "text-gray-400")}>Price</span>
-                <span className={cn("flex-1 text-right", darkMode ? "text-white/40" : "text-gray-400")}>Amount</span>
-                <span className={cn("flex-1 text-right", darkMode ? "text-white/40" : "text-gray-400")}>Total</span>
-              </div>
-              {/* Asks */}
-              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                {asks.slice(0, 15).reverse().map((ask, idx) => (
-                  <div
-                    key={`ask-${idx}`}
-                    onClick={() => setLimitPrice(ask.price.toString())}
-                    className={cn(
-                      "flex px-2 py-1 text-[11px] cursor-pointer hover:bg-red-500/10",
-                      darkMode ? "text-white/80" : "text-gray-700"
-                    )}
-                  >
-                    <span className="flex-1 text-red-500">{ask.price?.toFixed(6)}</span>
-                    <span className="flex-1 text-right">{ask.amount?.toFixed(2)}</span>
-                    <span className={cn("flex-1 text-right", darkMode ? "text-white/50" : "text-gray-500")}>{ask.total?.toFixed(2)}</span>
+              {asks.length === 0 && bids.length === 0 ? (
+                <div className={cn("p-8 text-center text-[12px] font-mono", darkMode ? "text-primary/40" : "text-primary/40")}>
+                  No orderbook data available
+                </div>
+              ) : (
+                <>
+                  <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
+                    <span className={cn("flex-1", darkMode ? "text-primary/40" : "text-primary/40")}>PRICE</span>
+                    <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>AMOUNT</span>
+                    <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>TOTAL</span>
                   </div>
-                ))}
-              </div>
-              {/* Spread */}
-              <div className={cn(
-                "px-2 py-1.5 text-[11px] text-center border-y",
-                darkMode ? "border-white/10 bg-white/[0.02] text-white/60" : "border-gray-100 bg-gray-50 text-gray-500"
-              )}>
-                Spread: {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
-              </div>
-              {/* Bids */}
-              <div className="max-h-[280px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                {bids.slice(0, 15).map((bid, idx) => (
-                  <div
-                    key={`bid-${idx}`}
-                    onClick={() => setLimitPrice(bid.price.toString())}
-                    className={cn(
-                      "flex px-2 py-1 text-[11px] cursor-pointer hover:bg-green-500/10",
-                      darkMode ? "text-white/80" : "text-gray-700"
-                    )}
-                  >
-                    <span className="flex-1 text-green-500">{bid.price?.toFixed(6)}</span>
-                    <span className="flex-1 text-right">{bid.amount?.toFixed(2)}</span>
-                    <span className={cn("flex-1 text-right", darkMode ? "text-white/50" : "text-gray-500")}>{bid.total?.toFixed(2)}</span>
+                  {/* Asks */}
+                  <div className="max-h-[200px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                    {asks.slice(0, 10).reverse().map((ask, idx) => (
+                      <div
+                        key={`ask-${idx}`}
+                        onClick={() => setLimitPrice(ask.price.toString())}
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/10",
+                          darkMode ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        <span className="flex-1 text-red-500">{ask.price?.toFixed(6)}</span>
+                        <span className="flex-1 text-right">{ask.amount?.toFixed(2)}</span>
+                        <span className={cn("flex-1 text-right", darkMode ? "text-primary/50" : "text-primary/50")}>{ask.total?.toFixed(2)}</span>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
+                  {/* Spread */}
+                  <div className={cn(
+                    "px-2 py-1.5 text-[11px] font-mono text-center border-y",
+                    darkMode ? "border-primary/20 bg-white/5 text-primary/60" : "border-primary/15 bg-gray-100 text-primary/60"
+                  )}>
+                    Spread: {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                  </div>
+                  {/* Bids */}
+                  <div className="max-h-[200px] overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+                    {bids.slice(0, 10).map((bid, idx) => (
+                      <div
+                        key={`bid-${idx}`}
+                        onClick={() => setLimitPrice(bid.price.toString())}
+                        className={cn(
+                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/10",
+                          darkMode ? "text-white/80" : "text-gray-700"
+                        )}
+                      >
+                        <span className="flex-1 text-green-500">{bid.price?.toFixed(6)}</span>
+                        <span className="flex-1 text-right">{bid.amount?.toFixed(2)}</span>
+                        <span className={cn("flex-1 text-right", darkMode ? "text-primary/50" : "text-primary/50")}>{bid.total?.toFixed(2)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>

@@ -163,26 +163,27 @@ const OrderBook = ({ token, onPriceClick }) => {
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
 
         if (res.data?.success) {
-          // Parse offers to show price in XRP per token (e.g., 0.0046 XRP per ARMY)
-          // API structure for XRP/Token pair:
-          // - Bids: TakerGets=Token, TakerPays=XRP (maker gives Token, wants XRP)
-          // - Asks: TakerGets=XRP, TakerPays=Token (maker gives XRP, wants Token)
-          const parseOffer = (offer, isBid) => {
-            const getAmount = (val) => typeof val === 'string' ? parseFloat(val) / 1e6 : parseFloat(val.value);
-            const gets = getAmount(offer.TakerGets);
-            const pays = getAmount(offer.TakerPays);
-            // Calculate price as XRP per Token
-            // Bids: TakerGets=Token, TakerPays=XRP -> price = XRP(pays) / Token(gets)
-            // Asks: TakerGets=XRP, TakerPays=Token -> price = XRP(gets) / Token(pays)
-            const xrpAmount = isBid ? pays : gets;
-            const tokenAmount = isBid ? gets : pays;
-            const price = xrpAmount / tokenAmount;
-            return { price, amount: tokenAmount, Account: offer.Account };
-          };
+          // API returns pre-parsed data with price, amount, total fields
+          // Filter out invalid entries where price is NaN
+          const parsedBids = (res.data.bids || [])
+            .map(o => ({
+              price: parseFloat(o.price),
+              amount: parseFloat(o.amount),
+              total: parseFloat(o.total),
+              account: o.account,
+              funded: o.funded
+            }))
+            .filter(o => !isNaN(o.price) && o.price > 0);
 
-          // Sort bids high to low (best bid = highest XRP price), asks low to high (best ask = lowest XRP price)
-          const parsedBids = (res.data.bids || []).map(o => parseOffer(o, true)).sort((a, b) => b.price - a.price);
-          const parsedAsks = (res.data.asks || []).map(o => parseOffer(o, false)).sort((a, b) => a.price - b.price);
+          const parsedAsks = (res.data.asks || [])
+            .map(o => ({
+              price: parseFloat(o.price),
+              amount: parseFloat(o.amount),
+              total: parseFloat(o.total),
+              account: o.account,
+              funded: o.funded
+            }))
+            .filter(o => !isNaN(o.price) && o.price > 0);
 
           let bidSum = 0, askSum = 0;
           parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });

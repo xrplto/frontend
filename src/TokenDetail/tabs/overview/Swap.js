@@ -368,24 +368,27 @@ const Alert = styled.div`
 const Tabs = styled.div`
   display: flex;
   width: fit-content;
-  gap: 2px;
-  padding: 3px;
+  gap: 4px;
+  padding: 4px;
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
+  background: ${props => props.isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'};
 `;
 
 const Tab = styled.button`
-  padding: 5px 12px;
-  font-size: 12px;
+  padding: 6px 16px;
+  font-size: 13px;
   text-transform: none;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 6px;
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.08)' : '#fff') : 'transparent'};
-  color: ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
+  background: ${props => props.isActive ? '#4285f4' : 'transparent'};
+  color: ${props => props.isActive ? '#fff' : (props.isDark ? 'rgba(66,133,244,0.6)' : 'rgba(66,133,244,0.7)')};
   cursor: pointer;
   font-weight: ${props => props.isActive ? 500 : 400};
+  transition: all 0.2s;
   &:hover {
-    background: ${props => props.isActive ? (props.isDark ? 'rgba(255,255,255,0.08)' : '#fff') : (props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)')};
+    background: ${props => props.isActive ? '#4285f4' : 'rgba(66,133,244,0.1)'};
+    border-color: ${props => props.isActive ? 'transparent' : 'rgba(66,133,244,0.2)'};
   }
 `;
 
@@ -448,10 +451,14 @@ const CurrencyContent = styled.div`
   padding: 12px 14px;
   border-radius: 10px;
   align-items: center;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  background: ${props => props.isDark ? 'rgba(66,133,244,0.03)' : 'rgba(66,133,244,0.02)'};
   width: 100%;
   justify-content: space-between;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'};
+  transition: border-color 0.2s;
+  &:focus-within {
+    border-color: #4285f4;
+  }
   @media (max-width: 600px) {
     padding: 10px 12px;
     margin: 3px 0;
@@ -473,15 +480,15 @@ const OverviewWrapper = styled.div`
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
-  border-radius: 10px;
+  border-radius: 12px;
   display: flex;
-  padding: 12px;
+  padding: 16px;
   width: 100%;
-  background: transparent;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  background: ${props => props.isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.8)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'};
   @media (max-width: 600px) {
-    border-radius: 8px;
-    padding: 10px;
+    border-radius: 10px;
+    padding: 12px;
   }
 `;
 
@@ -503,15 +510,17 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${props => props.isDark ? '#000' : '#fff'};
+  background: ${props => props.isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)'};
   border-radius: 50%;
-  padding: 6px;
+  padding: 8px;
   z-index: 1;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'};
+  transition: all 0.2s;
   &:hover {
-    border-color: #3b82f6;
+    border-color: #4285f4;
+    background: rgba(66,133,244,0.15);
     svg {
-      color: #3b82f6 !important;
+      color: #4285f4 !important;
     }
   }
 `;
@@ -520,26 +529,30 @@ const ExchangeButton = styled(Button)`
   width: 100%;
   position: relative;
   overflow: hidden;
-  border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
-  color: #3b82f6;
-  font-weight: 400;
-  border: 1.5px solid #3b82f6;
-  padding: 8px 16px;
-  font-size: 12px;
+  border-radius: 10px;
+  background: #4285f4;
+  color: #ffffff;
+  font-weight: 500;
+  border: 1.5px solid #4285f4;
+  padding: 12px 16px;
+  font-size: 14px;
   text-transform: none;
   margin: 0;
   letter-spacing: 0.3px;
+  box-shadow: 0 0 20px rgba(66,133,244,0.3);
+  transition: all 0.2s;
 
   &:hover {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
-    border-color: #3b82f6;
+    background: #3b78e7;
+    border-color: #3b78e7;
+    filter: brightness(1.1);
   }
 
   &:disabled {
-    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'};
     color: ${props => props.isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'};
-    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+    box-shadow: none;
   }
 `;
 
@@ -555,11 +568,11 @@ const TokenImage = styled(Image)`
 `;
 
 const SummaryBox = styled.div`
-  padding: 8px 10px;
-  background: transparent;
+  padding: 10px 12px;
+  background: ${props => props.isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)'};
   border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  margin-top: 4px;
+  border: 1px solid ${props => props.isDark ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'};
+  margin-top: 8px;
   margin-bottom: 4px;
 `;
 
@@ -782,17 +795,22 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
 
         if (res.data?.success) {
-          const parseOffer = (offer, isBid) => {
-            const getAmount = (val) => typeof val === 'string' ? parseFloat(val) / 1e6 : parseFloat(val.value);
-            const gets = getAmount(offer.TakerGets);
-            const pays = getAmount(offer.TakerPays);
-            const price = isBid ? gets / pays : pays / gets;
-            const amount = isBid ? pays : gets;
-            return { price, amount, Account: offer.Account };
-          };
+          // API returns pre-parsed data with price, amount, total fields
+          const parsedBids = (res.data.bids || []).map(o => ({
+            price: parseFloat(o.price),
+            amount: parseFloat(o.amount),
+            total: parseFloat(o.total),
+            account: o.account,
+            funded: o.funded
+          }));
 
-          const parsedBids = (res.data.bids || []).map(o => parseOffer(o, true)).sort((a, b) => b.price - a.price);
-          const parsedAsks = (res.data.asks || []).map(o => parseOffer(o, false)).sort((a, b) => a.price - b.price);
+          const parsedAsks = (res.data.asks || []).map(o => ({
+            price: parseFloat(o.price),
+            amount: parseFloat(o.amount),
+            total: parseFloat(o.total),
+            account: o.account,
+            funded: o.funded
+          }));
 
           // Add cumulative sumAmount
           let bidSum = 0, askSum = 0;
@@ -1819,66 +1837,68 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             </ToggleContent>
           </AmountRows>
 
-          {/* Slippage control */}
-          <Box sx={{ px: 1.5, py: 0.5 }}>
-            <Stack direction="row" alignItems="center" justifyContent="space-between">
-              <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
-                Slippage
-              </Typography>
-              <Stack direction="row" spacing={0.25} alignItems="center">
-                {[1, 3, 5].map((preset) => (
-                  <Button
-                    key={preset}
-                    size="small"
-                    variant={slippage === preset ? 'outlined' : 'text'}
-                    onClick={() => setSlippage(preset)}
+          {/* Slippage control - Only for market orders */}
+          {orderType === 'market' && (
+            <Box sx={{ px: 1.5, py: 0.5 }}>
+              <Stack direction="row" alignItems="center" justifyContent="space-between">
+                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                  Slippage
+                </Typography>
+                <Stack direction="row" spacing={0.25} alignItems="center">
+                  {[1, 3, 5].map((preset) => (
+                    <Button
+                      key={preset}
+                      size="small"
+                      variant={slippage === preset ? 'outlined' : 'text'}
+                      onClick={() => setSlippage(preset)}
+                      isDark={isDark}
+                      sx={{
+                        minWidth: '22px',
+                        height: '18px',
+                        fontSize: '11px',
+                        px: 0.5,
+                        py: 0,
+                        color: slippage === preset ? '#4285f4' : 'text.secondary',
+                        borderColor: '#4285f4',
+                        backgroundColor: slippage === preset ? alpha('#4285f4', 0.04) : 'transparent'
+                      }}
+                    >
+                      {preset}%
+                    </Button>
+                  ))}
+                  <Input
+                    value={slippage}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)) {
+                        setSlippage(val === '' ? 0 : parseFloat(val));
+                      }
+                    }}
                     isDark={isDark}
                     sx={{
-                      minWidth: '22px',
-                      height: '18px',
-                      fontSize: '11px',
-                      px: 0.5,
-                      py: 0,
-                      color: slippage === preset ? '#4285f4' : 'text.secondary',
-                      borderColor: '#4285f4',
-                      backgroundColor: slippage === preset ? alpha('#4285f4', 0.04) : 'transparent'
+                      width: '28px',
+                      input: {
+                        fontSize: '11px',
+                        textAlign: 'center',
+                        padding: '1px',
+                        border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+                        borderRadius: '4px',
+                        height: '14px'
+                      }
                     }}
-                  >
-                    {preset}%
-                  </Button>
-                ))}
-                <Input
-                  value={slippage}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === '' || (!isNaN(parseFloat(val)) && parseFloat(val) >= 0 && parseFloat(val) <= 50)) {
-                      setSlippage(val === '' ? 0 : parseFloat(val));
-                    }
-                  }}
-                  isDark={isDark}
-                  sx={{
-                    width: '28px',
-                    input: {
-                      fontSize: '11px',
-                      textAlign: 'center',
-                      padding: '1px',
-                      border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
-                      borderRadius: '4px',
-                      height: '14px'
-                    }
-                  }}
-                />
-                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: 'text.secondary' }}>
-                  % · Impact {priceImpact}%
-                </Typography>
+                  />
+                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                    % · Impact {priceImpact}%
+                  </Typography>
+                </Stack>
               </Stack>
-            </Stack>
-            {Number(slippage) > 5 && (
-              <Typography variant="caption" color="warning.main" isDark={isDark} sx={{ display: 'block', mt: 0.25, fontSize: '10px' }}>
-                High slippage = higher risk
-              </Typography>
-            )}
-          </Box>
+              {Number(slippage) > 5 && (
+                <Typography variant="caption" color="warning.main" isDark={isDark} sx={{ display: 'block', mt: 0.25, fontSize: '10px' }}>
+                  High slippage = higher risk
+                </Typography>
+              )}
+            </Box>
+          )}
 
           {/* Limit Order Settings */}
           {orderType === 'limit' && (
@@ -2059,60 +2079,56 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     );
                   })()}
 
-                {/* Order Expiration */}
-                <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mt: 0.25 }}>
-                  <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
-                    Expiration
-                  </Typography>
-                  <Stack direction="row" spacing={0.25} alignItems="center">
-                    <Select
-                      value={orderExpiry}
-                      onChange={(e) => {
-                        setOrderExpiry(e.target.value);
-                        if (e.target.value === '1h') setExpiryHours(1);
-                        else if (e.target.value === '24h') setExpiryHours(24);
-                        else if (e.target.value === '7d') setExpiryHours(168);
-                      }}
-                      isDark={isDark}
-                      sx={{
-                        fontSize: '10px',
-                        height: '20px',
-                        '& .MuiSelect-select': {
-                          py: 0,
-                          fontSize: '10px'
-                        }
-                      }}
-                    >
-                      <MenuItem value="never">Never</MenuItem>
-                      <MenuItem value="1h">1h</MenuItem>
-                      <MenuItem value="24h">24h</MenuItem>
-                      <MenuItem value="7d">7d</MenuItem>
-                      <MenuItem value="custom">Custom</MenuItem>
-                    </Select>
-                    {orderExpiry === 'custom' && (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
-                        <Input
-                          value={expiryHours}
-                          onChange={(e) => setExpiryHours(Number(e.target.value))}
-                          type="number"
-                          isDark={isDark}
-                          sx={{
-                            width: '40px',
-                            input: {
-                              fontSize: '10px',
-                              padding: '2px 4px',
-                              border: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`,
-                              borderRadius: '4px'
-                            }
-                          }}
-                        />
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px' }}>
-                          hrs
-                        </Typography>
-                      </div>
-                    )}
-                  </Stack>
-                </Stack>
+                {/* Order Expiration - Grid Style */}
+                <div style={{
+                  marginTop: '12px',
+                  padding: '12px',
+                  borderRadius: '8px',
+                  background: isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)',
+                  border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}`
+                }}>
+                  <span style={{
+                    display: 'block',
+                    fontSize: '11px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px',
+                    marginBottom: '10px',
+                    color: isDark ? 'rgba(66,133,244,0.6)' : 'rgba(66,133,244,0.7)'
+                  }}>
+                    Order Expires In
+                  </span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+                    {[
+                      { value: 'never', label: 'Never', desc: '∞' },
+                      { value: '1h', label: '1 Hour', desc: '1h' },
+                      { value: '24h', label: '1 Day', desc: '24h' },
+                      { value: '7d', label: '7 Days', desc: '7d' }
+                    ].map((exp) => (
+                      <button
+                        key={exp.value}
+                        onClick={() => {
+                          setOrderExpiry(exp.value);
+                          if (exp.value === '1h') setExpiryHours(1);
+                          else if (exp.value === '24h') setExpiryHours(24);
+                          else if (exp.value === '7d') setExpiryHours(168);
+                        }}
+                        style={{
+                          padding: '10px 4px',
+                          borderRadius: '8px',
+                          border: `1px solid ${orderExpiry === exp.value ? '#4285f4' : (isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)')}`,
+                          background: orderExpiry === exp.value ? '#4285f4' : 'transparent',
+                          color: orderExpiry === exp.value ? '#fff' : (isDark ? 'rgba(66,133,244,0.5)' : 'rgba(66,133,244,0.6)'),
+                          cursor: 'pointer',
+                          textAlign: 'center',
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        <span style={{ display: 'block', fontSize: '13px', fontWeight: 400 }}>{exp.desc}</span>
+                        <span style={{ display: 'block', fontSize: '9px', opacity: orderExpiry === exp.value ? 0.8 : 0.5, marginTop: '2px' }}>{exp.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
               </Stack>
             </Box>
