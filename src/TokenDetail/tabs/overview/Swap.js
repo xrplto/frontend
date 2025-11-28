@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
-import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -563,61 +563,6 @@ const SummaryBox = styled.div`
   margin-bottom: 4px;
 `;
 
-// Inline compact orderbook component
-const InlineOrderbook = styled.div`
-  margin-top: 8px;
-  border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  overflow: hidden;
-`;
-
-const OrderbookHeader = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 10px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-`;
-
-const OrderbookRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 4px 10px;
-  position: relative;
-  cursor: pointer;
-  font-size: 11px;
-  transition: background 0.15s ease;
-  &:hover {
-    background: ${props => props.type === 'ask'
-      ? 'rgba(239, 68, 68, 0.06)'
-      : 'rgba(34, 197, 94, 0.06)'};
-  }
-`;
-
-const OrderbookDepthBar = styled.div`
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  background: ${props => props.type === 'ask'
-    ? 'rgba(239, 68, 68, 0.08)'
-    : 'rgba(34, 197, 94, 0.08)'};
-  width: ${props => props.width}%;
-  pointer-events: none;
-`;
-
-const SpreadIndicator = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 4px 10px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
-  border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-`;
-
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const [sellAmount, setSellAmount] = useState('');
@@ -676,7 +621,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [expiryHours, setExpiryHours] = useState(24);
 
   const [showOrderbook, setShowOrderbook] = useState(false);
-  const [showInlineOrderbook, setShowInlineOrderbook] = useState(true); // Show by default for limit orders
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -2170,146 +2114,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </Stack>
                 </Stack>
 
-                {/* Inline Compact Orderbook */}
-                {(asks.length > 0 || bids.length > 0) && (
-                  <InlineOrderbook isDark={isDark}>
-                    <OrderbookHeader isDark={isDark}>
-                      <Stack direction="row" alignItems="center" spacing={0.5}>
-                        <BookOpen size={12} style={{ opacity: 0.7 }} />
-                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontWeight: 500 }}>
-                          Order Book
-                        </Typography>
-                      </Stack>
-                      <IconButton
-                        size="small"
-                        onClick={() => setShowInlineOrderbook(!showInlineOrderbook)}
-                        isDark={isDark}
-                        sx={{ padding: '2px', width: '18px', height: '18px' }}
-                      >
-                        {showInlineOrderbook ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                      </IconButton>
-                    </OrderbookHeader>
-
-                    {showInlineOrderbook && (
-                      <>
-                        {/* Asks (Sell Orders) - show lowest asks near spread */}
-                        <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 10px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, position: 'sticky', top: 0, background: isDark ? '#000' : '#fff', zIndex: 1 }}>
-                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', color: '#ef4444', opacity: 0.8 }}>Price</Typography>
-                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Amount</Typography>
-                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Maker</Typography>
-                          </div>
-                          {[...asks.slice(0, 30)].reverse().map((ask, idx) => {
-                            const origIdx = Math.min(29, asks.length - 1) - idx;
-                            const maxAmount = Math.max(...asks.slice(0, 30).map(a => Number(a.amount) || 0));
-                            const barWidth = maxAmount > 0 ? (Number(ask.amount) / maxAmount) * 100 : 0;
-                            const isAtLimit = limitPrice && Number(ask.price) <= Number(limitPrice);
-                            return (
-                              <OrderbookRow
-                                key={`ask-${origIdx}`}
-                                type="ask"
-                                onClick={() => {
-                                  setLimitPrice(String(ask.price));
-                                }}
-                                style={{
-                                  background: isAtLimit ? 'rgba(59, 130, 246, 0.08)' : undefined
-                                }}
-                              >
-                                <OrderbookDepthBar type="ask" width={barWidth} />
-                                <Tooltip title={ask.Account || ''}>
-                                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#ef4444', position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'help' }}>
-                                    {fNumber(ask.price)}
-                                  </Typography>
-                                </Tooltip>
-                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
-                                  {fNumber(ask.amount)}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  isDark={isDark}
-                                  sx={{ fontSize: '9px', opacity: 0.5, position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'pointer', '&:hover': { opacity: 1, color: '#3b82f6' } }}
-                                  onClick={(e) => { e.stopPropagation(); ask.Account && window.open(`/profile/${ask.Account}`, '_blank'); }}
-                                >
-                                  {ask.Account ? `${ask.Account.slice(0, 4)}...${ask.Account.slice(-3)}` : ''}
-                                </Typography>
-                              </OrderbookRow>
-                            );
-                          })}
-                        </div>
-
-                        {/* Spread Indicator */}
-                        <SpreadIndicator isDark={isDark}>
-                          <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
-                            <Typography variant="caption" sx={{ fontSize: '9px', color: '#22c55e', fontFamily: 'monospace' }}>
-                              ▲ {bestBid != null ? fNumber(bestBid) : '—'}
-                            </Typography>
-                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontWeight: 500, px: 1, borderRadius: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
-                              {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
-                            </Typography>
-                            <Typography variant="caption" sx={{ fontSize: '9px', color: '#ef4444', fontFamily: 'monospace' }}>
-                              {bestAsk != null ? fNumber(bestAsk) : '—'} ▼
-                            </Typography>
-                          </Stack>
-                        </SpreadIndicator>
-
-                        {/* Bids (Buy Orders) */}
-                        <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
-                          {bids.slice(0, 30).map((bid, idx) => {
-                            const maxAmount = Math.max(...bids.slice(0, 30).map(b => Number(b.amount) || 0));
-                            const barWidth = maxAmount > 0 ? (Number(bid.amount) / maxAmount) * 100 : 0;
-                            const isAtLimit = limitPrice && Number(bid.price) >= Number(limitPrice);
-                            return (
-                              <OrderbookRow
-                                key={`bid-${idx}`}
-                                type="bid"
-                                onClick={() => {
-                                  setLimitPrice(String(bid.price));
-                                }}
-                                style={{
-                                  background: isAtLimit ? 'rgba(59, 130, 246, 0.08)' : undefined
-                                }}
-                              >
-                                <OrderbookDepthBar type="bid" width={barWidth} />
-                                <Tooltip title={bid.Account || ''}>
-                                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#22c55e', position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'help' }}>
-                                    {fNumber(bid.price)}
-                                  </Typography>
-                                </Tooltip>
-                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
-                                  {fNumber(bid.amount)}
-                                </Typography>
-                                <Typography
-                                  variant="caption"
-                                  isDark={isDark}
-                                  sx={{ fontSize: '9px', opacity: 0.5, position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'pointer', '&:hover': { opacity: 1, color: '#3b82f6' } }}
-                                  onClick={(e) => { e.stopPropagation(); bid.Account && window.open(`/profile/${bid.Account}`, '_blank'); }}
-                                >
-                                  {bid.Account ? `${bid.Account.slice(0, 4)}...${bid.Account.slice(-3)}` : ''}
-                                </Typography>
-                              </OrderbookRow>
-                            );
-                          })}
-                        </div>
-
-                        {/* Quick Stats */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          padding: '4px 10px',
-                          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
-                          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
-                        }}>
-                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>
-                            {asks.length} sells · {bids.length} buys
-                          </Typography>
-                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>
-                            Click price to set
-                          </Typography>
-                        </div>
-                      </>
-                    )}
-                  </InlineOrderbook>
-                )}
               </Stack>
             </Box>
           )}

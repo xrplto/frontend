@@ -10,6 +10,7 @@ import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
 import Swap from './Swap';
+import OrderBook from './OrderBook';
 import { cn } from 'src/utils/cn';
 
 const Overview = memo(
@@ -136,6 +137,11 @@ const Overview = memo(
             orderBookOpen={orderBookOpen}
             onOrderBookData={onOrderBookData}
           />
+          {!isMobile && !isTablet && (
+            <div className="mt-2">
+              <OrderBook token={token} />
+            </div>
+          )}
           <PriceStatistics token={token} isDark={isDark} />
           <Description
             token={token}

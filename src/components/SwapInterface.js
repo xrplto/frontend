@@ -252,7 +252,6 @@ import { selectMetrics } from 'src/redux/statusSlice';
 // Utils
 import { fNumber } from 'src/utils/formatters';
 import { processOrderbookOffers } from 'src/utils/parseUtils';
-import useWebSocket from 'react-use-websocket';
 
 // Components
 import { ConnectWallet } from 'src/components/Wallet';
@@ -267,7 +266,6 @@ const currencySymbols = {
   XRP: '✕ '
 };
 const BASE_URL = 'https://api.xrpl.to/api';
-const WSS_URL = 'wss://s1.ripple.com';
 import { configureMemos } from 'src/utils/parseUtils';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
 
@@ -569,84 +567,41 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   // Orderbook state
   const [bids, setBids] = useState(propsBids || []);
   const [asks, setAsks] = useState(propsAsks || []);
-  const [wsReady, setWsReady] = useState(false);
-  const reqIDRef = useRef(1000);
 
-  // WebSocket for orderbook
-  const { sendJsonMessage, lastJsonMessage } = useWebSocket(WSS_URL, {
-    onOpen: () => {
-      setWsReady(true);
-    },
-    onClose: () => {
-      setWsReady(false);
-    },
-    shouldReconnect: () => true,
-    reconnectInterval: 3000
-  });
-
-  // Fetch orderbook data via WebSocket
+  // Fetch orderbook via REST API
   useEffect(() => {
-    if (!wsReady || !curr1 || !curr2) {
-      return;
-    }
+    if (!curr1 || !curr2) return;
+    const controller = new AbortController();
 
-    const sendRequest = () => {
+    async function fetchOrderbook() {
+      try {
+        const params = new URLSearchParams({
+          base_currency: curr1.currency,
+          quote_currency: curr2.currency,
+          limit: '60'
+        });
+        if (curr1.currency !== 'XRP' && curr1.issuer) params.append('base_issuer', curr1.issuer);
+        if (curr2.currency !== 'XRP' && curr2.issuer) params.append('quote_issuer', curr2.issuer);
 
-      // Build taker_gets/taker_pays (use API currency as-is, omit issuer for XRP)
-      const buildAmount = (token) => {
-        if (token.currency === 'XRP') {
-          return { currency: 'XRP' };
+        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
+        if (res.data?.success) {
+          setBids(processOrderbookOffers(res.data.bids || [], 'bids'));
+          setAsks(processOrderbookOffers(res.data.asks || [], 'asks'));
         }
-        return {
-          currency: token.currency,  // Use as-is from API (already hex if needed)
-          issuer: token.issuer
-        };
-      };
-
-      const cmdAsk = {
-        id: reqIDRef.current,
-        command: 'book_offers',
-        taker_gets: buildAmount(curr1),
-        taker_pays: buildAmount(curr2),
-        ledger_index: 'validated',
-        limit: 60
-      };
-      const cmdBid = {
-        id: reqIDRef.current + 1,
-        command: 'book_offers',
-        taker_gets: buildAmount(curr2),
-        taker_pays: buildAmount(curr1),
-        ledger_index: 'validated',
-        limit: 60
-      };
-      sendJsonMessage(cmdAsk);
-      sendJsonMessage(cmdBid);
-      reqIDRef.current += 2;
-    };
-
-    sendRequest();
-    const timer = setInterval(sendRequest, 4000);
-    return () => clearInterval(timer);
-  }, [wsReady, curr1, curr2, sendJsonMessage]);
-
-  // Process orderbook responses
-  useEffect(() => {
-    if (!lastJsonMessage) return;
-    const msg = lastJsonMessage;
-    if (msg.type === 'response' && msg.result?.offers) {
-      const req = msg.id % 2;
-      const processed = processOrderbookOffers(msg.result.offers, req === 1 ? 'asks' : 'bids');
-      if (req === 1) {
-        setAsks(processed);
-      } else if (req === 0) {
-        setBids(processed);
+      } catch (err) {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          console.error('Orderbook fetch error:', err);
+        }
       }
     }
-  }, [lastJsonMessage]);
 
-  // Debug orderbook state
-  useEffect(() => {
-  }, [bids, asks]);
+    fetchOrderbook();
+    const timer = setInterval(fetchOrderbook, 5000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [curr1, curr2]);
 
   // Token Selector Panel states
   const [panel1Open, setPanel1Open] = useState(false);
