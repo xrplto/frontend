@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
-import { ArrowUpDown, RefreshCw, EyeOff, X } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, BookOpen, ExternalLink } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -565,6 +565,61 @@ const SummaryBox = styled.div`
   margin-bottom: 4px;
 `;
 
+// Inline compact orderbook component
+const InlineOrderbook = styled.div`
+  margin-top: 8px;
+  border-radius: 8px;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  overflow: hidden;
+`;
+
+const OrderbookHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 10px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+`;
+
+const OrderbookRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 10px;
+  position: relative;
+  cursor: pointer;
+  font-size: 11px;
+  transition: background 0.15s ease;
+  &:hover {
+    background: ${props => props.type === 'ask'
+      ? 'rgba(239, 68, 68, 0.06)'
+      : 'rgba(34, 197, 94, 0.06)'};
+  }
+`;
+
+const OrderbookDepthBar = styled.div`
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  background: ${props => props.type === 'ask'
+    ? 'rgba(239, 68, 68, 0.08)'
+    : 'rgba(34, 197, 94, 0.08)'};
+  width: ${props => props.width}%;
+  pointer-events: none;
+`;
+
+const SpreadIndicator = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 4px 10px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+`;
+
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const WSS_URL = 'wss://s1.ripple.com';
 
@@ -624,6 +679,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [expiryHours, setExpiryHours] = useState(24);
 
   const [showOrderbook, setShowOrderbook] = useState(false);
+  const [showInlineOrderbook, setShowInlineOrderbook] = useState(true); // Show by default for limit orders
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -1984,40 +2040,63 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }
                   }}
                 />
+                {/* Live Market Prices - More Prominent Display */}
                 {bestBid != null && bestAsk != null && (
-                  <Stack direction="row" alignItems="center" justifyContent="space-between">
-                    <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '10px' }}>
-                      {(() => {
-                        const bb = Number(bestBid);
-                        const ba = Number(bestAsk);
-                        const mid = (bb + ba) / 2;
-                        const spread = mid ? ((ba - bb) / mid) * 100 : null;
-                        return `Bid ${new Decimal(bb).toFixed(6)} · Ask ${new Decimal(ba).toFixed(6)}${spread != null ? ` · ${new Decimal(spread).toFixed(2)}%` : ''}`;
-                      })()}
-                    </Typography>
-                    <Stack direction="row" spacing={0.25}>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!bids || bids.length === 0}
+                  <Box sx={{
+                    mt: 0.5,
+                    p: 0.75,
+                    borderRadius: '6px',
+                    border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+                    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+                  }}>
+                    <Stack direction="row" alignItems="center" justifyContent="space-between" spacing={1}>
+                      {/* Bid Price */}
+                      <Stack
+                        direction="column"
+                        alignItems="center"
+                        spacing={0}
+                        sx={{ cursor: 'pointer', flex: 1 }}
                         onClick={() => bids && bids[0] && setLimitPrice(String(bids[0].price))}
-                        isDark={isDark}
-                        sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                       >
-                        Bid
-                      </Button>
-                      <Button
-                        size="small"
-                        variant="text"
-                        disabled={!asks || asks.length === 0}
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
+                          Best Bid
+                        </Typography>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#22c55e', fontFamily: 'monospace' }}>
+                          {fNumber(bestBid)}
+                        </Typography>
+                      </Stack>
+
+                      {/* Spread */}
+                      <Stack direction="column" alignItems="center" spacing={0} sx={{ flex: 1 }}>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
+                          Spread
+                        </Typography>
+                        <Typography variant="caption" isDark={isDark} sx={{
+                          fontSize: '11px',
+                          fontWeight: 500,
+                          color: spreadPct != null && spreadPct > 2 ? '#f59e0b' : (isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')
+                        }}>
+                          {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
+                        </Typography>
+                      </Stack>
+
+                      {/* Ask Price */}
+                      <Stack
+                        direction="column"
+                        alignItems="center"
+                        spacing={0}
+                        sx={{ cursor: 'pointer', flex: 1 }}
                         onClick={() => asks && asks[0] && setLimitPrice(String(asks[0].price))}
-                        isDark={isDark}
-                        sx={{ textTransform: 'none', fontSize: '10px', minHeight: '16px', px: 0.5, py: 0 }}
                       >
-                        Ask
-                      </Button>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, textTransform: 'uppercase' }}>
+                          Best Ask
+                        </Typography>
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#ef4444', fontFamily: 'monospace' }}>
+                          {fNumber(bestAsk)}
+                        </Typography>
+                      </Stack>
                     </Stack>
-                  </Stack>
+                  </Box>
                 )}
                 {orderType === 'limit' && limitPrice && Number(limitPrice) <= 0 && (
                   <Typography variant="caption" color="error" isDark={isDark} sx={{ fontSize: '10px' }}>
@@ -2115,28 +2194,139 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                   </Stack>
                 </Stack>
 
-                {/* Show/Hide Order Book - inline */}
-                <Stack direction="row" justifyContent="center" sx={{ mt: 0.5 }}>
-                  <Button
-                    size="small"
-                    variant="text"
-                    onClick={() => {
-                      if (onOrderBookToggle) onOrderBookToggle(!orderBookOpen);
-                      else setShowOrderbook(!showOrderbook);
-                    }}
-                    isDark={isDark}
-                    sx={{
-                      fontSize: '10px',
-                      textTransform: 'none',
-                      py: 0.25,
-                      px: 0.75,
-                      minWidth: 0,
-                      color: 'text.secondary'
-                    }}
-                  >
-                    {(onOrderBookToggle ? orderBookOpen : showOrderbook) ? 'Hide' : 'Show'} Order Book
-                  </Button>
-                </Stack>
+                {/* Inline Compact Orderbook */}
+                {(asks.length > 0 || bids.length > 0) && (
+                  <InlineOrderbook isDark={isDark}>
+                    <OrderbookHeader isDark={isDark}>
+                      <Stack direction="row" alignItems="center" spacing={0.5}>
+                        <BookOpen size={12} style={{ opacity: 0.7 }} />
+                        <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontWeight: 500 }}>
+                          Order Book
+                        </Typography>
+                      </Stack>
+                      <Stack direction="row" spacing={0.25} alignItems="center">
+                        <IconButton
+                          size="small"
+                          onClick={() => setShowInlineOrderbook(!showInlineOrderbook)}
+                          isDark={isDark}
+                          sx={{ padding: '2px', width: '18px', height: '18px' }}
+                        >
+                          {showInlineOrderbook ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                        </IconButton>
+                        {onOrderBookToggle && (
+                          <IconButton
+                            size="small"
+                            onClick={() => onOrderBookToggle(!orderBookOpen)}
+                            isDark={isDark}
+                            sx={{ padding: '2px', width: '18px', height: '18px', color: '#3b82f6' }}
+                          >
+                            <ExternalLink size={11} />
+                          </IconButton>
+                        )}
+                      </Stack>
+                    </OrderbookHeader>
+
+                    {showInlineOrderbook && (
+                      <>
+                        {/* Asks (Sell Orders) - reversed to show lowest first (bottom) */}
+                        <div style={{ maxHeight: '100px', overflow: 'hidden' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 10px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', color: '#ef4444', opacity: 0.8 }}>Price</Typography>
+                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Amount</Typography>
+                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Total</Typography>
+                          </div>
+                          {asks.slice(0, 5).reverse().map((ask, idx) => {
+                            const origIdx = Math.min(4, asks.length - 1) - idx;
+                            const maxAmount = Math.max(...asks.slice(0, 5).map(a => Number(a.amount) || 0));
+                            const barWidth = maxAmount > 0 ? (Number(ask.amount) / maxAmount) * 100 : 0;
+                            const isAtLimit = limitPrice && Number(ask.price) <= Number(limitPrice);
+                            return (
+                              <OrderbookRow
+                                key={`ask-${origIdx}`}
+                                type="ask"
+                                onClick={() => {
+                                  setLimitPrice(String(ask.price));
+                                }}
+                                style={{
+                                  background: isAtLimit ? 'rgba(59, 130, 246, 0.08)' : undefined
+                                }}
+                              >
+                                <OrderbookDepthBar type="ask" width={barWidth} />
+                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#ef4444', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
+                                  {fNumber(ask.price)}
+                                </Typography>
+                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
+                                  {fNumber(ask.amount)}
+                                </Typography>
+                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', opacity: 0.6, position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
+                                  {fNumber(ask.sumAmount)}
+                                </Typography>
+                              </OrderbookRow>
+                            );
+                          })}
+                        </div>
+
+                        {/* Spread Indicator */}
+                        <SpreadIndicator isDark={isDark}>
+                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontWeight: 500 }}>
+                            {midPrice != null ? fNumber(midPrice) : '—'}
+                          </Typography>
+                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, ml: 1 }}>
+                            {spreadPct != null ? `${spreadPct.toFixed(2)}% spread` : ''}
+                          </Typography>
+                        </SpreadIndicator>
+
+                        {/* Bids (Buy Orders) */}
+                        <div style={{ maxHeight: '100px', overflow: 'hidden' }}>
+                          {bids.slice(0, 5).map((bid, idx) => {
+                            const maxAmount = Math.max(...bids.slice(0, 5).map(b => Number(b.amount) || 0));
+                            const barWidth = maxAmount > 0 ? (Number(bid.amount) / maxAmount) * 100 : 0;
+                            const isAtLimit = limitPrice && Number(bid.price) >= Number(limitPrice);
+                            return (
+                              <OrderbookRow
+                                key={`bid-${idx}`}
+                                type="bid"
+                                onClick={() => {
+                                  setLimitPrice(String(bid.price));
+                                }}
+                                style={{
+                                  background: isAtLimit ? 'rgba(59, 130, 246, 0.08)' : undefined
+                                }}
+                              >
+                                <OrderbookDepthBar type="bid" width={barWidth} />
+                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#22c55e', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
+                                  {fNumber(bid.price)}
+                                </Typography>
+                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
+                                  {fNumber(bid.amount)}
+                                </Typography>
+                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', opacity: 0.6, position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
+                                  {fNumber(bid.sumAmount)}
+                                </Typography>
+                              </OrderbookRow>
+                            );
+                          })}
+                        </div>
+
+                        {/* Quick Stats */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          padding: '4px 10px',
+                          borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+                          background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+                        }}>
+                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>
+                            {asks.length} sells · {bids.length} buys
+                          </Typography>
+                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>
+                            Click price to set
+                          </Typography>
+                        </div>
+                      </>
+                    )}
+                  </InlineOrderbook>
+                )}
               </Stack>
             </Box>
           )}

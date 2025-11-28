@@ -1003,7 +1003,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 {(() => {
                   const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
                   const { Icon, size, opacity } = getTradeSizeInfo(val);
-                  return <Icon size={size - 2} style={{ opacity: opacity * 0.6, color: '#3b82f6', marginLeft: '2px' }} />;
+                  return <Icon size={size} style={{ opacity, color: '#3b82f6', marginLeft: '4px' }} />;
                 })()}
               </Box>
 
@@ -1065,10 +1065,26 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Holders</Tab>
         </Tabs>
         {tabValue === 0 && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '11px', cursor: 'pointer', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-            <input type="checkbox" checked={xrpOnly} onChange={handleXrpOnlyChange} style={{ width: '12px', height: '12px', accentColor: '#3b82f6' }} />
+          <button
+            onClick={() => { setXrpOnly(!xrpOnly); setPage(1); }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '5px 10px',
+              fontSize: '11px',
+              fontWeight: 500,
+              borderRadius: '6px',
+              border: `1.5px solid ${xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+              background: xrpOnly ? (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent',
+              color: xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+              cursor: 'pointer',
+              transition: 'all 0.15s'
+            }}
+          >
+            <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" alt="" style={{ width: 14, height: 14, borderRadius: '50%' }} />
             XRP pairs
-          </label>
+          </button>
         )}
       </Box>
 
