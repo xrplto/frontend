@@ -89,6 +89,7 @@ const TransactionDetailsPanel = memo(({
   open,
   onClose,
   transactionHash,
+  tradeAccount,
   onSelectTransaction,
   mode = 'transaction',
   pair,
@@ -320,13 +321,13 @@ const TransactionDetailsPanel = memo(({
           <div className={cn('p-3 rounded-xl space-y-2', isDark ? 'bg-white/[0.02]' : 'bg-black/[0.02]')}>
             <div
               className="flex items-center gap-3 cursor-pointer group"
-              onClick={() => window.open(`https://xrpl.to/profile/${transaction.Account}`, '_blank')}
+              onClick={() => window.open(`https://xrpl.to/profile/${tradeAccount || transaction.Account}`, '_blank')}
             >
-              <AccountAvatar account={transaction.Account} size={20} />
+              <AccountAvatar account={tradeAccount || transaction.Account} size={20} />
               <div className="flex-1 min-w-0">
-                <span className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-black/30')}>From</span>
+                <span className={cn('text-[9px] uppercase tracking-wider', isDark ? 'text-white/30' : 'text-black/30')}>{tradeAccount ? 'Trader' : 'From'}</span>
                 <p className={cn('text-[11px] font-mono truncate group-hover:text-cyan-400 transition-colors', isDark ? 'text-white/70' : 'text-gray-700')}>
-                  {transaction.Account}
+                  {tradeAccount || transaction.Account}
                 </p>
               </div>
             </div>

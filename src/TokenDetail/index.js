@@ -26,6 +26,7 @@ const TokenDetail = memo(
     const [creatorTxOpen, setCreatorTxOpen] = useState(creatorPanelOpen || false);
     const [latestCreatorTx, setLatestCreatorTx] = useState(null);
     const [selectedTxHash, setSelectedTxHash] = useState(null);
+    const [selectedTradeAccount, setSelectedTradeAccount] = useState(null);
     const [txDetailsOpen, setTxDetailsOpen] = useState(transactionPanelOpen || false);
     const [panelMode, setPanelMode] = useState('transaction');
     const [orderBookData, setOrderBookData] = useState({
@@ -68,9 +69,10 @@ const TokenDetail = memo(
     }, [creatorTxOpen, onCreatorPanelToggle]);
 
     // Handle transaction selection
-    const handleSelectTransaction = useCallback((hash) => {
+    const handleSelectTransaction = useCallback((hash, tradeAccount = null) => {
       requestAnimationFrame(() => {
         setSelectedTxHash(hash);
+        setSelectedTradeAccount(tradeAccount);
         setPanelMode('transaction');
         setTxDetailsOpen(true);
         if (onTransactionPanelToggle) {
@@ -167,6 +169,7 @@ const TokenDetail = memo(
             open={txDetailsOpen}
             onClose={handleTxDetailsClose}
             transactionHash={selectedTxHash}
+            tradeAccount={selectedTradeAccount}
             onSelectTransaction={handleSelectTransaction}
             mode={panelMode}
             pair={orderBookData.pair}

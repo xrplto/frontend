@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
-import { X, RefreshCw, ChevronUp, ChevronDown, Zap, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { X, RefreshCw, ChevronDown, Zap, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { Client } from 'xrpl';
 import { fNumber } from 'src/utils/formatters';
 import { parseAmount, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import Decimal from 'decimal.js-light';
 import { cn } from 'src/utils/cn';
 
+const BASE_URL = 'https://api.xrpl.to';
 const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';
 
 const formatTimeAgo = (date) => {
@@ -126,22 +127,11 @@ const CreatorTransactionsDialog = memo(
       setError(null);
 
       try {
-        const client = new Client(XRPL_WEBSOCKET_URL, { connectionTimeout: 10000 });
-        await client.connect();
+        const response = await fetch(`${BASE_URL}/api/account_tx/${creatorAddress}?limit=20`);
+        const data = await response.json();
 
-        const response = await client.request({
-          command: 'account_tx',
-          account: creatorAddress,
-          ledger_index_min: -1,
-          ledger_index_max: -1,
-          limit: 20,
-          forward: false
-        });
-
-        await client.disconnect();
-
-        if (response?.result?.transactions) {
-          const validTxs = response.result.transactions
+        if (data?.result === 'success' && data?.transactions) {
+          const validTxs = data.transactions
             .map(txData => txData.tx_json && !txData.tx ? { ...txData, tx: txData.tx_json } : txData)
             .filter(txData => txData?.tx?.TransactionType)
             .slice(0, 10);

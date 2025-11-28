@@ -648,9 +648,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     setPage(1);
   };
 
-  const handleTxClick = (hash) => {
+  const handleTxClick = (hash, tradeAccount) => {
     if (onTransactionClick) {
-      onTransactionClick(hash);
+      onTransactionClick(hash, tradeAccount);
     }
   };
 
@@ -963,13 +963,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       const amountData = isBuy ? trade.got : trade.paid;
       const totalData = isBuy ? trade.paid : trade.got;
 
-      let addressToShow = trade.maker;
-      if (amm) {
-        if (trade.maker === amm) {
-          addressToShow = trade.taker;
-        } else if (trade.taker === amm) {
-          addressToShow = trade.maker;
-        }
+      // Always show taker (trade initiator), unless taker is the AMM account
+      // In AMM trades, show the human trader (maker) instead
+      let addressToShow = trade.taker;
+      if (amm && trade.taker === amm) {
+        addressToShow = trade.maker;
       }
 
       return (
@@ -1011,7 +1009,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 {addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : ''}
               </Link>
 
-              <IconButton onClick={() => handleTxClick(trade.hash)} isDark={isDark}>
+              <IconButton onClick={() => handleTxClick(trade.hash, addressToShow)} isDark={isDark}>
                 <ExternalLink size={12} />
               </IconButton>
             </Box>
