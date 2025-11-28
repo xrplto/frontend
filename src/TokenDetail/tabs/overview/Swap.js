@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import styled from '@emotion/styled';
 import { keyframes, css } from '@emotion/react';
-import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, BookOpen, ExternalLink } from 'lucide-react';
+import { ArrowUpDown, RefreshCw, EyeOff, X, ChevronDown, ChevronUp, BookOpen } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { useDispatch, useSelector } from 'react-redux';
 import axios from 'axios';
@@ -20,10 +20,8 @@ const currencySymbols = {
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
-import useWebSocket from 'react-use-websocket';
 
 import { configureMemos } from 'src/utils/parseUtils';
-import { processOrderbookOffers } from 'src/utils/parseUtils';
 import Image from 'next/image';
 import { PuffLoader } from '../../../components/Spinners';
 import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
@@ -621,7 +619,6 @@ const SpreadIndicator = styled.div`
 `;
 
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
-  const WSS_URL = 'wss://s1.ripple.com';
 
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
@@ -820,67 +817,62 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
 
-  const [wsReady, setWsReady] = useState(false);
-  const { sendJsonMessage } = useWebSocket(WSS_URL, {
-    onOpen: () => {
-      setWsReady(true);
-    },
-    onClose: () => {
-      setWsReady(false);
-    },
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => processMessages(event)
-  });
-
+  // Fetch orderbook from API
   useEffect(() => {
-    let reqID = 1;
-    function sendRequest() {
-      if (!wsReady) return;
+    const controller = new AbortController();
 
+    async function fetchOrderbook() {
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
+      if (!curr1 || !curr2) return;
 
-      const cmdAsk = {
-        id: reqID,
-        command: 'book_offers',
-        taker_gets: {
-          currency: curr1.currency,
-          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-        },
-        taker_pays: {
-          currency: curr2.currency,
-          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-        },
-        ledger_index: 'validated',
-        limit: 60
-      };
-      const cmdBid = {
-        id: reqID + 1,
-        command: 'book_offers',
-        taker_gets: {
-          currency: curr2.currency,
-          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-        },
-        taker_pays: {
-          currency: curr1.currency,
-          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-        },
-        ledger_index: 'validated',
-        limit: 60
-      };
-      sendJsonMessage(cmdAsk);
-      sendJsonMessage(cmdBid);
-      reqID += 2;
+      try {
+        const params = new URLSearchParams({
+          base_currency: curr1.currency,
+          quote_currency: curr2.currency,
+          limit: '60'
+        });
+        if (curr1.currency !== 'XRP' && curr1.issuer) params.append('base_issuer', curr1.issuer);
+        if (curr2.currency !== 'XRP' && curr2.issuer) params.append('quote_issuer', curr2.issuer);
+
+        const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
+
+        if (res.data?.success) {
+          const parseOffer = (offer, isBid) => {
+            const getAmount = (val) => typeof val === 'string' ? parseFloat(val) / 1e6 : parseFloat(val.value);
+            const gets = getAmount(offer.TakerGets);
+            const pays = getAmount(offer.TakerPays);
+            const price = isBid ? gets / pays : pays / gets;
+            const amount = isBid ? pays : gets;
+            return { price, amount, Account: offer.Account };
+          };
+
+          const parsedBids = (res.data.bids || []).map(o => parseOffer(o, true)).sort((a, b) => b.price - a.price);
+          const parsedAsks = (res.data.asks || []).map(o => parseOffer(o, false)).sort((a, b) => a.price - b.price);
+
+          // Add cumulative sumAmount
+          let bidSum = 0, askSum = 0;
+          parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
+          parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
+
+          setBids(parsedBids.slice(0, 30));
+          setAsks(parsedAsks.slice(0, 30));
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          console.error('Orderbook fetch error:', err);
+        }
+      }
     }
 
-    sendRequest();
-
-    const timer = setInterval(() => sendRequest(), 4000);
+    fetchOrderbook();
+    const timer = setInterval(fetchOrderbook, 5000);
 
     return () => {
+      controller.abort();
       clearInterval(timer);
     };
-  }, [wsReady, pair, revert, sendJsonMessage]);
+  }, [pair]);
 
   useEffect(() => {
     if (!onOrderBookData) return;
@@ -973,22 +965,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     return removeShift;
   }, [orderType, orderBookOpen, onOrderBookToggle, showOrderbook]);
-
-  const processMessages = (event) => {
-    const orderBook = JSON.parse(event.data);
-
-    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-      const req = orderBook.id % 2;
-      if (req === 1) {
-        const parsed = processOrderbookOffers(orderBook.result.offers, 'asks');
-        setAsks(parsed.slice(0, 30));
-      }
-      if (req === 0) {
-        const parsed = processOrderbookOffers(orderBook.result.offers, 'bids');
-        setBids(parsed.slice(0, 30));
-      }
-    }
-  };
 
   useEffect(() => {
     const controller = new AbortController();
@@ -2204,40 +2180,28 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           Order Book
                         </Typography>
                       </Stack>
-                      <Stack direction="row" spacing={0.25} alignItems="center">
-                        <IconButton
-                          size="small"
-                          onClick={() => setShowInlineOrderbook(!showInlineOrderbook)}
-                          isDark={isDark}
-                          sx={{ padding: '2px', width: '18px', height: '18px' }}
-                        >
-                          {showInlineOrderbook ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-                        </IconButton>
-                        {onOrderBookToggle && (
-                          <IconButton
-                            size="small"
-                            onClick={() => onOrderBookToggle(!orderBookOpen)}
-                            isDark={isDark}
-                            sx={{ padding: '2px', width: '18px', height: '18px', color: '#3b82f6' }}
-                          >
-                            <ExternalLink size={11} />
-                          </IconButton>
-                        )}
-                      </Stack>
+                      <IconButton
+                        size="small"
+                        onClick={() => setShowInlineOrderbook(!showInlineOrderbook)}
+                        isDark={isDark}
+                        sx={{ padding: '2px', width: '18px', height: '18px' }}
+                      >
+                        {showInlineOrderbook ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+                      </IconButton>
                     </OrderbookHeader>
 
                     {showInlineOrderbook && (
                       <>
-                        {/* Asks (Sell Orders) - reversed to show lowest first (bottom) */}
-                        <div style={{ maxHeight: '100px', overflow: 'hidden' }}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 10px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}` }}>
+                        {/* Asks (Sell Orders) - show lowest asks near spread */}
+                        <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 10px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, position: 'sticky', top: 0, background: isDark ? '#000' : '#fff', zIndex: 1 }}>
                             <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', color: '#ef4444', opacity: 0.8 }}>Price</Typography>
                             <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Amount</Typography>
-                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Total</Typography>
+                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6 }}>Maker</Typography>
                           </div>
-                          {asks.slice(0, 5).reverse().map((ask, idx) => {
-                            const origIdx = Math.min(4, asks.length - 1) - idx;
-                            const maxAmount = Math.max(...asks.slice(0, 5).map(a => Number(a.amount) || 0));
+                          {[...asks.slice(0, 30)].reverse().map((ask, idx) => {
+                            const origIdx = Math.min(29, asks.length - 1) - idx;
+                            const maxAmount = Math.max(...asks.slice(0, 30).map(a => Number(a.amount) || 0));
                             const barWidth = maxAmount > 0 ? (Number(ask.amount) / maxAmount) * 100 : 0;
                             const isAtLimit = limitPrice && Number(ask.price) <= Number(limitPrice);
                             return (
@@ -2252,14 +2216,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                                 }}
                               >
                                 <OrderbookDepthBar type="ask" width={barWidth} />
-                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#ef4444', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
-                                  {fNumber(ask.price)}
-                                </Typography>
+                                <Tooltip title={ask.Account || ''}>
+                                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#ef4444', position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'help' }}>
+                                    {fNumber(ask.price)}
+                                  </Typography>
+                                </Tooltip>
                                 <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
                                   {fNumber(ask.amount)}
                                 </Typography>
-                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', opacity: 0.6, position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
-                                  {fNumber(ask.sumAmount)}
+                                <Typography
+                                  variant="caption"
+                                  isDark={isDark}
+                                  sx={{ fontSize: '9px', opacity: 0.5, position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'pointer', '&:hover': { opacity: 1, color: '#3b82f6' } }}
+                                  onClick={(e) => { e.stopPropagation(); ask.Account && window.open(`/profile/${ask.Account}`, '_blank'); }}
+                                >
+                                  {ask.Account ? `${ask.Account.slice(0, 4)}...${ask.Account.slice(-3)}` : ''}
                                 </Typography>
                               </OrderbookRow>
                             );
@@ -2268,18 +2239,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
                         {/* Spread Indicator */}
                         <SpreadIndicator isDark={isDark}>
-                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontWeight: 500 }}>
-                            {midPrice != null ? fNumber(midPrice) : '—'}
-                          </Typography>
-                          <Typography variant="caption" isDark={isDark} sx={{ fontSize: '9px', opacity: 0.6, ml: 1 }}>
-                            {spreadPct != null ? `${spreadPct.toFixed(2)}% spread` : ''}
-                          </Typography>
+                          <Stack direction="row" alignItems="center" justifyContent="space-between" width="100%">
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: '#22c55e', fontFamily: 'monospace' }}>
+                              ▲ {bestBid != null ? fNumber(bestBid) : '—'}
+                            </Typography>
+                            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', fontWeight: 500, px: 1, borderRadius: '4px', background: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)' }}>
+                              {spreadPct != null ? `${spreadPct.toFixed(2)}%` : '—'}
+                            </Typography>
+                            <Typography variant="caption" sx={{ fontSize: '9px', color: '#ef4444', fontFamily: 'monospace' }}>
+                              {bestAsk != null ? fNumber(bestAsk) : '—'} ▼
+                            </Typography>
+                          </Stack>
                         </SpreadIndicator>
 
                         {/* Bids (Buy Orders) */}
-                        <div style={{ maxHeight: '100px', overflow: 'hidden' }}>
-                          {bids.slice(0, 5).map((bid, idx) => {
-                            const maxAmount = Math.max(...bids.slice(0, 5).map(b => Number(b.amount) || 0));
+                        <div style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                          {bids.slice(0, 30).map((bid, idx) => {
+                            const maxAmount = Math.max(...bids.slice(0, 30).map(b => Number(b.amount) || 0));
                             const barWidth = maxAmount > 0 ? (Number(bid.amount) / maxAmount) * 100 : 0;
                             const isAtLimit = limitPrice && Number(bid.price) >= Number(limitPrice);
                             return (
@@ -2294,14 +2270,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                                 }}
                               >
                                 <OrderbookDepthBar type="bid" width={barWidth} />
-                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#22c55e', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
-                                  {fNumber(bid.price)}
-                                </Typography>
+                                <Tooltip title={bid.Account || ''}>
+                                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', color: '#22c55e', position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'help' }}>
+                                    {fNumber(bid.price)}
+                                  </Typography>
+                                </Tooltip>
                                 <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
                                   {fNumber(bid.amount)}
                                 </Typography>
-                                <Typography variant="caption" isDark={isDark} sx={{ fontSize: '10px', opacity: 0.6, position: 'relative', zIndex: 1, fontFamily: 'monospace' }}>
-                                  {fNumber(bid.sumAmount)}
+                                <Typography
+                                  variant="caption"
+                                  isDark={isDark}
+                                  sx={{ fontSize: '9px', opacity: 0.5, position: 'relative', zIndex: 1, fontFamily: 'monospace', cursor: 'pointer', '&:hover': { opacity: 1, color: '#3b82f6' } }}
+                                  onClick={(e) => { e.stopPropagation(); bid.Account && window.open(`/profile/${bid.Account}`, '_blank'); }}
+                                >
+                                  {bid.Account ? `${bid.Account.slice(0, 4)}...${bid.Account.slice(-3)}` : ''}
                                 </Typography>
                               </OrderbookRow>
                             );
