@@ -59,7 +59,7 @@ function Detail({ data }) {
         {tokenName} Price Chart & Trading Data
       </h1>
 
-      <div className={isPanelOpen ? "w-full px-4" : "max-w-[1920px] mx-auto w-full px-4"}>
+      <div className="w-full px-4">
         <TokenDetail
           token={token}
           tab={data.tab}

@@ -244,27 +244,31 @@ const OrderBook = ({ token, onPriceClick }) => {
         {/* Asks (Sell Orders) - reversed so lowest ask at bottom near spread */}
         <Side ref={asksSideRef}>
           <ColumnHeader isDark={isDark}>
-            <span style={{ color: '#ef4444' }}>Ask (XRP)</span>
-            <span>Amount</span>
-            <span>Maker</span>
+            <span style={{ color: '#ef4444' }}>XRP</span>
+            <span>{token?.name || token?.currency || 'Token'}</span>
+            <span>By</span>
           </ColumnHeader>
-          {[...asks].reverse().map((ask, idx) => (
-            <Row
-              key={idx}
-              type="ask"
-              onClick={() => onPriceClick?.(ask.price)}
-            >
-              <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
-              <Price type="ask">✕{formatPrice(ask.price)}</Price>
-              <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
-              <Maker
-                isDark={isDark}
-                onClick={(e) => { e.stopPropagation(); ask.Account && window.open(`/profile/${ask.Account}`, '_blank'); }}
+          {[...asks].reverse().map((ask, idx) => {
+            const acc = ask.account || ask.Account;
+            return (
+              <Row
+                key={idx}
+                type="ask"
+                onClick={() => onPriceClick?.(ask.price)}
               >
-                {ask.Account ? `${ask.Account.slice(0, 4)}...${ask.Account.slice(-3)}` : ''}
-              </Maker>
-            </Row>
-          ))}
+                <DepthBar type="ask" width={(ask.amount / askMax) * 100} />
+                <Price type="ask">{formatPrice(ask.price)}</Price>
+                <Amount isDark={isDark}>{fNumber(ask.amount)}</Amount>
+                <Maker
+                  isDark={isDark}
+                  title={acc || ''}
+                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/profile/${acc}`, '_blank'); }}
+                >
+                  {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                </Maker>
+              </Row>
+            );
+          })}
         </Side>
 
         {/* Spread indicator in middle */}
@@ -284,27 +288,31 @@ const OrderBook = ({ token, onPriceClick }) => {
         {/* Bids (Buy Orders) - highest bid at top near spread */}
         <Side>
           <ColumnHeader isDark={isDark}>
-            <span style={{ color: '#22c55e' }}>Bid (XRP)</span>
-            <span>Amount</span>
-            <span>Maker</span>
+            <span style={{ color: '#22c55e' }}>XRP</span>
+            <span>{token?.name || token?.currency || 'Token'}</span>
+            <span>By</span>
           </ColumnHeader>
-          {bids.map((bid, idx) => (
-            <Row
-              key={idx}
-              type="bid"
-              onClick={() => onPriceClick?.(bid.price)}
-            >
-              <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
-              <Price type="bid">✕{formatPrice(bid.price)}</Price>
-              <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
-              <Maker
-                isDark={isDark}
-                onClick={(e) => { e.stopPropagation(); bid.Account && window.open(`/profile/${bid.Account}`, '_blank'); }}
+          {bids.map((bid, idx) => {
+            const acc = bid.account || bid.Account;
+            return (
+              <Row
+                key={idx}
+                type="bid"
+                onClick={() => onPriceClick?.(bid.price)}
               >
-                {bid.Account ? `${bid.Account.slice(0, 4)}...${bid.Account.slice(-3)}` : ''}
-              </Maker>
-            </Row>
-          ))}
+                <DepthBar type="bid" width={(bid.amount / bidMax) * 100} />
+                <Price type="bid">{formatPrice(bid.price)}</Price>
+                <Amount isDark={isDark}>{fNumber(bid.amount)}</Amount>
+                <Maker
+                  isDark={isDark}
+                  title={acc || ''}
+                  onClick={(e) => { e.stopPropagation(); acc && window.open(`/profile/${acc}`, '_blank'); }}
+                >
+                  {acc ? `${acc.slice(1, 5)}…${acc.slice(-2)}` : ''}
+                </Maker>
+              </Row>
+            );
+          })}
         </Side>
       </Content>
     </Container>

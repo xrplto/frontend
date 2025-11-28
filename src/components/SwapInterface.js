@@ -2904,8 +2904,8 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               ) : (
                 <>
                   <div className="flex text-[10px] font-mono px-2 py-1.5 border-b" style={{ borderColor: darkMode ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.08)' }}>
-                    <span className={cn("flex-1", darkMode ? "text-primary/40" : "text-primary/40")}>PRICE</span>
-                    <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>AMOUNT</span>
+                    <span className={cn("flex-1", darkMode ? "text-primary/40" : "text-primary/40")}>XRP</span>
+                    <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>{token2?.name || token2?.currency || 'Token'}</span>
                     <span className={cn("flex-1 text-right", darkMode ? "text-primary/40" : "text-primary/40")}>TOTAL</span>
                   </div>
                   {/* Asks */}

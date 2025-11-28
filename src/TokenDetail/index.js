@@ -130,15 +130,7 @@ const TokenDetail = memo(
         )}
 
         {/* Main Content Area */}
-        <div
-          className={cn(
-            "flex-1 min-w-0",
-            !isMobile && txDetailsOpen && panelMode === 'orderbook' && "md:pr-[280px] lg:pr-[300px] xl:pr-[320px]",
-            !isMobile && txDetailsOpen && panelMode !== 'orderbook' && "md:pr-[256px] lg:pr-[272px] xl:pr-[288px]",
-            !isMobile && !txDetailsOpen && notificationPanelOpen && "md:pr-[320px] lg:pr-[360px] xl:pr-[380px]",
-            !isMobile && creatorTxOpen && "md:pl-[240px] lg:pl-[256px] xl:pl-[272px]"
-          )}
-        >
+        <div className="flex-1 min-w-0">
           {!isMobile && <LinkCascade token={token} />}
 
           <div className="pr-0">
