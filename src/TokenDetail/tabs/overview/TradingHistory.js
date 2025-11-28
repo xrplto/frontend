@@ -377,30 +377,30 @@ const formatRelativeTime = (timestamp) => {
   const diffInSeconds = Math.floor((now - timestamp) / 1000);
 
   if (diffInSeconds < 0) {
-    return 'just now';
+    return 'now';
   } else if (diffInSeconds < 60) {
-    return `${diffInSeconds}s ago`;
+    return `${diffInSeconds}s`;
   } else if (diffInSeconds < 3600) {
     const minutes = Math.floor(diffInSeconds / 60);
-    return `${minutes}min ago`;
+    return `${minutes}m`;
   } else if (diffInSeconds < 86400) {
     const hours = Math.floor(diffInSeconds / 3600);
-    return `${hours}h ago`;
+    return `${hours}h`;
   } else {
     const days = Math.floor(diffInSeconds / 86400);
-    return `${days}d ago`;
+    return `${days}d`;
   }
 };
 
-// Trade size indicator - returns icon component and color based on XRP value
+// Trade size indicator - returns icon and opacity based on XRP value
 const getTradeSizeInfo = (value) => {
   const xrpValue = parseFloat(value);
-  if (xrpValue < 500) return { Icon: Fish, size: 12, opacity: 0.4 };
-  if (xrpValue < 1000) return { Icon: Fish, size: 13, opacity: 0.5 };
-  if (xrpValue < 2500) return { Icon: Waves, size: 13, opacity: 0.6 };
-  if (xrpValue < 5000) return { Icon: Anchor, size: 14, opacity: 0.7 };
-  if (xrpValue < 10000) return { Icon: Ship, size: 14, opacity: 0.8 };
-  return { Icon: Ship, size: 16, opacity: 1 };
+  if (xrpValue < 500) return { Icon: Fish, opacity: 0.3 };
+  if (xrpValue < 1000) return { Icon: Fish, opacity: 0.5 };
+  if (xrpValue < 2500) return { Icon: Fish, opacity: 0.7 };
+  if (xrpValue < 5000) return { Icon: Anchor, opacity: 0.8 };
+  if (xrpValue < 10000) return { Icon: Ship, opacity: 0.9 };
+  return { Icon: Ship, opacity: 1 };
 };
 
 const formatTradeValue = (value) => {
@@ -976,7 +976,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <CardContent>
             <Box style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.8fr 1.4fr 1.4fr 0.8fr 0.2fr', gap: '4px', alignItems: 'center' }}>
               <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', minWidth: '44px', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', minWidth: '28px', whiteSpace: 'nowrap' }}>
                   {formatRelativeTime(trade.time)}
                 </span>
                 <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
@@ -1000,8 +1000,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 </span>
                 {(() => {
                   const val = totalData.currency === 'XRP' ? parseFloat(totalData.value) : xrpAmount;
-                  const { Icon, size, opacity } = getTradeSizeInfo(val);
-                  return <Icon size={size} style={{ opacity, color: '#3b82f6', marginLeft: '4px' }} />;
+                  const { Icon, opacity } = getTradeSizeInfo(val);
+                  return <Icon size={13} style={{ opacity, color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', marginLeft: '4px' }} />;
                 })()}
               </Box>
 
