@@ -976,9 +976,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
           <VolumeIndicator volume={volumePercentage} isDark={isDark} />
           <CardContent>
-            <Box style={{ display: 'grid', gridTemplateColumns: '0.9fr 0.8fr 1.4fr 1.4fr 0.8fr 0.2fr', gap: '8px', alignItems: 'center' }}>
-              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', width: '52px' }}>
+            <Box style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.8fr 1.4fr 1.4fr 0.8fr 0.2fr', gap: '4px', alignItems: 'center' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', minWidth: '44px', whiteSpace: 'nowrap' }}>
                   {formatRelativeTime(trade.time)}
                 </span>
                 <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
@@ -1091,7 +1091,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       {tabValue === 0 && (
         <>
           <TableHeader isDark={isDark}>
-            <div style={{ flex: '0.9', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <div style={{ flex: '1.05', display: 'flex', alignItems: 'center', gap: '4px' }}>
               Time
               <LiveIndicator isDark={isDark}>
                 <LiveCircle />

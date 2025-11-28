@@ -218,8 +218,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
 
   const formatValue = (v) => {
     if (v >= 1e9) return `${(v / 1e9).toFixed(1)}B`;
-    if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
-    if (v >= 1e3) return `${(v / 1e3).toFixed(1)}K`;
+    if (v >= 999500) return `${(v / 1e6).toFixed(1)}M`;
+    if (v >= 999.5) return `${(v / 1e3).toFixed(1)}K`;
     return fNumber(v);
   };
 

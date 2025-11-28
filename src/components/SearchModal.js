@@ -6,6 +6,7 @@ import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
+import { AlertTriangle, BadgeCheck, Search, X, TrendingUp, Layers, Clock } from 'lucide-react';
 
 const API_URL = 'https://api.xrpl.to/api';
 
@@ -204,9 +205,7 @@ function SearchModal({ open, onClose }) {
           {/* Search Header */}
           <div className={cn("border-b px-4 py-3", theme.border)}>
             <div className="flex items-center gap-3">
-              <svg className={cn("h-4 w-4", theme.textSecondary)} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
+              <Search size={16} className={theme.textSecondary} />
               <input
                 ref={inputRef}
                 placeholder="Search tokens and collections..."
@@ -216,15 +215,10 @@ function SearchModal({ open, onClose }) {
                 className={cn("flex-1 bg-transparent text-[15px] font-normal focus:outline-none", theme.text, isDark ? "placeholder:text-gray-500" : "placeholder:text-gray-400")}
               />
               {loading && (
-                <svg className="h-4 w-4 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                </svg>
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               )}
               <button onClick={handleClose} className={cn("rounded-md p-1 transition-colors", theme.textSecondary, isDark ? "hover:bg-white/10 hover:text-white" : "hover:bg-gray-100 hover:text-gray-900")}>
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                <X size={16} />
               </button>
             </div>
           </div>
@@ -236,7 +230,10 @@ function SearchModal({ open, onClose }) {
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
                   <div className="px-4 pt-3 pb-1">
-                    <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500 mb-2">Recent</p>
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <Clock size={12} className="text-gray-500" />
+                      <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500">Recent</p>
+                    </div>
                     <div className="flex flex-wrap gap-1.5">
                       {recentSearches.slice(0, 4).map((item, index) => (
                         <button
@@ -277,41 +274,69 @@ function SearchModal({ open, onClose }) {
                 {!loadingTrending && trendingTokens.length > 0 && (
                   <>
                     <div className="flex items-center gap-1.5 px-4 pb-1.5 pt-3">
-                      <svg className="h-3 w-3 text-primary" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-                      </svg>
+                      <TrendingUp size={12} className="text-primary" />
                       <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500">Trending</p>
                     </div>
                     <div>
-                      {trendingTokens.map((token, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleResultClick(token, 'token')}
-                          className={cn("flex w-full items-center gap-3 px-4 py-2", theme.item)}
-                        >
-                          <Avatar.Root className="h-8 w-8">
-                            <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-full w-full rounded-full object-cover" />
-                            <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{token.user?.[0]}</Avatar.Fallback>
-                          </Avatar.Root>
-                          <div className="flex-1 text-left">
-                            <p className={cn("truncate text-[13px] font-normal", theme.text)}>{token.user}</p>
-                            <p className="truncate text-[11px] text-gray-500">{token.name}</p>
-                          </div>
-                          <div className="text-right">
-                            {token.exch !== undefined && token.exch !== null && (
-                              <p className={cn("text-[12px] font-normal", theme.text)}>
-                                {activeFiatCurrency === 'XRP' ? `${formatPrice(convertPrice(token.exch))} XRP` : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
-                              </p>
+                      {trendingTokens.map((token, index) => {
+                        const isCopycat = token.warning === 'copycat';
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleResultClick(token, 'token')}
+                            className={cn(
+                              "flex w-full items-center gap-3 px-4 py-2.5 transition-colors",
+                              theme.item,
+                              isCopycat && (isDark ? 'bg-red-500/5' : 'bg-red-50')
                             )}
-                            {token.pro24h !== undefined && token.pro24h !== null && (
-                              <p className={cn('text-[10px] font-normal', parseFloat(token.pro24h) >= 0 ? 'text-green-500' : 'text-red-500')}>
-                                {parseFloat(token.pro24h) >= 0 ? '+' : ''}
-                                {parseFloat(token.pro24h).toFixed(2)}%
-                              </p>
-                            )}
-                          </div>
-                        </button>
-                      ))}
+                          >
+                            <div className="relative">
+                              <Avatar.Root className="h-9 w-9">
+                                <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-9 w-9 rounded-full object-cover" />
+                                <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{token.user?.[0]}</Avatar.Fallback>
+                              </Avatar.Root>
+                              {isCopycat && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                  <AlertTriangle size={10} className="text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className={cn(
+                                  "truncate text-[13px] font-normal",
+                                  theme.text,
+                                  isCopycat && 'text-red-500'
+                                )}>{token.user}</p>
+                                {token.verified && (
+                                  <BadgeCheck size={14} className="text-primary flex-shrink-0" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <p className="truncate text-[11px] text-gray-500">{token.name}</p>
+                                {isCopycat && (
+                                  <span className="text-[9px] font-medium uppercase tracking-wide text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                                    Copycat
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              {token.exch !== undefined && token.exch !== null && (
+                                <p className={cn("text-[12px] font-normal", theme.text)}>
+                                  {activeFiatCurrency === 'XRP' ? `${formatPrice(convertPrice(token.exch))} XRP` : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
+                                </p>
+                              )}
+                              {token.pro24h !== undefined && token.pro24h !== null && (
+                                <p className={cn('text-[10px] font-normal', parseFloat(token.pro24h) >= 0 ? 'text-green-500' : 'text-red-500')}>
+                                  {parseFloat(token.pro24h) >= 0 ? '+' : ''}
+                                  {parseFloat(token.pro24h).toFixed(2)}%
+                                </p>
+                              )}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
@@ -321,9 +346,7 @@ function SearchModal({ open, onClose }) {
                   <>
                     <div className={cn("mx-4 my-2 h-px", theme.divider)} />
                     <div className="flex items-center gap-1.5 px-4 pb-1.5 pt-1">
-                      <svg className="h-3 w-3 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                      </svg>
+                      <Layers size={12} className="text-green-500" />
                       <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500">Trending Collections</p>
                     </div>
                     <div>
@@ -331,20 +354,22 @@ function SearchModal({ open, onClose }) {
                         <button
                           key={index}
                           onClick={() => handleResultClick(collection, 'collection')}
-                          className={cn("flex w-full items-center gap-3 px-4 py-2", theme.item)}
+                          className={cn("flex w-full items-center gap-3 px-4 py-2.5 transition-colors", theme.item)}
                         >
-                          <Avatar.Root className="h-8 w-8">
-                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-full w-full rounded-full object-cover" />
+                          <Avatar.Root className="h-9 w-9">
+                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-9 w-9 rounded-full object-cover" />
                             <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{collection.name?.[0]}</Avatar.Fallback>
                           </Avatar.Root>
-                          <div className="flex-1 text-left">
+                          <div className="flex-1 text-left min-w-0">
                             <div className="flex items-center gap-1.5">
                               <p className={cn("truncate text-[13px] font-normal", theme.text)}>{collection.name}</p>
-                              {collection.verified === 'yes' && <span className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium flex-shrink-0">✓</span>}
+                              {collection.verified === 'yes' && (
+                                <BadgeCheck size={14} className="text-primary flex-shrink-0" />
+                              )}
                             </div>
                             <p className="truncate text-[11px] text-gray-500">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
                           </div>
-                          <div className="text-right">
+                          <div className="text-right flex-shrink-0">
                             {collection.floor?.amount && (
                               <p className={cn("text-[12px] font-normal", theme.text)}>
                                 {Number(collection.floor.amount) >= 1 ? Math.round(collection.floor.amount) : collection.floor.amount} XRP
@@ -364,10 +389,7 @@ function SearchModal({ open, onClose }) {
 
                 {loadingTrending && (
                   <div className="flex justify-center py-6">
-                    <svg className="h-5 w-5 animate-spin text-primary" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
+                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
                   </div>
                 )}
               </>
@@ -379,32 +401,56 @@ function SearchModal({ open, onClose }) {
                 {searchResults.tokens.length > 0 && (
                   <>
                     <div className="flex items-center gap-2 px-4 pb-2 pt-4">
-                      <svg className="h-3.5 w-3.5 text-primary/50" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clipRule="evenodd" />
-                      </svg>
+                      <TrendingUp size={14} className="text-primary/50" />
                       <p className="text-xs font-normal text-gray-400/60">Tokens</p>
                     </div>
                     <div>
                       {searchResults.tokens.map((token, index) => {
-                        const shouldHighlight = index === 0 && searchResults.tokens.length > 1;
+                        const shouldHighlight = index === 0 && searchResults.tokens.length > 1 && token.verified && !token.warning;
+                        const isCopycat = token.warning === 'copycat';
                         return (
                           <button
                             key={index}
                             onClick={() => handleResultClick(token, 'token')}
-                            className={cn('flex w-full items-center gap-3 px-4 py-2', theme.item, shouldHighlight && 'bg-primary/5')}
+                            className={cn(
+                              'flex w-full items-center gap-3 px-4 py-2.5 transition-colors',
+                              theme.item,
+                              shouldHighlight && 'bg-primary/5',
+                              isCopycat && (isDark ? 'bg-red-500/5' : 'bg-red-50')
+                            )}
                           >
-                            <Avatar.Root className="h-8 w-8">
-                              <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-full w-full rounded-full object-cover" />
-                              <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{token.user?.[0]}</Avatar.Fallback>
-                            </Avatar.Root>
-                            <div className="flex-1 text-left">
-                              <div className="flex items-center gap-1.5">
-                                <p className={cn('truncate text-[13px] font-normal', shouldHighlight ? 'text-primary' : theme.text)}>{token.user}</p>
-                                {token.verified && <span className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium flex-shrink-0">✓</span>}
-                              </div>
-                              <p className="truncate text-[11px] text-gray-500">{token.name}</p>
+                            <div className="relative">
+                              <Avatar.Root className="h-9 w-9">
+                                <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-9 w-9 rounded-full object-cover" />
+                                <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{token.user?.[0]}</Avatar.Fallback>
+                              </Avatar.Root>
+                              {isCopycat && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                  <AlertTriangle size={10} className="text-white" />
+                                </div>
+                              )}
                             </div>
-                            <div className="text-right">
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className={cn(
+                                  'truncate text-[13px] font-normal',
+                                  shouldHighlight ? 'text-primary' : theme.text,
+                                  isCopycat && 'text-red-500'
+                                )}>{token.user}</p>
+                                {token.verified && (
+                                  <BadgeCheck size={14} className="text-primary flex-shrink-0" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <p className="truncate text-[11px] text-gray-500">{token.name}</p>
+                                {isCopycat && (
+                                  <span className="text-[9px] font-medium uppercase tracking-wide text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded flex-shrink-0">
+                                    Copycat
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
                               {token.exch !== undefined && token.exch !== null && (
                                 <p className={cn("text-[13px] font-normal", theme.text)}>
                                   {activeFiatCurrency === 'XRP' ? `${formatPrice(convertPrice(token.exch))} XRP` : `${currencySymbol}${formatPrice(convertPrice(token.exch))}`}
@@ -428,39 +474,58 @@ function SearchModal({ open, onClose }) {
                   <>
                     {searchResults.tokens.length > 0 && <div className={cn("mx-4 my-2 h-px", theme.divider)} />}
                     <div className="flex items-center gap-2 px-4 pb-2 pt-3">
-                      <svg className="h-3.5 w-3.5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M7 3a1 1 0 000 2h6a1 1 0 100-2H7zM4 7a1 1 0 011-1h10a1 1 0 110 2H5a1 1 0 01-1-1zM2 11a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2H4a2 2 0 01-2-2v-4z" />
-                      </svg>
+                      <Layers size={14} className="text-gray-500" />
                       <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Collections</p>
                     </div>
                     <div>
-                      {searchResults.collections.map((collection, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleResultClick(collection, 'collection')}
-                          className={cn("flex w-full items-center gap-3 px-4 py-2", theme.item)}
-                        >
-                          <Avatar.Root className="h-8 w-8">
-                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-full w-full rounded-full object-cover" />
-                            <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{collection.name?.[0]}</Avatar.Fallback>
-                          </Avatar.Root>
-                          <div className="flex-1 text-left">
-                            <div className="flex items-center gap-1.5">
-                              <p className={cn("truncate text-[13px] font-normal", theme.text)}>{collection.name}</p>
-                              {collection.verified === 'yes' && <span className="w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium flex-shrink-0">✓</span>}
-                            </div>
-                            <p className="truncate text-[11px] text-gray-500">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
-                          </div>
-                          <div className="text-right">
-                            {collection.floor?.amount && (
-                              <p className={cn("text-[13px] font-normal", theme.text)}>
-                                {Number(collection.floor.amount) >= 1 ? Math.round(collection.floor.amount) : collection.floor.amount} XRP
-                              </p>
+                      {searchResults.collections.map((collection, index) => {
+                        const isCopycat = collection.warning === 'copycat';
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleResultClick(collection, 'collection')}
+                            className={cn(
+                              "flex w-full items-center gap-3 px-4 py-2.5 transition-colors",
+                              theme.item,
+                              isCopycat && (isDark ? 'bg-red-500/5' : 'bg-red-50')
                             )}
-                            {collection.sales24h > 0 && <p className="text-[10px] text-gray-500">{collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today</p>}
-                          </div>
-                        </button>
-                      ))}
+                          >
+                            <div className="relative">
+                              <Avatar.Root className="h-9 w-9">
+                                <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-9 w-9 rounded-full object-cover" />
+                                <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{collection.name?.[0]}</Avatar.Fallback>
+                              </Avatar.Root>
+                              {isCopycat && (
+                                <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
+                                  <AlertTriangle size={10} className="text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex-1 text-left min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className={cn("truncate text-[13px] font-normal", theme.text, isCopycat && 'text-red-500')}>{collection.name}</p>
+                                {collection.verified === 'yes' && (
+                                  <BadgeCheck size={14} className="text-primary flex-shrink-0" />
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1.5">
+                                <p className="truncate text-[11px] text-gray-500">{collection.items ? `${collection.items.toLocaleString()} items` : 'Collection'}</p>
+                                {isCopycat && (
+                                  <span className="text-[9px] font-medium uppercase tracking-wide text-red-500 bg-red-500/10 px-1.5 py-0.5 rounded flex-shrink-0">Copycat</span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="text-right flex-shrink-0">
+                              {collection.floor?.amount && (
+                                <p className={cn("text-[13px] font-normal", theme.text)}>
+                                  {Number(collection.floor.amount) >= 1 ? Math.round(collection.floor.amount) : collection.floor.amount} XRP
+                                </p>
+                              )}
+                              {collection.sales24h > 0 && <p className="text-[10px] text-gray-500">{collection.sales24h} sale{collection.sales24h !== 1 ? 's' : ''} today</p>}
+                            </div>
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
