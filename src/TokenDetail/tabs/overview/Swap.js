@@ -774,23 +774,24 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
 
-  // Fetch orderbook from API
+  // Fetch orderbook from API - token (token2) as base, XRP (token1) as quote
+  // This gives prices in XRP per token (e.g., 1.69 XRP per DROP)
   useEffect(() => {
     const controller = new AbortController();
 
     async function fetchOrderbook() {
-      const curr1 = pair.curr1;
-      const curr2 = pair.curr2;
-      if (!curr1 || !curr2) return;
+      if (!token1 || !token2) return;
 
       try {
+        // Base = viewed token (token2), Quote = XRP (token1)
+        // Result: price = XRP per token
         const params = new URLSearchParams({
-          base_currency: curr1.currency,
-          quote_currency: curr2.currency,
+          base_currency: token2.currency,
+          quote_currency: token1.currency,
           limit: '60'
         });
-        if (curr1.currency !== 'XRP' && curr1.issuer) params.append('base_issuer', curr1.issuer);
-        if (curr2.currency !== 'XRP' && curr2.issuer) params.append('quote_issuer', curr2.issuer);
+        if (token2.currency !== 'XRP' && token2.issuer) params.append('base_issuer', token2.issuer);
+        if (token1.currency !== 'XRP' && token1.issuer) params.append('quote_issuer', token1.issuer);
 
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
 
@@ -834,7 +835,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       controller.abort();
       clearInterval(timer);
     };
-  }, [pair]);
+  }, [token1, token2]);
 
   useEffect(() => {
     if (!onOrderBookData) return;
