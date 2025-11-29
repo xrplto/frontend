@@ -6,7 +6,7 @@ import { AppContext } from 'src/AppContext';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
-import { AlertTriangle, BadgeCheck, Search, X, TrendingUp, Layers, Clock } from 'lucide-react';
+import { AlertTriangle, BadgeCheck, Search, X, TrendingUp, Layers, Clock, Image } from 'lucide-react';
 
 const API_URL = 'https://api.xrpl.to';
 
@@ -62,7 +62,7 @@ function SearchModal({ open, onClose }) {
   const theme = getThemeClasses(isDark);
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [] });
+  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [], nfts: [] });
   const [loading, setLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
   const [trendingTokens, setTrendingTokens] = useState([]);
@@ -121,7 +121,7 @@ function SearchModal({ open, onClose }) {
 
   useEffect(() => {
     if (!debouncedSearchQuery || !open) {
-      setSearchResults({ tokens: [], collections: [] });
+      setSearchResults({ tokens: [], collections: [], nfts: [] });
       return;
     }
 
@@ -138,7 +138,8 @@ function SearchModal({ open, onClose }) {
 
         setSearchResults({
           tokens: res.data?.tokens?.slice(0, 4) || [],
-          collections: res.data?.collections?.slice(0, 4) || []
+          collections: res.data?.collections?.slice(0, 4) || [],
+          nfts: res.data?.nfts?.slice(0, 6) || []
         });
       } catch (error) {
         if (!axios.isCancel(error)) {
@@ -155,12 +156,13 @@ function SearchModal({ open, onClose }) {
 
   const handleClose = useCallback(() => {
     setSearchQuery('');
-    setSearchResults({ tokens: [], collections: [] });
+    setSearchResults({ tokens: [], collections: [], nfts: [] });
     onClose();
   }, [onClose]);
 
   const handleResultClick = useCallback(
     (item, type) => {
+      const itemId = type === 'nft' ? item._id : item.slug;
       const newRecent = {
         ...item,
         type,
@@ -169,10 +171,17 @@ function SearchModal({ open, onClose }) {
         md5: item.md5,
         user: item.user,
         name: item.name,
-        logoImage: item.logoImage
+        logoImage: item.logoImage,
+        _id: item._id,
+        cslug: item.cslug,
+        collection: item.collection,
+        files: item.files
       };
 
-      const updated = [newRecent, ...recentSearches.filter((r) => r.slug !== item.slug || r.type !== type)].slice(0, 5);
+      const updated = [newRecent, ...recentSearches.filter((r) => {
+        if (type === 'nft') return r._id !== item._id || r.type !== type;
+        return r.slug !== item.slug || r.type !== type;
+      })].slice(0, 5);
 
       setRecentSearches(updated);
       localStorage.setItem('recentSearches', JSON.stringify(updated));
@@ -184,6 +193,8 @@ function SearchModal({ open, onClose }) {
           window.location.href = `/token/${item.slug}`;
         } else if (type === 'collection') {
           window.location.href = `/collection/${item.slug}`;
+        } else if (type === 'nft') {
+          window.location.href = `/nft/${item._id}`;
         }
       }, 0);
     },
@@ -198,7 +209,7 @@ function SearchModal({ open, onClose }) {
         <Dialog.Overlay className={cn("fixed inset-0 z-50", theme.overlay)} />
         <Dialog.Content
           onKeyDown={(e) => e.key === 'Escape' && handleClose()}
-          className={cn("fixed left-1/2 top-[12vh] z-50 max-h-[70vh] w-full max-w-[440px] -translate-x-1/2 overflow-hidden rounded-xl border", theme.modal)}
+          className={cn("fixed left-1/2 top-[12vh] z-50 w-full max-w-[440px] -translate-x-1/2 rounded-xl border", theme.modal)}
         >
           {/* Search Header */}
           <div className={cn("border-b px-4 py-3", theme.border)}>
@@ -206,7 +217,7 @@ function SearchModal({ open, onClose }) {
               <Search size={16} className={theme.textSecondary} />
               <input
                 ref={inputRef}
-                placeholder="Search tokens and collections..."
+                placeholder="Search tokens, collections, NFTs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 autoComplete="off"
@@ -222,7 +233,7 @@ function SearchModal({ open, onClose }) {
           </div>
 
           {/* Content */}
-          <div className="max-h-[calc(65vh-80px)] overflow-y-auto">
+          <div>
             {!searchQuery && (
               <>
                 {/* Recent Searches */}
@@ -243,6 +254,8 @@ function SearchModal({ open, onClose }) {
                                 window.location.href = `/token/${item.slug}`;
                               } else if (item.type === 'collection') {
                                 window.location.href = `/collection/${item.slug}`;
+                              } else if (item.type === 'nft') {
+                                window.location.href = `/nft/${item._id}`;
                               }
                             }, 0);
                           }}
@@ -253,6 +266,10 @@ function SearchModal({ open, onClose }) {
                               src={
                                 item.type === 'collection'
                                   ? `https://s1.xrpl.to/nft-collection/${item.logoImage}`
+                                  : item.type === 'nft'
+                                  ? (item.files?.[0]?.thumbnail?.small
+                                      ? `https://s1.xrpl.to/nft/${item.files[0].thumbnail.small}`
+                                      : `https://s1.xrpl.to/nft-collection/${item.cslug}`)
                                   : `https://s1.xrpl.to/token/${item.md5}`
                               }
                               className="h-full w-full rounded-full object-cover"
@@ -394,7 +411,7 @@ function SearchModal({ open, onClose }) {
             )}
 
             {/* Search Results */}
-            {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && (
+            {(searchResults.tokens.length > 0 || searchResults.collections.length > 0 || searchResults.nfts.length > 0) && (
               <>
                 {searchResults.tokens.length > 0 && (
                   <>
@@ -527,11 +544,51 @@ function SearchModal({ open, onClose }) {
                     </div>
                   </>
                 )}
+
+                {searchResults.nfts.length > 0 && (
+                  <>
+                    {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && <div className={cn("mx-4 my-2 h-px", theme.divider)} />}
+                    <div className="flex items-center gap-2 px-4 pb-2 pt-3">
+                      <Image size={14} className="text-purple-500" />
+                      <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">NFTs</p>
+                    </div>
+                    <div>
+                      {searchResults.nfts.map((nft, index) => {
+                        const thumbnail = nft.files?.[0]?.thumbnail?.small || nft.files?.[0]?.thumbnail?.medium;
+                        const imgSrc = thumbnail
+                          ? `https://s1.xrpl.to/nft/${thumbnail}`
+                          : `https://s1.xrpl.to/nft-collection/${nft.cslug}`;
+                        return (
+                          <button
+                            key={index}
+                            onClick={() => handleResultClick(nft, 'nft')}
+                            className={cn("flex w-full items-center gap-3 px-4 py-2.5 transition-colors", theme.item)}
+                          >
+                            <Avatar.Root className="h-9 w-9">
+                              <Avatar.Image src={imgSrc} className="h-9 w-9 rounded-lg object-cover" />
+                              <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-lg text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{nft.name?.[0]}</Avatar.Fallback>
+                            </Avatar.Root>
+                            <div className="flex-1 text-left min-w-0">
+                              <p className={cn("truncate text-[13px] font-normal", theme.text)}>{nft.name}</p>
+                              <p className="truncate text-[11px] text-gray-500">{nft.collection || nft.cslug}</p>
+                            </div>
+                            {nft.rarity_rank && nft.total && (
+                              <div className="text-right flex-shrink-0">
+                                <p className={cn("text-[12px] font-normal", theme.text)}>#{nft.rarity_rank}</p>
+                                <p className="text-[10px] text-gray-500">of {nft.total.toLocaleString()}</p>
+                              </div>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
               </>
             )}
 
             {/* No Results */}
-            {searchQuery && !loading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+            {searchQuery && !loading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && searchResults.nfts.length === 0 && (
               <div className="p-8 text-center">
                 <p className="text-[13px] text-gray-500">No results found for "{searchQuery}"</p>
               </div>
