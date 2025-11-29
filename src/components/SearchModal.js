@@ -8,7 +8,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 import { AlertTriangle, BadgeCheck, Search, X, TrendingUp, Layers, Clock } from 'lucide-react';
 
-const API_URL = 'https://api.xrpl.to/api';
+const API_URL = 'https://api.xrpl.to';
 
 const getThemeClasses = (isDark) => ({
   overlay: isDark ? 'bg-black/80' : 'bg-black/50',
@@ -105,13 +105,10 @@ function SearchModal({ open, onClose }) {
     const loadTrending = async () => {
       setLoadingTrending(true);
       try {
-        const [tokensRes, collectionsRes] = await Promise.all([
-          axios.post(`${API_URL}/search`, { search: '' }),
-          axios.post(`${API_URL}/nft/search`, { search: '' })
-        ]);
+        const res = await axios.post(`${API_URL}/api/search`, { search: '' });
 
-        setTrendingTokens(tokensRes.data?.tokens?.slice(0, 3) || []);
-        setTrendingCollections(collectionsRes.data?.collections?.slice(0, 4) || []);
+        setTrendingTokens(res.data?.tokens?.slice(0, 3) || []);
+        setTrendingCollections(res.data?.collections?.slice(0, 4) || []);
       } catch (error) {
         console.error('Error loading trending data:', error);
       } finally {
@@ -133,14 +130,15 @@ function SearchModal({ open, onClose }) {
     const performSearch = async () => {
       setLoading(true);
       try {
-        const [tokensRes, collectionsRes] = await Promise.all([
-          axios.post(`${API_URL}/search`, { search: debouncedSearchQuery }, { signal: controller.signal }),
-          axios.post(`${API_URL}/nft/search`, { search: debouncedSearchQuery }, { signal: controller.signal })
-        ]);
+        const res = await axios.post(
+          `${API_URL}/api/search`,
+          { search: debouncedSearchQuery },
+          { signal: controller.signal }
+        );
 
         setSearchResults({
-          tokens: tokensRes.data?.tokens?.slice(0, 4) || [],
-          collections: collectionsRes.data?.collections?.slice(0, 4) || []
+          tokens: res.data?.tokens?.slice(0, 4) || [],
+          collections: res.data?.collections?.slice(0, 4) || []
         });
       } catch (error) {
         if (!axios.isCancel(error)) {

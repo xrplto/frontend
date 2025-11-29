@@ -428,10 +428,10 @@ export default function NFTActions({ nft }) {
     <>
       {/* Main Glass Panel */}
       <div className={cn(
-        'rounded-2xl p-4 border backdrop-blur-lg',
+        'rounded-2xl p-4 border backdrop-blur-lg transition-all duration-300',
         isDark
-          ? 'bg-white/5 border-primary/20'
-          : 'bg-white/70 border-primary/15 shadow-lg shadow-primary/5'
+          ? 'bg-white/5 border-primary/20 hover:border-primary/30'
+          : 'bg-white/70 border-primary/15 shadow-lg shadow-primary/5 hover:shadow-primary/10'
       )}>
         <div className="space-y-4">
           {/* Collection Header */}
@@ -601,9 +601,8 @@ export default function NFTActions({ nft }) {
                   onClick={handleCreateSellOffer}
                   disabled={!accountLogin || burnt}
                   className={cn(
-                    'flex-1 py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-colors',
-                    'border-primary text-primary hover:bg-primary/5',
-                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed'
+                    'flex-1 py-3 rounded-xl text-[15px] font-medium bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/25',
+                    (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed shadow-none'
                   )}
                 >
                   Sell
@@ -612,8 +611,8 @@ export default function NFTActions({ nft }) {
                   onClick={handleTransfer}
                   disabled={!accountLogin || burnt}
                   className={cn(
-                    'flex-1 py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-colors',
-                    isDark ? 'border-white/20 text-white hover:border-white/30' : 'border-gray-200 text-gray-900 hover:border-gray-300',
+                    'flex-1 py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-all duration-200 active:scale-[0.98]',
+                    isDark ? 'border-white/20 text-white hover:border-primary hover:text-primary' : 'border-gray-200 text-gray-900 hover:border-primary hover:text-primary',
                     (!accountLogin || burnt) && 'opacity-50 cursor-not-allowed'
                   )}
                 >
@@ -629,15 +628,18 @@ export default function NFTActions({ nft }) {
                   </div>
                 ) : lowestSellOffer ? (
                   <div className={cn(
-                    'p-3 rounded-xl border',
-                    isDark ? 'border-white/10' : 'border-gray-200'
+                    'p-4 rounded-xl border transition-all duration-200',
+                    isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-primary/5'
                   )}>
-                    <div className="space-y-1">
+                    <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <span className={cn('text-xs', isDark ? 'text-gray-500' : 'text-gray-400')}>Price</span>
-                        <span className={cn('text-base font-mono font-normal', isDark ? 'text-white' : 'text-gray-900')}>
-                          {formatXRPAmount(lowestSellOffer.totalAmount, false)} XRP
-                        </span>
+                        <span className={cn('text-xs uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>Price</span>
+                        <div className="flex items-baseline gap-1">
+                          <span className={cn('text-2xl font-medium', 'text-primary')}>
+                            {formatXRPAmount(lowestSellOffer.totalAmount, false)}
+                          </span>
+                          <span className={cn('text-sm', isDark ? 'text-gray-400' : 'text-gray-500')}>XRP</span>
+                        </div>
                       </div>
                       {lowestSellOffer.hasBroker && (
                         <>
@@ -672,7 +674,7 @@ export default function NFTActions({ nft }) {
                     {lowestSellOffer && !burnt && (
                       <button
                         onClick={handleBuyNow}
-                        className="w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] border-primary text-primary hover:bg-primary/5 transition-colors"
+                        className="w-full py-3.5 rounded-xl text-[15px] font-medium bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/25"
                       >
                         Buy Now
                       </button>
@@ -681,8 +683,8 @@ export default function NFTActions({ nft }) {
                       disabled={burnt}
                       onClick={handleCreateBuyOffer}
                       className={cn(
-                        'w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-colors',
-                        isDark ? 'border-white/20 text-white hover:border-white/30' : 'border-gray-200 text-gray-900 hover:border-gray-300',
+                        'w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-all duration-200 active:scale-[0.98]',
+                        isDark ? 'border-white/20 text-white hover:border-primary hover:text-primary' : 'border-gray-200 text-gray-900 hover:border-primary hover:text-primary',
                         burnt && 'opacity-50 cursor-not-allowed'
                       )}
                     >
