@@ -214,10 +214,12 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   };
 
   const doLogIn = async (profile, profilesOverride = null) => {
-    // Add token creation timestamp
+    // Add token creation timestamp and generate access token
     const profileWithTimestamp = {
       ...profile,
-      tokenCreatedAt: Date.now()
+      tokenCreatedAt: Date.now(),
+      // Generate token from account address for API authentication
+      token: profile.token || profile.account
     };
 
     // For OAuth wallets, ensure seed is included
@@ -394,10 +396,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       }
 
       axios
-        .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
+        .get(`${BASE_URL}/watchlist?account=${account}`)
         .then((res) => {
-          if (res.status === 200) {
-            setWatchList(res.data.watchlist);
+          if (res.status === 200 && res.data.result === 'success') {
+            setWatchList(res.data.watchlist || []);
           }
         })
         .catch((err) => {});
@@ -407,10 +409,10 @@ function ContextProviderInner({ children, data, openSnackbar }) {
 
   const updateWatchList = async (md5) => {
     const account = accountProfile?.account;
-    const accountToken = accountProfile?.token;
 
-    if (!account || !accountToken) {
-      openSnackbar('Please login!', 'error');
+    if (!account) {
+      openSnackbar('Please login to use watchlist', 'info');
+      setOpenWalletModal(true);
       return false;
     }
 
@@ -423,20 +425,16 @@ function ContextProviderInner({ children, data, openSnackbar }) {
       const action = watchList.includes(md5) ? 'remove' : 'add';
       const body = { md5, account, action };
 
-      const res = await axios.post(`${BASE_URL}/watchlist/update_watchlist`, body, {
-        headers: { 'x-access-token': accountToken }
-      });
+      const res = await axios.post(`${BASE_URL}/watchlist`, body);
 
-      if (res.status === 200) {
-        const ret = res.data;
-        if (ret.status) {
-          openSnackbar('Watchlist updated successfully!', 'success');
-          return true;
-        } else {
-          setWatchList(watchList);
-          openSnackbar(ret.err || 'Failed to update watchlist', 'error');
-          return false;
-        }
+      if (res.status === 200 && res.data.result === 'success') {
+        setWatchList(res.data.watchlist || []);
+        openSnackbar('Watchlist updated!', 'success');
+        return true;
+      } else {
+        setWatchList(watchList);
+        openSnackbar('Failed to update watchlist', 'error');
+        return false;
       }
     } catch (err) {
       console.error(err);

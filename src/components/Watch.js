@@ -27,69 +27,38 @@ export default function Watch({ collection }) {
         setWatchList([]);
         return;
       }
-      // https://api.xrpl.to/api/watchlist/get_list?account=r22G1hNbxBVapj2zSmvjdXyKcedpSDKsm
       axios
-        .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
+        .get(`${BASE_URL}/watchlist?account=${account}`)
         .then((res) => {
-          let ret = res.status === 200 ? res.data : undefined;
-          if (ret) {
-            setWatchList(ret.watchlist);
+          if (res.status === 200 && res.data.result === 'success') {
+            setWatchList(res.data.watchlist || []);
           }
         })
-        .catch((err) => {
-        })
-        .then(function () {
-          // always executed
-        });
+        .catch(() => {});
     }
     getWatchList();
   }, [accountProfile]);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const onChangeWatchList = async (md5) => {
     const account = accountProfile?.account;
-    const accountToken = accountProfile?.token;
 
-    if (!account || !accountToken) {
+    if (!account) {
       setOpenWalletModal(true);
       return;
     }
 
     setLoading(true);
     try {
-      let res;
+      const action = watchList.includes(md5) ? 'remove' : 'add';
+      const res = await axios.post(`${BASE_URL}/watchlist`, { md5, account, action });
 
-      let action = 'add';
-
-      if (watchList.includes(md5)) {
-        action = 'remove';
+      if (res.status === 200 && res.data.result === 'success') {
+        setWatchList(res.data.watchlist || []);
+        openSnackbar('Watchlist updated!', 'success');
+      } else {
+        openSnackbar('Failed to update', 'error');
       }
-
-      const body = { md5, account, action };
-
-      res = await axios.post(`${BASE_URL}/watchlist/update_watchlist`, body, {
-        headers: { 'x-access-token': accountToken }
-      });
-
-      if (res.status === 200) {
-        const ret = res.data;
-        if (ret.status) {
-          setWatchList(ret.watchlist);
-          openSnackbar('Successful!', 'success');
-        } else {
-          const err = ret.err;
-          openSnackbar(err, 'error');
-        }
-      }
-    } catch (err) {
-    }
+    } catch (err) {}
     setLoading(false);
   };
 

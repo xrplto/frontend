@@ -534,6 +534,21 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           {/* Desktop Actions */}
           {!fullSearch && (
             <div className="mr-0 hidden items-center gap-2 md:flex">
+              {/* Watchlist Button */}
+              <a
+                href="/watchlist"
+                aria-label="Watchlist"
+                title="Watchlist"
+                className={cn(
+                  'flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200',
+                  isDark
+                    ? 'text-white/50 hover:text-yellow-500 hover:bg-yellow-500/10'
+                    : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10'
+                )}
+              >
+                <Star size={16} />
+              </a>
+
               {/* Settings Dropdown */}
               <div ref={settingsRef} className="relative">
                 <button
@@ -813,6 +828,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   )}
                 >
                   News
+                </a>
+                <a
+                  href="/watchlist"
+                  onClick={() => toggleDrawer(false)}
+                  className={cn(
+                    'flex items-center gap-2 rounded-xl px-3 py-2.5 text-[14px] font-medium transition-all duration-200',
+                    isDark ? 'text-yellow-500/80 hover:bg-yellow-500/10' : 'text-yellow-600 hover:bg-yellow-500/10'
+                  )}
+                >
+                  <Star size={16} />
+                  Watchlist
                 </a>
                 <a
                   href="/launch"

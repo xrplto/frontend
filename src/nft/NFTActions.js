@@ -19,7 +19,8 @@ import {
   ExternalLink,
   Hand,
   Tag,
-  Loader2
+  Loader2,
+  Star
 } from 'lucide-react';
 
 // Utils & Context
@@ -127,10 +128,12 @@ export default function NFTActions({ nft }) {
   const anchorRef = useRef(null);
   const shareDropdownRef = useRef(null);
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { themeName, accountProfile, openSnackbar } = useContext(AppContext);
+  const { themeName, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const accountLogin = accountProfile?.account;
   const accountToken = accountProfile?.token;
+  const [isWatchlisted, setIsWatchlisted] = useState(false);
+  const [watchlistLoading, setWatchlistLoading] = useState(false);
 
   const {
     name,
@@ -194,6 +197,46 @@ export default function NFTActions({ nft }) {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+
+  // Check if NFT is in watchlist
+  useEffect(() => {
+    if (!accountLogin || !NFTokenID) return;
+    axios
+      .get(`https://api.xrpl.to/api/watchlist/nft?account=${accountLogin}`)
+      .then((res) => {
+        if (res.data?.result === 'success' && res.data.watchlist) {
+          const allItems = Object.values(res.data.watchlist).flatMap(col => col.items || []);
+          setIsWatchlisted(allItems.some(item => item.nftokenId === NFTokenID));
+        }
+      })
+      .catch(() => {});
+  }, [accountLogin, NFTokenID]);
+
+  const toggleWatchlist = async () => {
+    if (!accountLogin) {
+      // Don't open modal - inline Wallet component handles this
+      return;
+    }
+    setWatchlistLoading(true);
+    try {
+      const action = isWatchlisted ? 'remove' : 'add';
+      const res = await axios.post(`https://api.xrpl.to/api/watchlist/nft`, {
+        account: accountLogin,
+        nftokenId: NFTokenID,
+        action
+      });
+      if (res.data?.result === 'success') {
+        setIsWatchlisted(!isWatchlisted);
+        openSnackbar(isWatchlisted ? 'Removed from watchlist' : 'Added to watchlist', 'success');
+      } else {
+        openSnackbar(res.data?.message || 'Failed to update watchlist', 'error');
+      }
+    } catch (err) {
+      console.error('Watchlist error:', err);
+      openSnackbar(err.response?.data?.message || 'Failed to update watchlist', 'error');
+    }
+    setWatchlistLoading(false);
+  };
 
   const handleOfferCreated = () => {
     setSync((prev) => prev + 1);
@@ -441,19 +484,39 @@ export default function NFTActions({ nft }) {
                 </div>
               </div>
 
-              {/* Share Button */}
-              <div className="relative" ref={shareDropdownRef}>
+              {/* Watchlist & Share Buttons */}
+              <div className="flex gap-2">
                 <button
-                  onClick={() => setOpenShare(!openShare)}
+                  onClick={toggleWatchlist}
+                  disabled={watchlistLoading}
                   className={cn(
                     'p-3 rounded-xl border transition-colors',
-                    isDark
-                      ? 'bg-primary/10 border-white/20 text-primary hover:border-primary/30'
-                      : 'bg-primary/10 border-gray-200 text-primary hover:border-primary/30'
+                    isWatchlisted
+                      ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
+                      : isDark
+                        ? 'border-white/20 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
+                        : 'border-gray-200 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
                   )}
+                  title={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
                 >
-                  <Share2 size={20} />
+                  {watchlistLoading ? (
+                    <Loader2 size={20} className="animate-spin" />
+                  ) : (
+                    <Star size={20} fill={isWatchlisted ? 'currentColor' : 'none'} />
+                  )}
                 </button>
+                <div className="relative" ref={shareDropdownRef}>
+                  <button
+                    onClick={() => setOpenShare(!openShare)}
+                    className={cn(
+                      'p-3 rounded-xl border transition-colors',
+                      isDark
+                        ? 'bg-primary/10 border-white/20 text-primary hover:border-primary/30'
+                        : 'bg-primary/10 border-gray-200 text-primary hover:border-primary/30'
+                    )}
+                  >
+                    <Share2 size={20} />
+                  </button>
 
                 {openShare && (
                   <div className={cn(
@@ -498,7 +561,33 @@ export default function NFTActions({ nft }) {
                     </div>
                   </div>
                 )}
+                </div>
               </div>
+            </div>
+          )}
+
+          {/* Watchlist Button (always visible) */}
+          {!self && (
+            <div className="flex justify-end">
+              <button
+                onClick={toggleWatchlist}
+                disabled={watchlistLoading}
+                className={cn(
+                  'p-2.5 rounded-xl border transition-colors',
+                  isWatchlisted
+                    ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
+                    : isDark
+                      ? 'border-white/20 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
+                      : 'border-gray-200 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
+                )}
+                title={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
+              >
+                {watchlistLoading ? (
+                  <Loader2 size={18} className="animate-spin" />
+                ) : (
+                  <Star size={18} fill={isWatchlisted ? 'currentColor' : 'none'} />
+                )}
+              </button>
             </div>
           )}
 

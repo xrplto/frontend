@@ -64,10 +64,10 @@ export default function Watch({ token }) {
       return;
     }
     axios
-      .get(`${BASE_URL}/watchlist/get_list?account=${account}`)
+      .get(`${BASE_URL}/watchlist?account=${account}`)
       .then((res) => {
-        if (res.status === 200 && res.data) {
-          setWatchList(res.data.watchlist);
+        if (res.status === 200 && res.data.result === 'success') {
+          setWatchList(res.data.watchlist || []);
         }
       })
       .catch(() => {});
@@ -75,9 +75,8 @@ export default function Watch({ token }) {
 
   const onChangeWatchList = async () => {
     const account = accountProfile?.account;
-    const accountToken = accountProfile?.token;
 
-    if (!account || !accountToken) {
+    if (!account) {
       setOpenWalletModal(true);
       return;
     }
@@ -85,17 +84,13 @@ export default function Watch({ token }) {
     setLoading(true);
     try {
       const action = isActive ? 'remove' : 'add';
-      const res = await axios.post(
-        `${BASE_URL}/watchlist/update_watchlist`,
-        { md5, account, action },
-        { headers: { 'x-access-token': accountToken } }
-      );
+      const res = await axios.post(`${BASE_URL}/watchlist`, { md5, account, action });
 
-      if (res.status === 200 && res.data.status) {
-        setWatchList(res.data.watchlist);
-        openSnackbar('Successful!', 'success');
+      if (res.status === 200 && res.data.result === 'success') {
+        setWatchList(res.data.watchlist || []);
+        openSnackbar('Watchlist updated!', 'success');
       } else {
-        openSnackbar(res.data.err, 'error');
+        openSnackbar('Failed to update', 'error');
       }
     } catch (err) {}
     setLoading(false);

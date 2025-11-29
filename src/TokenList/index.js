@@ -150,6 +150,7 @@ const ButtonRow = styled.div`
 
 function TokenListComponent({
   showWatchList,
+  hideFilters,
   tag,
   tagName,
   tags,
@@ -696,37 +697,39 @@ function TokenListComponent({
         </Suspense>
       )}
 
-      <SearchContainer>
-        <Suspense fallback={<div style={{ height: '56px' }} />}>
-          <LazySearchToolbar
-            tags={tags}
-            tagName={tagName}
-            filterName={filterName}
-            onFilterName={handleFilterByName}
-            rows={rows}
-            setRows={updateRows}
-            showNew={showNew}
-            setShowNew={updateShowNew}
-            showSlug={showSlug}
-            setShowSlug={updateShowSlug}
-            showDate={showDate}
-            setShowDate={updateShowDate}
-            viewType={viewType}
-            setViewType={setViewType}
-            setTokens={setTokens}
-            setPage={setPage}
-            setSync={setSync}
-            sync={sync}
-            currentOrderBy={orderBy}
-            setOrderBy={setOrderBy}
-            viewMode={viewMode}
-            setViewMode={handleViewModeChange}
-            customColumns={customColumns}
-            setCustomColumns={handleCustomColumnsChange}
-            setCustomSettingsOpen={setCustomSettingsOpen}
-          />
-        </Suspense>
-      </SearchContainer>
+      {!hideFilters && (
+        <SearchContainer>
+          <Suspense fallback={<div style={{ height: '56px' }} />}>
+            <LazySearchToolbar
+              tags={tags}
+              tagName={tagName}
+              filterName={filterName}
+              onFilterName={handleFilterByName}
+              rows={rows}
+              setRows={updateRows}
+              showNew={showNew}
+              setShowNew={updateShowNew}
+              showSlug={showSlug}
+              setShowSlug={updateShowSlug}
+              showDate={showDate}
+              setShowDate={updateShowDate}
+              viewType={viewType}
+              setViewType={setViewType}
+              setTokens={setTokens}
+              setPage={setPage}
+              setSync={setSync}
+              sync={sync}
+              currentOrderBy={orderBy}
+              setOrderBy={setOrderBy}
+              viewMode={viewMode}
+              setViewMode={handleViewModeChange}
+              customColumns={customColumns}
+              setCustomColumns={handleCustomColumnsChange}
+              setCustomSettingsOpen={setCustomSettingsOpen}
+            />
+          </Suspense>
+        </SearchContainer>
+      )}
 
       {customSettingsOpen && viewMode === 'custom' ? (
         <CustomColumnsPanel darkMode={darkMode}>
