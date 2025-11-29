@@ -609,6 +609,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   const [totalPages, setTotalPages] = useState(1);
   const [newTradeIds, setNewTradeIds] = useState(new Set());
   const [xrpOnly, setXrpOnly] = useState(true);
+  const [xrpAmount, setXrpAmount] = useState(''); // Filter by minimum XRP amount
   const [tabValue, setTabValue] = useState(0);
   const previousTradesRef = useRef(new Set());
   const limit = 20;
@@ -682,7 +683,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
       const response = await fetch(
         `https://api.xrpl.to/api/history?md5=${tokenId}&page=${page - 1}&limit=${limit}${
           xrpOnly ? '&xrpOnly=true' : ''
-        }`
+        }${xrpAmount ? `&xrpAmount=${xrpAmount}` : ''}`
       );
       const data = await response.json();
       if (data.result === 'success') {
@@ -705,7 +706,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     } finally {
       setLoading(false);
     }
-  }, [tokenId, page, xrpOnly]);
+  }, [tokenId, page, xrpOnly, xrpAmount]);
 
   // Batch updates for better performance
   const pendingUpdatesRef = useRef({ asks: null, bids: null });
@@ -1063,26 +1064,55 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Holders</Tab>
         </Tabs>
         {tabValue === 0 && (
-          <button
-            onClick={() => { setXrpOnly(!xrpOnly); setPage(1); }}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '5px 10px',
-              fontSize: '11px',
-              fontWeight: 500,
-              borderRadius: '6px',
-              border: `1.5px solid ${xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
-              background: xrpOnly ? (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent',
-              color: xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
-              cursor: 'pointer',
-              transition: 'all 0.15s'
-            }}
-          >
-            <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" alt="" style={{ width: 14, height: 14, borderRadius: '50%' }} />
-            XRP pairs
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => { setXrpOnly(!xrpOnly); setPage(1); }}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '5px 10px',
+                fontSize: '11px',
+                fontWeight: 500,
+                borderRadius: '6px',
+                border: `1px solid ${xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                background: xrpOnly ? (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent',
+                color: xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                cursor: 'pointer',
+                transition: 'all 0.15s'
+              }}
+            >
+              <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" alt="" style={{ width: 14, height: 14, borderRadius: '50%' }} />
+              XRP pairs
+            </button>
+            <select
+              value={xrpAmount}
+              onChange={(e) => { setXrpAmount(e.target.value); setPage(1); }}
+              style={{
+                padding: '5px 8px',
+                fontSize: '11px',
+                fontWeight: 500,
+                borderRadius: '6px',
+                border: `1px solid ${xrpAmount ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                background: isDark ? (xrpAmount ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (xrpAmount ? 'rgba(59,130,246,0.1)' : '#fff'),
+                color: xrpAmount ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                cursor: 'pointer',
+                outline: 'none',
+                colorScheme: isDark ? 'dark' : 'light',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none'
+              }}
+            >
+              <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Min XRP</option>
+              <option value="100" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>100+</option>
+              <option value="500" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>500+</option>
+              <option value="1000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>1k+</option>
+              <option value="2500" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>2.5k+</option>
+              <option value="5000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>5k+</option>
+              <option value="10000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>10k+</option>
+            </select>
+          </div>
         )}
       </Box>
 
@@ -1142,13 +1172,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
               {/* Header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 1fr 0.5fr', gap: '8px', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 0.9fr 0.6fr 0.5fr', gap: '8px', padding: '8px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}` }}>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>Pool</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fee</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>APY</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Fees</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Volume</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Liquidity</span>
+                <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.05em', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textAlign: 'right' }}>Last Trade</span>
                 <span></span>
               </div>
               {/* Rows */}
@@ -1161,7 +1192,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
                                    (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 1fr 0.5fr', gap: '8px', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)') : 'transparent', borderRadius: isMainPool ? '6px' : '0', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', paddingLeft: isMainPool ? '4px' : '0', paddingRight: isMainPool ? '4px' : '0' }}>
+                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 0.9fr 0.6fr 0.5fr', gap: '8px', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)') : 'transparent', borderRadius: isMainPool ? '6px' : '0', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', paddingLeft: isMainPool ? '4px' : '0', paddingRight: isMainPool ? '4px' : '0' }}>
                     {/* Pool pair */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'flex' }}>
@@ -1198,6 +1229,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                         </div>
                       ) : <span style={{ fontSize: '11px', opacity: 0.3 }}>-</span>}
                     </div>
+                    {/* Last Trade */}
+                    <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>
+                      {pool.lastTraded ? formatRelativeTime(pool.lastTraded) : '-'}
+                    </span>
                     {/* Action */}
                     <button
                       onClick={() => handleAddLiquidity(pool)}
