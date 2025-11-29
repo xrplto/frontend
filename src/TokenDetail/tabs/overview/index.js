@@ -1,17 +1,31 @@
 import axios from 'axios';
 import React, { memo, useCallback, useMemo, useRef } from 'react';
 import { useState, useEffect, useContext } from 'react';
+import dynamic from 'next/dynamic';
 
 // Context
 import { AppContext } from 'src/AppContext';
-import PriceChart from './PriceChartAdvanced';
-import TradingHistory from './TradingHistory';
+import { cn } from 'src/utils/cn';
+
+// Dynamic imports for heavy components (code splitting)
+const PriceChart = dynamic(() => import('./PriceChartAdvanced'), {
+  loading: () => <div className="h-[400px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+const TradingHistory = dynamic(() => import('./TradingHistory'), {
+  loading: () => <div className="h-[300px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+const OrderBook = dynamic(() => import('./OrderBook'), {
+  loading: () => <div className="h-[200px] animate-pulse bg-white/5 rounded-xl" />,
+  ssr: false
+});
+
+// Lighter components - static imports
 import PriceStatistics from './PriceStatistics';
 import Description from './Description';
 import TrendingTokens from './TrendingTokens';
 import Swap from './Swap';
-import OrderBook from './OrderBook';
-import { cn } from 'src/utils/cn';
 
 const Overview = memo(
   ({ token, onTransactionClick, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
@@ -112,10 +126,12 @@ const Overview = memo(
         "flex flex-col md:flex-row items-start",
         isMobile ? "gap-1" : "gap-2"
       )}>
-        <div className="w-full md:flex-[0_0_68%] md:max-w-[68%]">
+        <section className="w-full md:flex-[0_0_68%] md:max-w-[68%]" aria-label="Price Chart">
+          <h2 className="sr-only">Price Chart</h2>
           <PriceChart token={token} />
           {!isMobile && !isTablet && (
             <div className="mt-1">
+              <h2 className="sr-only">Trading History</h2>
               <TradingHistory
                 tokenId={token.md5}
                 amm={token.AMM}
@@ -126,11 +142,12 @@ const Overview = memo(
               />
             </div>
           )}
-        </div>
-        <div className={cn(
+        </section>
+        <aside className={cn(
           "w-full md:flex-[0_0_32%] md:max-w-[32%]",
           orderBookOpen ? "md:pr-1" : "md:pr-2"
-        )}>
+        )} aria-label="Trading Tools">
+          <h2 className="sr-only">Swap</h2>
           <Swap
             token={token}
             onOrderBookToggle={onOrderBookToggle}
@@ -139,9 +156,11 @@ const Overview = memo(
           />
           {!isMobile && !isTablet && (
             <div className="mt-2">
+              <h2 className="sr-only">Order Book</h2>
               <OrderBook token={token} />
             </div>
           )}
+          <h2 className="sr-only">Price Statistics</h2>
           <PriceStatistics token={token} isDark={isDark} />
           <Description
             token={token}
@@ -167,7 +186,7 @@ const Overview = memo(
             }
           />
           <TrendingTokens />
-        </div>
+        </aside>
       </div>
     );
   }

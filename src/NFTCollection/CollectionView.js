@@ -91,6 +91,31 @@ const getMinterName = (account) => {
   return minterMap[account] || null;
 };
 
+// Static options (defined outside component to prevent recreation)
+const SORT_OPTIONS = [
+  { value: 'activity', label: 'Latest Activity' },
+  { value: 'price-low', label: 'Price: Low to High' },
+  { value: 'price-high', label: 'Price: High to Low' },
+  { value: 'offer-high', label: 'Offer: High to Low' },
+  { value: 'offer-low', label: 'Offer: Low to High' },
+  { value: 'rarity-rare', label: 'Rarest First' },
+  { value: 'rarity-common', label: 'Common First' },
+  { value: 'volume-high', label: 'Most Traded' },
+  { value: 'volume-low', label: 'Least Traded' },
+  { value: 'recent-sale', label: 'Recently Sold' },
+  { value: 'recent-listed', label: 'Recently Listed' },
+  { value: 'minted-latest', label: 'Recently Minted' },
+  { value: 'minted-earliest', label: 'First Minted' }
+];
+
+const LISTING_OPTIONS = [
+  { value: '', label: 'All' },
+  { value: 'true', label: 'Listed Only' },
+  { value: 'false', label: 'Unlisted Only' },
+  { value: 'xrp', label: 'Listed for XRP' },
+  { value: 'non-xrp', label: 'Listed for Tokens' }
+];
+
 // Alpha utility for colors
 const alpha = (color, opacity) => {
   if (!color) return `rgba(0,0,0,${opacity})`;
@@ -217,6 +242,17 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
     </div>
   );
 }
+
+// NFT Skeleton Component for loading state
+const NFTSkeleton = React.memo(({ isDark }) => (
+  <div className={cn('rounded-lg overflow-hidden', isDark ? 'bg-white/[0.03]' : 'bg-gray-50')}>
+    <div className={cn('aspect-square animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
+    <div className="px-2 py-1.5 space-y-1.5">
+      <div className={cn('h-3 rounded animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} style={{ width: '70%' }} />
+      <div className={cn('h-2.5 rounded animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} style={{ width: '40%' }} />
+    </div>
+  </div>
+));
 
 // NFT Card Component - Matches watchlist card style
 const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike }) => {
@@ -357,15 +393,8 @@ const NFTGrid = React.memo(({ collection }) => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [listed, setListed] = useState('');
   const [showListedDropdown, setShowListedDropdown] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
   const listedDropdownRef = useRef(null);
-
-  const listingOptions = [
-    { value: '', label: 'All' },
-    { value: 'true', label: 'Listed Only' },
-    { value: 'false', label: 'Unlisted Only' },
-    { value: 'xrp', label: 'Listed for XRP' },
-    { value: 'non-xrp', label: 'Listed for Tokens' }
-  ];
 
   // Fetch traits for filtering
   useEffect(() => {
@@ -383,19 +412,55 @@ const NFTGrid = React.memo(({ collection }) => {
       .catch(() => {});
   }, [slug]);
 
-  // Apply URL traits filter on load
+  // Apply URL filters on load
   useEffect(() => {
-    if (traits.length === 0 || !router.isReady || !router.query.traits) return;
-    const parsed = router.query.traits.split(',').map(t => {
-      const [type, value] = t.split(':');
-      return { type, value };
-    });
-    setFilterAttrs(traits.map(t => ({
-      trait_type: t.title,
-      value: parsed.filter(p => p.type === t.title).map(p => p.value)
-    })));
-    setShowFilter(true);
-  }, [traits, router.isReady, router.query.traits]);
+    if (!router.isReady) return;
+
+    // Apply sortBy from URL
+    if (router.query.sortBy && SORT_OPTIONS.some(o => o.value === router.query.sortBy)) {
+      setSortBy(router.query.sortBy);
+    }
+
+    // Apply listed from URL
+    if (router.query.listed && LISTING_OPTIONS.some(o => o.value === router.query.listed)) {
+      setListed(router.query.listed);
+    }
+
+    // Apply traits from URL
+    if (traits.length > 0 && router.query.traits) {
+      const parsed = router.query.traits.split(',').map(t => {
+        const [type, value] = t.split(':');
+        return { type, value };
+      });
+      setFilterAttrs(traits.map(t => ({
+        trait_type: t.title,
+        value: parsed.filter(p => p.type === t.title).map(p => p.value)
+      })));
+      setShowFilter(true);
+    }
+  }, [traits, router.isReady, router.query.traits, router.query.sortBy, router.query.listed]);
+
+  // Sync filters to URL (debounced)
+  useEffect(() => {
+    if (!router.isReady || !slug) return;
+
+    const query = {};
+    if (sortBy !== 'price-low') query.sortBy = sortBy;
+    if (listed) query.listed = listed;
+
+    const activeTraits = filterAttrs.filter(a => a.value?.length > 0);
+    if (activeTraits.length > 0) {
+      query.traits = activeTraits.flatMap(a => a.value.map(v => `${a.trait_type}:${v}`)).join(',');
+    }
+
+    const currentQuery = { ...router.query };
+    delete currentQuery.slug;
+
+    const hasChanged = JSON.stringify(query) !== JSON.stringify(currentQuery);
+    if (hasChanged) {
+      router.replace({ pathname: `/collection/${slug}`, query }, undefined, { shallow: true });
+    }
+  }, [sortBy, listed, filterAttrs, slug, router.isReady]);
 
   // Fetch liked NFTs
   useEffect(() => {
@@ -414,44 +479,47 @@ const NFTGrid = React.memo(({ collection }) => {
   const handleToggleLike = useCallback(async (nftokenId) => {
     const account = accountProfile?.account;
     if (!account) { setOpenWalletModal(true); return; }
-    const action = likedNfts.includes(nftokenId) ? 'remove' : 'add';
-    try {
-      const res = await axios.post(`${BASE_URL}/watchlist/nft`, { account, nftokenId, action });
-      if (res.data?.result === 'success') {
-        setLikedNfts(prev => action === 'add' ? [...prev, nftokenId] : prev.filter(id => id !== nftokenId));
-        openSnackbar?.(action === 'add' ? 'Added to watchlist' : 'Removed from watchlist', 'success');
-      }
-    } catch {
-      openSnackbar?.('Failed to update', 'error');
-    }
-  }, [accountProfile, likedNfts, openSnackbar, setOpenWalletModal]);
 
-  const sortOptions = [
-    { value: 'activity', label: 'Latest Activity' },
-    { value: 'price-low', label: 'Price: Low to High' },
-    { value: 'price-high', label: 'Price: High to Low' },
-    { value: 'offer-high', label: 'Offer: High to Low' },
-    { value: 'offer-low', label: 'Offer: Low to High' },
-    { value: 'rarity-rare', label: 'Rarest First' },
-    { value: 'rarity-common', label: 'Common First' },
-    { value: 'volume-high', label: 'Most Traded' },
-    { value: 'volume-low', label: 'Least Traded' },
-    { value: 'recent-sale', label: 'Recently Sold' },
-    { value: 'recent-listed', label: 'Recently Listed' },
-    { value: 'minted-latest', label: 'Recently Minted' },
-    { value: 'minted-earliest', label: 'First Minted' }
-  ];
+    // Use functional update to avoid stale closure
+    setLikedNfts(prev => {
+      const isLiked = prev.includes(nftokenId);
+      const action = isLiked ? 'remove' : 'add';
 
-  const currentSort = sortOptions.find(opt => opt.value === sortBy) || sortOptions[0];
+      // Fire API call async (don't await to keep UI responsive)
+      axios.post(`${BASE_URL}/watchlist/nft`, { account, nftokenId, action })
+        .then(res => {
+          if (res.data?.result === 'success') {
+            openSnackbar?.(action === 'add' ? 'Added to watchlist' : 'Removed from watchlist', 'success');
+          }
+        })
+        .catch(() => openSnackbar?.('Failed to update', 'error'));
 
-  // Close dropdown on outside click
+      // Optimistic update
+      return isLiked ? prev.filter(id => id !== nftokenId) : [...prev, nftokenId];
+    });
+  }, [accountProfile?.account, openSnackbar, setOpenWalletModal]);
+
+  const currentSort = SORT_OPTIONS.find(opt => opt.value === sortBy) || SORT_OPTIONS[0];
+
+  // Close dropdown on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowSortDropdown(false);
       if (listedDropdownRef.current && !listedDropdownRef.current.contains(e.target)) setShowListedDropdown(false);
     };
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        setShowSortDropdown(false);
+        setShowListedDropdown(false);
+        setShowFilter(false);
+      }
+    };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Fetch NFTs
@@ -459,7 +527,7 @@ const NFTGrid = React.memo(({ collection }) => {
     if (!slug) return;
     setLoading(true);
 
-    const params = new URLSearchParams({ page: page.toString(), limit: '24', sortBy });
+    const params = new URLSearchParams({ page: page.toString(), limit: '100', sortBy });
     if (listed) params.append('listed', listed);
     const activeTraits = filterAttrs.filter(a => a.value?.length > 0);
     if (activeTraits.length > 0) {
@@ -470,8 +538,15 @@ const NFTGrid = React.memo(({ collection }) => {
       .then(res => {
         const newNfts = res.data.nfts || [];
         const pagination = res.data.pagination;
-        setHasMore(pagination ? (page + 1) < pagination.totalPages : newNfts.length === 24);
+        setHasMore(pagination ? (page + 1) < pagination.totalPages : newNfts.length === 100);
+        setTotalCount(pagination?.total || 0);
         setNfts(prev => page === 0 ? newNfts : [...prev, ...newNfts]);
+
+        // Prefetch images for smoother experience
+        newNfts.slice(0, 20).forEach(nft => {
+          const img = new window.Image();
+          img.src = getNftCoverUrl(nft, 'large');
+        });
       })
       .catch(err => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
@@ -542,7 +617,7 @@ const NFTGrid = React.memo(({ collection }) => {
                 'absolute top-full right-0 mt-1 min-w-[160px] rounded-lg border-[1.5px] p-1 z-50',
                 isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
               )}>
-                {sortOptions.map((option) => (
+                {SORT_OPTIONS.map((option) => (
                   <div
                     key={option.value}
                     onClick={() => { setSortBy(option.value); setShowSortDropdown(false); }}
@@ -569,7 +644,7 @@ const NFTGrid = React.memo(({ collection }) => {
                 listed ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
               )}
             >
-              {listingOptions.find(o => o.value === listed)?.label || 'All'}
+              {LISTING_OPTIONS.find(o => o.value === listed)?.label || 'All'}
               <ChevronDown size={12} />
             </button>
 
@@ -578,7 +653,7 @@ const NFTGrid = React.memo(({ collection }) => {
                 'absolute top-full right-0 mt-1 min-w-[140px] rounded-lg border-[1.5px] p-1 z-50',
                 isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
               )}>
-                {listingOptions.map((option) => (
+                {LISTING_OPTIONS.map((option) => (
                   <div
                     key={option.value}
                     onClick={() => { setListed(option.value); setShowListedDropdown(false); }}
@@ -597,6 +672,13 @@ const NFTGrid = React.memo(({ collection }) => {
           </div>
 
           {loading && <Loader2 size={14} className="animate-spin text-primary" />}
+
+          {/* Results Count */}
+          {totalCount > 0 && (
+            <span className={cn('text-[10px] ml-auto', isDark ? 'text-white/30' : 'text-gray-400')}>
+              {nfts.length} of {fIntNumber(totalCount)}
+            </span>
+          )}
         </div>
 
         {/* Trait Filter Panel */}
@@ -646,9 +728,12 @@ const NFTGrid = React.memo(({ collection }) => {
         }
       >
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
-          {nfts.map((nft) => (
-            <NFTCard key={nft.NFTokenID} nft={nft} collection={collection} onRemove={handleRemove} likedNfts={likedNfts} onToggleLike={handleToggleLike} />
-          ))}
+          {loading && nfts.length === 0
+            ? Array.from({ length: 24 }).map((_, i) => <NFTSkeleton key={`skeleton-${i}`} isDark={isDark} />)
+            : nfts.map((nft) => (
+                <NFTCard key={nft.NFTokenID} nft={nft} collection={collection} onRemove={handleRemove} likedNfts={likedNfts} onToggleLike={handleToggleLike} />
+              ))
+          }
         </div>
       </InfiniteScroll>
     </div>

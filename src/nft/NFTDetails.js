@@ -248,7 +248,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
       >
         {loadingImage()}
         <img
-          className={cn("absolute top-0 left-0 w-full h-full object-contain", loaded ? "block" : "hidden")}
+          className={cn("absolute top-0 left-0 w-full h-full object-contain transition-transform hover:scale-105", loaded ? "block" : "hidden")}
           onLoad={() => {
             setLoaded(true);
             setErrored(false);
@@ -461,8 +461,8 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
         </div>
       )}
 
-      {/* Description */}
-      {meta?.description && (
+      {/* Description - hide if it just matches collection name */}
+      {meta?.description && meta.description !== collection && meta.description !== collectionName && (
         <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
           <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-gray-500" : "text-gray-400")}>Description</p>
           <p className={cn("text-[13px] leading-relaxed", isDark ? "text-gray-300" : "text-gray-600")}>{meta.description}</p>

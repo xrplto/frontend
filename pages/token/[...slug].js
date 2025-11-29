@@ -49,17 +49,15 @@ function Detail({ data }) {
   const isPanelOpen = creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
 
   return (
-    <div className="overflow-hidden min-h-screen">
+    <main className="overflow-hidden min-h-screen">
       <div id="back-to-top-anchor" className="h-6" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}
       />
-      <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
-        {tokenName} Price Chart & Trading Data
-      </h1>
+      <h1 className="sr-only">{tokenName} Price Chart & Trading Data</h1>
 
-      <div className="w-full px-4">
+      <article className="w-full px-4">
         <TokenDetail
           token={token}
           tab={data.tab}
@@ -71,13 +69,13 @@ function Detail({ data }) {
           orderBookOpen={orderBookOpen}
           notificationPanelOpen={notificationPanelOpen}
         />
-      </div>
+      </article>
 
       <ScrollToTop />
 
       <Footer />
 
-    </div>
+    </main>
   );
 }
 
