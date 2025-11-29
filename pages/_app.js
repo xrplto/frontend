@@ -291,7 +291,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
 
           {/* Facebook Meta Tags */}
           <meta property="og:url" content={ogp.url} />
-          <meta property="og:type" content="website" />
+          <meta property="og:type" content={ogp.type || 'website'} />
           <meta property="og:title" content={`${ogp.title} | xrpl.to`} />
           <meta property="og:description" content={ogp.desc} />
           <meta property="og:image" content={ogp.imgUrl} />

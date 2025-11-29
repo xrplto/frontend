@@ -2,7 +2,10 @@
 User-agent: *
 Allow: /
 
-# User-Agent: YandexBot
-# Disallow: /token
+# Disallow private/utility pages
+Disallow: /callback
+Disallow: /device-login
+Disallow: /wallet-setup
+Disallow: /api/
 
 Sitemap: https://xrpl.to/sitemap.xml

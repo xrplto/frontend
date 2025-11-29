@@ -77,7 +77,7 @@ const abbreviateNumber = (num) => {
 
 // Custom SVG icons as components
 const XPMarketIcon = memo(({ className, size = 16 }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 32 32" fill="currentColor">
+  <svg className={className} width={size} height={size} viewBox="0 0 32 32" fill="currentColor" role="img" aria-label="XPmarket">
     <path d="M17.7872 2.625H4.41504L7.67032 7.88327H14.5L17.9149 13.4089H24.4574L17.7872 2.625Z" />
     <path d="M1 18.6667L7.67014 29.4506L10.9573 24.1627L7.54248 18.6667L10.9573 13.1708L7.67014 7.88281L1 18.6667Z" />
     <path d="M24.3292 24.1931L30.9994 13.4092H24.4569L21.042 18.9051H14.2123L10.957 24.1931H24.3292Z" />
@@ -86,7 +86,7 @@ const XPMarketIcon = memo(({ className, size = 16 }) => (
 XPMarketIcon.displayName = 'XPMarketIcon';
 
 const LedgerMemeIcon = memo(({ className, size = 16 }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 26 26">
+  <svg className={className} width={size} height={size} viewBox="0 0 26 26" role="img" aria-label="LedgerMeme">
     <g transform="scale(0.55)">
       <rect fill="#cfff04" width="36" height="36" rx="8" ry="8" x="0" y="0" />
       <g>
@@ -104,7 +104,7 @@ const LedgerMemeIcon = memo(({ className, size = 16 }) => (
 LedgerMemeIcon.displayName = 'LedgerMemeIcon';
 
 const HorizonIcon = memo(({ className, size = 16 }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+  <svg className={className} width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-label="Horizon">
     <circle cx="12" cy="12" r="4" />
     <path d="M12 2v2" />
     <path d="M12 20v2" />
@@ -119,7 +119,7 @@ const HorizonIcon = memo(({ className, size = 16 }) => (
 HorizonIcon.displayName = 'HorizonIcon';
 
 const MoonvalveIcon = memo(({ className, size = 16 }) => (
-  <svg className={className} width={size} height={size} viewBox="0 0 1080 1080" fill="#ff6b35">
+  <svg className={className} width={size} height={size} viewBox="0 0 1080 1080" fill="#ff6b35" role="img" aria-label="Moonvalve">
     <g transform="matrix(0.21 0 0 -0.21 405.9 545.69)">
       <path d="M 4690 8839 C 4166 8779 3630 8512 3267 8130 C 2862 7705 2643 7206 2599 6608 C 2561 6084 2717 5513 3023 5055 C 3214 4769 3472 4512 3749 4333 C 4414 3901 5232 3796 5955 4050 C 6070 4091 6193 4147 6188 4157 C 6115 4302 6106 4421 6160 4563 C 6171 4591 6178 4615 6177 4617 C 6175 4618 6150 4613 6120 4604 C 5919 4550 5578 4525 5349 4549 C 4904 4595 4475 4772 4138 5047 C 4035 5132 3858 5318 3774 5430 C 3359 5983 3235 6685 3436 7347 C 3620 7955 4061 8447 4652 8706 C 4758 8752 4989 8830 5021 8830 C 5031 8830 5042 8835 5045 8840 C 5053 8852 4800 8851 4690 8839 z" transform="translate(-4390.76, -6381.14)" />
     </g>
@@ -169,10 +169,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   // Handle responsive breakpoints
   useEffect(() => {
-    const checkBreakpoints = () => {
+    const checkBreakpoints = throttle(() => {
       setIsDesktop(window.innerWidth >= 1024);
       setIsTabletOrMobile(window.innerWidth < 1024);
-    };
+    }, 150);
     checkBreakpoints();
     window.addEventListener('resize', checkBreakpoints);
     return () => window.removeEventListener('resize', checkBreakpoints);
@@ -698,6 +698,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <span className={cn('text-[15px] font-medium', isDark ? 'text-white' : 'text-gray-900')}>Menu</span>
                 <button
                   onClick={() => toggleDrawer(false)}
+                  aria-label="Close menu"
                   className={cn(
                     'rounded-full p-2 transition-all duration-200',
                     isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/80'

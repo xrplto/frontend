@@ -3,18 +3,18 @@
   <!-- Static Pages Sitemap -->
   <sitemap>
     <loc>https://xrpl.to/sitemap-static.xml</loc>
-    <lastmod>2025-09-11T00:00:00+00:00</lastmod>
+    <lastmod>2025-11-29T00:00:00+00:00</lastmod>
   </sitemap>
-  
+
   <!-- Dynamic Token and Trustset Pages Sitemap -->
   <sitemap>
     <loc>https://xrpl.to/sitemap/token.xml</loc>
-    <lastmod>2025-09-11T00:00:00+00:00</lastmod>
+    <lastmod>2025-11-29T00:00:00+00:00</lastmod>
   </sitemap>
 
   <!-- Tags/Categories Sitemap -->
   <sitemap>
     <loc>https://xrpl.to/sitemap/tags.xml</loc>
-    <lastmod>2025-09-11T00:00:00+00:00</lastmod>
+    <lastmod>2025-11-29T00:00:00+00:00</lastmod>
   </sitemap>
 </sitemapindex>

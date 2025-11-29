@@ -41,13 +41,9 @@ function Logo({ style }) {
           src={img}
           width={100}
           height={37}
-          alt="XRPL.to Logo"
+          alt="XRPL.to - XRP Ledger Analytics"
           onError={handleImageError}
-          style={{
-            objectFit: 'contain',
-            width: '100%',
-            height: 'auto'
-          }}
+          style={{ objectFit: 'contain' }}
           priority
         />
       )}

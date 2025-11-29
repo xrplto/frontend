@@ -378,6 +378,7 @@ const OptimizedImage = memo(
           width={size}
           height={size}
           priority={priority}
+          loading={priority ? undefined : 'lazy'}
           unoptimized={true}
           onError={handleError}
           style={{
