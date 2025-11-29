@@ -38,7 +38,7 @@ import SelectPriceDialog from './SelectPriceDialog';
 import BurnNFT from './BurnNFT';
 import TransferDialog from './TransferDialog';
 import HistoryList from './HistoryList';
-import Wallet from 'src/components/Wallet';
+import { ConnectWallet } from 'src/components/Wallet';
 import CreateOfferXRPCafe from './CreateOfferXRPCafe';
 
 // XRPL
@@ -214,7 +214,7 @@ export default function NFTActions({ nft }) {
 
   const toggleWatchlist = async () => {
     if (!accountLogin) {
-      // Don't open modal - inline Wallet component handles this
+      setOpenWalletModal(true);
       return;
     }
     setWatchlistLoading(true);
@@ -690,7 +690,7 @@ export default function NFTActions({ nft }) {
                     </button>
                   </>
                 ) : (
-                  <Wallet />
+                  <ConnectWallet />
                 )}
               </div>
             )}
