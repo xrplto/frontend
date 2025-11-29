@@ -149,8 +149,11 @@ export default function TopTraders({ token }) {
 
   const tokenMd5 = token?.md5;
 
+  // Check if XRP token page
+  const isXRPToken = token?.currency === 'XRP';
+
   useEffect(() => {
-    if (!tokenMd5) {
+    if (!tokenMd5 && !isXRPToken) {
       setLoading(false);
       return;
     }
@@ -158,16 +161,31 @@ export default function TopTraders({ token }) {
     const fetchTopTraders = async () => {
       setLoading(true);
       try {
-        // Build sortBy: time-based (profit7d) or direct (roi, winRate)
-        const sortOption = SORT_OPTIONS.find(o => o.key === sortType);
-        const sortBy = sortOption?.timeBased ? `${sortType}${timePeriod}` : sortType;
-        const response = await axios.get(
-          `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${rowsPerPage}&sortBy=${sortBy}`
-        );
-        if (response.status === 200) {
-          const tradersArray = Array.isArray(response.data) ? response.data : [];
-          setTraders(tradersArray);
-          setTotalCount(tradersArray.length < rowsPerPage ? (page - 1) * rowsPerPage + tradersArray.length : page * rowsPerPage + 1);
+        let response;
+        if (isXRPToken) {
+          // XRP page: use cumulative-stats endpoint - valid: volume24h, winRate, buyVolume, sellVolume
+          const sortMap = { profit: 'buyVolume', volume: 'volume24h', roi: 'sellVolume', winRate: 'winRate' };
+          const sortBy = sortMap[sortType] || 'volume24h';
+          response = await axios.get(
+            `${BASE_URL}/analytics/cumulative-stats?page=${page}&limit=${rowsPerPage}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
+          );
+          if (response.status === 200) {
+            const tradersArray = Array.isArray(response.data.data) ? response.data.data : [];
+            setTraders(tradersArray);
+            setTotalCount(response.data.pagination?.total || tradersArray.length);
+          }
+        } else {
+          // Token-specific traders
+          const sortOption = SORT_OPTIONS.find(o => o.key === sortType);
+          const sortBy = sortOption?.timeBased ? `${sortType}${timePeriod}` : sortType;
+          response = await axios.get(
+            `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${rowsPerPage}&sortBy=${sortBy}`
+          );
+          if (response.status === 200) {
+            const tradersArray = Array.isArray(response.data) ? response.data : [];
+            setTraders(tradersArray);
+            setTotalCount(tradersArray.length < rowsPerPage ? (page - 1) * rowsPerPage + tradersArray.length : page * rowsPerPage + 1);
+          }
         }
       } catch (error) {
         setTraders([]);
@@ -178,7 +196,7 @@ export default function TopTraders({ token }) {
     };
 
     fetchTopTraders();
-  }, [tokenMd5, sortType, timePeriod, page]);
+  }, [tokenMd5, isXRPToken, sortType, timePeriod, page]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];

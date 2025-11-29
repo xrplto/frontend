@@ -1,6 +1,54 @@
 import { format, formatDistanceToNow, formatDistanceToNowStrict } from 'date-fns';
 import axios from 'axios';
 import hashicon from 'hashicon';
+import { useContext } from 'react';
+import { AppContext } from 'src/AppContext';
+
+// ==== THEME COMPATIBILITY ====
+
+// Alpha helper - converts hex color to rgba with opacity
+export function alpha(color, opacity) {
+  if (!color) return `rgba(0, 0, 0, ${opacity})`;
+  if (color.startsWith('rgba')) return color.replace(/[\d.]+\)$/, `${opacity})`);
+  if (color.startsWith('rgb')) {
+    return color.replace('rgb', 'rgba').replace(')', `, ${opacity})`);
+  }
+  if (color.startsWith('#')) {
+    const hex = color.slice(1);
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+  }
+  return color;
+}
+
+// MUI-compatible useTheme hook for legacy code
+export function useTheme() {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
+  return {
+    palette: {
+      mode: isDark ? 'dark' : 'light',
+      primary: { main: '#4285f4', light: '#6ba3f7', dark: '#2d5bb7' },
+      secondary: { main: '#8B92A8' },
+      success: { main: '#10b981' },
+      warning: { main: '#f59e0b' },
+      error: { main: '#ef4444' },
+      info: { main: '#3b82f6' },
+      text: {
+        primary: isDark ? '#ffffff' : '#000000',
+        secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)'
+      },
+      background: {
+        default: isDark ? '#000000' : '#ffffff',
+        paper: isDark ? '#111111' : '#ffffff'
+      },
+      divider: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+    }
+  };
+}
 
 // ==== NUMBER FORMATTING ====
 

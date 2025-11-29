@@ -40,6 +40,26 @@ const getTokenImageUrl = (issuer, currency) => {
   const md5Hash = MD5(tokenIdentifier).toString();
   return `https://s1.xrpl.to/token/${md5Hash}`;
 };
+const SOURCE_TAGS = {
+  101102979: 'xrp.cafe',
+  10011010: 'Magnetic',
+  74920348: 'First Ledger',
+  20221212: 'XPMarket',
+  69420589: 'Bidds',
+  110100111: 'Sologenic',
+  80085: 'Zerpaay',
+  11782013: 'ANODEX',
+  13888813: 'Zerpmon',
+  20102305: 'Opulence',
+  42697468: 'Bithomp',
+  123321: 'BearBull',
+  4152544945: 'ArtDept',
+  100010010: 'StaticBit',
+  80008000: 'Orchestra'
+};
+
+const getSourceTagName = (sourceTag) => SOURCE_TAGS[sourceTag] || (sourceTag ? 'Unknown' : null);
+
 const decodeCurrency = (currency) => {
   if (!currency || currency === 'XRP') return currency || 'XRP';
   // Only decode if it's a 40-character hex string (standard currency code format)
@@ -975,7 +995,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
           <VolumeIndicator volume={volumePercentage} isDark={isDark} />
           <CardContent>
-            <Box style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.8fr 1.4fr 1.4fr 0.8fr 0.2fr', gap: '4px', alignItems: 'center' }}>
+            <Box style={{ display: 'grid', gridTemplateColumns: '1.05fr 0.8fr 1.4fr 1.4fr 0.6fr 0.5fr 0.2fr', gap: '4px', alignItems: 'center' }}>
               <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                 <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', minWidth: '28px', whiteSpace: 'nowrap' }}>
                   {formatRelativeTime(trade.time)}
@@ -1009,6 +1029,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <Link href={`/profile/${addressToShow}`} isDark={isDark}>
                 {addressToShow ? `${addressToShow.slice(0, 4)}...${addressToShow.slice(-4)}` : ''}
               </Link>
+
+              <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {getSourceTagName(trade.sourceTag) || ''}
+              </span>
 
               <IconButton onClick={() => handleTxClick(trade.hash, addressToShow)} isDark={isDark}>
                 <ExternalLink size={12} />
@@ -1129,7 +1153,8 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             <div style={{ flex: '0.8' }}>Price</div>
             <div style={{ flex: '1.4' }}>Amount</div>
             <div style={{ flex: '1.4' }}>Total</div>
-            <div style={{ flex: '0.8' }}>Account</div>
+            <div style={{ flex: '0.6' }}>Account</div>
+            <div style={{ flex: '0.5' }}>Source</div>
             <div style={{ flex: '0.2' }}></div>
           </TableHeader>
 

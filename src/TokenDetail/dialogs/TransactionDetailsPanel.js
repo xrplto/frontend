@@ -43,10 +43,10 @@ const getPlatform = (tag) => {
     74920348: 'First Ledger', 10011010: 'Magnetic', 101102979: 'xrp.cafe',
     20221212: 'XPMarket', 69420589: 'Bidds', 110100111: 'Sologenic',
     20102305: 'Opulence', 13888813: 'Zerpmon', 11782013: 'ANODEX',
-    100010010: 'Xrpl Daddy', 123321: 'BearBull', 42697268: 'Bithomp',
-    4152544945: 'ArtDept.fun', 80085: 'Zerpaay', 510162502: 'Sonar Muse', 80008000: 'Orchestra'
+    100010010: 'StaticBit', 123321: 'BearBull', 42697468: 'Bithomp',
+    4152544945: 'ArtDept', 80085: 'Zerpaay', 510162502: 'Sonar Muse', 80008000: 'Orchestra'
   };
-  return map[tag] || null;
+  return map[tag] || (tag ? 'Unknown' : null);
 };
 
 const LimitMarker = ({ label, isDark }) => (

@@ -138,18 +138,34 @@ const OrderBook = ({ token, onPriceClick }) => {
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
   const asksSideRef = useRef(null);
+  const [rlusdToken, setRlusdToken] = useState(null);
+
+  // XRP is native asset - show RLUSD/XRP orderbook instead
+  const isXRPToken = token?.currency === 'XRP';
+
+  // Fetch RLUSD when viewing XRP
+  useEffect(() => {
+    if (!isXRPToken) return;
+    const controller = new AbortController();
+    axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`, { signal: controller.signal })
+      .then(res => res.data?.token && setRlusdToken(res.data.token))
+      .catch(() => {});
+    return () => controller.abort();
+  }, [isXRPToken]);
+
+  const effectiveToken = isXRPToken ? rlusdToken : token;
 
   const pair = useMemo(() => ({
     curr1: { currency: 'XRP', issuer: 'XRPL' },
-    curr2: token
-  }), [token]);
+    curr2: effectiveToken
+  }), [effectiveToken]);
 
   useEffect(() => {
     const controller = new AbortController();
 
     async function fetchOrderbook() {
       const { curr1, curr2 } = pair;
-      if (!curr1 || !curr2) return;
+      if (!curr1 || !curr2 || !curr2.issuer) return;
 
       try {
         const params = new URLSearchParams({
@@ -228,12 +244,14 @@ const OrderBook = ({ token, onPriceClick }) => {
 
   if (!bids.length && !asks.length) return null;
 
+  const displayToken = effectiveToken || token;
+
   return (
     <Container isDark={isDark}>
       <Header isDark={isDark}>
         <Title isDark={isDark}>
           <BookOpen size={14} style={{ opacity: 0.7 }} />
-          Order Book
+          {isXRPToken ? 'RLUSD/XRP' : 'Order Book'}
         </Title>
         <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
           {bids.length} bids · {asks.length} asks
@@ -245,7 +263,7 @@ const OrderBook = ({ token, onPriceClick }) => {
         <Side ref={asksSideRef}>
           <ColumnHeader isDark={isDark}>
             <span style={{ color: '#ef4444' }}>XRP</span>
-            <span>{token?.name || token?.currency || 'Token'}</span>
+            <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
             <span>By</span>
           </ColumnHeader>
           {[...asks].reverse().map((ask, idx) => {
@@ -289,7 +307,7 @@ const OrderBook = ({ token, onPriceClick }) => {
         <Side>
           <ColumnHeader isDark={isDark}>
             <span style={{ color: '#22c55e' }}>XRP</span>
-            <span>{token?.name || token?.currency || 'Token'}</span>
+            <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
             <span>By</span>
           </ColumnHeader>
           {bids.map((bid, idx) => {

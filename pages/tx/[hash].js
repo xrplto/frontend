@@ -7,21 +7,90 @@ import { update_metrics } from 'src/redux/statusSlice';
 import { LRUCache } from 'lru-cache';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
-import { Copy, CheckCircle, XCircle, ArrowLeftRight, Wallet, TrendingUp } from 'lucide-react';
+import { Copy, ArrowLeftRight, Wallet, TrendingUp } from 'lucide-react';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import Link from 'next/link';
 import { rippleTimeToISO8601, dropsToXrp, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { formatDistanceToNow } from 'date-fns';
 import Decimal from 'decimal.js-light';
+import CryptoJS from 'crypto-js';
+import { getHashIcon } from 'src/utils/formatters';
 
-// Helper function to format decimal with thousand separators (like BigNumber.toFormat)
 function formatDecimal(decimal, decimalPlaces = null) {
   let str = decimalPlaces !== null ? decimal.toFixed(decimalPlaces) : decimal.toString();
   return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
-import CryptoJS from 'crypto-js';
-import { getHashIcon } from 'src/utils/formatters';
+
+// Minimal MUI shims for legacy compatibility
+const alpha = (color, opacity) => {
+  if (!color) return `rgba(0,0,0,${opacity})`;
+  if (color.startsWith('#')) {
+    const r = parseInt(color.slice(1, 3), 16), g = parseInt(color.slice(3, 5), 16), b = parseInt(color.slice(5, 7), 16);
+    return `rgba(${r},${g},${b},${opacity})`;
+  }
+  return color;
+};
+
+const useTheme = () => {
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+  return {
+    palette: {
+      mode: isDark ? 'dark' : 'light',
+      primary: { main: '#4285f4' },
+      success: { main: '#10b981' },
+      error: { main: '#ef4444' },
+      text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
+      background: { default: isDark ? '#000' : '#fff', paper: isDark ? '#111' : '#fff' },
+      divider: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'
+    }
+  };
+};
+
+const sx2style = (sx) => {
+  if (!sx) return {};
+  const s = {}, u = 8;
+  for (const [k, v] of Object.entries(sx)) {
+    if (v === undefined || typeof v === 'object') continue;
+    if (k === 'p') s.padding = `${v * u}px`;
+    else if (k === 'pt') s.paddingTop = `${v * u}px`;
+    else if (k === 'pb') s.paddingBottom = `${v * u}px`;
+    else if (k === 'px') { s.paddingLeft = s.paddingRight = `${v * u}px`; }
+    else if (k === 'py') { s.paddingTop = s.paddingBottom = `${v * u}px`; }
+    else if (k === 'mt') s.marginTop = `${v * u}px`;
+    else if (k === 'mb') s.marginBottom = `${v * u}px`;
+    else if (k === 'mr') s.marginRight = `${v * u}px`;
+    else if (k === 'ml') s.marginLeft = `${v * u}px`;
+    else if (k === 'mx') { s.marginLeft = s.marginRight = `${v * u}px`; }
+    else if (k === 'my') { s.marginTop = s.marginBottom = `${v * u}px`; }
+    else if (k === 'gap') s.gap = typeof v === 'number' ? `${v * u}px` : v;
+    else if (k === 'bgcolor') s.backgroundColor = v;
+    else s[k] = v;
+  }
+  return s;
+};
+
+const Box = ({ children, sx, component: C = 'div', ...p }) => <C style={sx2style(sx)} {...p}>{children}</C>;
+const Typography = ({ children, variant, component: C, sx, ...p }) => { const Tag = C || (variant?.startsWith('h') ? variant : 'span'); return <Tag style={sx2style(sx)} {...p}>{children}</Tag>; };
+const Card = ({ children, sx, ...p }) => <div style={{ borderRadius: '12px', ...sx2style(sx) }} {...p}>{children}</div>;
+const CardContent = ({ children, sx, ...p }) => <div style={{ padding: '16px', ...sx2style(sx) }} {...p}>{children}</div>;
+const Chip = ({ label, sx, ...p }) => <span style={{ display: 'inline-flex', alignItems: 'center', borderRadius: '9999px', padding: '2px 8px', fontSize: '12px', ...sx2style(sx) }} {...p}>{label}</span>;
+const Stack = ({ children, direction = 'column', spacing = 1, alignItems, sx, ...p }) => <div style={{ display: 'flex', flexDirection: direction === 'row' ? 'row' : 'column', gap: `${spacing * 8}px`, alignItems, ...sx2style(sx) }} {...p}>{children}</div>;
+const Avatar = ({ src, children, sx, onError, ...p }) => <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#e0e0e0', ...sx2style(sx) }} {...p}>{src ? <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={onError} /> : children}</div>;
+const Tooltip = ({ children, title, onOpen, ...p }) => <span title={typeof title === 'string' ? title : ''} onMouseEnter={onOpen} {...p}>{children}</span>;
+const IconButton = ({ children, onClick, sx, ...p }) => <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '50%', display: 'inline-flex', ...sx2style(sx) }} onClick={onClick} {...p}>{children}</button>;
+const Divider = ({ sx, ...p }) => <hr style={{ border: 'none', borderTop: '1px solid rgba(128,128,128,0.2)', margin: '8px 0', ...sx2style(sx) }} {...p} />;
+const FileCopyOutlinedIcon = ({ sx }) => <Copy size={sx?.fontSize ? parseInt(sx.fontSize) : 16} />;
+const SwapHorizIcon = () => <ArrowLeftRight size={18} />;
+const TrendingUpIcon = () => <TrendingUp size={18} />;
+const AccountBalanceWalletIcon = () => <Wallet size={18} />;
+const Grid = ({ children, container, spacing = 0, size, sx, ...p }) => {
+  if (container) return <div style={{ display: 'flex', flexWrap: 'wrap', gap: `${spacing * 8}px`, ...sx2style(sx) }} {...p}>{children}</div>;
+  const xs = size?.xs || 12, md = size?.md;
+  const width = md ? undefined : `${(xs / 12) * 100}%`;
+  return <div style={{ flex: md ? `0 0 ${(md / 12) * 100}%` : `0 0 ${width}`, maxWidth: md ? `${(md / 12) * 100}%` : width, ...sx2style(sx) }} {...p}>{children}</div>;
+};
 
 // Create transaction cache with 1 hour TTL and max 100 entries
 const txCache = new LRUCache({
@@ -94,10 +163,10 @@ const KNOWN_SOURCE_TAGS = {
 };
 
 // Helper to render JSON with syntax highlighting
-const JsonViewer = ({ data }) => {
-  const theme = useTheme();
+const JsonViewer = ({ data, isDark: isDarkProp }) => {
+  const { themeName } = useContext(AppContext);
+  const isDark = isDarkProp ?? themeName === 'XrplToDarkTheme';
   const [copied, setCopied] = useState(false);
-
   const jsonString = JSON.stringify(data, null, 2);
 
   const copyJson = () => {
@@ -106,93 +175,44 @@ const JsonViewer = ({ data }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Simple syntax highlighting
   const highlightJson = (json) => {
     return json
-      .replace(/(".*?"):/g, '<span style="color: #4285f4;">$1</span>:') // Keys in blue
-      .replace(/: (".*?")/g, ': <span style="color: #10b981;">$1</span>') // String values in green
-      .replace(/: (true|false)/g, ': <span style="color: #f59e0b;">$1</span>') // Booleans in orange
-      .replace(/: (null)/g, ': <span style="color: #ef4444;">$1</span>') // Null in red
-      .replace(/: (-?\d+\.?\d*)/g, ': <span style="color: #8b5cf6;">$1</span>'); // Numbers in purple
+      .replace(/(".*?"):/g, '<span style="color: #4285f4;">$1</span>:')
+      .replace(/: (".*?")/g, ': <span style="color: #10b981;">$1</span>')
+      .replace(/: (true|false)/g, ': <span style="color: #f59e0b;">$1</span>')
+      .replace(/: (null)/g, ': <span style="color: #ef4444;">$1</span>')
+      .replace(/: (-?\d+\.?\d*)/g, ': <span style="color: #8b5cf6;">$1</span>');
   };
 
   return (
-    <Box sx={{ position: 'relative' }}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 8,
-          right: 8,
-          zIndex: 1
-        }}
+    <div className="relative">
+      <button
+        onClick={copyJson}
+        title={copied ? 'Copied!' : 'Copy JSON'}
+        className={cn(
+          "absolute top-2 right-2 z-10 p-2 rounded-full transition-colors",
+          isDark ? "bg-white/10 hover:bg-white/20" : "bg-black/5 hover:bg-black/10"
+        )}
       >
-        <Tooltip title={copied ? 'Copied!' : 'Copy JSON'}>
-          <IconButton
-            onClick={copyJson}
-            size="small"
-            sx={{
-              backgroundColor: alpha(theme.palette.background.paper, 0.8),
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.background.paper, 0.95)
-              }
-            }}
-          >
-            <FileCopyOutlinedIcon sx={{ fontSize: '16px' }} />
-          </IconButton>
-        </Tooltip>
-      </Box>
-      <Box
-        sx={{
-          maxHeight: '600px',
-          overflowY: 'auto',
-          overflowX: 'auto',
-          fontFamily: 'monospace',
-          fontSize: '12px',
-          lineHeight: 1.6,
-          backgroundColor: alpha(theme.palette.divider, 0.03),
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          borderRadius: '6px',
-          p: 2,
-          '&::-webkit-scrollbar': {
-            width: '8px',
-            height: '8px'
-          },
-          '&::-webkit-scrollbar-track': {
-            backgroundColor: alpha(theme.palette.divider, 0.05)
-          },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: alpha(theme.palette.divider, 0.2),
-            borderRadius: '4px',
-            '&:hover': {
-              backgroundColor: alpha(theme.palette.divider, 0.3)
-            }
-          }
-        }}
-      >
-        <pre
-          style={{
-            margin: 0,
-            whiteSpace: 'pre-wrap',
-            wordBreak: 'break-word',
-            color: theme.palette.text.primary
-          }}
-          dangerouslySetInnerHTML={{ __html: highlightJson(jsonString) }}
-        />
-      </Box>
-    </Box>
+        <Copy size={14} />
+      </button>
+      <pre
+        className={cn(
+          "font-mono text-xs leading-relaxed p-4 rounded-md whitespace-pre-wrap break-words",
+          isDark ? "bg-white/[0.02] text-white/90" : "bg-gray-100 text-gray-800"
+        )}
+        dangerouslySetInnerHTML={{ __html: highlightJson(jsonString) }}
+      />
+    </div>
   );
 };
 
-const DetailRow = ({ label, children, ...props }) => {
+const DetailRow = ({ label, children }) => {
   const theme = useTheme();
   return (
-    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2, ...props }}>
-      <Typography variant="body2" sx={{ color: alpha(theme.palette.text.primary, 0.5), minWidth: '100px', fontSize: '13px', pt: 0.3 }}>
-        {label}
-      </Typography>
-      <Box sx={{ flex: 1 }}>
-        {children}
-      </Box>
+    <Box sx={{ display: 'flex', alignItems: 'flex-start', gap: 2 }}>
+      <Typography sx={{ color: alpha(theme.palette.text.primary, 0.5), minWidth: '100px', fontSize: '13px', pt: 0.3 }}>{label}</Typography>
+      <Box sx={{ flex: 1 }}>{children}</Box>
     </Box>
   );
 };
@@ -1766,95 +1786,70 @@ const getTransactionDescription = (txData) => {
 const TransactionSummaryCard = ({ txData }) => {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const { hash, TransactionType, Account, Destination, Amount, meta, date, ledger_index, Fee } =
-    txData;
+  const { hash, TransactionType, Account, meta, date, ledger_index, Fee } = txData;
 
   const isSuccess = meta?.TransactionResult === 'tesSUCCESS';
-  const deliveredAmount = meta?.delivered_amount || meta?.DeliveredAmount;
   const description = getTransactionDescription(txData);
-
-  const getTransactionIcon = () => {
-    switch (TransactionType) {
-      case 'Payment':
-        return <SwapHorizIcon />;
-      case 'OfferCreate':
-      case 'OfferCancel':
-        return <TrendingUpIcon />;
-      case 'TrustSet':
-        return <AccountBalanceWalletIcon />;
-      default:
-        return <SwapHorizIcon />;
-    }
-  };
+  const timeAgo = formatDistanceToNow(new Date(rippleTimeToISO8601(date)));
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        mb: 2.5,
-        background: 'transparent',
-        border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`,
-        borderRadius: '12px'
-      }}
-    >
-      <CardContent sx={{ p: 2 }}>
-        <Stack direction="row" spacing={1} alignItems="center" mb={2}>
-          <Typography variant="h6" component="h2" sx={{ fontWeight: 400, fontSize: '18px' }}>
-            {description.title}
-          </Typography>
-          <Chip
-            label={isSuccess ? 'Success' : 'Failed'}
-            size="small"
-            sx={{
-              fontSize: '10px',
-              height: '18px',
-              px: 0.5,
-              backgroundColor: alpha(isSuccess ? '#10b981' : '#ef4444', 0.08),
-              color: isSuccess ? '#10b981' : '#ef4444',
-              border: `1px solid ${alpha(isSuccess ? '#10b981' : '#ef4444', 0.15)}`,
-              fontWeight: 400
-            }}
-          />
-        </Stack>
+    <div className={cn(
+      "rounded-xl border-[1.5px] p-6 mb-6",
+      isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50"
+    )}>
+      {/* Header with status */}
+      <div className="flex items-center gap-3 mb-4">
+        <span className={cn(
+          "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium",
+          isSuccess
+            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+            : "bg-red-500/10 text-red-500 border border-red-500/20"
+        )}>
+          {isSuccess ? '✓' : '✗'} {isSuccess ? 'Confirmed' : 'Failed'}
+        </span>
+        <span className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>
+          {timeAgo} ago · Ledger #{ledger_index.toLocaleString()}
+        </span>
+      </div>
 
-        <Box
-          sx={{
-            display: 'grid',
-            gridTemplateColumns: { xs: '1fr', sm: 'auto 1fr auto 1fr' },
-            gap: 1.5,
-            alignItems: 'center'
-          }}
-        >
-          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
-            Hash
-          </Typography>
-          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '13px', wordBreak: 'break-all' }}>
-            {hash}
-          </Typography>
+      {/* Main story */}
+      <h2 className={cn("text-2xl font-normal mb-3", isDark ? "text-white" : "text-gray-900")}>
+        {description.title}
+      </h2>
+      <p className={cn("text-[15px] leading-relaxed mb-5", isDark ? "text-white/70" : "text-gray-600")}>
+        {description.description}
+      </p>
 
-          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
-            Time
-          </Typography>
-          <Typography variant="body2" sx={{ fontSize: '13px' }}>
-            {formatDistanceToNow(new Date(rippleTimeToISO8601(date)))} ago
-          </Typography>
+      {/* Key details as pills */}
+      {description.details && (
+        <div className="flex flex-wrap gap-2 mb-5">
+          {description.details.map((detail, i) => (
+            <span key={i} className={cn(
+              "px-3 py-1.5 rounded-lg text-[13px]",
+              isDark ? "bg-white/5 text-white/80" : "bg-gray-100 text-gray-700"
+            )}>
+              {detail}
+            </span>
+          ))}
+        </div>
+      )}
 
-          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
-            Ledger
-          </Typography>
-          <Typography variant="body2" sx={{ fontSize: '13px' }}>
-            #{ledger_index.toLocaleString()}
-          </Typography>
-
-          <Typography variant="caption" sx={{ color: alpha(theme.palette.text.primary, 0.5), fontSize: '12px' }}>
-            Fee
-          </Typography>
-          <Typography variant="body2" sx={{ fontSize: '13px' }}>
-            {dropsToXrp(Fee)} XRP
-          </Typography>
-        </Box>
-      </CardContent>
-    </Card>
+      {/* Hash */}
+      <div className={cn(
+        "flex items-center gap-2 pt-4 border-t",
+        isDark ? "border-white/10" : "border-gray-200"
+      )}>
+        <span className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>
+          TX
+        </span>
+        <code className={cn(
+          "text-[12px] font-mono break-all",
+          isDark ? "text-white/60" : "text-gray-500"
+        )}>
+          {hash}
+        </code>
+      </div>
+    </div>
   );
 };
 
@@ -2434,74 +2429,49 @@ const TransactionDetails = ({ txData }) => {
     }
   }
 
+  const { themeName } = useContext(AppContext);
+  const isDark = themeName === 'XrplToDarkTheme';
+
   return (
-    <Box>
+    <div>
       <TransactionSummaryCard txData={txData} />
 
-      <Box
-        sx={{
-          p: 2.5,
-          borderRadius: '12px',
-          background: 'transparent',
-          border: `1.5px solid ${alpha(theme.palette.divider, 0.15)}`
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2, flexWrap: 'wrap', gap: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Typography variant="h6" sx={{ wordBreak: 'break-all', mr: 1.5, fontWeight: 400 }}>
-              Transaction Details
-            </Typography>
-            <Tooltip title={copied ? 'Copied!' : 'Copy Hash'}>
-              <IconButton onClick={copyToClipboard} size="small" aria-label="Copy transaction hash">
-                <FileCopyOutlinedIcon fontSize="small" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-          <Tooltip title={urlCopied ? 'Copied!' : 'Copy for LLM'}>
-            <Box
-              component="button"
-              onClick={copyForLLM}
-              aria-label="Copy transaction summary for LLM"
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                px: 1.2,
-                py: 0.6,
-                fontSize: '11px',
-                fontWeight: 400,
-                color: '#4285f4',
-                backgroundColor: 'transparent',
-                border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                borderRadius: '8px',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                '&:hover': {
-                  backgroundColor: alpha('#4285f4', 0.04),
-                  borderColor: '#4285f4'
-                }
-              }}
-            >
-              <FileCopyOutlinedIcon sx={{ fontSize: '14px' }} />
-              Copy for LLM
-            </Box>
-          </Tooltip>
-        </Box>
+      {/* Technical Details Section */}
+      <div className={cn(
+        "rounded-xl border-[1.5px] p-5",
+        isDark ? "border-white/10" : "border-gray-200"
+      )}>
+        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+          <h3 className={cn("text-lg font-normal", isDark ? "text-white" : "text-gray-900")}>
+            Technical Details
+          </h3>
+          <button
+            onClick={copyForLLM}
+            className={cn(
+              "flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg border transition-all",
+              isDark
+                ? "border-white/15 text-primary hover:bg-primary/5 hover:border-primary"
+                : "border-gray-300 text-primary hover:bg-primary/5 hover:border-primary"
+            )}
+          >
+            <Copy size={12} />
+            Copy for AI
+          </button>
+        </div>
 
         <Grid container spacing={2}>
           {/* Main Transaction Details */}
           <Grid size={{ xs: 12 }}>
-            <Box
-              sx={{
-                p: 2,
-                background: alpha(theme.palette.divider, 0.04),
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                borderRadius: '8px'
-              }}
-            >
-              <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-                Key Information
-              </Typography>
+            <div className={cn(
+              "p-4 rounded-lg border",
+              isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200"
+            )}>
+              <div className={cn(
+                "text-[13px] font-medium mb-3 pb-3 border-b",
+                isDark ? "text-white/60 border-white/10" : "text-gray-500 border-gray-200"
+              )}>
+                Transaction Data
+              </div>
               <Stack spacing={1.5}>
                 <DetailRow label="Type">
                   <Chip
@@ -3876,7 +3846,7 @@ const TransactionDetails = ({ txData }) => {
                   </DetailRow>
                 )}
               </Stack>
-            </Box>
+            </div>
           </Grid>
 
           {/* Affected Accounts */}
@@ -4062,43 +4032,38 @@ const TransactionDetails = ({ txData }) => {
           </Stack>
         </Box>
 
-        {/* Raw Transaction Data */}
-        <Box
-          sx={{
-            mt: 2,
-            p: 2,
-            background: alpha(theme.palette.divider, 0.04),
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            borderRadius: '8px'
-          }}
-        >
-          <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-            Raw Transaction Data
-          </Typography>
-          <Box sx={{ mt: 1.5 }}>
-            <JsonViewer data={rawData} />
-          </Box>
-        </Box>
+        {/* Raw JSON Data - Collapsible */}
+        <details className={cn(
+          "mt-4 rounded-lg border",
+          isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200"
+        )}>
+          <summary className={cn(
+            "px-4 py-3 cursor-pointer text-[13px] font-medium select-none",
+            isDark ? "text-white/60 hover:text-white/80" : "text-gray-500 hover:text-gray-700"
+          )}>
+            Raw Transaction JSON
+          </summary>
+          <div className="px-4 pb-4">
+            <JsonViewer data={rawData} isDark={isDark} />
+          </div>
+        </details>
 
-        {/* Transaction Metadata */}
-        <Box
-          sx={{
-            mt: 2,
-            p: 2,
-            background: alpha(theme.palette.divider, 0.04),
-            border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            borderRadius: '8px'
-          }}
-        >
-          <Typography variant="subtitle2" sx={{ fontWeight: 400, fontSize: '14px', mb: 1.5, pb: 1.5, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+        <details className={cn(
+          "mt-3 rounded-lg border",
+          isDark ? "bg-white/[0.02] border-white/10" : "bg-gray-50 border-gray-200"
+        )}>
+          <summary className={cn(
+            "px-4 py-3 cursor-pointer text-[13px] font-medium select-none",
+            isDark ? "text-white/60 hover:text-white/80" : "text-gray-500 hover:text-gray-700"
+          )}>
             Transaction Metadata
-          </Typography>
-          <Box sx={{ mt: 1.5 }}>
-            <JsonViewer data={meta} />
-          </Box>
-        </Box>
-      </Box>
-    </Box>
+          </summary>
+          <div className="px-4 pb-4">
+            <JsonViewer data={meta} isDark={isDark} />
+          </div>
+        </details>
+      </div>
+    </div>
   );
 };
 

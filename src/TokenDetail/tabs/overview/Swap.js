@@ -576,13 +576,27 @@ const SummaryBox = styled.div`
   margin-bottom: 4px;
 `;
 
+// RLUSD token for XRP orderbook display (Ripple's official stablecoin)
+const RLUSD_TOKEN = {
+  currency: '524C555344000000000000000000000000000000',
+  issuer: 'rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De',
+  name: 'RLUSD',
+  md5: '0dd550278b74cb6690fdae351e8e0df3'
+};
+
 const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
   const [sellAmount, setSellAmount] = useState('');
   const [buyAmount, setBuyAmount] = useState('');
+
+  // Special handling for XRP token page - show RLUSD/XRP orderbook instead
+  // Since XRP is the native asset, it can't have an orderbook against itself
+  const isXRPTokenPage = token?.currency === 'XRP';
+  const effectiveToken = isXRPTokenPage ? RLUSD_TOKEN : token;
+
   const [pair, setPair] = useState({
     curr1: XRP_TOKEN,
-    curr2: token
+    curr2: effectiveToken
   });
 
   const curr1 = pair.curr1;
@@ -605,7 +619,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [revert, setRevert] = useState(false);
 
   const [token1, setToken1] = useState(curr1);
-  const [token2, setToken2] = useState(curr2);
+  const [token2, setToken2] = useState(effectiveToken);
 
   const [amount1, setAmount1] = useState('');
   const [amount2, setAmount2] = useState('');
@@ -774,6 +788,44 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
 
+  // Fetch RLUSD token info when viewing XRP page
+  useEffect(() => {
+    if (!isXRPTokenPage) return;
+
+    const controller = new AbortController();
+
+    async function fetchRLUSD() {
+      try {
+        // Fetch RLUSD token info to get correct md5 and other details
+        const res = await axios.get(`${BASE_URL}/token/rMxCKbEDwqr76QuheSUMdEGf4B9xJ8m5De-524C555344000000000000000000000000000000`, { signal: controller.signal });
+        if (res.data?.token) {
+          const rlusdToken = res.data.token;
+          setToken2({
+            ...rlusdToken,
+            currency: rlusdToken.currency || 'USD',
+            issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
+          });
+          setPair(prev => ({
+            ...prev,
+            curr2: {
+              ...rlusdToken,
+              currency: rlusdToken.currency || 'USD',
+              issuer: rlusdToken.issuer || 'rMxWgaM9YkNkWwpTqUCBChs6zNTpYPY6NT'
+            }
+          }));
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          console.error('RLUSD fetch error:', err);
+        }
+      }
+    }
+
+    fetchRLUSD();
+
+    return () => controller.abort();
+  }, [isXRPTokenPage]);
+
   // Fetch orderbook from API - token (token2) as base, XRP (token1) as quote
   // This gives prices in XRP per token (e.g., 1.69 XRP per DROP)
   useEffect(() => {
@@ -781,6 +833,8 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     async function fetchOrderbook() {
       if (!token1 || !token2) return;
+      // Skip if XRP page and RLUSD not yet loaded (no valid issuer)
+      if (isXRPTokenPage && !token2.issuer) return;
 
       try {
         // Base = viewed token (token2), Quote = XRP (token1)
@@ -835,7 +889,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
       controller.abort();
       clearInterval(timer);
     };
-  }, [token1, token2]);
+  }, [token1, token2, isXRPTokenPage]);
 
   useEffect(() => {
     if (!onOrderBookData) return;
@@ -1544,6 +1598,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   return (
     <Stack alignItems="center" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
       <OverviewWrapper isDark={isDark}>
+        {/* XRP page notice - show that we're displaying RLUSD/XRP orderbook */}
+        {isXRPTokenPage && (
+          <Box sx={{ mb: 1.5, p: 1, borderRadius: '8px', background: isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)', border: `1px solid ${isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'}` }}>
+            <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', opacity: 0.8 }}>
+              Showing <span style={{ fontWeight: 500, color: '#4285f4' }}>RLUSD/XRP</span> orderbook. XRP is the native asset and cannot have an orderbook against itself.
+            </Typography>
+          </Box>
+        )}
         <Box sx={{ mb: 1 }}>
           <Tabs
             sx={{
