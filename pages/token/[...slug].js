@@ -49,7 +49,7 @@ function Detail({ data }) {
   const isPanelOpen = creatorPanelOpen || transactionPanelOpen || orderBookOpen || notificationPanelOpen;
 
   return (
-    <div className="overflow-hidden flex-1">
+    <div className="overflow-hidden min-h-screen">
       <div id="back-to-top-anchor" className="h-6" />
       <Header
         notificationPanelOpen={notificationPanelOpen}

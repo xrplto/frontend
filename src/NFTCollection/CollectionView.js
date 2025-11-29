@@ -11,6 +11,7 @@ import axios from 'axios';
 import dynamic from 'next/dynamic';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 import PropTypes from 'prop-types';
 
 // Lucide Icons
@@ -337,26 +338,64 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
 // NFT Grid Component
 const NFTGrid = React.memo(({ collection }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { themeName, setDeletingNfts, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
+  const router = useRouter();
+  const { themeName, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const [anchorEl, setAnchorEl] = useState(null);
   const dropdownRef = useRef(null);
 
-  const collectionData = collection?.collection || collection || {};
-  const slug = collectionData.slug;
+  const slug = collection?.collection?.slug || collection?.slug;
 
-  const initialNfts = collection?.initialNfts || [];
-  const [nfts, setNfts] = useState(initialNfts);
-  const [page, setPage] = useState(initialNfts.length > 0 ? 1 : 0);
+  const [nfts, setNfts] = useState([]);
+  const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
   const [showFilter, setShowFilter] = useState(false);
-  const [filter, setFilter] = useState(0);
-  const [subFilter, setSubFilter] = useState('price-low');
+  const [sortBy, setSortBy] = useState('price-low');
   const [filterAttrs, setFilterAttrs] = useState([]);
-  const [isFirstLoad, setIsFirstLoad] = useState(initialNfts.length === 0);
   const [likedNfts, setLikedNfts] = useState([]);
+  const [traits, setTraits] = useState([]);
+  const [showSortDropdown, setShowSortDropdown] = useState(false);
+  const [listed, setListed] = useState('');
+  const [showListedDropdown, setShowListedDropdown] = useState(false);
+  const listedDropdownRef = useRef(null);
+
+  const listingOptions = [
+    { value: '', label: 'All' },
+    { value: 'true', label: 'Listed Only' },
+    { value: 'false', label: 'Unlisted Only' },
+    { value: 'xrp', label: 'Listed for XRP' },
+    { value: 'non-xrp', label: 'Listed for Tokens' }
+  ];
+
+  // Fetch traits for filtering
+  useEffect(() => {
+    if (!slug) return;
+    axios.get(`${BASE_URL}/nft/collections/${slug}/traits`)
+      .then(res => {
+        if (res.data?.traits) {
+          const formatted = res.data.traits.map(t => ({
+            title: t.type,
+            items: t.values.reduce((acc, v) => ({ ...acc, [v.value]: { count: v.count } }), {})
+          }));
+          setTraits(formatted);
+        }
+      })
+      .catch(() => {});
+  }, [slug]);
+
+  // Apply URL traits filter on load
+  useEffect(() => {
+    if (traits.length === 0 || !router.isReady || !router.query.traits) return;
+    const parsed = router.query.traits.split(',').map(t => {
+      const [type, value] = t.split(':');
+      return { type, value };
+    });
+    setFilterAttrs(traits.map(t => ({
+      trait_type: t.title,
+      value: parsed.filter(p => p.type === t.title).map(p => p.value)
+    })));
+    setShowFilter(true);
+  }, [traits, router.isReady, router.query.traits]);
 
   // Fetch liked NFTs
   useEffect(() => {
@@ -365,10 +404,7 @@ const NFTGrid = React.memo(({ collection }) => {
     axios.get(`${BASE_URL}/watchlist/nft?account=${account}`)
       .then(res => {
         if (res.data?.result === 'success') {
-          const ids = [];
-          Object.values(res.data.watchlist || {}).forEach(col => {
-            (col.items || []).forEach(item => ids.push(item.nftokenId));
-          });
+          const ids = Object.values(res.data.watchlist || {}).flatMap(col => (col.items || []).map(item => item.nftokenId));
           setLikedNfts(ids);
         }
       })
@@ -385,84 +421,68 @@ const NFTGrid = React.memo(({ collection }) => {
         setLikedNfts(prev => action === 'add' ? [...prev, nftokenId] : prev.filter(id => id !== nftokenId));
         openSnackbar?.(action === 'add' ? 'Added to watchlist' : 'Removed from watchlist', 'success');
       }
-    } catch (err) {
+    } catch {
       openSnackbar?.('Failed to update', 'error');
     }
   }, [accountProfile, likedNfts, openSnackbar, setOpenWalletModal]);
 
-  const sortOptions = useMemo(() => [
+  const sortOptions = [
     { value: 'activity', label: 'Latest Activity' },
-    { value: 'price-low', label: 'Low to High' },
-    { value: 'price-high', label: 'High to Low' },
+    { value: 'price-low', label: 'Price: Low to High' },
+    { value: 'price-high', label: 'Price: High to Low' },
+    { value: 'offer-high', label: 'Offer: High to Low' },
+    { value: 'offer-low', label: 'Offer: Low to High' },
+    { value: 'rarity-rare', label: 'Rarest First' },
+    { value: 'rarity-common', label: 'Common First' },
+    { value: 'volume-high', label: 'Most Traded' },
+    { value: 'volume-low', label: 'Least Traded' },
+    { value: 'recent-sale', label: 'Recently Sold' },
+    { value: 'recent-listed', label: 'Recently Listed' },
     { value: 'minted-latest', label: 'Recently Minted' },
     { value: 'minted-earliest', label: 'First Minted' }
-  ], []);
+  ];
 
-  const currentSort = sortOptions.find((opt) => opt.value === subFilter) || sortOptions[0];
+  const currentSort = sortOptions.find(opt => opt.value === sortBy) || sortOptions[0];
 
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setAnchorEl(null);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setShowSortDropdown(false);
+      if (listedDropdownRef.current && !listedDropdownRef.current.contains(e.target)) setShowListedDropdown(false);
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   // Fetch NFTs
-  const fetchNfts = useCallback(() => {
+  useEffect(() => {
     if (!slug) return;
     setLoading(true);
-    const limit = 24;
 
-    const params = new URLSearchParams({
-      page: page.toString(),
-      limit: limit.toString(),
-      sortBy: subFilter
-    });
+    const params = new URLSearchParams({ page: page.toString(), limit: '24', sortBy });
+    if (listed) params.append('listed', listed);
+    const activeTraits = filterAttrs.filter(a => a.value?.length > 0);
+    if (activeTraits.length > 0) {
+      params.append('traits', activeTraits.flatMap(a => a.value.map(v => `${a.trait_type}:${v}`)).join(','));
+    }
 
-    if (filter === 1) params.append('listed', 'true');
-    if (filter === 2) params.append('listed', 'xrp');
-
-    axios
-      .get(`${BASE_URL}/nft/collections/${slug}/nfts?${params}`)
-      .then((res) => {
+    axios.get(`${BASE_URL}/nft/collections/${slug}/nfts?${params}`)
+      .then(res => {
         const newNfts = res.data.nfts || [];
-        setHasMore(newNfts.length === limit);
-        setNfts((prev) => {
-          if (page === 0) return newNfts;
-          // Deduplicate by NFTokenID to prevent duplicate key warnings
-          const existingIds = new Set(prev.map((n) => n.NFTokenID));
-          const uniqueNew = newNfts.filter((n) => !existingIds.has(n.NFTokenID));
-          return [...prev, ...uniqueNew];
-        });
-        setDeletingNfts((prev) => {
-          if (page === 0) return newNfts;
-          const existingIds = new Set(prev.map((n) => n.NFTokenID));
-          const uniqueNew = newNfts.filter((n) => !existingIds.has(n.NFTokenID));
-          return [...prev, ...uniqueNew];
-        });
+        const pagination = res.data.pagination;
+        setHasMore(pagination ? (page + 1) < pagination.totalPages : newNfts.length === 24);
+        setNfts(prev => page === 0 ? newNfts : [...prev, ...newNfts]);
       })
-      .catch((err) => console.error('Error fetching NFTs:', err))
+      .catch(err => console.error('Error fetching NFTs:', err))
       .finally(() => setLoading(false));
-  }, [page, slug, subFilter, filter, setDeletingNfts]);
+  }, [page, slug, sortBy, listed, filterAttrs]);
 
+  // Reset on filter/sort change
   useEffect(() => {
     setNfts([]);
     setPage(0);
     setHasMore(true);
-  }, [search, filter, subFilter, filterAttrs]);
-
-  useEffect(() => {
-    if ((isFirstLoad && initialNfts.length === 0) || page > 0 || !isFirstLoad) {
-      fetchNfts();
-    }
-    setIsFirstLoad(false);
-  }, [fetchNfts, isFirstLoad, page, initialNfts.length]);
-
-  const debouncedSearch = useMemo(() => debounce((value) => setSearch(value), 500), []);
+  }, [sortBy, listed, filterAttrs]);
 
   const handleRemove = useCallback((NFTokenID) => {
     if (!collection) return;
@@ -483,40 +503,31 @@ const NFTGrid = React.memo(({ collection }) => {
 
   return (
     <div className="bg-transparent">
-      {/* Search and Filter Header */}
+      {/* Filter Header */}
       <div className="mb-4">
-        <div className="flex gap-2 items-center">
-          {/* Search Bar */}
-          <div className={cn(
-            'flex-1 flex items-center px-2.5 py-1.5 rounded-lg border-[1.5px]',
-            isDark ? 'border-white/10 focus-within:border-primary/30' : 'border-gray-200 focus-within:border-primary/30'
-          )}>
-            <Search size={14} className={isDark ? 'text-white/30 mr-2' : 'text-gray-400 mr-2'} />
-            <input
-              type="text"
-              placeholder="Search..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                debouncedSearch(e.target.value);
-              }}
+        <div className="flex gap-2 items-center justify-end">
+          {/* Filter Button */}
+          {traits.length > 0 && (
+            <button
+              onClick={() => setShowFilter(!showFilter)}
               className={cn(
-                'flex-1 bg-transparent border-none outline-none text-[12px]',
-                isDark ? 'text-white placeholder-white/30' : 'text-gray-900 placeholder-gray-400'
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
+                showFilter ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
               )}
-            />
-            {search && (
-              <button onClick={() => { setSearch(''); debouncedSearch(''); }} className="p-0.5 hover:text-red-500">
-                <X size={12} />
-              </button>
-            )}
-            {loading && <Loader2 size={12} className="animate-spin text-primary ml-1" />}
-          </div>
+            >
+              <Filter size={12} />
+              {filterAttrs.filter(a => a.value?.length > 0).length > 0 && (
+                <span className="w-4 h-4 rounded-full bg-primary text-white text-[9px] flex items-center justify-center">
+                  {filterAttrs.reduce((sum, a) => sum + (a.value?.length || 0), 0)}
+                </span>
+              )}
+            </button>
+          )}
 
           {/* Sort Dropdown */}
           <div className="relative" ref={dropdownRef}>
             <button
-              onClick={() => setAnchorEl(anchorEl ? null : true)}
+              onClick={() => setShowSortDropdown(!showSortDropdown)}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
                 isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
@@ -526,7 +537,7 @@ const NFTGrid = React.memo(({ collection }) => {
               <ChevronDown size={12} />
             </button>
 
-            {anchorEl && (
+            {showSortDropdown && (
               <div className={cn(
                 'absolute top-full right-0 mt-1 min-w-[160px] rounded-lg border-[1.5px] p-1 z-50',
                 isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
@@ -534,10 +545,10 @@ const NFTGrid = React.memo(({ collection }) => {
                 {sortOptions.map((option) => (
                   <div
                     key={option.value}
-                    onClick={() => { setSubFilter(option.value); setAnchorEl(null); setPage(0); }}
+                    onClick={() => { setSortBy(option.value); setShowSortDropdown(false); }}
                     className={cn(
                       'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all',
-                      subFilter === option.value
+                      sortBy === option.value
                         ? 'bg-primary/10 text-primary font-medium'
                         : isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-50'
                     )}
@@ -548,27 +559,70 @@ const NFTGrid = React.memo(({ collection }) => {
               </div>
             )}
           </div>
+
+          {/* Listed Dropdown */}
+          <div className="relative" ref={listedDropdownRef}>
+            <button
+              onClick={() => setShowListedDropdown(!showListedDropdown)}
+              className={cn(
+                'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
+                listed ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
+              )}
+            >
+              {listingOptions.find(o => o.value === listed)?.label || 'All'}
+              <ChevronDown size={12} />
+            </button>
+
+            {showListedDropdown && (
+              <div className={cn(
+                'absolute top-full right-0 mt-1 min-w-[140px] rounded-lg border-[1.5px] p-1 z-50',
+                isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
+              )}>
+                {listingOptions.map((option) => (
+                  <div
+                    key={option.value}
+                    onClick={() => { setListed(option.value); setShowListedDropdown(false); }}
+                    className={cn(
+                      'px-2 py-1.5 rounded-md cursor-pointer text-[11px] transition-all',
+                      listed === option.value
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : isDark ? 'text-white/70 hover:bg-white/5' : 'text-gray-700 hover:bg-gray-50'
+                    )}
+                  >
+                    {option.label}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {loading && <Loader2 size={14} className="animate-spin text-primary" />}
         </div>
 
+        {/* Trait Filter Panel */}
+        {showFilter && traits.length > 0 && (
+          <div className={cn('mt-3 p-3 rounded-lg border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50')}>
+            <AttributeFilter attrs={traits} setFilterAttrs={setFilterAttrs} />
+          </div>
+        )}
+
         {/* Quick Filter Pills */}
-        {!showFilter && (filter > 0 || filterAttrs.length > 0) && (
+        {!showFilter && filterAttrs.some(a => a.value?.length > 0) && (
           <div className="flex flex-wrap gap-1 mt-2">
-            {(filter & 1) !== 0 && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-primary/10 text-primary">
-                Mints <button onClick={() => setFilter(filter ^ 1)}><X size={10} /></button>
-              </span>
+            {filterAttrs.filter(a => a.value?.length > 0).map(attr =>
+              attr.value.map(v => (
+                <span key={`${attr.trait_type}-${v}`} className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-500">
+                  {attr.trait_type}: {v}
+                  <button onClick={() => {
+                    const updated = filterAttrs.map(a =>
+                      a.trait_type === attr.trait_type ? { ...a, value: a.value.filter(val => val !== v) } : a
+                    );
+                    setFilterAttrs(updated);
+                  }}><X size={10} /></button>
+                </span>
+              ))
             )}
-            {(filter & 2) !== 0 && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-green-500/10 text-green-500">
-                Recent <button onClick={() => setFilter(filter ^ 2)}><X size={10} /></button>
-              </span>
-            )}
-            {(filter & 4) !== 0 && (
-              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium bg-yellow-500/10 text-yellow-500">
-                Buy Now <button onClick={() => setFilter(filter ^ 4)}><X size={10} /></button>
-              </span>
-            )}
-            <button onClick={() => { setFilter(0); setFilterAttrs([]); setSubFilter('price-low'); }} className="text-[10px] text-red-500 hover:text-red-400 px-1">
+            <button onClick={() => { setFilterAttrs(filterAttrs.map(a => ({ ...a, value: [] }))); setSortBy('price-low'); setListed(''); }} className="text-[10px] text-red-500 hover:text-red-400 px-1">
               Clear
             </button>
           </div>
@@ -578,13 +632,17 @@ const NFTGrid = React.memo(({ collection }) => {
       {/* NFT Grid */}
       <InfiniteScroll
         dataLength={nfts.length}
-        next={() => setPage((prev) => prev + 1)}
+        next={() => !loading && setPage((prev) => prev + 1)}
         hasMore={hasMore}
+        scrollThreshold="200px"
+        style={{ overflow: 'visible' }}
         loader={<div className="flex justify-center py-4"><Loader2 className="animate-spin text-primary" size={20} /></div>}
         endMessage={
-          <div className="text-center py-6">
-            <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>End of collection</p>
-          </div>
+          nfts.length > 0 && (
+            <div className="text-center py-6">
+              <p className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>End of collection</p>
+            </div>
+          )
         }
       >
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">

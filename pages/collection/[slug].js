@@ -17,7 +17,7 @@ import { useDispatch } from 'react-redux';
 import { update_metrics } from 'src/redux/statusSlice';
 
 const OverviewWrapper = styled.div`
-  flex: 1;
+  min-height: 100vh;
 `;
 
 export default function Overview({ collection }) {

@@ -441,13 +441,20 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
               const rarity = total > 0 && count > 0 ? ((count * 100) / total).toFixed(2) : 0;
 
               return (
-                <div key={`${type}-${value}`} className={cn("p-2.5 text-center rounded-lg border", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+                <Link
+                  key={`${type}-${value}`}
+                  href={cslug ? `/collection/${cslug}?traits=${encodeURIComponent(`${type}:${value}`)}` : '#'}
+                  className={cn(
+                    "p-2.5 text-center rounded-lg border cursor-pointer transition-all",
+                    isDark ? "border-white/10 bg-white/[0.02] hover:border-primary/50 hover:bg-primary/5" : "border-gray-200 bg-gray-50 hover:border-primary/50 hover:bg-primary/5"
+                  )}
+                >
                   <p className={cn("text-[10px] uppercase tracking-wide mb-1", isDark ? "text-gray-500" : "text-gray-400")}>{type}</p>
                   <p className={cn("text-[13px] font-normal", isDark ? "text-white" : "text-gray-900")}>{value}</p>
                   {total > 0 && count > 0 && (
                     <p className={cn("text-[11px] mt-1 text-primary")}>{rarity}%</p>
                   )}
-                </div>
+                </Link>
               );
             })}
           </div>

@@ -40,7 +40,7 @@ function MostViewedPage({ data }) {
   }, []);
 
   return (
-    <div className="flex-1 overflow-hidden m-0 p-0">
+    <div className="min-h-screen overflow-hidden m-0 p-0">
       {!isMobile && <div id="back-to-top-anchor" className="h-6" />}
       <Header
         notificationPanelOpen={notificationPanelOpen}

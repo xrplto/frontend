@@ -269,7 +269,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
   ] : null;
 
   return (
-    <div style={{ flex: 1, overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', overflow: 'hidden' }}>
       <div id="back-to-top-anchor" style={{ height: 24 }} />
       <Header
         notificationPanelOpen={notificationPanelOpen}

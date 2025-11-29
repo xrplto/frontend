@@ -1,6 +1,5 @@
 import axios from 'axios';
-import { useState, useEffect, useRef } from 'react';
-import { performance } from 'perf_hooks';
+import { useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 
 // Context
@@ -14,7 +13,7 @@ import EditCollection from 'src/NFTCollection/Edit';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`
-  flex: 1;
+  min-height: 100vh;
 `;
 
 export default function Overview({ data }) {
@@ -85,15 +84,10 @@ export async function getServerSideProps(ctx) {
   try {
     const slug = ctx.params.slug;
 
-    var t1 = performance.now();
-
     // https://api.xrpnft.com/api/collection/test1
     const res = await axios.get(`${BASE_URL}/collection/${slug}`);
 
     data = res.data;
-
-    var t2 = performance.now();
-    var dt = (t2 - t1).toFixed(2);
 
   } catch (e) {
     // Error during getServerSideProps

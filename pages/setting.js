@@ -11,7 +11,7 @@ export default function Overview({ data }) {
   const isDark = themeName === 'XrplToDarkTheme';
 
   return (
-    <div className="flex-1 overflow-hidden">
+    <div className="min-h-screen overflow-hidden">
       <div id="back-to-top-anchor" className="h-6" />
 
       <Header />

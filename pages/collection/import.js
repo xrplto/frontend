@@ -7,11 +7,11 @@ import { AppContext } from 'src/AppContext';
 // Components
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import ImportCollection from 'src/NFTCollection/import';
+import ImportCollection from 'src/NFTCollection/Import';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`
-  flex: 1;
+  min-height: 100vh;
 `;
 
 export default function Overview({ data }) {

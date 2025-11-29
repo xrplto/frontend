@@ -7,7 +7,7 @@ import CreateCollection from 'src/NFTCollection/Create';
 import ScrollToTop from 'src/components/ScrollToTop';
 
 const OverviewWrapper = styled.div`
-  flex: 1;
+  min-height: 100vh;
 `;
 
 export default function Overview({ data }) {

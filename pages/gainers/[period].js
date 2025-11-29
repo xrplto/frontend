@@ -1,16 +1,15 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import styled from '@emotion/styled';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import TokenList from 'src/TokenList';
 import ScrollToTop from 'src/components/ScrollToTop';
 import Summary from 'src/TokenList/Summary';
-import { useRouter } from 'next/router';
 import { getTokens } from 'src/utils/formatters';
 
 const OverviewWrapper = styled.div`
   overflow: hidden;
-  flex: 1;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
 
@@ -35,9 +34,8 @@ function GainersPage({ data, period }) {
     return map;
   }, [tokens]);
   const [isMobile, setIsMobile] = useState(false);
-  const router = useRouter();
 
-  useState(() => {
+  useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 600);
     checkMobile();
     window.addEventListener('resize', checkMobile);

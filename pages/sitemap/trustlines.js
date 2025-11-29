@@ -51,7 +51,7 @@ const Sitemap = ({ tokens, slug }) => {
   }, [page]);
 
   return (
-    <div className="flex-1 overflow-hidden">
+    <div className="min-h-screen overflow-hidden">
       <div id="back-to-top-anchor" className="h-16" />
       <Header />
 

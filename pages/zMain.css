@@ -41,15 +41,6 @@ body {
   overflow-x: hidden;
 }
 
-/* When the order book is open on desktop, allow content to occupy full width
-   so adding right padding doesn't visually "shrink" the centered container. */
-@media (min-width: 900px) {
-  .orderbook-shift .MuiContainer-root {
-    max-width: 100% !important;
-    width: 100% !important;
-  }
-}
-
 /* Hide fullscreen button in markdown editor */
 .rc-md-editor .button[title="full screen"],
 .rc-md-editor .button[title="exit full screen"],

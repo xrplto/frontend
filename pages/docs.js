@@ -1337,8 +1337,8 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
 
       <Header />
 
-      <div className={cn("min-h-screen flex flex-col", isDark ? "bg-black" : "bg-white")}>
-        <div className="flex flex-1">
+      <div className={cn("min-h-screen", isDark ? "bg-black" : "bg-white")}>
+        <div className="flex">
           {/* Mobile menu button */}
           <button
             onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -1506,7 +1506,7 @@ Rate Limits: 100 req/min (default), 300 req/min (authenticated)`
           </div>
 
           {/* Main content */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 min-h-screen">
             <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-20 pb-8">
               {/* Copy page button */}
               <div className="flex justify-end mb-4">

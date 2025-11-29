@@ -21,7 +21,7 @@ const currencySymbols = {
 
 const Wrapper = styled.div`
   overflow: hidden;
-  flex: 1;
+  min-height: 100vh;
   margin: 0;
   padding: 0;
 
