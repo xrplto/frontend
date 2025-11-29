@@ -24,6 +24,9 @@ function NFTCard({ nft, onRemove, isDark }) {
     setRemoving(false);
   };
 
+  // Format price from drops to XRP
+  const price = nft.offer?.amount ? (nft.offer.amount / 1000000).toFixed(2) : null;
+
   return (
     <Link href={`/nft/${nft.nftokenId}`} className="block group">
       <div className={cn(
@@ -51,6 +54,15 @@ function NFTCard({ nft, onRemove, isDark }) {
               <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
             </div>
           )}
+          {/* Rarity badge */}
+          {nft.rarityRank && nft.total && (
+            <div className={cn(
+              'absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium',
+              isDark ? 'bg-black/70 text-white/80' : 'bg-white/90 text-gray-700'
+            )}>
+              #{nft.rarityRank}
+            </div>
+          )}
           <button
             onClick={handleRemove}
             disabled={removing}
@@ -63,10 +75,15 @@ function NFTCard({ nft, onRemove, isDark }) {
             {removing ? <Loader2 size={12} className="animate-spin" /> : <X size={12} />}
           </button>
         </div>
-        <div className="px-2 py-2">
-          <p className={cn('text-[12px] font-normal truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
+        <div className="px-2 py-1.5">
+          <p className={cn('text-[11px] font-normal truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
             {nft.name || 'Unnamed'}
           </p>
+          {price && (
+            <p className={cn('text-[10px] font-medium', 'text-primary')}>
+              {price} XRP
+            </p>
+          )}
         </div>
       </div>
     </Link>
@@ -204,7 +221,7 @@ export default function NFTWatchList({ account }) {
           Browse collections and add NFTs to track them here
         </p>
         <Link
-          href="/nft-traders"
+          href="/collections"
           className="inline-block mt-4 px-4 py-2 rounded-lg bg-primary text-white text-[13px] font-medium hover:bg-primary/90 transition-colors"
         >
           Explore Collections

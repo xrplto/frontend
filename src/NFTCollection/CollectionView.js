@@ -36,14 +36,14 @@ import {
   Target,
   MoreVertical,
   Info,
-  Loader2
+  Loader2,
+  Heart
 } from 'lucide-react';
 
 // Utils & Context
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import AccountTransactions from 'src/components/CollectionActivity';
-import Watch from 'src/components/Watch';
 import { fNumber, fIntNumber, fVolume, formatMonthYear, isEqual } from 'src/utils/formatters';
 import { getNftCoverUrl, getNftFilesUrls, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import { FacebookShareButton, TwitterShareButton, FacebookIcon, TwitterIcon } from '../components/ShareButtons';
@@ -217,19 +217,20 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
   );
 }
 
-// NFT Card Component
-const NFTCard = React.memo(({ nft, collection, onRemove }) => {
+// NFT Card Component - Matches watchlist card style
+const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike }) => {
   const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isAdmin = accountProfile?.admin;
   const [loadingImg, setLoadingImg] = useState(true);
   const [imageError, setImageError] = useState(false);
+  const [liking, setLiking] = useState(false);
 
   const { cost, costb, meta, NFTokenID, rarity_rank, amount, MasterSequence } = nft;
-  const isSold = cost?.amount || costb?.amount || amount;
   const imgUrl = getNftCoverUrl(nft, 'large');
   const name = nft.meta?.name || meta?.Name || 'No Name';
   const isVideo = nft?.meta?.video;
+  const isLiked = likedNfts?.includes(NFTokenID);
 
   let videoUrl = null;
   if (isVideo) {
@@ -237,7 +238,8 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
     videoUrl = videoFiles?.[0]?.cachedUrl || null;
   }
 
-  const isIPFS = imgUrl?.includes('ipfs.io') || videoUrl?.includes('ipfs.io');
+  // Format price
+  const price = cost?.amount ? (cost.currency === 'XRP' ? cost.amount : null) : (amount || null);
 
   const handleImageLoad = () => setLoadingImg(false);
   const handleImageError = () => { setLoadingImg(false); setImageError(true); };
@@ -250,72 +252,82 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
     onRemove(NFTokenID);
   };
 
+  const handleLike = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (liking) return;
+    setLiking(true);
+    await onToggleLike(NFTokenID);
+    setLiking(false);
+  };
+
   return (
-    <Link href={`/nft/${NFTokenID}`} className="block w-full">
+    <Link href={`/nft/${NFTokenID}`} className="block group">
       <div className={cn(
-        'w-full rounded-lg border-[1.5px] overflow-hidden flex flex-col cursor-pointer transition-all',
-        isDark ? 'border-white/10 hover:border-primary/30' : 'border-gray-200 hover:border-primary/30'
-      )} style={{ aspectRatio: '1 / 1.35' }}>
-        {/* Image Section */}
-        <div className="relative h-[68%] overflow-hidden flex-shrink-0">
+        'rounded-lg overflow-hidden transition-all',
+        isDark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100'
+      )}>
+        <div className="relative aspect-square overflow-hidden">
           {loadingImg && !imageError && (
-            <div className={cn('w-full h-full animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-100')} />
+            <div className={cn('absolute inset-0 animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
           )}
           {!imageError ? (
             isVideo && videoUrl ? (
               <video src={videoUrl} poster={imgUrl} muted autoPlay loop playsInline onLoadedData={handleImageLoad} onError={handleImageError}
-                className={cn('w-full h-full object-cover', loadingImg && 'opacity-0')} />
+                className={cn('w-full h-full object-cover transition-transform group-hover:scale-105', loadingImg && 'opacity-0')} />
             ) : (
               <img src={imgUrl} alt={name} loading="lazy" onLoad={handleImageLoad} onError={handleImageError}
-                className={cn('w-full h-full object-cover', loadingImg && 'opacity-0')} />
+                className={cn('w-full h-full object-cover transition-transform group-hover:scale-105', loadingImg && 'opacity-0')} />
             )
           ) : (
-            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-gray-50')}>
-              <span className={cn('text-[10px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
+            <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-gray-200')}>
+              <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
             </div>
           )}
 
-          {/* Admin Close */}
+          {/* Rarity badge */}
+          {rarity_rank > 0 && (
+            <div className={cn(
+              'absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded text-[9px] font-medium',
+              isDark ? 'bg-black/70 text-white/80' : 'bg-white/90 text-gray-700'
+            )}>
+              #{fIntNumber(rarity_rank)}
+            </div>
+          )}
+
+          {/* Like button */}
+          <button onClick={handleLike} disabled={liking} className={cn(
+            'absolute top-1.5 right-1.5 p-1 rounded-md transition-all',
+            isLiked ? 'opacity-100' : 'opacity-0 group-hover:opacity-100',
+            isDark ? 'bg-black/70 hover:bg-black/90' : 'bg-white/90 hover:bg-white'
+          )}>
+            {liking ? (
+              <Loader2 size={12} className="animate-spin text-red-500" />
+            ) : (
+              <Heart size={12} className={cn(isLiked ? 'fill-red-500 text-red-500' : isDark ? 'text-white/70' : 'text-gray-500')} />
+            )}
+          </button>
+
+          {/* Admin remove button */}
           {isAdmin && (
             <button onClick={handleRemoveNft} className={cn(
-              'absolute top-1 right-1 z-10 w-5 h-5 rounded flex items-center justify-center transition-all',
-              isDark ? 'bg-black/60 hover:bg-red-500/30 text-white/70 hover:text-red-500' : 'bg-white/80 hover:bg-red-50 text-gray-500 hover:text-red-500'
+              'absolute bottom-1.5 right-1.5 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-all',
+              isDark ? 'bg-black/70 hover:bg-red-500' : 'bg-white/90 hover:bg-red-500 hover:text-white',
+              'text-white/70 hover:text-white'
             )}>
               <X size={12} />
             </button>
           )}
-
-          {/* Badges */}
-          <div className="absolute top-1 left-1 z-10 flex gap-1">
-            {isIPFS && <span className="px-1 py-0.5 rounded text-[8px] font-bold bg-orange-500 text-white">IPFS</span>}
-            {isSold && !isAdmin && <span className={cn('px-1 py-0.5 rounded text-[8px] font-medium', isDark ? 'bg-green-500/20 text-green-400' : 'bg-green-50 text-green-600')}>Listed</span>}
-          </div>
         </div>
-
-        {/* Content */}
-        <div className={cn('p-2 h-[32%] flex flex-col justify-between border-t', isDark ? 'border-white/5' : 'border-gray-100')}>
-          <div>
-            <h3 className={cn('text-[12px] font-medium truncate', isDark ? 'text-white' : 'text-gray-900')}>{name}</h3>
-            {(cost || amount) && (
-              <span className={cn('text-[10px]', isDark ? 'text-green-400' : 'text-green-600')}>
-                {cost ? (cost.currency === 'XRP' ? `✕${fNumber(cost.amount)}` : `${fNumber(cost.amount)} ${normalizeCurrencyCode(cost.currency)}`) : `✕${fNumber(amount)}`}
-              </span>
-            )}
-          </div>
-
-          {/* Ranks */}
-          <div className="flex gap-1 justify-end">
-            {MasterSequence > 0 && (
-              <span className={cn('px-1 py-0.5 rounded text-[9px] flex items-center gap-0.5', isDark ? 'bg-primary/10 text-primary' : 'bg-primary/5 text-primary')}>
-                #{fIntNumber(MasterSequence)}
-              </span>
-            )}
-            {rarity_rank > 0 && (
-              <span className={cn('px-1 py-0.5 rounded text-[9px] flex items-center gap-0.5', isDark ? 'bg-white/5 text-white/50' : 'bg-gray-50 text-gray-500')}>
-                <BarChart3 size={9} />{fIntNumber(rarity_rank)}
-              </span>
-            )}
-          </div>
+        <div className="px-2 py-1.5">
+          <p className={cn('text-[11px] font-normal truncate', isDark ? 'text-white/80' : 'text-gray-700')}>
+            {name}
+          </p>
+          {price && (
+            <p className={cn('text-[10px] font-medium', 'text-primary')}>
+              {fNumber(price)} XRP
+            </p>
+          )}
         </div>
       </div>
     </Link>
@@ -325,7 +337,7 @@ const NFTCard = React.memo(({ nft, collection, onRemove }) => {
 // NFT Grid Component
 const NFTGrid = React.memo(({ collection }) => {
   const BASE_URL = 'https://api.xrpl.to/api';
-  const { themeName, setDeletingNfts } = useContext(AppContext);
+  const { themeName, setDeletingNfts, accountProfile, openSnackbar, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const [anchorEl, setAnchorEl] = useState(null);
   const dropdownRef = useRef(null);
@@ -344,6 +356,39 @@ const NFTGrid = React.memo(({ collection }) => {
   const [subFilter, setSubFilter] = useState('price-low');
   const [filterAttrs, setFilterAttrs] = useState([]);
   const [isFirstLoad, setIsFirstLoad] = useState(initialNfts.length === 0);
+  const [likedNfts, setLikedNfts] = useState([]);
+
+  // Fetch liked NFTs
+  useEffect(() => {
+    const account = accountProfile?.account;
+    if (!account) { setLikedNfts([]); return; }
+    axios.get(`${BASE_URL}/watchlist/nft?account=${account}`)
+      .then(res => {
+        if (res.data?.result === 'success') {
+          const ids = [];
+          Object.values(res.data.watchlist || {}).forEach(col => {
+            (col.items || []).forEach(item => ids.push(item.nftokenId));
+          });
+          setLikedNfts(ids);
+        }
+      })
+      .catch(() => {});
+  }, [accountProfile]);
+
+  const handleToggleLike = useCallback(async (nftokenId) => {
+    const account = accountProfile?.account;
+    if (!account) { setOpenWalletModal(true); return; }
+    const action = likedNfts.includes(nftokenId) ? 'remove' : 'add';
+    try {
+      const res = await axios.post(`${BASE_URL}/watchlist/nft`, { account, nftokenId, action });
+      if (res.data?.result === 'success') {
+        setLikedNfts(prev => action === 'add' ? [...prev, nftokenId] : prev.filter(id => id !== nftokenId));
+        openSnackbar?.(action === 'add' ? 'Added to watchlist' : 'Removed from watchlist', 'success');
+      }
+    } catch (err) {
+      openSnackbar?.('Failed to update', 'error');
+    }
+  }, [accountProfile, likedNfts, openSnackbar, setOpenWalletModal]);
 
   const sortOptions = useMemo(() => [
     { value: 'activity', label: 'Latest Activity' },
@@ -544,7 +589,7 @@ const NFTGrid = React.memo(({ collection }) => {
       >
         <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8">
           {nfts.map((nft) => (
-            <NFTCard key={nft.NFTokenID} nft={nft} collection={collection} onRemove={handleRemove} />
+            <NFTCard key={nft.NFTokenID} nft={nft} collection={collection} onRemove={handleRemove} likedNfts={likedNfts} onToggleLike={handleToggleLike} />
           ))}
         </div>
       </InfiniteScroll>
@@ -768,7 +813,6 @@ export default function CollectionView({ collection }) {
                 <Pencil size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
               </Link>
             )}
-            <Watch collection={collection} />
             <div className="relative" ref={shareDropdownRef}>
               <button
                 onClick={() => setOpenShare(!openShare)}

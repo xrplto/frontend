@@ -13,7 +13,8 @@ import ScrollToTop from 'src/components/ScrollToTop';
 
 import TokenList from 'src/TokenList';
 import NFTWatchList from 'src/components/NFTWatchList';
-import { Coins, Image, Star } from 'lucide-react';
+import { Coins, Image, Star, Compass } from 'lucide-react';
+import Link from 'next/link';
 import { cn } from 'src/utils/cn';
 
 function Overview({ data }) {
@@ -106,7 +107,23 @@ function Overview({ data }) {
               />
             )}
             {activeTab === 'nfts' && (
-              <NFTWatchList account={account} />
+              <div className="space-y-4">
+                <div className="flex justify-end">
+                  <Link
+                    href="/collections"
+                    className={cn(
+                      'flex items-center gap-2 px-3 py-1.5 rounded-lg text-[12px] font-normal transition-all',
+                      isDark
+                        ? 'text-white/50 hover:text-white hover:bg-white/5'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    )}
+                  >
+                    <Compass size={14} />
+                    Explore Collections
+                  </Link>
+                </div>
+                <NFTWatchList account={account} />
+              </div>
             )}
           </>
         )}
