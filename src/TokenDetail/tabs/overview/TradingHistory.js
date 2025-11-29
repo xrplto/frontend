@@ -1157,8 +1157,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 const asset2 = pool.asset2?.currency === 'XRP' ? 'XRP' : decodeCurrency(pool.asset2?.currency);
                 const feePercent = pool.tradingFee ? (pool.tradingFee / 100000).toFixed(3) : '-';
                 const hasApy = pool.apy7d?.apy > 0;
+                // Check if this is the main XRP/TOKEN pool
+                const isMainPool = (pool.asset1?.currency === 'XRP' && pool.asset2?.issuer === token?.issuer && pool.asset2?.currency === token?.currency) ||
+                                   (pool.asset2?.currency === 'XRP' && pool.asset1?.issuer === token?.issuer && pool.asset1?.currency === token?.currency);
                 return (
-                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 1fr 0.5fr', gap: '8px', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center' }}>
+                  <div key={pool._id} style={{ display: 'grid', gridTemplateColumns: '1.5fr 0.7fr 0.7fr 0.8fr 0.8fr 1fr 0.5fr', gap: '8px', padding: '10px 0', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'}`, alignItems: 'center', background: isMainPool ? (isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)') : 'transparent', borderRadius: isMainPool ? '6px' : '0', marginLeft: isMainPool ? '-4px' : '0', marginRight: isMainPool ? '-4px' : '0', paddingLeft: isMainPool ? '4px' : '0', paddingRight: isMainPool ? '4px' : '0' }}>
                     {/* Pool pair */}
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <div style={{ display: 'flex' }}>
@@ -1166,6 +1169,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                         <img src={getTokenImageUrl(pool.asset2.issuer, pool.asset2.currency)} alt="" style={{ width: 18, height: 18, borderRadius: '50%', marginLeft: -6 }} />
                       </div>
                       <span style={{ fontSize: '12px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>{asset1}/{asset2}</span>
+                      {isMainPool && (
+                        <span style={{ fontSize: '9px', fontWeight: 500, padding: '2px 5px', borderRadius: '4px', background: '#3b82f6', color: '#fff' }}>MAIN</span>
+                      )}
                     </div>
                     {/* Fee */}
                     <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)', textAlign: 'right' }}>{feePercent}%</span>

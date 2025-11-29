@@ -2003,7 +2003,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           Best Bid
                         </Typography>
                         <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#22c55e', fontFamily: 'monospace' }}>
-                          {fNumber(bestBid)}
+                          {bestBid < 0.0001 ? bestBid.toFixed(8) : fNumber(bestBid)}
                         </Typography>
                       </Stack>
 
@@ -2033,7 +2033,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           Best Ask
                         </Typography>
                         <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', fontWeight: 500, color: '#ef4444', fontFamily: 'monospace' }}>
-                          {fNumber(bestAsk)}
+                          {bestAsk < 0.0001 ? bestAsk.toFixed(8) : fNumber(bestAsk)}
                         </Typography>
                       </Stack>
                     </Stack>
