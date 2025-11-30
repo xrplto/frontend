@@ -625,14 +625,25 @@ const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers = []) =>
 const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark = false }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [newTradeIds, setNewTradeIds] = useState(new Set());
-  const [xrpOnly, setXrpOnly] = useState(true);
+  const [pairType, setPairType] = useState('xrp'); // xrp, token, or empty for all
   const [xrpAmount, setXrpAmount] = useState(''); // Filter by minimum XRP amount
+  const [historyType, setHistoryType] = useState('trades'); // trades, liquidity, all
+  const [timeRange, setTimeRange] = useState(''); // 1h, 24h, 7d, 30d, or empty for all
+  const [accountFilter, setAccountFilter] = useState('');
+  const [liquidityType, setLiquidityType] = useState(''); // deposit, withdraw, create, or empty for all
   const [tabValue, setTabValue] = useState(0);
   const previousTradesRef = useRef(new Set());
   const limit = 20;
+
+  // Cursor-based pagination state
+  const [cursor, setCursor] = useState(null);
+  const [nextCursor, setNextCursor] = useState(null);
+  const [cursorHistory, setCursorHistory] = useState([]); // Stack of cursors for back navigation
+  const [totalRecords, setTotalRecords] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [direction, setDirection] = useState('desc'); // 'desc' = newest first, 'asc' = oldest first
+  const [isLastPage, setIsLastPage] = useState(false); // True when we've reached the end of records
 
   // OrderBook state
   const [orderBookData, setOrderBookData] = useState({ bids: [], asks: [] });
@@ -693,24 +704,68 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     }
   };
 
-  const fetchTradingHistory = useCallback(async () => {
+  const fetchTradingHistory = useCallback(async (useCursor = null, isRefresh = false, useDirection = 'desc') => {
     if (!tokenId) {
       setLoading(false);
       return;
     }
 
     try {
-      const response = await fetch(
-        `https://api.xrpl.to/api/history?md5=${tokenId}&page=${page - 1}&limit=${limit}${
-          xrpOnly ? '&xrpOnly=true' : ''
-        }${xrpAmount ? `&xrpAmount=${xrpAmount}` : ''}`
-      );
-      const data = await response.json();
-      if (data.result === 'success') {
-        const currentTradeIds = previousTradesRef.current;
-        const newTrades = data.hists.filter((trade) => !currentTradeIds.has(trade._id));
+      // Build query params
+      const params = new URLSearchParams({
+        md5: tokenId,
+        limit: String(limit),
+        type: historyType,
+        direction: useDirection
+      });
 
-        if (newTrades.length > 0) {
+      // Add cursor for pagination (but not for refresh which should get latest)
+      if (useCursor && !isRefresh) {
+        params.set('cursor', String(useCursor));
+      }
+
+      // Add optional filters
+      if (pairType) {
+        params.set('pairType', pairType);
+      }
+
+      if (xrpAmount && pairType === 'xrp' && historyType === 'trades') {
+        params.set('xrpAmount', xrpAmount);
+      }
+
+      if (accountFilter) {
+        params.set('account', accountFilter);
+      }
+
+      // Add time range params
+      if (timeRange) {
+        const now = Date.now();
+        const ranges = {
+          '1h': 60 * 60 * 1000,
+          '24h': 24 * 60 * 60 * 1000,
+          '7d': 7 * 24 * 60 * 60 * 1000,
+          '30d': 30 * 24 * 60 * 60 * 1000
+        };
+        if (ranges[timeRange]) {
+          params.set('startTime', String(now - ranges[timeRange]));
+          params.set('endTime', String(now));
+        }
+      }
+
+      const response = await fetch(`https://api.xrpl.to/api/history?${params}`);
+      const data = await response.json();
+
+      if (data.result === 'success') {
+        // Client-side filter for liquidity type (API doesn't support this filter)
+        let filteredHists = data.hists;
+        if (liquidityType && historyType !== 'trades') {
+          filteredHists = data.hists.filter(h => h.isLiquidity && h.type === liquidityType);
+        }
+
+        const currentTradeIds = previousTradesRef.current;
+        const newTrades = filteredHists.filter((trade) => !currentTradeIds.has(trade._id));
+
+        if (newTrades.length > 0 && isRefresh) {
           setNewTradeIds(new Set(newTrades.map((trade) => trade._id)));
           previousTradesRef.current = new Set(data.hists.map((trade) => trade._id));
           setTimeout(() => {
@@ -718,15 +773,31 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           }, 1000);
         }
 
-        setTrades(data.hists.slice(0, 50));
-        setTotalPages(Math.ceil(data.count / limit));
+        setTrades(filteredHists.slice(0, 50));
+        setNextCursor(data.nextCursor || null);
+        setTotalRecords(data.totalRecords || 0);
+
+        // Determine if we've reached the end of records in the current direction
+        // For direction=asc with no cursor (first request), we're viewing the oldest records
+        // which IS the last page - nextCursor in this case points BACK toward page 1
+        // Only set isLastPage=false if we're navigating forward and there's more data
+        const recordsReturned = data.recordsReturned || filteredHists.length;
+
+        if (useDirection === 'asc' && !useCursor) {
+          // First page of asc = last page of records (oldest), this is the end
+          setIsLastPage(true);
+        } else {
+          // Normal pagination - check if there are more records
+          const hasMoreRecords = recordsReturned >= limit && data.nextCursor;
+          setIsLastPage(!hasMoreRecords);
+        }
       }
     } catch (error) {
       console.error('Error fetching trading history:', error);
     } finally {
       setLoading(false);
     }
-  }, [tokenId, page, xrpOnly, xrpAmount]);
+  }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
   // Batch updates for better performance
   const pendingUpdatesRef = useRef({ asks: null, bids: null });
@@ -850,16 +921,31 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     }
   }, [clearNewFlag]);
 
+  // Reset pagination when filters change
   useEffect(() => {
+    setCursor(null);
+    setNextCursor(null);
+    setCursorHistory([]);
+    setCurrentPage(1);
+    setDirection('desc');
+    setIsLastPage(false);
     previousTradesRef.current = new Set();
     setLoading(true);
-    fetchTradingHistory();
+    fetchTradingHistory(null, false, 'desc');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
+
+  // Auto-refresh interval (only for page 1 with desc direction)
+  useEffect(() => {
+    if (currentPage !== 1 || direction !== 'desc') return;
 
     // Sync with ledger updates every 4 seconds
-    const intervalId = setInterval(fetchTradingHistory, 4000);
+    const intervalId = setInterval(() => {
+      fetchTradingHistory(null, true, 'desc');
+    }, 4000);
 
     return () => clearInterval(intervalId);
-  }, [fetchTradingHistory]);
+  }, [fetchTradingHistory, currentPage, direction]);
 
   // OrderBook WebSocket effect - optimized polling
   useEffect(() => {
@@ -880,9 +966,100 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   }, [wsReady, selectedPair, requestOrderBook]);
 
 
-  const handlePageChange = (event, newPage) => {
-    setPage(newPage);
-  };
+  // Cursor-based pagination handlers
+  const handleNextPage = useCallback(() => {
+    if (!nextCursor) return;
+
+    // Save current cursor to history for back navigation
+    setCursorHistory(prev => [...prev, cursor]);
+    setCursor(nextCursor);
+
+    // Update page number based on direction
+    if (direction === 'desc') {
+      setCurrentPage(prev => prev + 1);
+    } else {
+      setCurrentPage(prev => prev - 1);
+    }
+
+    setLoading(true);
+    fetchTradingHistory(nextCursor, false, direction);
+  }, [nextCursor, cursor, direction, fetchTradingHistory]);
+
+  const handlePrevPage = useCallback(() => {
+    if (cursorHistory.length === 0) return;
+
+    // Pop the last cursor from history
+    const newHistory = [...cursorHistory];
+    const prevCursor = newHistory.pop();
+
+    setCursorHistory(newHistory);
+    setCursor(prevCursor);
+
+    // Update page number based on direction
+    if (direction === 'desc') {
+      setCurrentPage(prev => prev - 1);
+    } else {
+      setCurrentPage(prev => prev + 1);
+    }
+
+    setLoading(true);
+    fetchTradingHistory(prevCursor, false, direction);
+  }, [cursorHistory, direction, fetchTradingHistory]);
+
+  const handleFirstPage = useCallback(() => {
+    if (currentPage === 1 && direction === 'desc') return;
+
+    setCursor(null);
+    setNextCursor(null);
+    setCursorHistory([]);
+    setCurrentPage(1);
+    setDirection('desc');
+    setLoading(true);
+    fetchTradingHistory(null, false, 'desc');
+  }, [currentPage, direction, fetchTradingHistory]);
+
+  // Jump back multiple pages at once
+  const handleJumpBack = useCallback((steps) => {
+    if (steps <= 0 || steps > cursorHistory.length) return;
+
+    const newHistory = [...cursorHistory];
+    let targetCursor = null;
+
+    // Pop 'steps' cursors from history
+    for (let i = 0; i < steps; i++) {
+      targetCursor = newHistory.pop();
+    }
+
+    setCursorHistory(newHistory);
+    setCursor(targetCursor);
+
+    if (direction === 'desc') {
+      setCurrentPage(prev => prev - steps);
+    } else {
+      setCurrentPage(prev => prev + steps);
+    }
+
+    setLoading(true);
+    fetchTradingHistory(targetCursor, false, direction);
+  }, [cursorHistory, direction, fetchTradingHistory]);
+
+  // Jump to last page (oldest records)
+  const handleLastPage = useCallback(() => {
+    if (!tokenId || totalRecords <= limit) return;
+
+    const totalPages = Math.ceil(totalRecords / limit);
+
+    // Use direction=asc with no cursor to get oldest records
+    // This IS the last page - there are no older records beyond this
+    setCursor(null);
+    setNextCursor(null);
+    setCursorHistory([]);
+    setCurrentPage(totalPages);
+    setDirection('asc');
+    setIsLastPage(true); // We're at the true last page (oldest records)
+    setLoading(true);
+    fetchTradingHistory(null, false, 'asc');
+  }, [tokenId, totalRecords, limit, fetchTradingHistory]);
 
   const handleAddLiquidity = (pool) => {
     setAddLiquidityDialog({ open: true, pool });
@@ -976,20 +1153,28 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   // Memoized trade list rendering
   const renderedTrades = useMemo(() => {
     return trades.map((trade, index) => {
+      const isLiquidity = trade.isLiquidity;
       const isBuy = trade.paid.currency === 'XRP';
       const xrpAmount = getXRPAmount(trade);
-      const price = calculatePrice(trade);
+      const price = isLiquidity ? null : calculatePrice(trade);
       const volumePercentage = Math.min(100, Math.max(5, (xrpAmount / 50000) * 100));
 
       const amountData = isBuy ? trade.got : trade.paid;
       const totalData = isBuy ? trade.paid : trade.got;
 
-      // Always show taker (trade initiator), unless taker is the AMM account
-      // In AMM trades, show the human trader (maker) instead
-      let addressToShow = trade.taker;
-      if (amm && trade.taker === amm) {
+      // For liquidity events, show the account; for trades show taker (or maker if taker is AMM)
+      let addressToShow = isLiquidity ? trade.account : trade.taker;
+      if (!isLiquidity && amm && trade.taker === amm) {
         addressToShow = trade.maker;
       }
+
+      // Liquidity type label
+      const getLiquidityLabel = (type) => {
+        if (type === 'deposit') return 'ADD';
+        if (type === 'withdraw') return 'REMOVE';
+        if (type === 'create') return 'CREATE';
+        return type?.toUpperCase() || 'LIQ';
+      };
 
       return (
         <Card key={trade._id} isNew={newTradeIds.has(trade._id)} isDark={isDark}>
@@ -1000,11 +1185,22 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', minWidth: '28px', whiteSpace: 'nowrap' }}>
                   {formatRelativeTime(trade.time)}
                 </span>
-                <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
+                {isLiquidity ? (
+                  <span style={{
+                    fontSize: '11px',
+                    fontWeight: 500,
+                    color: trade.type === 'deposit' || trade.type === 'create' ? '#8b5cf6' : '#f59e0b',
+                    width: '48px'
+                  }}>
+                    {getLiquidityLabel(trade.type)}
+                  </span>
+                ) : (
+                  <TradeTypeChip tradetype={isBuy ? 'BUY' : 'SELL'}>{isBuy ? 'BUY' : 'SELL'}</TradeTypeChip>
+                )}
               </Box>
 
               <span style={{ fontSize: '12px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
-                {formatPrice(price)}
+                {isLiquidity ? (trade.lpTokens ? `${formatTradeValue(trade.lpTokens)} LP` : '-') : formatPrice(price)}
               </span>
 
               <Box style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -1031,7 +1227,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               </Link>
 
               <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {getSourceTagName(trade.sourceTag) || ''}
+                {isLiquidity ? 'AMM' : (getSourceTagName(trade.sourceTag) || '')}
               </span>
 
               <IconButton onClick={() => handleTxClick(trade.hash, addressToShow)} isDark={isDark}>
@@ -1055,28 +1251,24 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     );
   }
 
-  if (!trades || trades.length === 0) {
-    return (
-      <Stack spacing={1}>
-        <Box
-          style={{
-            textAlign: 'center',
-            padding: '24px',
-            backgroundColor: 'transparent',
-            borderRadius: '12px',
-            border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
-          }}
-        >
-          <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px' }}>
-            No Recent Trades
-          </Typography>
-          <Typography variant="body2" color="text.secondary" isDark={isDark}>
-            Trading activity will appear here when available
-          </Typography>
-        </Box>
-      </Stack>
-    );
-  }
+  const emptyState = (
+    <Box
+      style={{
+        textAlign: 'center',
+        padding: '24px',
+        backgroundColor: 'transparent',
+        borderRadius: '12px',
+        border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
+      }}
+    >
+      <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px' }}>
+        {historyType === 'liquidity' ? 'No Liquidity Events' : historyType === 'all' ? 'No Activity' : 'No Recent Trades'}
+      </Typography>
+      <Typography variant="body2" color="text.secondary" isDark={isDark}>
+        {historyType === 'liquidity' ? 'AMM liquidity events will appear here' : 'Trading activity will appear here when available'}
+      </Typography>
+    </Box>
+  );
 
   return (
     <Stack spacing={1} style={{ width: '100%' }}>
@@ -1088,27 +1280,79 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Holders</Tab>
         </Tabs>
         {tabValue === 0 && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <button
-              onClick={() => { setXrpOnly(!xrpOnly); setPage(1); }}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <select
+              value={pairType}
+              onChange={(e) => { setPairType(e.target.value); setPage(1); }}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: '5px 10px',
+                padding: '5px 8px',
                 fontSize: '11px',
                 fontWeight: 500,
                 borderRadius: '6px',
-                border: `1px solid ${xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
-                background: xrpOnly ? (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent',
-                color: xrpOnly ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                border: `1px solid ${pairType ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                background: isDark ? (pairType ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (pairType ? 'rgba(59,130,246,0.1)' : '#fff'),
+                color: pairType ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                 cursor: 'pointer',
-                transition: 'all 0.15s'
+                outline: 'none',
+                colorScheme: isDark ? 'dark' : 'light',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none'
               }}
             >
-              <img src="https://s1.xrpl.to/token/84e5efeb89c4eae8f68188982dc290d8" alt="" style={{ width: 14, height: 14, borderRadius: '50%' }} />
-              XRP pairs
-            </button>
+              <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>All Pairs</option>
+              <option value="xrp" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>XRP Pairs</option>
+              <option value="token" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Token Pairs</option>
+            </select>
+            <select
+              value={historyType}
+              onChange={(e) => { setHistoryType(e.target.value); setPage(1); }}
+              style={{
+                padding: '5px 8px',
+                fontSize: '11px',
+                fontWeight: 500,
+                borderRadius: '6px',
+                border: `1px solid ${historyType !== 'trades' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                background: isDark ? (historyType !== 'trades' ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (historyType !== 'trades' ? 'rgba(59,130,246,0.1)' : '#fff'),
+                color: historyType !== 'trades' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                cursor: 'pointer',
+                outline: 'none',
+                colorScheme: isDark ? 'dark' : 'light',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none'
+              }}
+            >
+              <option value="trades" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Trades</option>
+              <option value="liquidity" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Liquidity</option>
+              <option value="all" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>All</option>
+            </select>
+            {historyType !== 'trades' && (
+              <select
+                value={liquidityType}
+                onChange={(e) => { setLiquidityType(e.target.value); setPage(1); }}
+                style={{
+                  padding: '5px 8px',
+                  fontSize: '11px',
+                  fontWeight: 500,
+                  borderRadius: '6px',
+                  border: `1px solid ${liquidityType ? '#8b5cf6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                  background: isDark ? (liquidityType ? 'rgba(139,92,246,0.15)' : 'rgba(0,0,0,0.8)') : (liquidityType ? 'rgba(139,92,246,0.1)' : '#fff'),
+                  color: liquidityType ? '#8b5cf6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                  cursor: 'pointer',
+                  outline: 'none',
+                  colorScheme: isDark ? 'dark' : 'light',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  appearance: 'none'
+                }}
+              >
+                <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>All Events</option>
+                <option value="deposit" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Deposits</option>
+                <option value="withdraw" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Withdrawals</option>
+                <option value="create" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>Pool Creates</option>
+              </select>
+            )}
             <select
               value={xrpAmount}
               onChange={(e) => { setXrpAmount(e.target.value); setPage(1); }}
@@ -1136,6 +1380,48 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <option value="5000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>5k+</option>
               <option value="10000" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>10k+</option>
             </select>
+            <select
+              value={timeRange}
+              onChange={(e) => { setTimeRange(e.target.value); setPage(1); }}
+              style={{
+                padding: '5px 8px',
+                fontSize: '11px',
+                fontWeight: 500,
+                borderRadius: '6px',
+                border: `1px solid ${timeRange ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                background: isDark ? (timeRange ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (timeRange ? 'rgba(59,130,246,0.1)' : '#fff'),
+                color: timeRange ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
+                cursor: 'pointer',
+                outline: 'none',
+                colorScheme: isDark ? 'dark' : 'light',
+                WebkitAppearance: 'none',
+                MozAppearance: 'none',
+                appearance: 'none'
+              }}
+            >
+              <option value="" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>All Time</option>
+              <option value="1h" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>1h</option>
+              <option value="24h" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>24h</option>
+              <option value="7d" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>7d</option>
+              <option value="30d" style={{ background: isDark ? '#1a1a1a' : '#fff' }}>30d</option>
+            </select>
+            <input
+              type="text"
+              value={accountFilter}
+              onChange={(e) => { setAccountFilter(e.target.value); setPage(1); }}
+              placeholder="Filter account..."
+              style={{
+                padding: '5px 8px',
+                fontSize: '11px',
+                fontWeight: 500,
+                borderRadius: '6px',
+                border: `1px solid ${accountFilter ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                background: isDark ? (accountFilter ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (accountFilter ? 'rgba(59,130,246,0.1)' : '#fff'),
+                color: isDark ? '#fff' : '#1a1a1a',
+                outline: 'none',
+                width: '120px'
+              }}
+            />
           </div>
         )}
       </Box>
@@ -1150,7 +1436,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 <span style={{ color: '#3b82f6', fontSize: '9px', fontWeight: 500 }}>LIVE</span>
               </LiveIndicator>
             </div>
-            <div style={{ flex: '0.8' }}>Price</div>
+            <div style={{ flex: '0.8' }}>{historyType === 'liquidity' ? 'LP Tokens' : historyType === 'all' ? 'Price/LP' : 'Price'}</div>
             <div style={{ flex: '1.4' }}>Amount</div>
             <div style={{ flex: '1.4' }}>Total</div>
             <div style={{ flex: '0.6' }}>Account</div>
@@ -1158,26 +1444,111 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             <div style={{ flex: '0.2' }}></div>
           </TableHeader>
 
-          <Stack spacing={0.25}>
-            {renderedTrades}
-          </Stack>
+          {trades.length === 0 ? emptyState : (
+            <Stack spacing={0.25}>
+              {renderedTrades}
+            </Stack>
+          )}
 
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '16px' }}>
+          {/* Cursor-based pagination */}
+          {(totalRecords > limit || currentPage > 1) && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '16px', gap: '12px' }}>
               <Pagination isDark={isDark}>
-                <PaginationButton onClick={() => handlePageChange(null, 1)} disabled={page === 1} isDark={isDark}>≪</PaginationButton>
-                <PaginationButton onClick={() => handlePageChange(null, page - 1)} disabled={page === 1} isDark={isDark}>‹</PaginationButton>
-                {Array.from({length: Math.min(5, totalPages)}, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <PaginationButton key={pageNum} onClick={() => handlePageChange(null, pageNum)} selected={page === pageNum} isDark={isDark}>
-                      {pageNum}
-                    </PaginationButton>
-                  );
-                })}
-                <PaginationButton onClick={() => handlePageChange(null, page + 1)} disabled={page === totalPages} isDark={isDark}>›</PaginationButton>
-                <PaginationButton onClick={() => handlePageChange(null, totalPages)} disabled={page === totalPages} isDark={isDark}>≫</PaginationButton>
+                <PaginationButton onClick={handleFirstPage} disabled={currentPage === 1} isDark={isDark}>≪</PaginationButton>
+                <PaginationButton onClick={handlePrevPage} disabled={currentPage === 1} isDark={isDark}>‹</PaginationButton>
+
+                {/* Page number buttons */}
+                {(() => {
+                  const totalPages = Math.ceil(totalRecords / limit);
+                  const buttons = [];
+
+                  // Always show page 1
+                  if (currentPage > 3) {
+                    buttons.push(
+                      <PaginationButton key={1} onClick={handleFirstPage} isDark={isDark}>1</PaginationButton>
+                    );
+                    if (currentPage > 4) {
+                      buttons.push(
+                        <span key="dots1" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 4px' }}>...</span>
+                      );
+                    }
+                  }
+
+                  // Show pages around current page (that we can navigate to via history)
+                  for (let i = Math.max(1, currentPage - 2); i <= currentPage; i++) {
+                    if (i === currentPage) {
+                      buttons.push(
+                        <PaginationButton key={i} selected isDark={isDark}>{i}</PaginationButton>
+                      );
+                    } else if (i >= currentPage - cursorHistory.length) {
+                      // Can navigate back to this page via history
+                      const stepsBack = currentPage - i;
+                      buttons.push(
+                        <PaginationButton
+                          key={i}
+                          onClick={() => handleJumpBack(stepsBack)}
+                          isDark={isDark}
+                        >
+                          {i}
+                        </PaginationButton>
+                      );
+                    }
+                  }
+
+                  // Show next page indicator if available and not at the last page
+                  // For desc: show higher page numbers (older records)
+                  // For asc: show lower page numbers (newer records)
+                  const hasMorePages = nextCursor && !isLastPage;
+
+                  if (hasMorePages && direction === 'desc') {
+                    buttons.push(
+                      <PaginationButton key={currentPage + 1} onClick={handleNextPage} isDark={isDark}>
+                        {currentPage + 1}
+                      </PaginationButton>
+                    );
+                    if (totalPages > currentPage + 1) {
+                      buttons.push(
+                        <span key="dots2" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 4px' }}>...</span>
+                      );
+                      // Show total pages estimate
+                      buttons.push(
+                        <Tooltip key="total" title={`~${totalPages.toLocaleString()} pages`}>
+                          <span style={{
+                            fontSize: '11px',
+                            color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)',
+                            padding: '0 6px'
+                          }}>
+                            {totalPages.toLocaleString()}
+                          </span>
+                        </Tooltip>
+                      );
+                    }
+                  } else if (hasMorePages && direction === 'asc' && currentPage > 1) {
+                    // When viewing from last page (asc), show path back to page 1
+                    buttons.push(
+                      <PaginationButton key={currentPage - 1} onClick={handleNextPage} isDark={isDark}>
+                        {currentPage - 1}
+                      </PaginationButton>
+                    );
+                    if (currentPage > 2) {
+                      buttons.push(
+                        <span key="dots2" style={{ color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 4px' }}>...</span>
+                      );
+                      buttons.push(
+                        <span key="page1" style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', padding: '0 6px' }}>1</span>
+                      );
+                    }
+                  }
+
+                  return buttons;
+                })()}
+
+                <PaginationButton onClick={handleNextPage} disabled={isLastPage} isDark={isDark}>›</PaginationButton>
+                <PaginationButton onClick={handleLastPage} disabled={isLastPage && direction === 'asc'} isDark={isDark}>≫</PaginationButton>
               </Pagination>
+              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                {totalRecords > 0 ? `${totalRecords.toLocaleString()} records` : ''}
+              </span>
             </div>
           )}
         </>

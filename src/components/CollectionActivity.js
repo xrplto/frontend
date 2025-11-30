@@ -1,120 +1,55 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
-import { ExternalLink, ChevronDown } from 'lucide-react';
+import { ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from 'src/utils/cn';
-import { formatDateTime } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
+import { fNumber } from 'src/utils/formatters';
 
-// ListToolbar Component
-function NftListToolbar({ count, rows, setRows, page, setPage, isDark }) {
-  const num = count / rows;
-  let page_count = Math.floor(num);
-  if (num % 1 != 0) page_count++;
-
-  const start = page * rows + 1;
-  let end = start + rows - 1;
-  if (end > count) end = count;
-
-  const handleChangeRows = (event) => {
-    setRows(parseInt(event.target.value, 10));
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage - 1);
-    gotoTop(event);
-  };
-
-  const gotoTop = (event) => {
-    const anchor = (event.target.ownerDocument || document).querySelector(
-      '#back-to-top-tab-anchor'
-    );
-
-    if (anchor) {
-      anchor.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  };
-
-  const pages = [];
-  for (let i = 1; i <= page_count; i++) {
-    pages.push(i);
-  }
+// Compact Pagination Component
+function Pagination({ total, page, setPage, isDark }) {
+  const pageCount = Math.ceil(total / 20);
+  if (pageCount <= 1) return null;
 
   return (
-    <div className="flex items-center justify-between gap-4 mt-4 mb-4 flex-wrap">
-      <div className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-lg border min-h-[36px]",
-        isDark ? "border-white/8" : "border-black/8"
-      )}>
-        <span className={cn(
-          "text-[11px] px-2 py-0.5 rounded border",
-          isDark ? "border-white/8" : "border-black/8"
-        )}>
-          {start}-{end} of {count}
-        </span>
-        <span className="text-[11px] text-gray-500">items</span>
-      </div>
-
-      <div className={cn(
-        "flex items-center gap-1 px-2.5 py-1.5 rounded-lg border min-h-[36px]",
-        isDark ? "border-white/8" : "border-black/8"
-      )}>
-        {pages.map((p) => (
-          <button
-            key={p}
-            onClick={(e) => handleChangePage(e, p)}
-            className={cn(
-              "rounded px-2 py-0.5 text-[11px] font-normal min-w-[22px] h-[22px]",
-              page + 1 === p
-                ? "bg-primary text-white"
-                : isDark
-                ? "hover:bg-primary/10"
-                : "hover:bg-primary/5"
-            )}
-          >
-            {p}
-          </button>
-        ))}
-      </div>
-
-      <div className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-lg border min-h-[36px]",
-        isDark ? "border-white/8" : "border-black/8"
-      )}>
-        <span className="text-[11px] text-gray-500">Rows</span>
-        <select
-          value={rows}
-          onChange={handleChangeRows}
-          className={cn(
-            "text-[11px] font-medium text-primary bg-transparent outline-none cursor-pointer border-0"
-          )}
-        >
-          <option value={20}>20</option>
-          <option value={10}>10</option>
-          <option value={5}>5</option>
-        </select>
-      </div>
+    <div className="flex items-center justify-center gap-1 pt-4">
+      <button
+        onClick={() => setPage(Math.max(0, page - 1))}
+        disabled={page === 0}
+        className={cn(
+          "p-1.5 rounded-md transition-colors",
+          page === 0 ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
+          isDark ? "text-white/50" : "text-gray-500"
+        )}
+      >
+        <ChevronLeft size={14} />
+      </button>
+      <span className={cn("text-[11px] px-2", isDark ? "text-white/40" : "text-gray-500")}>
+        {page + 1} / {pageCount}
+      </span>
+      <button
+        onClick={() => setPage(Math.min(pageCount - 1, page + 1))}
+        disabled={page >= pageCount - 1}
+        className={cn(
+          "p-1.5 rounded-md transition-colors",
+          page >= pageCount - 1 ? "opacity-30 cursor-not-allowed" : "hover:bg-primary/10",
+          isDark ? "text-white/50" : "text-gray-500"
+        )}
+      >
+        <ChevronRight size={14} />
+      </button>
     </div>
   );
 }
 
-// Helper function to render XRP address as a link
-const renderAddressLink = (address, displayText = null) => {
-  if (!address) return null;
-
-  const text = displayText || `${address.slice(0, 6)}...`;
-
-  return (
-    <a
-      href={`/profile/${address}`}
-      className="text-[13px] font-medium text-primary hover:underline"
-    >
-      {text}
-    </a>
-  );
-};
+// Filter type labels
+const FILTER_TYPES = [
+  { value: '', label: 'All' },
+  { value: 'SALE', label: 'Sale' },
+  { value: 'CREATE_BUY_OFFER', label: 'Buy Offer' },
+  { value: 'CREATE_SELL_OFFER', label: 'Sell Offer' },
+  { value: 'CANCEL_BUY_OFFER', label: 'Cancel' },
+  { value: 'TRANSFER', label: 'Transfer' }
+];
 
 // Main AccountTransactions Component
 export default function AccountTransactions({ creatorAccount, collectionSlug }) {
@@ -126,8 +61,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   const [page, setPage] = useState(0);
   const [total, setTotal] = useState(0);
   const [hasMore, setHasMore] = useState(true);
-  const [filterType, setFilterType] = useState('SALE');
-  const [expandedRows, setExpandedRows] = useState({});
+  const [filterType, setFilterType] = useState('');
 
   const fetchHistory = async () => {
     if (!collectionSlug) return;
@@ -174,13 +108,6 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
     if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
     if (diffInSeconds < 2592000) return `${Math.floor(diffInSeconds / 86400)}d ago`;
     return date.toLocaleDateString();
-  };
-
-  const toggleExpanded = (idx) => {
-    setExpandedRows(prev => ({
-      ...prev,
-      [idx]: !prev[idx]
-    }));
   };
 
   if (!collectionSlug) {
@@ -347,21 +274,17 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
                         </td>
                         <td className="px-4 py-3">
                           {item.brokerFeeXRP || item.royaltyAmountXRP ? (
-                            <div className="flex gap-2 items-center flex-wrap">
+                            <div className="flex flex-col gap-0.5">
                               {item.brokerFeeXRP && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-1 h-1 rounded-full bg-orange-500" />
-                                  <span className="text-[10px] text-gray-500">
-                                    {item.brokerFeeXRP}
-                                  </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[9px] text-orange-400 uppercase tracking-wide w-12">Broker</span>
+                                  <span className="text-[10px] text-gray-400">✕{item.brokerFeeXRP}</span>
                                 </div>
                               )}
                               {item.royaltyAmountXRP && (
-                                <div className="flex items-center gap-1">
-                                  <div className="w-1 h-1 rounded-full bg-blue-500" />
-                                  <span className="text-[10px] text-gray-500">
-                                    {item.royaltyAmountXRP}
-                                  </span>
+                                <div className="flex items-center gap-1.5">
+                                  <span className="text-[9px] text-blue-400 uppercase tracking-wide w-12">Royalty</span>
+                                  <span className="text-[10px] text-gray-400">✕{item.royaltyAmountXRP}</span>
                                 </div>
                               )}
                             </div>
@@ -422,18 +345,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
               </div>
 
               {/* Pagination */}
-              {total > 20 && (
-                <div className="flex justify-center p-6">
-                  <NftListToolbar
-                    count={total}
-                    rows={20}
-                    setRows={() => {}}
-                    page={page}
-                    setPage={setPage}
-                    isDark={isDark}
-                  />
-                </div>
-              )}
+              <Pagination total={total} page={page} setPage={setPage} isDark={isDark} />
             </>
           )}
         </div>
@@ -442,5 +354,3 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
   );
 }
 
-// Export the toolbar component as well
-export { NftListToolbar };
