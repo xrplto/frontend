@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useContext } from 'react';
 import axios from 'axios';
 import { cn } from 'src/utils/cn';
 
@@ -10,32 +10,13 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import ScrollToTop from 'src/components/ScrollToTop';
 import CollectionBreadcrumb from 'src/NFTCollection/CollectionBreadcrumb';
-import { useContext } from 'react';
 const TokenDetail = lazy(() => import('src/NFT'));
-import useWebSocket from 'react-use-websocket';
-import { useDispatch } from 'react-redux';
-import { update_metrics } from 'src/redux/statusSlice';
 
 import { AppContext } from 'src/AppContext';
 
 export default function Overview({ nft }) {
   const { themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
-  const dispatch = useDispatch();
-
-  // Add WebSocket connection
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        dispatch(update_metrics(json));
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
-    }
-  });
 
   // Create the properly structured collection data
   const collectionData = nft?.nft

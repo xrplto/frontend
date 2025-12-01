@@ -96,7 +96,7 @@ export default function Advertise() {
     setLocalLoading(true);
     try {
       const response = await axios.get(
-        `${API_URL}/tokens?limit=100&sortBy=vol24hxrp&sortType=desc`
+        `${API_URL}/tokens?limit=50&sortBy=vol24hxrp&sortType=desc`
       );
 
       if (response.data.total) {

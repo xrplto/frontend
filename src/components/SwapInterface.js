@@ -1892,7 +1892,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
     try {
       // Fetch more tokens and XRP data in parallel
       const [tokensRes, xrpRes] = await Promise.all([
-        axios.get(`${BASE_URL}/tokens?start=0&limit=200&sortBy=vol24hxrp&sortType=desc&filter=`),
+        axios.get(`${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=`),
         axios.get(`${BASE_URL}/token/84e5efeb89c4eae8f68188982dc290d8`)
       ]);
 

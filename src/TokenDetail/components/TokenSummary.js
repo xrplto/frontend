@@ -259,14 +259,11 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
     if (!creator || propLatestCreatorTx) return;
     (async () => {
       try {
-        const { Client } = await import('xrpl');
-        const client = new Client('wss://s1.ripple.com', { connectionTimeout: 10000 });
-        await client.connect();
-        const response = await client.request({ command: 'account_tx', account: creator, ledger_index_min: -1, ledger_index_max: -1, limit: 5, forward: false });
-        await client.disconnect();
-        if (response?.result?.transactions?.length > 0) {
-          for (const txData of response.result.transactions) {
-            const tx = txData.tx_json || txData.tx;
+        const response = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=10`);
+        const data = await response.json();
+        if (data.result === 'success' && data.transactions?.length > 0) {
+          for (const txData of data.transactions) {
+            const tx = txData.tx;
             if (!tx) continue;
             if (tx.TransactionType === 'Payment' && typeof tx.Amount === 'string' && parseInt(tx.Amount) / 1e6 < 1) continue;
             setFetchedCreatorTx({ tx, meta: txData.meta, validated: txData.validated });

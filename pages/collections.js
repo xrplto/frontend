@@ -3,27 +3,8 @@ import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
 import AllCollections from 'src/NFTCollection/AllCollections';
 import ScrollToTop from 'src/components/ScrollToTop';
-import useWebSocket from 'react-use-websocket';
-import { useDispatch } from 'react-redux';
-import { update_metrics } from 'src/redux/statusSlice';
 
 export default function Overview({ collections, total, globalMetrics }) {
-  const dispatch = useDispatch();
-
-  // Add WebSocket connection
-  const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
-  const { sendJsonMessage } = useWebSocket(WSS_FEED_URL, {
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => {
-      try {
-        const json = JSON.parse(event.data);
-        dispatch(update_metrics(json));
-      } catch (err) {
-        console.error('Error processing WebSocket message:', err);
-      }
-    }
-  });
-
   return (
     <div className="min-h-screen overflow-hidden">
       <div id="back-to-top-anchor" className="h-4" />

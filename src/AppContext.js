@@ -5,7 +5,6 @@ import { Client } from 'xrpl';
 // Redux
 import { Provider, useDispatch } from 'react-redux';
 import { configureRedux } from 'src/redux/store';
-import { update_metrics } from 'src/redux/statusSlice';
 
 // Loader
 import { PuffLoader } from './components/Spinners';
@@ -63,7 +62,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
   const [openWalletModal, setOpenWalletModal] = useState(false);
   const [accountBalance, setAccountBalance] = useState(null);
   const [watchList, setWatchList] = useState([]);
-  const [metricsLoaded, setMetricsLoaded] = useState(false);
 
   const toggleTheme = () => {
     window.localStorage.setItem('appTheme', !darkMode);
@@ -366,25 +364,6 @@ function ContextProviderInner({ children, data, openSnackbar }) {
     getAccountInfo();
   }, [accountProfile, sync]);
 
-  // Fetch metrics
-  useEffect(() => {
-    if (!metricsLoaded && BASE_URL) {
-      const fetchMetrics = async () => {
-        try {
-          const metricsResponse = await axios.get(
-            `${BASE_URL}/tokens?start=0&limit=50&sortBy=vol24hxrp&sortType=desc&filter=&skipMetrics=false`
-          );
-          if (metricsResponse.status === 200 && metricsResponse.data) {
-            dispatch(update_metrics(metricsResponse.data));
-            setMetricsLoaded(true);
-          }
-        } catch (error) {
-          console.error('Error fetching metrics via REST API:', error);
-        }
-      };
-      setTimeout(fetchMetrics, 100);
-    }
-  }, [metricsLoaded, BASE_URL, dispatch]);
 
   // Fetch watchlist
   useEffect(() => {

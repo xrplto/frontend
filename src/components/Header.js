@@ -7,12 +7,10 @@ import {
   useCallback,
   lazy,
   Suspense,
-  useRef,
-  useMemo
+  useRef
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import dynamic from 'next/dynamic';
-import axios from 'axios';
 import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
@@ -20,7 +18,7 @@ import NavSearchBar from './NavSearchBar';
 const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
-import { selectMetrics, update_metrics } from 'src/redux/statusSlice';
+import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
 import {
   Search,
@@ -178,39 +176,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     return () => window.removeEventListener('resize', checkBreakpoints);
   }, []);
 
-  // Check if metrics are properly loaded
-  const metricsLoaded = useMemo(() => {
-    return (
-      metrics?.global?.total !== undefined &&
-      metrics?.global?.totalAddresses !== undefined &&
-      metrics?.H24?.transactions24H !== undefined &&
-      metrics?.global?.total > 0
-    );
-  }, [metrics?.global?.total, metrics?.global?.totalAddresses, metrics?.H24?.transactions24H]);
-
-  // Fetch metrics if not loaded
-  useEffect(() => {
-    if (!metricsLoaded) {
-      const controller = new AbortController();
-      const fetchMetrics = async () => {
-        try {
-          const response = await axios.get(
-            'https://api.xrpl.to/api/tokens?start=0&limit=100&sortBy=vol24hxrp&sortType=desc&filter=',
-            { signal: controller.signal }
-          );
-          if (response.status === 200 && response.data) {
-            dispatch(update_metrics(response.data));
-          }
-        } catch (error) {
-          if (!axios.isCancel(error)) {
-            console.error('Error fetching metrics:', error);
-          }
-        }
-      };
-      fetchMetrics();
-      return () => controller.abort();
-    }
-  }, [metricsLoaded, dispatch]);
 
   // Menu items
   const discoverMenuItems = [
