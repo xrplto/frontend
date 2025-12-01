@@ -43,7 +43,7 @@ function Logo({ style }) {
           height={37}
           alt="XRPL.to - XRP Ledger Analytics"
           onError={handleImageError}
-          style={{ objectFit: 'contain' }}
+          style={{ objectFit: 'contain', width: 'auto', height: 'auto' }}
           priority
         />
       )}

@@ -217,6 +217,7 @@ const config = {
     ];
   },
   reactStrictMode: true,
+  devIndicators: false,
   compress: true,
   experimental: {
     esmExternals: true,

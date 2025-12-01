@@ -905,7 +905,6 @@ export default function CollectionView({ collection }) {
                 alt={name}
                 width={36}
                 height={36}
-                priority
                 className="rounded-lg object-cover border border-primary/20"
               />
               {verified === 'yes' && (

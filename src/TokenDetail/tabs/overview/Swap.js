@@ -18,6 +18,9 @@ const currencySymbols = {
   XRP: '✕ '
 };
 const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL', md5: '84e5efeb89c4eae8f68188982dc290d8', name: 'XRP' };
+
+// Module-level cache to prevent duplicate fetches in StrictMode
+const fetchCache = { orderbook: null, pairRates: null };
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 
@@ -827,18 +830,23 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   }, [isXRPTokenPage]);
 
   // Fetch orderbook from API - token (token2) as base, XRP (token1) as quote
-  // This gives prices in XRP per token (e.g., 1.69 XRP per DROP)
+  // Use md5 as dependency to avoid re-fetching when token object reference changes
+  const token1Md5 = token1?.md5;
+  const token2Md5 = token2?.md5;
+
   useEffect(() => {
+    if (!token1Md5 || !token2Md5) return;
+
+    const pairKey = `ob-${token1Md5}-${token2Md5}`;
+    // Skip if fetch in progress for this pair (StrictMode protection)
+    if (fetchCache.orderbook === pairKey) return;
+    fetchCache.orderbook = pairKey;
+
     const controller = new AbortController();
+    let timer;
 
     async function fetchOrderbook() {
-      if (!token1 || !token2) return;
-      // Skip if XRP page and RLUSD not yet loaded (no valid issuer)
-      if (isXRPTokenPage && !token2.issuer) return;
-
       try {
-        // Base = viewed token (token2), Quote = XRP (token1)
-        // Result: price = XRP per token
         const params = new URLSearchParams({
           base_currency: token2.currency,
           quote_currency: token1.currency,
@@ -850,7 +858,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
 
         if (res.data?.success) {
-          // API returns pre-parsed data with price, amount, total fields
           const parsedBids = (res.data.bids || []).map(o => ({
             price: parseFloat(o.price),
             amount: parseFloat(o.amount),
@@ -867,7 +874,6 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             funded: o.funded
           }));
 
-          // Add cumulative sumAmount
           let bidSum = 0, askSum = 0;
           parsedBids.forEach(b => { bidSum += b.amount; b.sumAmount = bidSum; });
           parsedAsks.forEach(a => { askSum += a.amount; a.sumAmount = askSum; });
@@ -883,13 +889,14 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     }
 
     fetchOrderbook();
-    const timer = setInterval(fetchOrderbook, 5000);
+    timer = setInterval(fetchOrderbook, 5000);
 
     return () => {
       controller.abort();
       clearInterval(timer);
+      fetchCache.orderbook = null;
     };
-  }, [token1, token2, isXRPTokenPage]);
+  }, [token1Md5, token2Md5]);
 
   useEffect(() => {
     if (!onOrderBookData) return;
@@ -1171,16 +1178,19 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   }, [accountProfile, curr1, curr2, sync, isSwapped]);
 
   useEffect(() => {
+    if (!token1Md5 || !token2Md5) return;
+
+    const pairKey = `pr-${token1Md5}-${token2Md5}`;
+    // Skip if fetch in progress for this pair (StrictMode protection)
+    if (fetchCache.pairRates === pairKey) return;
+    fetchCache.pairRates = pairKey;
+
     const controller = new AbortController();
 
     async function getTokenPrice() {
-      const md51 = token1?.md5;
-      const md52 = token2?.md5;
-      if (!md51 || !md52) return;
-
       setLoadingPrice(true);
       try {
-        const res = await axios.get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`, {
+        const res = await axios.get(`${BASE_URL}/pair_rates?md51=${token1Md5}&md52=${token2Md5}`, {
           signal: controller.signal
         });
 
@@ -1199,8 +1209,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
     getTokenPrice();
 
-    return () => controller.abort();
-  }, [token1, token2]);
+    return () => {
+      controller.abort();
+      fetchCache.pairRates = null;
+    };
+  }, [token1Md5, token2Md5]);
 
   useEffect(() => {
     const pair = {

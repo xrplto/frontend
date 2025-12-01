@@ -17,6 +17,9 @@ import { BookOpen } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
 
+// Module-level cache to prevent duplicate fetches in StrictMode
+const fetchCache = { orderbook: null };
+
 const Container = styled.div`
   border-radius: 10px;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
@@ -154,33 +157,30 @@ const OrderBook = ({ token, onPriceClick }) => {
   }, [isXRPToken]);
 
   const effectiveToken = isXRPToken ? rlusdToken : token;
-
-  const pair = useMemo(() => ({
-    curr1: { currency: 'XRP', issuer: 'XRPL' },
-    curr2: effectiveToken
-  }), [effectiveToken]);
+  const tokenMd5 = effectiveToken?.md5;
 
   useEffect(() => {
+    if (!tokenMd5 || !effectiveToken?.issuer) return;
+
+    const pairKey = `ob2-${tokenMd5}`;
+    // Skip if fetch in progress for this pair (StrictMode protection)
+    if (fetchCache.orderbook === pairKey) return;
+    fetchCache.orderbook = pairKey;
+
     const controller = new AbortController();
 
     async function fetchOrderbook() {
-      const { curr1, curr2 } = pair;
-      if (!curr1 || !curr2 || !curr2.issuer) return;
-
       try {
         const params = new URLSearchParams({
-          base_currency: curr1.currency,
-          quote_currency: curr2.currency,
+          base_currency: 'XRP',
+          quote_currency: effectiveToken.currency,
           limit: '60'
         });
-        if (curr1.currency !== 'XRP' && curr1.issuer) params.append('base_issuer', curr1.issuer);
-        if (curr2.currency !== 'XRP' && curr2.issuer) params.append('quote_issuer', curr2.issuer);
+        params.append('quote_issuer', effectiveToken.issuer);
 
         const res = await axios.get(`${BASE_URL}/orderbook?${params}`, { signal: controller.signal });
 
         if (res.data?.success) {
-          // API returns pre-parsed data with price, amount, total fields
-          // Filter out invalid entries where price is NaN
           const parsedBids = (res.data.bids || [])
             .map(o => ({
               price: parseFloat(o.price),
@@ -221,8 +221,9 @@ const OrderBook = ({ token, onPriceClick }) => {
     return () => {
       controller.abort();
       clearInterval(timer);
+      fetchCache.orderbook = null;
     };
-  }, [pair]);
+  }, [tokenMd5]);
 
   const { bestBid, bestAsk, spreadPct } = useMemo(() => {
     const bb = bids.length ? bids[0].price : null;

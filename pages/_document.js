@@ -17,14 +17,6 @@ export default class MyDocument extends Document {
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
           <link rel="dns-prefetch" href="https://api.xrpl.to" />
 
-          {/* Preload critical font */}
-          <link
-            rel="preload"
-            href="https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiJ-Ek-_EeA.woff2"
-            as="font"
-            type="font/woff2"
-            crossOrigin="anonymous"
-          />
 
           {/* Google Sign-In Client Library */}
           <script src="https://accounts.google.com/gsi/client" async defer></script>
