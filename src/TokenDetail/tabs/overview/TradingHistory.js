@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo, Suspense } from 'react';
-import useWebSocket from 'react-use-websocket';
 import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-import { ExternalLink, X, Plus, Fish, Waves, Anchor, Ship, Loader2 } from 'lucide-react';
+import { ExternalLink, X, Plus, Fish, Anchor, Ship, Loader2 } from 'lucide-react';
 
 // Custom styled components
 const Box = styled.div``;
@@ -72,27 +71,6 @@ const decodeCurrency = (currency) => {
   }
   // Already plain text (e.g., "DROP", "GDROP", "BTC")
   return currency;
-};
-
-// Performance utilities
-const throttle = (func, delay) => {
-  let lastCall = 0;
-  let timeout;
-  return (...args) => {
-    const now = Date.now();
-    if (now - lastCall >= delay) {
-      lastCall = now;
-      return func(...args);
-    }
-    clearTimeout(timeout);
-    timeout = setTimeout(
-      () => {
-        lastCall = Date.now();
-        func(...args);
-      },
-      delay - (now - lastCall)
-    );
-  };
 };
 
 // Define the highlight animation with softer colors
@@ -492,136 +470,6 @@ const parseValue = (value) => {
   return parseFloat(value);
 };
 
-const filterTrades = (trades, selectedFilter) => {
-  if (!trades || !Array.isArray(trades)) return [];
-
-  const filters = {
-    All: () => true,
-    '<500': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount > 0 && xrpAmount < 500;
-    },
-    '500-1k': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 500 && xrpAmount < 1000;
-    },
-    '1k-2.5k': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 1000 && xrpAmount < 2500;
-    },
-    '2.5k-5k': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 2500 && xrpAmount < 5000;
-    },
-    '5k-10k': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 5000 && xrpAmount < 10000;
-    },
-    '10k+': (trade) => {
-      const xrpAmount = getXRPAmount(trade);
-      return xrpAmount >= 10000;
-    }
-  };
-
-  const filteredTrades = trades.filter(filters[selectedFilter]);
-  return filteredTrades.sort((a, b) => b.time - a.time);
-};
-
-// OrderBook helper functions
-const ORDER_TYPE_BIDS = 1;
-const ORDER_TYPE_ASKS = 2;
-
-function getXRPPair(issuer, currency) {
-  const t1 = 'XRPL_XRP';
-  const t2 = issuer + '_' + currency;
-  let pair = t1 + t2;
-  if (t1.localeCompare(t2) > 0) pair = t2 + t1;
-  return MD5(pair).toString();
-}
-
-function getInitPair(token) {
-  const issuer = token.issuer;
-  const currency = token.currency;
-  const name = token.name;
-  const pairMD5 = getXRPPair(issuer, currency);
-  const curr1 = { currency, name, issuer, value: 0, ...token };
-  const curr2 = {
-    currency: 'XRP',
-    issuer: 'XRPL',
-    name: 'XRP',
-    value: 0,
-    md5: '84e5efeb89c4eae8f68188982dc290d8'
-  };
-  const pair = { id: 1, pair: pairMD5, curr1, curr2, count: 0 };
-  return pair;
-}
-
-const formatOrderBook = (offers, orderType = ORDER_TYPE_BIDS, arrOffers = []) => {
-  if (!offers || offers.length < 1) return [];
-
-  // Cache first offer checks
-  const firstOffer = offers[0];
-  const getCurrency = firstOffer.TakerGets?.currency || 'XRP';
-  const payCurrency = firstOffer.TakerPays?.currency || 'XRP';
-
-  // Pre-calculate multiplier
-  const isBID = orderType === ORDER_TYPE_BIDS;
-  const multiplier = getCurrency === 'XRP' ? 1_000_000 :
-                    payCurrency === 'XRP' ? 0.000_001 : 1;
-
-  // Create old offers set more efficiently
-  const oldOfferIds = new Set(arrOffers.map(offer => offer.id));
-
-  // Process offers with single pass
-  const array = [];
-  let sumAmount = 0;
-  let sumValue = 0;
-
-  // Use for...of for better performance
-  for (const offer of offers) {
-    const id = `${offer.Account}:${offer.Sequence}`;
-    const gets = offer.taker_gets_funded || offer.TakerGets;
-    const pays = offer.taker_pays_funded || offer.TakerPays;
-
-    const takerPays = pays.value || pays;
-    const takerGets = gets.value || gets;
-
-    const amount = Number(isBID ? takerPays : takerGets);
-
-    // Skip zero amounts early
-    if (amount <= 0) continue;
-
-    // Optimize power calculation
-    const price = isBID ? 1 / (offer.quality * multiplier) : offer.quality * multiplier;
-    const value = amount * price;
-
-    sumAmount += amount;
-    sumValue += value;
-
-    // Create object with calculated values
-    array.push({
-      id,
-      price,
-      amount,
-      value,
-      sumAmount,
-      sumValue,
-      avgPrice: sumValue / sumAmount,
-      sumGets: 0,
-      sumPays: 0,
-      isNew: !oldOfferIds.has(id)
-    });
-  }
-
-  // Sort in place for better performance
-  array.sort((a, b) => {
-    return orderType === ORDER_TYPE_BIDS ? b.price - a.price : a.price - b.price;
-  });
-
-  // Limit to 30 entries to prevent memory growth
-  return array.slice(0, 30);
-};
-
 const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark = false }) => {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -645,39 +493,13 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   const [direction, setDirection] = useState('desc'); // 'desc' = newest first, 'asc' = oldest first
   const [isLastPage, setIsLastPage] = useState(false); // True when we've reached the end of records
 
-  // OrderBook state
-  const [orderBookData, setOrderBookData] = useState({ bids: [], asks: [] });
-  const [clearNewFlag, setClearNewFlag] = useState(false);
-  const [wsReady, setWsReady] = useState(false);
-  const [bidId, setBidId] = useState(-1);
-  const [askId, setAskId] = useState(-1);
-  const [selectedPair, setSelectedPair] = useState(() => (token ? getInitPair(token) : null));
+  // AMM Pools state
   const [ammPools, setAmmPools] = useState([]);
   const [ammLoading, setAmmLoading] = useState(false);
   const [addLiquidityDialog, setAddLiquidityDialog] = useState({ open: false, pool: null });
   const [depositAmount1, setDepositAmount1] = useState('');
   const [depositAmount2, setDepositAmount2] = useState('');
   const [depositMode, setDepositMode] = useState('double'); // 'double', 'single1', 'single2'
-
-  const WSS_URL = 'wss://s1.ripple.com';
-
-  // WebSocket for OrderBook - optimized handlers
-  const { sendJsonMessage } = useWebSocket(WSS_URL, {
-    onOpen: () => {
-      requestAnimationFrame(() => setWsReady(true));
-    },
-    onClose: () => {
-      requestAnimationFrame(() => setWsReady(false));
-    },
-    shouldReconnect: (closeEvent) => true,
-    onMessage: (event) => processOrderBookMessages(event)
-  });
-
-
-
-  const handleXrpOnlyChange = (event) => {
-    setXrpOnly(event.target.checked);
-  };
 
   const handleTxClick = (hash, tradeAccount) => {
     if (onTransactionClick) {
@@ -798,128 +620,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     }
   }, [tokenId, pairType, xrpAmount, historyType, timeRange, accountFilter, liquidityType]);
 
-  // Batch updates for better performance
-  const pendingUpdatesRef = useRef({ asks: null, bids: null });
-  const updateTimerRef = useRef(null);
-
-  // Clean up on unmount
-  useEffect(() => {
-    return () => {
-      // Cancel any pending animation frames
-      if (updateTimerRef.current) {
-        cancelAnimationFrame(updateTimerRef.current);
-      }
-    };
-  }, []);
-
-  // Apply batched updates
-  const applyBatchedUpdates = useCallback(() => {
-    const updates = pendingUpdatesRef.current;
-    if (updates.asks || updates.bids) {
-      setOrderBookData(prev => ({
-        asks: updates.asks || prev.asks,
-        bids: updates.bids || prev.bids
-      }));
-      pendingUpdatesRef.current = { asks: null, bids: null };
-    }
-  }, []);
-
-  // WebSocket message processor - heavily optimized
-  const processOrderBookMessages = useMemo(
-    () =>
-      throttle((event) => {
-        // Parse in a try-catch to handle errors gracefully
-        let orderBook;
-        try {
-          orderBook = JSON.parse(event.data);
-        } catch (error) {
-          console.error('Failed to parse orderbook message:', error);
-          return;
-        }
-
-        if (!orderBook?.result || orderBook.status !== 'success') return;
-
-        const req = orderBook.id % 2;
-        const offers = orderBook.result.offers;
-
-        // Process in microtask to avoid blocking
-        queueMicrotask(() => {
-          try {
-            if (req === 1) {
-              // Process asks
-              const parsed = formatOrderBook(offers, ORDER_TYPE_ASKS, pendingUpdatesRef.current.asks || orderBookData.asks);
-              pendingUpdatesRef.current.asks = parsed;
-            } else if (req === 0) {
-              // Process bids
-              const parsed = formatOrderBook(offers, ORDER_TYPE_BIDS, pendingUpdatesRef.current.bids || orderBookData.bids);
-              pendingUpdatesRef.current.bids = parsed;
-            }
-
-            // Batch updates using RAF for smooth rendering
-            if (updateTimerRef.current) cancelAnimationFrame(updateTimerRef.current);
-            updateTimerRef.current = requestAnimationFrame(applyBatchedUpdates);
-          } catch (error) {
-            console.error('Error processing orderbook data:', error);
-          }
-        });
-      }, 300), // Increased throttle for better batching
-    [applyBatchedUpdates]
-  );
-
-  // OrderBook WebSocket request
-  const requestOrderBook = useCallback(() => {
-    if (!wsReady || !selectedPair) return;
-
-    const pair = selectedPair;
-    const curr1 = pair.curr1;
-    const curr2 = pair.curr2;
-    let reqID = 1;
-
-    const cmdAsk = {
-      id: reqID,
-      command: 'book_offers',
-      taker_gets: {
-        currency: curr1.currency,
-        issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-      },
-      taker_pays: {
-        currency: curr2.currency,
-        issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-      },
-      ledger_index: 'validated',
-      limit: 60
-    };
-    const cmdBid = {
-      id: reqID + 1,
-      command: 'book_offers',
-      taker_gets: {
-        currency: curr2.currency,
-        issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-      },
-      taker_pays: {
-        currency: curr1.currency,
-        issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-      },
-      ledger_index: 'validated',
-      limit: 60
-    };
-    sendJsonMessage(cmdAsk);
-    sendJsonMessage(cmdBid);
-  }, [wsReady, selectedPair, sendJsonMessage]);
-
-  // Clear new flags effect - optimized with RAF
-  useEffect(() => {
-    if (clearNewFlag) {
-      requestAnimationFrame(() => {
-        setClearNewFlag(false);
-        setOrderBookData((prev) => ({
-          asks: prev.asks.map((ask) => ({ ...ask, isNew: false })),
-          bids: prev.bids.map((bid) => ({ ...bid, isNew: false }))
-        }));
-      });
-    }
-  }, [clearNewFlag]);
-
   // Reset pagination when filters change
   useEffect(() => {
     setCursor(null);
@@ -945,25 +645,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
     return () => clearInterval(intervalId);
   }, [fetchTradingHistory, currentPage, direction]);
-
-  // OrderBook WebSocket effect - optimized polling
-  useEffect(() => {
-    if (!wsReady || !selectedPair) return;
-
-    // Initial request
-    requestOrderBook();
-
-    // Sync orderbook requests with ledger updates
-    const timer = setInterval(() => requestOrderBook(), 4000);
-
-    return () => {
-      clearInterval(timer);
-      if (updateTimerRef.current) {
-        cancelAnimationFrame(updateTimerRef.current);
-      }
-    };
-  }, [wsReady, selectedPair, requestOrderBook]);
-
 
   // Cursor-based pagination handlers
   const handleNextPage = useCallback(() => {
@@ -1097,50 +778,9 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     }
   };
 
-  const handleSubmitDeposit = async () => {
-    const { pool } = addLiquidityDialog;
-    if (!pool) return;
-
-    try {
-      const xrpl = await import('xrpl');
-      const wallet = xrpl.Wallet.fromSeed(process.env.WALLET_SEED); // Replace with actual wallet
-      const client = new xrpl.Client('wss://s1.ripple.com');
-      await client.connect();
-
-      const tx = {
-        TransactionType: 'AMMDeposit',
-        Account: wallet.address,
-        Asset: pool.asset1.currency === 'XRP'
-          ? { currency: 'XRP' }
-          : { currency: pool.asset1.currency, issuer: pool.asset1.issuer },
-        Asset2: pool.asset2.currency === 'XRP'
-          ? { currency: 'XRP' }
-          : { currency: pool.asset2.currency, issuer: pool.asset2.issuer }
-      };
-
-      if (depositMode === 'double') {
-        tx.Amount = pool.asset1.currency === 'XRP'
-          ? xrpl.xrpToDrops(depositAmount1)
-          : { currency: pool.asset1.currency, issuer: pool.asset1.issuer, value: depositAmount1 };
-        tx.Amount2 = pool.asset2.currency === 'XRP'
-          ? xrpl.xrpToDrops(depositAmount2)
-          : { currency: pool.asset2.currency, issuer: pool.asset2.issuer, value: depositAmount2 };
-      } else if (depositMode === 'single1') {
-        tx.Amount = pool.asset1.currency === 'XRP'
-          ? xrpl.xrpToDrops(depositAmount1)
-          : { currency: pool.asset1.currency, issuer: pool.asset1.issuer, value: depositAmount1 };
-      } else {
-        tx.Amount = pool.asset2.currency === 'XRP'
-          ? xrpl.xrpToDrops(depositAmount2)
-          : { currency: pool.asset2.currency, issuer: pool.asset2.issuer, value: depositAmount2 };
-      }
-
-      await client.submitAndWait(tx, { wallet });
-      handleCloseDialog();
-      await client.disconnect();
-    } catch (error) {
-      console.error('Deposit failed:', error);
-    }
+  const handleSubmitDeposit = () => {
+    // TODO: Implement AMM deposit using proper wallet integration
+    handleCloseDialog();
   };
 
   const calculatePrice = useCallback((trade) => {
