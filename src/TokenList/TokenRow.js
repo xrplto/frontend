@@ -222,11 +222,18 @@ const UserName = styled.span`
   margin-top: 0;
 `;
 
-const PriceText = styled.span`
-  font-weight: 500;
-  font-size: ${(props) => (props.isMobile ? '11px' : '12px')};
-  color: ${(props) => props.priceColor || (props.isDark ? '#FFFFFF' : '#000000')};
-`;
+const PriceText = ({ flashColor, isDark, isMobile, children }) => (
+  <span
+    style={{
+      fontWeight: 500,
+      fontSize: isMobile ? '11px' : '12px',
+      color: flashColor || (isDark ? '#FFFFFF' : '#000000'),
+      transition: 'color 1s ease-out'
+    }}
+  >
+    {children}
+  </span>
+);
 
 const PercentText = styled.span`
   font-weight: 500;
@@ -431,7 +438,19 @@ const MobileTokenRow = ({
     dateon,
     date
   } = token;
-  const [priceColor, setPriceColor] = useState('');
+
+  const [flashColor, setFlashColor] = useState(null);
+  const prevBearbullTime = useRef(token.bearbullTime);
+
+  useEffect(() => {
+    if (token.bearbullTime && token.bearbullTime !== prevBearbullTime.current) {
+      prevBearbullTime.current = token.bearbullTime;
+      const color = token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : null;
+      setFlashColor(color);
+      const timer = setTimeout(() => setFlashColor(null), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [token.bearbullTime, token.bearbull]);
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
@@ -443,25 +462,13 @@ const MobileTokenRow = ({
 
   const getMarketCapColor = (mcap) => {
     if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
-    // Elite: $5M+ (3% - dark green)
     if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
-    // Established: $1M-$5M (8% - green)
     if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
-    // Mid-tier: $100K-$1M (24% - blue)
     if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
-    // Small: $10K-$100K (32% - yellow)
     if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
-    // Micro: $1K-$10K (orange)
     if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
-    // Nano: <$1K (red)
     return darkMode ? '#EF5350' : '#C62828';
   };
-
-  useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : '');
-    const timer = setTimeout(() => setPriceColor(''), 1500);
-    return () => clearTimeout(timer);
-  }, [token.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
@@ -592,7 +599,19 @@ const DesktopTokenRow = ({
     date,
     origin
   } = token;
-  const [priceColor, setPriceColor] = useState('');
+
+  const [flashColor, setFlashColor] = useState(null);
+  const prevBearbullTime = useRef(token.bearbullTime);
+
+  useEffect(() => {
+    if (token.bearbullTime && token.bearbullTime !== prevBearbullTime.current) {
+      prevBearbullTime.current = token.bearbullTime;
+      const color = token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : null;
+      setFlashColor(color);
+      const timer = setTimeout(() => setFlashColor(null), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [token.bearbullTime, token.bearbull]);
 
   const getPercentColor = (value) => {
     if (value === undefined || value === null || isNaN(value))
@@ -604,25 +623,13 @@ const DesktopTokenRow = ({
 
   const getMarketCapColor = (mcap) => {
     if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
-    // Elite: $5M+ (3% - dark green)
     if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
-    // Established: $1M-$5M (8% - green)
     if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
-    // Mid-tier: $100K-$1M (24% - blue)
     if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
-    // Small: $10K-$100K (32% - yellow)
     if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
-    // Micro: $1K-$10K (orange)
     if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
-    // Nano: <$1K (red)
     return darkMode ? '#EF5350' : '#C62828';
   };
-
-  useEffect(() => {
-    setPriceColor(token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : '');
-    const timer = setTimeout(() => setPriceColor(''), 1500);
-    return () => clearTimeout(timer);
-  }, [token.bearbull]);
 
   const imgUrl = `https://s1.xrpl.to/token/${md5}`;
 
@@ -667,7 +674,7 @@ const DesktopTokenRow = ({
           const significant = str.replace(/^0\.0+/, '').replace(/0+$/, '');
           return (
             <StyledCell align="right" isDark={darkMode}>
-              <PriceText priceColor={priceColor} isDark={darkMode}>
+              <PriceText flashColor={flashColor} isDark={darkMode}>
                 <span>
                   {currencySymbols[activeFiatCurrency]}0.0
                   <sub style={{ fontSize: '0.6em' }}>{zeros}</sub>
@@ -681,7 +688,7 @@ const DesktopTokenRow = ({
       const formattedPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
       return (
         <StyledCell align="right" isDark={darkMode}>
-          <PriceText priceColor={priceColor} isDark={darkMode}>
+          <PriceText flashColor={flashColor} isDark={darkMode}>
             {currencySymbols[activeFiatCurrency]}{formatPrice(formattedPrice)}
           </PriceText>
         </StyledCell>
@@ -917,7 +924,7 @@ const DesktopTokenRow = ({
               const customPrice = activeFiatCurrency === 'XRP' ? exch : exch / exchRate;
               columnElements.push(
                 <StyledCell key="price" align="right" isDark={darkMode} style={extraStyle}>
-                  <PriceText priceColor={priceColor}>
+                  <PriceText flashColor={flashColor} isDark={darkMode}>
                     {currencySymbols[activeFiatCurrency]}{formatPrice(customPrice)}
                   </PriceText>
                 </StyledCell>
@@ -1340,7 +1347,7 @@ const FTokenRow = memo(
       prev.pro5m === next.pro5m &&
       prev.pro1h === next.pro1h &&
       prev.pro7d === next.pro7d &&
-      prev.bearbull === next.bearbull &&
+      prev.bearbullTime === next.bearbullTime &&
       prev.vol24hxrp === next.vol24hxrp &&
       prev.marketcap === next.marketcap &&
       prev.tvl === next.tvl &&

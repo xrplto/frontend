@@ -188,6 +188,8 @@ function TokenListComponent({
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = 'https://api.xrpl.to/api';
 
+  console.log('[TokenList] Component mounted, WSS_FEED_URL:', WSS_FEED_URL);
+
   const [filterName, setFilterName] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -418,24 +420,21 @@ function TokenListComponent({
 
       if (aggregatedTokens.size > 0) {
         setTokens((prevTokens) => {
-          // Only update if we have actual changes
           if (aggregatedTokens.size === 0) return prevTokens;
 
-          // Use faster array iteration
           let hasChanges = false;
           const result = prevTokens.map(token => {
             const update = aggregatedTokens.get(token.md5);
-            if (update && (
-              token.exch !== update.exch ||
-              token.pro24h !== update.pro24h ||
-              token.vol24hxrp !== update.vol24hxrp
-            )) {
+            if (update && token.exch !== update.exch) {
               hasChanges = true;
+              const direction = token.exch > update.exch ? -1 : 1;
+              console.log(`[WS] ${token.name}: ${token.exch} -> ${update.exch} (${direction === 1 ? 'UP' : 'DOWN'})`);
               return {
                 ...token,
                 ...update,
                 time: Date.now(),
-                bearbull: token.exch > update.exch ? -1 : 1
+                bearbull: direction,
+                bearbullTime: Date.now()
               };
             }
             return token;
@@ -454,6 +453,7 @@ function TokenListComponent({
   }, [dispatch, setTokens, startTransition]);
 
   // Only use WebSocket if URL is provided (not in development mode)
+  console.log('[WS] Initializing useWebSocket hook...');
   const { sendJsonMessage, readyState } = useWebSocket(
     WSS_FEED_URL,
     {
@@ -464,8 +464,7 @@ function TokenListComponent({
         (event) => {
           try {
             const json = JSON.parse(event.data);
-
-            // Track WebSocket message
+            console.log('[WS] Message received, tokens:', json.tokens?.length || 0);
 
             // Queue the message
             wsMessageQueue.current.push(json);
@@ -485,16 +484,22 @@ function TokenListComponent({
         [processWebSocketQueue]
       ),
       onOpen: () => {
-        if (WSS_FEED_URL) {
-        }
+        console.log('[WS] Connected to', WSS_FEED_URL);
       },
       onClose: () => {
-        if (WSS_FEED_URL) {
-        }
+        console.log('[WS] Disconnected');
+      },
+      onError: (error) => {
+        console.error('[WS] Error:', error);
       }
-    },
-    !WSS_FEED_URL
-  ); // Skip WebSocket connection if URL is null
+    }
+  );
+
+  // Debug readyState
+  useEffect(() => {
+    const states = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
+    console.log('[WS] readyState:', states[readyState] || readyState);
+  }, [readyState]);
 
   // Optimized token change detector using shallow comparison
   const applyTokenChanges = useCallback(
@@ -530,7 +535,8 @@ function TokenListComponent({
                 ...existing,
                 ...newToken,
                 time: Date.now(),
-                bearbull: existing.exch > newToken.exch ? -1 : 1
+                bearbull: existing.exch > newToken.exch ? -1 : 1,
+                bearbullTime: Date.now()
               };
               tokenMap.set(newToken.md5, updated);
               changedTokens.add(newToken.md5);
