@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect, useMemo, useCallback, memo } from 'react';
+import React, { useState, useContext, useEffect, useMemo, useCallback, memo, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
@@ -116,6 +116,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   const [editToken, setEditToken] = useState(null);
   const [trustStatus, setTrustStatus] = useState(null); // 'loading' | 'success' | 'error' | {message}
   const [fetchedCreatorTx, setFetchedCreatorTx] = useState(null);
+  const fetchedCreatorRef = useRef(null);
 
   const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator } = token;
 
@@ -256,7 +257,8 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
 
   // Creator tx
   useEffect(() => {
-    if (!creator || propLatestCreatorTx) return;
+    if (!creator || propLatestCreatorTx || fetchedCreatorRef.current === creator) return;
+    fetchedCreatorRef.current = creator;
     (async () => {
       try {
         const response = await fetch(`https://api.xrpl.to/api/account_tx/${creator}?limit=10`);

@@ -1,6 +1,6 @@
 import Decimal from 'decimal.js-light';
 import PropTypes from 'prop-types';
-import { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import styled from '@emotion/styled';
 import { AlertTriangle, Copy, Twitter, Send, MessageCircle, Globe, Github, TrendingUp, Link as LinkIcon } from 'lucide-react';
 import { useSelector } from 'react-redux';
@@ -162,6 +162,7 @@ export default function PriceStatistics({ token, isDark = false }) {
   const [isMobile, setIsMobile] = useState(false);
   const [creations, setCreations] = useState(0);
   const [openScamWarning, setOpenScamWarning] = useState(false);
+  const fetchedCreatorRef = useRef(null);
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 600);
@@ -190,7 +191,8 @@ export default function PriceStatistics({ token, isDark = false }) {
   } = token;
 
   useEffect(() => {
-    if (creator) {
+    if (creator && fetchedCreatorRef.current !== creator) {
+      fetchedCreatorRef.current = creator;
       fetch(`https://api.xrpscan.com/api/v1/account/${creator}/activated`)
         .then((res) => res.json())
         .then((data) => {

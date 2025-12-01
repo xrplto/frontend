@@ -638,13 +638,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   useEffect(() => {
     if (currentPage !== 1 || direction !== 'desc') return;
 
-    // Sync with ledger updates every 4 seconds
+    // Sync with ledger updates every 4 seconds (delay first refresh)
     const intervalId = setInterval(() => {
       fetchTradingHistory(null, true, 'desc');
     }, 4000);
 
     return () => clearInterval(intervalId);
-  }, [fetchTradingHistory, currentPage, direction]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, direction]);
 
   // Cursor-based pagination handlers
   const handleNextPage = useCallback(() => {

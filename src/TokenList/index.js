@@ -193,7 +193,7 @@ function TokenListComponent({
   const [page, setPage] = useState(0);
   const [order, setOrder] = useState('desc');
   const [orderBy, setOrderBy] = useState(initialOrderBy || 'vol24hxrp');
-  const [sync, setSync] = useState(1);
+  const [sync, setSync] = useState(tokens?.length > 0 ? 0 : 1);
   const [editToken, setEditToken] = useState(null);
   const [trustToken, setTrustToken] = useState(null);
   const [rows, setRows] = useState(() => {

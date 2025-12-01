@@ -17,7 +17,7 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL' };
+const XRP_TOKEN = { currency: 'XRP', issuer: 'XRPL', md5: '84e5efeb89c4eae8f68188982dc290d8', name: 'XRP' };
 import Decimal from 'decimal.js-light';
 import { fNumber } from 'src/utils/formatters';
 
@@ -1174,10 +1174,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
     const controller = new AbortController();
 
     async function getTokenPrice() {
-      setLoadingPrice(true);
-      const md51 = token1.md5;
-      const md52 = token2.md5;
+      const md51 = token1?.md5;
+      const md52 = token2?.md5;
+      if (!md51 || !md52) return;
 
+      setLoadingPrice(true);
       try {
         const res = await axios.get(`${BASE_URL}/pair_rates?md51=${md51}&md52=${md52}`, {
           signal: controller.signal
