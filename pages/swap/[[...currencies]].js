@@ -1,13 +1,11 @@
 import axios from 'axios';
 import { performance } from 'perf_hooks';
 import { useState, useEffect, useContext } from 'react';
-import useWebSocket from 'react-use-websocket';
 
 // Context
 import { AppContext } from 'src/AppContext';
 
 // Utils
-import { processOrderbookOffers } from 'src/utils/parseUtils';
 import { cn } from 'src/utils/cn';
 
 // Components
@@ -35,7 +33,6 @@ const DEFAULT_PAIR = {
 };
 
 function SwapPage({ data }) {
-  const WSS_URL = 'wss://s1.ripple.com';
   const { accountProfile, themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
@@ -52,79 +49,65 @@ function SwapPage({ data }) {
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false);
   const [bids, setBids] = useState([]);
   const [asks, setAsks] = useState([]);
-  const [wsReady, setWsReady] = useState(false);
 
-  const { sendJsonMessage } = useWebSocket(WSS_URL, {
-    onOpen: () => setWsReady(true),
-    onClose: () => setWsReady(false),
-    shouldReconnect: () => true,
-    onMessage: (event) => processMessages(event)
-  });
-
-  // Orderbook WebSocket updates
+  // Orderbook REST API polling
   useEffect(() => {
-    let reqID = 1;
-    function sendRequest() {
-      if (!wsReady) return;
+    const controller = new AbortController();
 
+    async function fetchOrderbook() {
       const curr1 = pair.curr1;
       const curr2 = pair.curr2;
 
-      const cmdAsk = {
-        id: reqID,
-        command: 'book_offers',
-        taker_gets: {
-          currency: curr1.currency,
-          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-        },
-        taker_pays: {
-          currency: curr2.currency,
-          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-        },
-        ledger_index: 'validated',
-        limit: 60
-      };
+      // Determine base/quote - XRP is typically the base
+      const isXrpBase = curr1.currency === 'XRP';
+      const base = isXrpBase ? curr1 : curr2;
+      const quote = isXrpBase ? curr2 : curr1;
 
-      const cmdBid = {
-        id: reqID + 1,
-        command: 'book_offers',
-        taker_gets: {
-          currency: curr2.currency,
-          issuer: curr2.currency === 'XRP' ? undefined : curr2.issuer
-        },
-        taker_pays: {
-          currency: curr1.currency,
-          issuer: curr1.currency === 'XRP' ? undefined : curr1.issuer
-        },
-        ledger_index: 'validated',
-        limit: 60
-      };
+      try {
+        const params = new URLSearchParams({
+          base_currency: base.currency,
+          quote_currency: quote.currency,
+          limit: '60'
+        });
+        if (base.issuer) params.append('base_issuer', base.issuer);
+        if (quote.issuer) params.append('quote_issuer', quote.issuer);
 
-      sendJsonMessage(cmdAsk);
-      sendJsonMessage(cmdBid);
-      reqID += 2;
-    }
+        const res = await axios.get(`https://api.xrpl.to/api/orderbook?${params}`, {
+          signal: controller.signal
+        });
 
-    sendRequest();
-    const timer = setInterval(() => sendRequest(), 4000);
-    return () => clearInterval(timer);
-  }, [wsReady, pair, revert, sendJsonMessage]);
+        if (res.data?.success) {
+          const parsedBids = (res.data.bids || []).map(o => ({
+            price: parseFloat(o.price),
+            amount: parseFloat(o.amount),
+            total: parseFloat(o.total),
+            account: o.account
+          })).filter(o => !isNaN(o.price) && o.price > 0);
 
-  // Process orderbook messages
-  const processMessages = (event) => {
-    const orderBook = JSON.parse(event.data);
-    if (orderBook.hasOwnProperty('result') && orderBook.status === 'success') {
-      const req = orderBook.id % 2;
-      if (req === 1) {
-        const parsed = processOrderbookOffers(orderBook.result.offers, 'asks');
-        setAsks(parsed);
-      }
-      if (req === 0) {
-        const parsed = processOrderbookOffers(orderBook.result.offers, 'bids');
-        setBids(parsed);
+          const parsedAsks = (res.data.asks || []).map(o => ({
+            price: parseFloat(o.price),
+            amount: parseFloat(o.amount),
+            total: parseFloat(o.total),
+            account: o.account
+          })).filter(o => !isNaN(o.price) && o.price > 0);
+
+          setBids(isXrpBase ? parsedBids : parsedAsks);
+          setAsks(isXrpBase ? parsedAsks : parsedBids);
+        }
+      } catch (err) {
+        if (err.name !== 'AbortError' && err.name !== 'CanceledError') {
+          console.error('Orderbook fetch error:', err);
+        }
       }
     }
-  };
+
+    fetchOrderbook();
+    const timer = setInterval(fetchOrderbook, 4000);
+    return () => {
+      controller.abort();
+      clearInterval(timer);
+    };
+  }, [pair, revert]);
 
   return (
     <div className="flex flex-col h-screen overflow-hidden fixed top-0 left-0 right-0 bottom-0">

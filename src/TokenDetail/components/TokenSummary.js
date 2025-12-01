@@ -137,7 +137,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
     }
     setTrustStatus('loading');
     try {
-      const { Client, Wallet } = await import('xrpl');
+      const { Wallet } = await import('xrpl');
       const CryptoJS = (await import('crypto-js')).default;
 
       const entropyString = `passkey-wallet-${accountProfile.deviceKeyId}-${accountProfile.accountIndex}-`;
@@ -146,9 +146,6 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         iterations: 100000
       }).toString();
       const deviceWallet = new Wallet(seedHash.substring(0, 64));
-
-      const client = new Client('wss://s1.ripple.com');
-      await client.connect();
 
       const tx = {
         Account: accountProfile.account,
@@ -161,16 +158,26 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
         Flags: 0x00020000
       };
 
-      const prepared = await client.autofill(tx);
-      const signed = deviceWallet.sign(prepared);
-      const result = await client.submitAndWait(signed.tx_blob);
-      await client.disconnect();
+      // REST-based autofill
+      const [seqRes, feeRes] = await Promise.all([
+        axios.get(`https://api.xrpl.to/api/submit/account/${accountProfile.account}/sequence`),
+        axios.get('https://api.xrpl.to/api/submit/fee')
+      ]);
+      const prepared = {
+        ...tx,
+        Sequence: seqRes.data.sequence,
+        Fee: feeRes.data.base_fee,
+        LastLedgerSequence: seqRes.data.ledger_index + 20
+      };
 
-      if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
+      const signed = deviceWallet.sign(prepared);
+      const result = await axios.post('https://api.xrpl.to/api/submit', { tx_blob: signed.tx_blob });
+
+      if (result.data.engine_result === 'tesSUCCESS') {
         setIsRemove(!isRemove);
         showStatus(isRemove ? 'Removed!' : 'Trustline set!');
       } else {
-        showStatus('Failed: ' + result.result?.meta?.TransactionResult);
+        showStatus('Failed: ' + result.data.engine_result);
       }
     } catch (err) {
       console.error('Trustline error:', err);

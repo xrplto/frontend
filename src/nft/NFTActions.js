@@ -42,7 +42,6 @@ import { ConnectWallet } from 'src/components/Wallet';
 import CreateOfferXRPCafe from './CreateOfferXRPCafe';
 
 // XRPL
-import { Client } from 'xrpl';
 import { xrpToDrops, dropsToXrp } from 'xrpl';
 
 // Constants
@@ -266,33 +265,19 @@ export default function NFTActions({ nft }) {
   useEffect(() => {
     async function getLowestSellOffer() {
       if (!NFTokenID) return;
-      let client = null;
       try {
-        client = new Client('wss://s1.ripple.com');
-        await client.connect();
-        const request = { command: 'nft_sell_offers', nft_id: NFTokenID };
-        const response = await client.request(request);
+        const response = await axios.get(`https://api.xrpl.to/nft/${NFTokenID}/offers`);
+        const sellOffers = response.data?.sellOffers || [];
 
-        let lowestOffer = null;
-        if (response.result.offers && response.result.offers.length > 0) {
-          lowestOffer = response.result.offers.reduce(
-            (min, offer) => {
-              if (typeof offer.amount !== 'string') return min;
-              const amount = BigInt(offer.amount);
-              const isValidAmount = amount > BigInt(0);
-              const isValidOwner = offer.owner === nft.account;
-              if (isValidAmount && isValidOwner && (!min.amount || amount < BigInt(min.amount))) {
-                return { amount, offer };
-              }
-              return min;
-            },
-            { amount: null, offer: null }
-          );
-        }
+        // API returns sellOffers sorted by amount ascending (lowest first)
+        // Find lowest offer from the NFT owner
+        const ownerOffer = sellOffers.find(
+          (offer) => typeof offer.amount === 'string' && BigInt(offer.amount) > 0 && offer.owner === nft.account
+        );
 
-        if (lowestOffer && lowestOffer.offer) {
-          const baseAmount = parseFloat(parseFloat(dropsToXrp(lowestOffer.amount.toString())).toFixed(6));
-          const brokerAddress = lowestOffer.offer.destination;
+        if (ownerOffer) {
+          const baseAmount = parseFloat(parseFloat(dropsToXrp(ownerOffer.amount)).toFixed(6));
+          const brokerAddress = ownerOffer.destination;
           const hasBroker = brokerAddress && BROKER_ADDRESSES[brokerAddress];
           const brokerInfo = hasBroker ? BROKER_ADDRESSES[brokerAddress] : null;
           const brokerFeePercentage = brokerInfo ? brokerInfo.fee : 0;
@@ -306,27 +291,19 @@ export default function NFTActions({ nft }) {
             brokerFeePercentage,
             hasBroker,
             brokerName: brokerInfo ? brokerInfo.name : null,
-            offerIndex: lowestOffer.offer.nft_offer_index,
-            seller: lowestOffer.offer.owner,
+            offerIndex: ownerOffer.nft_offer_index,
+            seller: ownerOffer.owner,
             destination: brokerAddress,
-            offer: lowestOffer.offer
+            offer: ownerOffer
           });
         } else {
           setLowestSellOffer(null);
         }
       } catch (error) {
-        const isNotFoundError =
-          (error.name === 'RippledError' && error.data?.error === 'notFound') ||
-          (error.message && error.message.includes('notFound')) ||
-          error.toString().includes('notFound');
-        if (!isNotFoundError) {
-          console.error('Error with XRPL connection or fetching NFT sell offers:', error);
+        if (error.response?.status !== 400) {
+          console.error('Error fetching NFT sell offers:', error);
         }
         setLowestSellOffer(null);
-      } finally {
-        if (client && client.isConnected()) {
-          try { await client.disconnect(); } catch (e) {}
-        }
       }
     }
     getLowestSellOffer();

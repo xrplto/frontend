@@ -203,47 +203,19 @@ export async function getServerSideProps(context) {
   }
 
   try {
-    const response = await axios.post('https://s1.ripple.com:51234/', {
-      method: 'ledger',
-      params: [
-        {
-          ledger_index: parseInt(index, 10),
-          transactions: true,
-          expand: true
-        }
-      ]
-    });
-
-    if (response.data.result.error) {
-      return {
-        props: {
-          ledgerData: null,
-          error: response.data.result.error_message || 'Ledger not found'
-        }
-      };
-    }
-
+    const response = await axios.get(`https://api.xrpscan.com/api/v1/ledger/${index}`);
     return {
       props: {
-        ledgerData: response.data.result,
+        ledgerData: response.data,
         error: null
       }
     };
   } catch (error) {
     console.error(error);
-    let errorMessage = 'Failed to fetch ledger data.';
-    if (
-      error.response &&
-      error.response.data &&
-      error.response.data.result &&
-      error.response.data.result.error_message
-    ) {
-      errorMessage = error.response.data.result.error_message;
-    }
     return {
       props: {
         ledgerData: null,
-        error: errorMessage
+        error: 'Failed to fetch ledger data.'
       }
     };
   }

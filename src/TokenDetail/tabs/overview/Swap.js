@@ -30,17 +30,35 @@ import { PuffLoader } from '../../../components/Spinners';
 import TransactionDetailsPanel from 'src/TokenDetail/dialogs/TransactionDetailsPanel';
 
 // Lazy load XRPL dependencies for device authentication
-let Client, Wallet, CryptoJS;
+let Wallet, CryptoJS;
 
 const loadXRPLDependencies = async () => {
-  if (!Client) {
+  if (!Wallet) {
     const xrpl = await import('xrpl');
-    Client = xrpl.Client;
     Wallet = xrpl.Wallet;
   }
   if (!CryptoJS) {
     CryptoJS = await import('crypto-js');
   }
+};
+
+// REST-based autofill and submit helpers
+const autofillTransaction = async (tx, address) => {
+  const [seqRes, feeRes] = await Promise.all([
+    axios.get(`https://api.xrpl.to/api/submit/account/${address}/sequence`),
+    axios.get('https://api.xrpl.to/api/submit/fee')
+  ]);
+  return {
+    ...tx,
+    Sequence: seqRes.data.sequence,
+    Fee: feeRes.data.base_fee,
+    LastLedgerSequence: seqRes.data.ledger_index + 20
+  };
+};
+
+const submitTransaction = async (tx_blob) => {
+  const res = await axios.post('https://api.xrpl.to/api/submit', { tx_blob });
+  return res.data;
 };
 
 // Device authentication wallet helpers
@@ -1566,28 +1584,21 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
             Flags
           };
 
-          const client = new Client('wss://s1.ripple.com');
-          await client.connect();
+          const preparedTx = await autofillTransaction(trustSetTransaction, accountProfile.account);
+          const signedTx = deviceWallet.sign(preparedTx);
+          const result = await submitTransaction(signedTx.tx_blob);
 
-          try {
-            const preparedTx = await client.autofill(trustSetTransaction);
-            const signedTx = deviceWallet.sign(preparedTx);
-            const result = await client.submitAndWait(signedTx.tx_blob);
-
-            if (result.result?.meta?.TransactionResult === 'tesSUCCESS') {
-              dispatch(updateProcess(2));
-              dispatch(updateTxHash(result.result?.hash));
-              setTimeout(() => {
-                setSync(sync + 1);
-                dispatch(updateProcess(0));
-              }, 1500);
-              openSnackbar('Trustline created successfully!', 'success');
-            } else {
-              openSnackbar('Transaction failed: ' + result.result?.meta?.TransactionResult, 'error');
+          if (result.engine_result === 'tesSUCCESS') {
+            dispatch(updateProcess(2));
+            dispatch(updateTxHash(result.hash));
+            setTimeout(() => {
+              setSync(sync + 1);
               dispatch(updateProcess(0));
-            }
-          } finally {
-            await client.disconnect();
+            }, 1500);
+            openSnackbar('Trustline created successfully!', 'success');
+          } else {
+            openSnackbar('Transaction failed: ' + result.engine_result, 'error');
+            dispatch(updateProcess(0));
           }
         } catch (error) {
           console.error('Device wallet trustline error:', error);

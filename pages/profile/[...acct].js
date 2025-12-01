@@ -1,6 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
-import { Client } from 'xrpl';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
@@ -41,21 +40,14 @@ const OverView = ({ account }) => {
         setData(profileRes.data);
         setHoldings(holdingsRes.data);
 
-        // Fetch XRPL transaction history via WebSocket
-        const client = new Client('wss://s1.ripple.com');
-        client.connect().then(async () => {
-          const response = await client.request({
-            command: 'account_tx',
-            account: account,
-            limit: 200
-          });
-          const txs = response.result.transactions || [];
-          setTxHistory(txs);
-          setFilteredTxHistory(txs);
-          client.disconnect();
-        }).catch(err => {
-          console.error('XRPL fetch failed:', err);
-        });
+        // Fetch transaction history via xrpl.to API
+        axios.get(`https://api.xrpl.to/api/account_tx/${account}?limit=200`)
+          .then(res => {
+            const txs = res.data?.transactions || [];
+            setTxHistory(txs);
+            setFilteredTxHistory(txs);
+          })
+          .catch(err => console.error('TX history fetch failed:', err));
       } catch (err) {
         console.error('Failed to fetch profile:', err);
       } finally {

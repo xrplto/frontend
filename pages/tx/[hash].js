@@ -4134,37 +4134,12 @@ export async function getServerSideProps(context) {
     };
   }
 
-  const xrplNodes = [
-    'https://s1.ripple.com:51234/',
-    'https://s2.ripple.com:51234/',
-    'https://xrpl.ws/'
-  ];
-
-  let response;
-  let lastError;
-
-  for (const node of xrplNodes) {
-    try {
-      response = await axios.post(node, {
-        method: 'tx',
-        params: [
-          {
-            transaction: hash,
-            binary: false,
-            ledger_index: 'validated'
-          }
-        ]
-      });
-      break; // Success, exit loop
-    } catch (error) {
-      lastError = error;
-      console.error(`Failed to fetch from ${node}:`, error.message);
-      continue; // Try next node
-    }
-  }
+  const response = await axios.get(`https://api.xrpscan.com/api/v1/tx/${hash}`)
+    .then(res => ({ data: { result: res.data } }))
+    .catch(() => null);
 
   if (!response) {
-    throw lastError || new Error('All XRPL nodes failed');
+    throw new Error('Failed to fetch transaction');
   }
 
   try {

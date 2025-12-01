@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef, memo, useMemo } from 'react';
 import { X, RefreshCw, ChevronDown, Zap, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
-import { Client } from 'xrpl';
 import { fNumber } from 'src/utils/formatters';
 import { parseAmount, normalizeCurrencyCode } from 'src/utils/parseUtils';
 import Decimal from 'decimal.js-light';
 import { cn } from 'src/utils/cn';
 
 const BASE_URL = 'https://api.xrpl.to';
-const XRPL_WEBSOCKET_URL = 'wss://s1.ripple.com';
 
 const formatTimeAgo = (date) => {
   if (!date) return '...';
@@ -117,9 +115,6 @@ const CreatorTransactionsDialog = memo(
     const [expanded, setExpanded] = useState(true);
     const [newTxHashes, setNewTxHashes] = useState(new Set());
 
-    const clientRef = useRef(null);
-    const reconnectTimeoutRef = useRef(null);
-    const reconnectAttemptsRef = useRef(0);
 
     const fetchTransactionHistory = useCallback(async () => {
       if (!creatorAddress) return;
@@ -146,81 +141,60 @@ const CreatorTransactionsDialog = memo(
       }
     }, [creatorAddress, onLatestTransaction]);
 
-    const subscribeToTransactions = useCallback(async () => {
-      if (!creatorAddress || clientRef.current) return;
+    // Poll for new transactions using xrpl.to API
+    const lastTxHashRef = useRef(null);
 
+    const pollTransactions = useCallback(async () => {
+      if (!creatorAddress) return;
       try {
-        const client = new Client(XRPL_WEBSOCKET_URL, { connectionTimeout: 10000 });
-        clientRef.current = client;
+        const response = await fetch(`${BASE_URL}/api/account_tx/${creatorAddress}?limit=20`);
+        const data = await response.json();
 
-        client.on('error', () => handleReconnect());
-        client.on('disconnected', () => {
-          setIsSubscribed(false);
-          handleReconnect();
-        });
+        if (data?.result === 'success' && data?.transactions?.length > 0) {
+          const validTxs = data.transactions
+            .map(txData => txData.tx_json && !txData.tx ? { ...txData, tx: txData.tx_json } : txData)
+            .filter(txData => txData?.tx?.TransactionType)
+            .slice(0, 10);
 
-        await client.connect();
-        const res = await client.request({ command: 'subscribe', accounts: [creatorAddress] });
+          // Check for new transactions
+          const latestHash = validTxs[0]?.tx?.hash;
+          if (latestHash && latestHash !== lastTxHashRef.current) {
+            // Find new transactions
+            const oldHashes = new Set(transactions.map(t => t.tx?.hash));
+            const newTxs = validTxs.filter(t => !oldHashes.has(t.tx?.hash));
 
-        if (res.result.status === 'success') {
-          setIsSubscribed(true);
-          reconnectAttemptsRef.current = 0;
-
-          client.on('transaction', (txEvent) => {
-            const txn = txEvent.transaction;
-            if (txn && (txn.Account === creatorAddress || txn.Destination === creatorAddress)) {
-              const newTx = { tx: txn, meta: txEvent.meta, validated: txEvent.validated };
-              onLatestTransaction?.(newTx);
-              setNewTxHashes(prev => new Set([...prev, txn.hash]));
-              setTransactions(prev => [newTx, ...prev].slice(0, 10));
-              setTimeout(() => setNewTxHashes(prev => {
-                const next = new Set(prev);
-                next.delete(txn.hash);
-                return next;
-              }), 2000);
+            if (newTxs.length > 0 && lastTxHashRef.current) {
+              // Mark new transactions for animation
+              newTxs.forEach(t => setNewTxHashes(prev => new Set([...prev, t.tx?.hash])));
+              setTimeout(() => {
+                newTxs.forEach(t => setNewTxHashes(prev => {
+                  const next = new Set(prev);
+                  next.delete(t.tx?.hash);
+                  return next;
+                }));
+              }, 2000);
+              onLatestTransaction?.(newTxs[0]);
             }
-          });
+
+            lastTxHashRef.current = latestHash;
+            setTransactions(validTxs);
+            if (!isSubscribed) setIsSubscribed(true);
+          }
         }
-      } catch {
-        handleReconnect();
+      } catch (err) {
+        console.error('Poll error:', err);
       }
-    }, [creatorAddress, onLatestTransaction]);
-
-    const handleReconnect = useCallback(() => {
-      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      reconnectAttemptsRef.current += 1;
-      const backoff = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
-      reconnectTimeoutRef.current = setTimeout(() => {
-        clientRef.current?.removeAllListeners();
-        clientRef.current = null;
-        subscribeToTransactions();
-      }, backoff);
-    }, [subscribeToTransactions]);
-
-    const unsubscribe = useCallback(async () => {
-      if (!clientRef.current?.isConnected()) return;
-      try {
-        await clientRef.current.request({ command: 'unsubscribe', accounts: [creatorAddress] });
-      } catch {}
-      await clientRef.current?.disconnect();
-      clientRef.current?.removeAllListeners();
-      clientRef.current = null;
-      setIsSubscribed(false);
-    }, [creatorAddress]);
+    }, [creatorAddress, transactions, onLatestTransaction, isSubscribed]);
 
     useEffect(() => {
       if (creatorAddress) {
         fetchTransactionHistory();
-        subscribeToTransactions();
-        const interval = setInterval(fetchTransactionHistory, 15000);
-        return () => {
-          clearInterval(interval);
-          clearTimeout(reconnectTimeoutRef.current);
-          clientRef.current?.removeAllListeners();
-          unsubscribe();
-        };
+        setIsSubscribed(true);
+        // Poll every 5 seconds for new transactions
+        const interval = setInterval(pollTransactions, 5000);
+        return () => clearInterval(interval);
       }
-    }, [creatorAddress, fetchTransactionHistory, subscribeToTransactions, unsubscribe]);
+    }, [creatorAddress, fetchTransactionHistory, pollTransactions]);
 
     if (!open) return null;
 
