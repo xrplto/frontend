@@ -677,7 +677,6 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
 
   const handleXrpOnlyChange = (event) => {
     setXrpOnly(event.target.checked);
-    setPage(1);
   };
 
   const handleTxClick = (hash, tradeAccount) => {
@@ -1283,7 +1282,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <select
               value={pairType}
-              onChange={(e) => { setPairType(e.target.value); setPage(1); }}
+              onChange={(e) => setPairType(e.target.value)}
               style={{
                 padding: '5px 8px',
                 fontSize: '11px',
@@ -1306,7 +1305,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             </select>
             <select
               value={historyType}
-              onChange={(e) => { setHistoryType(e.target.value); setPage(1); }}
+              onChange={(e) => setHistoryType(e.target.value)}
               style={{
                 padding: '5px 8px',
                 fontSize: '11px',
@@ -1330,7 +1329,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             {historyType !== 'trades' && (
               <select
                 value={liquidityType}
-                onChange={(e) => { setLiquidityType(e.target.value); setPage(1); }}
+                onChange={(e) => setLiquidityType(e.target.value)}
                 style={{
                   padding: '5px 8px',
                   fontSize: '11px',
@@ -1355,7 +1354,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             )}
             <select
               value={xrpAmount}
-              onChange={(e) => { setXrpAmount(e.target.value); setPage(1); }}
+              onChange={(e) => setXrpAmount(e.target.value)}
               style={{
                 padding: '5px 8px',
                 fontSize: '11px',
@@ -1382,7 +1381,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             </select>
             <select
               value={timeRange}
-              onChange={(e) => { setTimeRange(e.target.value); setPage(1); }}
+              onChange={(e) => setTimeRange(e.target.value)}
               style={{
                 padding: '5px 8px',
                 fontSize: '11px',
@@ -1408,7 +1407,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
             <input
               type="text"
               value={accountFilter}
-              onChange={(e) => { setAccountFilter(e.target.value); setPage(1); }}
+              onChange={(e) => setAccountFilter(e.target.value)}
               placeholder="Filter account..."
               style={{
                 padding: '5px 8px',
