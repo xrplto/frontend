@@ -669,6 +669,32 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   const [expiryHours, setExpiryHours] = useState(24);
 
   const [showOrderbook, setShowOrderbook] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug info loader
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) { setDebugInfo(null); return; }
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      let seed = accountProfile.seed || null;
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
+    };
+    loadDebugInfo();
+  }, [accountProfile]);
 
   const amount = revert ? amount2 : amount1;
   const value = revert ? amount1 : amount2;
@@ -2247,6 +2273,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                 }}
               />
             </Box>
+          )}
+
+          {/* Debug Panel */}
+          {debugInfo && (
+            <div style={{ marginBottom: 8, padding: 8, borderRadius: 8, border: `1px solid ${isDark ? 'rgba(234,179,8,0.3)' : '#fef3c7'}`, background: isDark ? 'rgba(234,179,8,0.1)' : '#fefce8', fontFamily: 'monospace', fontSize: 9 }}>
+              <div style={{ fontWeight: 500, marginBottom: 4, color: '#ca8a04', fontSize: 10 }}>Debug:</div>
+              <div>wallet_type: <span style={{ color: '#3b82f6' }}>{debugInfo.wallet_type || 'undefined'}</span></div>
+              <div>account: <span style={{ opacity: 0.7 }}>{debugInfo.account || 'undefined'}</span></div>
+              <div>walletKeyId: <span style={{ color: debugInfo.walletKeyId ? '#22c55e' : '#ef4444' }}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+              <div>seed: <span style={{ color: '#22c55e', wordBreak: 'break-all' }}>{debugInfo.seed}</span></div>
+            </div>
           )}
 
           {/* Exchange/Trustline Button - inside the swap card when connected */}

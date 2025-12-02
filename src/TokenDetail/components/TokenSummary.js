@@ -117,6 +117,32 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   const [trustStatus, setTrustStatus] = useState(null); // 'loading' | 'success' | 'error' | {message}
   const [fetchedCreatorTx, setFetchedCreatorTx] = useState(null);
   const fetchedCreatorRef = useRef(null);
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug info loader
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) { setDebugInfo(null); return; }
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      let seed = accountProfile.seed || null;
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
+    };
+    loadDebugInfo();
+  }, [accountProfile]);
 
   const { id, name, exch, pro7d, pro24h, pro5m, pro1h, maxMin24h, usd, vol24hxrp, marketcap, expiration, user, md5, currency, issuer, verified, holders, tvl, origin, creator } = token;
 
@@ -440,6 +466,19 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </div>
         ))}
       </div>
+
+      {/* Debug Panel */}
+      {debugInfo && (
+        <div className={cn("mt-2 p-2 rounded-lg border font-mono text-[9px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
+          <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
+          <div className="space-y-0.5">
+            <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
+            <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+            <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+            <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
+          </div>
+        </div>
+      )}
 
       {editToken && <EditTokenDialog token={editToken} setToken={setEditToken} />}
     </div>

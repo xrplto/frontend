@@ -555,6 +555,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
   const [showOrderbook, setShowOrderbook] = useState(false);
   const [showOrderSummary, setShowOrderSummary] = useState(false);
   const [showDepthPanel, setShowDepthPanel] = useState(false);
+  const [debugInfo, setDebugInfo] = useState(null);
   const amount1Ref = useRef(null);
 
   // Persist slippage
@@ -563,6 +564,31 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       localStorage.setItem('swap_slippage', slippage.toString());
     }
   }, [slippage]);
+
+  // Debug info for wallet
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) { setDebugInfo(null); return; }
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      let seed = accountProfile.seed || null;
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, accountIndex: accountProfile.accountIndex, seed: seed || 'N/A' });
+    };
+    loadDebugInfo();
+  }, [accountProfile]);
 
   // Orderbook state
   const [bids, setBids] = useState(propsBids || []);
@@ -2848,6 +2874,19 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               <span>Network Fee</span>
               <span>~0.000012 XRP</span>
             </div>
+
+            {/* Debug Panel */}
+            {debugInfo && (
+              <div className={cn("mb-4 p-2 rounded-lg border font-mono text-[9px]", darkMode ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
+                <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
+                <div className="space-y-0.5">
+                  <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
+                  <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+                  <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+                  <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
+                </div>
+              </div>
+            )}
 
             {/* Action Button */}
             {accountProfile && accountProfile.account ? (

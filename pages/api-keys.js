@@ -1,20 +1,17 @@
 import React, { useState, useContext, useEffect, useCallback } from 'react';
 import Head from 'next/head';
 import axios from 'axios';
-import { Wallet } from 'xrpl';
 import { sign } from 'ripple-keypairs';
 import { Key, Plus, Copy, Trash2, Eye, EyeOff, CheckCircle, AlertCircle, Loader2, RefreshCw, CreditCard, Lock } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 import { cn } from 'src/utils/cn';
 import Header from 'src/components/Header';
 import Footer from 'src/components/Footer';
-import { UnifiedWalletStorage } from 'src/utils/encryptedWalletStorage';
 
 const BASE_URL = 'https://api.xrpl.to/api';
-const walletStorage = new UnifiedWalletStorage();
 
 const ApiKeysPage = () => {
-  const { themeName, accountProfile, seedPassword } = useContext(AppContext);
+  const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   const [apiKeys, setApiKeys] = useState([]);
@@ -36,32 +33,119 @@ const ApiKeysPage = () => {
   ];
 
   const walletAddress = accountProfile?.account;
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug: Log account profile and fetch seed
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) return;
+
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+
+      let seed = accountProfile.seed || null;
+
+      // If no seed in profile, try to fetch from storage
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
+      }
+
+      setDebugInfo({
+        wallet_type: accountProfile.wallet_type,
+        account: accountProfile.account,
+        walletKeyId: walletKeyId,
+        accountIndex: accountProfile.accountIndex,
+        seed: seed || 'N/A'
+      });
+    };
+    loadDebugInfo();
+  }, [accountProfile]);
+
+  // Get wallet for signing based on wallet type
+  const getDeviceWallet = useCallback(async () => {
+    if (!accountProfile) return null;
+
+    try {
+      const { Wallet } = await import('xrpl');
+
+      // If seed is directly available (OAuth wallets after login)
+      if (accountProfile.seed) {
+        return Wallet.fromSeed(accountProfile.seed);
+      }
+
+      // Device/passkey wallet - derive from deviceKeyId
+      if (accountProfile.wallet_type === 'device' && accountProfile.deviceKeyId) {
+        const CryptoJS = (await import('crypto-js')).default;
+        const entropyString = `passkey-wallet-${accountProfile.deviceKeyId}-${accountProfile.accountIndex || 0}-`;
+        const seedHash = CryptoJS.PBKDF2(entropyString, `salt-${accountProfile.deviceKeyId}`, {
+          keySize: 256 / 32,
+          iterations: 100000
+        }).toString();
+        return new Wallet(seedHash.substring(0, 64));
+      }
+
+      // OAuth wallet - try to get from encrypted storage
+      if (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social') {
+        const { UnifiedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+        const walletStorage = new UnifiedWalletStorage();
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+
+        if (storedPassword) {
+          const walletData = await walletStorage.findWalletBySocialId(
+            walletId,
+            storedPassword,
+            accountProfile.account || accountProfile.address
+          );
+          if (walletData?.seed) {
+            return Wallet.fromSeed(walletData.seed);
+          }
+        }
+      }
+
+      return null;
+    } catch (err) {
+      console.error('Failed to get wallet:', err);
+      return null;
+    }
+  }, [accountProfile]);
 
   // Create auth headers with signature for protected endpoints
   const getAuthHeaders = useCallback(async () => {
-    if (!walletAddress || !seedPassword) return null;
+    if (!walletAddress) return null;
 
     try {
-      const deviceWallet = await walletStorage.getWallet(walletAddress, seedPassword);
-      if (!deviceWallet) return null;
+      const wallet = await getDeviceWallet();
+      if (!wallet) return null;
 
       const timestamp = Date.now();
-      // Message format per docs: `${wallet}:${timestamp}`
       const message = `${walletAddress}:${timestamp}`;
       const messageHex = Buffer.from(message).toString('hex');
-      const signature = sign(messageHex, deviceWallet.privateKey);
+      const signature = sign(messageHex, wallet.privateKey);
 
       return {
         'X-Wallet': walletAddress,
         'X-Timestamp': timestamp.toString(),
         'X-Signature': signature,
-        'X-Public-Key': deviceWallet.publicKey
+        'X-Public-Key': wallet.publicKey
       };
     } catch (err) {
       console.error('Failed to sign:', err);
       return null;
     }
-  }, [walletAddress, seedPassword]);
+  }, [walletAddress, getDeviceWallet]);
 
   const fetchApiKeys = useCallback(async () => {
     if (!walletAddress) {
@@ -117,7 +201,11 @@ const ApiKeysPage = () => {
       const headers = await getAuthHeaders();
 
       if (!headers) {
-        setError('Unable to sign request. Please unlock your wallet.');
+        setError(
+          accountProfile?.wallet_type === 'device'
+            ? 'Unable to sign request. Please try again.'
+            : 'API key management requires a device/passkey wallet.'
+        );
         setCreating(false);
         return;
       }
@@ -148,7 +236,11 @@ const ApiKeysPage = () => {
       const headers = await getAuthHeaders();
 
       if (!headers) {
-        setError('Unable to sign request. Please unlock your wallet.');
+        setError(
+          accountProfile?.wallet_type === 'device'
+            ? 'Unable to sign request. Please try again.'
+            : 'API key management requires a device/passkey wallet.'
+        );
         setDeletingId(null);
         return;
       }
@@ -230,6 +322,20 @@ const ApiKeysPage = () => {
               Create Key
             </button>
           </div>
+
+          {/* Debug Panel */}
+          {debugInfo && (
+            <div className={cn("mb-6 p-4 rounded-xl border-[1.5px] font-mono text-[11px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
+              <div className="font-medium mb-2 text-yellow-600">Debug Info:</div>
+              <div className="space-y-1">
+                <div>wallet_type: <span className="text-primary">{debugInfo.wallet_type || 'undefined'}</span></div>
+                <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+                <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-500" : "text-red-500"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+                <div>accountIndex: <span className="opacity-70">{debugInfo.accountIndex ?? 'undefined'}</span></div>
+                <div>seed: <span className="text-green-500 break-all">{debugInfo.seed}</span></div>
+              </div>
+            </div>
+          )}
 
           {/* Error */}
           {error && (

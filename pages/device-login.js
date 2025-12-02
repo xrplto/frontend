@@ -111,6 +111,9 @@ const DeviceLoginPage = () => {
         address: wallet.address,
         publicKey: wallet.publicKey,
         wallet_type: 'device',
+        deviceKeyId: passkeyId,
+        walletKeyId: passkeyId,
+        accountIndex: 0,
         xrp: '0'
       };
 
@@ -150,6 +153,9 @@ const DeviceLoginPage = () => {
           address: wallet.address,
           publicKey: wallet.publicKey,
           wallet_type: 'device',
+          deviceKeyId: passkeyId,
+          walletKeyId: passkeyId,
+          accountIndex: 0,
           xrp: '0'
         }];
       }
@@ -161,6 +167,9 @@ const DeviceLoginPage = () => {
           address: wallet.address,
           publicKey: wallet.publicKey,
           wallet_type: 'device',
+          deviceKeyId: passkeyId,
+          walletKeyId: passkeyId,
+          accountIndex: 0,
           xrp: '0'
         });
       }
@@ -220,6 +229,9 @@ const DeviceLoginPage = () => {
       address: wallet.address,
       publicKey: wallet.publicKey,
       wallet_type: 'device',
+      deviceKeyId: passkeyId,
+      walletKeyId: passkeyId,
+      accountIndex: 0,
       xrp: '0'
     });
 

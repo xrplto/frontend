@@ -1661,6 +1661,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setOAuthPasswordError('Creating wallet...');
       const wallet = generateRandomWallet();
 
+      const walletKeyId = `${provider}_${user.id}`;
       const walletData = {
         accountIndex: 0,
         account: wallet.address,
@@ -1669,6 +1670,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
         wallet_type: 'oauth',
         provider: provider,
         provider_id: user.id,
+        walletKeyId: walletKeyId,
         xrp: '0',
         createdAt: Date.now(),
         seed: wallet.seed

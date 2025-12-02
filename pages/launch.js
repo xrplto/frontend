@@ -124,6 +124,7 @@ function CreatePage() {
   const [showSummary, setShowSummary] = useState(false);
   const [decryptedSeed, setDecryptedSeed] = useState(null);
   const [costBreakdown, setCostBreakdown] = useState(null);
+  const [debugInfo, setDebugInfo] = useState(null);
   const [loadingCost, setLoadingCost] = useState(false);
 
   // Decrypt seed on mount if OAuth wallet
@@ -170,6 +171,30 @@ function CreatePage() {
 
     decryptSeed();
   }, [accountProfile]);
+
+  // Debug info for wallet
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) { setDebugInfo(null); return; }
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      let seed = accountProfile.seed || decryptedSeed || null;
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const walletStorage = new UnifiedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, accountIndex: accountProfile.accountIndex, seed: seed || 'N/A' });
+    };
+    loadDebugInfo();
+  }, [accountProfile, decryptedSeed]);
 
   // Fetch cost breakdown when ammXrpAmount or antiSnipe changes
   useEffect(() => {
@@ -882,6 +907,20 @@ function CreatePage() {
           {errors.file && <p className="text-red-500 text-[10px] mt-1">{errors.file}</p>}
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileInputChange} className="hidden" />
         </div>
+
+        {/* Debug Panel */}
+        {debugInfo && (
+          <div className={cn("mb-4 p-3 rounded-lg border font-mono text-[10px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
+            <div className="font-medium mb-1 text-yellow-600">Debug Info:</div>
+            <div className="space-y-0.5">
+              <div>wallet_type: <span className="text-blue-500">{debugInfo.wallet_type || 'undefined'}</span></div>
+              <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
+              <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-500" : "text-red-500"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
+              <div>accountIndex: <span className="opacity-70">{debugInfo.accountIndex ?? 'undefined'}</span></div>
+              <div>seed: <span className="text-green-500 break-all">{debugInfo.seed}</span></div>
+            </div>
+          </div>
+        )}
 
         {/* Submit */}
         <Button

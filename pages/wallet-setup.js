@@ -77,9 +77,11 @@ const WalletSetupPage = () => {
       setError('Creating wallet...');
       const wallet = generateRandomWallet();
 
+      const walletId = `${provider}_${user.id}`;
       const walletData = {
         provider,
         provider_id: user.id,
+        walletKeyId: walletId,
         accountIndex: 0,
         account: wallet.address,
         address: wallet.address,
@@ -106,8 +108,7 @@ const WalletSetupPage = () => {
       await walletStorage.setSecureItem('authMethod', provider);
       await walletStorage.setSecureItem('user', user);
 
-      // Store password for provider
-      const walletId = `${provider}_${user.id}`;
+      // Store password for provider (walletId already defined above)
       await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
 
       // Mark wallet as needing backup
