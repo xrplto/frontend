@@ -134,6 +134,75 @@ GET /api/amm-pools?sortBy=created
 - Metrics update every 60 seconds
 - Response time: ~100-150ms for all 5000+ pools
 
+#### WebSocket API
+
+Real-time updates via WebSocket connections.
+
+**Endpoints:**
+
+| Endpoint | Purpose |
+|----------|---------|
+| `wss://api.xrpl.to/ws/sync/` | Real-time token list (delta updates) |
+| `wss://api.xrpl.to/ws/token/{md5}` | Single token detail updates |
+
+**`/ws/sync/` — Token List Stream**
+
+```javascript
+const ws = new WebSocket('wss://api.xrpl.to/ws/sync/');
+
+ws.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  // data.tokens = only changed tokens (delta)
+};
+
+// Optional client ping
+ws.send(JSON.stringify({ type: 'ping' }));
+```
+
+Response (every 5s):
+```json
+{
+  "res": "success",
+  "session": 42,
+  "total": 15000,
+  "exch": { "EUR": 0.92, "JPY": 149.5 },
+  "H24": { "vol": 1234567 },
+  "global": { "marketcap": 50000000 },
+  "tokens": [{ "md5": "abc...", "exch": 0.5 }]
+}
+```
+
+**`/ws/token/{md5}` — Token Detail Stream**
+
+```javascript
+const ws = new WebSocket('wss://api.xrpl.to/ws/token/0dd550278b74cb6690fdae351e8e0df3');
+
+ws.onmessage = (e) => {
+  const data = JSON.parse(e.data);
+  // data.token = full token object
+};
+```
+
+Response (every 5s):
+```json
+{
+  "res": "success",
+  "session": 10,
+  "total": 15000,
+  "exch": { "EUR": 0.92 },
+  "token": { "md5": "...", "name": "Token", "exch": 0.5, "vol24h": 1000 }
+}
+```
+
+**Features:**
+
+| Feature | Value |
+|---------|-------|
+| Heartbeat | 30s server ping |
+| Compression | permessage-deflate (>1KB) |
+| Broadcast interval | 5 seconds |
+| Delta updates | `/ws/sync` only sends changed tokens |
+
 ### Implementation Patterns to AVOID
 ```javascript
 // ❌ WRONG - Hardcoding categories

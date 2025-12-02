@@ -188,8 +188,6 @@ function TokenListComponent({
   const WSS_FEED_URL = 'wss://api.xrpl.to/ws/sync';
   const BASE_URL = 'https://api.xrpl.to/api';
 
-  console.log('[TokenList] Component mounted, WSS_FEED_URL:', WSS_FEED_URL);
-
   const [filterName, setFilterName] = useState('');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(0);
@@ -428,7 +426,6 @@ function TokenListComponent({
             if (update && token.exch !== update.exch) {
               hasChanges = true;
               const direction = token.exch > update.exch ? -1 : 1;
-              console.log(`[WS] ${token.name}: ${token.exch} -> ${update.exch} (${direction === 1 ? 'UP' : 'DOWN'})`);
               return {
                 ...token,
                 ...update,
@@ -452,8 +449,7 @@ function TokenListComponent({
     });
   }, [dispatch, setTokens, startTransition]);
 
-  // Only use WebSocket if URL is provided (not in development mode)
-  console.log('[WS] Initializing useWebSocket hook...');
+  // WebSocket for real-time token updates
   const { sendJsonMessage, readyState } = useWebSocket(
     WSS_FEED_URL,
     {
@@ -464,7 +460,6 @@ function TokenListComponent({
         (event) => {
           try {
             const json = JSON.parse(event.data);
-            console.log('[WS] Message received, tokens:', json.tokens?.length || 0);
 
             // Queue the message
             wsMessageQueue.current.push(json);
@@ -483,23 +478,11 @@ function TokenListComponent({
         },
         [processWebSocketQueue]
       ),
-      onOpen: () => {
-        console.log('[WS] Connected to', WSS_FEED_URL);
-      },
-      onClose: () => {
-        console.log('[WS] Disconnected');
-      },
-      onError: (error) => {
-        console.error('[WS] Error:', error);
-      }
+      onOpen: () => {},
+      onClose: () => {},
+      onError: () => {}
     }
   );
-
-  // Debug readyState
-  useEffect(() => {
-    const states = ['CONNECTING', 'OPEN', 'CLOSING', 'CLOSED'];
-    console.log('[WS] readyState:', states[readyState] || readyState);
-  }, [readyState]);
 
   // Optimized token change detector using shallow comparison
   const applyTokenChanges = useCallback(

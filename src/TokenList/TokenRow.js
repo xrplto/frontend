@@ -447,7 +447,7 @@ const MobileTokenRow = ({
       prevBearbullTime.current = token.bearbullTime;
       const color = token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : null;
       setFlashColor(color);
-      const timer = setTimeout(() => setFlashColor(null), 300);
+      const timer = setTimeout(() => setFlashColor(null), 800);
       return () => clearTimeout(timer);
     }
   }, [token.bearbullTime, token.bearbull]);
@@ -608,7 +608,7 @@ const DesktopTokenRow = ({
       prevBearbullTime.current = token.bearbullTime;
       const color = token.bearbull === -1 ? '#ef4444' : token.bearbull === 1 ? '#10b981' : null;
       setFlashColor(color);
-      const timer = setTimeout(() => setFlashColor(null), 300);
+      const timer = setTimeout(() => setFlashColor(null), 800);
       return () => clearTimeout(timer);
     }
   }, [token.bearbullTime, token.bearbull]);
