@@ -194,74 +194,6 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
   const collectionName = nft?.collection || nft?.meta?.collection?.name || '';
   const rarity = nft?.rarity_rank || null;
 
-  const loadingImage = () => {
-    if (errored) {
-      return (
-        <div className="absolute top-0 left-0 w-full h-full flex items-center justify-center bg-black/70">
-          <span className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
-            Image unavailable
-          </span>
-        </div>
-      );
-    } else if (!loaded) {
-      return (
-        <div className="text-center py-5">
-          <Loader2 size={24} className="animate-spin text-primary" />
-        </div>
-      );
-    }
-  };
-
-  const renderImageLink = (file) => {
-    const cdn = 'https://s1.xrpl.to/nft/';
-
-    // Full size image for modal (IPFS or cachedUrl)
-    const fullSizeUrl = typeof file === 'string'
-      ? file
-      : file.cachedUrl
-        || (file.IPFSPath ? (() => {
-            const pathParts = file.IPFSPath.split('/');
-            const encodedPath = pathParts.map(encodeURIComponent).join('/');
-            return `https://ipfs.io/ipfs/${encodedPath}`;
-          })() : null)
-        || file.dfile
-        || file.convertedFile;
-
-    // Thumbnail for display (large 768x768 preferred)
-    const thumbnailUrl = typeof file === 'string'
-      ? file
-      : file.thumbnail?.large
-        ? cdn + file.thumbnail.large
-        : file.thumbnail?.medium
-          ? cdn + file.thumbnail.medium
-          : file.thumbnail?.small
-            ? cdn + file.thumbnail.small
-            : fullSizeUrl;
-
-    return (
-      <div
-        onClick={() => !errored && handleOpenImage(fullSizeUrl)}
-        className={cn(
-          "w-full h-full flex items-center justify-center relative",
-          errored ? "cursor-default" : "cursor-pointer"
-        )}
-      >
-        {loadingImage()}
-        <img
-          className={cn("absolute top-0 left-0 w-full h-full object-contain transition-transform hover:scale-105", loaded ? "block" : "hidden")}
-          onLoad={() => {
-            setLoaded(true);
-            setErrored(false);
-          }}
-          onError={() => setErrored(true)}
-          src={thumbnailUrl}
-          alt={NFTName}
-          fetchPriority={thumbnailUrl?.includes('ipfs.io') ? 'low' : 'auto'}
-        />
-      </div>
-    );
-  };
-
   return (
     <div className={cn("rounded-xl overflow-hidden w-full", isDark ? "bg-white/[0.02]" : "bg-gray-50")}>
 
@@ -273,7 +205,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
       )}
 
       {/* Media */}
-      <div className={cn("relative w-full aspect-square flex items-center justify-center overflow-hidden", isDark ? "bg-gray-900" : "bg-gray-100")}>
+      <div className={cn("relative w-full", isDark ? "bg-gray-900" : "bg-gray-100")}>
         {/* IPFS Debug Badge */}
         {isIPFS && (
           <div className="absolute top-2 left-2 z-10 px-2 py-1 rounded bg-orange-500/90 text-white text-[11px] font-medium">
@@ -283,22 +215,70 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
         {((imageUrl && contentTab === 'image') || (animationUrl && contentTab === 'animation')) && (
           <>
-            {renderImageLink(typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0])}
+            <div className="w-full">
+              <img
+                className={cn(
+                  "w-full h-auto max-h-[70vh] object-contain mx-auto cursor-pointer transition-transform hover:scale-[1.02]",
+                  loaded ? "block" : "hidden"
+                )}
+                onLoad={() => {
+                  setLoaded(true);
+                  setErrored(false);
+                }}
+                onError={() => setErrored(true)}
+                onClick={() => {
+                  const file = typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0];
+                  const cdn = 'https://s1.xrpl.to/nft/';
+                  const fullSizeUrl = typeof file === 'string'
+                    ? file
+                    : file.cachedUrl
+                      || (file.IPFSPath ? `https://ipfs.io/ipfs/${file.IPFSPath.split('/').map(encodeURIComponent).join('/')}` : null)
+                      || file.dfile
+                      || file.convertedFile;
+                  if (!errored && fullSizeUrl) handleOpenImage(fullSizeUrl);
+                }}
+                src={(() => {
+                  const file = typeof imgOrAnimUrl === 'string' ? imgOrAnimUrl : imgOrAnimUrl[0];
+                  const cdn = 'https://s1.xrpl.to/nft/';
+                  if (typeof file === 'string') return file;
+                  return file?.thumbnail?.large
+                    ? cdn + file.thumbnail.large
+                    : file?.thumbnail?.medium
+                      ? cdn + file.thumbnail.medium
+                      : file?.thumbnail?.small
+                        ? cdn + file.thumbnail.small
+                        : file?.cachedUrl || file?.dfile || file?.convertedFile;
+                })()}
+                alt={NFTName}
+              />
+              {!loaded && !errored && (
+                <div className="flex items-center justify-center py-20">
+                  <Loader2 size={24} className="animate-spin text-primary" />
+                </div>
+              )}
+              {errored && (
+                <div className="flex items-center justify-center py-20">
+                  <span className={cn("text-[13px]", isDark ? "text-gray-400" : "text-gray-600")}>
+                    Image unavailable
+                  </span>
+                </div>
+              )}
+            </div>
             {openImage && (
               <div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-black/80"
+                className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
                 onClick={() => setOpenImage(false)}
               >
-                <div className="relative max-w-[90vw] max-h-[90vh] flex items-center justify-center">
+                <div className="relative max-w-[95vw] max-h-[95vh] flex items-center justify-center">
                   <img
                     src={selectedImageUrl}
                     alt={NFTName}
-                    className="max-w-[90vw] max-h-[90vh] object-contain"
+                    className="max-w-[95vw] max-h-[95vh] object-contain"
                     fetchpriority={selectedImageUrl?.includes('ipfs.io') ? 'low' : 'auto'}
                   />
                   <button
-                    onClick={() => setOpenImage(false)}
-                    className="absolute top-2 right-2 p-2 text-white hover:bg-white/20 rounded-lg"
+                    onClick={(e) => { e.stopPropagation(); setOpenImage(false); }}
+                    className="absolute top-4 right-4 p-2 text-white bg-black/50 hover:bg-black/70 rounded-full"
                   >
                     <X size={24} />
                   </button>
@@ -309,14 +289,14 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
         )}
 
         {videoUrl && contentTab === 'video' && (
-          <div className="p-4">
+          <div className="w-full">
             <video
               playsInline
               muted
               autoPlay
               loop
               controls
-              className="w-full h-full max-h-full object-contain"
+              className="w-full h-auto max-h-[70vh] object-contain"
             >
               <source src={videoUrl[currentSlide]?.cachedUrl} type="video/mp4" />
             </video>
@@ -488,7 +468,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       )}
 
       {/* Technical Details */}
-      <div className={cn("p-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+      <div className={cn("p-4 mb-8 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
         <div className="space-y-3">
           {/* Owner + Royalties row */}
           <div className="flex items-start justify-between gap-4">

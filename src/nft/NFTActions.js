@@ -659,9 +659,7 @@ export default function NFTActions({ nft }) {
                     )}
                   </div>
                 ) : (
-                  <div className={cn('text-center py-3 rounded-xl border border-dashed', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
-                    <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>Not listed for sale</p>
-                  </div>
+                  <p className={cn('text-sm text-center py-2', isDark ? 'text-gray-500' : 'text-gray-400')}>Not listed for sale</p>
                 )}
 
                 {accountLogin ? (
@@ -762,7 +760,7 @@ export default function NFTActions({ nft }) {
 
             {/* Buy Offers */}
             <div>
-              <div className="flex items-center justify-between mb-3 px-2">
+              <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <h3 className={cn('text-sm font-normal', isDark ? 'text-white' : 'text-gray-900')}>Buy Offers</h3>
                   {buyOffers.length > 0 && (
@@ -856,14 +854,14 @@ export default function NFTActions({ nft }) {
                 </div>
               ) : (
                 <div className={cn(
-                  'py-8 text-center rounded-xl border border-dashed',
-                  isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50/50'
+                  'py-4 text-center rounded-lg border border-dashed',
+                  isDark ? 'border-white/10' : 'border-gray-200'
                 )}>
                   <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>No buy offers available</p>
                   {!isOwner && (
                     <button
                       onClick={handleCreateBuyOffer}
-                      className="mt-4 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal border border-primary/30 text-primary hover:bg-primary/5 transition-colors"
+                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal text-primary hover:bg-primary/5 transition-colors"
                     >
                       <Hand size={14} />
                       Make Offer
@@ -875,7 +873,7 @@ export default function NFTActions({ nft }) {
 
             {/* History */}
             <div>
-              <h3 className={cn('text-sm font-normal mb-3 px-2', isDark ? 'text-white' : 'text-gray-900')}>History</h3>
+              <h3 className={cn('text-sm font-normal mb-2', isDark ? 'text-white' : 'text-gray-900')}>History</h3>
               <HistoryList nft={nft} />
             </div>
           </div>

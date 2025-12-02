@@ -57,9 +57,9 @@ const Tooltip = ({ title, children, arrow }) => {
 
 const Root = styled.footer`
   width: 100%;
-  border-top: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border-top: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.1)'};
   background-color: transparent;
-  margin-top: 0;
+  margin-top: 32px;
 `;
 
 const Link = styled.a`

@@ -262,12 +262,15 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
   const [loadingImg, setLoadingImg] = useState(true);
   const [imageError, setImageError] = useState(false);
   const [liking, setLiking] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const { cost, costb, meta, NFTokenID, rarity_rank, amount, MasterSequence } = nft;
   const imgUrl = getNftCoverUrl(nft, 'large');
   const name = nft.meta?.name || meta?.Name || 'No Name';
   const isVideo = nft?.meta?.video;
   const isLiked = likedNfts?.includes(NFTokenID);
+
+  const isIpfsImage = imgUrl?.includes('ipfs.io');
 
   let videoUrl = null;
   if (isVideo) {
@@ -300,17 +303,21 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
 
   return (
     <Link href={`/nft/${NFTokenID}`} className="block group">
-      <div className={cn(
-        'rounded-lg overflow-hidden transition-all',
-        isDark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100'
-      )}>
+      <div
+        className={cn(
+          'rounded-lg overflow-hidden transition-all',
+          isDark ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-gray-50 hover:bg-gray-100'
+        )}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+      >
         <div className="relative aspect-square overflow-hidden">
           {loadingImg && !imageError && (
             <div className={cn('absolute inset-0 animate-pulse', isDark ? 'bg-white/5' : 'bg-gray-200')} />
           )}
           {!imageError ? (
-            isVideo && videoUrl ? (
-              <video src={videoUrl} poster={imgUrl} muted autoPlay loop playsInline onLoadedData={handleImageLoad} onError={handleImageError}
+            isVideo && videoUrl && isHovered ? (
+              <video src={videoUrl} poster={imgUrl} muted autoPlay loop playsInline preload="none" onLoadedData={handleImageLoad} onError={handleImageError}
                 className={cn('w-full h-full object-cover transition-transform group-hover:scale-105', loadingImg && 'opacity-0')} />
             ) : (
               <img src={imgUrl} alt={name} loading="lazy" onLoad={handleImageLoad} onError={handleImageError}
@@ -319,6 +326,15 @@ const NFTCard = React.memo(({ nft, collection, onRemove, likedNfts, onToggleLike
           ) : (
             <div className={cn('w-full h-full flex items-center justify-center', isDark ? 'bg-white/5' : 'bg-gray-200')}>
               <span className={cn('text-[11px]', isDark ? 'text-white/30' : 'text-gray-400')}>No image</span>
+            </div>
+          )}
+
+          {/* IPFS indicator */}
+          {isIpfsImage && loadingImg && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className={cn('text-[10px] px-2 py-1 rounded', isDark ? 'bg-black/70 text-white/70' : 'bg-white/90 text-gray-600')}>
+                Loading from IPFS...
+              </span>
             </div>
           )}
 

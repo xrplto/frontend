@@ -451,9 +451,12 @@ export const getNftCoverUrl = (nft, size = 'medium', type = '') => {
     }
 
     if (metaUrl) {
-      // Skip IPFS URLs
+      // Convert IPFS URLs to gateway URLs
       if (metaUrl.startsWith('ipfs://')) {
-        return '';
+        const ipfsPath = metaUrl.replace('ipfs://', '');
+        const pathParts = ipfsPath.split('/');
+        const encodedPath = pathParts.map(encodeURIComponent).join('/');
+        return `https://ipfs.io/ipfs/${encodedPath}`;
       }
       return metaUrl;
     }
