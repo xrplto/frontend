@@ -4,9 +4,9 @@ const DEFAULT_CURRENCY = 'XRP';
 
 const initialState = {
   metrics: {
-    USD: 100,
-    EUR: 100,
-    JPY: 100,
+    USD: null,
+    EUR: null,
+    JPY: null,
     CNY: null,
     XRP: 1,
     H24: {

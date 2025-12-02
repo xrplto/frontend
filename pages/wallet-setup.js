@@ -131,9 +131,9 @@ const WalletSetupPage = () => {
 
       openSnackbar(`Wallet created successfully!`, 'success');
 
-      // Redirect to home
+      // Redirect to home (full reload to get fresh server data)
       setTimeout(() => {
-        router.push('/');
+        window.location.href = '/';
       }, 1000);
 
     } catch (err) {

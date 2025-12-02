@@ -8,7 +8,6 @@ import { AppContext } from 'src/AppContext';
 import { ConnectWallet } from 'src/components/Wallet';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectProcess, updateProcess, updateTxHash } from 'src/redux/transactionSlice';
-import { enqueueSnackbar } from 'notistack';
 import Decimal from 'decimal.js-light';
 import { cn } from 'src/utils/cn';
 

@@ -7,6 +7,7 @@ import { CacheProvider } from '@emotion/react';
 import createEmotionCache from 'src/theme/createEmotionCache';
 import { ContextProvider, AppContext } from 'src/AppContext';
 import { useContext, useEffect, useState } from 'react';
+import { Toaster, toast } from 'sonner';
 import './zMain.css';
 import 'swiper/css';
 import 'swiper/css/navigation';
@@ -169,53 +170,28 @@ function AppPageLayout({ children }) {
   );
 }
 
-// Custom Toast notification component
-function Toast({ isOpen, msg, variant, onClose }) {
-  const { themeName } = useContext(AppContext);
-  const isDark = themeName === 'XrplToDarkTheme';
-
-  const colors = {
-    success: { bg: 'bg-green-500', border: 'border-green-500', text: 'text-green-50' },
-    error: { bg: 'bg-red-500', border: 'border-red-500', text: 'text-red-50' },
-    warning: { bg: 'bg-yellow-500', border: 'border-yellow-500', text: 'text-yellow-50' },
-    info: { bg: 'bg-blue-500', border: 'border-blue-500', text: 'text-blue-50' }
-  };
-
-  const color = colors[variant] || colors.info;
-
-  if (!isOpen) return null;
-
-  return (
-    <div className="fixed right-4 top-20 z-[9999] animate-[slideInRight_0.3s_ease-out]">
-      <div className={cn('flex items-center gap-3 rounded-xl border-[1.5px] px-4 py-3 shadow-lg', color.bg, color.border)}>
-        <span className={cn('text-sm font-normal', color.text)}>{msg}</span>
-        <button onClick={onClose} className={cn('ml-2 hover:opacity-80', color.text)}>
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-    </div>
-  );
-}
 
 function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmotionCache }) {
   // Treat MAINTENANCE env as boolean string ("true"/"false")
   const isUnderMaintenance = process.env.MAINTENANCE === 'true';
 
-  // Inline snackbar hook logic (previously useSnackbar hook)
-  const [isOpen, setIsOpen] = useState(false);
-  const [msg, setMsg] = useState('');
-  const [variant, setVariant] = useState('success');
-
+  // Sonner toast wrapper for backward compatibility
   const openSnackbar = (msg, variant) => {
-    setMsg(msg);
-    setVariant(variant);
-    setIsOpen(true);
-  };
-
-  const closeSnackbar = () => {
-    setIsOpen(false);
+    switch (variant) {
+      case 'success':
+        toast.success(msg);
+        break;
+      case 'error':
+        toast.error(msg);
+        break;
+      case 'warning':
+        toast.warning(msg);
+        break;
+      case 'info':
+      default:
+        toast.info(msg);
+        break;
+    }
   };
 
   // Memoize ogp to prevent unnecessary re-renders
@@ -327,7 +303,7 @@ function XRPLToApp({ Component, pageProps, router, emotionCache = clientSideEmot
             <AppPageLayout>
               <Component {...pageProps} />
             </AppPageLayout>
-            <Toast isOpen={isOpen} msg={msg} variant={variant} onClose={closeSnackbar} />
+            <Toaster position="bottom-right" richColors closeButton duration={4000} />
             <TransactionAlert />
           </ThemeProvider>
         </ContextProvider>

@@ -111,9 +111,9 @@ const TransactionAlert = () => {
     <>
       <div
         className={cn(
-          "fixed bottom-6 left-6 z-[9999] sm:min-w-[360px] sm:max-w-[480px]",
+          "fixed bottom-6 right-6 z-[9999] sm:min-w-[360px] sm:max-w-[480px]",
           "max-sm:left-4 max-sm:right-4 max-sm:bottom-4",
-          isClosing ? "animate-slideOut" : "animate-slideIn"
+          isClosing ? "animate-slideOutDown" : "animate-slideInUp"
         )}
       >
         <div
@@ -149,24 +149,24 @@ const TransactionAlert = () => {
       </div>
 
       <style jsx>{`
-        @keyframes slideIn {
+        @keyframes slideInUp {
           from {
-            transform: translateX(-100%);
+            transform: translateY(100%);
             opacity: 0;
           }
           to {
-            transform: translateX(0);
+            transform: translateY(0);
             opacity: 1;
           }
         }
 
-        @keyframes slideOut {
+        @keyframes slideOutDown {
           from {
-            transform: translateX(0);
+            transform: translateY(0);
             opacity: 1;
           }
           to {
-            transform: translateX(-100%);
+            transform: translateY(100%);
             opacity: 0;
           }
         }
@@ -180,12 +180,12 @@ const TransactionAlert = () => {
           }
         }
 
-        :global(.animate-slideIn) {
-          animation: slideIn 0.3s ease-out;
+        :global(.animate-slideInUp) {
+          animation: slideInUp 0.3s ease-out;
         }
 
-        :global(.animate-slideOut) {
-          animation: slideOut 0.3s ease-out forwards;
+        :global(.animate-slideOutDown) {
+          animation: slideOutDown 0.3s ease-out forwards;
         }
 
         :global(.animate-progress) {

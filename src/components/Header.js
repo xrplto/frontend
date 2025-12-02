@@ -163,9 +163,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [fullSearch, setFullSearch] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const [isClosed, setIsClosed] = useState(false);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [snackbarSeverity, setSnackbarSeverity] = useState('success');
   const [tokensMenuOpen, setTokensMenuOpen] = useState(false);
   const [nftsMenuOpen, setNftsMenuOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
@@ -685,14 +682,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
         </div>
       </div>
 
-      {/* Snackbar */}
-      {snackbarOpen && (
-        <div className="fixed right-4 top-20 z-[9999]">
-          <div className={cn('rounded-xl border px-4 py-3', isDark ? 'border-white/[0.08] bg-[#0d0d0d]' : 'border-gray-200 bg-white')}>
-            {snackbarMessage}
-          </div>
-        </div>
-      )}
 
       {/* Search Modal */}
       <Suspense fallback={null}>

@@ -23,7 +23,6 @@
     "lru-cache": "^11.2.2",
     "lucide-react": "^0.554.0",
     "next": "^16.0.4",
-    "notistack": "^3.0.2",
     "prop-types": "^15.8.1",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
@@ -35,6 +34,7 @@
     "redux-persist": "^6.0.0",
     "ripple-address-codec": "^5.0.0",
     "scrypt-js": "^3.0.1",
+    "sonner": "^2.0.7",
     "swiper": "^12.0.3",
     "tailwind-merge": "^3.4.0",
     "xrpl": "^4.4.3"
