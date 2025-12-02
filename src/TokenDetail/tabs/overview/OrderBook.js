@@ -24,6 +24,9 @@ const Container = styled.div`
   border-radius: 10px;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   overflow: hidden;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 `;
 
 const Header = styled.div`
@@ -47,10 +50,11 @@ const Title = styled.div`
 const Content = styled.div`
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 `;
 
 const Side = styled.div`
-  max-height: 180px;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -261,7 +265,7 @@ const OrderBook = ({ token, onPriceClick }) => {
 
       <Content>
         {/* Asks (Sell Orders) - reversed so lowest ask at bottom near spread */}
-        <Side ref={asksSideRef}>
+        <Side ref={asksSideRef} type="asks">
           <ColumnHeader isDark={isDark}>
             <span style={{ color: '#ef4444' }}>XRP</span>
             <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>
@@ -305,7 +309,7 @@ const OrderBook = ({ token, onPriceClick }) => {
         </SpreadBar>
 
         {/* Bids (Buy Orders) - highest bid at top near spread */}
-        <Side>
+        <Side type="bids">
           <ColumnHeader isDark={isDark}>
             <span style={{ color: '#22c55e' }}>XRP</span>
             <span>{displayToken?.name || displayToken?.currency || 'Token'}</span>

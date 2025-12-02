@@ -492,7 +492,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     lastChartTypeRef.current = chartType;
 
-    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 380 : 550);
+    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 360 : 500);
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: containerHeight,
@@ -769,7 +769,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     const handleResize = () => {
       if (chartContainerRef.current && chart) {
         const container = chartContainerRef.current;
-        const containerHeight = container.clientHeight || (isMobile ? 380 : 550);
+        const containerHeight = container.clientHeight || (isMobile ? 380 : 420);
 
         chart.applyOptions({
           width: container.clientWidth,
@@ -813,7 +813,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       const container = chartContainerRef.current;
       if (!container) return;
 
-      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 380 : 550;
+      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 360 : 500;
       const rect = container.getBoundingClientRect();
       const newWidth = rect.width || container.clientWidth;
 

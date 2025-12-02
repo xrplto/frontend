@@ -122,71 +122,80 @@ const Overview = memo(
     if (!user) user = token.name;
 
     return (
-      <div className={cn(
-        "flex flex-col md:flex-row items-start",
-        isMobile ? "gap-1" : "gap-2"
-      )}>
-        <section className="w-full md:flex-[0_0_68%] md:max-w-[68%]" aria-label="Price Chart">
-          <h2 className="sr-only">Price Chart</h2>
-          <PriceChart token={token} />
+      <div className="flex flex-col gap-2">
+        {/* Main row: Chart+TradingHistory | OrderBook | Swap sidebar */}
+        <div className={cn(
+          "flex flex-col md:flex-row items-stretch",
+          isMobile ? "gap-1" : "gap-2"
+        )}>
+          {/* Left: Chart + TradingHistory stacked - flex grow */}
+          <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
+            <section aria-label="Price Chart" style={{ height: '500px' }}>
+              <h2 className="sr-only">Price Chart</h2>
+              <PriceChart token={token} />
+            </section>
+            {!isMobile && !isTablet && (
+              <section aria-label="Trading History">
+                <h2 className="sr-only">Trading History</h2>
+                <TradingHistory
+                  tokenId={token.md5}
+                  amm={token.AMM}
+                  token={token}
+                  pairs={pairs}
+                  onTransactionClick={onTransactionClick}
+                  isDark={isDark}
+                />
+              </section>
+            )}
+          </div>
+
+          {/* Middle: OrderBook - fixed width, stretch height */}
           {!isMobile && !isTablet && (
-            <div className="mt-1">
-              <h2 className="sr-only">Trading History</h2>
-              <TradingHistory
-                tokenId={token.md5}
-                amm={token.AMM}
-                token={token}
-                pairs={pairs}
-                onTransactionClick={onTransactionClick}
-                isDark={isDark}
-              />
-            </div>
-          )}
-        </section>
-        <aside className={cn(
-          "w-full md:flex-[0_0_32%] md:max-w-[32%]",
-          orderBookOpen ? "md:pr-1" : "md:pr-2"
-        )} aria-label="Trading Tools">
-          <h2 className="sr-only">Swap</h2>
-          <Swap
-            token={token}
-            onOrderBookToggle={onOrderBookToggle}
-            orderBookOpen={orderBookOpen}
-            onOrderBookData={onOrderBookData}
-          />
-          {!isMobile && !isTablet && (
-            <div className="mt-2">
+            <aside className="w-[260px] flex-shrink-0" aria-label="Order Book">
               <h2 className="sr-only">Order Book</h2>
               <OrderBook token={token} />
-            </div>
+            </aside>
           )}
-          <h2 className="sr-only">Price Statistics</h2>
-          <PriceStatistics token={token} isDark={isDark} />
-          <Description
-            token={token}
-            showEditor={showEditor}
-            setShowEditor={setShowEditor}
-            description={description}
-            onApplyDescription={onApplyDescription}
-            isDark={isDark}
-            mdEditor={
-              showEditor ? (
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className={cn(
-                    "w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary",
-                    isDark
-                      ? "border-white/20 bg-white/5 text-white placeholder-white/40"
-                      : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
-                  )}
-                  placeholder="Enter description..."
-                />
-              ) : null
-            }
-          />
-          <TrendingTokens />
-        </aside>
+
+          {/* Right sidebar: Swap, Stats, Trending - fixed width */}
+          <aside className="w-full md:w-[340px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
+            <h2 className="sr-only">Swap</h2>
+            <Swap
+              token={token}
+              onOrderBookToggle={onOrderBookToggle}
+              orderBookOpen={orderBookOpen}
+              onOrderBookData={onOrderBookData}
+            />
+            <h2 className="sr-only">Price Statistics</h2>
+            <PriceStatistics token={token} isDark={isDark} />
+            <TrendingTokens />
+          </aside>
+        </div>
+
+        {/* Description below */}
+        <Description
+          token={token}
+          showEditor={showEditor}
+          setShowEditor={setShowEditor}
+          description={description}
+          onApplyDescription={onApplyDescription}
+          isDark={isDark}
+          mdEditor={
+            showEditor ? (
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className={cn(
+                  "w-full h-[300px] p-2 rounded-xl border-[1.5px] font-mono text-xs resize-none focus:outline-none focus:border-primary",
+                  isDark
+                    ? "border-white/20 bg-white/5 text-white placeholder-white/40"
+                    : "border-gray-300 bg-white text-gray-900 placeholder-gray-400"
+                )}
+                placeholder="Enter description..."
+              />
+            ) : null
+          }
+        />
       </div>
     );
   }
