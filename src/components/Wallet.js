@@ -92,13 +92,46 @@ const alpha = (color, opacity) => {
   return color;
 };
 
-// Dialog component
+// Dialog component - Enhanced with smooth animations
 const Dialog = ({ open, onClose, children, maxWidth, fullWidth, sx, ...props }) => {
-  if (!open) return null;
+  const [isVisible, setIsVisible] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setShouldRender(true);
+      // Small delay to trigger CSS transition
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setIsVisible(true);
+        });
+      });
+    } else {
+      setIsVisible(false);
+      const timer = setTimeout(() => setShouldRender(false), 200);
+      return () => clearTimeout(timer);
+    }
+  }, [open]);
+
+  if (!shouldRender) return null;
+
   return (
-    <div className="fixed inset-0 z-[9999] flex items-start justify-end" onClick={onClose}>
+    <div
+      className={cn(
+        "fixed inset-0 z-[9999] flex items-start justify-end transition-opacity duration-200",
+        isVisible ? "opacity-100" : "opacity-0"
+      )}
+      onClick={onClose}
+    >
+      {/* Invisible click-away area (no blur, no background) */}
+      <div className="absolute inset-0" />
       <div
-        className="mt-[62px] mr-3 w-[340px] max-w-[340px] rounded-2xl bg-transparent animate-in fade-in slide-in-from-top-2 duration-200"
+        className={cn(
+          "relative mt-[62px] mr-3 w-[340px] max-w-[340px] transition-all duration-200 ease-out",
+          isVisible
+            ? "translate-y-0 opacity-100 scale-100"
+            : "-translate-y-2 opacity-0 scale-[0.98]"
+        )}
         onClick={e => e.stopPropagation()}
         style={sx?.['& .MuiDialog-paper'] || {}}
       >
@@ -112,13 +145,13 @@ const DialogContent = ({ children, sx }) => (
   <div style={{ padding: sx?.p === 0 ? 0 : 16 }}>{children}</div>
 );
 
-// StyledPopoverPaper component
+// StyledPopoverPaper component - Enhanced with subtle gradient border
 const StyledPopoverPaper = ({ children, isDark }) => (
   <div className={cn(
-    "overflow-hidden rounded-xl border shadow-2xl",
+    "overflow-hidden rounded-2xl shadow-2xl",
     isDark
-      ? "border-white/[0.08] bg-[#0d0d0d] shadow-black/70"
-      : "border-gray-200 bg-white shadow-black/[0.08]"
+      ? "bg-[#0a0a0a] shadow-black/80 ring-1 ring-white/[0.08]"
+      : "bg-white shadow-gray-200/50 ring-1 ring-gray-200/80"
   )}>
     {children}
   </div>
@@ -427,559 +460,451 @@ const WalletContent = ({
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showQR, setShowQR] = useState(false);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
+  const [copiedAddress, setCopiedAddress] = useState(false);
+
+  // Copy address handler with feedback
+  const handleCopyAddress = () => {
+    navigator.clipboard.writeText(accountLogin);
+    setCopiedAddress(true);
+    openSnackbar('Address copied', 'success');
+    setTimeout(() => setCopiedAddress(false), 2000);
+  };
 
   // Show backup section instead of wallet when downloading
   if (showBackupPassword) {
     return (
-      <Box sx={{ p: 2 }}>
-        <Stack spacing={1.5}>
+      <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>
+        <div className="space-y-4">
           {/* Header */}
-          <Box sx={{ textAlign: 'center', mb: 1 }}>
-            <Typography sx={{ fontSize: '16px', fontWeight: 500, display: 'block' }}>
-              Download Backup
-            </Typography>
-            <Typography sx={{ fontSize: '12px', opacity: 0.6, display: 'block', mt: 0.5 }}>
-              All {profiles.length} wallets encrypted
-            </Typography>
-          </Box>
+          <div className="text-center pb-2">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-amber-500/10 mb-3">
+              <Download size={22} className="text-amber-500" />
+            </div>
+            <h3 className="text-base font-medium">Download Backup</h3>
+            <p className={cn("text-xs mt-1", isDark ? "text-white/50" : "text-gray-500")}>
+              All {profiles.length} wallets • Encrypted
+            </p>
+          </div>
 
           {/* Warning */}
-          <Alert severity="warning" icon={false} sx={{ py: 1 }}>
-            <Box sx={{ display: 'block' }}>
-              <Typography sx={{ fontSize: '11px', fontWeight: 500, display: 'block', mb: 0.5, color: '#b45309' }}>
-                Keep this file safe
-              </Typography>
-              <Typography sx={{ fontSize: '11px', display: 'block', lineHeight: 1.4 }}>
-                Contains all wallet seeds. Never share it.
-              </Typography>
-            </Box>
-          </Alert>
+          <div className={cn(
+            "rounded-xl p-3.5 border",
+            isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200"
+          )}>
+            <div className="flex gap-2.5">
+              <AlertTriangle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Keep this file safe</p>
+                <p className={cn("text-[11px] mt-0.5 leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
+                  Contains all wallet seeds. Never share it with anyone.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Acknowledgment */}
-          <Box
+          <button
             onClick={() => setBackupAgreed(!backupAgreed)}
-            sx={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: 1,
-              p: 1.2,
-              borderRadius: '8px',
-              border: `1.5px solid ${backupAgreed ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
-              cursor: 'pointer',
-              backgroundColor: backupAgreed ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
-              '&:hover': { borderColor: theme.palette.primary.main }
-            }}
+            className={cn(
+              "w-full flex items-start gap-3 p-3.5 rounded-xl border-[1.5px] text-left transition-all",
+              backupAgreed
+                ? "border-primary bg-primary/5"
+                : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300"
+            )}
           >
-            <Box sx={{
-              width: 16,
-              height: 16,
-              borderRadius: '3px',
-              border: `2px solid ${backupAgreed ? theme.palette.primary.main : alpha(theme.palette.divider, 0.4)}`,
-              background: backupAgreed ? theme.palette.primary.main : 'transparent',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-              mt: 0.2
-            }}>
-              {backupAgreed && <Check size={12} color="white" />}
-            </Box>
-            <Typography sx={{ fontSize: '11px', lineHeight: 1.4 }}>
+            <div className={cn(
+              "w-[18px] h-[18px] rounded flex items-center justify-center flex-shrink-0 mt-0.5 transition-all",
+              backupAgreed
+                ? "bg-primary"
+                : isDark ? "border-2 border-white/20" : "border-2 border-gray-300"
+            )}>
+              {backupAgreed && <Check size={12} className="text-white" />}
+            </div>
+            <span className={cn("text-xs leading-relaxed", isDark ? "text-white/80" : "text-gray-700")}>
               I understand and will keep this file safe
-            </Typography>
-          </Box>
+            </span>
+          </button>
 
           {/* Password Input */}
-          <TextField
-            type={showBackupPasswordVisible ? 'text' : 'password'}
-            value={backupPassword}
-            onChange={(e) => setBackupPassword(e.target.value)}
-            placeholder="Enter password"
-            fullWidth
-            disabled={!backupAgreed}
-            isDark={isDark}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && backupPassword && backupAgreed) {
-                processBackupDownload();
-              }
-            }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => setShowBackupPasswordVisible(!showBackupPasswordVisible)}
-                    edge="end"
-                  >
-                    {showBackupPasswordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
-                  </IconButton>
-                </InputAdornment>
-              )
-            }}
-          />
+          <div className="relative">
+            <input
+              type={showBackupPasswordVisible ? 'text' : 'password'}
+              value={backupPassword}
+              onChange={(e) => setBackupPassword(e.target.value)}
+              placeholder="Enter your password"
+              disabled={!backupAgreed}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && backupPassword && backupAgreed) {
+                  processBackupDownload();
+                }
+              }}
+              className={cn(
+                "w-full px-4 py-3 pr-12 rounded-xl border-[1.5px] text-sm outline-none transition-all",
+                isDark
+                  ? "bg-white/[0.03] border-white/10 text-white placeholder:text-white/30 focus:border-primary/50 disabled:opacity-40"
+                  : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary disabled:opacity-40"
+              )}
+            />
+            <button
+              type="button"
+              onClick={() => setShowBackupPasswordVisible(!showBackupPasswordVisible)}
+              className={cn(
+                "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
+                isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"
+              )}
+            >
+              {showBackupPasswordVisible ? <EyeOff size={16} /> : <Eye size={16} />}
+            </button>
+          </div>
 
           {/* Actions */}
-          <Stack direction="row" spacing={1.5} sx={{ mt: 0.5 }}>
-            <Button
-              variant="contained"
-              size="small"
-              onClick={processBackupDownload}
-              disabled={!backupPassword || !backupAgreed}
-              sx={{ fontSize: '13px', py: 0.6, px: 2, flex: 1 }}
-            >
-              Download
-            </Button>
-            <Button
-              variant="outlined"
-              size="small"
+          <div className="flex gap-3 pt-1">
+            <button
               onClick={() => {
                 setShowBackupPassword(false);
                 setBackupPassword('');
                 setShowBackupPasswordVisible(false);
                 setBackupAgreed(false);
               }}
-              sx={{ fontSize: '13px', py: 0.6, px: 2 }}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl text-sm font-medium border-[1.5px] transition-all",
+                isDark
+                  ? "border-white/10 text-white/70 hover:bg-white/5"
+                  : "border-gray-200 text-gray-600 hover:bg-gray-50"
+              )}
             >
               Cancel
-            </Button>
-          </Stack>
-        </Stack>
-      </Box>
+            </button>
+            <button
+              onClick={processBackupDownload}
+              disabled={!backupPassword || !backupAgreed}
+              className={cn(
+                "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+                backupPassword && backupAgreed
+                  ? "bg-primary text-white hover:bg-primary/90"
+                  : isDark
+                    ? "bg-white/5 text-white/30 cursor-not-allowed"
+                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+              )}
+            >
+              Download
+            </button>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <>
-      {/* Header */}
-      <Box sx={{
-        p: 1.2,
-        borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`
-      }}>
-        <Stack direction="row" alignItems="center" justifyContent="space-between">
-          <Stack direction="row" spacing={1} alignItems="center">
-            <Box sx={{
-              width: 4,
-              height: 4,
-              borderRadius: '50%',
-              background: theme.palette.success.main
-            }} />
-            <Typography sx={{
-              fontFamily: 'monospace',
-              fontSize: '11px',
-              fontWeight: 400,
-              opacity: 0.7
-            }}>
-              {truncateAccount(accountLogin, 6)}
-            </Typography>
-          </Stack>
-          <Stack direction="row" spacing={1} alignItems="center">
-            {needsBackup && (
-              <Typography
-                onClick={onBackupSeed}
-                sx={{
-                  fontSize: '11px',
-                  color: '#f59e0b',
-                  cursor: 'pointer',
-                  '&:hover': { color: '#fbbf24' }
-                }}
-              >
-                backup
-              </Typography>
-            )}
-            <IconButton
-              size="small"
-              onClick={onClose}
-              sx={{
-                p: 0.3,
-                opacity: 0.5,
-                '&:hover': { opacity: 0.8 }
-              }}
+    <div className={isDark ? "text-white" : "text-gray-900"}>
+      {/* Header with gradient accent */}
+      <div className={cn(
+        "px-4 py-3 flex items-center justify-between",
+        isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
+      )}>
+        <div className="flex items-center gap-2.5">
+          <div className="relative">
+            <div className="w-2 h-2 rounded-full bg-emerald-400" />
+            <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
+          </div>
+          <span className={cn("font-mono text-xs", isDark ? "text-white/60" : "text-gray-500")}>
+            {truncateAccount(accountLogin, 6)}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          {needsBackup && (
+            <button
+              onClick={onBackupSeed}
+              className="px-2 py-1 rounded-md text-[10px] font-medium text-amber-500 bg-amber-500/10 hover:bg-amber-500/20 transition-colors"
             >
-              <Box component="svg" sx={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </Box>
-            </IconButton>
-          </Stack>
-        </Stack>
-      </Box>
-
-      {/* Balance */}
-      <Box sx={{
-        py: 2,
-        px: 2,
-        textAlign: 'center'
-      }}>
-        <Typography sx={{
-          fontSize: '28px',
-          fontWeight: 400,
-          lineHeight: 1,
-          fontFamily: 'monospace'
-        }}>
-          {accountTotalXrp || accountBalance?.curr1?.value || '0'}
-        </Typography>
-        <Typography sx={{
-          fontSize: '11px',
-          opacity: 0.5,
-          fontWeight: 400,
-          mt: 0.5
-        }}>
-          XRP
-        </Typography>
-
-        {/* Actions */}
-        <Stack direction="row" spacing={1} justifyContent="center" sx={{ mt: 1.5 }}>
-          <Button
-            size="small"
-            onClick={() => {
-              navigator.clipboard.writeText(accountLogin);
-              openSnackbar('Address copied', 'success');
-            }}
-            sx={{
-              fontSize: '11px',
-              fontWeight: 400,
-              textTransform: 'none',
-              color: 'text.secondary',
-              minWidth: 'auto',
-              px: 1.5,
-              py: 0.5,
-              '&:hover': { backgroundColor: alpha(theme.palette.text.primary, 0.04) }
-            }}
-          >
-            Copy
-          </Button>
-          <Button
-            size="small"
-            onClick={() => setShowQR(!showQR)}
-            sx={{
-              fontSize: '11px',
-              fontWeight: 400,
-              textTransform: 'none',
-              color: 'text.secondary',
-              minWidth: 'auto',
-              px: 1.5,
-              py: 0.5,
-              '&:hover': { backgroundColor: alpha(theme.palette.text.primary, 0.04) }
-            }}
-          >
-            QR
-          </Button>
-          <Button
-            size="small"
-            onClick={onBackupSeed}
-            sx={{
-              fontSize: '11px',
-              fontWeight: 400,
-              textTransform: 'none',
-              color: 'text.secondary',
-              minWidth: 'auto',
-              px: 1.5,
-              py: 0.5,
-              '&:hover': { backgroundColor: alpha(theme.palette.text.primary, 0.04) }
-            }}
-          >
-            Backup
-          </Button>
-        </Stack>
-
-        {showQR && (
-          <Box sx={{
-            mt: 1.5,
-            p: 1,
-            borderRadius: '8px',
-            background: 'white',
-            display: 'inline-block'
-          }}>
-            <Box
-              component="img"
-              src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${accountLogin}`}
-              alt="QR Code"
-              sx={{ display: 'block', width: 100, height: 100 }}
-            />
-          </Box>
-        )}
-      </Box>
-
-      {/* Stats */}
-      <Box sx={{ px: 2, pb: 1.5 }}>
-        <Stack direction="row" spacing={1} justifyContent="center">
-          <Typography sx={{ fontSize: '11px', opacity: 0.5 }}>
-            {accountBalance?.curr1?.value || '0'} available
-          </Typography>
-          <Typography sx={{ fontSize: '11px', opacity: 0.3 }}>•</Typography>
-          <Typography sx={{ fontSize: '11px', opacity: 0.5, color: theme.palette.warning.main }}>
-            {accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved
-          </Typography>
-        </Stack>
-      </Box>
-
-      {/* Accounts */}
-      <Box sx={{
-        borderTop: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-      }}>
-          <Button
-            fullWidth
-            onClick={() => setShowAllAccounts(!showAllAccounts)}
-            sx={{
-              py: 1,
-              px: 2,
-              justifyContent: 'space-between',
-              textTransform: 'none',
-              fontSize: '12px',
-              fontWeight: 500,
-              color: theme.palette.text.primary,
-              borderRadius: 0,
-              '&:hover': {
-                backgroundColor: alpha(theme.palette.text.primary, 0.04)
-              }
-            }}
-          >
-            <span>Accounts ({profiles.length})</span>
-            <Box
-              component="svg"
-              sx={{
-                width: 12,
-                height: 12,
-                transform: showAllAccounts ? 'rotate(180deg)' : 'rotate(0deg)',
-                opacity: 0.4,
-                transition: 'transform 0.2s'
-              }}
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.5"
-            >
-              <polyline points="6 9 12 15 18 9" />
-            </Box>
-          </Button>
-
-          {showAllAccounts && (
-            <Box sx={{
-              borderTop: `1px solid ${alpha(theme.palette.divider, 0.06)}`
-            }}>
-              {/* Compact Pagination */}
-              {(() => {
-                const totalPages = Math.ceil(profiles.length / walletsPerPage);
-                return totalPages > 1 && (
-                  <Box sx={{
-                    px: 2,
-                    py: 1,
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                  }}>
-                    <IconButton
-                      size="small"
-                      disabled={walletPage === 0}
-                      onClick={() => setWalletPage(Math.max(0, walletPage - 1))}
-                      sx={{
-                        p: 0.4,
-                        minWidth: 24,
-                        height: 24,
-                        opacity: walletPage === 0 ? 0.2 : 0.5,
-                        '&:hover': { opacity: walletPage === 0 ? 0.2 : 0.8 }
-                      }}
-                    >
-                      <Box component="svg" sx={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <polyline points="15 18 9 12 15 6" />
-                      </Box>
-                    </IconButton>
-
-                    <Typography sx={{
-                      fontSize: '11px',
-                      opacity: 0.45,
-                      fontWeight: 400,
-                      letterSpacing: '0.5px',
-                      minWidth: 60,
-                      textAlign: 'center'
-                    }}>
-                      {walletPage + 1} / {totalPages}
-                    </Typography>
-
-                    <IconButton
-                      size="small"
-                      disabled={walletPage >= totalPages - 1}
-                      onClick={() => setWalletPage(Math.min(totalPages - 1, walletPage + 1))}
-                      sx={{
-                        p: 0.4,
-                        minWidth: 24,
-                        height: 24,
-                        opacity: walletPage >= totalPages - 1 ? 0.2 : 0.5,
-                        '&:hover': { opacity: walletPage >= totalPages - 1 ? 0.2 : 0.8 }
-                      }}
-                    >
-                      <Box component="svg" sx={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <polyline points="9 18 15 12 9 6" />
-                      </Box>
-                    </IconButton>
-                  </Box>
-                );
-              })()}
-
-              {/* Wallets list */}
-              <Box sx={{
-                maxHeight: '280px',
-                overflowY: 'auto',
-                py: 0.5,
-                '&::-webkit-scrollbar': {
-                  width: '3px',
-                },
-                '&::-webkit-scrollbar-track': {
-                  background: 'transparent',
-                },
-                '&::-webkit-scrollbar-thumb': {
-                  background: alpha(theme.palette.text.primary, 0.08),
-                  borderRadius: '3px',
-                }
-              }}>
-                {(() => {
-                  // Group accounts by activation status
-                  const activeAccounts = [];
-                  const inactiveAccounts = [];
-
-                  profiles.forEach(profile => {
-                    if (accountsActivation[profile.account] === false) {
-                      inactiveAccounts.push(profile);
-                    } else {
-                      activeAccounts.push(profile);
-                    }
-                  });
-
-                  // Sort each group by address
-                  const sortByAddress = (a, b) => a.account.localeCompare(b.account);
-                  activeAccounts.sort(sortByAddress);
-                  inactiveAccounts.sort(sortByAddress);
-
-                  // Combine: current account first, then active, then inactive
-                  const currentAccount = profiles.find(p => p.account === accountLogin);
-                  const otherActive = activeAccounts.filter(p => p.account !== accountLogin);
-                  const sorted = [
-                    ...(currentAccount ? [currentAccount] : []),
-                    ...otherActive,
-                    ...inactiveAccounts
-                  ];
-
-                  // Paginate
-                  const startIndex = walletPage * walletsPerPage;
-                  const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
-
-                  return paginatedProfiles.map((profile, index) => {
-                const account = profile.account;
-                const isCurrent = account === accountLogin;
-                const isInactive = accountsActivation[account] === false;
-
-                return (
-                  <Box
-                    key={account}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!isCurrent) {
-                        onAccountSwitch(account);
-                      }
-                    }}
-                    sx={{
-                      py: 0.9,
-                      px: 2,
-                      cursor: isCurrent ? 'default' : 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      background: isCurrent ? alpha(theme.palette.primary.main, 0.08) : 'transparent',
-                      borderLeft: isCurrent ? `2px solid ${theme.palette.primary.main}` : '2px solid transparent',
-                      transition: 'background 0.15s',
-                      '&:hover': !isCurrent ? {
-                        background: alpha(theme.palette.text.primary, 0.05)
-                      } : {}
-                    }}
-                  >
-                    <Stack direction="row" spacing={1} alignItems="center" sx={{ flex: 1, minWidth: 0 }}>
-                      <Box sx={{
-                        width: 6,
-                        height: 6,
-                        borderRadius: '50%',
-                        flexShrink: 0,
-                        background: isInactive ? alpha(theme.palette.warning.main, 0.5) : '#22c55e'
-                      }} />
-                      <Typography sx={{
-                        fontFamily: 'monospace',
-                        fontSize: '12px',
-                        fontWeight: 400,
-                        color: isCurrent ? theme.palette.text.primary : theme.palette.text.secondary
-                      }}>
-                        {truncateAccount(account, 7)}
-                      </Typography>
-                      {isCurrent && (
-                        <Typography sx={{
-                          fontSize: '10px',
-                          fontWeight: 500,
-                          color: '#22c55e'
-                        }}>
-                          active
-                        </Typography>
-                      )}
-                    </Stack>
-                  </Box>
-                );
-                  });
-                })()}
-              </Box>
-            </Box>
+              Backup
+            </button>
           )}
-      </Box>
-
-
-      {/* Actions */}
-      <Box sx={{
-        p: 1,
-        borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        display: 'flex',
-        gap: 0.5
-      }}>
-        {onCreateNewAccount && profiles.length < 25 && (
-          <Button
-            onClick={onCreateNewAccount}
-            size="small"
-            sx={{
-              flex: 1,
-              py: 0.5,
-              borderRadius: '8px',
-              color: '#4285f4',
-              fontSize: '11px',
-              textTransform: 'none',
-              fontWeight: 400,
-              '&:hover': {
-                background: alpha('#4285f4', 0.04)
-              }
-            }}
+          <button
+            onClick={onClose}
+            className={cn(
+              "p-1.5 rounded-lg transition-colors",
+              isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+            )}
           >
-            + Account
-          </Button>
-        )}
+            <XIcon size={14} />
+          </button>
+        </div>
+      </div>
 
-        <Button
+      {/* Balance Section - Enhanced */}
+      <div className="px-5 py-6 text-center">
+        <div className="mb-1">
+          <span className="font-mono text-3xl font-light tracking-tight">
+            {accountTotalXrp || accountBalance?.curr1?.value || '0'}
+          </span>
+        </div>
+        <span className={cn("text-xs font-medium tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
+          XRP
+        </span>
+
+        {/* Quick Actions - Redesigned */}
+        <div className="flex items-center justify-center gap-2 mt-5">
+          <button
+            onClick={handleCopyAddress}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
+              copiedAddress
+                ? "bg-emerald-500/10 text-emerald-500"
+                : isDark
+                  ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+            )}
+          >
+            {copiedAddress ? <Check size={13} /> : <Copy size={13} />}
+            {copiedAddress ? 'Copied' : 'Copy'}
+          </button>
+          <button
+            onClick={() => setShowQR(!showQR)}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
+              showQR
+                ? "bg-primary/10 text-primary"
+                : isDark
+                  ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+            )}
+          >
+            <QrCode size={13} />
+            QR
+          </button>
+          <button
+            onClick={onBackupSeed}
+            className={cn(
+              "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
+              isDark
+                ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+            )}
+          >
+            <Shield size={13} />
+            Backup
+          </button>
+        </div>
+
+        {/* QR Code - Enhanced */}
+        {showQR && (
+          <div className="mt-5 inline-block">
+            <div className="p-3 bg-white rounded-2xl shadow-lg">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`}
+                alt="Wallet QR Code"
+                className="w-[120px] h-[120px] rounded-lg"
+              />
+            </div>
+            <p className={cn("text-[10px] mt-2", isDark ? "text-white/40" : "text-gray-400")}>
+              Scan to receive XRP
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Balance Stats - Refined */}
+      <div className={cn(
+        "px-5 pb-4 flex items-center justify-center gap-4 text-[11px]",
+        isDark ? "text-white/50" : "text-gray-500"
+      )}>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+          <span>{accountBalance?.curr1?.value || '0'} available</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+          <span>{accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved</span>
+        </div>
+      </div>
+
+      {/* Accounts Section - Enhanced */}
+      <div className={cn("border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+        <button
+          onClick={() => setShowAllAccounts(!showAllAccounts)}
+          className={cn(
+            "w-full px-4 py-3 flex items-center justify-between transition-colors",
+            isDark ? "hover:bg-white/[0.02]" : "hover:bg-gray-50"
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <span className={cn("text-xs font-medium", isDark ? "text-white/80" : "text-gray-700")}>
+              Accounts
+            </span>
+            <span className={cn(
+              "px-1.5 py-0.5 rounded text-[10px] font-medium",
+              isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500"
+            )}>
+              {profiles.length}
+            </span>
+          </div>
+          <ChevronDown
+            size={14}
+            className={cn(
+              "transition-transform duration-200",
+              showAllAccounts ? "rotate-180" : "",
+              isDark ? "text-white/40" : "text-gray-400"
+            )}
+          />
+        </button>
+
+        {showAllAccounts && (
+          <div className={cn("border-t", isDark ? "border-white/[0.04]" : "border-gray-50")}>
+            {/* Pagination - Compact */}
+            {(() => {
+              const totalPages = Math.ceil(profiles.length / walletsPerPage);
+              return totalPages > 1 && (
+                <div className={cn(
+                  "px-4 py-2 flex items-center justify-center gap-3 border-b",
+                  isDark ? "border-white/[0.04]" : "border-gray-50"
+                )}>
+                  <button
+                    disabled={walletPage === 0}
+                    onClick={() => setWalletPage(Math.max(0, walletPage - 1))}
+                    className={cn(
+                      "p-1 rounded transition-colors",
+                      walletPage === 0
+                        ? "opacity-30 cursor-not-allowed"
+                        : isDark ? "hover:bg-white/10 text-white/60" : "hover:bg-gray-100 text-gray-500"
+                    )}
+                  >
+                    <ChevronDown size={12} className="rotate-90" />
+                  </button>
+                  <span className={cn("text-[10px] font-medium min-w-[50px] text-center", isDark ? "text-white/50" : "text-gray-400")}>
+                    {walletPage + 1} / {totalPages}
+                  </span>
+                  <button
+                    disabled={walletPage >= totalPages - 1}
+                    onClick={() => setWalletPage(Math.min(totalPages - 1, walletPage + 1))}
+                    className={cn(
+                      "p-1 rounded transition-colors",
+                      walletPage >= totalPages - 1
+                        ? "opacity-30 cursor-not-allowed"
+                        : isDark ? "hover:bg-white/10 text-white/60" : "hover:bg-gray-100 text-gray-500"
+                    )}
+                  >
+                    <ChevronDown size={12} className="-rotate-90" />
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Wallets List - Enhanced */}
+            <div className="max-h-[240px] overflow-y-auto py-1">
+              {(() => {
+                const activeAccounts = [];
+                const inactiveAccounts = [];
+
+                profiles.forEach(profile => {
+                  if (accountsActivation[profile.account] === false) {
+                    inactiveAccounts.push(profile);
+                  } else {
+                    activeAccounts.push(profile);
+                  }
+                });
+
+                const sortByAddress = (a, b) => a.account.localeCompare(b.account);
+                activeAccounts.sort(sortByAddress);
+                inactiveAccounts.sort(sortByAddress);
+
+                const currentAccount = profiles.find(p => p.account === accountLogin);
+                const otherActive = activeAccounts.filter(p => p.account !== accountLogin);
+                const sorted = [
+                  ...(currentAccount ? [currentAccount] : []),
+                  ...otherActive,
+                  ...inactiveAccounts
+                ];
+
+                const startIndex = walletPage * walletsPerPage;
+                const paginatedProfiles = sorted.slice(startIndex, startIndex + walletsPerPage);
+
+                return paginatedProfiles.map((profile) => {
+                  const account = profile.account;
+                  const isCurrent = account === accountLogin;
+                  const isInactive = accountsActivation[account] === false;
+
+                  return (
+                    <button
+                      key={account}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!isCurrent) {
+                          onAccountSwitch(account);
+                        }
+                      }}
+                      className={cn(
+                        "w-full px-4 py-2.5 flex items-center gap-3 transition-all",
+                        isCurrent
+                          ? isDark
+                            ? "bg-primary/10 border-l-2 border-primary"
+                            : "bg-primary/5 border-l-2 border-primary"
+                          : isDark
+                            ? "hover:bg-white/[0.03] border-l-2 border-transparent"
+                            : "hover:bg-gray-50 border-l-2 border-transparent",
+                        !isCurrent && "cursor-pointer"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full flex-shrink-0",
+                        isInactive ? "bg-amber-400/60" : "bg-emerald-400"
+                      )} />
+                      <span className={cn(
+                        "font-mono text-xs",
+                        isCurrent
+                          ? isDark ? "text-white" : "text-gray-900"
+                          : isDark ? "text-white/60" : "text-gray-600"
+                      )}>
+                        {truncateAccount(account, 8)}
+                      </span>
+                      {isCurrent && (
+                        <span className="ml-auto px-1.5 py-0.5 rounded text-[9px] font-semibold tracking-wide uppercase bg-emerald-500/20 text-emerald-500">
+                          Active
+                        </span>
+                      )}
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Footer Actions - Enhanced */}
+      <div className={cn(
+        "px-3 py-3 flex items-center gap-2 border-t",
+        isDark ? "border-white/[0.06]" : "border-gray-100"
+      )}>
+        {onCreateNewAccount && profiles.length < 25 && (
+          <button
+            onClick={onCreateNewAccount}
+            className={cn(
+              "flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-medium transition-all",
+              isDark
+                ? "text-primary hover:bg-primary/10"
+                : "text-primary hover:bg-primary/5"
+            )}
+          >
+            <Plus size={14} />
+            Add Account
+          </button>
+        )}
+        <button
           onClick={onLogout}
-          size="small"
-          sx={{
-            flex: profiles.length >= 25 ? 1 : 'none',
-            px: profiles.length >= 25 ? 0 : 1.5,
-            py: 0.5,
-            borderRadius: '8px',
-            color: 'text.secondary',
-            fontSize: '11px',
-            textTransform: 'none',
-            fontWeight: 400,
-            '&:hover': {
-              color: 'error.main',
-              background: alpha(theme.palette.error.main, 0.04)
-            }
-          }}
+          className={cn(
+            "py-2.5 rounded-xl text-xs font-medium transition-all",
+            profiles.length >= 25 ? "flex-1" : "px-4",
+            isDark
+              ? "text-white/50 hover:text-red-400 hover:bg-red-500/10"
+              : "text-gray-500 hover:text-red-500 hover:bg-red-50"
+          )}
         >
           Logout
-        </Button>
-      </Box>
-    </>
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -2887,32 +2812,44 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             : 'Connect wallet'
         }
         className={cn(
-          'flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200',
+          'group flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200',
           accountProfile
-            ? 'h-8 min-w-[120px] px-4'
-            : 'h-8 px-5',
+            ? 'h-9 min-w-[130px] px-4'
+            : 'h-9 px-5',
           isDark
             ? accountProfile
-              ? 'bg-white/[0.06] text-white hover:bg-white/[0.1]'
-              : 'border border-white/[0.08] text-white hover:bg-white/[0.06]'
+              ? 'bg-white/[0.05] text-white hover:bg-white/[0.08] ring-1 ring-white/[0.06]'
+              : 'bg-primary/10 text-primary hover:bg-primary/15 ring-1 ring-primary/20'
             : accountProfile
-              ? 'bg-gray-100 text-gray-900 hover:bg-gray-200/80'
-              : 'border border-gray-200 text-gray-700 hover:bg-gray-100/80'
+              ? 'bg-gray-50 text-gray-900 hover:bg-gray-100 ring-1 ring-gray-200'
+              : 'bg-primary/5 text-primary hover:bg-primary/10 ring-1 ring-primary/20'
         )}
         title={accountProfile ? 'Account Details' : 'Connect Wallet'}
       >
         {accountProfile ? (
           <>
-            <div className={cn(
-              'h-2 w-2 rounded-full',
-              accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
-            )} />
-            <span className="font-mono text-[13px]">
+            <div className="relative">
+              <div className={cn(
+                'h-2 w-2 rounded-full',
+                accountsActivation[accountLogin] === false ? 'bg-red-500' : 'bg-emerald-400'
+              )} />
+              {accountsActivation[accountLogin] !== false && (
+                <div className="absolute inset-0 h-2 w-2 rounded-full bg-emerald-400 animate-ping opacity-50" />
+              )}
+            </div>
+            <span className="font-mono text-[13px] tracking-tight">
               {truncateAccount(accountLogin, 6)}
             </span>
+            <ChevronDown size={12} className={cn(
+              "transition-transform duration-200",
+              open ? "rotate-180" : "",
+              isDark ? "text-white/40" : "text-gray-400"
+            )} />
           </>
         ) : (
-          <span className="text-[13px]">Connect</span>
+          <>
+            <span className="text-[13px] font-medium">Connect</span>
+          </>
         )}
       </button>
 
@@ -3008,94 +2945,119 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     walletsPerPage={walletsPerPage}
                   />
                 ) : showNewAccountFlow ? (
-                  <Box sx={{ p: 3 }}>
-                    <Stack spacing={2.5}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 400 }}>
-                          Create New Account
-                        </Typography>
-                        <Button size="small" onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}>
-                          ×
-                        </Button>
-                      </Box>
-
-                      <Typography variant="body2" sx={{ fontSize: '14px', opacity: 0.7, color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' }}>
-                        Creating account #{profiles.length + 1}
-                      </Typography>
-
-                      <Alert severity="info" sx={{ py: 1 }}>
-                        <Typography variant="body2" sx={{ fontSize: '13px' }}>
-                          Enter your password to create a new account. The new account will use the same password.
-                        </Typography>
-                      </Alert>
-
-                      <TextField
-                        fullWidth
-                        type={showNewAccountPassword ? 'text' : 'password'}
-                        label="Password"
-                        placeholder="Enter your password"
-                        value={newAccountPassword}
-                        onChange={(e) => setNewAccountPassword(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && newAccountPassword && handleCreateNewAccount()}
-                        autoFocus
-                        autoComplete="off"
-                        isDark={isDark}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton
-                                size="small"
-                                onClick={() => setShowNewAccountPassword(!showNewAccountPassword)}
-                                edge="end"
-                              >
-                                {showNewAccountPassword ? <VisibilityOff /> : <Visibility />}
-                              </IconButton>
-                            </InputAdornment>
-                          )
-                        }}
-                      />
-
-                      <Box sx={{ display: 'flex', gap: 1.5, mt: 1 }}>
-                        <Button
-                          variant="outlined"
-                          fullWidth
+                  <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>
+                    <div className="space-y-5">
+                      {/* Header */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className={cn(
+                            "w-10 h-10 rounded-xl flex items-center justify-center",
+                            isDark ? "bg-primary/10" : "bg-primary/5"
+                          )}>
+                            <Plus size={20} className="text-primary" />
+                          </div>
+                          <div>
+                            <h3 className="text-base font-medium">New Account</h3>
+                            <p className={cn("text-xs", isDark ? "text-white/50" : "text-gray-500")}>
+                              Account #{profiles.length + 1}
+                            </p>
+                          </div>
+                        </div>
+                        <button
                           onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}
-                          sx={{
-                            py: 0.75,
-                            fontSize: '13px',
-                            textTransform: 'none',
-                            borderRadius: '8px',
-                            fontWeight: 400
-                          }}
+                          className={cn(
+                            "p-1.5 rounded-lg transition-colors",
+                            isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                          )}
+                        >
+                          <XIcon size={16} />
+                        </button>
+                      </div>
+
+                      {/* Info Notice */}
+                      <div className={cn(
+                        "rounded-xl p-3 flex items-start gap-2.5",
+                        isDark ? "bg-white/[0.03] ring-1 ring-white/[0.06]" : "bg-gray-50 ring-1 ring-gray-100"
+                      )}>
+                        <Info size={14} className={cn("flex-shrink-0 mt-0.5", isDark ? "text-white/40" : "text-gray-400")} />
+                        <p className={cn("text-xs leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
+                          All accounts share the same password for security. Enter your existing password to continue.
+                        </p>
+                      </div>
+
+                      {/* Password Input */}
+                      <div className="space-y-2">
+                        <label className={cn("text-xs font-medium", isDark ? "text-white/60" : "text-gray-500")}>
+                          Password
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={showNewAccountPassword ? 'text' : 'password'}
+                            placeholder="Enter your password"
+                            value={newAccountPassword}
+                            onChange={(e) => setNewAccountPassword(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && newAccountPassword && handleCreateNewAccount()}
+                            autoFocus
+                            autoComplete="off"
+                            className={cn(
+                              "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
+                              isDark
+                                ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
+                                : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary/20"
+                            )}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewAccountPassword(!showNewAccountPassword)}
+                            className={cn(
+                              "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
+                              isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"
+                            )}
+                          >
+                            {showNewAccountPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Actions */}
+                      <div className="flex gap-3 pt-1">
+                        <button
+                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}
+                          className={cn(
+                            "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+                            isDark
+                              ? "text-white/60 hover:bg-white/5 ring-1 ring-white/10"
+                              : "text-gray-600 hover:bg-gray-50 ring-1 ring-gray-200"
+                          )}
                         >
                           Cancel
-                        </Button>
-                        <Button
-                          variant="contained"
-                          fullWidth
+                        </button>
+                        <button
                           onClick={handleCreateNewAccount}
                           disabled={!newAccountPassword}
-                          sx={{
-                            py: 0.75,
-                            fontSize: '13px',
-                            textTransform: 'none',
-                            borderRadius: '8px',
-                            fontWeight: 400
-                          }}
+                          className={cn(
+                            "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2",
+                            newAccountPassword
+                              ? "bg-primary text-white hover:bg-primary/90"
+                              : isDark
+                                ? "bg-white/5 text-white/30 cursor-not-allowed"
+                                : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                          )}
                         >
-                          Create Account
-                        </Button>
-                      </Box>
-                    </Stack>
-                  </Box>
+                          <Plus size={14} />
+                          Create
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 ) : (
-                  <Box sx={{ p: 3 }}>
-                    <Stack spacing={2}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <Typography variant="h6" sx={{ fontWeight: 500 }}>
-                          Backup Options
-                        </Typography>
-                        <IconButton size="small" onClick={() => {
+                  <div className="p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                        Backup
+                      </span>
+                      <button
+                        onClick={() => {
                           setShowSeedDialog(false);
                           setSeedAuthStatus('idle');
                           setDisplaySeed('');
@@ -3103,148 +3065,107 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           setSeedWarningAgreed(false);
                           setBackupMode(null);
                           setSeedPassword('');
-                        }} sx={{ opacity: 0.5, '&:hover': { opacity: 1 } }}>
-                          <XIcon size={16} />
-                        </IconButton>
-                      </Box>
+                        }}
+                        className={cn("p-1 rounded-md transition-colors", isDark ? "text-white/40 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                      >
+                        <XIcon size={14} />
+                      </button>
+                    </div>
 
                       {seedAuthStatus === 'select-mode' && (
-                        <Box>
-                          <Typography variant="body2" sx={{ mb: 2, fontSize: '13px', color: theme.palette.text.secondary }}>
-                            Choose your backup method:
-                          </Typography>
-                          <Stack spacing={1.5}>
-                            <Box
-                              onClick={() => {
-                                setBackupMode('seed');
-                                setSeedAuthStatus('password-required');
-                              }}
-                              sx={{
-                                p: 2,
-                                cursor: 'pointer',
-                                borderRadius: '10px',
-                                border: `1.5px solid ${alpha(theme.palette.primary.main, 0.3)}`,
-                                '&:hover': {
-                                  borderColor: theme.palette.primary.main,
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.04)
-                                }
-                              }}
-                            >
-                              <Typography sx={{ fontWeight: 400, fontSize: '13px', color: theme.palette.primary.main, display: 'block' }}>
-                                View Current Seed
-                              </Typography>
-                              <Typography sx={{ fontSize: '11px', color: theme.palette.text.secondary, mt: 0.5, display: 'block' }}>
-                                Wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} only
-                              </Typography>
-                            </Box>
-                            <Box
-                              onClick={() => {
-                                setShowSeedDialog(false);
-                                handleDownloadBackup();
-                              }}
-                              sx={{
-                                p: 2,
-                                cursor: 'pointer',
-                                borderRadius: '10px',
-                                backgroundColor: theme.palette.primary.main,
-                                '&:hover': {
-                                  backgroundColor: alpha(theme.palette.primary.main, 0.9)
-                                }
-                              }}
-                            >
-                              <Typography sx={{ fontWeight: 400, fontSize: '13px', color: '#fff', display: 'block' }}>
-                                Download Full Backup
-                              </Typography>
-                              <Typography sx={{ fontSize: '11px', color: 'rgba(255,255,255,0.8)', mt: 0.5, display: 'block' }}>
-                                All {profiles.length} wallets encrypted
-                              </Typography>
-                            </Box>
-                          </Stack>
-                        </Box>
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => {
+                              setBackupMode('seed');
+                              setSeedAuthStatus('password-required');
+                            }}
+                            className={cn(
+                              "w-full flex items-center justify-between p-3 rounded-lg border-[1.5px] transition-colors",
+                              isDark
+                                ? "border-white/10 hover:border-primary/50 hover:bg-primary/5"
+                                : "border-gray-200 hover:border-primary/50 hover:bg-primary/5"
+                            )}
+                          >
+                            <span className={cn("text-[13px]", isDark ? "text-white" : "text-gray-900")}>View Seed</span>
+                            <span className={cn("text-[11px]", isDark ? "text-white/40" : "text-gray-400")}>Wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1}</span>
+                          </button>
+                          <button
+                            onClick={() => {
+                              setShowSeedDialog(false);
+                              handleDownloadBackup();
+                            }}
+                            className="w-full text-left p-3 rounded-lg bg-primary hover:bg-primary/90 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="text-[13px] text-white">Download Backup</span>
+                              <span className="text-[11px] text-white/60">{profiles.length} wallet{profiles.length > 1 ? 's' : ''}</span>
+                            </div>
+                            <p className="text-[11px] text-white/50 mt-1">Full encrypted backup file</p>
+                          </button>
+                        </div>
                       )}
 
                       {seedAuthStatus === 'password-required' && backupMode === 'seed' && (
-                        <Box sx={{ p: 1 }}>
-                          <Alert severity="warning" icon={false} sx={{ mb: 2, py: 1 }}>
-                            <Box sx={{ display: 'block' }}>
-                              <Typography sx={{ fontWeight: 500, fontSize: '12px', display: 'block', mb: 0.5, color: '#b45309' }}>
-                                Keep your seed safe
-                              </Typography>
-                              <Typography sx={{ fontSize: '11px', display: 'block', lineHeight: 1.4, color: theme.palette.text.secondary }}>
-                                Your seed is stored locally. We cannot recover it. Never share it with anyone.
-                              </Typography>
-                            </Box>
-                          </Alert>
+                        <div className="space-y-3">
+                          <div className={cn("p-3 rounded-lg", isDark ? "bg-amber-500/10 border border-amber-500/20" : "bg-amber-50 border border-amber-200")}>
+                            <p className="text-[12px] font-medium text-amber-600 mb-0.5">Keep your seed safe</p>
+                            <p className={cn("text-[11px] leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
+                              Stored locally. Cannot be recovered. Never share it.
+                            </p>
+                          </div>
 
-                          <Box sx={{
-                            display: 'flex',
-                            alignItems: 'flex-start',
-                            gap: 1,
-                            mb: 2,
-                            p: 1.2,
-                            borderRadius: '8px',
-                            border: `1.5px solid ${seedWarningAgreed ? theme.palette.primary.main : alpha(theme.palette.divider, 0.3)}`,
-                            cursor: 'pointer',
-                            backgroundColor: seedWarningAgreed ? alpha(theme.palette.primary.main, 0.04) : 'transparent',
-                            '&:hover': {
-                              borderColor: theme.palette.primary.main
-                            }
-                          }}
-                          onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
+                          <button
+                            onClick={() => setSeedWarningAgreed(!seedWarningAgreed)}
+                            className={cn(
+                              "w-full flex items-start gap-2 p-2.5 rounded-lg border-[1.5px] text-left transition-colors",
+                              seedWarningAgreed
+                                ? "border-primary bg-primary/5"
+                                : isDark ? "border-white/15 hover:border-primary" : "border-gray-200 hover:border-primary"
+                            )}
                           >
-                            <Box sx={{
-                              width: 16,
-                              height: 16,
-                              borderRadius: '3px',
-                              border: `2px solid ${seedWarningAgreed ? theme.palette.primary.main : alpha(theme.palette.divider, 0.4)}`,
-                              background: seedWarningAgreed ? theme.palette.primary.main : 'transparent',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
-                              mt: 0.2
-                            }}>
-                              {seedWarningAgreed && (
-                                <Check size={12} color="white" />
-                              )}
-                            </Box>
-                            <Typography sx={{ fontSize: '11px', lineHeight: 1.4, color: theme.palette.text.primary }}>
+                            <div className={cn(
+                              "w-4 h-4 rounded flex-shrink-0 flex items-center justify-center mt-0.5 border-2 transition-colors",
+                              seedWarningAgreed ? "border-primary bg-primary" : isDark ? "border-white/30" : "border-gray-300"
+                            )}>
+                              {seedWarningAgreed && <Check size={12} color="white" />}
+                            </div>
+                            <span className={cn("text-[11px] leading-relaxed", isDark ? "text-white" : "text-gray-900")}>
                               I understand and will keep my seed safe
-                            </Typography>
-                          </Box>
+                            </span>
+                          </button>
 
-                          <Typography sx={{ mb: 1, fontSize: '11px', color: theme.palette.text.secondary }}>
-                            Enter password to view seed
-                          </Typography>
-                          <TextField
-                            fullWidth
-                            type={showSeedPassword ? 'text' : 'password'}
-                            placeholder="Password"
-                            value={seedPassword}
-                            onChange={(e) => setSeedPassword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && seedWarningAgreed && handleSeedPasswordSubmit()}
-                            autoFocus
-                            size="small"
-                            autoComplete="off"
-                            isDark={isDark}
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <IconButton
-                                    size="small"
-                                    onClick={() => setShowSeedPassword(!showSeedPassword)}
-                                    edge="end"
-                                  >
-                                    {showSeedPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                                  </IconButton>
-                                </InputAdornment>
-                              )
-                            }}
-                          />
-                          <Box sx={{ display: 'flex', gap: 1, mt: 2 }}>
-                            <Button
-                              variant="outlined"
-                              size="small"
+                          <div>
+                            <p className={cn("text-[11px] mb-1.5", isDark ? "text-white/50" : "text-gray-500")}>
+                              Enter password to view seed
+                            </p>
+                            <div className="relative">
+                              <input
+                                type={showSeedPassword ? 'text' : 'password'}
+                                placeholder="Password"
+                                value={seedPassword}
+                                onChange={(e) => setSeedPassword(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && seedWarningAgreed && handleSeedPasswordSubmit()}
+                                autoFocus
+                                autoComplete="off"
+                                className={cn(
+                                  "w-full px-3 py-2 pr-10 rounded-lg border-[1.5px] text-[13px] outline-none transition-colors",
+                                  isDark
+                                    ? "bg-white/5 border-white/15 text-white placeholder:text-white/30 focus:border-primary"
+                                    : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                )}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowSeedPassword(!showSeedPassword)}
+                                className={cn("absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded", isDark ? "text-white/50 hover:text-white" : "text-gray-400 hover:text-gray-600")}
+                              >
+                                {showSeedPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2">
+                            <button
                               onClick={() => {
                                 setShowSeedDialog(false);
                                 setSeedAuthStatus('idle');
@@ -3252,579 +3173,552 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                                 setShowSeedPassword(false);
                                 setSeedWarningAgreed(false);
                               }}
-                              sx={{
-                                fontSize: '13px',
-                                py: 0.5,
-                                px: 2
-                              }}
+                              className={cn(
+                                "px-3 py-1.5 rounded-lg border-[1.5px] text-[13px] font-normal transition-colors",
+                                isDark ? "border-white/15 text-white hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                              )}
                             >
                               Cancel
-                            </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
+                            </button>
+                            <button
                               onClick={handleSeedPasswordSubmit}
                               disabled={!seedPassword || !seedWarningAgreed}
-                              sx={{
-                                fontSize: '13px',
-                                py: 0.5,
-                                px: 2
-                              }}
+                              className={cn(
+                                "px-3 py-1.5 rounded-lg text-[13px] font-normal text-white transition-colors",
+                                seedPassword && seedWarningAgreed
+                                  ? "bg-primary hover:bg-primary/90"
+                                  : "bg-primary/50 cursor-not-allowed"
+                              )}
                             >
                               View Seed
-                            </Button>
-                          </Box>
-                        </Box>
+                            </button>
+                          </div>
+                        </div>
                       )}
 
                       {seedAuthStatus === 'success' && (
-                        <>
-                          <Alert severity="info" sx={{ mb: 1.5 }}>
-                            <Typography variant="body2" sx={{ fontSize: '11px', fontWeight: 400 }}>
-                              Seed for wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
-                            </Typography>
-                            <Typography variant="body2" sx={{ fontSize: '11px', opacity: 0.8, mt: 0.3 }}>
-                              This only backs up one wallet. Use download backup for all {profiles.length} wallets.
-                            </Typography>
-                          </Alert>
+                        <div className="space-y-3">
+                          <div className={cn("p-3 rounded-lg", isDark ? "bg-blue-500/10 border border-blue-500/20" : "bg-blue-50 border border-blue-200")}>
+                            <p className={cn("text-[11px]", isDark ? "text-blue-400" : "text-blue-700")}>
+                              Wallet {profiles.findIndex(p => p.account === accountProfile?.account) + 1} of {profiles.length}
+                            </p>
+                            <p className={cn("text-[11px] mt-0.5", isDark ? "text-white/50" : "text-gray-500")}>
+                              Use download backup for all wallets.
+                            </p>
+                          </div>
 
-                          <Box sx={{
-                            py: 1,
-                            px: 1,
-                            borderRadius: 1,
-                            background: alpha(theme.palette.background.paper, 0.8),
-                            border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                            fontFamily: 'monospace',
-                            fontSize: '11px',
-                            wordBreak: 'break-all',
-                            lineHeight: 1.5,
-                            filter: seedBlurred ? 'blur(5px)' : 'none',
-                            cursor: seedBlurred ? 'pointer' : 'default',
-                            userSelect: seedBlurred ? 'none' : 'auto'
-                          }}
-                          onClick={seedBlurred ? () => setSeedBlurred(false) : undefined}
-                          title={seedBlurred ? 'Click to reveal seed' : ''}
+                          <div
+                            onClick={seedBlurred ? () => setSeedBlurred(false) : undefined}
+                            title={seedBlurred ? 'Click to reveal' : ''}
+                            className={cn(
+                              "p-3 rounded-lg font-mono text-[11px] break-all leading-relaxed",
+                              isDark ? "bg-white/5 border border-white/10" : "bg-gray-50 border border-gray-200",
+                              seedBlurred && "blur-[5px] cursor-pointer select-none"
+                            )}
                           >
                             {displaySeed}
-                          </Box>
+                          </div>
 
-                          <Stack direction="row" spacing={1} justifyContent="center">
-                            <Button
-                              variant="contained"
-                              size="small"
+                          <div className="flex gap-2 justify-center">
+                            <button
                               onClick={() => {
                                 navigator.clipboard.writeText(displaySeed).then(() => {
-                                  openSnackbar('Seed copied to clipboard', 'success');
+                                  openSnackbar('Seed copied', 'success');
                                 });
                               }}
-                              sx={{ fontSize: '11px', py: 0.5, px: 2 }}
+                              className="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary/90 text-white text-[11px] transition-colors"
                             >
                               Copy Seed
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              size="small"
+                            </button>
+                            <button
                               onClick={() => setSeedBlurred(!seedBlurred)}
-                              sx={{ fontSize: '11px', py: 0.5, px: 2 }}
+                              className={cn(
+                                "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] transition-colors",
+                                isDark ? "border-white/15 text-white hover:bg-white/5" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+                              )}
                             >
                               {seedBlurred ? 'Show' : 'Hide'}
-                            </Button>
-                          </Stack>
-                        </>
+                            </button>
+                          </div>
+                        </div>
                       )}
 
                       {seedAuthStatus === 'error' && (
-                        <Alert severity="error">
+                        <div className={cn("p-3 rounded-lg text-[12px]", isDark ? "bg-red-500/10 border border-red-500/20 text-red-400" : "bg-red-50 border border-red-200 text-red-600")}>
                           Authentication failed. Please try again.
-                        </Alert>
+                        </div>
                       )}
-                    </Stack>
-                  </Box>
+                  </div>
                 )}
               </>
             ) : (
-              // WalletConnect Modal Content with full styling
-              <Box sx={{
-                borderRadius: '12px',
-                background: theme.palette.background.paper,
-                border: 'none',
-                boxShadow: 'none',
-                overflow: 'hidden'
-              }}>
+              // WalletConnect Modal Content - Enhanced UI
+              <div className={isDark ? "text-white" : "text-gray-900"}>
                 {/* Header */}
-                <Box sx={{
-                  padding: theme.spacing(2, 2.5),
-                  background: 'transparent',
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.08)}`
-                }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center">
-                    <Typography variant="h6" sx={{
-                      fontWeight: 400,
-                      fontSize: '18px',
-                      color: theme.palette.text.primary
-                    }}>
-                      Connect Wallet
-                    </Typography>
-                    <Box
-                      onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
-                      sx={{
-                        cursor: 'pointer',
-                        width: 32,
-                        height: 32,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        borderRadius: '12px',
-                        color: theme.palette.text.secondary,
-                        '&:hover': {
-                          color: theme.palette.text.primary,
-                          backgroundColor: alpha(theme.palette.text.primary, 0.04)
-                        }
-                      }}
-                    >
-                      <XIcon size={20} />
-                    </Box>
-                  </Stack>
-                </Box>
+                <div className={cn(
+                  "px-5 py-4 flex items-center justify-between",
+                  isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
+                )}>
+                  <h2 className="text-lg font-medium">Connect Wallet</h2>
+                  <button
+                    onClick={() => { setOpenWalletModal(false); setShowDeviceLogin(false); }}
+                    className={cn(
+                      "p-2 rounded-xl transition-colors",
+                      isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
+                    )}
+                  >
+                    <XIcon size={18} />
+                  </button>
+                </div>
 
                 {/* Content */}
-                <Box sx={{
-                  padding: theme.spacing(2.5, 2.5, 1.5, 2.5),
-                  background: 'transparent'
-                }}>
+                <div className="px-5 py-4">
                   {!showDeviceLogin ? (
                     <>
-                      {/* Social Options */}
-                      <div className="flex flex-col gap-2">
+                      {/* Social Options - Grid Layout */}
+                      <div className="grid grid-cols-2 gap-2.5">
                         {/* Google */}
                         <button
                           onClick={handleGoogleConnect}
                           className={cn(
-                            'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium transition-all duration-200',
+                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
                             isDark
-                              ? 'bg-white/[0.04] text-white hover:bg-white/[0.08]'
-                              : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
                           )}
                         >
-                          <svg className="h-[18px] w-[18px]" viewBox="0 0 24 24">
+                          <svg className="h-[18px] w-[18px] flex-shrink-0" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
                             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
                           </svg>
-                          Google
+                          <span>Google</span>
                         </button>
 
                         {/* Email */}
                         <button
                           onClick={handleEmailConnect}
                           className={cn(
-                            'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium transition-all duration-200',
+                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
                             isDark
-                              ? 'bg-white/[0.04] text-white hover:bg-white/[0.08]'
-                              : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
                           )}
                         >
-                          <Mail size={18} className="opacity-60" />
-                          Email
+                          <Mail size={18} className={isDark ? "text-white/50 group-hover:text-white/70" : "text-gray-400 group-hover:text-gray-600"} />
+                          <span>Email</span>
                         </button>
 
                         {/* Twitter/X */}
                         <button
                           onClick={handleXConnect}
                           className={cn(
-                            'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium transition-all duration-200',
+                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
                             isDark
-                              ? 'bg-white/[0.04] text-white hover:bg-white/[0.08]'
-                              : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
                           )}
                         >
-                          <XIcon size={18} className="opacity-60" />
-                          Twitter
+                          <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50 group-hover:text-white/70" : "text-gray-400 group-hover:text-gray-600")} viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                          </svg>
+                          <span>Twitter</span>
                         </button>
 
                         {/* Discord */}
                         <button
                           onClick={handleDiscordConnect}
                           className={cn(
-                            'flex w-full items-center gap-3 rounded-xl px-4 py-3 text-[14px] font-medium transition-all duration-200',
+                            "flex items-center gap-2.5 rounded-xl px-4 py-3 text-[13px] font-medium transition-all duration-200 group",
                             isDark
-                              ? 'bg-white/[0.04] text-white hover:bg-white/[0.08]'
-                              : 'bg-gray-50 text-gray-900 hover:bg-gray-100'
+                              ? "bg-white/[0.03] text-white hover:bg-white/[0.06] ring-1 ring-white/[0.06] hover:ring-white/10"
+                              : "bg-gray-50 text-gray-700 hover:bg-gray-100 ring-1 ring-gray-100 hover:ring-gray-200"
                           )}
                         >
-                          <svg className="h-[18px] w-[18px] opacity-60" viewBox="0 0 24 24" fill="currentColor">
+                          <svg className={cn("h-[18px] w-[18px] flex-shrink-0", isDark ? "text-white/50 group-hover:text-white/70" : "text-gray-400 group-hover:text-gray-600")} viewBox="0 0 24 24" fill="currentColor">
                             <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515a.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0a12.64 12.64 0 0 0-.617-1.25a.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057a19.9 19.9 0 0 0 5.993 3.03a.078.078 0 0 0 .084-.028a14.09 14.09 0 0 0 1.226-1.994a.076.076 0 0 0-.041-.106a13.107 13.107 0 0 1-1.872-.892a.077.077 0 0 1-.008-.128a10.2 10.2 0 0 0 .372-.292a.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127a12.299 12.299 0 0 1-1.873.892a.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028a19.839 19.839 0 0 0 6.002-3.03a.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.956-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419c0-1.333.955-2.419 2.157-2.419c1.21 0 2.176 1.096 2.157 2.42c0 1.333-.946 2.418-2.157 2.418z"/>
                           </svg>
-                          Discord
+                          <span>Discord</span>
                         </button>
                       </div>
 
-                      {/* Passkeys - Most secure */}
+                      {/* Divider */}
+                      <div className="relative my-4">
+                        <div className={cn("absolute inset-0 flex items-center", isDark ? "text-white/20" : "text-gray-200")}>
+                          <div className="w-full border-t border-current" />
+                        </div>
+                        <div className="relative flex justify-center">
+                          <span className={cn("px-3 text-[11px] uppercase tracking-wider", isDark ? "bg-[#0a0a0a] text-white/30" : "bg-white text-gray-400")}>
+                            or
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Passkeys - Most secure - Enhanced */}
                       <button
                         onClick={() => setShowDeviceLogin(true)}
-                        className="mt-3 mb-3 flex w-full items-center justify-center gap-2.5 rounded-xl bg-primary px-4 py-3.5 text-[14px] font-medium text-white transition-all duration-200 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25"
+                        className="w-full flex items-center justify-center gap-2.5 rounded-xl bg-gradient-to-r from-primary to-primary/80 px-4 py-3.5 text-[14px] font-medium text-white transition-all duration-200 hover:shadow-lg hover:shadow-primary/25 hover:from-primary/90 hover:to-primary/70 active:scale-[0.99]"
                       >
-                        <Shield size={17} />
-                        Passkeys
+                        <FingerprintIcon size={18} />
+                        <span>Continue with Passkey</span>
+                        <span className="ml-1 px-1.5 py-0.5 rounded text-[9px] font-semibold bg-white/20">SECURE</span>
                       </button>
 
-                      {/* Email Verification UI */}
+                      {/* Email Verification UI - Enhanced */}
                       {showEmailVerification && (
-                        <Box sx={{ mt: 2, p: 2, background: alpha(theme.palette.background.default, 0.4), borderRadius: '12px' }}>
+                        <div className={cn(
+                          "mt-4 p-4 rounded-xl",
+                          isDark ? "bg-white/[0.03] ring-1 ring-white/[0.06]" : "bg-gray-50 ring-1 ring-gray-100"
+                        )}>
                           {emailStep === 'email' ? (
                             <>
-                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
+                              <p className={cn("text-sm mb-3", isDark ? "text-white/80" : "text-gray-700")}>
                                 Enter your email address
-                              </Typography>
-                              <TextField
-                                fullWidth
+                              </p>
+                              <input
                                 type="email"
                                 placeholder="your@email.com"
                                 value={verificationEmail}
                                 onChange={(e) => setVerificationEmail(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleEmailContinue()}
                                 autoFocus
-                                size="small"
-                                sx={{ mb: 1.5 }}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
+                                  isDark
+                                    ? "bg-white/[0.05] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
+                                    : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                )}
                               />
-                              <Stack direction="row" spacing={1}>
-                                <Button
-                                  variant="outlined"
-                                  fullWidth
+                              <div className="flex gap-2">
+                                <button
                                   onClick={handleEmailContinue}
-                                  sx={{
-                                    py: 1,
-                                    fontSize: '14px',
-                                    textTransform: 'none',
-                                    borderRadius: '12px'
-                                  }}
+                                  className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90"
                                 >
                                   Continue
-                                </Button>
-                                <Button
-                                  variant="outlined"
+                                </button>
+                                <button
                                   onClick={() => setShowEmailVerification(false)}
-                                  sx={{
-                                    py: 1,
-                                    fontSize: '14px',
-                                    textTransform: 'none',
-                                    borderRadius: '12px'
-                                  }}
+                                  className={cn(
+                                    "px-4 py-2.5 rounded-xl text-sm font-medium",
+                                    isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
+                                  )}
                                 >
                                   Cancel
-                                </Button>
-                              </Stack>
+                                </button>
+                              </div>
                             </>
                           ) : emailStep === 'code' ? (
                             <>
-                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
-                                Enter the 6-digit code sent to {verificationEmail}
-                              </Typography>
-                              <TextField
-                                fullWidth
+                              <p className={cn("text-sm mb-3", isDark ? "text-white/80" : "text-gray-700")}>
+                                Enter the 6-digit code sent to <span className="font-medium">{verificationEmail}</span>
+                              </p>
+                              <input
                                 type="text"
                                 placeholder="000000"
                                 value={verificationCode}
                                 onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                                 onKeyDown={(e) => e.key === 'Enter' && handleVerifyEmailCode()}
                                 autoFocus
-                                size="small"
-                                sx={{ mb: 1.5 }}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl text-sm text-center font-mono tracking-[0.5em] outline-none mb-3",
+                                  isDark
+                                    ? "bg-white/[0.05] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
+                                    : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                )}
                               />
-                              <Stack direction="row" spacing={1}>
-                                <Button
-                                  variant="outlined"
-                                  fullWidth
+                              <div className="flex gap-2">
+                                <button
                                   onClick={handleVerifyEmailCode}
-                                  sx={{
-                                    py: 1,
-                                    fontSize: '14px',
-                                    textTransform: 'none',
-                                    borderRadius: '12px'
-                                  }}
+                                  className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90"
                                 >
                                   Verify
-                                </Button>
-                                <Button
-                                  variant="outlined"
+                                </button>
+                                <button
                                   onClick={() => setEmailStep('email')}
-                                  sx={{
-                                    py: 1,
-                                    fontSize: '14px',
-                                    textTransform: 'none',
-                                    borderRadius: '12px'
-                                  }}
+                                  className={cn(
+                                    "px-4 py-2.5 rounded-xl text-sm font-medium",
+                                    isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
+                                  )}
                                 >
                                   Back
-                                </Button>
-                              </Stack>
+                                </button>
+                              </div>
                             </>
                           ) : (
                             <>
-                              <Typography variant="body2" sx={{ mb: 1.5, fontSize: '14px' }}>
-                                Enter your password for {verificationEmail}
-                              </Typography>
-                              <TextField
-                                fullWidth
+                              <p className={cn("text-sm mb-3", isDark ? "text-white/80" : "text-gray-700")}>
+                                Enter your password for <span className="font-medium">{verificationEmail}</span>
+                              </p>
+                              <input
                                 type="password"
                                 placeholder="Password"
                                 value={emailPassword}
                                 onChange={(e) => setEmailPassword(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && handleEmailPasswordLogin()}
                                 autoFocus
-                                size="small"
-                                sx={{ mb: 1.5 }}
+                                className={cn(
+                                  "w-full px-4 py-2.5 rounded-xl text-sm outline-none mb-3",
+                                  isDark
+                                    ? "bg-white/[0.05] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
+                                    : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                )}
                               />
-                              <Stack direction="row" spacing={1}>
-                                <Button
-                                  variant="outlined"
-                                  fullWidth
+                              <div className="flex gap-2">
+                                <button
                                   onClick={handleEmailPasswordLogin}
-                                  sx={{
-                                    py: 1,
-                                    fontSize: '14px',
-                                    textTransform: 'none',
-                                    borderRadius: '12px'
-                                  }}
+                                  className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90"
                                 >
                                   Login
-                                </Button>
-                                <Button
-                                  variant="outlined"
+                                </button>
+                                <button
                                   onClick={() => { setEmailStep('email'); setEmailPassword(''); }}
-                                  sx={{
-                                    py: 1,
-                                    fontSize: '14px',
-                                    textTransform: 'none',
-                                    borderRadius: '12px'
-                                  }}
+                                  className={cn(
+                                    "px-4 py-2.5 rounded-xl text-sm font-medium",
+                                    isDark ? "text-white/60 hover:bg-white/5" : "text-gray-600 hover:bg-gray-100"
+                                  )}
                                 >
                                   Back
-                                </Button>
-                              </Stack>
+                                </button>
+                              </div>
                             </>
                           )}
-                        </Box>
+                        </div>
                       )}
 
-                      {/* Footer */}
+                      {/* Footer - Enhanced */}
                       <div className={cn(
-                        'mt-2 border-t pt-3 pb-1 text-center',
-                        isDark ? 'border-white/5' : 'border-gray-100'
+                        "mt-4 pt-4 text-center border-t",
+                        isDark ? "border-white/[0.04]" : "border-gray-100"
                       )}>
-                        <span className="text-[11px] opacity-40">
-                          Encrypted and stored locally
-                        </span>
-                        <button
-                          onClick={handleDeleteIndexedDB}
-                          className="mt-1 block w-full text-[11px] text-red-500/50 hover:text-red-500"
-                        >
-                          [Debug] Clear IndexedDB
-                        </button>
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Lock size={11} className={isDark ? "text-white/30" : "text-gray-400"} />
+                          <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
+                            Encrypted and stored locally
+                          </span>
+                        </div>
                       </div>
                     </>
                   ) : (
                     <>
-                      {/* Passkeys Connect Header */}
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
-                        <Button
-                          onClick={handleGoBack}
-                          size="small"
-                          sx={{
-                            minWidth: 'auto',
-                            px: 1.5,
-                            py: 0.5,
-                            fontSize: '13px',
-                            borderRadius: '8px',
-                            color: theme.palette.primary.main,
-                            border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                            '&:hover': { backgroundColor: alpha(theme.palette.primary.main, 0.08) }
-                          }}
-                        >
-                          <ArrowLeft size={14} style={{ marginRight: 4 }} /> Back
-                        </Button>
-                        <Typography sx={{ fontWeight: 500, color: theme.palette.primary.main, fontSize: '15px' }}>
-                          Key Authentication
-                        </Typography>
-                      </Box>
+                      {/* Passkeys Section - Enhanced */}
+                      <div className="space-y-4">
+                        {/* Header with back button */}
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={handleGoBack}
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+                              isDark
+                                ? "text-primary hover:bg-primary/10"
+                                : "text-primary hover:bg-primary/5"
+                            )}
+                          >
+                            <ArrowLeft size={14} />
+                            Back
+                          </button>
+                          <span className="text-sm font-medium text-primary">Passkey Authentication</span>
+                        </div>
 
-                      {error && (
-                        <Alert
-                          severity={error.includes('Creating wallets') ? "info" : "warning"}
-                          icon={error.includes('Creating wallets') ? undefined : <AlertCircle size={18} />}
-                          sx={{ mb: 2, py: 1.5 }}
-                        >
-                          {error.includes('Creating wallets') ? (
-                            <Typography variant="body2">
-                              {error}
-                            </Typography>
-                          ) : (
-                            <Stack spacing={0.5}>
-                              <Typography variant="body2" sx={{ fontWeight: 500, fontSize: '13px' }}>
-                                Hardware Security Required
-                              </Typography>
-                              <Typography variant="body2" sx={{ fontSize: '12px', opacity: 0.9, lineHeight: 1.4 }}>
-                                {error}
-                              </Typography>
-                            </Stack>
-                          )}
-                        </Alert>
-                      )}
+                        {/* Error Alert */}
+                        {error && (
+                          <div className={cn(
+                            "rounded-xl p-3.5 border",
+                            error.includes('Creating wallets')
+                              ? isDark ? "bg-primary/5 border-primary/20" : "bg-primary/5 border-primary/20"
+                              : isDark ? "bg-amber-500/5 border-amber-500/20" : "bg-amber-50 border-amber-200"
+                          )}>
+                            <div className="flex gap-2.5">
+                              {!error.includes('Creating wallets') && (
+                                <AlertCircle size={16} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                              )}
+                              <div>
+                                {!error.includes('Creating wallets') && (
+                                  <p className="text-xs font-medium text-amber-600 dark:text-amber-400">Hardware Security Required</p>
+                                )}
+                                <p className={cn("text-xs mt-0.5 leading-relaxed", isDark ? "text-white/70" : "text-gray-600")}>
+                                  {error}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
 
-                      {/* Password Input for Device Connect */}
-                      {showDevicePasswordInput && (
-                        <Box sx={{ mb: 3 }}>
-                          <Typography variant="body2" sx={{ mb: 2, fontWeight: 400 }}>
-                            {devicePasswordMode === 'create'
-                              ? 'Create a password to secure your wallet'
-                              : 'Enter your password to access your wallet'}
-                          </Typography>
-                          <TextField
-                            fullWidth
-                            type={showDevicePassword ? 'text' : 'password'}
-                            value={devicePassword}
-                            onChange={(e) => { setDevicePassword(e.target.value); setError(''); }}
-                            onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
-                            placeholder="Password"
-                            autoFocus
-                            sx={{ mb: 2 }}
-                            InputProps={{
-                              endAdornment: (
-                                <InputAdornment position="end">
-                                  <IconButton
-                                    onClick={() => setShowDevicePassword(!showDevicePassword)}
-                                    edge="end"
-                                  >
-                                    {showDevicePassword ? <VisibilityOff /> : <Visibility />}
-                                  </IconButton>
-                                </InputAdornment>
-                              )
-                            }}
-                          />
-                          {devicePasswordMode === 'create' && (
-                            <TextField
-                              fullWidth
-                              type={showDevicePassword ? 'text' : 'password'}
-                              value={devicePasswordConfirm}
-                              onChange={(e) => { setDevicePasswordConfirm(e.target.value); setError(''); }}
-                              onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
-                              placeholder="Confirm Password"
-                              sx={{ mb: 2 }}
-                            />
-                          )}
-                          {error && (
-                            <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-                          )}
-                          <Box sx={{ display: 'flex', gap: 2, justifyContent: 'center' }}>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              onClick={() => {
-                                setShowDevicePasswordInput(false);
-                                setDevicePassword('');
-                                setDevicePasswordConfirm('');
-                                setStatus('idle');
-                                setError('');
-                              }}
+                        {/* Password Input for Device Connect - Enhanced */}
+                        {showDevicePasswordInput && (
+                          <div className="space-y-3">
+                            <p className={cn("text-sm", isDark ? "text-white/80" : "text-gray-700")}>
+                              {devicePasswordMode === 'create'
+                                ? 'Create a password to secure your wallet'
+                                : 'Enter your password to access your wallet'}
+                            </p>
+
+                            <div className="relative">
+                              <input
+                                type={showDevicePassword ? 'text' : 'password'}
+                                value={devicePassword}
+                                onChange={(e) => { setDevicePassword(e.target.value); setError(''); }}
+                                onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
+                                placeholder="Password"
+                                autoFocus
+                                className={cn(
+                                  "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
+                                  isDark
+                                    ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
+                                    : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                )}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => setShowDevicePassword(!showDevicePassword)}
+                                className={cn(
+                                  "absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg transition-colors",
+                                  isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600"
+                                )}
+                              >
+                                {showDevicePassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                              </button>
+                            </div>
+
+                            {devicePasswordMode === 'create' && (
+                              <input
+                                type={showDevicePassword ? 'text' : 'password'}
+                                value={devicePasswordConfirm}
+                                onChange={(e) => { setDevicePasswordConfirm(e.target.value); setError(''); }}
+                                onKeyDown={(e) => e.key === 'Enter' && handleDevicePasswordSubmit()}
+                                placeholder="Confirm Password"
+                                className={cn(
+                                  "w-full px-4 py-3 rounded-xl text-sm outline-none transition-all",
+                                  isDark
+                                    ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
+                                    : "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
+                                )}
+                              />
+                            )}
+
+                            <div className="flex gap-2 pt-1">
+                              <button
+                                onClick={() => {
+                                  setShowDevicePasswordInput(false);
+                                  setDevicePassword('');
+                                  setDevicePasswordConfirm('');
+                                  setStatus('idle');
+                                  setError('');
+                                }}
+                                className={cn(
+                                  "flex-1 py-2.5 rounded-xl text-sm font-medium border transition-all",
+                                  isDark
+                                    ? "border-white/10 text-white/70 hover:bg-white/5"
+                                    : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                                )}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={handleDevicePasswordSubmit}
+                                disabled={devicePasswordMode === 'create' ? !devicePassword || !devicePasswordConfirm : !devicePassword}
+                                className={cn(
+                                  "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
+                                  (devicePasswordMode === 'create' ? devicePassword && devicePasswordConfirm : devicePassword)
+                                    ? "bg-primary text-white hover:bg-primary/90"
+                                    : isDark
+                                      ? "bg-white/5 text-white/30 cursor-not-allowed"
+                                      : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                                )}
+                              >
+                                {devicePasswordMode === 'create' ? 'Create Wallet' : 'Authenticate'}
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Success State */}
+                        {status === 'success' && walletInfo && (
+                          <div className={cn(
+                            "rounded-xl p-4 border",
+                            isDark ? "bg-emerald-500/5 border-emerald-500/20" : "bg-emerald-50 border-emerald-200"
+                          )}>
+                            <div className="flex items-start gap-3">
+                              <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
+                                <CheckCircle size={16} className="text-emerald-500" />
+                              </div>
+                              <div>
+                                <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                                  {walletInfo.isAdditional ? 'Wallet Accessed!' : 'Wallet Created!'}
+                                </p>
+                                <p className={cn("text-xs mt-1", isDark ? "text-white/60" : "text-gray-600")}>
+                                  Secured by hardware authentication
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Loading State */}
+                        {isLoadingDeps && (
+                          <div className={cn(
+                            "rounded-xl p-4 border flex items-center gap-3",
+                            isDark ? "bg-white/[0.02] border-white/[0.06]" : "bg-gray-50 border-gray-100"
+                          )}>
+                            <div className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                            <span className={cn("text-sm", isDark ? "text-white/60" : "text-gray-600")}>
+                              Loading security modules...
+                            </span>
+                          </div>
+                        )}
+
+                        {/* Action Buttons - Enhanced */}
+                        {!showDevicePasswordInput && (
+                          <div className="space-y-2.5">
+                            <button
+                              onClick={handleAuthenticate}
+                              disabled={status !== 'idle' || isLoadingDeps}
+                              className={cn(
+                                "w-full py-3 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2",
+                                status === 'idle' && !isLoadingDeps
+                                  ? "bg-primary text-white hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/25"
+                                  : isDark
+                                    ? "bg-white/5 text-white/30 cursor-not-allowed"
+                                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
+                              )}
                             >
-                              Cancel
-                            </Button>
-                            <Button
-                              variant="contained"
-                              size="small"
-                              onClick={handleDevicePasswordSubmit}
-                              disabled={devicePasswordMode === 'create' ? !devicePassword || !devicePasswordConfirm : !devicePassword}
+                              <FingerprintIcon size={16} />
+                              {status === 'authenticating' ? 'Authenticating...' :
+                               status === 'discovering' ? 'Discovering...' :
+                               status === 'creating' ? 'Creating Wallet...' :
+                               'Sign In with Passkey'}
+                            </button>
+
+                            <button
+                              onClick={handleRegister}
+                              disabled={status !== 'idle' || isLoadingDeps}
+                              className={cn(
+                                "w-full py-3 rounded-xl text-sm font-medium transition-all border-[1.5px]",
+                                status === 'idle' && !isLoadingDeps
+                                  ? isDark
+                                    ? "border-amber-500/30 text-amber-400 hover:bg-amber-500/10 hover:border-amber-500/50"
+                                    : "border-amber-500/30 text-amber-600 hover:bg-amber-50 hover:border-amber-500/50"
+                                  : isDark
+                                    ? "border-white/5 text-white/20 cursor-not-allowed"
+                                    : "border-gray-100 text-gray-300 cursor-not-allowed"
+                              )}
                             >
-                              {devicePasswordMode === 'create' ? 'Create Wallet' : 'Authenticate'}
-                            </Button>
-                          </Box>
-                        </Box>
-                      )}
+                              {status === 'registering' ? 'Creating...' : 'Create New Passkey'}
+                            </button>
 
-                      {status === 'success' && walletInfo && (
-                        <Alert severity="success" sx={{ mb: 2 }}>
-                          <Typography variant="subtitle2" gutterBottom>
-                            🎉 {walletInfo.isAdditional ? `Device Wallets Accessed!` : `Device Wallets Created!`}
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Wallets Available:</strong> {walletInfo.totalWallets} wallets
-                          </Typography>
-                          <Typography variant="body2" sx={{ mb: 1 }}>
-                            <strong>Security:</strong> Deterministically generated from your device key
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            Your wallet is secured by hardware authentication.
-                          </Typography>
-                        </Alert>
-                      )}
-
-                      {isLoadingDeps && (
-                        <Alert severity="info" sx={{ mb: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <Typography>Loading...</Typography>
-                            <Typography variant="body2">Loading security modules...</Typography>
-                          </Box>
-                        </Alert>
-                      )}
-
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          fullWidth
-                          onClick={handleAuthenticate}
-                          disabled={status !== 'idle' || isLoadingDeps}
-                          sx={{
-                            py: 1,
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            background: 'transparent',
-                            '&:hover': {
-                              background: 'transparent'
-                            }
-                          }}
-                        >
-                          {status === 'authenticating' ? 'Authenticating...' :
-                           status === 'discovering' ? 'Discovering...' :
-                           status === 'creating' ? 'Creating Wallets...' :
-                           'Sign In (Existing Key)'}
-                        </Button>
-
-                        <Button
-                          variant="outlined"
-                          size="large"
-                          fullWidth
-                          onClick={handleRegister}
-                          disabled={status !== 'idle' || isLoadingDeps}
-                          sx={{
-                            py: 1,
-                            fontSize: '14px',
-                            fontWeight: 500,
-                            borderColor: theme.palette.warning.main,
-                            color: theme.palette.warning.main,
-                            '&:hover': {
-                              borderColor: theme.palette.warning.dark,
-                              backgroundColor: alpha(theme.palette.warning.main, 0.08)
-                            }
-                          }}
-                        >
-                          {status === 'registering' ? 'Creating...' : 'Create New Key'}
-                        </Button>
-
-                        <Typography variant="caption" sx={{
-                          textAlign: 'center',
-                          color: 'text.secondary',
-                          mt: 1,
-                          fontSize: '11px'
-                        }}>
-                          Hardware Secured
-                        </Typography>
-                      </Box>
+                            <div className="flex items-center justify-center gap-1.5 pt-2">
+                              <Shield size={11} className={isDark ? "text-white/30" : "text-gray-400"} />
+                              <span className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>
+                                Hardware secured authentication
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
-                </Box>
-              </Box>
+                </div>
+              </div>
             )}
             </StyledPopoverPaper>
           </DialogContent>
