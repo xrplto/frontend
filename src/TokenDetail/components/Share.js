@@ -32,19 +32,18 @@ const currencySymbols = {
 
 const ShareButton = styled.button`
   border-radius: 8px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)'};
   background: transparent;
-  padding: 5px;
-  min-width: 28px;
-  min-height: 28px;
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'};
+  font-size: 10px;
+  font-weight: 500;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   &:hover {
-    border-color: #4285f4;
-    background: rgba(66,133,244,0.04);
+    border-color: rgba(66,133,244,0.3);
     color: #4285f4;
   }
 `;
@@ -244,7 +243,7 @@ export default function Share({ token }) {
   return (
     <>
       <ShareButton isDark={isDark} onClick={() => setOpen(true)}>
-        <ShareIcon size={14} />
+        Share
       </ShareButton>
 
       {open && (

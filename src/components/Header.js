@@ -551,32 +551,28 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               {/* Watchlist Button */}
               <a
                 href="/watchlist"
-                aria-label="Watchlist"
-                title="Watchlist"
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200',
+                  'flex h-8 items-center rounded-lg px-3 text-[12px] font-medium transition-all duration-200',
                   isDark
-                    ? 'text-white/50 hover:text-yellow-500 hover:bg-yellow-500/10'
-                    : 'text-gray-400 hover:text-yellow-500 hover:bg-yellow-500/10'
+                    ? 'text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10'
+                    : 'text-yellow-600 hover:text-yellow-500 hover:bg-yellow-500/10'
                 )}
               >
-                <Star size={16} />
+                Saved
               </a>
 
               {/* Settings Dropdown */}
               <div ref={settingsRef} className="relative">
                 <button
                   onClick={handleSettingsToggle}
-                  aria-label="Settings"
-                  title="Settings"
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-full transition-all duration-200',
+                    'flex h-8 items-center rounded-lg px-3 text-[12px] font-medium transition-all duration-200',
                     isDark
                       ? 'text-white/50 hover:text-white hover:bg-white/[0.06]'
                       : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/80'
                   )}
                 >
-                  <Settings size={16} />
+                  Settings
                 </button>
 
                 {settingsMenuOpen && (

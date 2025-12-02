@@ -1040,24 +1040,24 @@ export default function CollectionView({ collection }) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 pl-2 border-l border-white/[0.08]">
+            <div className="flex items-center gap-1.5 pl-2 border-l border-white/[0.08]">
               {accountLogin === collection.account && (
                 <Link href={`/collection/${slug}/edit`} className={cn(
-                  "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                  isDark ? "border-white/[0.08] hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                  "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
+                  isDark ? "border-white/[0.08] text-white/50 hover:border-primary hover:text-primary" : "border-gray-200 text-gray-500 hover:border-primary hover:text-primary"
                 )}>
-                  <Pencil size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
+                  Edit
                 </Link>
               )}
               <div className="relative" ref={shareDropdownRef}>
                 <button
                   onClick={() => setOpenShare(!openShare)}
                   className={cn(
-                    "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                    isDark ? "border-white/[0.08] hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                    "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
+                    isDark ? "border-white/[0.08] text-white/50 hover:border-primary hover:text-primary" : "border-gray-200 text-gray-500 hover:border-primary hover:text-primary"
                   )}
                 >
-                  <Share2 size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
+                  Share
                 </button>
 
                 {openShare && (

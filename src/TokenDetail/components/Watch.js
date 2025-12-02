@@ -1,51 +1,24 @@
 import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
 import styled from '@emotion/styled';
-import { Star } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 
 const WatchButton = styled.button`
   border-radius: 8px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
-  background: transparent;
-  padding: 5px;
-  min-width: 28px;
-  min-height: 28px;
+  border: 1.5px solid ${props => props.isActive ? 'rgba(246,184,126,0.3)' : (props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.12)')};
+  background: ${props => props.isActive ? 'rgba(246,184,126,0.1)' : 'transparent'};
+  padding: 4px 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: ${props => props.isActive ? '#F6B87E' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+  font-size: 10px;
+  font-weight: 500;
+  color: ${props => props.isActive ? '#F6B87E' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   &:hover {
-    border-color: #F6B87E;
-    background: rgba(246,184,126,0.04);
+    border-color: rgba(246,184,126,0.3);
     color: #F6B87E;
   }
-`;
-
-const WatchWrapper = styled.div`
-  position: relative;
-  display: inline-block;
-  &:hover .watch-tooltip {
-    opacity: 1;
-  }
-`;
-
-const Tooltip = styled.div`
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translateX(-50%);
-  padding: 4px 8px;
-  background: rgba(0,0,0,0.9);
-  color: #fff;
-  border-radius: 4px;
-  font-size: 11px;
-  white-space: nowrap;
-  margin-bottom: 4px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.2s;
 `;
 
 export default function Watch({ token }) {
@@ -97,11 +70,8 @@ export default function Watch({ token }) {
   };
 
   return (
-    <WatchWrapper>
-      <Tooltip className="watch-tooltip">{isActive ? 'Remove from Watchlist' : 'Add to Watchlist'}</Tooltip>
-      <WatchButton isDark={isDark} isActive={isActive} onClick={onChangeWatchList}>
-        <Star size={14} fill={isActive ? '#F6B87E' : 'none'} />
-      </WatchButton>
-    </WatchWrapper>
+    <WatchButton isDark={isDark} isActive={isActive} onClick={onChangeWatchList}>
+      {isActive ? 'Saved' : 'Save'}
+    </WatchButton>
   );
 }

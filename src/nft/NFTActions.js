@@ -497,32 +497,30 @@ export default function NFTActions({ nft }) {
                   onClick={toggleWatchlist}
                   disabled={watchlistLoading}
                   className={cn(
-                    'p-3 rounded-xl border transition-colors',
+                    'px-3 py-2 rounded-xl border text-[13px] font-medium transition-colors flex items-center gap-1.5',
                     isWatchlisted
                       ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
                       : isDark
                         ? 'border-white/20 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
                         : 'border-gray-200 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
                   )}
-                  title={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
                 >
                   {watchlistLoading ? (
-                    <Loader2 size={20} className="animate-spin" />
-                  ) : (
-                    <Star size={20} fill={isWatchlisted ? 'currentColor' : 'none'} />
-                  )}
+                    <Loader2 size={14} className="animate-spin" />
+                  ) : null}
+                  {isWatchlisted ? 'Saved' : 'Save'}
                 </button>
                 <div className="relative" ref={shareDropdownRef}>
                   <button
                     onClick={() => setOpenShare(!openShare)}
                     className={cn(
-                      'p-3 rounded-xl border transition-colors',
+                      'px-3 py-2 rounded-xl border text-[13px] font-medium transition-colors',
                       isDark
-                        ? 'bg-primary/10 border-white/20 text-primary hover:border-primary/30'
-                        : 'bg-primary/10 border-gray-200 text-primary hover:border-primary/30'
+                        ? 'border-white/20 text-white/70 hover:border-primary/30 hover:text-primary'
+                        : 'border-gray-200 text-gray-600 hover:border-primary/30 hover:text-primary'
                     )}
                   >
-                    <Share2 size={20} />
+                    Share
                   </button>
 
                 {openShare && (
@@ -580,20 +578,18 @@ export default function NFTActions({ nft }) {
                 onClick={toggleWatchlist}
                 disabled={watchlistLoading}
                 className={cn(
-                  'p-2.5 rounded-xl border transition-colors',
+                  'px-3 py-1.5 rounded-xl border text-[12px] font-medium transition-colors flex items-center gap-1.5',
                   isWatchlisted
                     ? 'bg-yellow-500/10 border-yellow-500/30 text-yellow-500'
                     : isDark
                       ? 'border-white/20 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
                       : 'border-gray-200 text-gray-400 hover:border-yellow-500/30 hover:text-yellow-500'
                 )}
-                title={isWatchlisted ? 'Remove from watchlist' : 'Add to watchlist'}
               >
                 {watchlistLoading ? (
-                  <Loader2 size={18} className="animate-spin" />
-                ) : (
-                  <Star size={18} fill={isWatchlisted ? 'currentColor' : 'none'} />
-                )}
+                  <Loader2 size={12} className="animate-spin" />
+                ) : null}
+                {isWatchlisted ? 'Saved' : 'Save'}
               </button>
             </div>
           )}

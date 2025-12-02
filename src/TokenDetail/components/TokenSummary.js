@@ -422,19 +422,48 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 pl-2 border-l border-white/[0.08] relative">
+          <div className="flex items-center gap-1.5 pl-2 border-l border-white/[0.08] relative">
             {trustStatus && trustStatus !== 'loading' && (
               <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
                 {trustStatus}
               </div>
             )}
-            <IconBtn onClick={handleSetTrust} disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'} isDark={isDark} title={isRemove ? 'Remove Trustline' : 'Set Trustline'}>
-              {trustStatus === 'loading' ? <Loader2 size={14} className="animate-spin text-primary" /> : isRemove ? <Unlink size={14} className="text-red-500" /> : <LinkIconLucide size={14} className="text-green-500" />}
-            </IconBtn>
+            <button
+              onClick={handleSetTrust}
+              disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
+              className={cn(
+                "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all flex items-center gap-1",
+                isRemove ? "border-red-500/30 text-red-500 hover:bg-red-500/10" : "border-green-500/30 text-green-500 hover:bg-green-500/10",
+                (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
+              )}
+            >
+              {trustStatus === 'loading' ? <Loader2 size={10} className="animate-spin" /> : null}
+              {isRemove ? 'Untrust' : 'Trust'}
+            </button>
             <Share token={token} />
             <Watch token={token} />
-            {creator && <IconBtn onClick={onCreatorTxToggle} isDark={isDark} active={creatorTxOpen} title="Creator Activity"><Clock size={14} className={isDark ? "text-white/70" : "text-gray-600"} /></IconBtn>}
-            {accountProfile?.admin && <IconBtn onClick={() => setEditToken(token)} isDark={isDark} title="Admin Edit"><Settings size={14} className="text-amber-500" /></IconBtn>}
+            {creator && (
+              <button
+                onClick={onCreatorTxToggle}
+                className={cn(
+                  "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
+                  creatorTxOpen ? "border-primary bg-primary/10 text-primary" : isDark ? "border-white/[0.08] text-white/50 hover:border-primary/30" : "border-gray-200 text-gray-500 hover:border-primary/30"
+                )}
+              >
+                Activity
+              </button>
+            )}
+            {accountProfile?.admin && (
+              <button
+                onClick={() => setEditToken(token)}
+                className={cn(
+                  "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
+                  isDark ? "border-amber-500/30 text-amber-500 hover:bg-amber-500/10" : "border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+                )}
+              >
+                Edit
+              </button>
+            )}
           </div>
         </div>
       </div>
