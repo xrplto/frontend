@@ -676,38 +676,41 @@ export default function PriceStatistics({ token, isDark = false }) {
             </TableRow>
           ) : null}
 
-          {/* Social Links & Tags Row */}
-          {social || enhancedTags.length > 0 ? (
-            <TableRow>
-              <ModernTableCell align="left">
-                <Typography
-                  isDark={isDark}
-                variant="body2"
-                  style={{
-                    fontWeight: 400,
-                    color: isDark ? "rgba(255,255,255,0.5)" : "rgba(33,43,54,0.5)",
-                    fontSize: '11px'
-                  }}
-                  noWrap
-                >
-                  Social & Tags
-                </Typography>
-              </ModernTableCell>
-              <ModernTableCell align="left">
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  spacing={isMobile ? 0.5 : 1.25}
-                  style={{ flexWrap: 'wrap', gap: isMobile ? 0.25 : 0.75 }}
-                >
-                  <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 2 : 3} />
-                  <CompactSocialLinks social={social} size="small" />
-                </Stack>
-              </ModernTableCell>
-            </TableRow>
-          ) : null}
         </TableBody>
       </StyledTable>
+
+      {/* Social Links & Tags Section */}
+      {(social || enhancedTags.length > 0) && (
+        <Box
+          style={{
+            padding: '10px',
+            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+          }}
+        >
+          <Typography
+            isDark={isDark}
+            variant="body2"
+            style={{
+              fontWeight: 500,
+              color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(33,43,54,0.4)',
+              fontSize: '10px',
+              textTransform: 'uppercase',
+              letterSpacing: '0.5px',
+              marginBottom: '8px'
+            }}
+          >
+            Social & Tags
+          </Typography>
+          <Stack
+            direction="row"
+            alignItems="center"
+            style={{ flexWrap: 'wrap', gap: '8px' }}
+          >
+            <CompactTags enhancedTags={enhancedTags} maxTags={isMobile ? 3 : 5} />
+            <CompactSocialLinks social={social} size="small" />
+          </Stack>
+        </Box>
+      )}
     </Box>
   );
 }

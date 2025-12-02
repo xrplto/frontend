@@ -151,14 +151,14 @@ const Overview = memo(
 
           {/* Middle: OrderBook - fixed width, stretch height */}
           {!isMobile && !isTablet && (
-            <aside className="w-[280px] flex-shrink-0" aria-label="Order Book">
+            <aside className="w-[280px] flex-shrink-0 self-start" style={{ height: '1300px' }} aria-label="Order Book">
               <h2 className="sr-only">Order Book</h2>
               <OrderBook token={token} />
             </aside>
           )}
 
           {/* Right sidebar: Swap, Stats, Trending - fills remaining space */}
-          <aside className="w-full md:w-[420px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
+          <aside className="w-full md:w-[520px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
             <h2 className="sr-only">Swap</h2>
             <Swap
               token={token}

@@ -48,8 +48,8 @@ const Title = styled.div`
 `;
 
 const Content = styled.div`
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: 0.6fr auto 1fr;
   flex: 1;
   min-height: 0;
   overflow: hidden;

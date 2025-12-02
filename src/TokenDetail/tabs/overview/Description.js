@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import ReactMarkdown from 'react-markdown';
 import styled from '@emotion/styled';
-import { Edit, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Edit, X } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
 
 const alpha = (color, opacity) => color.replace(')', `, ${opacity})`);
@@ -52,8 +52,6 @@ const IconButton = styled.button`
 const Content = styled.div`
   padding: 4px 10px 10px;
   position: relative;
-  overflow: ${props => props.expanded ? 'visible' : 'hidden'};
-  max-height: ${props => props.expanded ? 'none' : '56px'};
 `;
 
 const Typography = styled.div`
@@ -139,7 +137,6 @@ export default function Description({
   isDark = false
 }) {
   const { accountProfile, themeName } = useContext(AppContext);
-  const [expanded, setExpanded] = useState(false);
   const effectiveIsDark = isDark || themeName === 'XrplToDarkTheme';
 
   const isAdmin = accountProfile?.admin;
@@ -149,6 +146,8 @@ export default function Description({
     if (showEditor) onApplyDescription();
     setShowEditor(!showEditor);
   };
+
+  if (!description && !showEditor && !isAdmin) return null;
 
   const markdownComponents = {
     p: (props) => <MarkdownParagraph {...props} isDark={effectiveIsDark} />,
@@ -160,49 +159,40 @@ export default function Description({
     li: (props) => <MarkdownLI {...props} isDark={effectiveIsDark} />
   };
 
-  if (!description && !showEditor && !isAdmin) return null;
-
   return (
     <Card isDark={effectiveIsDark}>
       <CardHeader isDark={effectiveIsDark}>
         <Title isDark={effectiveIsDark}>About {displayName}</Title>
-        <Actions>
-          <Tooltip title={expanded ? 'Show less' : 'Show more'}>
-            <IconButton onClick={() => setExpanded(!expanded)} isDark={effectiveIsDark}>
-              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </IconButton>
-          </Tooltip>
-          {isAdmin && (
+        {isAdmin && (
+          <Actions>
             <Tooltip title={showEditor ? 'Save & close' : 'Edit'}>
               <IconButton onClick={handleEditToggle} isError={showEditor} isDark={effectiveIsDark}>
                 {showEditor ? <X size={16} /> : <Edit size={16} />}
               </IconButton>
             </Tooltip>
-          )}
-        </Actions>
+          </Actions>
+        )}
       </CardHeader>
 
       {showEditor && mdEditor ? (
         <div style={{ padding: '8px 10px' }}>
           {mdEditor}
         </div>
-      ) : !showEditor && description ? (
-        <Content expanded={expanded} isDark={effectiveIsDark}>
+      ) : description ? (
+        <Content isDark={effectiveIsDark}>
           <ReactMarkdown components={markdownComponents}>{description}</ReactMarkdown>
         </Content>
       ) : (
-        !showEditor && (
-          <div style={{ padding: '8px 10px', minHeight: '40px' }}>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              fontStyle="italic"
-              isDark={effectiveIsDark}
-            >
-              No description available.
-            </Typography>
-          </div>
-        )
+        <div style={{ padding: '8px 10px', minHeight: '40px' }}>
+          <Typography
+            variant="body2"
+            color="text.secondary"
+            fontStyle="italic"
+            isDark={effectiveIsDark}
+          >
+            No description available.
+          </Typography>
+        </div>
       )}
     </Card>
   );

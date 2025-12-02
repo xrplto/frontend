@@ -405,7 +405,7 @@ const TrendingTokens = () => {
         <Box
           style={{
             display: 'grid',
-            gridTemplateColumns: '75px 55px 70px 70px',
+            gridTemplateColumns: '80px 55px 70px 70px',
             gap: '6px',
             marginLeft: 'auto',
             flexShrink: 0
@@ -565,7 +565,7 @@ const TrendingTokens = () => {
                   <Box
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: isMobile ? '55px 65px' : '75px 55px 70px 70px',
+                      gridTemplateColumns: isMobile ? '55px 65px' : '80px 55px 70px 70px',
                       gap: '6px',
                       marginLeft: 'auto',
                       flexShrink: 0
