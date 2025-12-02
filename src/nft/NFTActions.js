@@ -31,15 +31,12 @@ import { fNumber, fIntNumber, getHashIcon } from 'src/utils/formatters';
 
 // Components
 import { PuffLoader, PulseLoader } from '../components/Spinners';
-import CreateOfferDialog from './CreateOfferDialog';
-import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 import OffersList from './OffersList';
 import SelectPriceDialog from './SelectPriceDialog';
 import BurnNFT from './BurnNFT';
 import TransferDialog from './TransferDialog';
 import HistoryList from './HistoryList';
 import { ConnectWallet } from 'src/components/Wallet';
-import CreateOfferXRPCafe from './CreateOfferXRPCafe';
 
 // XRPL
 import { xrpToDrops, dropsToXrp } from 'xrpl';
@@ -177,13 +174,12 @@ export default function NFTActions({ nft }) {
   const [loading, setLoading] = useState(true);
   const [pageLoading, setPageLoading] = useState(false);
   const [acceptOffer, setAcceptOffer] = useState(null);
-  const [openConfirm, setOpenConfirm] = useState(false);
   const [openSelectPrice, setOpenSelectPrice] = useState(false);
   const [qrType, setQrType] = useState('NFTokenAcceptOffer');
   const [cost, setCost] = useState(null);
   const [sync, setSync] = useState(0);
   const [lowestSellOffer, setLowestSellOffer] = useState(null);
-  const [openCreateOfferXRPCafe, setOpenCreateOfferXRPCafe] = useState(false);
+  const [offerAmount, setOfferAmount] = useState('');
 
   // Close share dropdown on outside click
   useEffect(() => {
@@ -410,24 +406,26 @@ export default function NFTActions({ nft }) {
     return newOffers;
   };
 
-  const handleCreateSellOffer = () => { setIsSellOffer(true); setOpenCreateOffer(true); };
+  const handleCreateSellOffer = () => {
+    setIsSellOffer(true);
+    setOfferAmount('');
+    setOpenCreateOffer(true);
+  };
   const handleTransfer = () => { setOpenTransfer(true); };
-  const handleCreateBuyOffer = () => { setIsSellOffer(false); setOpenCreateOffer(true); };
+  const handleCreateBuyOffer = () => {
+    setIsSellOffer(false);
+    setOfferAmount('');
+    setOpenCreateOffer(true);
+  };
   const onHandleBurn = () => { setBurnt(true); };
   const handleCancelOffer = async (offer) => { doProcessOffer(offer, false); };
-  const handleAcceptOffer = async (offer) => { setAcceptOffer(offer); setOpenConfirm(true); };
-  const onContinueAccept = async () => { doProcessOffer(acceptOffer, true); };
 
-  const handleBuyNow = async () => {
-    if (!lowestSellOffer) {
+  const handleBuyNow = () => {
+    if (!lowestSellOffer?.offer) {
       openSnackbar('No valid sell offer available', 'error');
       return;
     }
-    if (lowestSellOffer.hasBroker) {
-      setOpenCreateOfferXRPCafe(true);
-    } else {
-      handleAcceptOffer(lowestSellOffer.offer);
-    }
+    setAcceptOffer(lowestSellOffer.offer);
   };
 
   const handleCloseCreateOffer = () => { setOpenCreateOffer(false); setIsSellOffer(false); };
@@ -665,24 +663,83 @@ export default function NFTActions({ nft }) {
                 {accountLogin ? (
                   <>
                     {lowestSellOffer && !burnt && (
-                      <button
-                        onClick={handleBuyNow}
-                        className="w-full py-3.5 rounded-xl text-[15px] font-medium bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/25"
-                      >
-                        Buy Now
-                      </button>
+                      acceptOffer && acceptOffer?.nft_offer_index === lowestSellOffer.offer?.nft_offer_index ? (
+                        <div className={cn('p-3 rounded-xl border-[1.5px]', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
+                          <p className={cn('text-[12px] mb-2', isDark ? 'text-white/60' : 'text-gray-500')}>
+                            Buy <span className="font-medium">{truncate(nftName, 20)}</span> for {formatXRPAmount(lowestSellOffer.totalAmount)}?
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => setAcceptOffer(null)}
+                              className={cn('flex-1 py-2 rounded-lg text-[13px] border-[1.5px]', isDark ? 'border-white/[0.08] text-white/70' : 'border-gray-200 text-gray-600')}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => { doProcessOffer(lowestSellOffer.offer, true); setAcceptOffer(null); }}
+                              className="flex-1 py-2 rounded-lg text-[13px] font-medium bg-primary text-white"
+                            >
+                              Confirm
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleBuyNow}
+                          className="w-full py-3.5 rounded-xl text-[15px] font-medium bg-primary text-white hover:bg-primary/90 active:scale-[0.98] transition-all duration-200 shadow-lg shadow-primary/25"
+                        >
+                          Buy Now
+                        </button>
+                      )
                     )}
-                    <button
-                      disabled={burnt}
-                      onClick={handleCreateBuyOffer}
-                      className={cn(
-                        'w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-all duration-200 active:scale-[0.98]',
-                        isDark ? 'border-white/20 text-white hover:border-primary hover:text-primary' : 'border-gray-200 text-gray-900 hover:border-primary hover:text-primary',
-                        burnt && 'opacity-50 cursor-not-allowed'
-                      )}
-                    >
-                      Make Offer
-                    </button>
+                    {!burnt && (
+                      openCreateOffer ? (
+                        <div className={cn('p-3 rounded-xl border-[1.5px]', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
+                          <div className="flex items-center gap-2 mb-2">
+                            <input
+                              type="text"
+                              placeholder="0.00"
+                              value={offerAmount}
+                              onChange={(e) => setOfferAmount(e.target.value.replace(/[^0-9.]/g, ''))}
+                              autoFocus
+                              className={cn(
+                                'flex-1 px-3 py-2 rounded-lg border-[1.5px] text-[15px] outline-none',
+                                isDark ? 'border-white/[0.08] bg-white/[0.02] text-white placeholder:text-white/30 focus:border-primary' : 'border-gray-200 bg-gray-50 text-gray-900 placeholder:text-gray-400 focus:border-primary'
+                              )}
+                            />
+                            <span className={cn('text-[13px] font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>XRP</span>
+                          </div>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={() => { setOpenCreateOffer(false); setOfferAmount(''); }}
+                              className={cn('flex-1 py-2 rounded-lg text-[13px] border-[1.5px]', isDark ? 'border-white/[0.08] text-white/70 hover:bg-white/5' : 'border-gray-200 text-gray-600 hover:bg-gray-50')}
+                            >
+                              Cancel
+                            </button>
+                            <button
+                              onClick={() => { openSnackbar('NFT offers coming soon', 'info'); setOpenCreateOffer(false); setOfferAmount(''); }}
+                              disabled={!offerAmount}
+                              className={cn(
+                                'flex-1 py-2 rounded-lg text-[13px] font-medium',
+                                !offerAmount ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-primary text-white hover:bg-primary/90'
+                              )}
+                            >
+                              Submit
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          onClick={handleCreateBuyOffer}
+                          className={cn(
+                            'w-full py-3 rounded-xl text-[15px] font-normal border-[1.5px] transition-all duration-200 active:scale-[0.98]',
+                            isDark ? 'border-white/20 text-white hover:border-primary hover:text-primary' : 'border-gray-200 text-gray-900 hover:border-primary hover:text-primary'
+                          )}
+                        >
+                          Make Offer
+                        </button>
+                      )
+                    )}
                   </>
                 ) : (
                   <ConnectWallet />
@@ -826,17 +883,34 @@ export default function NFTActions({ nft }) {
                             </div>
                           </div>
                           {isOwner ? (
-                            <button
-                              onClick={() => handleAcceptOffer(offer)}
-                              className={cn(
-                                "px-2 py-1 rounded-md text-[11px] font-normal border transition-colors",
-                                isReasonable
-                                  ? "border-green-500 text-green-500 hover:bg-green-500/10"
-                                  : "border-primary text-primary hover:bg-primary/5"
-                              )}
-                            >
-                              Accept
-                            </button>
+                            acceptOffer && acceptOffer.nft_offer_index === offer.nft_offer_index ? (
+                              <div className="flex gap-1">
+                                <button
+                                  onClick={() => setAcceptOffer(null)}
+                                  className={cn('px-2 py-1 rounded-md text-[11px] border', isDark ? 'border-white/10 text-white/60' : 'border-gray-200 text-gray-500')}
+                                >
+                                  No
+                                </button>
+                                <button
+                                  onClick={() => { doProcessOffer(offer, true); setAcceptOffer(null); }}
+                                  className="px-2 py-1 rounded-md text-[11px] bg-green-500 text-white"
+                                >
+                                  Yes
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setAcceptOffer(offer)}
+                                className={cn(
+                                  "px-2 py-1 rounded-md text-[11px] font-normal border transition-colors",
+                                  isReasonable
+                                    ? "border-green-500 text-green-500 hover:bg-green-500/10"
+                                    : "border-primary text-primary hover:bg-primary/5"
+                                )}
+                              >
+                                Accept
+                              </button>
+                            )
                           ) : (
                             accountLogin === offer.owner && (
                               <button
@@ -857,16 +931,7 @@ export default function NFTActions({ nft }) {
                   'py-4 text-center rounded-lg border border-dashed',
                   isDark ? 'border-white/10' : 'border-gray-200'
                 )}>
-                  <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>No buy offers available</p>
-                  {!isOwner && (
-                    <button
-                      onClick={handleCreateBuyOffer}
-                      className="mt-2 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-normal text-primary hover:bg-primary/5 transition-colors"
-                    >
-                      <Hand size={14} />
-                      Make Offer
-                    </button>
-                  )}
+                  <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>No buy offers yet</p>
                 </div>
               )}
             </div>
@@ -879,35 +944,10 @@ export default function NFTActions({ nft }) {
           </div>
         </div>
 
-        {/* Dialogs */}
-        <CreateOfferDialog
-          open={openCreateOffer}
-          setOpen={setOpenCreateOffer}
-          onClose={handleCloseCreateOffer}
-          nft={nft}
-          isSellOffer={isSellOffer}
-          onOfferCreated={handleOfferCreated}
-        />
         <TransferDialog
           open={openTransfer}
           setOpen={setOpenTransfer}
-          onClose={handleCloseTransfer}
           nft={nft}
-        />
-        <CreateOfferXRPCafe
-          open={openCreateOfferXRPCafe}
-          setOpen={setOpenCreateOfferXRPCafe}
-          nft={nft}
-          isSellOffer={false}
-          initialAmount={lowestSellOffer ? lowestSellOffer.totalAmount : 0}
-          brokerFeePercentage={lowestSellOffer ? lowestSellOffer.brokerFeePercentage : 0}
-          onOfferCreated={handleOfferCreated}
-        />
-        <ConfirmAcceptOfferDialog
-          open={openConfirm}
-          setOpen={setOpenConfirm}
-          offer={acceptOffer}
-          onContinue={onContinueAccept}
         />
       </div>
     </>

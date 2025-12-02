@@ -12,7 +12,6 @@ import { normalizeAmount } from 'src/utils/parseUtils';
 
 // Components
 import CountdownTimer from './CountDownTimer';
-import ConfirmAcceptOfferDialog from './ConfirmAcceptOfferDialog';
 
 export default function OffersList({ nft, offers, handleAcceptOffer, handleCancelOffer, isSell }) {
   const { themeName, accountProfile, openSnackbar, sync, setSync } = useContext(AppContext);
