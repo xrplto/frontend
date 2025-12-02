@@ -30,7 +30,8 @@ import {
   Info,
   ArrowLeft,
   Check,
-  AlertTriangle
+  AlertTriangle,
+  Send
 } from 'lucide-react';
 
 // Context
@@ -458,17 +459,7 @@ const WalletContent = ({
   walletsPerPage
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
-  const [showQR, setShowQR] = useState(false);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
-  const [copiedAddress, setCopiedAddress] = useState(false);
-
-  // Copy address handler with feedback
-  const handleCopyAddress = () => {
-    navigator.clipboard.writeText(accountLogin);
-    setCopiedAddress(true);
-    openSnackbar('Address copied', 'success');
-    setTimeout(() => setCopiedAddress(false), 2000);
-  };
 
   // Show backup section instead of wallet when downloading
   if (showBackupPassword) {
@@ -645,34 +636,30 @@ const WalletContent = ({
 
         {/* Quick Actions - Redesigned */}
         <div className="flex items-center justify-center gap-2 mt-5">
-          <button
-            onClick={handleCopyAddress}
+          <a
+            href="/wallet?tab=send"
             className={cn(
               "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              copiedAddress
-                ? "bg-emerald-500/10 text-emerald-500"
-                : isDark
-                  ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              isDark
+                ? "bg-primary/10 text-primary hover:bg-primary/20"
+                : "bg-primary/10 text-primary hover:bg-primary/20"
             )}
           >
-            {copiedAddress ? <Check size={13} /> : <Copy size={13} />}
-            {copiedAddress ? 'Copied' : 'Copy'}
-          </button>
-          <button
-            onClick={() => setShowQR(!showQR)}
+            <Send size={13} />
+            Send
+          </a>
+          <a
+            href="/wallet?tab=receive"
             className={cn(
               "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              showQR
-                ? "bg-primary/10 text-primary"
-                : isDark
-                  ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              isDark
+                ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
             )}
           >
             <QrCode size={13} />
-            QR
-          </button>
+            Receive
+          </a>
           <button
             onClick={onBackupSeed}
             className={cn(
@@ -687,21 +674,6 @@ const WalletContent = ({
           </button>
         </div>
 
-        {/* QR Code - Enhanced */}
-        {showQR && (
-          <div className="mt-5 inline-block">
-            <div className="p-3 bg-white rounded-2xl shadow-lg">
-              <img
-                src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`}
-                alt="Wallet QR Code"
-                className="w-[120px] h-[120px] rounded-lg"
-              />
-            </div>
-            <p className={cn("text-[10px] mt-2", isDark ? "text-white/40" : "text-gray-400")}>
-              Scan to receive XRP
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Balance Stats - Refined */}

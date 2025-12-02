@@ -9,10 +9,12 @@ import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
+import { Wallet } from 'lucide-react';
 
 const OverView = ({ account }) => {
-  const { themeName } = useContext(AppContext);
+  const { themeName, accountProfile } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
+  const isOwnAccount = accountProfile?.account === account;
   const [data, setData] = useState(null);
   const [txHistory, setTxHistory] = useState([]);
   const [filteredTxHistory, setFilteredTxHistory] = useState([]);
@@ -128,6 +130,15 @@ const OverView = ({ account }) => {
             <span className="text-[11px] h-5 px-2 rounded bg-[#4285f4]/10 text-[#4285f4] font-normal flex items-center">
               AMM
             </span>
+          )}
+          {isOwnAccount && (
+            <Link
+              href="/wallet"
+              className="flex items-center gap-1.5 text-[12px] px-3 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+            >
+              <Wallet size={14} />
+              Manage
+            </Link>
           )}
           {data?.firstTradeDate && (
             <span className={cn("text-[0.9rem] ml-auto", isDark ? "text-white/50" : "text-gray-500")}>
