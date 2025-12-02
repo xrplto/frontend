@@ -82,22 +82,34 @@ export const XrplToDarkTheme = {
     borderRadius: '12px',
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
-    backgroundAlt: '#000000',
-    backgroundAsset: '#000000',
-    backgroundTrait: alpha('#ffffff', 0.1),
+    // Premium dark background with subtle gradient
+    background: 'linear-gradient(135deg, #0a0a0f 0%, #0d0d14 25%, #080810 50%, #0a0a12 75%, #050508 100%)',
+    backgroundAlt: '#08080c',
+    backgroundAsset: '#0a0a10',
+    backgroundTrait: alpha('#ffffff', 0.08),
     borderTrait: '#ffffff',
-    glassMorphism: 'rgba(255, 255, 255, 0.05)',
-    cardBackground: '#000000',
-    surfaceElevated: '#111111'
+    // Enhanced glass morphism for premium feel
+    glassMorphism: 'rgba(255, 255, 255, 0.03)',
+    glassMorphismHover: 'rgba(255, 255, 255, 0.06)',
+    cardBackground: 'rgba(12, 12, 18, 0.8)',
+    cardBackgroundSolid: '#0c0c12',
+    surfaceElevated: 'rgba(18, 18, 26, 0.9)',
+    // Subtle accent glow for depth
+    accentGlow: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 125, 254, 0.15), transparent)',
+    accentGlowGreen: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(16, 185, 129, 0.08), transparent)',
+    // Premium border styling
+    borderSubtle: 'rgba(255, 255, 255, 0.06)',
+    borderMedium: 'rgba(255, 255, 255, 0.1)',
+    borderStrong: 'rgba(255, 255, 255, 0.15)'
   },
 
   // Header configuration
   header: {
     height: '80px',
-    background: '#000000',
-    boxShadow: '0px 1px 0px rgba(255, 255, 255, 0.1)',
-    backdropFilter: 'blur(20px) saturate(180%)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+    background: 'rgba(8, 8, 12, 0.85)',
+    boxShadow: '0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 24px rgba(0, 0, 0, 0.4)',
+    backdropFilter: 'blur(24px) saturate(180%)',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
     textColor: themeColors.white
   },
 
@@ -124,9 +136,9 @@ export const XrplToDarkTheme = {
 
   // Chart configuration
   chart: {
-    background: '#000000',
-    gridColor: alpha('#ffffff', 0.1),
-    borderColor: alpha('#ffffff', 0.2)
+    background: 'rgba(10, 10, 16, 0.6)',
+    gridColor: 'rgba(255, 255, 255, 0.04)',
+    borderColor: 'rgba(255, 255, 255, 0.08)'
   },
 
   // Typography

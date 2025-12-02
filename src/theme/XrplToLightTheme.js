@@ -82,22 +82,37 @@ export const XrplToLightTheme = {
     borderRadius: '12px',
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
-    backgroundAlt: '#F8FAFC',
-    backgroundAsset: '#F1F5F9',
-    backgroundTrait: '#E0F2FE',
+    // Premium light background with subtle warmth
+    background: 'linear-gradient(135deg, #fafbfc 0%, #f5f7fa 25%, #f8f9fb 50%, #f6f8fa 75%, #fafbfd 100%)',
+    backgroundAlt: '#f4f6f9',
+    backgroundAsset: '#f0f3f7',
+    backgroundTrait: '#e8f4fd',
     borderTrait: '#0EA5E9',
-    surfaceElevated: '#FFFFFF',
-    surfaceHover: '#F8FAFC',
-    surfacePressed: '#F1F5F9'
+    // Premium glass surfaces
+    glassMorphism: 'rgba(255, 255, 255, 0.7)',
+    glassMorphismHover: 'rgba(255, 255, 255, 0.85)',
+    cardBackground: 'rgba(255, 255, 255, 0.8)',
+    cardBackgroundSolid: '#ffffff',
+    surfaceElevated: 'rgba(255, 255, 255, 0.95)',
+    surfaceHover: '#f8fafc',
+    surfacePressed: '#f1f5f9',
+    // Subtle accent glow for depth
+    accentGlow: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(20, 125, 254, 0.08), transparent)',
+    accentGlowGreen: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(16, 185, 129, 0.06), transparent)',
+    // Premium border styling
+    borderSubtle: 'rgba(0, 0, 0, 0.04)',
+    borderMedium: 'rgba(0, 0, 0, 0.08)',
+    borderStrong: 'rgba(0, 0, 0, 0.12)'
   },
 
   // Header configuration
   header: {
     height: '80px',
-    background: '#FFFFFF',
-    boxShadow: '0px 1px 3px rgba(0, 0, 0, 0.1), 0px 1px 2px rgba(0, 0, 0, 0.06)',
+    background: 'rgba(255, 255, 255, 0.85)',
+    boxShadow: '0 1px 0 rgba(0, 0, 0, 0.03), 0 4px 20px rgba(0, 0, 0, 0.04)',
+    backdropFilter: 'blur(24px) saturate(180%)',
     textColor: themeColors.black,
-    borderBottom: '1px solid #E2E8F0'
+    borderBottom: '1px solid rgba(0, 0, 0, 0.06)'
   },
 
   // Sidebar configuration
@@ -129,9 +144,9 @@ export const XrplToLightTheme = {
 
   // Chart configuration
   chart: {
-    background: '#FFFFFF',
-    gridColor: '#F1F5F9',
-    borderColor: '#E2E8F0'
+    background: 'rgba(255, 255, 255, 0.6)',
+    gridColor: 'rgba(0, 0, 0, 0.03)',
+    borderColor: 'rgba(0, 0, 0, 0.06)'
   },
 
   // Typography

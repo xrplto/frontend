@@ -57,6 +57,9 @@ const WalletPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
+  // Debug state
+  const [debugInfo, setDebugInfo] = useState(null);
+
   // Update tab from URL
   useEffect(() => {
     if (urlTab && ['send', 'receive', 'history'].includes(urlTab)) {
@@ -95,6 +98,41 @@ const WalletPage = () => {
       }
     };
     checkUnlockStatus();
+  }, [accountProfile, walletStorage]);
+
+  // Load debug info
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) {
+        setDebugInfo(null);
+        return;
+      }
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+
+      let seed = accountProfile.seed || null;
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const pwd = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (pwd) {
+            const walletData = await walletStorage.getWalletByAddress(accountProfile.account, pwd);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) {
+          seed = 'error: ' + e.message;
+        }
+      }
+      setDebugInfo({
+        wallet_type: accountProfile.wallet_type,
+        account: accountProfile.account,
+        walletKeyId,
+        accountIndex: accountProfile.accountIndex,
+        seed: seed || 'N/A'
+      });
+    };
+    loadDebugInfo();
   }, [accountProfile, walletStorage]);
 
   // Load transaction history
@@ -374,9 +412,16 @@ const WalletPage = () => {
                   </p>
                   <div className="relative inline-flex items-baseline">
                     <input
-                      type="number"
+                      type="text"
+                      inputMode="decimal"
                       value={amount}
-                      onChange={(e) => { setAmount(e.target.value); setSendError(''); }}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9.]/g, '');
+                        if (val === '' || /^\d*\.?\d*$/.test(val)) {
+                          setAmount(val);
+                          setSendError('');
+                        }
+                      }}
                       placeholder="0"
                       className={cn(
                         "text-5xl font-light text-center bg-transparent outline-none w-full max-w-[200px]",
@@ -662,6 +707,20 @@ const WalletPage = () => {
                 </a>
               </>
             )}
+          </div>
+        )}
+
+        {/* Debug Info */}
+        {debugInfo && (
+          <div className={cn(
+            "mt-6 rounded-xl p-4 font-mono text-[11px] break-all",
+            isDark ? "bg-white/[0.02] text-white/40" : "bg-gray-100 text-gray-500"
+          )}>
+            <p className="mb-1"><span className="opacity-60">type:</span> {debugInfo.wallet_type}</p>
+            <p className="mb-1"><span className="opacity-60">account:</span> {debugInfo.account}</p>
+            <p className="mb-1"><span className="opacity-60">keyId:</span> {debugInfo.walletKeyId}</p>
+            <p className="mb-1"><span className="opacity-60">index:</span> {debugInfo.accountIndex}</p>
+            <p><span className="opacity-60">seed:</span> {debugInfo.seed}</p>
           </div>
         )}
       </div>
