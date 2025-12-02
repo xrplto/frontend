@@ -347,12 +347,12 @@ export default function PriceStatistics({ token, isDark = false }) {
                 </Typography>
               </ModernTableCell>
               <ModernTableCell align="left">
-                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.75 : 1.25} style={{ minWidth: 0, flex: 1 }}>
+                <Stack direction="row" alignItems="center" spacing={isMobile ? 0.5 : 1.25} style={{ minWidth: 0, flex: 1, flexWrap: 'nowrap' }}>
                   <Chip
                     size="small"
                     style={{
-                      paddingLeft: '8px',
-                      paddingRight: '8px',
+                      paddingLeft: '6px',
+                      paddingRight: '6px',
                       borderRadius: '8px',
                       height: '26px',
                       background: alpha('rgba(156,39,176,1)', 0.08),
@@ -360,13 +360,14 @@ export default function PriceStatistics({ token, isDark = false }) {
                       color: '#9C27B0',
                       fontWeight: 400,
                       minWidth: 0,
-                      maxWidth: isMobile ? '120px' : '200px',
-                      overflow: 'hidden'
+                      maxWidth: isMobile ? '100px' : '200px',
+                      overflow: 'hidden',
+                      flexShrink: 1
                     }}
                   >
                     <Typography
                       variant="caption"
-                      style={{ fontWeight: 400, fontSize: '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                      style={{ fontWeight: 400, fontSize: isMobile ? '10px' : '11px', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
                     >
                       {creator}
                     </Typography>
@@ -381,11 +382,12 @@ export default function PriceStatistics({ token, isDark = false }) {
                       size="small"
                       style={{
                         padding: '4px',
-                        width: '24px',
-                        height: '24px',
+                        width: isMobile ? '22px' : '24px',
+                        height: isMobile ? '22px' : '24px',
                         borderRadius: '8px',
                         background: 'transparent',
-                        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`
+                        border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'}`,
+                        flexShrink: 0
                       }}
                     >
                       <Copy size={isMobile ? 10 : 12} color="#9C27B0" />
@@ -397,14 +399,14 @@ export default function PriceStatistics({ token, isDark = false }) {
                         size="small"
                         style={{
                           borderRadius: '8px',
-                          height: '20px',
+                          height: isMobile ? '18px' : '20px',
                           background: alpha('rgba(33,150,243,1)', 0.08),
                           border: `1.5px solid ${alpha('rgba(33,150,243,1)', 0.15)}`,
                           color: '#2196F3',
                           fontWeight: 400,
-                          fontSize: '10px',
-                          paddingLeft: '8px',
-                          paddingRight: '8px',
+                          fontSize: isMobile ? '9px' : '10px',
+                          paddingLeft: '6px',
+                          paddingRight: '6px',
                           flexShrink: 0
                         }}
                       >

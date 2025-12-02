@@ -72,7 +72,8 @@ const Grid = styled.div`
   @media (max-width: 600px) {
     display: flex;
     overflow-x: auto;
-    gap: 4px;
+    gap: 6px;
+    padding-bottom: 4px;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     &::-webkit-scrollbar {
@@ -81,7 +82,7 @@ const Grid = styled.div`
   }
 
   @media (max-width: 480px) {
-    gap: 4px;
+    gap: 6px;
   }
 `;
 
@@ -98,20 +99,20 @@ const MetricBox = styled.div`
   border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
 
   @media (max-width: 600px) {
-    padding: 6px 6px;
-    min-height: 58px;
-    flex: 1;
-    min-width: 0;
+    padding: 8px;
+    min-height: 62px;
+    flex: 0 0 auto;
+    min-width: 72px;
     border-radius: 10px;
     border-width: 1px;
     justify-content: space-between;
   }
 
   @media (max-width: 480px) {
-    padding: 6px 6px;
-    min-height: 58px;
-    flex: 1;
-    min-width: 0;
+    padding: 8px;
+    min-height: 62px;
+    flex: 0 0 auto;
+    min-width: 72px;
     border-radius: 10px;
     border-width: 1px;
     justify-content: space-between;
@@ -127,16 +128,16 @@ const MetricTitle = styled.span`
   line-height: 1.2;
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
-    margin-bottom: 0;
-    line-height: 1;
+    font-size: 0.6rem;
+    margin-bottom: 2px;
+    line-height: 1.1;
     flex-shrink: 0;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.55rem;
-    margin-bottom: 0;
-    line-height: 1;
+    font-size: 0.6rem;
+    margin-bottom: 2px;
+    line-height: 1.1;
     flex-shrink: 0;
   }
 `;
@@ -152,15 +153,15 @@ const MetricValue = styled.span`
   white-space: nowrap;
 
   @media (max-width: 600px) {
-    font-size: 0.7rem;
-    margin-bottom: 1px;
-    line-height: 1;
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+    line-height: 1.1;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.7rem;
-    margin-bottom: 1px;
-    line-height: 1;
+    font-size: 0.8rem;
+    margin-bottom: 2px;
+    line-height: 1.1;
   }
 `;
 
@@ -175,14 +176,14 @@ const PercentageChange = styled.span`
   letter-spacing: -0.01em;
 
   @media (max-width: 600px) {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     gap: 1px;
     flex-shrink: 0;
     margin-top: auto;
   }
 
   @media (max-width: 480px) {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
     gap: 1px;
     flex-shrink: 0;
     margin-top: auto;
@@ -1030,13 +1031,13 @@ export default function Summary() {
                 </PercentageChange>
               </MetricBox>
 
-              <MetricBox isDark={darkMode}>
+              <MetricBox isDark={darkMode} style={isMobile ? { minWidth: '90px' } : {}}>
                 <MetricTitle isDark={darkMode}>Market</MetricTitle>
-                <div style={{ display: 'flex', gap: isMobile ? '16px' : '24px', width: '100%', marginTop: '4px' }}>
+                <div style={{ display: 'flex', gap: isMobile ? '12px' : '24px', width: '100%', marginTop: '4px' }}>
                   <div>
                     <MetricValue
                       style={{
-                        fontSize: isMobile ? '0.7rem' : '1.35rem',
+                        fontSize: isMobile ? '0.8rem' : '1.35rem',
                         color:
                           metrics.global?.sentimentScore >= 60
                             ? '#10b981'
@@ -1047,13 +1048,13 @@ export default function Summary() {
                     >
                       {(metrics.global?.sentimentScore || 0).toFixed(0)}
                     </MetricValue>
-                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px' }}>Sentiment</VolumePercentage>
+                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px', fontSize: isMobile ? '0.5rem' : undefined }}>Sent</VolumePercentage>
                   </div>
                   <div>
                     <MetricValue
                       isDark={darkMode}
                       style={{
-                        fontSize: isMobile ? '0.7rem' : '1.35rem',
+                        fontSize: isMobile ? '0.8rem' : '1.35rem',
                         color:
                           (metrics.global?.avgRSI || 50) <= 30
                             ? '#ef4444'
@@ -1064,7 +1065,7 @@ export default function Summary() {
                     >
                       {(metrics.global?.avgRSI || 50).toFixed(0)}
                     </MetricValue>
-                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px' }}>RSI</VolumePercentage>
+                    <VolumePercentage isDark={darkMode} style={{ display: 'block', marginTop: '2px', fontSize: isMobile ? '0.5rem' : undefined }}>RSI</VolumePercentage>
                   </div>
                 </div>
               </MetricBox>

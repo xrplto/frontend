@@ -126,27 +126,26 @@ const Overview = memo(
         {/* Main row: Chart+TradingHistory | OrderBook | Swap sidebar */}
         <div className={cn(
           "flex flex-col md:flex-row items-stretch",
-          isMobile ? "gap-1" : "gap-2"
+          isMobile ? "gap-3" : "gap-2"
         )}>
           {/* Left: Chart + TradingHistory stacked */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
-            <section aria-label="Price Chart" style={{ minHeight: '720px', position: 'relative', zIndex: 10 }}>
+            <section aria-label="Price Chart" style={{ minHeight: isMobile ? 'auto' : '720px', position: 'relative', zIndex: 10 }}>
               <h2 className="sr-only">Price Chart</h2>
               <PriceChart token={token} />
             </section>
-            {!isMobile && !isTablet && (
-              <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
-                <h2 className="sr-only">Trading History</h2>
-                <TradingHistory
-                  tokenId={token.md5}
-                  amm={token.AMM}
-                  token={token}
-                  pairs={pairs}
-                  onTransactionClick={onTransactionClick}
-                  isDark={isDark}
-                />
-              </section>
-            )}
+            <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
+              <h2 className="sr-only">Trading History</h2>
+              <TradingHistory
+                tokenId={token.md5}
+                amm={token.AMM}
+                token={token}
+                pairs={pairs}
+                onTransactionClick={onTransactionClick}
+                isDark={isDark}
+                isMobile={isMobile || isTablet}
+              />
+            </section>
           </div>
 
           {/* Middle: OrderBook - fixed width, stretch height */}

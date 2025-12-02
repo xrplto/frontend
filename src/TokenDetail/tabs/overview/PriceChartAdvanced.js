@@ -32,7 +32,7 @@ const Card = styled.div`
   width: 100%;
   height: 100%;
   padding: ${props => props.isMobile ? '8px' : '16px'};
-  padding-bottom: ${props => props.isMobile ? '32px' : '40px'};
+  padding-bottom: ${props => props.isMobile ? '8px' : '16px'};
   background: transparent;
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
   border-radius: 12px;
@@ -69,10 +69,10 @@ const ButtonGroup = styled.div`
 `;
 
 const Button = styled.button`
-  padding: ${props => props.isMobile ? '4px 8px' : '5px 10px'};
-  font-size: ${props => props.isMobile ? '11px' : '12px'};
+  padding: ${props => props.isMobile ? '6px 10px' : '5px 10px'};
+  font-size: ${props => props.isMobile ? '12px' : '12px'};
   min-width: ${props => props.minWidth || 'auto'};
-  height: ${props => props.isMobile ? '26px' : '28px'};
+  height: ${props => props.isMobile ? '30px' : '28px'};
   border-radius: 6px;
   font-weight: 400;
   border: 1.5px solid ${props => props.isActive ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)')};
@@ -500,7 +500,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
     lastChartTypeRef.current = chartType;
 
-    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 380 : 520);
+    const containerHeight = chartContainerRef.current.clientHeight || (isMobile ? 360 : 600);
     const chart = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
       height: containerHeight,
@@ -510,7 +510,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           color: 'transparent'
         },
         textColor: isDark ? '#FFFFFF' : '#212B36',
-        fontSize: 13,
+        fontSize: isMobile ? 10 : 13,
         fontFamily: "'Segoe UI', Roboto, Arial, sans-serif"
       },
       grid: {
@@ -549,10 +549,11 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderVisible: false,
         visible: true,
         entireTextOnly: false,
-        drawTicks: true,
-        ticksVisible: true,
+        drawTicks: isMobile ? false : true,
+        ticksVisible: isMobile ? false : true,
         alignLabels: true,
-        textColor: isDark ? '#ffffff' : '#000000'
+        textColor: isDark ? '#ffffff' : '#000000',
+        minimumWidth: isMobile ? 50 : 80
       },
       localization: {
         priceFormatter: (price) => {
@@ -817,7 +818,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     const handleResize = () => {
       if (chartContainerRef.current && chart) {
         const container = chartContainerRef.current;
-        const containerHeight = container.clientHeight || (isMobile ? 380 : 520);
+        const containerHeight = container.clientHeight || (isMobile ? 360 : 600);
 
         chart.applyOptions({
           width: container.clientWidth,
@@ -863,7 +864,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       const container = chartContainerRef.current;
       if (!container) return;
 
-      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 420 : 620;
+      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 380 : 620;
       const rect = container.getBoundingClientRect();
       const newWidth = rect.width || container.clientWidth;
 
@@ -1059,8 +1060,8 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   return (
     <Card isDark={isDark} isMobile={isMobile} isFullscreen={isFullscreen}>
-      <Box style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-        <Box style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+      <Box style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', justifyContent: 'space-between', marginBottom: isMobile ? '8px' : '12px', gap: isMobile ? '10px' : '8px' }}>
+        <Box style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '8px' : '10px', flexWrap: 'wrap' }}>
           <Typography variant="h6" isDark={isDark}>
             {token.name} {chartType === 'holders' ? 'Holders' : `(${activeFiatCurrency})`}
           </Typography>
@@ -1093,7 +1094,7 @@ const PriceChartAdvanced = memo(({ token }) => {
           )}
         </Box>
 
-        <Box style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <Box style={{ display: 'flex', gap: isMobile ? '8px' : '6px', flexWrap: 'wrap', alignItems: 'center', justifyContent: isMobile ? 'space-between' : 'flex-start' }}>
           <ButtonGroup>
             {Object.entries(chartTypeIcons).map(([type, icon]) => (
               <Button key={type} onClick={() => setChartType(type)} isActive={chartType === type} isMobile={isMobile} isDark={isDark}>
@@ -1114,7 +1115,7 @@ const PriceChartAdvanced = memo(({ token }) => {
                 isActive={timeRange === range}
                 isMobile={isMobile}
                 isDark={isDark}
-                minWidth={isMobile ? '28px' : '32px'}
+                minWidth={isMobile ? '32px' : '32px'}
               >
                 {range.toUpperCase()}
               </Button>
@@ -1127,7 +1128,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         </Box>
       </Box>
 
-      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '420px' : '620px', borderRadius: '8px' }}>
+      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '380px' : '620px', borderRadius: '8px' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {loading && !chartRef.current && (
           <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

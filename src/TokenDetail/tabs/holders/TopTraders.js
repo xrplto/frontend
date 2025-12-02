@@ -1,113 +1,18 @@
 import { useState, useEffect, useContext, useMemo } from 'react';
 import axios from 'axios';
-import { format } from 'date-fns';
 import Link from 'next/link';
-import {
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Target,
-  Zap
-} from 'lucide-react';
-
-// Context
+import { Loader2, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, TrendingUp, TrendingDown, Activity, Target, Zap } from 'lucide-react';
 import { AppContext } from 'src/AppContext';
-
-// Utils
 import { cn } from 'src/utils/cn';
-import { fNumber, fPercent } from 'src/utils/formatters';
-
-function formatDuration(seconds) {
-  if (seconds === 0 || seconds === null || seconds === undefined) return '-';
-  const hours = Math.floor(seconds / 3600);
-  const days = Math.floor(hours / 24);
-  const months = Math.floor(days / 30);
-
-  if (months > 0) {
-    return `${months}mo`;
-  } else if (days > 0) {
-    return `${days}d`;
-  } else if (hours > 0) {
-    return `${hours}h`;
-  } else {
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (minutes > 0) {
-      return `${minutes}min`;
-    } else {
-      return `<1min`;
-    }
-  }
-}
-
-function formatDate(dateString) {
-  if (!dateString) return '-';
-  try {
-    return format(new Date(dateString), 'MMM d');
-  } catch (error) {
-    return '-';
-  }
-}
+import { fNumber } from 'src/utils/formatters';
 
 function formatCompactNumber(num) {
   if (num === 0 || num === null || num === undefined) return '0';
   const absNum = Math.abs(num);
-  if (absNum >= 1000000) {
-    return (num / 1000000).toFixed(1) + 'M';
-  } else if (absNum >= 1000) {
-    return (num / 1000).toFixed(1) + 'K';
-  } else if (absNum >= 1) {
-    return num.toFixed(0);
-  } else {
-    return num.toFixed(2);
-  }
-}
-
-function descendingComparator(a, b, orderBy) {
-  let aValue = a[orderBy];
-  let bValue = b[orderBy];
-
-  if (orderBy === 'firstTradeDate' || orderBy === 'lastTradeDate') {
-    aValue = aValue ? new Date(aValue).getTime() : 0;
-    bValue = bValue ? new Date(bValue).getTime() : 0;
-  }
-
-  if (bValue < aValue) {
-    return -1;
-  }
-  if (bValue > aValue) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-// Win rate bar component
-function WinRateBar({ winRate, isDark }) {
-  if (winRate === null || winRate === undefined) return <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>-</span>;
-
-  return (
-    <div className="flex items-center gap-1.5">
-      <div className={cn('h-1.5 w-12 rounded-full overflow-hidden', isDark ? 'bg-white/10' : 'bg-gray-200')}>
-        <div
-          className="h-full bg-green-500 rounded-full transition-all"
-          style={{ width: `${winRate}%` }}
-        />
-      </div>
-      <span className={cn('text-[10px] font-medium', winRate >= 50 ? 'text-green-500' : 'text-red-400')}>
-        {winRate.toFixed(0)}%
-      </span>
-    </div>
-  );
+  if (absNum >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+  if (absNum >= 1000) return (num / 1000).toFixed(1) + 'K';
+  if (absNum >= 1) return num.toFixed(0);
+  return num.toFixed(2);
 }
 
 // Time period options
@@ -138,11 +43,13 @@ export default function TopTraders({ token }) {
   const [timePeriod, setTimePeriod] = useState('7d');
   const [page, setPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const rowsPerPage = 20;
+  const [mobileChecked, setMobileChecked] = useState(false);
+  const rowsPerPage = isMobile ? 10 : 20;
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
+    setMobileChecked(true);
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
@@ -153,11 +60,13 @@ export default function TopTraders({ token }) {
   const isXRPToken = token?.currency === 'XRP';
 
   useEffect(() => {
+    if (!mobileChecked) return;
     if (!tokenMd5 && !isXRPToken) {
       setLoading(false);
       return;
     }
 
+    const limit = isMobile ? 10 : 20;
     const fetchTopTraders = async () => {
       setLoading(true);
       try {
@@ -167,7 +76,7 @@ export default function TopTraders({ token }) {
           const sortMap = { profit: 'buyVolume', volume: 'volume24h', roi: 'sellVolume', winRate: 'winRate' };
           const sortBy = sortMap[sortType] || 'volume24h';
           response = await axios.get(
-            `${BASE_URL}/analytics/cumulative-stats?page=${page}&limit=${rowsPerPage}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
+            `${BASE_URL}/analytics/cumulative-stats?page=${page}&limit=${limit}&sortBy=${sortBy}&sortOrder=desc&includeAMM=false`
           );
           if (response.status === 200) {
             const tradersArray = Array.isArray(response.data.data) ? response.data.data : [];
@@ -179,12 +88,13 @@ export default function TopTraders({ token }) {
           const sortOption = SORT_OPTIONS.find(o => o.key === sortType);
           const sortBy = sortOption?.timeBased ? `${sortType}${timePeriod}` : sortType;
           response = await axios.get(
-            `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${rowsPerPage}&sortBy=${sortBy}`
+            `${BASE_URL}/analytics/top-traders/${tokenMd5}?page=${page}&limit=${limit}&sortBy=${sortBy}`
           );
           if (response.status === 200) {
-            const tradersArray = Array.isArray(response.data) ? response.data : [];
+            // API returns { traders, total, page, limit, totalPages }
+            const tradersArray = Array.isArray(response.data.traders) ? response.data.traders : [];
             setTraders(tradersArray);
-            setTotalCount(tradersArray.length < rowsPerPage ? (page - 1) * rowsPerPage + tradersArray.length : page * rowsPerPage + 1);
+            setTotalCount(response.data.total || tradersArray.length);
           }
         }
       } catch (error) {
@@ -196,7 +106,7 @@ export default function TopTraders({ token }) {
     };
 
     fetchTopTraders();
-  }, [tokenMd5, isXRPToken, sortType, timePeriod, page]);
+  }, [tokenMd5, isXRPToken, sortType, timePeriod, page, isMobile, mobileChecked]);
 
   const processedTraders = useMemo(() => {
     if (!Array.isArray(traders) || traders.length === 0) return [];
@@ -253,9 +163,9 @@ export default function TopTraders({ token }) {
           {/* Controls */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             {/* Time Period - only for time-based sorts */}
-            <div className="flex items-center gap-1">
-              {SORT_OPTIONS.find(o => o.key === sortType)?.timeBased ? (
-                TIME_PERIODS.map((period) => (
+            {SORT_OPTIONS.find(o => o.key === sortType)?.timeBased && (
+              <div className="flex items-center gap-1">
+                {TIME_PERIODS.map((period) => (
                   <button
                     key={period.key}
                     onClick={() => handlePeriodChange(period.key)}
@@ -270,11 +180,9 @@ export default function TopTraders({ token }) {
                   >
                     {period.label}
                   </button>
-                ))
-              ) : (
-                <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>All time</span>
-              )}
-            </div>
+                ))}
+              </div>
+            )}
 
             {/* Sort Options */}
             <div className="flex items-center gap-1">
@@ -303,130 +211,43 @@ export default function TopTraders({ token }) {
           </div>
 
           {/* Table */}
-          <div className="overflow-x-auto">
+          <div>
             <table className="w-full">
               <thead>
                 <tr className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
-                  <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider w-8', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
+                  <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
                   <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trader</th>
                   <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>P&L</th>
-                  <th className={cn('hidden md:table-cell py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Bought</th>
-                  <th className={cn('hidden md:table-cell py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Sold</th>
-                  <th className={cn('hidden lg:table-cell py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
-                  <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
-                  <th className={cn('hidden lg:table-cell py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>ROI</th>
-                  <th className={cn('hidden md:table-cell py-2 px-2 text-center text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Win Rate</th>
-                  <th className={cn('hidden sm:table-cell py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Last Trade</th>
+                  <th className={cn('py-2 pl-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Trades</th>
                 </tr>
               </thead>
               <tbody>
                 {processedTraders.map((trader, index) => {
                   const rank = (page - 1) * rowsPerPage + index + 1;
                   const isTopTrader = rank <= 3;
-
                   return (
-                    <tr
-                      key={trader.address + '-' + index}
-                      className={cn(
-                        'border-b transition-colors',
-                        isDark ? 'border-white/[0.03] hover:bg-white/[0.02]' : 'border-gray-50 hover:bg-gray-50/50'
-                      )}
-                    >
-                      {/* Rank */}
-                      <td className="py-2.5 pr-2">
+                    <tr key={trader.address + '-' + index} className={cn('border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
+                      <td className="py-2 pr-2">
                         <span className={cn(
-                          'text-[11px] font-medium',
-                          isTopTrader
-                            ? rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-400' : 'text-amber-600'
-                            : isDark ? 'text-white/30' : 'text-gray-400'
-                        )}>
-                          {rank}
-                        </span>
+                          'text-[10px] font-medium',
+                          isTopTrader ? rank === 1 ? 'text-yellow-500' : rank === 2 ? 'text-gray-400' : 'text-amber-600' : isDark ? 'text-white/30' : 'text-gray-400'
+                        )}>{rank}</span>
                       </td>
-
-                      {/* Trader Address */}
-                      <td className="py-2.5 px-2">
-                        <Link
-                          href={`/profile/${trader.address}`}
-                          className={cn(
-                            'text-[12px] font-mono hover:text-primary transition-colors',
-                            isDark ? 'text-white/90' : 'text-gray-700'
-                          )}
-                        >
-                          {isMobile
-                            ? `${trader.address.slice(0, 4)}...${trader.address.slice(-4)}`
-                            : `${trader.address.slice(0, 6)}...${trader.address.slice(-6)}`
-                          }
+                      <td className="py-2 px-2">
+                        <Link href={`/profile/${trader.address}`} className={cn('text-[11px] font-mono hover:text-primary', isDark ? 'text-white/80' : 'text-gray-700')}>
+                          {`${trader.address.slice(0, isMobile ? 4 : 6)}...${trader.address.slice(isMobile ? -4 : -6)}`}
                         </Link>
                       </td>
-
-                      {/* P&L */}
-                      <td className="py-2.5 px-2 text-right">
+                      <td className="py-2 px-2 text-right">
                         <div className="flex items-center justify-end gap-1">
-                          {trader.profit >= 0 ? (
-                            <TrendingUp size={12} className="text-green-500" />
-                          ) : (
-                            <TrendingDown size={12} className="text-red-500" />
-                          )}
-                          <span className={cn(
-                            'text-[12px] font-medium tabular-nums',
-                            trader.profit >= 0 ? 'text-green-500' : 'text-red-500'
-                          )}>
+                          {trader.profit >= 0 ? <TrendingUp size={10} className="text-green-500" /> : <TrendingDown size={10} className="text-red-500" />}
+                          <span className={cn('text-[11px] font-medium tabular-nums', trader.profit >= 0 ? 'text-green-500' : 'text-red-500')}>
                             {trader.profit >= 0 ? '+' : ''}{formatCompactNumber(trader.profit)}
                           </span>
                         </div>
                       </td>
-
-                      {/* Bought */}
-                      <td className="hidden md:table-cell py-2.5 px-2 text-right">
-                        <span className={cn('text-[11px] tabular-nums text-green-500')}>
-                          {formatCompactNumber(trader.buyVolume || 0)}
-                        </span>
-                      </td>
-
-                      {/* Sold */}
-                      <td className="hidden md:table-cell py-2.5 px-2 text-right">
-                        <span className={cn('text-[11px] tabular-nums text-red-500')}>
-                          {formatCompactNumber(trader.sellVolume || 0)}
-                        </span>
-                      </td>
-
-                      {/* Balance */}
-                      <td className="hidden lg:table-cell py-2.5 px-2 text-right">
-                        <span className={cn('text-[11px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
-                          {formatCompactNumber(trader.actualBalance || 0)}
-                        </span>
-                      </td>
-
-                      {/* Trades */}
-                      <td className="py-2.5 px-2 text-right">
-                        <span className={cn('text-[11px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
-                          {fNumber(trader.totalTrades || trader.trades)}
-                        </span>
-                      </td>
-
-                      {/* ROI */}
-                      <td className="hidden lg:table-cell py-2.5 px-2 text-right">
-                        <span className={cn(
-                          'text-[11px] font-medium tabular-nums',
-                          (trader.roi || 0) >= 0 ? 'text-green-500' : 'text-red-500'
-                        )}>
-                          {fPercent(trader.roi || 0)}
-                        </span>
-                      </td>
-
-                      {/* Win Rate */}
-                      <td className="hidden md:table-cell py-2.5 px-2">
-                        <div className="flex justify-center">
-                          <WinRateBar winRate={trader.winRate} isDark={isDark} />
-                        </div>
-                      </td>
-
-                      {/* Last Trade */}
-                      <td className="hidden sm:table-cell py-2.5 pl-2 text-right">
-                        <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                          {formatDate(trader.lastTradeDate)}
-                        </span>
+                      <td className={cn('py-2 pl-2 text-right text-[11px] tabular-nums', isDark ? 'text-white/70' : 'text-gray-600')}>
+                        {fNumber(trader.totalTrades || trader.trades)}
                       </td>
                     </tr>
                   );
@@ -439,7 +260,7 @@ export default function TopTraders({ token }) {
           {totalPages > 1 && (
             <div className="flex items-center justify-between pt-2">
               <span className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-400')}>
-                Showing {(page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, totalCount)} of {totalCount}
+                Showing {(page - 1) * rowsPerPage + 1}-{Math.min(page * rowsPerPage, totalCount)} of {totalCount.toLocaleString()}
               </span>
               <div className="flex items-center gap-1">
                 <button
@@ -463,7 +284,7 @@ export default function TopTraders({ token }) {
                   <ChevronLeft size={14} />
                 </button>
                 <span className={cn('px-3 text-[11px] font-medium', isDark ? 'text-white/70' : 'text-gray-600')}>
-                  {page} / {totalPages}
+                  {page} / {totalPages.toLocaleString()}
                 </span>
                 <button
                   onClick={() => setPage(page + 1)}

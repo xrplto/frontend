@@ -66,8 +66,8 @@ export const XrplToDarkTheme = {
   },
 
   walletDialog: {
-    background: 'rgba(0, 0, 0, 0.95)',
-    backgroundSecondary: 'rgba(0, 0, 0, 0.6)',
+    background: '#000000',
+    backgroundSecondary: '#0c0c12',
     border: 'rgba(255, 255, 255, 0.1)'
   },
 

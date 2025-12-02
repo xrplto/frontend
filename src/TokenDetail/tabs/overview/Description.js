@@ -50,18 +50,19 @@ const IconButton = styled.button`
 `;
 
 const Content = styled.div`
-  padding: 4px 10px 10px;
+  padding: 6px 12px 12px;
   position: relative;
 `;
 
 const Typography = styled.div`
-  font-size: ${props => props.variant === 'h6' ? '12px' : props.variant === 'subtitle1' ? '11px' : props.variant === 'subtitle2' ? '11px' : '12px'};
+  font-size: ${props => props.variant === 'h6' ? '13px' : props.variant === 'subtitle1' ? '12px' : props.variant === 'subtitle2' ? '12px' : '13px'};
   font-weight: 400;
-  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
-  margin-bottom: ${props => props.paragraph ? '4px' : props.gutterBottom ? '6px' : 0};
+  color: ${props => props.color === 'text.secondary' ? (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)') : (props.isDark ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.85)')};
+  margin-bottom: ${props => props.paragraph ? '8px' : props.gutterBottom ? '8px' : 0};
   margin-top: ${props => props.gutterBottom ? '4px' : 0};
-  line-height: 1.5;
+  line-height: 1.6;
   font-style: ${props => props.fontStyle || 'normal'};
+  letter-spacing: 0.01em;
 `;
 
 const Tooltip = ({ title, children }) => {

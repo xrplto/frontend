@@ -146,7 +146,7 @@ const SOCIALS = [
 ];
 
 const Group = React.memo(({ items, isDark }) => (
-  <Box style={{ display: 'inline-flex', alignItems: 'center', flexWrap: 'wrap', gap: '4px' }}>
+  <Box style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '2px 4px', justifyContent: 'center' }}>
     {items.map((it) => (
       <FooterLink key={it.label} href={it.href} isDark={isDark}>{it.label}</FooterLink>
     ))}
@@ -177,26 +177,26 @@ function Footer() {
 
   return (
     <Root isDark={isDark}>
-      <Container px="32px" py="10px" pb="12px">
-        <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap' }}>
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <NextLink href="/" style={{ display: 'inline-flex', textDecoration: 'none' }}>
-              <Logo alt="XRPL.to" style={{ width: '70px', height: 'auto' }} />
-            </NextLink>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              isDark={isDark}
-              style={{ fontSize: '0.9rem', opacity: 0.5 }}
-            >
-              © {year}
-            </Typography>
-          </Box>
-
-          <Box style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', justifyContent: 'center' }}>
-            <Group items={PRODUCTS} isDark={isDark} />
+      <Container px="16px" py="10px" pb="12px">
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Mobile: stacked, Desktop: row */}
+          <Box style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+            <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <NextLink href="/" style={{ display: 'inline-flex', textDecoration: 'none' }}>
+                <Logo alt="XRPL.to" style={{ width: '60px', height: 'auto' }} />
+              </NextLink>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                isDark={isDark}
+                style={{ fontSize: '0.85rem', opacity: 0.5 }}
+              >
+                © {year}
+              </Typography>
+            </Box>
             <SocialIcons isDark={isDark} />
           </Box>
+          <Group items={PRODUCTS} isDark={isDark} />
         </Box>
       </Container>
     </Root>

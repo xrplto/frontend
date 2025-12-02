@@ -448,8 +448,8 @@ const TrendingTokens = () => {
           <Box
             style={{
               display: 'grid',
-              gridTemplateColumns: '55px 65px',
-              gap: '8px',
+              gridTemplateColumns: '60px 55px',
+              gap: '4px',
               marginLeft: 'auto'
             }}
           >
@@ -515,7 +515,7 @@ const TrendingTokens = () => {
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          maxWidth: isMobile ? '90px' : 'none'
+                          maxWidth: isMobile ? '110px' : 'none'
                         }}
                       >
                         {token.user}
@@ -565,8 +565,8 @@ const TrendingTokens = () => {
                   <Box
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: isMobile ? '55px 65px' : '80px 55px 70px 70px',
-                      gap: '6px',
+                      gridTemplateColumns: isMobile ? '60px 55px' : '80px 55px 70px 70px',
+                      gap: isMobile ? '4px' : '6px',
                       marginLeft: 'auto',
                       flexShrink: 0
                     }}

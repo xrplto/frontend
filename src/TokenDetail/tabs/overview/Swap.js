@@ -304,6 +304,10 @@ const Input = styled.input`
   &::placeholder {
     color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
   }
+  @media (max-width: 600px) {
+    font-size: 16px;
+    padding: 10px;
+  }
   @media (min-width: 600px) {
     font-size: ${props => {
       if (props.sx?.input?.fontSize && typeof props.sx.input.fontSize === 'object') {
@@ -394,6 +398,10 @@ const Tabs = styled.div`
   border-radius: 8px;
   background: ${props => props.isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)'};
   border: 1px solid ${props => props.isDark ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'};
+  @media (max-width: 600px) {
+    padding: 4px;
+    gap: 4px;
+  }
 `;
 
 const Tab = styled.button`
@@ -410,6 +418,11 @@ const Tab = styled.button`
   &:hover {
     background: ${props => props.isActive ? '#4285f4' : 'rgba(66,133,244,0.1)'};
     border-color: ${props => props.isActive ? 'transparent' : 'rgba(66,133,244,0.2)'};
+  }
+  @media (max-width: 600px) {
+    padding: 10px 20px;
+    font-size: 15px;
+    border-radius: 8px;
   }
 `;
 
@@ -481,8 +494,9 @@ const CurrencyContent = styled.div`
     border-color: #4285f4;
   }
   @media (max-width: 600px) {
-    padding: 10px 12px;
-    margin: 3px 0;
+    padding: 14px 16px;
+    margin: 6px 0;
+    border-radius: 12px;
   }
 `;
 
@@ -509,8 +523,8 @@ const OverviewWrapper = styled.div`
   background: transparent;
   border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   @media (max-width: 600px) {
-    border-radius: 10px;
-    padding: 12px;
+    border-radius: 12px;
+    padding: 16px;
   }
 `;
 
@@ -576,6 +590,12 @@ const ExchangeButton = styled(Button)`
     border-color: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
     box-shadow: none;
   }
+
+  @media (max-width: 600px) {
+    padding: 16px 18px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
 `;
 
 const TokenImage = styled(Image)`
@@ -584,8 +604,8 @@ const TokenImage = styled(Image)`
   border-radius: 50%;
   object-fit: cover;
   @media (max-width: 600px) {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 `;
 
@@ -596,6 +616,11 @@ const SummaryBox = styled.div`
   border: 1px solid ${props => props.isDark ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'};
   margin-top: 8px;
   margin-bottom: 4px;
+  @media (max-width: 600px) {
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-top: 12px;
+  }
 `;
 
 // RLUSD token for XRP orderbook display (Ripple's official stablecoin)
@@ -1767,17 +1792,17 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                           : '0'}
                       </Typography>
                     </Typography>
-                    <Stack direction="row" spacing={0.25}>
+                    <Stack direction="row" spacing={0.5}>
                       {[0.25, 0.5, 0.75].map((p) => (
                         <Button
                           key={p}
                           isDark={isDark}
                           sx={{
-                            px: { xs: 0.75, sm: 0.5 },
+                            px: { xs: 1, sm: 0.5 },
                             py: 0,
                             minWidth: 0,
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                            height: { xs: '24px', sm: '20px' }
+                            fontSize: { xs: '0.75rem', sm: '0.75rem' },
+                            height: { xs: '28px', sm: '20px' }
                           }}
                           disabled={!accountPairBalance?.curr1?.value}
                           onClick={() => onFillPercent(p)}
@@ -1788,11 +1813,11 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       <Button
                         isDark={isDark}
                         sx={{
-                          px: { xs: 0.75, sm: 0.5 },
+                          px: { xs: 1, sm: 0.5 },
                           py: 0,
                           minWidth: 0,
-                          fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                          height: { xs: '24px', sm: '20px' }
+                          fontSize: { xs: '0.75rem', sm: '0.75rem' },
+                          height: { xs: '28px', sm: '20px' }
                         }}
                         disabled={!accountPairBalance?.curr1?.value}
                         onClick={onFillMax}
@@ -1954,12 +1979,12 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
 
           {/* Slippage control - Only for market orders */}
           {orderType === 'market' && (
-            <Box sx={{ px: 1.5, py: 0.5 }}>
+            <Box sx={{ px: 1.5, py: 1 }}>
               <Stack direction="row" alignItems="center" justifyContent="space-between">
-                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '11px' }}>
+                <Typography variant="caption" color="textSecondary" isDark={isDark} sx={{ fontSize: '12px' }}>
                   Slippage
                 </Typography>
-                <Stack direction="row" spacing={0.25} alignItems="center">
+                <Stack direction="row" spacing={0.5} alignItems="center">
                   {[1, 3, 5].map((preset) => (
                     <Button
                       key={preset}
@@ -1968,10 +1993,10 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                       onClick={() => setSlippage(preset)}
                       isDark={isDark}
                       sx={{
-                        minWidth: '22px',
-                        height: '18px',
-                        fontSize: '11px',
-                        px: 0.5,
+                        minWidth: '28px',
+                        height: '24px',
+                        fontSize: '12px',
+                        px: 0.75,
                         py: 0,
                         color: slippage === preset ? '#4285f4' : 'text.secondary',
                         borderColor: '#4285f4',
@@ -1991,18 +2016,18 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
                     }}
                     isDark={isDark}
                     sx={{
-                      width: '28px',
+                      width: '32px',
                       input: {
-                        fontSize: '11px',
+                        fontSize: '12px',
                         textAlign: 'center',
-                        padding: '1px',
+                        padding: '2px',
                         border: `1px solid ${isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'}`,
                         borderRadius: '4px',
-                        height: '14px'
+                        height: '18px'
                       }
                     }}
                   />
-                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '11px', color: 'text.secondary' }}>
+                  <Typography variant="caption" isDark={isDark} sx={{ fontSize: '12px', color: 'text.secondary' }}>
                     % · Impact {priceImpact}%
                   </Typography>
                 </Stack>

@@ -27,8 +27,8 @@ const Container = styled.div`
   position: relative;
 
   @media (max-width: 600px) {
-    padding: 4px;
-    gap: 4px;
+    padding: 6px;
+    gap: 6px;
   }
 `;
 
@@ -44,12 +44,13 @@ const Row = styled.div`
   width: 100%;
 
   @media (max-width: 600px) {
-    gap: 3px;
+    gap: 6px;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     -ms-overflow-style: none;
+    padding-bottom: 2px;
 
     &::-webkit-scrollbar {
       display: none;
@@ -64,7 +65,7 @@ const RowContent = styled.div`
   flex-wrap: wrap;
 
   @media (max-width: 600px) {
-    gap: 3px;
+    gap: 6px;
     flex-wrap: nowrap;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
@@ -115,9 +116,9 @@ const RowsSelector = styled.select`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.65rem;
-    height: 24px;
-    min-width: 60px;
+    font-size: 0.7rem;
+    height: 28px;
+    min-width: 55px;
     padding-right: 20px;
     background-size: 10px;
     background-position: right 4px center;
@@ -132,7 +133,7 @@ const Stack = styled.div`
   flex-shrink: 0;
 
   @media (max-width: 600px) {
-    gap: 2px;
+    gap: 4px;
   }
 `;
 
@@ -186,10 +187,10 @@ const Button = styled.button`
   }
 
   @media (max-width: 600px) {
-    padding: 3px 6px;
-    font-size: 0.7rem;
-    height: 28px;
-    gap: 2px;
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    height: 30px;
+    gap: 3px;
   }
 `;
 
@@ -262,12 +263,13 @@ const ButtonGroup = styled.div`
 
   @media (max-width: 600px) {
     display: ${(props) => (props.hideOnMobile ? 'none' : 'flex')};
+    padding: 2px;
 
     & > button {
-      min-width: 26px;
-      height: 24px;
-      padding: 0 5px;
-      font-size: 0.65rem;
+      min-width: 32px;
+      height: 26px;
+      padding: 0 6px;
+      font-size: 0.7rem;
       gap: 2px;
     }
   }
@@ -282,8 +284,8 @@ const Divider = styled.div`
 
   @media (max-width: 600px) {
     display: ${(props) => (props.hideOnMobile ? 'none' : 'block')};
-    margin: 0 3px;
-    height: 14px;
+    margin: 0 4px;
+    height: 16px;
   }
 `;
 
@@ -310,10 +312,10 @@ const Chip = styled.button`
   }
 
   @media (max-width: 600px) {
-    padding: 2px 6px;
-    font-size: 0.65rem;
-    height: 24px;
-    gap: 2px;
+    padding: 4px 8px;
+    font-size: 0.7rem;
+    height: 28px;
+    gap: 3px;
     display: ${(props) => (props.hideOnMobile ? 'none' : 'inline-flex')};
   }
 `;
@@ -341,10 +343,10 @@ const TagChip = styled.button`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    height: 22px;
-    padding: 2px 6px;
-    gap: 2px;
+    font-size: 0.68rem;
+    height: 26px;
+    padding: 4px 8px;
+    gap: 3px;
   }
 `;
 
@@ -370,10 +372,10 @@ const AllTagsButton = styled.button`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.6rem;
-    height: 22px;
-    padding: 2px 6px;
-    gap: 2px;
+    font-size: 0.68rem;
+    height: 26px;
+    padding: 4px 8px;
+    gap: 3px;
   }
 `;
 
