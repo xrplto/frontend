@@ -685,18 +685,19 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
       {/* Search Modal */}
       <Suspense fallback={null}>
-        <SearchModal open={searchModalOpen} onClose={() => setSearchModalOpen(false)} />
+        <SearchModal open={searchModalOpen} onClose={() => { setSearchModalOpen(false); setFullSearch(false); }} />
       </Suspense>
 
       {/* Mobile Drawer */}
       {openDrawer && (
         <>
-          <div className="fixed inset-0 z-[1200] bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => toggleDrawer(false)} />
+          <div className="fixed inset-0 z-[2147483646] bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => toggleDrawer(false)} />
           <div
             className={cn(
-              'fixed bottom-0 right-0 top-0 z-[1300] w-[260px] overflow-y-auto animate-in slide-in-from-right duration-200',
+              'fixed bottom-0 right-0 top-0 z-[2147483647] w-[280px] animate-in slide-in-from-right duration-200',
               isDark ? 'bg-[#0d0d0d] border-l border-white/[0.08]' : 'bg-white border-l border-gray-200'
             )}
+            style={{ overflowY: 'auto', height: '100vh', paddingBottom: '80px' }}
           >
             <div className="p-4">
               <div className="mb-4 flex items-center justify-between">
@@ -713,7 +714,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </button>
               </div>
 
-              <nav className="space-y-0.5">
+              <nav className="space-y-1">
                 {/* Tokens Expandable */}
                 <button
                   onClick={() => setTokensExpanded(!tokensExpanded)}
@@ -883,6 +884,64 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
               <div className="px-1">
                 <Wallet buttonOnly={true} />
+              </div>
+
+              <div className={cn('my-3 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')} />
+
+              {/* Currency */}
+              <div className="px-1">
+                <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  Currency
+                </p>
+                <div className="flex flex-wrap gap-1">
+                  {currencyConfig.availableFiatCurrencies.map((currency) => (
+                    <button
+                      key={currency}
+                      onClick={() => toggleFiatCurrency(currency)}
+                      className={cn(
+                        'rounded-lg px-3 py-2 text-[13px] transition-colors',
+                        currency === activeFiatCurrency
+                          ? isDark ? 'bg-white/[0.12] text-white font-medium' : 'bg-primary/10 text-primary font-medium'
+                          : isDark ? 'text-white/60 hover:bg-white/[0.06]' : 'text-gray-600 hover:bg-gray-50'
+                      )}
+                    >
+                      {currencySymbols[currency] || ''}{currency}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Theme */}
+              <div className="mt-4 px-1">
+                <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                  Theme
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setTheme('XrplToLightTheme')}
+                    className={cn(
+                      'flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors',
+                      themeName === 'XrplToLightTheme'
+                        ? isDark ? 'bg-white/[0.12] text-white font-medium' : 'bg-primary/10 text-primary font-medium'
+                        : isDark ? 'text-white/60 hover:bg-white/[0.06]' : 'text-gray-600 hover:bg-gray-50'
+                    )}
+                  >
+                    <Sun size={14} />
+                    Light
+                  </button>
+                  <button
+                    onClick={() => setTheme('XrplToDarkTheme')}
+                    className={cn(
+                      'flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] transition-colors',
+                      themeName === 'XrplToDarkTheme'
+                        ? 'bg-white/[0.12] text-white font-medium'
+                        : isDark ? 'text-white/60 hover:bg-white/[0.06]' : 'text-gray-600 hover:bg-gray-50'
+                    )}
+                  >
+                    <div className="h-3.5 w-3.5 rounded-full bg-gray-700 border border-gray-500" />
+                    Dark
+                  </button>
+                </div>
               </div>
             </div>
           </div>

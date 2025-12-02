@@ -209,11 +209,11 @@ function SearchModal({ open, onClose }) {
         <Dialog.Overlay className={cn("fixed inset-0 z-50", theme.overlay)} />
         <Dialog.Content
           onKeyDown={(e) => e.key === 'Escape' && handleClose()}
-          className={cn("fixed left-1/2 top-[12vh] z-50 w-full max-w-[440px] -translate-x-1/2 rounded-xl border", theme.modal)}
+          className={cn("fixed left-1/2 top-[8vh] sm:top-[12vh] z-50 w-[calc(100%-24px)] sm:w-full max-w-[440px] -translate-x-1/2 rounded-xl border max-h-[80vh] overflow-y-auto", theme.modal)}
         >
           {/* Search Header */}
-          <div className={cn("border-b px-4 py-3", theme.border)}>
-            <div className="flex items-center gap-3">
+          <div className={cn("sticky top-0 z-10 border-b px-3 sm:px-4 py-3", theme.border, theme.modal)}>
+            <div className="flex items-center gap-2 sm:gap-3">
               <Search size={16} className={theme.textSecondary} />
               <input
                 ref={inputRef}
@@ -238,7 +238,7 @@ function SearchModal({ open, onClose }) {
               <>
                 {/* Recent Searches */}
                 {recentSearches.length > 0 && (
-                  <div className="px-4 pt-3 pb-1">
+                  <div className="px-3 sm:px-4 pt-3 pb-1">
                     <div className="flex items-center gap-1.5 mb-2">
                       <Clock size={12} className="text-gray-500" />
                       <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500">Recent</p>
@@ -288,7 +288,7 @@ function SearchModal({ open, onClose }) {
                 {/* Trending Tokens */}
                 {!loadingTrending && trendingTokens.length > 0 && (
                   <>
-                    <div className="flex items-center gap-1.5 px-4 pb-1.5 pt-3">
+                    <div className="flex items-center gap-1.5 px-3 sm:px-4 pb-1.5 pt-3">
                       <TrendingUp size={12} className="text-primary" />
                       <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500">Trending</p>
                     </div>
@@ -300,14 +300,14 @@ function SearchModal({ open, onClose }) {
                             key={index}
                             onClick={() => handleResultClick(token, 'token')}
                             className={cn(
-                              "flex w-full items-center gap-3 px-4 py-2.5 transition-colors",
+                              "flex w-full items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 transition-colors",
                               theme.item,
                               isCopycat && (isDark ? 'bg-red-500/5' : 'bg-red-50')
                             )}
                           >
-                            <div className="relative">
-                              <Avatar.Root className="h-9 w-9">
-                                <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-9 w-9 rounded-full object-cover" />
+                            <div className="relative flex-shrink-0">
+                              <Avatar.Root className="h-8 w-8 sm:h-9 sm:w-9">
+                                <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
                                 <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{token.user?.[0]}</Avatar.Fallback>
                               </Avatar.Root>
                               {isCopycat && (
@@ -359,8 +359,8 @@ function SearchModal({ open, onClose }) {
                 {/* Trending Collections */}
                 {!loadingTrending && trendingCollections.length > 0 && (
                   <>
-                    <div className={cn("mx-4 my-2 h-px", theme.divider)} />
-                    <div className="flex items-center gap-1.5 px-4 pb-1.5 pt-1">
+                    <div className={cn("mx-3 sm:mx-4 my-2 h-px", theme.divider)} />
+                    <div className="flex items-center gap-1.5 px-3 sm:px-4 pb-1.5 pt-1">
                       <Layers size={12} className="text-green-500" />
                       <p className="text-[10px] font-medium uppercase tracking-wider text-gray-500">Trending Collections</p>
                     </div>
@@ -369,10 +369,10 @@ function SearchModal({ open, onClose }) {
                         <button
                           key={index}
                           onClick={() => handleResultClick(collection, 'collection')}
-                          className={cn("flex w-full items-center gap-3 px-4 py-2.5 transition-colors", theme.item)}
+                          className={cn("flex w-full items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 transition-colors", theme.item)}
                         >
-                          <Avatar.Root className="h-9 w-9">
-                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-9 w-9 rounded-full object-cover" />
+                          <Avatar.Root className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
+                            <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
                             <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{collection.name?.[0]}</Avatar.Fallback>
                           </Avatar.Root>
                           <div className="flex-1 text-left min-w-0">
@@ -415,7 +415,7 @@ function SearchModal({ open, onClose }) {
               <>
                 {searchResults.tokens.length > 0 && (
                   <>
-                    <div className="flex items-center gap-2 px-4 pb-2 pt-4">
+                    <div className="flex items-center gap-2 px-3 sm:px-4 pb-2 pt-4">
                       <TrendingUp size={14} className="text-primary/50" />
                       <p className="text-xs font-normal text-gray-400/60">Tokens</p>
                     </div>
@@ -428,15 +428,15 @@ function SearchModal({ open, onClose }) {
                             key={index}
                             onClick={() => handleResultClick(token, 'token')}
                             className={cn(
-                              'flex w-full items-center gap-3 px-4 py-2.5 transition-colors',
+                              'flex w-full items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 transition-colors',
                               theme.item,
                               shouldHighlight && 'bg-primary/5',
                               isCopycat && (isDark ? 'bg-red-500/5' : 'bg-red-50')
                             )}
                           >
-                            <div className="relative">
-                              <Avatar.Root className="h-9 w-9">
-                                <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-9 w-9 rounded-full object-cover" />
+                            <div className="relative flex-shrink-0">
+                              <Avatar.Root className="h-8 w-8 sm:h-9 sm:w-9">
+                                <Avatar.Image src={`https://s1.xrpl.to/token/${token.md5}`} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
                                 <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{token.user?.[0]}</Avatar.Fallback>
                               </Avatar.Root>
                               {isCopycat && (
@@ -487,8 +487,8 @@ function SearchModal({ open, onClose }) {
 
                 {searchResults.collections.length > 0 && (
                   <>
-                    {searchResults.tokens.length > 0 && <div className={cn("mx-4 my-2 h-px", theme.divider)} />}
-                    <div className="flex items-center gap-2 px-4 pb-2 pt-3">
+                    {searchResults.tokens.length > 0 && <div className={cn("mx-3 sm:mx-4 my-2 h-px", theme.divider)} />}
+                    <div className="flex items-center gap-2 px-3 sm:px-4 pb-2 pt-3">
                       <Layers size={14} className="text-gray-500" />
                       <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">Collections</p>
                     </div>
@@ -500,14 +500,14 @@ function SearchModal({ open, onClose }) {
                             key={index}
                             onClick={() => handleResultClick(collection, 'collection')}
                             className={cn(
-                              "flex w-full items-center gap-3 px-4 py-2.5 transition-colors",
+                              "flex w-full items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 transition-colors",
                               theme.item,
                               isCopycat && (isDark ? 'bg-red-500/5' : 'bg-red-50')
                             )}
                           >
-                            <div className="relative">
-                              <Avatar.Root className="h-9 w-9">
-                                <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-9 w-9 rounded-full object-cover" />
+                            <div className="relative flex-shrink-0">
+                              <Avatar.Root className="h-8 w-8 sm:h-9 sm:w-9">
+                                <Avatar.Image src={`https://s1.xrpl.to/nft-collection/${collection.logoImage}`} className="h-8 w-8 sm:h-9 sm:w-9 rounded-full object-cover" />
                                 <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-full text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{collection.name?.[0]}</Avatar.Fallback>
                               </Avatar.Root>
                               {isCopycat && (
@@ -547,8 +547,8 @@ function SearchModal({ open, onClose }) {
 
                 {searchResults.nfts.length > 0 && (
                   <>
-                    {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && <div className={cn("mx-4 my-2 h-px", theme.divider)} />}
-                    <div className="flex items-center gap-2 px-4 pb-2 pt-3">
+                    {(searchResults.tokens.length > 0 || searchResults.collections.length > 0) && <div className={cn("mx-3 sm:mx-4 my-2 h-px", theme.divider)} />}
+                    <div className="flex items-center gap-2 px-3 sm:px-4 pb-2 pt-3">
                       <Image size={14} className="text-purple-500" />
                       <p className="text-[11px] font-medium uppercase tracking-wider text-gray-500">NFTs</p>
                     </div>
@@ -562,10 +562,10 @@ function SearchModal({ open, onClose }) {
                           <button
                             key={index}
                             onClick={() => handleResultClick(nft, 'nft')}
-                            className={cn("flex w-full items-center gap-3 px-4 py-2.5 transition-colors", theme.item)}
+                            className={cn("flex w-full items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-2.5 transition-colors", theme.item)}
                           >
-                            <Avatar.Root className="h-9 w-9">
-                              <Avatar.Image src={imgSrc} className="h-9 w-9 rounded-lg object-cover" />
+                            <Avatar.Root className="h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0">
+                              <Avatar.Image src={imgSrc} className="h-8 w-8 sm:h-9 sm:w-9 rounded-lg object-cover" />
                               <Avatar.Fallback className={cn("flex h-full w-full items-center justify-center rounded-lg text-xs", isDark ? "bg-white/10" : "bg-gray-200")}>{nft.name?.[0]}</Avatar.Fallback>
                             </Avatar.Root>
                             <div className="flex-1 text-left min-w-0">

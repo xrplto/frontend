@@ -57,8 +57,6 @@ const WalletPage = () => {
   const [transactions, setTransactions] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Debug state
-  const [debugInfo, setDebugInfo] = useState(null);
 
   // Update tab from URL
   useEffect(() => {
@@ -98,41 +96,6 @@ const WalletPage = () => {
       }
     };
     checkUnlockStatus();
-  }, [accountProfile, walletStorage]);
-
-  // Load debug info
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) {
-        setDebugInfo(null);
-        return;
-      }
-      const walletKeyId = accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
-
-      let seed = accountProfile.seed || null;
-      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
-        try {
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const pwd = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (pwd) {
-            const walletData = await walletStorage.getWalletByAddress(accountProfile.account, pwd);
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) {
-          seed = 'error: ' + e.message;
-        }
-      }
-      setDebugInfo({
-        wallet_type: accountProfile.wallet_type,
-        account: accountProfile.account,
-        walletKeyId,
-        accountIndex: accountProfile.accountIndex,
-        seed: seed || 'N/A'
-      });
-    };
-    loadDebugInfo();
   }, [accountProfile, walletStorage]);
 
   // Load transaction history
@@ -285,13 +248,13 @@ const WalletPage = () => {
   };
 
   return (
-    <div className={cn("min-h-screen", isDark ? "bg-black" : "bg-gray-50")}>
+    <div className={cn("min-h-screen pb-8", isDark ? "bg-black" : "bg-gray-50")}>
       {/* Header */}
       <div className={cn(
-        "sticky top-0 z-10 border-b backdrop-blur-xl",
-        isDark ? "border-white/10 bg-black/80" : "border-gray-200 bg-white/80"
+        "sticky top-[52px] z-10 border-b backdrop-blur-xl",
+        isDark ? "border-white/10 bg-black/90" : "border-gray-200 bg-white/90"
       )}>
-        <div className="max-w-md mx-auto px-4 py-3">
+        <div className="max-w-lg mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <a
               href="/"
@@ -319,19 +282,19 @@ const WalletPage = () => {
           </div>
 
           {/* Balance */}
-          <div className="mt-4 mb-5 text-center">
-            <p className={cn("text-[11px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>
-              Available Balance
+          <div className="mt-3 mb-4 text-center">
+            <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>
+              Available
             </p>
-            <p className={cn("text-4xl font-light tracking-tight", isDark ? "text-white" : "text-gray-900")}>
+            <p className={cn("text-3xl font-light tracking-tight", isDark ? "text-white" : "text-gray-900")}>
               {Number(availableBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
-              <span className={cn("text-base ml-1.5", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+              <span className={cn("text-sm ml-1", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
             </p>
           </div>
 
           {/* Tabs */}
           <div className={cn(
-            "flex rounded-xl p-1",
+            "flex rounded-lg p-0.5 gap-0.5",
             isDark ? "bg-white/5" : "bg-gray-100"
           )}>
             {[
@@ -343,7 +306,7 @@ const WalletPage = () => {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={cn(
-                  "flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[13px] font-medium transition-all",
+                  "flex-1 flex items-center justify-center gap-1 py-2 rounded-md text-[12px] font-medium transition-all",
                   activeTab === tab.id
                     ? isDark
                       ? "bg-white/10 text-white"
@@ -353,7 +316,7 @@ const WalletPage = () => {
                       : "text-gray-500 hover:text-gray-700"
                 )}
               >
-                <tab.icon size={15} />
+                <tab.icon size={14} />
                 {tab.label}
               </button>
             ))}
@@ -362,7 +325,7 @@ const WalletPage = () => {
       </div>
 
       {/* Content */}
-      <div className="max-w-md mx-auto px-4 py-5">
+      <div className="max-w-lg mx-auto px-4 py-5">
         {/* Send Tab */}
         {activeTab === 'send' && (
           <div className="space-y-3">
@@ -710,19 +673,6 @@ const WalletPage = () => {
           </div>
         )}
 
-        {/* Debug Info */}
-        {debugInfo && (
-          <div className={cn(
-            "mt-6 rounded-xl p-4 font-mono text-[11px] break-all",
-            isDark ? "bg-white/[0.02] text-white/40" : "bg-gray-100 text-gray-500"
-          )}>
-            <p className="mb-1"><span className="opacity-60">type:</span> {debugInfo.wallet_type}</p>
-            <p className="mb-1"><span className="opacity-60">account:</span> {debugInfo.account}</p>
-            <p className="mb-1"><span className="opacity-60">keyId:</span> {debugInfo.walletKeyId}</p>
-            <p className="mb-1"><span className="opacity-60">index:</span> {debugInfo.accountIndex}</p>
-            <p><span className="opacity-60">seed:</span> {debugInfo.seed}</p>
-          </div>
-        )}
       </div>
     </div>
   );

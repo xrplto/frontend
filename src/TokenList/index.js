@@ -280,6 +280,24 @@ function TokenListComponent({
     if (typeof window !== 'undefined') {
       localStorage.setItem('tokenListViewMode', newMode);
     }
+    // Update customColumns for mobile based on view mode
+    const mobileColumnPresets = {
+      classic: ['price', 'pro24h'],
+      priceChange: ['price', 'pro1h'],
+      marketData: ['marketCap', 'volume24h'],
+      topGainers: ['price', 'pro5m'],
+      trader: ['volume24h', 'pro24h']
+    };
+    const preset = mobileColumnPresets[newMode];
+    if (preset) {
+      setCustomColumns(preset);
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('customTokenColumns', JSON.stringify(preset));
+      }
+    } else if (newMode === 'custom') {
+      // Open custom settings dialog
+      setCustomSettingsOpen(true);
+    }
   }, []);
 
   // Save custom columns to localStorage when they change
@@ -721,242 +739,137 @@ function TokenListComponent({
       )}
 
       {customSettingsOpen && viewMode === 'custom' ? (
-        <CustomColumnsPanel darkMode={darkMode}>
-          <h3
-            style={{
-              margin: '0 0 10px 0',
-              color: darkMode ? '#fff' : '#000',
-              fontSize: '18px'
-            }}
-          >
-            Customize Table Columns
-          </h3>
-          <p
-            style={{
-              color: darkMode ? '#999' : '#666',
-              fontSize: '14px',
-              margin: '0 0 20px 0'
-            }}
-          >
-            {isMobile
-              ? 'Choose any data field for each column position'
-              : 'Select the columns you want to display in the token list'}
-          </p>
+        <CustomColumnsPanel darkMode={darkMode} style={isMobile ? { padding: '16px', margin: '8px 0', borderRadius: '8px' } : {}}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+            <h3 style={{ margin: 0, color: darkMode ? '#fff' : '#000', fontSize: isMobile ? '15px' : '18px', fontWeight: 500 }}>
+              {isMobile ? 'Custom Columns' : 'Customize Table Columns'}
+            </h3>
+            {isMobile && (
+              <button
+                onClick={() => { setTempCustomColumns(customColumns); setCustomSettingsOpen(false); }}
+                style={{ background: 'none', border: 'none', color: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', fontSize: '20px', cursor: 'pointer', padding: '4px' }}
+              >
+                ×
+              </button>
+            )}
+          </div>
 
           {isMobile ? (
-            // Mobile: Two dropdowns for selecting any column
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <div>
-                <label
-                  htmlFor="column-2-select"
-                  style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '12px',
-                    fontWeight: '400',
-                    color: darkMode ? '#999' : '#666',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Column 2 (Middle)
+                <label htmlFor="column-2-select" style={{ display: 'block', marginBottom: '6px', fontSize: '11px', fontWeight: 500, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Middle Column
                 </label>
                 <select
                   id="column-2-select"
                   value={tempCustomColumns[0] || 'price'}
-                  onChange={(e) =>
-                    setTempCustomColumns([e.target.value, tempCustomColumns[1] || 'pro24h'])
-                  }
-                  aria-label="Select data for column 2"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '12px',
-                    border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
-                    background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
-                    color: darkMode ? '#fff' : '#000',
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
+                  onChange={(e) => setTempCustomColumns([e.target.value, tempCustomColumns[1] || 'pro24h'])}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: `1.5px solid ${darkMode ? '#f59e0b' : 'rgba(0,0,0,0.1)'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000', fontSize: '13px', cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
                 >
-                  <optgroup label="Data Fields">
-                    <option value="price">Price - Current token price</option>
-                    <option value="volume24h">Vol - 24 hour volume</option>
-                    <option value="volume7d">V7D - 7 day volume</option>
-                    <option value="marketCap">MCap - Market capitalization</option>
-                    <option value="tvl">TVL - Total Value Locked</option>
-                    <option value="holders">Hldr - Number of holders</option>
-                    <option value="trades">Trds - 24h trade count</option>
-                    <option value="created">Age - Token creation date</option>
-                    <option value="supply">Supp - Total supply</option>
-                    <option value="origin">Orig - Token origin</option>
-                  </optgroup>
-                  <optgroup label="Percent Changes">
-                    <option value="pro5m">5M - 5 minute change</option>
-                    <option value="pro1h">1H - 1 hour change</option>
-                    <option value="pro24h">24H - 24 hour change</option>
-                    <option value="pro7d">7D - 7 day change</option>
-                    <option value="pro30d">30D - 30 day estimate</option>
-                  </optgroup>
+                  <option value="price" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Price</option>
+                  <option value="volume24h" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Volume 24h</option>
+                  <option value="volume7d" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Volume 7d</option>
+                  <option value="marketCap" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Market Cap</option>
+                  <option value="tvl" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>TVL</option>
+                  <option value="holders" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Holders</option>
+                  <option value="trades" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Trades</option>
+                  <option value="created" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Age</option>
+                  <option value="supply" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Supply</option>
+                  <option value="pro5m" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>5m %</option>
+                  <option value="pro1h" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>1h %</option>
+                  <option value="pro24h" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>24h %</option>
+                  <option value="pro7d" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>7d %</option>
                 </select>
               </div>
-
               <div>
-                <label
-                  htmlFor="column-3-select"
-                  style={{
-                    display: 'block',
-                    marginBottom: '8px',
-                    fontSize: '12px',
-                    fontWeight: '400',
-                    color: darkMode ? '#999' : '#666',
-                    textTransform: 'uppercase'
-                  }}
-                >
-                  Column 3 (Right)
+                <label htmlFor="column-3-select" style={{ display: 'block', marginBottom: '6px', fontSize: '11px', fontWeight: 500, color: darkMode ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Right Column
                 </label>
                 <select
                   id="column-3-select"
                   value={tempCustomColumns[1] || 'pro24h'}
-                  onChange={(e) =>
-                    setTempCustomColumns([tempCustomColumns[0] || 'price', e.target.value])
-                  }
-                  aria-label="Select data for column 3"
-                  style={{
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: '12px',
-                    border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
-                    background: darkMode ? 'rgba(255, 255, 255, 0.03)' : 'rgba(0, 0, 0, 0.02)',
-                    color: darkMode ? '#fff' : '#000',
-                    fontSize: '14px',
-                    cursor: 'pointer'
-                  }}
+                  onChange={(e) => setTempCustomColumns([tempCustomColumns[0] || 'price', e.target.value])}
+                  style={{ width: '100%', padding: '12px', borderRadius: '8px', border: `1.5px solid ${darkMode ? '#f59e0b' : 'rgba(0,0,0,0.1)'}`, background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000', fontSize: '13px', cursor: 'pointer', appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='${darkMode ? '%23fff' : '%23000'}' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center' }}
                 >
-                  <optgroup label="Percent Changes">
-                    <option value="pro5m">5M - 5 minute change</option>
-                    <option value="pro1h">1H - 1 hour change</option>
-                    <option value="pro24h">24H - 24 hour change</option>
-                    <option value="pro7d">7D - 7 day change</option>
-                    <option value="pro30d">30D - 30 day estimate</option>
-                  </optgroup>
-                  <optgroup label="Data Fields">
-                    <option value="price">Price - Current token price</option>
-                    <option value="volume24h">Vol - 24 hour volume</option>
-                    <option value="volume7d">V7D - 7 day volume</option>
-                    <option value="marketCap">MCap - Market capitalization</option>
-                    <option value="tvl">TVL - Total Value Locked</option>
-                    <option value="holders">Hldr - Number of holders</option>
-                    <option value="trades">Trds - 24h trade count</option>
-                    <option value="created">Age - Token creation date</option>
-                    <option value="supply">Supp - Total supply</option>
-                    <option value="origin">Orig - Token origin</option>
-                  </optgroup>
+                  <option value="pro5m" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>5m %</option>
+                  <option value="pro1h" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>1h %</option>
+                  <option value="pro24h" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>24h %</option>
+                  <option value="pro7d" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>7d %</option>
+                  <option value="price" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Price</option>
+                  <option value="volume24h" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Volume 24h</option>
+                  <option value="volume7d" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Volume 7d</option>
+                  <option value="marketCap" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Market Cap</option>
+                  <option value="tvl" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>TVL</option>
+                  <option value="holders" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Holders</option>
+                  <option value="trades" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Trades</option>
+                  <option value="created" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Age</option>
+                  <option value="supply" style={{ background: darkMode ? '#1a1a1a' : '#fff', color: darkMode ? '#fff' : '#000' }}>Supply</option>
                 </select>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                <button
+                  onClick={() => setTempCustomColumns(['price', 'pro24h'])}
+                  style={{ flex: 1, padding: '10px', borderRadius: '8px', border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, background: 'transparent', color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => { setCustomColumns(tempCustomColumns); localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns)); setCustomSettingsOpen(false); }}
+                  style={{ flex: 2, padding: '10px', borderRadius: '8px', border: 'none', background: '#2196f3', color: '#fff', fontSize: '12px', fontWeight: 500, cursor: 'pointer' }}
+                >
+                  Apply
+                </button>
               </div>
             </div>
           ) : (
-            // Desktop: Checkbox grid
-            <ColumnsGrid>
-              {AVAILABLE_COLUMNS.map((column) => (
-                <ColumnItem key={column.id} darkMode={darkMode}>
-                  <input
-                    type="checkbox"
-                    checked={tempCustomColumns.includes(column.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setTempCustomColumns([...tempCustomColumns, column.id]);
-                      } else {
-                        setTempCustomColumns(tempCustomColumns.filter((id) => id !== column.id));
-                      }
-                    }}
-                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
-                  />
-                  <div style={{ flex: 1 }}>
-                    <div
-                      style={{
-                        color: darkMode ? '#fff' : '#000',
-                        fontSize: '14px',
-                        fontWeight: 400
+            <>
+              <p style={{ color: darkMode ? '#999' : '#666', fontSize: '14px', margin: '0 0 20px 0' }}>
+                Select the columns you want to display in the token list
+              </p>
+              <ColumnsGrid>
+                {AVAILABLE_COLUMNS.map((column) => (
+                  <ColumnItem key={column.id} darkMode={darkMode}>
+                    <input
+                      type="checkbox"
+                      checked={tempCustomColumns.includes(column.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setTempCustomColumns([...tempCustomColumns, column.id]);
+                        } else {
+                          setTempCustomColumns(tempCustomColumns.filter((id) => id !== column.id));
+                        }
                       }}
-                    >
-                      {column.label}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ color: darkMode ? '#fff' : '#000', fontSize: '14px', fontWeight: 400 }}>{column.label}</div>
+                      <div style={{ color: darkMode ? '#999' : '#666', fontSize: '12px' }}>{column.description}</div>
                     </div>
-                    <div
-                      style={{
-                        color: darkMode ? '#999' : '#666',
-                        fontSize: '12px'
-                      }}
-                    >
-                      {column.description}
-                    </div>
-                  </div>
-                </ColumnItem>
-              ))}
-            </ColumnsGrid>
+                  </ColumnItem>
+                ))}
+              </ColumnsGrid>
+              <ButtonRow>
+                <button
+                  onClick={() => setTempCustomColumns(['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline'])}
+                  style={{ padding: '10px 20px', borderRadius: '8px', border: `1.5px solid ${darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, background: 'transparent', color: darkMode ? '#fff' : '#000', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                >
+                  Reset
+                </button>
+                <button
+                  onClick={() => { setCustomColumns(tempCustomColumns); localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns)); setCustomSettingsOpen(false); }}
+                  style={{ padding: '10px 20px', borderRadius: '8px', border: 'none', background: '#2196f3', color: '#fff', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                >
+                  Apply
+                </button>
+                <button
+                  onClick={() => { setTempCustomColumns(customColumns); setCustomSettingsOpen(false); }}
+                  style={{ padding: '10px 20px', borderRadius: '8px', border: `1.5px solid rgba(239,68,68,0.2)`, background: 'rgba(239,68,68,0.1)', color: '#ef4444', cursor: 'pointer', fontSize: '13px', fontWeight: 500 }}
+                >
+                  Cancel
+                </button>
+              </ButtonRow>
+            </>
           )}
-
-          <ButtonRow>
-            <button
-              onClick={() => {
-                setTempCustomColumns(
-                  isMobile
-                    ? ['price', 'pro24h']
-                    : ['price', 'pro24h', 'volume24h', 'marketCap', 'sparkline']
-                );
-              }}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '12px',
-                border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.12)'}`,
-                background: darkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
-                color: darkMode ? '#fff' : '#000',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 400
-              }}
-            >
-              Reset Default
-            </button>
-            <button
-              onClick={() => {
-                setCustomColumns(tempCustomColumns);
-                if (typeof window !== 'undefined') {
-                  localStorage.setItem('customTokenColumns', JSON.stringify(tempCustomColumns));
-                }
-                setCustomSettingsOpen(false);
-              }}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '12px',
-                border: 'none',
-                background: '#2196f3',
-                color: 'white',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 400
-              }}
-            >
-              Apply Changes
-            </button>
-            <button
-              onClick={() => {
-                setTempCustomColumns(customColumns);
-                setCustomSettingsOpen(false);
-              }}
-              style={{
-                padding: '10px 20px',
-                borderRadius: '12px',
-                border: `1px solid ${darkMode ? 'rgba(255, 100, 100, 0.2)' : 'rgba(255, 50, 50, 0.2)'}`,
-                background: darkMode ? 'rgba(255, 100, 100, 0.1)' : 'rgba(255, 50, 50, 0.1)',
-                color: darkMode ? '#ff6666' : '#cc0000',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: 400
-              }}
-            >
-              Cancel
-            </button>
-          </ButtonRow>
         </CustomColumnsPanel>
       ) : isMobile ? (
         <MobileContainer isDark={darkMode}>

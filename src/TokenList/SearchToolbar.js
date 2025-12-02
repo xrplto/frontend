@@ -131,9 +131,12 @@ const Stack = styled.div`
   gap: 4px;
   align-items: center;
   flex-shrink: 0;
+  position: relative;
+  z-index: 1;
 
   @media (max-width: 600px) {
     gap: 4px;
+    touch-action: manipulation;
   }
 `;
 
@@ -245,6 +248,8 @@ const ButtonGroup = styled.div`
     justify-content: center;
     gap: 3px;
     color: inherit;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 
     &:hover {
       background: rgba(33, 150, 243, 0.08);
@@ -1002,27 +1007,50 @@ const SearchToolbar = memo(function SearchToolbar({
         <Stack style={{ marginLeft: 'auto', gap: '6px' }}>
           {/* View Mode Selector */}
           {setViewMode && (
-            <>
-              <label htmlFor="view-mode-select" className="visually-hidden">
-                View Mode
-              </label>
-              <RowsSelector
-                id="view-mode-select"
-                darkMode={darkMode}
-                value={viewMode || 'classic'}
-                onChange={(e) => setViewMode(e.target.value)}
-                noMargin
-                style={{ minWidth: '110px' }}
-                aria-label="Select view mode"
+            <ButtonGroup darkMode={darkMode}>
+              <button
+                className={viewMode === 'classic' ? 'selected' : ''}
+                onClick={() => setViewMode('classic')}
+                title="Classic View"
               >
-                <option value="classic">Classic</option>
-                <option value="priceChange">Price Change</option>
-                <option value="marketData">Market Data</option>
-                <option value="topGainers">Top Gainers</option>
-                <option value="trader">Trader View</option>
-                <option value="custom">Custom</option>
-              </RowsSelector>
-            </>
+                Classic
+              </button>
+              <button
+                className={viewMode === 'priceChange' ? 'selected' : ''}
+                onClick={() => setViewMode('priceChange')}
+                title="Price Change View"
+              >
+                Price
+              </button>
+              <button
+                className={viewMode === 'marketData' ? 'selected' : ''}
+                onClick={() => setViewMode('marketData')}
+                title="Market Data View"
+              >
+                Market
+              </button>
+              <button
+                className={viewMode === 'topGainers' ? 'selected' : ''}
+                onClick={() => setViewMode('topGainers')}
+                title="Top Gainers View"
+              >
+                Gainers
+              </button>
+              <button
+                className={viewMode === 'trader' ? 'selected' : ''}
+                onClick={() => setViewMode('trader')}
+                title="Trader View"
+              >
+                Trader
+              </button>
+              <button
+                className={viewMode === 'custom' ? 'selected' : ''}
+                onClick={() => setViewMode('custom')}
+                title="Custom View"
+              >
+                Custom
+              </button>
+            </ButtonGroup>
           )}
 
           {/* Custom columns settings button */}

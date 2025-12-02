@@ -136,7 +136,7 @@ const StyledCell = styled.td`
 const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
-  padding: 10px 8px;
+  padding: 10px 4px;
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
   cursor: pointer;
   box-sizing: border-box;
@@ -152,30 +152,27 @@ const MobileTokenInfo = styled.div`
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 2px;
+  padding: 0 4px;
   min-width: 0;
 `;
 
 const MobilePriceCell = styled.div`
   flex: 1.2;
   text-align: right;
-  padding: 0 2px;
-  font-weight: 600;
-  font-size: 11px;
+  padding: 0 4px;
+  font-weight: 500;
+  font-size: 12px;
   color: ${(props) => props.isDark ? '#FFFFFF' : '#000000'};
-  min-width: 65px;
-  word-break: break-all;
-  line-height: 1.3;
+  min-width: 0;
 `;
 
 const MobilePercentCell = styled.div`
   flex: 0.7;
   text-align: right;
-  padding: 0 2px;
-  font-weight: 600;
-  font-size: 11px;
-  color: ${(props) => props.color};
-  min-width: 45px;
+  padding: 0 4px;
+  font-weight: 500;
+  font-size: 12px;
+  min-width: 0;
 `;
 
 // Shared components with mobile/desktop variations
@@ -558,7 +555,7 @@ const MobileTokenRow = ({
 
       <MobilePriceCell isDark={darkMode}>{formatMobileValue(mobilePriceColumn)}</MobilePriceCell>
 
-      <MobilePriceCell isDark={darkMode}>{formatMobileValue(mobilePercentColumn)}</MobilePriceCell>
+      <MobilePercentCell isDark={darkMode}>{formatMobileValue(mobilePercentColumn)}</MobilePercentCell>
     </MobileTokenCard>
   );
 };
@@ -1414,13 +1411,14 @@ export const MobileContainer = styled.div`
 export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
-  padding: 6px 4px;
+  padding: 8px 4px;
   background: ${(props) => props.isDark ? '#000000' : '#FFFFFF'};
   border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  font-size: 9px;
-  font-weight: 700;
+  font-size: 10px;
+  font-weight: 500;
   text-transform: uppercase;
-  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)'};
+  letter-spacing: 0.5px;
+  color: ${(props) => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
   position: sticky;
   top: 0;
   z-index: 10;
