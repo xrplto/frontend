@@ -168,7 +168,6 @@ export default function NFTActions({ nft }) {
   const isBurnable = (flag & 0x00000001) > 0;
 
   const [openShare, setOpenShare] = useState(false);
-  const [showPriceBreakdown, setShowPriceBreakdown] = useState(false);
   const [openCreateOffer, setOpenCreateOffer] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [isSellOffer, setIsSellOffer] = useState(false);
@@ -185,32 +184,6 @@ export default function NFTActions({ nft }) {
   const [sync, setSync] = useState(0);
   const [lowestSellOffer, setLowestSellOffer] = useState(null);
   const [openCreateOfferXRPCafe, setOpenCreateOfferXRPCafe] = useState(false);
-  const [debugInfo, setDebugInfo] = useState(null);
-
-  // Debug info loader
-  useEffect(() => {
-    const loadDebugInfo = async () => {
-      if (!accountProfile) { setDebugInfo(null); return; }
-      const walletKeyId = accountProfile.walletKeyId ||
-        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
-        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
-      let seed = accountProfile.seed || null;
-      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
-        try {
-          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
-          const walletStorage = new EncryptedWalletStorage();
-          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
-          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
-          if (storedPassword) {
-            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
-            seed = walletData?.seed || 'encrypted';
-          }
-        } catch (e) { seed = 'error: ' + e.message; }
-      }
-      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
-    };
-    loadDebugInfo();
-  }, [accountProfile]);
 
   // Close share dropdown on outside click
   useEffect(() => {
@@ -288,21 +261,30 @@ export default function NFTActions({ nft }) {
     getOffers();
   }, [sync]);
 
+  // Get listing price and broker info
   useEffect(() => {
-    async function getLowestSellOffer() {
-      if (!NFTokenID) return;
+    if (!nft) return;
+
+    const cost = nft.cost;
+    // If no cost in NFT data, not listed
+    if (!cost || !cost.amount || cost.amount <= 0) {
+      setLowestSellOffer(null);
+      return;
+    }
+
+    // Fetch offers to get broker info
+    async function getOfferDetails() {
       try {
-        const response = await axios.get(`https://api.xrpl.to/nft/${NFTokenID}/offers`);
+        const response = await axios.get(`https://api.xrpl.to/api/nft/${NFTokenID}/offers`);
         const sellOffers = response.data?.sellOffers || [];
 
-        // API returns sellOffers sorted by amount ascending (lowest first)
-        // Find lowest offer from the NFT owner
+        // Find the owner's valid offer
         const ownerOffer = sellOffers.find(
-          (offer) => typeof offer.amount === 'string' && BigInt(offer.amount) > 0 && offer.owner === nft.account
+          (offer) => offer.amount && Number(offer.amount) > 0 && offer.owner === nft.account && offer.orphaned !== 'yes'
         );
 
         if (ownerOffer) {
-          const baseAmount = parseFloat(parseFloat(dropsToXrp(ownerOffer.amount)).toFixed(6));
+          const baseAmount = parseFloat(dropsToXrp(ownerOffer.amount));
           const brokerAddress = ownerOffer.destination;
           const hasBroker = brokerAddress && BROKER_ADDRESSES[brokerAddress];
           const brokerInfo = hasBroker ? BROKER_ADDRESSES[brokerAddress] : null;
@@ -317,23 +299,47 @@ export default function NFTActions({ nft }) {
             brokerFeePercentage,
             hasBroker,
             brokerName: brokerInfo ? brokerInfo.name : null,
-            offerIndex: ownerOffer.nft_offer_index,
+            offerIndex: ownerOffer.index || ownerOffer.nft_offer_index,
             seller: ownerOffer.owner,
             destination: brokerAddress,
             offer: ownerOffer
           });
         } else {
-          setLowestSellOffer(null);
+          // Fallback to nft.cost if no valid offer found in offers endpoint
+          const baseAmount = parseFloat(cost.amount);
+          setLowestSellOffer({
+            baseAmount,
+            totalAmount: baseAmount,
+            brokerFee: 0,
+            brokerFeePercentage: 0,
+            hasBroker: false,
+            brokerName: null,
+            offerIndex: null,
+            seller: nft.account,
+            destination: null,
+            offer: null
+          });
         }
       } catch (error) {
-        if (error.response?.status !== 400) {
-          console.error('Error fetching NFT sell offers:', error);
-        }
-        setLowestSellOffer(null);
+        // Fallback to nft.cost on error
+        const baseAmount = parseFloat(cost.amount);
+        setLowestSellOffer({
+          baseAmount,
+          totalAmount: baseAmount,
+          brokerFee: 0,
+          brokerFeePercentage: 0,
+          hasBroker: false,
+          brokerName: null,
+          offerIndex: null,
+          seller: nft.account,
+          destination: null,
+          offer: null
+        });
       }
     }
-    getLowestSellOffer();
-  }, [NFTokenID, nft.account]);
+
+    getOfferDetails();
+  }, [nft, NFTokenID]);
 
   const doProcessOffer = async (offer, isAcceptOrCancel) => {
     if (!accountLogin || !accountToken) {
@@ -594,19 +600,6 @@ export default function NFTActions({ nft }) {
             </div>
           )}
 
-          {/* Debug Panel */}
-          {debugInfo && (
-            <div className={cn("p-2 rounded-lg border font-mono text-[9px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
-              <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
-              <div className="space-y-0.5">
-                <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
-                <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-                <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-                <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
-              </div>
-            </div>
-          )}
-
           {/* Action Buttons */}
           <div className="space-y-3">
             {burnt ? (
@@ -644,45 +637,31 @@ export default function NFTActions({ nft }) {
                   </div>
                 ) : lowestSellOffer ? (
                   <div className={cn(
-                    'p-4 rounded-xl border transition-all duration-200',
-                    isDark ? 'border-primary/20 bg-primary/5' : 'border-primary/20 bg-primary/5'
+                    'p-3 rounded-xl border',
+                    isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
                   )}>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className={cn('text-xs uppercase tracking-wide', isDark ? 'text-gray-500' : 'text-gray-400')}>Price</span>
-                        <div className="flex items-baseline gap-1">
-                          <span className={cn('text-2xl font-medium', 'text-primary')}>
-                            {formatXRPAmount(lowestSellOffer.totalAmount, false)}
-                          </span>
-                          <span className={cn('text-sm', isDark ? 'text-gray-400' : 'text-gray-500')}>XRP</span>
+                    <div className="flex justify-between items-center">
+                      <span className={cn('text-[10px] uppercase tracking-wider font-medium', isDark ? 'text-gray-500' : 'text-gray-400')}>Price</span>
+                      <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl font-medium text-primary">
+                          {formatXRPAmount(lowestSellOffer.totalAmount, false)}
+                        </span>
+                        <span className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>XRP</span>
+                      </div>
+                    </div>
+                    {lowestSellOffer.hasBroker && (
+                      <div className={cn('mt-2 pt-2 border-t', isDark ? 'border-white/5' : 'border-gray-200')}>
+                        <div className="flex justify-between text-[11px]">
+                          <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>Base: {lowestSellOffer.baseAmount} XRP</span>
+                          <span className={isDark ? 'text-gray-500' : 'text-gray-400'}>{lowestSellOffer.brokerName}: +{lowestSellOffer.brokerFee.toFixed(2)} XRP</span>
                         </div>
                       </div>
-                      {lowestSellOffer.hasBroker && (
-                        <>
-                          {showPriceBreakdown && (
-                            <>
-                              <div className="flex justify-between">
-                                <span className={cn('text-[11px]', isDark ? 'text-gray-500' : 'text-gray-400')}>Base</span>
-                                <span className="text-xs font-mono">{lowestSellOffer.baseAmount} XRP</span>
-                              </div>
-                              <div className="flex justify-between">
-                                <span className={cn('text-[11px]', isDark ? 'text-gray-500' : 'text-gray-400')}>{lowestSellOffer.brokerName} Fee</span>
-                                <span className="text-xs font-mono">{lowestSellOffer.brokerFee} XRP</span>
-                              </div>
-                            </>
-                          )}
-                          <button
-                            onClick={() => setShowPriceBreakdown(!showPriceBreakdown)}
-                            className={cn('block w-full text-right text-[10px] mt-1', isDark ? 'text-gray-600' : 'text-gray-400')}
-                          >
-                            {showPriceBreakdown ? '−' : '+'} breakdown
-                          </button>
-                        </>
-                      )}
-                    </div>
+                    )}
                   </div>
                 ) : (
-                  <p className={cn('text-center py-2 text-sm', isDark ? 'text-gray-600' : 'text-gray-400')}>Not listed</p>
+                  <div className={cn('text-center py-3 rounded-xl border border-dashed', isDark ? 'border-white/10' : 'border-gray-200')}>
+                    <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>Not listed for sale</p>
+                  </div>
                 )}
 
                 {accountLogin ? (
@@ -783,14 +762,21 @@ export default function NFTActions({ nft }) {
 
             {/* Buy Offers */}
             <div>
-              <div className="flex items-center gap-2 mb-3 px-2">
-                <h3 className={cn('text-sm font-normal', isDark ? 'text-white' : 'text-gray-900')}>Buy Offers</h3>
-                {buyOffers.length > 0 && (
-                  <span className={cn(
-                    'px-1.5 py-0.5 rounded text-[11px] font-normal border',
-                    isDark ? 'border-white/20 text-gray-500' : 'border-gray-200 text-gray-400'
-                  )}>
-                    {buyOffers.length}
+              <div className="flex items-center justify-between mb-3 px-2">
+                <div className="flex items-center gap-2">
+                  <h3 className={cn('text-sm font-normal', isDark ? 'text-white' : 'text-gray-900')}>Buy Offers</h3>
+                  {buyOffers.length > 0 && (
+                    <span className={cn(
+                      'px-1.5 py-0.5 rounded text-[11px] font-normal border',
+                      isDark ? 'border-white/20 text-gray-500' : 'border-gray-200 text-gray-400'
+                    )}>
+                      {buyOffers.length}
+                    </span>
+                  )}
+                </div>
+                {lowestSellOffer && (
+                  <span className={cn('text-[11px]', isDark ? 'text-gray-500' : 'text-gray-400')}>
+                    Ask: {fNumber(lowestSellOffer.baseAmount)} XRP
                   </span>
                 )}
               </div>
@@ -799,17 +785,34 @@ export default function NFTActions({ nft }) {
                   <PulseLoader color="#4285f4" size={10} />
                 </div>
               ) : buyOffers.length > 0 ? (
-                <div className={cn('rounded-lg border overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                <div className={cn('rounded-lg border overflow-hidden max-h-[320px] overflow-y-auto', isDark ? 'border-white/10' : 'border-gray-200')} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   {buyOffers.map((offer, index) => {
                     const amount = normalizeAmount(offer.amount);
                     const isLast = index === buyOffers.length - 1;
+                    // Calculate % of asking price
+                    const askingPrice = lowestSellOffer?.baseAmount || 0;
+                    const offerPercent = askingPrice > 0 ? Math.round((amount.amount / askingPrice) * 100) : 0;
+                    const isLowBall = offerPercent > 0 && offerPercent < 50;
+                    const isReasonable = offerPercent >= 80;
                     return (
                       <div key={index} className={cn('p-2.5', !isLast && (isDark ? 'border-b border-white/5' : 'border-b border-gray-100'))}>
                         <div className="flex justify-between items-center gap-3">
                           <div className="flex-1 min-w-0">
-                            <span className={cn('text-sm font-mono font-normal', isDark ? 'text-white' : 'text-gray-900')}>
-                              {formatXRPAmount(amount.amount, false)} XRP
-                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className={cn('text-sm font-mono font-normal', isDark ? 'text-white' : 'text-gray-900')}>
+                                {formatXRPAmount(amount.amount, false)} XRP
+                              </span>
+                              {askingPrice > 0 && (
+                                <span className={cn(
+                                  'px-1.5 py-0.5 rounded text-[10px] font-normal',
+                                  isLowBall ? 'bg-red-500/20 text-red-400' :
+                                  isReasonable ? 'bg-green-500/20 text-green-400' :
+                                  isDark ? 'bg-white/10 text-gray-400' : 'bg-gray-100 text-gray-500'
+                                )}>
+                                  {offerPercent}%
+                                </span>
+                              )}
+                            </div>
                             <div className="flex items-center gap-2 mt-0.5">
                               <Link href={`/profile/${offer.owner}`} className={cn('text-[11px] font-mono', isDark ? 'text-gray-500' : 'text-gray-400')}>
                                 {truncate(offer.owner, 10)}
@@ -827,7 +830,12 @@ export default function NFTActions({ nft }) {
                           {isOwner ? (
                             <button
                               onClick={() => handleAcceptOffer(offer)}
-                              className="px-2 py-1 rounded-md text-[11px] font-normal border border-primary text-primary hover:bg-primary/5 transition-colors"
+                              className={cn(
+                                "px-2 py-1 rounded-md text-[11px] font-normal border transition-colors",
+                                isReasonable
+                                  ? "border-green-500 text-green-500 hover:bg-green-500/10"
+                                  : "border-primary text-primary hover:bg-primary/5"
+                              )}
                             >
                               Accept
                             </button>

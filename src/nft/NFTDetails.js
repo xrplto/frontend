@@ -408,23 +408,15 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       </div>
 
       {/* Title and Collection */}
-      <div className="mb-4">
-        <h2 className={cn("text-lg font-normal mb-1", isDark ? "text-white" : "text-gray-900")}>
+      <div className="mb-5">
+        <h1 className={cn("text-xl font-medium mb-1.5", isDark ? "text-white" : "text-gray-900")}>
           {nft.name || meta?.name || 'Untitled'}
-        </h2>
-        <div className="flex items-center gap-2">
+        </h1>
+        <div className="flex items-center gap-2 flex-wrap">
           {cslug && (
-            <Link href={`/collection/${cslug}`} className={cn("text-[13px] hover:text-primary", isDark ? "text-gray-400" : "text-gray-500")}>
+            <Link href={`/collection/${cslug}`} className={cn("text-sm hover:text-primary transition-colors", isDark ? "text-gray-400" : "text-gray-500")}>
               {collectionName}
             </Link>
-          )}
-          {date && (
-            <>
-              <span className={cn("text-[13px]", isDark ? "text-gray-600" : "text-gray-300")}>•</span>
-              <span className={cn("text-[13px]", isDark ? "text-gray-500" : "text-gray-400")}>
-                {new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
-              </span>
-            </>
           )}
         </div>
       </div>
@@ -472,23 +464,23 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       {/* Stats */}
       {(rarity_rank > 0 || MasterSequence > 0 || volume > 0) && (
         <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
-          <div className="flex flex-wrap gap-6">
+          <div className="grid grid-cols-3 gap-4">
             {rarity_rank > 0 && (
-              <div>
-                <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Rarity Rank</p>
-                <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>#{rarity_rank}</p>
+              <div className="text-center">
+                <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Rarity Rank</p>
+                <p className={cn("text-base font-medium", isDark ? "text-white" : "text-gray-900")}>#{rarity_rank}</p>
               </div>
             )}
             {MasterSequence > 0 && (
-              <div>
-                <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>On-Chain Rank</p>
-                <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>#{MasterSequence}</p>
+              <div className="text-center">
+                <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>On-Chain Rank</p>
+                <p className={cn("text-base font-medium", isDark ? "text-white" : "text-gray-900")}>#{MasterSequence}</p>
               </div>
             )}
             {volume > 0 && (
-              <div>
-                <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Volume</p>
-                <p className={cn("text-[15px] font-normal", isDark ? "text-white" : "text-gray-900")}>✕{fVolume(volume)}</p>
+              <div className="text-center">
+                <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Volume</p>
+                <p className={cn("text-base font-medium", isDark ? "text-white" : "text-gray-900")}>✕{fVolume(volume)}</p>
               </div>
             )}
           </div>
@@ -497,41 +489,44 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Technical Details */}
       <div className={cn("p-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
-        <div className="space-y-4">
-          <div className="flex gap-6">
+        <div className="space-y-3">
+          {/* Owner + Royalties row */}
+          <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Owner</span>
-                <button onClick={() => handleCopy(account, 'Owner')} className={cn("p-1 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900")}>
-                  <Copy size={12} />
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Owner</span>
+                <button onClick={() => handleCopy(account, 'Owner')} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
+                  <Copy size={10} />
                 </button>
               </div>
-              <Link href={`/profile/${account}`} className={cn("text-[13px] break-all block", isDark ? "text-white hover:text-primary" : "text-gray-900 hover:text-primary")}>{account}</Link>
+              <Link href={`/profile/${account}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{account}</Link>
             </div>
-            <div className="flex-shrink-0">
-              <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-1", isDark ? "text-gray-500" : "text-gray-400")}>Royalties</p>
-              <p className={cn("text-[13px] font-normal text-primary")}>{transferFee}%</p>
+            <div className="text-right">
+              <p className={cn("text-[10px] font-medium uppercase tracking-wider mb-0.5", isDark ? "text-gray-500" : "text-gray-400")}>Royalties</p>
+              <p className="text-sm font-medium text-primary">{transferFee}%</p>
             </div>
           </div>
 
+          {/* Issuer */}
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Issuer</span>
-              <button onClick={() => handleCopy(issuer, 'Issuer')} className={cn("p-1 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900")}>
-                <Copy size={12} />
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Issuer</span>
+              <button onClick={() => handleCopy(issuer, 'Issuer')} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
+                <Copy size={10} />
               </button>
             </div>
-            <Link href={`/profile/${issuer}`} className={cn("text-[13px] break-all block", isDark ? "text-white hover:text-primary" : "text-gray-900 hover:text-primary")}>{issuer}</Link>
+            <Link href={`/profile/${issuer}`} className={cn("text-[12px] font-mono break-all block hover:text-primary", isDark ? "text-gray-300" : "text-gray-700")}>{issuer}</Link>
           </div>
 
+          {/* Token ID */}
           <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className={cn("text-[11px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Token ID</span>
-              <button onClick={() => handleCopy(NFTokenID, 'Token ID')} className={cn("p-1 rounded hover:bg-white/10 transition-colors", isDark ? "text-gray-400 hover:text-white" : "text-gray-500 hover:text-gray-900")}>
-                <Copy size={12} />
+            <div className="flex items-center gap-1.5 mb-0.5">
+              <span className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-gray-500" : "text-gray-400")}>Token ID</span>
+              <button onClick={() => handleCopy(NFTokenID, 'Token ID')} className={cn("p-0.5 rounded hover:bg-white/10", isDark ? "text-gray-500 hover:text-white" : "text-gray-400 hover:text-gray-900")}>
+                <Copy size={10} />
               </button>
             </div>
-            <a href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" rel="noopener noreferrer" className={cn("text-[12px] break-all leading-relaxed block", isDark ? "text-white hover:text-primary" : "text-gray-900 hover:text-primary")}>{NFTokenID}</a>
+            <a href={`https://livenet.xrpl.org/nfts/${NFTokenID}`} target="_blank" rel="noopener noreferrer" className={cn("text-[11px] font-mono break-all block hover:text-primary", isDark ? "text-gray-400" : "text-gray-500")}>{NFTokenID}</a>
           </div>
         </div>
       </div>
