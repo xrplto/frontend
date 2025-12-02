@@ -41,7 +41,7 @@ import { AppContext } from 'src/AppContext';
 
 // Utils
 import { getHashIcon } from 'src/utils/formatters';
-import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
+import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
 import { cn } from 'src/utils/cn';
 
 // Base64url encoding helper
@@ -1039,13 +1039,19 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [backupPassword, setBackupPassword] = useState('');
   const [showBackupPasswordVisible, setShowBackupPasswordVisible] = useState(false);
   const [backupAgreed, setBackupAgreed] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [clearSliderValue, setClearSliderValue] = useState(0);
+  const [storedWalletCount, setStoredWalletCount] = useState(0);
+  const [storedWalletDate, setStoredWalletDate] = useState(null);
+  const [storedWalletAddresses, setStoredWalletAddresses] = useState([]);
 
 
   // Device Password handlers
   const handleDevicePasswordSubmit = async () => {
     if (devicePasswordMode === 'create') {
-      if (devicePassword.length < 8) {
-        setError('Password must be at least 8 characters');
+      const strengthCheck = securityUtils.validatePasswordStrength(devicePassword);
+      if (!strengthCheck.valid) {
+        setError(strengthCheck.error);
         return;
       }
       if (devicePassword !== devicePasswordConfirm) {
@@ -1513,8 +1519,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const handleOAuthPasswordSetup = async () => {
     // Validate password
     if (importMethod === 'new') {
-      if (oauthPassword.length < 8) {
-        setOAuthPasswordError('Password must be at least 8 characters');
+      const strengthCheck = securityUtils.validatePasswordStrength(oauthPassword);
+      if (!strengthCheck.valid) {
+        setOAuthPasswordError(strengthCheck.error);
         return;
       }
 
@@ -2287,16 +2294,60 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
     setIsCreatingWallet(false);
   };
 
-  // Debug function to delete IndexedDB
-  const handleDeleteIndexedDB = async () => {
-    if (!confirm('WARNING: This will delete all encrypted wallet data from IndexedDB. Are you sure?')) {
-      return;
+  // Get wallet count, oldest date, and addresses from IndexedDB
+  const checkStoredWalletCount = async () => {
+    try {
+      const request = indexedDB.open('XRPLWalletDB', 1);
+      request.onsuccess = () => {
+        const db = request.result;
+        if (db.objectStoreNames.contains('wallets')) {
+          const tx = db.transaction(['wallets'], 'readonly');
+          const store = tx.objectStore('wallets');
+          const allReq = store.getAll();
+          allReq.onsuccess = () => {
+            const wallets = allReq.result.filter(r => !r.id?.startsWith?.('__pwd__'));
+            setStoredWalletCount(wallets.length);
+            if (wallets.length > 0) {
+              const oldest = Math.min(...wallets.map(w => w.timestamp || Date.now()));
+              setStoredWalletDate(oldest);
+              // Get masked addresses from IndexedDB (or fallback to localStorage)
+              const masked = wallets.map(w => w.maskedAddress).filter(Boolean);
+              if (masked.length > 0) {
+                setStoredWalletAddresses(masked);
+              } else {
+                // Fallback: try localStorage profiles
+                const storedProfiles = localStorage.getItem('profiles');
+                if (storedProfiles) {
+                  const parsed = JSON.parse(storedProfiles);
+                  setStoredWalletAddresses(parsed.map(p => {
+                    const addr = p.account || p.address;
+                    return addr ? `${addr.slice(0, 6)}...${addr.slice(-4)}` : null;
+                  }).filter(Boolean));
+                }
+              }
+            }
+          };
+        }
+        db.close();
+      };
+    } catch (e) {
+      setStoredWalletCount(0);
+      setStoredWalletDate(null);
     }
+  };
+
+  // Clear all wallets
+  const handleClearAllWallets = async () => {
     try {
       await indexedDB.deleteDatabase('XRPLWalletDB');
-      openSnackbar('IndexedDB deleted. Please refresh the page.', 'success');
+      localStorage.removeItem('profiles');
+      handleLogout();
+      setShowClearConfirm(false);
+      setClearSliderValue(0);
+      setOpenWalletModal(false);
+      openSnackbar('All wallets cleared', 'success');
     } catch (error) {
-      openSnackbar('Failed to delete IndexedDB: ' + error.message, 'error');
+      openSnackbar('Failed to clear wallets: ' + error.message, 'error');
     }
   };
 
@@ -2726,11 +2777,23 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
       const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
 
-      if (!storedPassword || storedPassword !== newAccountPassword) {
+      // Rate limiting check
+      const rateLimitKey = `new_account_${walletId}`;
+      const rateCheck = securityUtils.rateLimiter.check(rateLimitKey);
+      if (!rateCheck.allowed) {
+        openSnackbar(rateCheck.error, 'error');
+        setNewAccountPassword('');
+        return;
+      }
+
+      // Timing-safe password comparison
+      if (!storedPassword || !securityUtils.timingSafeEqual(storedPassword, newAccountPassword)) {
+        securityUtils.rateLimiter.recordFailure(rateLimitKey);
         openSnackbar('Incorrect password', 'error');
         setNewAccountPassword('');
         return;
       }
+      securityUtils.rateLimiter.recordSuccess(rateLimitKey);
 
       // Password verified - create new wallet with SAME auth type
       const wallet = generateRandomWallet();
@@ -3497,6 +3560,62 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             Encrypted and stored locally
                           </span>
                         </div>
+                        {!showClearConfirm ? (
+                          <button
+                            onClick={() => { checkStoredWalletCount(); setShowClearConfirm(true); }}
+                            className={cn("text-[10px] mt-2", isDark ? "text-red-400/50 hover:text-red-400" : "text-red-400/60 hover:text-red-500")}
+                          >
+                            Clear all wallets
+                          </button>
+                        ) : (
+                          <div className={cn("mt-3 p-3 rounded-lg border text-left", isDark ? "bg-red-500/5 border-red-500/20" : "bg-red-50 border-red-200")}>
+                            <p className={cn("text-[11px] font-medium mb-1", isDark ? "text-red-400" : "text-red-600")}>
+                              Delete {(profiles.length || storedWalletCount) || 'all'} wallet{(profiles.length || storedWalletCount) !== 1 ? 's' : ''}?
+                            </p>
+                            {(storedWalletDate || storedWalletAddresses.length > 0) && (
+                              <div className={cn("text-[10px] mb-2 space-y-0.5", isDark ? "text-white/40" : "text-gray-400")}>
+                                {storedWalletAddresses.slice(0, 3).map((addr, i) => (
+                                  <p key={i} className="font-mono">{addr}</p>
+                                ))}
+                                {storedWalletAddresses.length > 3 && (
+                                  <p>+{storedWalletAddresses.length - 3} more</p>
+                                )}
+                                {storedWalletDate && <p>Created {new Date(storedWalletDate).toLocaleDateString()}</p>}
+                              </div>
+                            )}
+                            <p className={cn("text-[10px] mb-2", isDark ? "text-white/50" : "text-gray-500")}>
+                              Slide to delete permanently
+                            </p>
+                            <div className="relative">
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={clearSliderValue}
+                                onChange={(e) => {
+                                  const val = parseInt(e.target.value);
+                                  setClearSliderValue(val);
+                                  if (val >= 100) handleClearAllWallets();
+                                }}
+                                className="w-full h-8 appearance-none rounded-lg cursor-pointer"
+                                style={{
+                                  background: `linear-gradient(to right, ${isDark ? 'rgb(239 68 68 / 0.4)' : 'rgb(239 68 68 / 0.3)'} ${clearSliderValue}%, ${isDark ? 'rgb(255 255 255 / 0.1)' : 'rgb(229 231 235)'} ${clearSliderValue}%)`
+                                }}
+                              />
+                              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                                <span className={cn("text-[11px]", clearSliderValue > 50 ? "text-white" : isDark ? "text-white/40" : "text-gray-400")}>
+                                  {clearSliderValue < 100 ? '→ Slide to delete →' : 'Deleting...'}
+                                </span>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => { setShowClearConfirm(false); setClearSliderValue(0); }}
+                              className={cn("text-[10px] mt-2", isDark ? "text-white/40 hover:text-white/60" : "text-gray-400 hover:text-gray-600")}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        )}
                       </div>
                     </>
                   ) : (

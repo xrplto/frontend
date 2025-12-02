@@ -14,6 +14,97 @@ const isDev = process.env.NODE_ENV === 'development';
 const devLog = () => {};
 const devError = () => {};
 
+// Security utilities
+const securityUtils = {
+  // Timing-safe string comparison to prevent timing attacks
+  timingSafeEqual(a, b) {
+    if (typeof a !== 'string' || typeof b !== 'string') return false;
+    const encoder = new TextEncoder();
+    const bufA = encoder.encode(a);
+    const bufB = encoder.encode(b);
+    if (bufA.length !== bufB.length) {
+      // Still do comparison to maintain constant time
+      const dummy = new Uint8Array(bufA.length);
+      let result = bufA.length ^ bufB.length;
+      for (let i = 0; i < bufA.length; i++) result |= bufA[i] ^ dummy[i];
+      return false;
+    }
+    let result = 0;
+    for (let i = 0; i < bufA.length; i++) result |= bufA[i] ^ bufB[i];
+    return result === 0;
+  },
+
+  // Password strength validation (OWASP 2025)
+  validatePasswordStrength(password) {
+    if (!password || typeof password !== 'string') {
+      return { valid: false, error: 'Password is required' };
+    }
+    if (password.length < 8) {
+      return { valid: false, error: 'Password must be at least 8 characters' };
+    }
+    if (password.length > 128) {
+      return { valid: false, error: 'Password too long' };
+    }
+    // Check for common patterns
+    const hasUpper = /[A-Z]/.test(password);
+    const hasLower = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const variety = [hasUpper, hasLower, hasNumber, hasSpecial].filter(Boolean).length;
+
+    if (variety < 2) {
+      return { valid: false, error: 'Password needs more variety (mix letters, numbers, or symbols)' };
+    }
+    // Check for common weak passwords
+    const weak = ['password', '12345678', 'qwerty12', 'letmein1', 'welcome1'];
+    if (weak.some(w => password.toLowerCase().includes(w))) {
+      return { valid: false, error: 'Password is too common' };
+    }
+    return { valid: true };
+  },
+
+  // Rate limiting for password attempts
+  rateLimiter: {
+    attempts: new Map(),
+    maxAttempts: 5,
+    lockoutMs: 30000, // 30 seconds
+
+    check(key) {
+      const now = Date.now();
+      const record = this.attempts.get(key);
+      if (!record) return { allowed: true };
+
+      // Reset if lockout expired
+      if (record.lockedUntil && now > record.lockedUntil) {
+        this.attempts.delete(key);
+        return { allowed: true };
+      }
+
+      if (record.lockedUntil) {
+        const remaining = Math.ceil((record.lockedUntil - now) / 1000);
+        return { allowed: false, error: `Too many attempts. Try again in ${remaining}s` };
+      }
+      return { allowed: true };
+    },
+
+    recordFailure(key) {
+      const now = Date.now();
+      const record = this.attempts.get(key) || { count: 0 };
+      record.count++;
+      record.lastAttempt = now;
+
+      if (record.count >= this.maxAttempts) {
+        record.lockedUntil = now + this.lockoutMs;
+      }
+      this.attempts.set(key, record);
+    },
+
+    recordSuccess(key) {
+      this.attempts.delete(key);
+    }
+  }
+};
+
 export class UnifiedWalletStorage {
   constructor() {
     this.dbName = 'XRPLWalletDB';
@@ -26,23 +117,34 @@ export class UnifiedWalletStorage {
   generateLocalStorageKey() {
     if (typeof window === 'undefined') return 'server-side-key';
 
-    // Use browser fingerprinting for key generation
+    // Check for stored random component (adds entropy)
+    let storedEntropy = localStorage.getItem('__wk_entropy__');
+    if (!storedEntropy) {
+      const randomBytes = crypto.getRandomValues(new Uint8Array(16));
+      storedEntropy = btoa(String.fromCharCode(...randomBytes));
+      localStorage.setItem('__wk_entropy__', storedEntropy);
+    }
+
+    // Use browser fingerprinting + random entropy for key generation
     const fingerprint = [
       navigator.userAgent,
       navigator.language,
       navigator.hardwareConcurrency,
       new Date().getTimezoneOffset(),
       window.screen?.colorDepth,
-      'xrpl-wallet-storage-v1'
+      window.screen?.width,
+      window.screen?.height,
+      storedEntropy, // Random component unique to this browser
+      'xrpl-wallet-storage-v2'
     ].join('|');
 
-    // Simple hash for consistent key
-    let hash = 0;
+    // Better hash function (FNV-1a)
+    let hash = 2166136261;
     for (let i = 0; i < fingerprint.length; i++) {
-      hash = ((hash << 5) - hash) + fingerprint.charCodeAt(i);
-      hash = hash & hash;
+      hash ^= fingerprint.charCodeAt(i);
+      hash = (hash * 16777619) >>> 0;
     }
-    return 'wallet-key-' + Math.abs(hash).toString(36);
+    return 'wallet-key-' + hash.toString(36);
   }
 
   // Check if Web Crypto API is available (secure context required)
@@ -412,11 +514,15 @@ export class UnifiedWalletStorage {
       const transaction = db.transaction([this.walletsStore], 'readwrite');
       const store = transaction.objectStore(this.walletsStore);
 
-      // Store ONLY encrypted data and lookup hash
+      // Store encrypted data with minimal public metadata
+      const maskedAddr = walletData.address ?
+        `${walletData.address.slice(0, 6)}...${walletData.address.slice(-4)}` : null;
+
       const record = {
         id: walletId,
         lookupHash: lookupHash, // One-way hash for finding wallet
         data: encryptedData, // Everything encrypted
+        maskedAddress: maskedAddr, // Public: truncated address for UX
         timestamp: Date.now()
       };
 
@@ -1082,3 +1188,6 @@ export class UnifiedWalletStorage {
 
 // Backward compatibility
 export const EncryptedWalletStorage = UnifiedWalletStorage;
+
+// Export security utilities for use in components
+export { securityUtils };

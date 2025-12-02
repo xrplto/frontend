@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
-import { EncryptedWalletStorage } from 'src/utils/encryptedWalletStorage';
+import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
 import { Wallet as XRPLWallet } from 'xrpl';
 
 // Generate random wallet for OAuth
@@ -23,6 +23,7 @@ const WalletSetupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [importSeeds, setImportSeeds] = useState(['']);
   const [importFile, setImportFile] = useState(null);
+  const [importFileData, setImportFileData] = useState(null);
   const [error, setError] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   const walletStorage = useMemo(() => new EncryptedWalletStorage(), []);
@@ -50,8 +51,9 @@ const WalletSetupPage = () => {
   const handleCreateWallet = async () => {
     // Validate password
     if (importMethod === 'new') {
-      if (password.length < 8) {
-        setError('Password must be at least 8 characters');
+      const strengthCheck = securityUtils.validatePasswordStrength(password);
+      if (!strengthCheck.valid) {
+        setError(strengthCheck.error);
         return;
       }
       if (password !== confirmPassword) {
@@ -60,6 +62,14 @@ const WalletSetupPage = () => {
       }
     } else if (!password) {
       setError('Please enter your wallet password');
+      return;
+    }
+
+    // Rate limiting check
+    const rateLimitKey = `wallet_setup_${oauthData?.user?.id || 'unknown'}`;
+    const rateCheck = securityUtils.rateLimiter.check(rateLimitKey);
+    if (!rateCheck.allowed) {
+      setError(rateCheck.error);
       return;
     }
 
@@ -72,30 +82,88 @@ const WalletSetupPage = () => {
       }
 
       const { token, provider, user, action } = oauthData;
-
-      // Create 1 wallet
-      setError('Creating wallet...');
-      const wallet = generateRandomWallet();
-
       const walletId = `${provider}_${user.id}`;
-      const walletData = {
-        provider,
-        provider_id: user.id,
-        walletKeyId: walletId,
-        accountIndex: 0,
-        account: wallet.address,
-        address: wallet.address,
-        publicKey: wallet.publicKey,
-        seed: wallet.seed,
-        wallet_type: 'oauth',
-        xrp: '0',
-        createdAt: Date.now()
-      };
+      let wallets = [];
 
-      await walletStorage.storeWallet(walletData, password);
-      const wallets = [walletData];
+      // Handle file import - MUST decrypt with original password first
+      if (importMethod === 'import' && importFileData) {
+        setError('Decrypting backup...');
 
-      setError(''); // Clear progress
+        // Try to decrypt each wallet with provided password
+        const decryptedWallets = [];
+        for (const encWallet of importFileData.wallets) {
+          try {
+            const decrypted = await walletStorage.decryptData(encWallet.data, password);
+            decryptedWallets.push(decrypted);
+          } catch (decryptErr) {
+            securityUtils.rateLimiter.recordFailure(rateLimitKey);
+            throw new Error('Incorrect password - cannot decrypt backup');
+          }
+        }
+
+        if (decryptedWallets.length === 0) {
+          throw new Error('No wallets found in backup');
+        }
+
+        // Re-store decrypted wallets with SAME password (security: no password change)
+        setError('Restoring wallets...');
+        for (const wallet of decryptedWallets) {
+          const walletData = {
+            ...wallet,
+            provider,
+            provider_id: user.id,
+            walletKeyId: walletId,
+            wallet_type: 'oauth',
+            restoredAt: Date.now()
+          };
+          await walletStorage.storeWallet(walletData, password);
+          wallets.push(walletData);
+        }
+
+        openSnackbar(`${wallets.length} wallet(s) restored!`, 'success');
+      }
+      // Handle seed import
+      else if (importMethod === 'seed' && importSeeds[0]) {
+        setError('Importing wallet...');
+        const wallet = XRPLWallet.fromSeed(importSeeds[0].trim());
+        const walletData = {
+          provider,
+          provider_id: user.id,
+          walletKeyId: walletId,
+          accountIndex: 0,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'oauth',
+          xrp: '0',
+          importedAt: Date.now()
+        };
+        await walletStorage.storeWallet(walletData, password);
+        wallets = [walletData];
+      }
+      // Create new wallet
+      else {
+        setError('Creating wallet...');
+        const wallet = generateRandomWallet();
+        const walletData = {
+          provider,
+          provider_id: user.id,
+          walletKeyId: walletId,
+          accountIndex: 0,
+          account: wallet.address,
+          address: wallet.address,
+          publicKey: wallet.publicKey,
+          seed: wallet.seed,
+          wallet_type: 'oauth',
+          xrp: '0',
+          createdAt: Date.now()
+        };
+        await walletStorage.storeWallet(walletData, password);
+        wallets = [walletData];
+      }
+
+      setError('');
 
       // Clear OAuth session data
       sessionStorage.removeItem('oauth_temp_token');
@@ -108,19 +176,19 @@ const WalletSetupPage = () => {
       await walletStorage.setSecureItem('authMethod', provider);
       await walletStorage.setSecureItem('user', user);
 
-      // Store password for provider (walletId already defined above)
+      // Store password for provider
       await walletStorage.setSecureItem(`wallet_pwd_${walletId}`, password);
 
-      // Mark wallet as needing backup
-      if (action === 'create') {
+      // Mark wallet as needing backup (only for new wallets)
+      if (importMethod === 'new' && action === 'create') {
         localStorage.setItem(`wallet_needs_backup_${wallets[0].address}`, 'true');
       }
 
       // Add all wallets to profiles
       const allProfiles = [...profiles];
       wallets.forEach(w => {
-        if (!allProfiles.find(p => p.account === w.address)) {
-          allProfiles.push({ ...w, tokenCreatedAt: Date.now() });
+        if (!allProfiles.find(p => p.account === (w.address || w.account))) {
+          allProfiles.push({ ...w, account: w.address || w.account, tokenCreatedAt: Date.now() });
         }
       });
 
@@ -129,9 +197,11 @@ const WalletSetupPage = () => {
       // Login with first wallet
       doLogIn(wallets[0], allProfiles);
 
-      openSnackbar(`Wallet created successfully!`, 'success');
+      if (importMethod === 'new') {
+        openSnackbar('Wallet created successfully!', 'success');
+      }
 
-      // Redirect to home (full reload to get fresh server data)
+      // Redirect to home
       setTimeout(() => {
         window.location.href = '/';
       }, 1000);
@@ -249,7 +319,7 @@ const WalletSetupPage = () => {
             </button>
             {importMethod === 'new' && (
               <p className={cn("mt-1 text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
-                Minimum 8 characters
+                8+ chars, mix letters/numbers/symbols
               </p>
             )}
           </div>
@@ -301,27 +371,59 @@ const WalletSetupPage = () => {
           )}
 
           {importMethod === 'import' && (
-            <label className={cn(
-              "flex w-full cursor-pointer items-center justify-center rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
-              isDark
-                ? "border-white/15 text-white hover:border-primary/50"
-                : "border-gray-300 text-gray-900 hover:bg-gray-100"
-            )}>
-              {importFile ? importFile.name : 'Choose Backup File'}
-              <input
-                type="file"
-                hidden
-                accept=".json"
-                onChange={(e) => setImportFile(e.target.files[0])}
-              />
-            </label>
+            <div>
+              <label className={cn(
+                "flex w-full cursor-pointer items-center justify-center rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
+                isDark
+                  ? "border-white/15 text-white hover:border-primary/50"
+                  : "border-gray-300 text-gray-900 hover:bg-gray-100"
+              )}>
+                {importFile ? importFile.name : 'Choose Backup File'}
+                <input
+                  type="file"
+                  hidden
+                  accept=".json"
+                  onChange={(e) => {
+                    const file = e.target.files[0];
+                    setImportFile(file);
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        try {
+                          const data = JSON.parse(ev.target.result);
+                          if (data.type !== 'xrpl-wallet-backup') {
+                            setError('Invalid backup file format');
+                            setImportFileData(null);
+                          } else {
+                            setImportFileData(data);
+                            setError('');
+                          }
+                        } catch {
+                          setError('Could not read backup file');
+                          setImportFileData(null);
+                        }
+                      };
+                      reader.readAsText(file);
+                    }
+                  }}
+                />
+              </label>
+              {importFileData && (
+                <p className={cn("mt-2 text-[11px]", isDark ? "text-white/50" : "text-gray-500")}>
+                  {importFileData.wallets?.length || 0} wallet(s) • Exported {new Date(importFileData.exported).toLocaleDateString()}
+                </p>
+              )}
+              <p className={cn("mt-1 text-[11px]", isDark ? "text-amber-400/80" : "text-amber-600")}>
+                Enter the original password used when creating this backup
+              </p>
+            </div>
           )}
         </div>
 
         {error && (
           <div className={cn(
             "mb-4 rounded-lg border-[1.5px] p-3 text-[13px]",
-            error.startsWith('Creating')
+            (error.startsWith('Creating') || error.startsWith('Decrypting') || error.startsWith('Restoring') || error.startsWith('Importing'))
               ? isDark
                 ? "border-blue-500/20 bg-blue-500/10 text-blue-400"
                 : "border-blue-500/20 bg-blue-50 text-blue-700"
@@ -354,13 +456,13 @@ const WalletSetupPage = () => {
             disabled={isCreating || !password ||
               (importMethod === 'new' && !confirmPassword) ||
               (importMethod === 'seed' && !importSeeds[0]) ||
-              (importMethod === 'import' && !importFile)}
+              (importMethod === 'import' && !importFileData)}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
               isCreating || !password ||
               (importMethod === 'new' && !confirmPassword) ||
               (importMethod === 'seed' && !importSeeds[0]) ||
-              (importMethod === 'import' && !importFile)
+              (importMethod === 'import' && !importFileData)
                 ? "cursor-not-allowed border-gray-400 bg-gray-400 text-white opacity-50"
                 : "border-primary bg-primary text-white hover:bg-primary/90"
             )}
@@ -368,10 +470,10 @@ const WalletSetupPage = () => {
             {isCreating ? (
               <>
                 <Loader2 className="animate-spin" size={16} />
-                Creating...
+                {importMethod === 'import' ? 'Restoring...' : 'Creating...'}
               </>
             ) : (
-              importMethod === 'new' ? 'Create Wallet' : 'Import Wallet'
+              importMethod === 'new' ? 'Create Wallet' : importMethod === 'import' ? 'Restore Wallet' : 'Import Wallet'
             )}
           </button>
         </div>
