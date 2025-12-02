@@ -147,7 +147,7 @@ export default function HistoryList({ nft }) {
     return (
       <div className={cn(
         "rounded-xl border-[1.5px] overflow-hidden",
-        isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+        isDark ? "border-white/[0.08] bg-transparent" : "border-gray-200 bg-transparent"
       )}>
         <LoadingSkeleton isDark={isDark} />
       </div>
@@ -158,7 +158,7 @@ export default function HistoryList({ nft }) {
     return (
       <div className={cn(
         "rounded-xl border-[1.5px] overflow-hidden",
-        isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+        isDark ? "border-white/[0.08] bg-transparent" : "border-gray-200 bg-transparent"
       )}>
         <EmptyState isDark={isDark} />
       </div>
@@ -187,7 +187,7 @@ export default function HistoryList({ nft }) {
       )}
       <div className={cn(
         "rounded-xl border-[1.5px] overflow-hidden",
-        isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+        isDark ? "border-white/[0.08] bg-transparent" : "border-gray-200 bg-transparent"
       )}>
       {isMobile ? (
         // Mobile view - Cards
@@ -197,7 +197,7 @@ export default function HistoryList({ nft }) {
               key={row.uuid}
               className={cn(
                 "p-3 rounded-xl border-[1.5px]",
-                isDark ? "border-white/10 bg-transparent" : "border-gray-200 bg-transparent"
+                isDark ? "border-white/[0.08] bg-transparent" : "border-gray-200 bg-transparent"
               )}
             >
               <div className="space-y-2">
@@ -280,7 +280,7 @@ export default function HistoryList({ nft }) {
             <thead>
               <tr className={cn(
                 "border-b-[1.5px]",
-                isDark ? "border-white/10" : "border-gray-200"
+                isDark ? "border-white/[0.08]" : "border-gray-200"
               )}>
                 <th className={cn(
                   "text-left py-2.5 px-3 text-[11px] font-medium uppercase tracking-wide w-[100px]",

@@ -148,7 +148,7 @@ const TokenDetail = memo(
           {!isMobile && (
             <hr className={cn(
               "my-1 mx-4 border-t-[1.5px]",
-              isDark ? "border-white/10" : "border-gray-200"
+              isDark ? "border-white/[0.08]" : "border-gray-200"
             )} />
           )}
 

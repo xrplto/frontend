@@ -352,7 +352,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onMouseLeave={handleTokensClose}
                   className={cn(
                     'absolute left-0 top-full z-[2147483647] mt-2 min-w-[480px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                    isDark ? 'border-white/[0.1] bg-[#111] shadow-2xl shadow-black/60' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
+                    isDark ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
                   )}
                 >
                   <div className="flex gap-0 p-1.5">
@@ -452,7 +452,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   onMouseLeave={handleNftsClose}
                   className={cn(
                     'absolute left-0 top-full z-[2147483647] mt-2 min-w-[160px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                    isDark ? 'border-white/[0.1] bg-[#111] shadow-2xl shadow-black/60' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
+                    isDark ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
                   )}
                 >
                   <div className="p-1.5">
@@ -586,7 +586,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'absolute right-0 top-10 z-[2147483647] min-w-[180px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark ? 'border-white/[0.1] bg-[#111] shadow-2xl shadow-black/60' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
+                      isDark ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
                     )}
                   >
                     <div className="p-1.5">
@@ -688,7 +688,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       {/* Snackbar */}
       {snackbarOpen && (
         <div className="fixed right-4 top-20 z-[9999]">
-          <div className={cn('rounded-xl border-[1.5px] px-4 py-3', isDark ? 'border-white/10 bg-gray-900' : 'border-gray-200 bg-white')}>
+          <div className={cn('rounded-xl border px-4 py-3', isDark ? 'border-white/[0.08] bg-[#0d0d0d]' : 'border-gray-200 bg-white')}>
             {snackbarMessage}
           </div>
         </div>
@@ -706,7 +706,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div
             className={cn(
               'fixed bottom-0 right-0 top-0 z-[1300] w-[260px] overflow-y-auto animate-in slide-in-from-right duration-200',
-              isDark ? 'bg-[#0a0a0a] border-l border-white/[0.06]' : 'bg-white border-l border-gray-200'
+              isDark ? 'bg-[#0d0d0d] border-l border-white/[0.08]' : 'bg-white border-l border-gray-200'
             )}
           >
             <div className="p-4">

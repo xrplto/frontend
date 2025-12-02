@@ -252,7 +252,7 @@ const TransactionDetailsPanel = memo(({
     <div className="p-3 space-y-3" style={{ height: 320 }}>
       {loading ? (
         <div className="h-full flex flex-col items-center justify-center">
-          <div className={cn('w-5 h-5 border-2 rounded-full animate-spin', isDark ? 'border-white/10 border-t-cyan-400' : 'border-black/10 border-t-cyan-500')} />
+          <div className={cn('w-5 h-5 border-2 rounded-full animate-spin', isDark ? 'border-white/[0.08] border-t-cyan-400' : 'border-black/10 border-t-cyan-500')} />
           <p className={cn('mt-2 text-[10px]', isDark ? 'text-white/30' : 'text-black/30')}>Loading...</p>
         </div>
       ) : error ? (

@@ -101,7 +101,7 @@ export default function PairsList({ token, pairs }) {
       {/* Table Headers */}
       <div className={cn(
         'hidden md:grid grid-cols-[0.5fr_2fr_1.5fr_1.5fr_1fr_1.5fr_1.5fr_0.5fr] gap-4 p-4 rounded-t-xl border-[1.5px]',
-        isDark ? 'border-white/10' : 'border-gray-200'
+        isDark ? 'border-white/[0.08]' : 'border-gray-200'
       )}>
         <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>#</span>
         <span className={cn('text-[12px] font-medium uppercase tracking-wide', isDark ? 'text-white/60' : 'text-gray-500')}>Pair</span>
@@ -154,7 +154,7 @@ export default function PairsList({ token, pairs }) {
               className={cn(
                 'relative rounded-xl border-[1.5px] overflow-hidden transition-all hover:-translate-y-0.5',
                 isDark
-                  ? 'border-white/10 hover:border-primary/30'
+                  ? 'border-white/[0.08] hover:border-primary/30'
                   : 'border-gray-200 hover:border-primary/30'
               )}
             >
@@ -329,7 +329,7 @@ export default function PairsList({ token, pairs }) {
             disabled={page === 1}
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              isDark ? 'border-white/[0.08] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
             )}
           >
             <ChevronsLeft size={16} />
@@ -339,7 +339,7 @@ export default function PairsList({ token, pairs }) {
             disabled={page === 1}
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              isDark ? 'border-white/[0.08] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
             )}
           >
             <ChevronLeft size={16} />
@@ -352,7 +352,7 @@ export default function PairsList({ token, pairs }) {
             disabled={page === totalPages}
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              isDark ? 'border-white/[0.08] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
             )}
           >
             <ChevronRight size={16} />
@@ -362,7 +362,7 @@ export default function PairsList({ token, pairs }) {
             disabled={page === totalPages}
             className={cn(
               'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+              isDark ? 'border-white/[0.08] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
             )}
           >
             <ChevronsRight size={16} />

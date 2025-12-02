@@ -69,7 +69,7 @@ const IconBtn = ({ onClick, disabled, children, className, title, isDark, active
       disabled={disabled}
       className={cn(
         "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-        isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5",
+        isDark ? "border-white/[0.08] hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5",
         active && "border-primary bg-primary/10",
         disabled && "opacity-40 cursor-not-allowed",
         className
@@ -358,7 +358,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] px-4 py-2.5", isDark ? "border-white/10" : "border-gray-200")}>
+    <div className={cn("rounded-xl border-[1.5px] px-4 py-2.5", isDark ? "border-white/[0.08]" : "border-gray-200")}>
       {/* Main Row */}
       <div className="flex items-center">
         {/* Left: Token Image + Info */}
@@ -422,7 +422,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-1 pl-2 border-l border-white/10 relative">
+          <div className="flex items-center gap-1 pl-2 border-l border-white/[0.08] relative">
             {trustStatus && trustStatus !== 'loading' && (
               <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
                 {trustStatus}

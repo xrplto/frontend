@@ -115,10 +115,10 @@ const DialogContent = ({ children, sx }) => (
 // StyledPopoverPaper component
 const StyledPopoverPaper = ({ children, isDark }) => (
   <div className={cn(
-    "overflow-hidden rounded-2xl border backdrop-blur-2xl shadow-2xl",
+    "overflow-hidden rounded-xl border shadow-2xl",
     isDark
-      ? "border-white/10 bg-[#0a0a0a] shadow-black/50"
-      : "border-gray-200 bg-white shadow-black/10"
+      ? "border-white/[0.08] bg-[#0d0d0d] shadow-black/70"
+      : "border-gray-200 bg-white shadow-black/[0.08]"
   )}>
     {children}
   </div>
@@ -1022,7 +1022,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       error: { main: '#f44336' },
       primary: { main: '#4285f4' },
       text: { primary: isDark ? '#fff' : '#000', secondary: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.6)' },
-      background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#0a0a0a' : '#fff' },
+      background: { default: isDark ? '#000000' : '#fff', paper: isDark ? '#0d0d0d' : '#fff' },
       action: { hover: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)', disabled: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.26)' }
     },
     spacing: (...args) => args.map(v => v * 8).join('px ') + 'px'
@@ -2894,7 +2894,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           isDark
             ? accountProfile
               ? 'bg-white/[0.06] text-white hover:bg-white/[0.1]'
-              : 'border border-white/10 text-white hover:bg-white/[0.06]'
+              : 'border border-white/[0.08] text-white hover:bg-white/[0.06]'
             : accountProfile
               ? 'bg-gray-100 text-gray-900 hover:bg-gray-200/80'
               : 'border border-gray-200 text-gray-700 hover:bg-gray-100/80'

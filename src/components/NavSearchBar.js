@@ -42,7 +42,7 @@ const NavSearchBar = ({
       className={cn(
         "flex items-center gap-2.5 rounded-lg border px-3 py-1.5 h-8 w-[240px] cursor-pointer transition-all duration-150",
         isDark
-          ? "bg-white/[0.04] border-white/10 hover:border-white/20"
+          ? "bg-white/[0.04] border-white/[0.08] hover:border-white/20"
           : "bg-gray-50 border-gray-200 hover:border-gray-300"
       )}
       onClick={openModal}

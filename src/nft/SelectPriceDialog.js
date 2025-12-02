@@ -51,11 +51,11 @@ export default function SelectPriceDialog({ open, setOpen, offers, handleAccept 
       <div
         className={cn(
           'relative w-full max-w-xs rounded-xl',
-          isDark ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'
+          isDark ? 'bg-[#0d0d0d] border border-white/[0.08] text-white' : 'bg-white text-gray-900'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-white/10 p-4">
+        <div className={cn("flex items-center justify-between border-b p-4", isDark ? "border-white/[0.08]" : "border-gray-200")}>
           <div className="flex items-center gap-2">
             <CheckCircle size={18} />
             <h2 className="text-[15px] font-normal">Checkout</h2>

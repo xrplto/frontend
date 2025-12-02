@@ -115,7 +115,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
       <div className="max-w-[2000px] mx-auto px-4 sm:px-0">
         <div className={cn(
           "rounded-xl border-[1.5px] p-8 mb-6 text-center",
-          isDark ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+          isDark ? "bg-black/20 border-white/[0.08]" : "bg-white border-gray-200"
         )}>
           <p className="text-[15px] text-gray-500">No creator account available</p>
         </div>
@@ -165,7 +165,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
           ) : error ? (
             <div className={cn(
               "rounded-xl border-[1.5px] p-12 text-center",
-              isDark ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+              isDark ? "bg-black/20 border-white/[0.08]" : "bg-white border-gray-200"
             )}>
               <p className="text-[15px] font-medium text-red-500 mb-2">{error}</p>
               <p className="text-[13px] text-gray-500">
@@ -175,7 +175,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
           ) : transactions.length === 0 ? (
             <div className={cn(
               "rounded-xl border-[1.5px] p-12 text-center",
-              isDark ? "bg-black/20 border-white/10" : "bg-white border-gray-200"
+              isDark ? "bg-black/20 border-white/[0.08]" : "bg-white border-gray-200"
             )}>
               <p className="text-[15px] font-medium mb-2">No Transactions Found</p>
               <p className="text-[13px] text-gray-500">
@@ -186,7 +186,7 @@ export default function AccountTransactions({ creatorAccount, collectionSlug }) 
             <>
               <div className={cn(
                 "overflow-x-auto rounded-xl border-[1.5px]",
-                isDark ? "border-white/10" : "border-gray-200"
+                isDark ? "border-white/[0.08]" : "border-gray-200"
               )}>
                 <table className="w-full min-w-[700px]">
                   <thead className={cn(

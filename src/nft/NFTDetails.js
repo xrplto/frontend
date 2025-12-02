@@ -267,7 +267,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
       {/* Tabs */}
       {contentTabList.length > 1 && (
-        <div className={cn("px-4 pb-2 border-b-[1.5px]", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("px-4 pb-2 border-b-[1.5px]", isDark ? "border-white/[0.08]" : "border-gray-200")}>
           <Tabs tabList={contentTabList} tab={contentTab} setTab={setContentTab} name="content" />
         </div>
       )}
@@ -326,7 +326,7 @@ const NFTPreviewComponent = memo(function NFTPreviewComponent({ nft, showDetails
 
       {/* Footer */}
       {showDetails && (
-        <div className={cn("p-4 border-t-[1.5px]", isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white")}>
+        <div className={cn("p-4 border-t-[1.5px]", isDark ? "border-white/[0.08] bg-black" : "border-gray-200 bg-white")}>
           <div className="flex justify-between items-center gap-4">
             <div className="flex gap-4">
               {nft?.transferFee && (
@@ -423,7 +423,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Properties */}
       {properties && properties.length > 0 && (
-        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
           <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-3", isDark ? "text-gray-500" : "text-gray-400")}>Properties</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {properties.map((item) => {
@@ -438,7 +438,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
                   href={cslug ? `/collection/${cslug}?traits=${encodeURIComponent(`${type}:${value}`)}` : '#'}
                   className={cn(
                     "group p-2.5 text-center rounded-lg border cursor-pointer transition-all duration-200 active:scale-[0.97]",
-                    isDark ? "border-white/10 bg-white/[0.02] hover:border-primary hover:bg-primary/10" : "border-gray-200 bg-gray-50 hover:border-primary hover:bg-primary/5"
+                    isDark ? "border-white/[0.08] bg-white/[0.02] hover:border-primary hover:bg-primary/10" : "border-gray-200 bg-gray-50 hover:border-primary hover:bg-primary/5"
                   )}
                 >
                   <p className={cn("text-[10px] uppercase tracking-wide mb-1 transition-colors", isDark ? "text-gray-500 group-hover:text-primary/70" : "text-gray-400 group-hover:text-primary/70")}>{type}</p>
@@ -455,7 +455,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Description - hide if it just matches collection name */}
       {meta?.description && meta.description !== collection && meta.description !== collectionName && (
-        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
           <p className={cn("text-[11px] font-medium uppercase tracking-wider mb-2", isDark ? "text-gray-500" : "text-gray-400")}>Description</p>
           <p className={cn("text-[13px] leading-relaxed", isDark ? "text-gray-300" : "text-gray-600")}>{meta.description}</p>
         </div>
@@ -463,7 +463,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
 
       {/* Stats */}
       {(rarity_rank > 0 || MasterSequence > 0 || volume > 0) && (
-        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("p-4 mb-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
           <div className="grid grid-cols-3 gap-4">
             {rarity_rank > 0 && (
               <div className="text-center">
@@ -488,7 +488,7 @@ const NFTDetails = memo(function NFTDetails({ nft }) {
       )}
 
       {/* Technical Details */}
-      <div className={cn("p-4 rounded-xl border", isDark ? "border-white/10" : "border-gray-200")}>
+      <div className={cn("p-4 rounded-xl border", isDark ? "border-white/[0.08]" : "border-gray-200")}>
         <div className="space-y-3">
           {/* Owner + Royalties row */}
           <div className="flex items-start justify-between gap-4">

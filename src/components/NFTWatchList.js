@@ -212,7 +212,7 @@ export default function NFTWatchList({ account }) {
     return (
       <div className={cn(
         'rounded-xl border-[1.5px] p-12 text-center',
-        isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+        isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
       )}>
         <p className={cn('text-[15px]', isDark ? 'text-white/60' : 'text-gray-500')}>
           No NFTs in your watchlist yet

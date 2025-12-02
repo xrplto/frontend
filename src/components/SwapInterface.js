@@ -308,7 +308,7 @@ const ToggleButton = memo(({ onClick, isDark, isSwitching, children, ...props })
     onClick={onClick}
     className={cn(
       "absolute left-1/2 top-1/2 z-[2] h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-lg border-[1.5px] transition-all",
-      isDark ? "border-white/10 bg-black" : "border-gray-200 bg-white",
+      isDark ? "border-white/[0.08] bg-black" : "border-gray-200 bg-white",
       "hover:border-primary hover:bg-primary hover:text-white",
       isSwitching && "rotate-180"
     )}
@@ -2206,7 +2206,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
           "flex items-center gap-2 rounded-xl px-3 py-2 transition-all",
           "border-[1.5px] bg-transparent cursor-pointer",
           darkMode
-            ? "border-white/10 hover:border-primary/30 hover:bg-white/[0.02]"
+            ? "border-white/[0.08] hover:border-primary/30 hover:bg-white/[0.02]"
             : "border-gray-200 hover:border-primary/30 hover:bg-gray-50"
         )}
         style={{ background: 'transparent' }}
@@ -2249,11 +2249,11 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
       <div
         className={cn(
           "fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[95%] max-w-[720px] h-[90vh] max-h-[750px] rounded-xl border-[1.5px] flex flex-col z-[1201]",
-          darkMode ? "bg-black border-white/10" : "bg-white border-gray-200"
+          darkMode ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
         )}
       >
         {/* Header */}
-        <div className={cn("p-2 border-b flex items-center justify-between", darkMode ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("p-2 border-b flex items-center justify-between", darkMode ? "border-white/[0.08]" : "border-gray-200")}>
           <span className={cn("text-[13px] font-normal", darkMode ? "text-white" : "text-gray-900")}>{title}</span>
           <button onClick={onClose} className={cn("p-1 rounded-lg hover:bg-white/5", darkMode ? "text-white/60" : "text-gray-500")}>
             <X size={18} />
@@ -2261,7 +2261,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
         </div>
 
         {/* Search and Filters */}
-        <div className={cn("p-2 border-b", darkMode ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("p-2 border-b", darkMode ? "border-white/[0.08]" : "border-gray-200")}>
           <div className="relative">
             <input
               ref={searchInputRef}
@@ -2272,7 +2272,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
               className={cn(
                 "w-full px-3 py-2 text-[13px] rounded-xl border-[1.5px] bg-transparent outline-none transition-colors",
                 darkMode
-                  ? "border-white/10 text-white placeholder:text-white/40 focus:border-primary"
+                  ? "border-white/[0.08] text-white placeholder:text-white/40 focus:border-primary"
                   : "border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
               )}
             />
@@ -2300,7 +2300,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   selectedCategory === cat.value
                     ? "bg-primary/10 text-primary border-primary/30"
                     : darkMode
-                      ? "text-white/50 border-white/10 hover:border-primary/30 hover:bg-primary/5"
+                      ? "text-white/50 border-white/[0.08] hover:border-primary/30 hover:bg-primary/5"
                       : "text-gray-500 border-gray-200 hover:border-primary/30 hover:bg-primary/5"
                 )}
               >
@@ -2360,7 +2360,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
             ) : filteredTokens.length > 0 ? (
               <div>
                 {/* Column Headers */}
-                <div className={cn("flex items-center px-2 py-1 mb-1 border-b", darkMode ? "border-white/10" : "border-gray-200")}>
+                <div className={cn("flex items-center px-2 py-1 mb-1 border-b", darkMode ? "border-white/[0.08]" : "border-gray-200")}>
                   <span className={cn("flex-1 text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Token</span>
                   <span className={cn("w-[110px] text-right mr-3 text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Price</span>
                   <span className={cn("w-[65px] text-right mr-3 text-[9px] font-normal uppercase tracking-wide", darkMode ? "text-white/30" : "text-gray-400")}>Volume</span>
@@ -2901,7 +2901,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   "w-full py-3.5 rounded-lg text-[15px] font-medium transition-all",
                   isProcessing === 1 || !isLoggedIn || (canPlaceOrder === false && hasTrustline1 && hasTrustline2)
                     ? darkMode
-                      ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/10"
+                      ? "bg-white/5 text-white/30 cursor-not-allowed border border-white/[0.08]"
                       : "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
                     : "bg-primary text-white hover:brightness-110 border border-primary shadow-[0_0_20px_rgba(66,133,244,0.3)]"
                 )}

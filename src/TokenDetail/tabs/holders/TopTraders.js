@@ -447,7 +447,7 @@ export default function TopTraders({ token }) {
                   disabled={page === 1}
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
                   )}
                 >
                   <ChevronsLeft size={14} />
@@ -457,7 +457,7 @@ export default function TopTraders({ token }) {
                   disabled={page === 1}
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
                   )}
                 >
                   <ChevronLeft size={14} />
@@ -470,7 +470,7 @@ export default function TopTraders({ token }) {
                   disabled={page === totalPages}
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
                   )}
                 >
                   <ChevronRight size={14} />
@@ -480,7 +480,7 @@ export default function TopTraders({ token }) {
                   disabled={page === totalPages}
                   className={cn(
                     'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-                    isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+                    isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
                   )}
                 >
                   <ChevronsRight size={14} />

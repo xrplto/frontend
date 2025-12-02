@@ -134,7 +134,7 @@ export default function CreateOfferXRPCafe({
         <div
           className={cn(
             'relative w-full max-w-sm rounded-xl border-2 border-primary',
-            isDark ? 'bg-[#1a1a1a] text-white' : 'bg-white text-gray-900'
+            isDark ? 'bg-[#0d0d0d] text-white' : 'bg-white text-gray-900'
           )}
         >
           {/* Header */}

@@ -127,7 +127,7 @@ const RichList = ({ token, amm }) => {
           ].map(({ label, value }) => (
             <div key={label} className={cn(
               'rounded-lg border px-3 py-2',
-              isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+              isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
             )}>
               <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>{label}</div>
               <div className={cn(
@@ -145,7 +145,7 @@ const RichList = ({ token, amm }) => {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b', isDark ? 'border-white/10' : 'border-gray-200')}>
+            <tr className={cn('border-b', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
               <th className={cn('py-2.5 pr-3 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
               <th className={cn('py-2.5 px-3 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
               <th className={cn('py-2.5 px-3 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
@@ -272,7 +272,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === 1}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronsLeft size={14} />
@@ -282,7 +282,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === 1}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronLeft size={14} />
@@ -295,7 +295,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === totalPages}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronRight size={14} />
@@ -305,7 +305,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === totalPages}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/10 hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronsRight size={14} />

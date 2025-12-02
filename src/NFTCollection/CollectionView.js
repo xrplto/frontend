@@ -198,7 +198,7 @@ function AttributeFilter({ attrs, setFilterAttrs }) {
           const maxValue = Math.max(...Object.values(items).map((item) => item.count || item));
 
           return (
-            <details key={title} className={cn('group rounded-lg border-[1.5px] overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')} open={idx === 0}>
+            <details key={title} className={cn('group rounded-lg border-[1.5px] overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-gray-200')} open={idx === 0}>
               <summary className={cn('flex items-center justify-between px-2.5 py-2 cursor-pointer list-none', isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50')}>
                 <div className="flex items-center gap-2">
                   <Layers size={12} className="text-blue-500" />
@@ -587,7 +587,7 @@ const NFTGrid = React.memo(({ collection }) => {
               onClick={() => setShowFilter(!showFilter)}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
-                showFilter ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
+                showFilter ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/[0.08] text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
               )}
             >
               <Filter size={12} />
@@ -605,7 +605,7 @@ const NFTGrid = React.memo(({ collection }) => {
               onClick={() => setShowSortDropdown(!showSortDropdown)}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
-                isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
+                isDark ? 'border-white/[0.08] text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
               )}
             >
               {currentSort.label}
@@ -615,7 +615,7 @@ const NFTGrid = React.memo(({ collection }) => {
             {showSortDropdown && (
               <div className={cn(
                 'absolute top-full right-0 mt-1 min-w-[160px] rounded-lg border-[1.5px] p-1 z-50',
-                isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                isDark ? 'bg-black/95 border-white/[0.08]' : 'bg-white border-gray-200 shadow-lg'
               )}>
                 {SORT_OPTIONS.map((option) => (
                   <div
@@ -641,7 +641,7 @@ const NFTGrid = React.memo(({ collection }) => {
               onClick={() => setShowListedDropdown(!showListedDropdown)}
               className={cn(
                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all',
-                listed ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/10 text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
+                listed ? 'border-primary bg-primary/10 text-primary' : isDark ? 'border-white/[0.08] text-white/50 hover:border-primary/30' : 'border-gray-200 text-gray-500 hover:border-primary/30'
               )}
             >
               {LISTING_OPTIONS.find(o => o.value === listed)?.label || 'All'}
@@ -651,7 +651,7 @@ const NFTGrid = React.memo(({ collection }) => {
             {showListedDropdown && (
               <div className={cn(
                 'absolute top-full right-0 mt-1 min-w-[140px] rounded-lg border-[1.5px] p-1 z-50',
-                isDark ? 'bg-black/95 border-white/10' : 'bg-white border-gray-200 shadow-lg'
+                isDark ? 'bg-black/95 border-white/[0.08]' : 'bg-white border-gray-200 shadow-lg'
               )}>
                 {LISTING_OPTIONS.map((option) => (
                   <div
@@ -683,7 +683,7 @@ const NFTGrid = React.memo(({ collection }) => {
 
         {/* Trait Filter Panel */}
         {showFilter && traits.length > 0 && (
-          <div className={cn('mt-3 p-3 rounded-lg border-[1.5px]', isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50')}>
+          <div className={cn('mt-3 p-3 rounded-lg border-[1.5px]', isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50')}>
             <AttributeFilter attrs={traits} setFilterAttrs={setFilterAttrs} />
           </div>
         )}
@@ -763,7 +763,7 @@ function CollectionCard({ collectionData, type, account, handleRemove }) {
     <Link href={`/account/${account}/collection${collectionType}/${collectionData.collection.id}`} className="block">
       <div className={cn(
         'rounded-lg border-[1.5px] overflow-hidden cursor-pointer transition-all w-full',
-        isDark ? 'border-white/10 hover:border-primary/30' : 'border-gray-200 hover:border-primary/30'
+        isDark ? 'border-white/[0.08] hover:border-primary/30' : 'border-gray-200 hover:border-primary/30'
       )} style={{ aspectRatio: '1 / 1.3' }}>
         <div className="relative h-[70%]">
           {isAdmin && (
@@ -929,7 +929,7 @@ export default function CollectionView({ collection }) {
   return (
     <div className="w-full relative animate-fadeIn">
       {/* Collection Header - TokenSummary style */}
-      <div className={cn("rounded-xl border-[1.5px] px-4 py-2.5 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+      <div className={cn("rounded-xl border-[1.5px] px-4 py-2.5 mb-4", isDark ? "border-white/[0.08]" : "border-gray-200")}>
         {/* Main Row */}
         <div className="flex items-center">
           {/* Left: Logo + Info */}
@@ -1024,11 +1024,11 @@ export default function CollectionView({ collection }) {
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-1 pl-2 border-l border-white/10">
+            <div className="flex items-center gap-1 pl-2 border-l border-white/[0.08]">
               {accountLogin === collection.account && (
                 <Link href={`/collection/${slug}/edit`} className={cn(
                   "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                  isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                  isDark ? "border-white/[0.08] hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
                 )}>
                   <Pencil size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
                 </Link>
@@ -1038,7 +1038,7 @@ export default function CollectionView({ collection }) {
                   onClick={() => setOpenShare(!openShare)}
                   className={cn(
                     "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                    isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                    isDark ? "border-white/[0.08] hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
                   )}
                 >
                   <Share2 size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
@@ -1047,7 +1047,7 @@ export default function CollectionView({ collection }) {
                 {openShare && (
                   <div className={cn(
                     'absolute top-full right-0 mt-2 p-3 rounded-xl border z-50 min-w-[180px]',
-                    isDark ? 'bg-black/95 border-white/10 backdrop-blur-lg' : 'bg-white border-gray-200 shadow-lg'
+                    isDark ? 'bg-black/95 border-white/[0.08] backdrop-blur-lg' : 'bg-white border-gray-200 shadow-lg'
                   )}>
                     <p className={cn('text-[11px] font-medium mb-2 text-center uppercase tracking-wider', isDark ? 'text-white/50' : 'text-gray-500')}>
                       Share
@@ -1112,7 +1112,7 @@ export default function CollectionView({ collection }) {
       </div>
 
       {/* NFTs and Activity Tabs */}
-      <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/10' : 'border-gray-200')}>
+      <div className={cn('rounded-xl border-[1.5px] p-4', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
         <TabContext value={value}>
           <div className={cn('flex justify-between items-center mb-4 pb-2 border-b', isDark ? 'border-white/5' : 'border-gray-100')}>
             <div className="flex gap-1">

@@ -52,7 +52,7 @@ const EditDialog = ({ label, value, setValue, isDark }) => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className={cn(
             "rounded-xl border-[1.5px] p-6 w-[400px] max-w-[90vw]",
-            isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+            isDark ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
           )}>
             <div className="mb-4">
               <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">
@@ -368,10 +368,10 @@ export default function EditTokenDialog({ token, setToken }) {
       <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
         <div className={cn(
           "rounded-xl border-[1.5px] w-full max-w-4xl my-8",
-          isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+          isDark ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
         )}>
           {/* Header */}
-          <div className="flex items-center justify-between p-4 border-b border-white/10">
+          <div className="flex items-center justify-between p-4 border-b border-white/[0.08]">
             <div className="flex items-center gap-3">
               <input
                 ref={fileRef}
@@ -528,7 +528,7 @@ export default function EditTokenDialog({ token, setToken }) {
                     </div>
                   </td>
                 </tr>
-                <tr className="border-b border-white/10">
+                <tr className="border-b border-white/[0.08]">
                   <td className="py-2 pr-4 text-right text-[13px] text-gray-500">Tags</td>
                   <td className="py-2">
                     <div className="flex flex-wrap gap-2 items-center">
@@ -747,7 +747,7 @@ export default function EditTokenDialog({ token, setToken }) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
           <div className={cn(
             "rounded-xl border-[1.5px] p-6 w-[400px] max-w-[90vw]",
-            isDark ? "bg-black border-white/10" : "bg-white border-gray-200"
+            isDark ? "bg-black border-white/[0.08]" : "bg-white border-gray-200"
           )}>
             <div className="mb-4">
               <label className="block text-[11px] font-medium uppercase tracking-wide mb-2 text-gray-500">

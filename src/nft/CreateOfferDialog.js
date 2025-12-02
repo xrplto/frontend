@@ -235,12 +235,12 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
       <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
         <div className={cn(
           'relative w-full max-w-md rounded-xl border-[1.5px] overflow-hidden',
-          isDark ? 'border-white/10 bg-black' : 'border-gray-200 bg-white'
+          isDark ? 'border-white/[0.08] bg-black' : 'border-gray-200 bg-white'
         )}>
           {/* Dialog Title */}
           <div className={cn(
             'flex items-center justify-between p-4 border-b-[1.5px]',
-            isDark ? 'border-white/10' : 'border-gray-200'
+            isDark ? 'border-white/[0.08]' : 'border-gray-200'
           )}>
             <h2 className={cn('text-[19px] font-normal text-primary')}>
               Create {isSellOffer ? 'Sell' : 'Buy'} Offer
@@ -249,7 +249,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
               onClick={handleClose}
               className={cn(
                 'flex h-8 w-8 items-center justify-center rounded-xl border-[1.5px] transition-colors',
-                isDark ? 'border-white/10 hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
+                isDark ? 'border-white/[0.08] hover:border-primary hover:bg-primary/5' : 'border-gray-200 hover:border-primary hover:bg-primary/5'
               )}
             >
               <X size={16} />
@@ -261,7 +261,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
             {/* NFT Preview */}
             <div className={cn(
               'p-4 rounded-xl border-[1.5px]',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              isDark ? 'border-white/[0.08]' : 'border-gray-200'
             )}>
               <div className="flex items-center gap-3">
                 {nftImageUrl && (
@@ -292,7 +292,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
             {/* Token Selection */}
             <div className={cn(
               'p-4 rounded-xl border-[1.5px]',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              isDark ? 'border-white/[0.08]' : 'border-gray-200'
             )}>
               <div className={cn(
                 'px-3 py-2 rounded-lg',
@@ -307,7 +307,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
             {/* Amount Input */}
             <div className={cn(
               'p-4 rounded-xl border-[1.5px]',
-              isDark ? 'border-white/10' : 'border-gray-200'
+              isDark ? 'border-white/[0.08]' : 'border-gray-200'
             )}>
               <p className={cn('text-[15px] font-normal mb-3', isDark ? 'text-white' : 'text-gray-900')}>
                 Cost <span className="text-red-500">*</span>
@@ -322,7 +322,7 @@ export default function CreateOfferDialog({ open, setOpen, nft, isSellOffer, nft
                   className={cn(
                     'flex-1 px-4 py-3 rounded-xl border-[1.5px] text-[14px] outline-none transition-colors',
                     isDark
-                      ? 'border-white/10 bg-white/5 text-white placeholder:text-white/40 focus:border-primary'
+                      ? 'border-white/[0.08] bg-white/5 text-white placeholder:text-white/40 focus:border-primary'
                       : 'border-gray-200 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary'
                   )}
                 />

@@ -11,17 +11,17 @@ import { AlertTriangle, BadgeCheck, Search, X, TrendingUp, Layers, Clock, Image 
 const API_URL = 'https://api.xrpl.to';
 
 const getThemeClasses = (isDark) => ({
-  overlay: isDark ? 'bg-black/80' : 'bg-black/50',
+  overlay: isDark ? 'bg-black/60' : 'bg-black/40',
   modal: isDark
-    ? 'border-white/10 bg-[#0a0a0a]'
-    : 'border-gray-200 bg-white',
+    ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70'
+    : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]',
   text: isDark ? 'text-white' : 'text-gray-900',
-  textSecondary: isDark ? 'text-gray-500' : 'text-gray-500',
-  border: isDark ? 'border-white/10' : 'border-gray-200',
-  hover: isDark ? 'hover:bg-white/5' : 'hover:bg-gray-50',
-  bg: isDark ? 'bg-white/5' : 'bg-gray-100',
-  divider: isDark ? 'bg-white/5' : 'bg-gray-100',
-  item: isDark ? 'hover:bg-white/[0.03]' : 'hover:bg-gray-50'
+  textSecondary: isDark ? 'text-white/50' : 'text-gray-500',
+  border: isDark ? 'border-white/[0.08]' : 'border-gray-200',
+  hover: isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50',
+  bg: isDark ? 'bg-white/[0.05]' : 'bg-gray-100',
+  divider: isDark ? 'bg-white/[0.06]' : 'bg-gray-100',
+  item: isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50'
 });
 
 const currencySymbols = {

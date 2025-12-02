@@ -638,7 +638,7 @@ export default function NFTActions({ nft }) {
                 ) : lowestSellOffer ? (
                   <div className={cn(
                     'p-3 rounded-xl border',
-                    isDark ? 'border-white/10 bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+                    isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
                   )}>
                     <div className="flex justify-between items-center">
                       <span className={cn('text-[10px] uppercase tracking-wider font-medium', isDark ? 'text-gray-500' : 'text-gray-400')}>Price</span>
@@ -659,7 +659,7 @@ export default function NFTActions({ nft }) {
                     )}
                   </div>
                 ) : (
-                  <div className={cn('text-center py-3 rounded-xl border border-dashed', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  <div className={cn('text-center py-3 rounded-xl border border-dashed', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
                     <p className={cn('text-sm', isDark ? 'text-gray-500' : 'text-gray-400')}>Not listed for sale</p>
                   </div>
                 )}
@@ -714,7 +714,7 @@ export default function NFTActions({ nft }) {
                     <PulseLoader color="#4285f4" size={10} />
                   </div>
                 ) : sellOffers.length > 0 ? (
-                  <div className={cn('rounded-lg border overflow-hidden', isDark ? 'border-white/10' : 'border-gray-200')}>
+                  <div className={cn('rounded-lg border overflow-hidden', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
                     {sellOffers.map((offer, index) => {
                       const amount = normalizeAmount(offer.amount);
                       const isLast = index === sellOffers.length - 1;
@@ -785,7 +785,7 @@ export default function NFTActions({ nft }) {
                   <PulseLoader color="#4285f4" size={10} />
                 </div>
               ) : buyOffers.length > 0 ? (
-                <div className={cn('rounded-lg border overflow-hidden max-h-[320px] overflow-y-auto', isDark ? 'border-white/10' : 'border-gray-200')} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                <div className={cn('rounded-lg border overflow-hidden max-h-[320px] overflow-y-auto', isDark ? 'border-white/[0.08]' : 'border-gray-200')} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
                   {buyOffers.map((offer, index) => {
                     const amount = normalizeAmount(offer.amount);
                     const isLast = index === buyOffers.length - 1;
