@@ -117,38 +117,6 @@ const IconButton = styled.button`
   & svg { width: 14px; height: 14px; }
 `;
 
-const Menu = styled.div`
-  position: absolute;
-  top: 100%;
-  right: 0;
-  margin-top: 4px;
-  min-width: 160px;
-  background: ${props => props.isDark ? '#1a1a1a' : '#fff'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
-  border-radius: 8px;
-  z-index: 1000;
-  padding: 4px;
-  display: ${props => props.open ? 'block' : 'none'};
-`;
-
-const MenuItem = styled.div`
-  padding: 6px 10px;
-  font-size: 12px;
-  border-radius: 4px;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#374151'};
-  cursor: ${props => props.disabled ? 'default' : 'pointer'};
-  opacity: ${props => props.disabled ? 0.5 : 1};
-  background: ${props => props.isActive ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
-  &:hover {
-    background: ${props => props.disabled ? 'transparent' : (props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)')};
-  }
-`;
-
-const Divider = styled.div`
-  height: 1px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'};
-  margin: 4px;
-`;
 
 const Spinner = styled(Loader2)`
   animation: spin 1s linear infinite;
@@ -171,15 +139,13 @@ const PriceChartAdvanced = memo(({ token }) => {
   const isTablet = typeof window !== 'undefined' && window.innerWidth < 900;
 
   const [chartType, setChartType] = useState('candles');
-  const [chartInterval, setChartInterval] = useState('5m');
+  const [timeRange, setTimeRange] = useState('1d'); // 1d, 5d, 1m, 3m, 1y, 5y
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [anchorEl, setAnchorEl] = useState(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  const nextEndRef = useRef(null);
   // ATH from token prop (API /api/token endpoint), not from chart intervals
   const athData = useMemo(() => {
     if (token?.athMarketcap) {
@@ -288,14 +254,22 @@ const PriceChartAdvanced = memo(({ token }) => {
 
   // Load more historical data (infinite scroll)
   const loadMoreData = useCallback(async () => {
-    if (!token?.md5 || isLoadingMoreRef.current || !hasMore || !nextEndRef.current) {
+    if (!token?.md5 || isLoadingMoreRef.current || !hasMore || !dataRef.current?.length) {
       return;
     }
 
     isLoadingMoreRef.current = true;
     setIsLoadingMore(true);
     try {
-      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?interval=${chartInterval}&end=${nextEndRef.current}&limit=300&vs_currency=${activeFiatCurrency}`;
+      // Get resolution from timeRange preset
+      const presetResolutions = { '1d': '1', '5d': '5', '1m': '60', '3m': '240', '1y': 'D', '5y': 'W' };
+      const resolution = presetResolutions[timeRange] || '15';
+      const intervalSeconds = { '1': 60, '5': 300, '15': 900, '30': 1800, '60': 3600, '240': 14400, 'D': 86400, 'W': 604800 };
+      const to = dataRef.current[0].time; // Oldest candle
+      const barsToLoad = 300;
+      const from = to - (barsToLoad * (intervalSeconds[resolution] || 900));
+
+      const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?from=${from}&to=${to}&resolution=${resolution}&vs_currency=${activeFiatCurrency}`;
       const response = await axios.get(endpoint);
 
       if (response.data?.ohlc && response.data.ohlc.length > 0) {
@@ -321,8 +295,8 @@ const PriceChartAdvanced = memo(({ token }) => {
           return unique;
         });
 
-        setHasMore(response.data.hasMore);
-        nextEndRef.current = response.data.nextEnd;
+        // Check if we got fewer bars than requested = no more data
+        setHasMore(response.data.ohlc.length >= barsToLoad * 0.5);
       } else {
         setHasMore(false);
       }
@@ -334,7 +308,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       isLoadingMoreRef.current = false;
       setIsLoadingMore(false);
     }
-  }, [token?.md5, chartInterval, activeFiatCurrency, hasMore, convertScientific, BASE_URL]);
+  }, [token?.md5, timeRange, activeFiatCurrency, hasMore, convertScientific, BASE_URL]);
 
   // Keep ref updated
   useEffect(() => {
@@ -372,12 +346,21 @@ const PriceChartAdvanced = memo(({ token }) => {
             setLoading(true);
             // Reset infinite scroll state on fresh load
             setHasMore(true);
-            nextEndRef.current = null;
           }
         }
 
-        const limit = isMobile ? 200 : isTablet ? 300 : 500;
-        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?interval=${chartInterval}&limit=${limit}&vs_currency=${activeFiatCurrency}`;
+        // Presets with optimal resolution for each time range
+        const to = Math.floor(Date.now() / 1000);
+        const presets = {
+          '1d':  { from: to - 86400,     resolution: '1'   },
+          '5d':  { from: to - 432000,    resolution: '5'   },
+          '1m':  { from: to - 2592000,   resolution: '60'  },
+          '3m':  { from: to - 7776000,   resolution: '240' },
+          '1y':  { from: to - 31536000,  resolution: 'D'   },
+          '5y':  { from: to - 157680000, resolution: 'W'   }
+        };
+        const preset = presets[timeRange] || presets['1d'];
+        const endpoint = `${BASE_URL}/graph-ohlc-v2/${token.md5}?from=${preset.from}&to=${to}&resolution=${preset.resolution}&vs_currency=${activeFiatCurrency}`;
 
         const response = await axios.get(endpoint, { signal: requestController.signal });
 
@@ -424,14 +407,10 @@ const PriceChartAdvanced = memo(({ token }) => {
               setData(finalData);
               setLastUpdate(new Date());
             }
-            // Always update pagination refs (they don't trigger re-render)
-            nextEndRef.current = response.data.nextEnd;
           } else {
             dataRef.current = processedData;
             setData(processedData);
             setLastUpdate(new Date());
-            setHasMore(response.data.hasMore);
-            nextEndRef.current = response.data.nextEnd;
           }
 
           const rsiData = calcRSI(processedData, 14);
@@ -482,7 +461,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
       clearInterval(updateInterval);
     };
-  }, [token.md5, chartInterval, BASE_URL, activeFiatCurrency, isMobile, isTablet, convertScientific, calcRSI]);
+  }, [token.md5, timeRange, BASE_URL, activeFiatCurrency, isMobile, isTablet, convertScientific, calcRSI]);
 
   // Fetch holder data
   useEffect(() => {
@@ -744,7 +723,7 @@ const PriceChartAdvanced = memo(({ token }) => {
 
 
           // Infinite scroll: load more when near left edge
-          if (chartType !== 'holders' && logicalRange.from < 20 && nextEndRef.current && !isLoadingMoreRef.current) {
+          if (chartType !== 'holders' && logicalRange.from < 50 && !isLoadingMoreRef.current) {
             clearTimeout(loadMoreTimeout);
             loadMoreTimeout = setTimeout(() => {
               if (loadMoreDataRef.current) {
@@ -938,7 +917,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       const container = chartContainerRef.current;
       if (!container) return;
 
-      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 380 : 520;
+      const newHeight = isFullscreen ? window.innerHeight - 120 : isMobile ? 420 : 620;
       const rect = container.getBoundingClientRect();
       const newWidth = rect.width || container.clientWidth;
 
@@ -1061,7 +1040,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       chartRef.current.priceScale('volume').applyOptions({ scaleMargins: { top: 0.9, bottom: 0 } });
     }
 
-    const isIntervalChange = lastChartTypeRef.current !== `${chartType}-${chartInterval}`;
+    const isIntervalChange = lastChartTypeRef.current !== `${chartType}-${timeRange}`;
     const isCurrencyChange = activeFiatCurrencyRef.current !== activeFiatCurrency;
 
     // Check if data length changed significantly (more data loaded via infinite scroll)
@@ -1135,14 +1114,14 @@ const PriceChartAdvanced = memo(({ token }) => {
     if (isIntervalChange || isCurrencyChange) {
       // Show last ~80 candles zoomed in, keeping right side in place
       const dataLength = chartData.length;
-      const visibleBars = isMobile ? 50 : 80;
+      const visibleBars = isMobile ? 200 : 400;
       const from = Math.max(0, dataLength - visibleBars);
       chartRef.current.timeScale().setVisibleLogicalRange({ from, to: dataLength + 3 });
-      lastChartTypeRef.current = `${chartType}-${chartInterval}`;
+      lastChartTypeRef.current = `${chartType}-${timeRange}`;
       activeFiatCurrencyRef.current = activeFiatCurrency;
     }
     // Don't restore zoom state on every update - it causes flickering
-  }, [data, holderData, chartType, chartInterval]);
+  }, [data, holderData, chartType, timeRange]);
 
   const handleFullscreen = useCallback(() => {
     setIsFullscreen((prev) => {
@@ -1219,65 +1198,30 @@ const PriceChartAdvanced = memo(({ token }) => {
           </ButtonGroup>
 
           <ButtonGroup>
-            {(isMobile ? ['1m', '5m', '15m', '1h', '1d'] : ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w']).map((int) => (
+            {(isMobile ? ['1d', '5d', '1m', '1y'] : ['1d', '5d', '1m', '3m', '1y', '5y']).map((range) => (
               <Button
-                key={int}
+                key={range}
                 onClick={() => {
-                  setChartInterval(int);
+                  setTimeRange(range);
                   setIsUserZoomed(false);
                 }}
-                isActive={chartInterval === int}
+                isActive={timeRange === range}
                 isMobile={isMobile}
                 isDark={isDark}
                 minWidth={isMobile ? '28px' : '32px'}
               >
-                {int}
+                {range.toUpperCase()}
               </Button>
             ))}
           </ButtonGroup>
 
-          <div style={{ position: 'relative' }}>
-            <IconButton onClick={() => setAnchorEl(anchorEl ? null : {})} isDark={isDark}>
-              <MoreVertical />
-            </IconButton>
-
-            <Menu open={!!anchorEl} isDark={isDark}>
-              {isMobile && (
-                <>
-                  <MenuItem onClick={() => { handleFullscreen(); setAnchorEl(null); }} isDark={isDark}>
-                    <Box style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      {isFullscreen ? <Minimize size={14} /> : <Maximize size={14} />}
-                      {isFullscreen ? 'Exit' : 'Fullscreen'}
-                    </Box>
-                  </MenuItem>
-                  <Divider isDark={isDark} />
-                </>
-              )}
-              <MenuItem disabled isDark={isDark} style={{ fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                More Intervals
-              </MenuItem>
-              {['30m', '4h', '1w'].filter(int => isMobile).map((int) => (
-                <MenuItem
-                  key={int}
-                  onClick={() => { setChartInterval(int); setAnchorEl(null); }}
-                  isActive={chartInterval === int}
-                  isDark={isDark}
-                >
-                  {int}
-                </MenuItem>
-              ))}
-            </Menu>
-          </div>
-
-          {!isMobile && (
-            <IconButton onClick={handleFullscreen} isDark={isDark} title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
-              {isFullscreen ? <Minimize /> : <Maximize />}
-            </IconButton>
-          )}
+          <IconButton onClick={handleFullscreen} isDark={isDark} title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
+            {isFullscreen ? <Minimize /> : <Maximize />}
+          </IconButton>
         </Box>
       </Box>
 
-      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '380px' : '520px', borderRadius: '8px' }}>
+      <Box style={{ position: 'relative', height: isFullscreen ? 'calc(100vh - 100px)' : isMobile ? '420px' : '620px', borderRadius: '8px' }}>
         <div ref={chartContainerRef} style={{ width: '100%', height: '100%' }} />
         {loading && !chartRef.current && (
           <Box style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
