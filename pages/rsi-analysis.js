@@ -16,7 +16,7 @@ const currencySymbols = {
   CNH: '¥ ',
   XRP: '✕ '
 };
-import { fNumber } from 'src/utils/formatters';
+import { fNumber, fCurrency5 } from 'src/utils/formatters';
 import Decimal from 'decimal.js-light';
 
 const Controls = styled.div`
@@ -436,6 +436,8 @@ function RSIAnalysisPage({ data }) {
   };
 
   const setTimeframe = (tf) => {
+    if (tf === params.timeframe) return;
+    setTokens([]); // Clear stale data to prevent flash during API fetch
     setParams(prev => ({
       ...prev,
       timeframe: tf,
@@ -491,6 +493,16 @@ function RSIAnalysisPage({ data }) {
   const getRSIValue = (token) => {
     const field = `rsi${params.timeframe}`;
     return token[field];
+  };
+
+  const getMarketCapColor = (mcap) => {
+    if (!mcap || isNaN(mcap)) return darkMode ? '#FFFFFF' : '#000000';
+    if (mcap >= 5e6) return darkMode ? '#2E7D32' : '#1B5E20';
+    if (mcap >= 1e6) return darkMode ? '#4CAF50' : '#2E7D32';
+    if (mcap >= 1e5) return darkMode ? '#42A5F5' : '#1976D2';
+    if (mcap >= 1e4) return darkMode ? '#FFC107' : '#F57F17';
+    if (mcap >= 1e3) return darkMode ? '#FF9800' : '#E65100';
+    return darkMode ? '#EF5350' : '#C62828';
   };
 
   const getRSIColor = (rsi) => {
@@ -597,7 +609,7 @@ function RSIAnalysisPage({ data }) {
 
   const drawHeatMap = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !tokens.length) return;
+    if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
     const rect = canvas.getBoundingClientRect();
@@ -851,6 +863,7 @@ function RSIAnalysisPage({ data }) {
                 ref={canvasRef}
                 onMouseMove={handleCanvasMouseMove}
                 onMouseLeave={handleCanvasMouseLeave}
+                style={{ opacity: loading ? 0.3 : 1, transition: 'opacity 0.2s' }}
               />
               <div style={{
                 position: 'absolute',
@@ -863,6 +876,18 @@ function RSIAnalysisPage({ data }) {
               }}>
                 RSI Heatmap · {params.timeframe.toUpperCase()}
               </div>
+              {loading && (
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '50%',
+                  transform: 'translate(-50%, -50%)',
+                  color: darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.5)',
+                  fontSize: '13px'
+                }}>
+                  Loading...
+                </div>
+              )}
               {tooltip.visible && tooltip.data && (
                 <CustomTooltip
                   darkMode={darkMode}
@@ -931,7 +956,7 @@ function RSIAnalysisPage({ data }) {
                           </TokenInfo>
                         </Td>
                         <Td darkMode={darkMode} align="right">
-                          <span>{currencySymbols[activeFiatCurrency]}{fNumber(priceFiat)}</span>
+                          <span>{currencySymbols[activeFiatCurrency]}{fCurrency5(priceFiat)}</span>
                         </Td>
                         <Td darkMode={darkMode} align="right">
                           <PriceChange positive={token.pro24h >= 0}>
@@ -947,7 +972,7 @@ function RSIAnalysisPage({ data }) {
                           </span>
                         </Td>
                         <Td darkMode={darkMode} align="right">
-                          <span>
+                          <span style={{ color: getMarketCapColor(marketCapFiat) }}>
                             {currencySymbols[activeFiatCurrency]}
                             {marketCapFiat >= 1e6 ? `${(marketCapFiat / 1e6).toFixed(1)}M` :
                              marketCapFiat >= 1e3 ? `${(marketCapFiat / 1e3).toFixed(1)}K` :

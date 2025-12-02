@@ -219,13 +219,13 @@ const EmptyState = styled.div`
 const TABLE_HEAD = [
   { id: 'rank', label: '#', align: 'center', width: '50px' },
   { id: 'trader', label: 'TRADER', align: 'left', width: '180px' },
-  { id: 'balance', label: 'BAL', align: 'right', width: '100px', sortable: true, tooltip: 'Balance' },
-  { id: 'buyVolume', label: 'BUY', align: 'right', width: '100px', sortable: true, tooltip: 'Buy volume' },
-  { id: 'sellVolume', label: 'SELL', align: 'right', width: '100px', sortable: true, tooltip: 'Sell volume' },
-  { id: 'totalVolume', label: 'VOL', align: 'right', width: '100px', sortable: true, tooltip: 'Total volume' },
-  { id: 'collections', label: 'NFTS', align: 'right', width: '80px', tooltip: 'NFT count' },
-  { id: 'lastActive', label: 'AGE', align: 'right', width: '90px', tooltip: 'Last active' },
-  { id: 'marketplaces', label: 'MKT', align: 'right', width: '120px', tooltip: 'Marketplaces' },
+  { id: 'balance', label: 'BALANCE', align: 'right', width: '100px', sortable: true, tooltip: 'Current XRP balance' },
+  { id: 'buyVolume', label: 'BOUGHT (24H)', align: 'right', width: '110px', sortable: true, tooltip: 'XRP spent buying NFTs in 24h' },
+  { id: 'sellVolume', label: 'SOLD (24H)', align: 'right', width: '110px', sortable: true, tooltip: 'XRP received from selling NFTs in 24h' },
+  { id: 'totalVolume', label: 'VOLUME (24H)', align: 'right', width: '110px', sortable: true, tooltip: 'Total trading volume in 24h' },
+  { id: 'collections', label: 'COLLECTIONS', align: 'right', width: '100px', tooltip: 'Collections traded in 24h' },
+  { id: 'lastActive', label: 'LAST ACTIVE', align: 'right', width: '100px', tooltip: 'Time since last trade' },
+  { id: 'marketplaces', label: 'MARKETS', align: 'right', width: '120px', tooltip: 'Marketplaces used' },
 ];
 
 export default function TradersPage({ traders = [], sortBy = 'totalVolume', globalMetrics = null }) {
@@ -260,12 +260,12 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
   };
 
   const metrics = globalMetrics ? [
-    { label: 'Traders', value: fNumber(globalMetrics.activeTraders24h || 0) },
-    { label: 'Balance', value: `✕ ${fVolume(globalMetrics.totalLiquidity24h || 0)}` },
-    { label: 'Volume', value: `✕ ${fVolume(globalMetrics.total24hVolume || 0)}` },
-    { label: 'Trades', value: fNumber(globalMetrics.total24hSales || 0) },
-    { label: 'Mints', value: fNumber(globalMetrics.total24hMints || 0) },
-    { label: 'Burns', value: fNumber(globalMetrics.total24hBurns || 0) },
+    { label: 'Active Traders', value: fNumber(globalMetrics.activeTraders24h || 0) },
+    { label: 'Total Liquidity', value: `${fVolume(globalMetrics.totalLiquidity24h || 0)} XRP` },
+    { label: '24h Volume', value: `${fVolume(globalMetrics.total24hVolume || 0)} XRP` },
+    { label: '24h Sales', value: fNumber(globalMetrics.total24hSales || 0) },
+    { label: '24h Mints', value: fNumber(globalMetrics.total24hMints || 0) },
+    { label: '24h Burns', value: fNumber(globalMetrics.total24hBurns || 0) },
   ] : null;
 
   return (
@@ -277,8 +277,8 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
       />
 
       <Container>
-        <Title darkMode={darkMode}>NFT Traders</Title>
-        <Subtitle darkMode={darkMode}>Active traders (24h)</Subtitle>
+        <Title darkMode={darkMode}>NFT Traders Leaderboard</Title>
+        <Subtitle darkMode={darkMode}>Top NFT traders by volume in the last 24 hours</Subtitle>
 
         {metrics && (
           <MetricsGrid>

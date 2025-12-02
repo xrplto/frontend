@@ -142,7 +142,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
           <div style={{ width: '100%' }}>
             <Grid cols={6} mdCols={3} spacing="10px">
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Volume</MetricTitle>
+                <MetricTitle isDark={isDark}>Trading Volume</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
@@ -152,7 +152,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       marginBottom: '2px'
                     }}>24h</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
-                      ✕ {formatNumberWithDecimals(globalMetrics.total24hVolume || 0)}
+                      {formatNumberWithDecimals(globalMetrics.total24hVolume || 0)} XRP
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
@@ -161,16 +161,16 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
-                    }}>Total</span>
+                    }}>All Time</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
-                      ✕ {formatNumberWithDecimals(globalMetrics.totalVolume || 0)}
+                      {formatNumberWithDecimals(globalMetrics.totalVolume || 0)} XRP
                     </MetricValue>
                   </div>
                 </div>
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Activity</MetricTitle>
+                <MetricTitle isDark={isDark}>24h Activity</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
@@ -198,7 +198,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Traders</MetricTitle>
+                <MetricTitle isDark={isDark}>24h Traders</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
@@ -217,9 +217,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
-                    }}>Balance</span>
+                    }}>Liquidity</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
-                      ✕ {formatNumberWithDecimals(globalMetrics.totalLiquidity24h || 0)}
+                      {formatNumberWithDecimals(globalMetrics.totalLiquidity24h || 0)} XRP
                     </MetricValue>
                   </div>
                 </div>
@@ -254,7 +254,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Mints & Burns</MetricTitle>
+                <MetricTitle isDark={isDark}>24h Mints & Burns</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
@@ -262,7 +262,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
-                    }}>Mints</span>
+                    }}>Minted</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.total24hMints || 0)}
                     </MetricValue>
@@ -273,7 +273,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
-                    }}>Burns</span>
+                    }}>Burned</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
                       {formatNumberWithDecimals(globalMetrics.total24hBurns || 0)}
                     </MetricValue>
@@ -282,7 +282,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
               </MetricBox>
 
               <MetricBox isDark={isDark}>
-                <MetricTitle isDark={isDark}>Fees</MetricTitle>
+                <MetricTitle isDark={isDark}>24h Fees Paid</MetricTitle>
                 <div style={{ display: 'flex', gap: isMobile ? '8px' : '12px', width: '100%' }}>
                   <div style={{ flex: 1 }}>
                     <span style={{
@@ -292,7 +292,7 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       marginBottom: '2px'
                     }}>Broker</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
-                      ✕ {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)}
+                      {formatNumberWithDecimals(globalMetrics.total24hBrokerFees || 0)} XRP
                     </MetricValue>
                   </div>
                   <div style={{ flex: 1 }}>
@@ -301,9 +301,9 @@ function Collections({ initialCollections, initialTotal, initialGlobalMetrics })
                       color: isDark ? 'rgba(255, 255, 255, 0.6)' : 'rgba(33, 43, 54, 0.6)',
                       display: 'block',
                       marginBottom: '2px'
-                    }}>Royalty</span>
+                    }}>Royalties</span>
                     <MetricValue isDark={isDark} style={{ fontSize: isMobile ? '0.75rem' : '16px' }}>
-                      ✕ {formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)}
+                      {formatNumberWithDecimals(globalMetrics.total24hRoyalties || 0)} XRP
                     </MetricValue>
                   </div>
                 </div>

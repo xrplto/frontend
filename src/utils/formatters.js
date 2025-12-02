@@ -89,7 +89,8 @@ export function fCurrency5(num) {
   if (absN >= 1) return n.toFixed(2);
 
   // For very small numbers, show more precision
-  if (absN > 0 && absN < 0.01) return n.toFixed(6);
+  if (absN > 0 && absN < 0.0001) return n.toFixed(10);
+  if (absN > 0 && absN < 0.01) return n.toFixed(8);
 
   // Default to 4 decimal places
   return n.toFixed(4);

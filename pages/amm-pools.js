@@ -439,23 +439,23 @@ function AMMPoolsPage({ data }) {
               <SummaryValue darkMode={darkMode}>{currencySymbols[activeFiatCurrency]}{formatCurrency(new Decimal(summary.totalLiquidity).div(exchRate).toNumber())}</SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>24h Volume</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume24h)}</SummaryValue>
+              <SummaryLabel darkMode={darkMode}>Volume (24h)</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume24h)} XRP</SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>7d Volume</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume7d)}</SummaryValue>
+              <SummaryLabel darkMode={darkMode}>Volume (7d)</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalVolume7d)} XRP</SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>24h Fees</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees24h)}</SummaryValue>
+              <SummaryLabel darkMode={darkMode}>Fees Earned (24h)</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees24h)} XRP</SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>7d Fees</SummaryLabel>
-              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees7d)}</SummaryValue>
+              <SummaryLabel darkMode={darkMode}>Fees Earned (7d)</SummaryLabel>
+              <SummaryValue darkMode={darkMode}>{formatCurrency(summary.totalFees7d)} XRP</SummaryValue>
             </SummaryCard>
             <SummaryCard darkMode={darkMode}>
-              <SummaryLabel darkMode={darkMode}>Avg Fee</SummaryLabel>
+              <SummaryLabel darkMode={darkMode}>Avg Trade Fee</SummaryLabel>
               <SummaryValue darkMode={darkMode}>{(summary.avgFee / 10).toFixed(4)}%</SummaryValue>
             </SummaryCard>
           </SummaryGrid>
@@ -499,14 +499,14 @@ function AMMPoolsPage({ data }) {
               <tr>
                 <Th darkMode={darkMode}>#</Th>
                 <Th darkMode={darkMode}>POOL</Th>
-                <Th darkMode={darkMode} align="right">FEE</Th>
-                <Th darkMode={darkMode} align="right">LIQ</Th>
-                <Th darkMode={darkMode} align="right">VOL</Th>
-                <Th darkMode={darkMode} align="right">V7D</Th>
-                <Th darkMode={darkMode} align="right">FEES</Th>
-                <Th darkMode={darkMode} align="right">F7D</Th>
-                <Th darkMode={darkMode} align="center">APY</Th>
-                <Th darkMode={darkMode} align="center">A7D</Th>
+                <Th darkMode={darkMode} align="right">TRADE FEE</Th>
+                <Th darkMode={darkMode} align="right">LIQUIDITY</Th>
+                <Th darkMode={darkMode} align="right">VOL (24H)</Th>
+                <Th darkMode={darkMode} align="right">VOL (7D)</Th>
+                <Th darkMode={darkMode} align="right">FEES (24H)</Th>
+                <Th darkMode={darkMode} align="right">FEES (7D)</Th>
+                <Th darkMode={darkMode} align="center">APY (24H)</Th>
+                <Th darkMode={darkMode} align="center">APY (7D)</Th>
               </tr>
             </thead>
             <tbody>

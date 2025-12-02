@@ -339,118 +339,118 @@ const DESKTOP_TABLE_HEAD = [
   },
   {
     id: 'pro5m',
-    label: '5M',
+    label: '5M %',
     align: 'right',
     width: '7%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '5 minute change'
+    tooltip: '5-minute price change'
   },
   {
     id: 'pro1h',
-    label: '1H',
+    label: '1H %',
     align: 'right',
     width: '7%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '1 hour change'
+    tooltip: '1-hour price change'
   },
   {
     id: 'pro24h',
-    label: '24H',
+    label: '24H %',
     align: 'right',
     width: '7%',
     order: true,
     sticky: false,
     mobileHide: false,
-    tooltip: '24 hour change'
+    tooltip: '24-hour price change'
   },
   {
     id: 'pro7d',
-    label: '7D',
+    label: '7D %',
     align: 'right',
     width: '7%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '7 day change'
+    tooltip: '7-day price change'
   },
   {
     id: 'vol24hxrp',
-    label: 'VOL',
+    label: 'VOL (24H)',
     align: 'right',
     width: '8%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '24h volume'
+    tooltip: '24-hour trading volume'
   },
   {
     id: 'dateon',
-    label: 'AGE',
+    label: 'CREATED',
     align: 'right',
     width: '8%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Token age'
+    tooltip: 'Token creation date'
   },
   {
     id: 'vol24htx',
-    label: 'TXS',
+    label: 'TRADES',
     align: 'right',
     width: '7%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: '24h trades'
+    tooltip: '24-hour trade count'
   },
   {
     id: 'tvl',
-    label: 'TVL',
+    label: 'LIQUIDITY',
     align: 'right',
     width: '10%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Total Value Locked'
+    tooltip: 'Total liquidity in DEX pools'
   },
   {
     id: 'marketcap',
-    label: 'MCAP',
+    label: 'MARKET CAP',
     align: 'right',
     width: '10%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Market cap'
+    tooltip: 'Price × circulating supply'
   },
   {
     id: 'holders',
-    label: 'HLDR',
+    label: 'HOLDERS',
     align: 'right',
     width: '10%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Holders'
+    tooltip: 'Unique wallet addresses holding this token'
   },
   {
     id: 'origin',
-    label: 'SRC',
+    label: 'SOURCE',
     align: 'right',
     width: '13%',
     order: true,
     sticky: false,
     mobileHide: true,
-    tooltip: 'Origin',
+    tooltip: 'Token origin/issuer platform',
     style: { paddingRight: '16px' }
   },
   {
     id: 'historyGraph',
-    label: 'CHART',
+    label: '24H CHART',
     align: 'right',
     width: '15%',
     order: false,
@@ -495,20 +495,20 @@ export const TokenListHead = memo(function TokenListHead({
       // Mobile column abbreviation map - matches all available options
       const mobileLabels = {
         price: 'PRICE',
-        volume24h: 'VOL',
-        volume7d: 'V7D',
+        volume24h: 'VOL 24H',
+        volume7d: 'VOL 7D',
         marketCap: 'MCAP',
-        tvl: 'TVL',
-        holders: 'HLDR',
-        trades: 'TXS',
+        tvl: 'LIQ',
+        holders: 'HOLDERS',
+        trades: 'TRADES',
         supply: 'SUPPLY',
-        created: 'AGE',
-        origin: 'SRC',
-        pro5m: '5M',
-        pro1h: '1H',
-        pro24h: '24H',
-        pro7d: '7D',
-        pro30d: '30D'
+        created: 'CREATED',
+        origin: 'SOURCE',
+        pro5m: '5M %',
+        pro1h: '1H %',
+        pro24h: '24H %',
+        pro7d: '7D %',
+        pro30d: '30D %'
       };
 
       // Always use customColumns when available, regardless of viewMode

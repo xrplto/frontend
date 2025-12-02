@@ -622,26 +622,26 @@ const MobileContainer = styled.div`
 // Table Head Configuration
 const TABLE_HEAD_MOBILE = [
   { id: 'name', label: 'COLLECTION', align: 'left', width: '40%', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '20%', order: true, tooltip: 'Floor price' },
-  { id: 'floor1dPercent', label: '24H', align: 'right', width: '20%', order: true, tooltip: '24h floor change' },
-  { id: 'totalVolume', label: 'VOL', align: 'right', width: '20%', order: true, tooltip: 'Total volume' }
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '20%', order: true, tooltip: 'Floor price in XRP' },
+  { id: 'floor1dPercent', label: '24H %', align: 'right', width: '20%', order: true, tooltip: '24h floor price change' },
+  { id: 'totalVolume', label: 'VOLUME', align: 'right', width: '20%', order: true, tooltip: 'All-time trading volume' }
 ];
 
 const TABLE_HEAD_DESKTOP = [
   { id: 'rank', label: '#', align: 'center', width: '40px', order: false },
   { id: 'name', label: 'COLLECTION', align: 'left', width: '250px', order: false },
-  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true, tooltip: 'Floor price' },
-  { id: 'floor1dPercent', label: '24H', align: 'right', width: '10%', order: true, tooltip: '24h floor change' },
-  { id: 'totalVol24h', label: 'VOL', align: 'right', width: '12%', order: true, tooltip: '24h volume' },
-  { id: 'totalVolume', label: 'TVOL', align: 'right', width: '12%', order: true, tooltip: 'Total volume' },
-  { id: 'sales24h', label: 'SALES', align: 'right', width: '10%', order: true, tooltip: '24h sales' },
-  { id: 'marketcap.amount', label: 'MCAP', align: 'right', width: '12%', order: true, tooltip: 'Market cap' },
-  { id: 'listedCount', label: 'LIST', align: 'right', width: '8%', order: true, tooltip: 'Listed count' },
-  { id: 'owners', label: 'OWN', align: 'right', width: '8%', order: true, tooltip: 'Owners' },
-  { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true, tooltip: 'Total supply' },
-  { id: 'origin', label: 'SRC', align: 'right', width: '8%', order: true, tooltip: 'Origin' },
-  { id: 'created', label: 'AGE', align: 'right', width: '8%', order: true, tooltip: 'Created date' },
-  { id: 'sparkline', label: 'CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' }, tooltip: '30d sales' }
+  { id: 'floor.amount', label: 'FLOOR', align: 'right', width: '10%', order: true, tooltip: 'Floor price in XRP' },
+  { id: 'floor1dPercent', label: '24H %', align: 'right', width: '10%', order: true, tooltip: '24h floor price change' },
+  { id: 'totalVol24h', label: 'VOL (24H)', align: 'right', width: '12%', order: true, tooltip: '24h trading volume' },
+  { id: 'totalVolume', label: 'VOL (ALL)', align: 'right', width: '12%', order: true, tooltip: 'All-time trading volume' },
+  { id: 'sales24h', label: 'SALES (24H)', align: 'right', width: '10%', order: true, tooltip: '24h sales count' },
+  { id: 'marketcap.amount', label: 'MARKET CAP', align: 'right', width: '12%', order: true, tooltip: 'Floor price × supply' },
+  { id: 'listedCount', label: 'LISTED', align: 'right', width: '8%', order: true, tooltip: 'NFTs listed for sale' },
+  { id: 'owners', label: 'OWNERS', align: 'right', width: '8%', order: true, tooltip: 'Unique holders' },
+  { id: 'items', label: 'SUPPLY', align: 'right', width: '8%', order: true, tooltip: 'Total NFTs in collection' },
+  { id: 'origin', label: 'SOURCE', align: 'right', width: '8%', order: true, tooltip: 'Origin marketplace' },
+  { id: 'created', label: 'CREATED', align: 'right', width: '8%', order: true, tooltip: 'Collection creation date' },
+  { id: 'sparkline', label: '30D CHART', align: 'center', width: '12%', order: false, style: { paddingLeft: '16px' }, tooltip: '30-day sales history' }
 ];
 
 // ListHead Component
