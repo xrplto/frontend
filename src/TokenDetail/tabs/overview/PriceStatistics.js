@@ -264,7 +264,8 @@ export default function PriceStatistics({ token, isDark = false }) {
         background: 'transparent',
         border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
         width: '100%',
-        marginBottom: '6px'
+        marginBottom: '6px',
+        overflow: 'hidden'
       }}
     >
       {/* Scam Warning Dialog */}

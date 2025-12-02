@@ -52,9 +52,12 @@ const Content = styled.div`
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  overflow: hidden;
 `;
 
 const Side = styled.div`
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -80,15 +83,16 @@ const Row = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 10px;
   position: relative;
   cursor: pointer;
   font-size: 11px;
   font-family: monospace;
+  transition: background 0.1s;
   &:hover {
     background: ${props => props.type === 'ask'
-      ? 'rgba(239, 68, 68, 0.08)'
-      : 'rgba(34, 197, 94, 0.08)'};
+      ? 'rgba(239, 68, 68, 0.12)'
+      : 'rgba(34, 197, 94, 0.12)'};
   }
 `;
 
@@ -98,10 +102,11 @@ const DepthBar = styled.div`
   bottom: 0;
   ${props => props.type === 'bid' ? 'left: 0;' : 'right: 0;'}
   background: ${props => props.type === 'ask'
-    ? 'rgba(239, 68, 68, 0.1)'
-    : 'rgba(34, 197, 94, 0.1)'};
+    ? 'rgba(239, 68, 68, 0.15)'
+    : 'rgba(34, 197, 94, 0.15)'};
   width: ${props => props.width}%;
   pointer-events: none;
+  transition: width 0.2s ease-out;
 `;
 
 const Price = styled.span`
@@ -131,11 +136,13 @@ const SpreadBar = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.03)'};
-  border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  padding: 8px 12px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   font-size: 11px;
+  font-family: monospace;
+  flex-shrink: 0;
 `;
 
 const OrderBook = ({ token, onPriceClick }) => {

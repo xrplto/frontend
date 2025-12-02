@@ -43,10 +43,14 @@ const alpha = (color, opacity) => {
 
 const Card = styled.div`
   width: 100%;
+  height: 100%;
   padding: ${props => props.isMobile ? '8px' : '16px'};
   background: transparent;
   border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
   border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  z-index: 1;
   ${props => props.isFullscreen && `
     position: fixed;
     inset: 0;

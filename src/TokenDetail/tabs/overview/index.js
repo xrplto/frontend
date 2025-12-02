@@ -128,14 +128,14 @@ const Overview = memo(
           "flex flex-col md:flex-row items-stretch",
           isMobile ? "gap-1" : "gap-2"
         )}>
-          {/* Left: Chart + TradingHistory stacked - flex grow */}
+          {/* Left: Chart + TradingHistory stacked */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
-            <section aria-label="Price Chart" style={{ height: '500px' }}>
+            <section aria-label="Price Chart" style={{ height: '500px', position: 'relative', zIndex: 10 }}>
               <h2 className="sr-only">Price Chart</h2>
               <PriceChart token={token} />
             </section>
             {!isMobile && !isTablet && (
-              <section aria-label="Trading History">
+              <section aria-label="Trading History" style={{ position: 'relative', zIndex: 0 }}>
                 <h2 className="sr-only">Trading History</h2>
                 <TradingHistory
                   tokenId={token.md5}
@@ -151,14 +151,14 @@ const Overview = memo(
 
           {/* Middle: OrderBook - fixed width, stretch height */}
           {!isMobile && !isTablet && (
-            <aside className="w-[260px] flex-shrink-0" aria-label="Order Book">
+            <aside className="w-[280px] flex-shrink-0" aria-label="Order Book">
               <h2 className="sr-only">Order Book</h2>
               <OrderBook token={token} />
             </aside>
           )}
 
-          {/* Right sidebar: Swap, Stats, Trending - fixed width */}
-          <aside className="w-full md:w-[340px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
+          {/* Right sidebar: Swap, Stats, Trending - fills remaining space */}
+          <aside className="w-full md:w-[420px] md:flex-shrink-0 flex flex-col gap-2" aria-label="Trading Tools">
             <h2 className="sr-only">Swap</h2>
             <Swap
               token={token}

@@ -911,7 +911,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
   );
 
   return (
-    <Stack spacing={1} style={{ width: '100%' }}>
+    <Stack spacing={1} style={{ width: '100%', position: 'relative', zIndex: 0 }}>
       <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <Tabs isDark={isDark}>
           <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>Trades</Tab>

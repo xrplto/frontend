@@ -501,12 +501,13 @@ const OverviewWrapper = styled.div`
   overflow: hidden;
   box-sizing: border-box;
   position: relative;
-  border-radius: 12px;
+  border-radius: 10px;
   display: flex;
   padding: 16px;
   width: 100%;
-  background: ${props => props.isDark ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.8)'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'};
+  min-width: 0;
+  background: transparent;
+  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
   @media (max-width: 600px) {
     border-radius: 10px;
     padding: 12px;
@@ -1647,7 +1648,7 @@ const Swap = ({ token, onOrderBookToggle, orderBookOpen, onOrderBookData }) => {
   };
 
   return (
-    <Stack alignItems="center" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
+    <Stack alignItems="stretch" width="100%" sx={{ px: { xs: 0, sm: 0 } }}>
       <OverviewWrapper isDark={isDark}>
         {/* XRP page notice - show that we're displaying RLUSD/XRP orderbook */}
         {isXRPTokenPage && (

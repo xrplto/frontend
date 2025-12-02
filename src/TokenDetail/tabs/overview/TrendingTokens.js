@@ -39,6 +39,7 @@ const Container = styled('div')(({ isDark }) => ({
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
+  minWidth: 0,
   marginBottom: '6px'
 }));
 
@@ -48,6 +49,8 @@ const TokenCard = styled('div')(({ isDark }) => ({
   borderRadius: '8px',
   padding: '6px 8px',
   cursor: 'pointer',
+  width: '100%',
+  minWidth: 0,
   '&:hover': {
     background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
   }
@@ -402,9 +405,10 @@ const TrendingTokens = () => {
         <Box
           style={{
             display: 'grid',
-            gridTemplateColumns: '70px 55px 65px 65px',
-            gap: '8px',
-            marginLeft: 'auto'
+            gridTemplateColumns: '75px 55px 70px 70px',
+            gap: '6px',
+            marginLeft: 'auto',
+            flexShrink: 0
           }}
         >
           <Typography isDark={darkMode} style={{ fontSize: '9px', textTransform: 'uppercase', fontWeight: 500, letterSpacing: '0.5px', textAlign: 'right', color: darkMode ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)' }}>
@@ -561,9 +565,10 @@ const TrendingTokens = () => {
                   <Box
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: isMobile ? '55px 65px' : '70px 55px 65px 65px',
-                      gap: '8px',
-                      marginLeft: 'auto'
+                      gridTemplateColumns: isMobile ? '55px 65px' : '75px 55px 70px 70px',
+                      gap: '6px',
+                      marginLeft: 'auto',
+                      flexShrink: 0
                     }}
                   >
                     {!isMobile && (
