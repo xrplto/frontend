@@ -879,6 +879,12 @@ export default function CollectionView({ collection }) {
   const shareTitle = name;
   const totalVol = totalVolume || volume || 0;
 
+  const marketcapData = collection?.collection?.marketcap || collection?.marketcap;
+  const marketcap = typeof marketcapData === 'object' ? marketcapData?.amount : marketcapData || 0;
+  const sales24h = collection?.collection?.sales24h || collection?.sales24h || 0;
+  const topOfferData = collection?.collection?.topOffer || collection?.topOffer;
+  const topOfferAmount = topOfferData?.amount || 0;
+
   const statsData = [
     { label: 'Floor', value: fNumber(floor?.amount || 0), prefix: '✕', color: 'text-green-500' },
     floor7dPercent !== undefined && floor7dPercent !== 0 && {
@@ -886,7 +892,10 @@ export default function CollectionView({ collection }) {
       value: `${floor7dPercent > 0 ? '+' : ''}${floor7dPercent.toFixed(1)}%`,
       color: floor7dPercent > 0 ? 'text-green-500' : 'text-red-500'
     },
+    topOfferAmount > 0 && { label: 'Top Offer', value: fNumber(topOfferAmount), prefix: '✕', color: 'text-emerald-500' },
+    marketcap > 0 && { label: 'Mkt Cap', value: fVolume(marketcap), prefix: '✕', color: 'text-yellow-500' },
     totalVol24h > 0 && { label: '24h Vol', value: fVolume(totalVol24h), prefix: '✕', color: 'text-red-500' },
+    sales24h > 0 && { label: '24h Sales', value: fIntNumber(sales24h), color: 'text-pink-500' },
     totalVol > 0 && { label: 'Total Vol', value: fVolume(totalVol), prefix: '✕', color: 'text-blue-500' },
     { label: 'Supply', value: fIntNumber(items || 0), color: 'text-orange-500' },
     owners > 0 && { label: 'Owners', value: fIntNumber(owners), color: 'text-purple-500' },
@@ -924,7 +933,7 @@ export default function CollectionView({ collection }) {
         {/* Main Row */}
         <div className="flex items-center">
           {/* Left: Logo + Info */}
-          <div className="flex items-center gap-3 min-w-[200px] flex-shrink-0">
+          <div className="flex items-center gap-3 w-[200px] flex-shrink-0">
             <div className="relative">
               <Image
                 src={`https://s1.xrpl.to/nft-collection/${logoImage}`}
@@ -958,9 +967,14 @@ export default function CollectionView({ collection }) {
             </div>
           </div>
 
-          {/* Center: Stats Grid */}
-          <div className="hidden md:grid grid-cols-4 lg:grid-cols-7 gap-4 flex-1 mx-6">
-            {statsData.map((stat) => (
+          {/* Center: Stats Grid - 4 main stats like TokenSummary */}
+          <div className="hidden md:grid grid-cols-4 gap-6 flex-1 mx-6">
+            {[
+              { label: 'Mkt Cap', value: fVolume(marketcap), prefix: '✕', color: 'text-green-500' },
+              { label: 'Volume 24h', value: fVolume(totalVol24h), prefix: '✕', color: 'text-red-500' },
+              { label: 'Total Vol', value: fVolume(totalVol), prefix: '✕', color: 'text-blue-500' },
+              { label: 'Owners', value: fIntNumber(owners || 0), color: 'text-orange-500' }
+            ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className={cn("text-[9px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
                 <div className={cn("text-[13px] font-medium", stat.color)}>
@@ -971,61 +985,112 @@ export default function CollectionView({ collection }) {
             ))}
           </div>
 
-          {/* Right: Actions */}
-          <div className="flex items-center gap-1 ml-auto pl-2 border-l border-white/10">
-            {accountLogin === collection.account && (
-              <Link href={`/collection/${slug}/edit`} className={cn(
-                "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
-              )}>
-                <Pencil size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
-              </Link>
-            )}
-            <div className="relative" ref={shareDropdownRef}>
-              <button
-                onClick={() => setOpenShare(!openShare)}
-                className={cn(
-                  "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-                  isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
-                )}
-              >
-                <Share2 size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
-              </button>
+          {/* Right: Floor Price + Change Pills + Actions */}
+          <div className="flex items-center gap-3 ml-auto">
+            {/* Floor Price - Large like TokenSummary price */}
+            <span className={cn("text-xl font-bold tracking-tight text-primary")}>
+              <span className={isDark ? "text-white/30" : "text-gray-400"}>✕</span>
+              {fNumber(floor?.amount || 0)}
+            </span>
 
-              {openShare && (
-                <div className={cn(
-                  'absolute top-full right-0 mt-2 p-3 rounded-xl border z-50 min-w-[180px]',
-                  isDark ? 'bg-black/95 border-white/10 backdrop-blur-lg' : 'bg-white border-gray-200 shadow-lg'
-                )}>
-                  <p className={cn('text-[11px] font-medium mb-2 text-center uppercase tracking-wider', isDark ? 'text-white/50' : 'text-gray-500')}>
-                    Share
-                  </p>
-                  <div className="flex justify-center gap-2">
-                    <FacebookShareButton url={shareUrl} quote={shareTitle}>
-                      <FacebookIcon size={32} round />
-                    </FacebookShareButton>
-                    <TwitterShareButton title={`Check out ${shareTitle} on XRPNFT`} url={shareUrl}>
-                      <TwitterIcon size={32} round />
-                    </TwitterShareButton>
-                  </div>
+            {/* Stats Pills - like 5m/1h/24h/7d in TokenSummary */}
+            <div className="hidden sm:flex items-center gap-1">
+              {floor7dPercent !== undefined && floor7dPercent !== 0 && (
+                <div className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5" : "bg-gray-100")}>
+                  <span className={isDark ? "text-white/30" : "text-gray-400"}>7d </span>
+                  <span className={floor7dPercent >= 0 ? "text-green-500" : "text-red-500"}>
+                    {floor7dPercent > 0 ? '+' : ''}{floor7dPercent.toFixed(1)}%
+                  </span>
                 </div>
               )}
+              {topOfferAmount > 0 && (
+                <div className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5" : "bg-gray-100")}>
+                  <span className={isDark ? "text-white/30" : "text-gray-400"}>Offer </span>
+                  <span className="text-emerald-500">✕{fNumber(topOfferAmount)}</span>
+                </div>
+              )}
+              {sales24h > 0 && (
+                <div className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5" : "bg-gray-100")}>
+                  <span className={isDark ? "text-white/30" : "text-gray-400"}>Sales </span>
+                  <span className="text-pink-500">{fIntNumber(sales24h)}</span>
+                </div>
+              )}
+              {listedCount > 0 && (
+                <div className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5" : "bg-gray-100")}>
+                  <span className={isDark ? "text-white/30" : "text-gray-400"}>Listed </span>
+                  <span className="text-cyan-500">{fIntNumber(listedCount)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Actions */}
+            <div className="flex items-center gap-1 pl-2 border-l border-white/10">
+              {accountLogin === collection.account && (
+                <Link href={`/collection/${slug}/edit`} className={cn(
+                  "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
+                  isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                )}>
+                  <Pencil size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
+                </Link>
+              )}
+              <div className="relative" ref={shareDropdownRef}>
+                <button
+                  onClick={() => setOpenShare(!openShare)}
+                  className={cn(
+                    "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
+                    isDark ? "border-white/10 hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5"
+                  )}
+                >
+                  <Share2 size={14} className={isDark ? "text-white/70" : "text-gray-600"} />
+                </button>
+
+                {openShare && (
+                  <div className={cn(
+                    'absolute top-full right-0 mt-2 p-3 rounded-xl border z-50 min-w-[180px]',
+                    isDark ? 'bg-black/95 border-white/10 backdrop-blur-lg' : 'bg-white border-gray-200 shadow-lg'
+                  )}>
+                    <p className={cn('text-[11px] font-medium mb-2 text-center uppercase tracking-wider', isDark ? 'text-white/50' : 'text-gray-500')}>
+                      Share
+                    </p>
+                    <div className="flex justify-center gap-2">
+                      <FacebookShareButton url={shareUrl} quote={shareTitle}>
+                        <FacebookIcon size={32} round />
+                      </FacebookShareButton>
+                      <TwitterShareButton title={`Check out ${shareTitle} on XRPNFT`} url={shareUrl}>
+                        <TwitterIcon size={32} round />
+                      </TwitterShareButton>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Description Row */}
-        {description && (
-          <div className="mt-2 pt-2 border-t border-white/5">
-            <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
-              {truncate(description, 120)}
-            </p>
-          </div>
-        )}
+        {/* Secondary Stats Row - Additional metrics */}
+        <div className="hidden md:flex items-center gap-4 mt-2 pt-2 border-t border-white/5">
+          {[
+            items > 0 && { label: 'Supply', value: fIntNumber(items), color: 'text-purple-500' },
+            listedCount > 0 && { label: 'Listed', value: fIntNumber(listedCount), color: 'text-cyan-500' },
+            totalSales > 0 && { label: 'Total Sales', value: fIntNumber(totalSales), color: 'text-pink-500' },
+            burnedItems > 0 && { label: 'Burned', value: fIntNumber(burnedItems), color: 'text-red-500' }
+          ].filter(Boolean).map((stat, idx, arr) => (
+            <div key={stat.label} className="flex items-center gap-1">
+              <span className={cn("text-[10px]", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}:</span>
+              <span className={cn("text-[11px] font-medium", stat.color)}>{stat.value}</span>
+              {idx < arr.length - 1 && <span className={cn("ml-3", isDark ? "text-white/10" : "text-gray-200")}>|</span>}
+            </div>
+          ))}
+        </div>
 
         {/* Mobile Stats */}
         <div className="md:hidden grid grid-cols-4 gap-2 mt-2 pt-2 border-t border-white/5">
-          {statsData.slice(0, 4).map((stat) => (
+          {[
+            { label: 'Mkt Cap', value: fVolume(marketcap), prefix: '✕', color: 'text-green-500' },
+            { label: 'Vol 24h', value: fVolume(totalVol24h), prefix: '✕', color: 'text-red-500' },
+            { label: 'Supply', value: fIntNumber(items || 0), color: 'text-purple-500' },
+            { label: 'Owners', value: fIntNumber(owners || 0), color: 'text-orange-500' }
+          ].map((stat) => (
             <div key={stat.label} className="text-center">
               <div className={cn("text-[8px] uppercase", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
               <div className={cn("text-[11px] font-medium", stat.color)}>
@@ -1036,16 +1101,12 @@ export default function CollectionView({ collection }) {
           ))}
         </div>
 
-        {/* Debug Panel */}
-        {debugInfo && (
-          <div className={cn("mt-2 p-2 rounded-lg border font-mono text-[9px]", isDark ? "border-yellow-500/30 bg-yellow-500/10" : "border-yellow-200 bg-yellow-50")}>
-            <div className="font-medium mb-1 text-yellow-600 text-[10px]">Debug:</div>
-            <div className="space-y-0.5">
-              <div>wallet_type: <span className="text-blue-400">{debugInfo.wallet_type || 'undefined'}</span></div>
-              <div>account: <span className="opacity-70">{debugInfo.account || 'undefined'}</span></div>
-              <div>walletKeyId: <span className={debugInfo.walletKeyId ? "text-green-400" : "text-red-400"}>{debugInfo.walletKeyId || 'undefined'}</span></div>
-              <div>seed: <span className="text-green-400 break-all">{debugInfo.seed}</span></div>
-            </div>
+        {/* Description Row */}
+        {description && (
+          <div className="mt-2 pt-2 border-t border-white/5">
+            <p className={cn('text-[11px]', isDark ? 'text-white/40' : 'text-gray-500')}>
+              {truncate(description, 120)}
+            </p>
           </div>
         )}
       </div>
