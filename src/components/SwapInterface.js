@@ -2665,7 +2665,7 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   Slippage
                 </span>
                 <div className="flex gap-1">
-                  {[0.5, 1, 3].map((val) => (
+                  {[1, 3, 5].map((val) => (
                     <button
                       key={val}
                       onClick={() => setSlippage(val)}
@@ -2921,44 +2921,67 @@ function Swap({ pair, setPair, revert, setRevert, bids: propsBids, asks: propsAs
                   </div>
                   {/* Asks */}
                   <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                    {asks.slice(0, 8).reverse().map((ask, idx) => (
-                      <div
-                        key={`ask-${idx}`}
-                        onClick={() => setLimitPrice(ask.price.toString())}
-                        className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/10",
-                          darkMode ? "text-white/80" : "text-gray-700"
-                        )}
-                      >
-                        <span className="flex-1 text-red-500">{ask.price?.toFixed(6)}</span>
-                        <span className="flex-1 text-right">{ask.amount?.toFixed(2)}</span>
-                        <span className={cn("flex-1 text-right", darkMode ? "text-primary/50" : "text-primary/50")}>{ask.total?.toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const visibleAsks = asks.slice(0, 8);
+                      const maxAmount = Math.max(...visibleAsks.map(a => a.amount || 0), 1);
+                      return visibleAsks.reverse().map((ask, idx) => (
+                        <div
+                          key={`ask-${idx}`}
+                          onClick={() => setLimitPrice(ask.price.toString())}
+                          className={cn(
+                            "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-red-500/15 relative",
+                            darkMode ? "text-white/80" : "text-gray-700"
+                          )}
+                        >
+                          <div
+                            className="absolute inset-y-0 right-0 bg-red-500/15 pointer-events-none"
+                            style={{ width: `${(ask.amount / maxAmount) * 100}%` }}
+                          />
+                          <span className="flex-1 text-red-400 relative z-[1]">{ask.price?.toFixed(6)}</span>
+                          <span className="flex-1 text-right relative z-[1]">{fNumber(ask.amount)}</span>
+                          <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(ask.total)}</span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                   {/* Spread */}
                   <div className={cn(
-                    "px-2 py-1.5 text-[11px] font-mono text-center border-y",
-                    darkMode ? "border-primary/20 bg-white/5 text-primary/60" : "border-primary/15 bg-gray-100 text-primary/60"
+                    "px-2 py-2 text-[11px] font-mono border-y flex justify-between items-center",
+                    darkMode ? "border-white/10 bg-white/[0.03]" : "border-gray-200 bg-gray-50"
                   )}>
-                    Spread: {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                    <span className="text-green-400">▲ {bids[0]?.price?.toFixed(6) || '—'}</span>
+                    <span className={cn(
+                      "px-2 py-0.5 rounded text-[10px]",
+                      darkMode ? "bg-white/10" : "bg-gray-200"
+                    )}>
+                      {asks[0] && bids[0] ? ((asks[0].price - bids[0].price) / asks[0].price * 100).toFixed(2) : '0.00'}%
+                    </span>
+                    <span className="text-red-400">{asks[0]?.price?.toFixed(6) || '—'} ▼</span>
                   </div>
                   {/* Bids */}
                   <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none" style={{ scrollbarWidth: 'none' }}>
-                    {bids.slice(0, 8).map((bid, idx) => (
-                      <div
-                        key={`bid-${idx}`}
-                        onClick={() => setLimitPrice(bid.price.toString())}
-                        className={cn(
-                          "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/10",
-                          darkMode ? "text-white/80" : "text-gray-700"
-                        )}
-                      >
-                        <span className="flex-1 text-green-500">{bid.price?.toFixed(6)}</span>
-                        <span className="flex-1 text-right">{bid.amount?.toFixed(2)}</span>
-                        <span className={cn("flex-1 text-right", darkMode ? "text-primary/50" : "text-primary/50")}>{bid.total?.toFixed(2)}</span>
-                      </div>
-                    ))}
+                    {(() => {
+                      const visibleBids = bids.slice(0, 8);
+                      const maxAmount = Math.max(...visibleBids.map(b => b.amount || 0), 1);
+                      return visibleBids.map((bid, idx) => (
+                        <div
+                          key={`bid-${idx}`}
+                          onClick={() => setLimitPrice(bid.price.toString())}
+                          className={cn(
+                            "flex px-2 py-1 text-[11px] font-mono cursor-pointer hover:bg-green-500/15 relative",
+                            darkMode ? "text-white/80" : "text-gray-700"
+                          )}
+                        >
+                          <div
+                            className="absolute inset-y-0 left-0 bg-green-500/15 pointer-events-none"
+                            style={{ width: `${(bid.amount / maxAmount) * 100}%` }}
+                          />
+                          <span className="flex-1 text-green-400 relative z-[1]">{bid.price?.toFixed(6)}</span>
+                          <span className="flex-1 text-right relative z-[1]">{fNumber(bid.amount)}</span>
+                          <span className={cn("flex-1 text-right relative z-[1]", darkMode ? "text-white/40" : "text-gray-400")}>{fNumber(bid.total)}</span>
+                        </div>
+                      ));
+                    })()}
                   </div>
                 </>
               )}
