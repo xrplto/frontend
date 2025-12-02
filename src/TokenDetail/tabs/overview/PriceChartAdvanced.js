@@ -1,17 +1,14 @@
 import { useState, useEffect, useRef, memo, useContext, useMemo, useCallback } from 'react';
-import dynamic from 'next/dynamic';
 import styled from '@emotion/styled';
-import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, MoreVertical, Loader2 } from 'lucide-react';
+import { TrendingUp, CandlestickChart, Users, Maximize, Minimize, Loader2 } from 'lucide-react';
 import {
   createChart,
   CandlestickSeries,
-  LineSeries,
   HistogramSeries,
   AreaSeries
 } from 'lightweight-charts';
 import axios from 'axios';
 import { AppContext } from 'src/AppContext';
-import { throttle } from 'src/utils/formatters';
 
 // Constants
 const currencySymbols = {
@@ -29,16 +26,6 @@ const formatMcap = (value) => {
   if (value >= 1e6) return (value / 1e6).toFixed(2) + 'M';
   if (value >= 1e3) return (value / 1e3).toFixed(2) + 'K';
   return value.toFixed(2);
-};
-
-const alpha = (color, opacity) => {
-  if (color.startsWith('#')) {
-    const r = parseInt(color.slice(1, 3), 16);
-    const g = parseInt(color.slice(3, 5), 16);
-    const b = parseInt(color.slice(5, 7), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  return color.replace(')', `, ${opacity})`);
 };
 
 const Card = styled.div`
@@ -127,7 +114,7 @@ const Spinner = styled(Loader2)`
 `;
 
 const PriceChartAdvanced = memo(({ token }) => {
-  const { activeFiatCurrency, accountProfile, themeName } = useContext(AppContext);
+  const { activeFiatCurrency, themeName } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const chartContainerRef = useRef(null);
   const chartRef = useRef(null);
@@ -135,39 +122,46 @@ const PriceChartAdvanced = memo(({ token }) => {
   const lineSeriesRef = useRef(null);
   const volumeSeriesRef = useRef(null);
   const lastChartTypeRef = useRef(null);
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 600;
-  const isTablet = typeof window !== 'undefined' && window.innerWidth < 900;
+
+  // Reactive viewport state
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const checkViewport = () => {
+      setIsMobile(window.innerWidth < 600);
+      setIsTablet(window.innerWidth < 900);
+    };
+    checkViewport();
+    window.addEventListener('resize', checkViewport);
+    return () => window.removeEventListener('resize', checkViewport);
+  }, []);
 
   const [chartType, setChartType] = useState('candles');
-  const [timeRange, setTimeRange] = useState('1d'); // 1d, 5d, 1m, 3m, 1y, 5y
+  const [timeRange, setTimeRange] = useState('1d');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
   const [lastUpdate, setLastUpdate] = useState(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
-  // ATH from token prop (API /api/token endpoint), not from chart intervals
+  const [holderData, setHolderData] = useState(null);
+  const [isUserZoomed, setIsUserZoomed] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // ATH from token prop
   const athData = useMemo(() => {
     if (token?.athMarketcap) {
       const athMcap = token.athMarketcap;
       const currentMcap = token.marketcap || 0;
       const percentFromATH = athMcap > 0 ? (((currentMcap - athMcap) / athMcap) * 100).toFixed(2) : 0;
-      return { price: null, percentDown: percentFromATH, athMcap };
+      return { percentDown: percentFromATH, athMcap };
     }
-    return { price: null, percentDown: null, athMcap: null };
+    return { percentDown: null, athMcap: null };
   }, [token?.athMarketcap, token?.marketcap]);
-  const [rsiValues, setRsiValues] = useState({});
-  const rsiValuesRef = useRef({});
-  const [showRSI, setShowRSI] = useState(false);
-  const showRSIRef = useRef(false);
-  const [holderData, setHolderData] = useState(null);
-  const [userTrades, setUserTrades] = useState([]);
-  const [isUserZoomed, setIsUserZoomed] = useState(false);
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const [chartKey, setChartKey] = useState(0);
-  const zoomStateRef = useRef(null);
+
   const isUserZoomedRef = useRef(false);
-  const crosshairPositionRef = useRef(null);
+  const zoomStateRef = useRef(null);
   const dataRef = useRef(null);
   const holderDataRef = useRef(null);
   const activeFiatCurrencyRef = useRef(activeFiatCurrency);
@@ -215,41 +209,6 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
     }
     return value;
-  }, []);
-
-  const calcRSI = useCallback((data, period = 14) => {
-    if (data.length < period + 1) return [];
-    const rsi = [];
-    let avgGain = 0;
-    let avgLoss = 0;
-    for (let i = 1; i <= period; i++) {
-      const change = data[i].close - data[i - 1].close;
-      if (change >= 0) {
-        avgGain += change;
-      } else {
-        avgLoss += Math.abs(change);
-      }
-    }
-    avgGain /= period;
-    avgLoss /= period;
-    const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-    rsi.push({
-      time: data[period].time,
-      value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
-    });
-    for (let i = period + 1; i < data.length; i++) {
-      const change = data[i].close - data[i - 1].close;
-      const gain = change >= 0 ? change : 0;
-      const loss = change < 0 ? Math.abs(change) : 0;
-      avgGain = (avgGain * (period - 1) + gain) / period;
-      avgLoss = (avgLoss * (period - 1) + loss) / period;
-      const rs = avgLoss === 0 ? 100 : avgGain / avgLoss;
-      rsi.push({
-        time: data[i].time,
-        value: avgLoss === 0 ? 100 : 100 - 100 / (1 + rs)
-      });
-    }
-    return rsi;
   }, []);
 
   // Load more historical data (infinite scroll)
@@ -413,16 +372,6 @@ const PriceChartAdvanced = memo(({ token }) => {
             setLastUpdate(new Date());
           }
 
-          const rsiData = calcRSI(processedData, 14);
-          const rsiMap = {};
-          rsiData.forEach((r) => {
-            rsiMap[r.time] = r.value;
-          });
-          if (mounted) {
-            setRsiValues(rsiMap);
-            rsiValuesRef.current = rsiMap;
-          }
-
           if (mounted) {
             setLoading(false);
             setIsUpdating(false);
@@ -452,7 +401,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       if (!isUserZoomedRef.current && mounted) {
         fetchData(true);
       }
-    }, 5000);
+    }, 10000);
 
     return () => {
       mounted = false;
@@ -461,7 +410,7 @@ const PriceChartAdvanced = memo(({ token }) => {
       }
       clearInterval(updateInterval);
     };
-  }, [token.md5, timeRange, BASE_URL, activeFiatCurrency, isMobile, isTablet, convertScientific, calcRSI]);
+  }, [token.md5, timeRange, BASE_URL, activeFiatCurrency, convertScientific]);
 
   // Fetch holder data
   useEffect(() => {
@@ -748,11 +697,8 @@ const PriceChartAdvanced = memo(({ token }) => {
         param.point.y > chartContainerRef.current.clientHeight
       ) {
         toolTip.style.display = 'none';
-        crosshairPositionRef.current = null;
         return;
       }
-
-      crosshairPositionRef.current = { time: param.time, point: param.point };
 
       const date = new Date(param.time * 1000);
       const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
@@ -966,41 +912,14 @@ const PriceChartAdvanced = memo(({ token }) => {
       return;
     }
 
-    const getScaleFactor = (data) => {
-      if (!data || data.length === 0) return 1;
-      const maxPrice = Math.max(
-        ...data.map((d) => Math.max(d.high || d.close || d.value || d.open || 0))
-      );
-      const minPrice = Math.min(
-        ...data.map((d) => Math.min(d.low || d.close || d.value || d.open || Infinity))
-      );
-
-      const avgPrice = (maxPrice + minPrice) / 2;
-
-      if (avgPrice < 0.000000000001) return 1000000000000000;
-      if (avgPrice < 0.00000000001) return 100000000000000;
-      if (avgPrice < 0.0000000001) return 10000000000000;
-      if (avgPrice < 0.000000001) return 1000000000000;
-      if (avgPrice < 0.00000001) return 100000000000;
-      if (avgPrice < 0.0000001) return 10000000000;
-      if (avgPrice < 0.000001) return 1000000000;
-      if (avgPrice < 0.00001) return 100000000;
-      if (avgPrice < 0.0001) return 10000000;
-      if (avgPrice < 0.001) return 1000000;
-      if (avgPrice < 0.01) return 100000;
-      if (avgPrice < 0.1) return 10000;
-      if (avgPrice < 1) return 1000;
-      return 1;
+    const getScaleFactor = (chartData) => {
+      if (!chartData || chartData.length === 0) return 1;
+      const prices = chartData.flatMap((d) => [d.high, d.low, d.close, d.open, d.value].filter(Boolean));
+      if (prices.length === 0) return 1;
+      const avgPrice = (Math.max(...prices) + Math.min(...prices)) / 2;
+      if (avgPrice >= 1) return 1;
+      return Math.pow(10, Math.ceil(-Math.log10(avgPrice) + 2));
     };
-
-    if (chartRef.current && chartRef.current.timeScale) {
-      try {
-        const visibleRange = chartRef.current.timeScale().getVisibleRange();
-        if (visibleRange) {
-          zoomStateRef.current = visibleRange;
-        }
-      } catch (e) {}
-    }
 
     if (chartType === 'candles' && !candleSeriesRef.current) {
       const candleSeries = chartRef.current.addSeries(CandlestickSeries, {
@@ -1170,19 +1089,6 @@ const PriceChartAdvanced = memo(({ token }) => {
                 {lastUpdate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
               </span>
               {isUserZoomed && <span style={{ fontSize: '10px', color: '#f59e0b', textTransform: 'uppercase' }}>paused</span>}
-            </Box>
-          )}
-          {data && chartType !== 'holders' && (
-            <Box style={{ display: 'flex', alignItems: 'center', gap: '6px', opacity: 0.5 }}>
-              <span style={{ fontSize: '10px', color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'monospace' }}>
-                {data.length}
-              </span>
-              {isLoadingMore && (
-                <Loader2 size={10} style={{ animation: 'spin 1s linear infinite' }} />
-              )}
-              {hasMore && !isLoadingMore && (
-                <span style={{ fontSize: '9px', color: '#3b82f6', textTransform: 'uppercase' }}>← scroll</span>
-              )}
             </Box>
           )}
         </Box>
