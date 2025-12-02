@@ -4,7 +4,7 @@ import styled from '@emotion/styled';
 import { useContext } from 'react';
 import { AppContext } from 'src/AppContext';
 import Link from 'next/link';
-import { Flame, Gem, TrendingUp, Sparkles, Eye } from 'lucide-react';
+import { Flame, Gem, TrendingUp, Sparkles, Eye, Search, X } from 'lucide-react';
 
 // Helper function
 function getTagValue(tags, tagName) {
@@ -42,9 +42,10 @@ const Row = styled.div`
   overflow-x: ${(props) => (props.noWrap ? 'auto' : 'hidden')};
   overflow-y: visible;
   width: 100%;
+  position: relative;
 
   @media (max-width: 600px) {
-    gap: 6px;
+    gap: 8px;
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
@@ -56,6 +57,43 @@ const Row = styled.div`
       display: none;
     }
   }
+`;
+
+const TagsRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+
+  @media (max-width: 600px) {
+    gap: 6px;
+  }
+`;
+
+const TagsScrollArea = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-right: 4px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  @media (max-width: 600px) {
+    gap: 6px;
+  }
+`;
+
+const AllButtonWrapper = styled.div`
+  flex-shrink: 0;
+  margin-left: 4px;
 `;
 
 const RowContent = styled.div`
@@ -340,7 +378,8 @@ const TagChip = styled.button`
   white-space: nowrap;
   height: 24px;
   flex-shrink: 0;
-  opacity: ${(props) => (props.show ? 1 : 0)};
+  opacity: 1;
+  transition: opacity 0.15s ease;
 
   &:hover {
     background: ${(props) => props.hoverBackground || 'rgba(66, 133, 244, 0.04)'};
@@ -348,39 +387,41 @@ const TagChip = styled.button`
   }
 
   @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 26px;
-    padding: 4px 8px;
-    gap: 3px;
+    font-size: 0.7rem;
+    height: 28px;
+    padding: 4px 10px;
+    gap: 4px;
+    min-width: fit-content;
   }
 `;
 
 const AllTagsButton = styled.button`
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
-  border: 1px solid #4285f4;
-  border-radius: 5px;
-  background: transparent;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1.5px solid #4285f4;
+  border-radius: 6px;
+  background: rgba(66, 133, 244, 0.08);
   color: #4285f4;
-  font-size: 0.68rem;
-  font-weight: 400;
+  font-size: 0.7rem;
+  font-weight: 500;
   cursor: pointer;
   white-space: nowrap;
-  height: 24px;
+  height: 26px;
   flex-shrink: 0;
+  margin-left: auto;
 
   &:hover {
-    background: rgba(66, 133, 244, 0.04);
+    background: rgba(66, 133, 244, 0.12);
     border-color: #4285f4;
   }
 
   @media (max-width: 600px) {
-    font-size: 0.68rem;
-    height: 26px;
-    padding: 4px 8px;
-    gap: 3px;
+    font-size: 0.72rem;
+    height: 28px;
+    padding: 4px 12px;
+    gap: 4px;
   }
 `;
 
@@ -435,20 +476,26 @@ const DrawerTitle = styled.h2`
 `;
 
 const DrawerClose = styled.button`
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
-  border-radius: 12px;
-  background: transparent;
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 10px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.02)'};
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   color: ${props => props.isDark ? '#fff' : '#000'};
   font-size: 20px;
+  transition: all 0.15s ease;
 
   &:hover {
-    background: rgba(0,0,0,0.04);
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.06)'};
+    border-color: ${props => props.isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)'};
+  }
+
+  &:active {
+    transform: scale(0.95);
   }
 `;
 
@@ -492,48 +539,84 @@ const MenuItem = styled.button`
 `;
 
 const SearchBox = styled.div`
-  padding: 16px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  padding: 12px 16px;
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+`;
+
+const SearchInputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+`;
+
+const SearchIconWrapper = styled.div`
+  position: absolute;
+  left: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: ${props => props.isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'};
+  pointer-events: none;
 `;
 
 const SearchInput = styled.input`
   width: 100%;
-  padding: 10px 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 12px 12px 12px 40px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)'};
+  border-radius: 10px;
+  font-size: 15px;
   outline: none;
-  background: ${props => props.isDark ? '#1a1a1a' : '#fff'};
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'};
   color: ${props => props.isDark ? '#fff' : '#000'};
   font-family: inherit;
+  transition: border-color 0.15s ease, background 0.15s ease;
+
+  &:focus {
+    border-color: #4285f4;
+    background: ${props => props.isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.04)'};
+  }
+
+  &::placeholder {
+    color: ${props => props.isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'};
+  }
 `;
 
 const TagsGrid = styled.div`
   padding: 16px;
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 10px;
   flex: 1;
   overflow-y: auto;
+  align-content: flex-start;
 
   &::-webkit-scrollbar {
-    width: 8px;
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
-    border-radius: 4px;
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    border-radius: 3px;
+  }
+
+  @media (max-width: 600px) {
+    padding: 12px;
+    gap: 8px;
   }
 `;
 
 const TagButton = styled.button`
   min-width: 80px;
   max-width: 200px;
-  height: 36px;
-  padding: 0 12px;
-  border: 1.5px solid rgba(145, 158, 171, 0.2);
-  border-radius: 6px;
-  background: transparent;
+  height: 40px;
+  padding: 0 14px;
+  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 8px;
+  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.02)'};
   color: ${props => props.isDark ? '#fff' : '#000'};
   font-size: 13px;
   font-weight: 400;
@@ -543,10 +626,23 @@ const TagButton = styled.button`
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  transition: all 0.15s ease;
 
   &:hover {
     border-color: #4285f4;
-    background: rgba(66, 133, 244, 0.04);
+    background: rgba(66, 133, 244, 0.08);
+    color: #4285f4;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  @media (max-width: 600px) {
+    height: 42px;
+    padding: 0 16px;
+    font-size: 14px;
+    min-width: 90px;
   }
 `;
 
@@ -579,18 +675,23 @@ const CategoriesDrawerContent = memo(function CategoriesDrawerContent({ tags, da
     <>
       {tags && tags.length > 0 && (
         <SearchBox isDark={darkMode}>
-          <SearchInput
-            type="search"
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            autoComplete="off"
-            isDark={darkMode}
-          />
+          <SearchInputWrapper>
+            <SearchIconWrapper isDark={darkMode}>
+              <Search size={18} />
+            </SearchIconWrapper>
+            <SearchInput
+              type="search"
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              autoComplete="off"
+              isDark={darkMode}
+            />
+          </SearchInputWrapper>
         </SearchBox>
       )}
 
-      <TagsGrid>
+      <TagsGrid isDark={darkMode}>
         {filteredTags.length > 0 ? (
           filteredTags.map((tag) => (
             <Link key={tag} href={`/view/${normalizeTag(tag)}`} style={{ textDecoration: 'none' }}>
@@ -830,39 +931,40 @@ const SearchToolbar = memo(function SearchToolbar({
       <Container darkMode={darkMode} ref={containerRef}>
       {/* Top Categories - first row */}
       {tags && tags.length > 0 && (
-        <Row noWrap style={{ paddingBottom: '2px' }}>
-          {/* Display categories dynamically based on available space */}
-          {tags.slice(0, visibleTagCount).map((tag, index) => {
-            const normalizedTag = tag
-              .split(' ')
-              .join('-')
-              .replace(/&/g, 'and')
-              .toLowerCase()
-              .replace(/[^a-zA-Z0-9-]/g, '');
-            const isSelected = tagName === tag;
+        <TagsRow>
+          <TagsScrollArea>
+            {/* Display categories dynamically based on available space */}
+            {tags.slice(0, visibleTagCount).map((tag, index) => {
+              const normalizedTag = tag
+                .split(' ')
+                .join('-')
+                .replace(/&/g, 'and')
+                .toLowerCase()
+                .replace(/[^a-zA-Z0-9-]/g, '');
+              const isSelected = tagName === tag;
 
-            return (
-              <TagChip
-                key={tag}
-                data-tag="true"
-                show={measuredTags}
-                onClick={() => (window.location.href = `/view/${normalizedTag}`)}
-                borderColor={isSelected ? '#4285f4' : 'rgba(145, 158, 171, 0.2)'}
-                color={isSelected ? '#4285f4' : darkMode ? '#fff' : '#333'}
-                hoverBackground="rgba(66, 133, 244, 0.04)"
-              >
-                <span>{tag}</span>
-              </TagChip>
-            );
-          })}
+              return (
+                <TagChip
+                  key={tag}
+                  data-tag="true"
+                  onClick={() => (window.location.href = `/view/${normalizedTag}`)}
+                  borderColor={isSelected ? '#4285f4' : 'rgba(145, 158, 171, 0.2)'}
+                  color={isSelected ? '#4285f4' : darkMode ? '#fff' : '#333'}
+                  hoverBackground="rgba(66, 133, 244, 0.04)"
+                >
+                  <span>{tag}</span>
+                </TagChip>
+              );
+            })}
+          </TagsScrollArea>
 
-          {/* All Tags Button - show only if there are more tags than visible */}
-          {tags.length > visibleTagCount && (
-            <AllTagsButton onClick={() => setCategoriesOpen(true)}>
-              <span>All ({tags.length})</span>
+          {/* All Tags Button - always visible, never hidden by scroll */}
+          <AllButtonWrapper>
+            <AllTagsButton onClick={() => setCategoriesOpen(true)} darkMode={darkMode}>
+              <span>All {tags.length > visibleTagCount ? `(${tags.length})` : ''}</span>
             </AllTagsButton>
-          )}
-        </Row>
+          </AllButtonWrapper>
+        </TagsRow>
       )}
 
       {/* Navigation buttons and chips - second row */}
@@ -1159,7 +1261,7 @@ const SearchToolbar = memo(function SearchToolbar({
               Categories {tags?.length ? `(${tags.length})` : ''}
             </DrawerTitle>
             <DrawerClose isDark={darkMode} onClick={() => setCategoriesOpen(false)} aria-label="Close">
-              ×
+              <X size={18} />
             </DrawerClose>
           </DrawerHeader>
           <CategoriesDrawerContent tags={tags} darkMode={darkMode} />
