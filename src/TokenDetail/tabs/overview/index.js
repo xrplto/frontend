@@ -130,7 +130,7 @@ const Overview = memo(
         )}>
           {/* Left: Chart + TradingHistory stacked */}
           <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2">
-            <section aria-label="Price Chart" style={{ minHeight: isMobile ? 'auto' : '720px', position: 'relative', zIndex: 10 }}>
+            <section aria-label="Price Chart" style={{ position: 'relative', zIndex: 10 }}>
               <h2 className="sr-only">Price Chart</h2>
               <PriceChart token={token} />
             </section>

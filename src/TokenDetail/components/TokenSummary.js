@@ -4,7 +4,7 @@ import { selectMetrics } from 'src/redux/statusSlice';
 import { AppContext } from 'src/AppContext';
 import { fNumber, checkExpiration, getHashIcon } from 'src/utils/formatters';
 import { cn } from 'src/utils/cn';
-import { Search, Link as LinkIconLucide, Unlink, TrendingUp, TrendingDown, Sparkles, ExternalLink, Star, Clock, Settings, Copy, Check, Loader2 } from 'lucide-react';
+import { TrendingUp, Sparkles, ExternalLink, Star, Copy, Check, Loader2 } from 'lucide-react';
 import Decimal from 'decimal.js-light';
 import Image from 'next/image';
 import axios from 'axios';
@@ -45,40 +45,6 @@ const formatPrice = (price) => {
   if (numPrice < 1000000) return numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   return numPrice.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
-
-// Tooltip
-const Tooltip = ({ title, children, className }) => {
-  const [show, setShow] = useState(false);
-  return (
-    <div className={cn("relative inline-flex", className)} onMouseEnter={() => setShow(true)} onMouseLeave={() => setShow(false)}>
-      {children}
-      {show && title && (
-        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-black/90 text-white rounded text-[10px] whitespace-nowrap z-50">
-          {title}
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Icon Button
-const IconBtn = ({ onClick, disabled, children, className, title, isDark, active }) => (
-  <Tooltip title={title}>
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={cn(
-        "w-7 h-7 rounded-lg border-[1.5px] flex items-center justify-center transition-all",
-        isDark ? "border-white/[0.08] hover:border-primary hover:bg-primary/10" : "border-gray-200 hover:border-primary hover:bg-primary/5",
-        active && "border-primary bg-primary/10",
-        disabled && "opacity-40 cursor-not-allowed",
-        className
-      )}
-    >
-      {children}
-    </button>
-  </Tooltip>
-);
 
 // Origin Icon
 const OriginIcon = ({ origin, isDark }) => {

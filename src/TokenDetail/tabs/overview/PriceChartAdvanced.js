@@ -89,22 +89,6 @@ const Button = styled.button`
   & svg { width: 14px; height: 14px; }
 `;
 
-const IconButton = styled.button`
-  padding: 5px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'};
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-  color: ${props => props.isDark ? 'rgba(255,255,255,0.7)' : '#374151'};
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.15s;
-  &:hover { border-color: #3b82f6; }
-  & svg { width: 14px; height: 14px; }
-`;
-
-
 const Spinner = styled(Loader2)`
   animation: spin 1s linear infinite;
   @keyframes spin {
@@ -542,7 +526,7 @@ const PriceChartAdvanced = memo(({ token }) => {
         borderColor: isDark ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
         scaleMargins: {
           top: 0.05,
-          bottom: 0.2
+          bottom: 0.15
         },
         mode: 0,
         autoScale: true,
@@ -1122,9 +1106,10 @@ const PriceChartAdvanced = memo(({ token }) => {
             ))}
           </ButtonGroup>
 
-          <IconButton onClick={handleFullscreen} isDark={isDark} title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}>
+          <Button onClick={handleFullscreen} isDark={isDark} isMobile={isMobile}>
             {isFullscreen ? <Minimize /> : <Maximize />}
-          </IconButton>
+            {!isMobile && (isFullscreen ? 'Exit' : 'Full')}
+          </Button>
         </Box>
       </Box>
 

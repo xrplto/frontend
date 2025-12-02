@@ -138,11 +138,19 @@ const Button = styled.button`
 
 const StyledTable = styled(Table)`
   margin-top: 4px;
+  table-layout: fixed;
 `;
 
 const ModernTableCell = styled(TableCell)`
-  padding: 6px 10px;
+  padding: 8px 10px;
   border-bottom: none;
+  vertical-align: middle;
+  &:first-of-type {
+    width: 45%;
+  }
+  &:last-of-type {
+    width: 55%;
+  }
 `;
 
 // Constants
