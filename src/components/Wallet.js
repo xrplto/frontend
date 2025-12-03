@@ -68,6 +68,19 @@ const generateRandomWallet = () => {
   return XRPLWallet.fromEntropy(Array.from(entropy));
 };
 
+// XRPL Seed validation and algorithm detection
+const BASE58_ALPHABET = 'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz';
+const validateSeed = (seed) => {
+  const trimmed = seed.trim();
+  if (!trimmed) return { valid: false, error: '' };
+  if (!trimmed.startsWith('s')) return { valid: false, error: 'Seed must start with "s"' };
+  if (trimmed.length < 20 || trimmed.length > 35) return { valid: false, error: 'Invalid seed length' };
+  const invalidChar = [...trimmed].find(c => !BASE58_ALPHABET.includes(c));
+  if (invalidChar) return { valid: false, error: `Invalid character "${invalidChar}"` };
+  return { valid: true, error: '' };
+};
+const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+
 // Note: Removed signature entropy functions - no longer deriving wallets from WebAuthn signatures
 // WebAuthn is now used only for authentication, not key derivation (2025 security standard)
 
@@ -1426,6 +1439,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [showNewAccountFlow, setShowNewAccountFlow] = useState(false);
   const [newAccountPassword, setNewAccountPassword] = useState('');
   const [showNewAccountPassword, setShowNewAccountPassword] = useState(false);
+  const [newAccountMode, setNewAccountMode] = useState('new'); // 'new' or 'import'
+  const [newAccountSeed, setNewAccountSeed] = useState('');
   const [showBackupPassword, setShowBackupPassword] = useState(false);
   const [backupPassword, setBackupPassword] = useState('');
   const [showBackupPasswordVisible, setShowBackupPasswordVisible] = useState(false);
@@ -3187,8 +3202,26 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       }
       securityUtils.rateLimiter.recordSuccess(rateLimitKey);
 
-      // Password verified - create new wallet with SAME auth type
-      const wallet = generateRandomWallet();
+      // Password verified - create or import wallet with SAME auth type
+      let wallet;
+      if (newAccountMode === 'import' && newAccountSeed) {
+        // Validate seed
+        const validation = validateSeed(newAccountSeed);
+        if (!validation.valid) {
+          openSnackbar(validation.error || 'Invalid seed', 'error');
+          return;
+        }
+        // Import from seed with correct algorithm
+        const algorithm = getAlgorithmFromSeed(newAccountSeed.trim());
+        wallet = XRPLWallet.fromSeed(newAccountSeed.trim(), { algorithm });
+        // Check if already exists
+        if (profiles.find(p => p.account === wallet.address)) {
+          openSnackbar('This wallet is already added', 'warning');
+          return;
+        }
+      } else {
+        wallet = generateRandomWallet();
+      }
 
       const walletData = {
         deviceKeyId: accountProfile.deviceKeyId,
@@ -3218,18 +3251,22 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
       setProfiles(allProfiles);
       await syncProfilesToIndexedDB(allProfiles);
 
-      // Mark as needing backup
-      localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
+      // Mark as needing backup (only new wallets, not imported)
+      if (newAccountMode === 'new') {
+        localStorage.setItem(`wallet_needs_backup_${wallet.address}`, 'true');
+      }
 
       // Close and switch
       setShowNewAccountFlow(false);
       setNewAccountPassword('');
+      setNewAccountSeed('');
+      setNewAccountMode('new');
       setOpen(false);
       requestAnimationFrame(() => {
         doLogIn(walletData, allProfiles);
       });
 
-      openSnackbar(`Account #${allProfiles.length} created`, 'success');
+      openSnackbar(newAccountMode === 'import' ? 'Wallet imported' : `Account #${allProfiles.length} created`, 'success');
     } catch (error) {
       devError('Create account error:', error);
       openSnackbar('Incorrect password', 'error');
@@ -3423,25 +3460,12 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                   />
                 ) : showNewAccountFlow ? (
                   <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>
-                    <div className="space-y-5">
+                    <div className="space-y-4">
                       {/* Header */}
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className={cn(
-                            "w-10 h-10 rounded-xl flex items-center justify-center",
-                            isDark ? "bg-primary/10" : "bg-primary/5"
-                          )}>
-                            <Plus size={20} className="text-primary" />
-                          </div>
-                          <div>
-                            <h3 className="text-base font-medium">New Account</h3>
-                            <p className={cn("text-xs", isDark ? "text-white/50" : "text-gray-500")}>
-                              Account #{profiles.length + 1}
-                            </p>
-                          </div>
-                        </div>
+                        <h3 className="text-base font-medium">Add Account</h3>
                         <button
-                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}
+                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); }}
                           className={cn(
                             "p-1.5 rounded-lg transition-colors",
                             isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600"
@@ -3451,16 +3475,74 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </button>
                       </div>
 
-                      {/* Info Notice */}
-                      <div className={cn(
-                        "rounded-xl p-3 flex items-start gap-2.5",
-                        isDark ? "bg-white/[0.03] ring-1 ring-white/[0.06]" : "bg-gray-50 ring-1 ring-gray-100"
-                      )}>
-                        <Info size={14} className={cn("flex-shrink-0 mt-0.5", isDark ? "text-white/40" : "text-gray-400")} />
-                        <p className={cn("text-xs leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>
-                          All accounts share the same password for security. Enter your existing password to continue.
-                        </p>
+                      {/* Mode Toggle */}
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => setNewAccountMode('new')}
+                          className={cn(
+                            "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+                            newAccountMode === 'new'
+                              ? "border-primary bg-primary text-white"
+                              : isDark
+                              ? "border-white/15 text-white hover:border-primary/50"
+                              : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                          )}
+                        >
+                          New
+                        </button>
+                        <button
+                          onClick={() => setNewAccountMode('import')}
+                          className={cn(
+                            "flex-1 rounded-lg border-[1.5px] px-3 py-2 text-[13px] font-normal transition-colors",
+                            newAccountMode === 'import'
+                              ? "border-primary bg-primary text-white"
+                              : isDark
+                              ? "border-white/15 text-white hover:border-primary/50"
+                              : "border-gray-300 text-gray-900 hover:bg-gray-100"
+                          )}
+                        >
+                          Import Seed
+                        </button>
                       </div>
+
+                      {/* Seed Input (import mode only) */}
+                      {newAccountMode === 'import' && (
+                        <div className="space-y-2">
+                          <label className={cn("text-xs font-medium", isDark ? "text-white/60" : "text-gray-500")}>
+                            Seed
+                          </label>
+                          {(() => {
+                            const validation = validateSeed(newAccountSeed);
+                            const hasInput = newAccountSeed.trim().length > 0;
+                            return (
+                              <>
+                                <input
+                                  type="text"
+                                  placeholder='Enter seed (starts with "s")'
+                                  value={newAccountSeed}
+                                  onChange={(e) => setNewAccountSeed(e.target.value)}
+                                  className={cn(
+                                    "w-full px-4 py-3 rounded-xl text-sm font-mono outline-none transition-all",
+                                    hasInput && !validation.valid
+                                      ? "border-red-500/50 focus:border-red-500"
+                                      : hasInput && validation.valid
+                                      ? "border-green-500/50 focus:border-green-500"
+                                      : isDark
+                                      ? "border-white/10 focus:border-primary/50"
+                                      : "border-gray-200 focus:border-primary",
+                                    isDark
+                                      ? "bg-white/[0.03] border text-white placeholder:text-white/30"
+                                      : "bg-white border text-gray-900 placeholder:text-gray-400"
+                                  )}
+                                />
+                                {hasInput && validation.error && (
+                                  <p className="text-[11px] text-red-500">{validation.error}</p>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
 
                       {/* Password Input */}
                       <div className="space-y-2">
@@ -3473,14 +3555,14 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                             placeholder="Enter your password"
                             value={newAccountPassword}
                             onChange={(e) => setNewAccountPassword(e.target.value)}
-                            onKeyDown={(e) => e.key === 'Enter' && newAccountPassword && handleCreateNewAccount()}
-                            autoFocus
+                            onKeyDown={(e) => e.key === 'Enter' && newAccountPassword && (newAccountMode === 'new' || validateSeed(newAccountSeed).valid) && handleCreateNewAccount()}
+                            autoFocus={newAccountMode === 'new'}
                             autoComplete="off"
                             className={cn(
                               "w-full px-4 py-3 pr-12 rounded-xl text-sm outline-none transition-all",
                               isDark
-                                ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
-                                : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary focus:ring-1 focus:ring-primary/20"
+                                ? "bg-white/[0.03] border border-white/10 text-white placeholder:text-white/30 focus:border-primary/50"
+                                : "bg-white border border-gray-200 text-gray-900 placeholder:text-gray-400 focus:border-primary"
                             )}
                           />
                           <button
@@ -3499,7 +3581,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                       {/* Actions */}
                       <div className="flex gap-3 pt-1">
                         <button
-                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); }}
+                          onClick={() => { setShowNewAccountFlow(false); setNewAccountPassword(''); setNewAccountSeed(''); setNewAccountMode('new'); }}
                           className={cn(
                             "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all",
                             isDark
@@ -3511,10 +3593,10 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                         </button>
                         <button
                           onClick={handleCreateNewAccount}
-                          disabled={!newAccountPassword}
+                          disabled={!newAccountPassword || (newAccountMode === 'import' && !validateSeed(newAccountSeed).valid)}
                           className={cn(
                             "flex-1 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2",
-                            newAccountPassword
+                            newAccountPassword && (newAccountMode === 'new' || validateSeed(newAccountSeed).valid)
                               ? "bg-primary text-white hover:bg-primary/90"
                               : isDark
                                 ? "bg-white/5 text-white/30 cursor-not-allowed"
@@ -3522,7 +3604,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                           )}
                         >
                           <Plus size={14} />
-                          Create
+                          {newAccountMode === 'import' ? 'Import' : 'Create'}
                         </button>
                       </div>
                     </div>

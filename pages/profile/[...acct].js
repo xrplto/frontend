@@ -9,7 +9,7 @@ import { isValidClassicAddress } from 'ripple-address-codec';
 import { fCurrency5, fDateTime } from 'src/utils/formatters';
 import { formatDistanceToNow } from 'date-fns';
 import Link from 'next/link';
-import { Wallet } from 'lucide-react';
+import { Wallet, Copy, ExternalLink } from 'lucide-react';
 
 const OverView = ({ account }) => {
   const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
@@ -21,6 +21,7 @@ const OverView = ({ account }) => {
   const [txFilter, setTxFilter] = useState('all');
   const [holdings, setHoldings] = useState(null);
   const [holdingsPage, setHoldingsPage] = useState(0);
+  const [txPage, setTxPage] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ const OverView = ({ account }) => {
     setTxHistory([]);
     setHoldings(null);
     setHoldingsPage(0);
+    setTxPage(0);
     setLoading(true);
 
     const fetchData = async () => {
@@ -127,6 +129,22 @@ const OverView = ({ account }) => {
           <h2 className={cn("text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
             {account.substring(0, 10)}...{account.substring(account.length - 8)}
           </h2>
+          <button
+            onClick={() => navigator.clipboard.writeText(account)}
+            className={cn("p-1 rounded hover:bg-white/10", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}
+            title="Copy address"
+          >
+            <Copy size={14} />
+          </button>
+          <a
+            href={`https://xrpscan.com/account/${account}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={cn("p-1 rounded hover:bg-white/10", isDark ? "text-white/40 hover:text-white/70" : "text-gray-400 hover:text-gray-600")}
+            title="View on XRPScan"
+          >
+            <ExternalLink size={14} />
+          </a>
           {data?.isAMM && (
             <span className="text-[11px] h-5 px-2 rounded bg-[#4285f4]/10 text-[#4285f4] font-normal flex items-center">
               AMM
@@ -218,56 +236,45 @@ const OverView = ({ account }) => {
           <div>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>Total Volume</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
-              {fCurrency5(data.totalVolume)}
+              {fCurrency5(data.totalVolume)} <span className={cn("text-[11px] font-normal", isDark ? "text-white/40" : "text-gray-400")}>XRP</span>
             </p>
             <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>
-              {fCurrency5(data.buyVolume || 0)} in · {fCurrency5(data.sellVolume || 0)} out
+              <span className="text-[#ef4444]/70">{fCurrency5(data.buyVolume || 0)}</span> spent · <span className="text-[#10b981]/70">{fCurrency5(data.sellVolume || 0)}</span> received
             </span>
           </div>
         </div>
 
-        {/* Period P&L + Stats Row */}
-        <div className={cn("grid grid-cols-10 gap-2 mb-3 pb-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
-          {[
-            { label: '24h P&L', profit: data.profit24h },
-            { label: '7d P&L', profit: data.profit7d },
-            { label: '30d P&L', profit: data.profit1m },
-            { label: '60d P&L', profit: data.profit2m },
-            { label: '90d P&L', profit: data.profit3m }
-          ].map((period) => (
-            <div key={period.label}>
-              <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>
-                {period.label}
-              </p>
-              <p className={cn(
-                "text-[13px] font-medium",
-                period.profit !== 0
-                  ? (period.profit >= 0 ? "text-[#10b981]" : "text-[#ef4444]")
-                  : (isDark ? "text-white/30" : "text-gray-300")
-              )}>
-                {period.profit !== 0 ? fCurrency5(period.profit) : '—'}
-              </p>
-            </div>
-          ))}
+        {/* Period P&L Summary */}
+        <div className={cn("grid grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
           <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Wins</p>
-            <p className={cn("text-[13px] font-medium text-[#10b981]")}>{fCurrency5(data.profitableTrades)}</p>
+            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>7d P&L</p>
+            <p className={cn("text-[14px] font-medium", (data.profit7d || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
+              {fCurrency5(data.profit7d || 0)}
+            </p>
           </div>
           <div>
-            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Losses</p>
-            <p className={cn("text-[13px] font-medium text-[#ef4444]")}>{fCurrency5(data.losingTrades)}</p>
+            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>30d P&L</p>
+            <p className={cn("text-[14px] font-medium", (data.profit1m || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
+              {fCurrency5(data.profit1m || 0)}
+            </p>
+          </div>
+          <div>
+            <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>90d P&L</p>
+            <p className={cn("text-[14px] font-medium", (data.profit3m || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
+              {fCurrency5(data.profit3m || 0)}
+            </p>
           </div>
           <div>
             <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Best</p>
-            <p className="text-[13px] font-medium text-[#10b981]">{fCurrency5(data.maxProfitTrade)}</p>
+            <p className="text-[14px] font-medium text-[#10b981]">{fCurrency5(data.maxProfitTrade || 0)}</p>
           </div>
           <div>
             <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Worst</p>
-            <p className="text-[13px] font-medium text-[#ef4444]">-{fCurrency5(Math.abs(data.maxLossTrade || 0))}</p>
+            <p className="text-[14px] font-medium text-[#ef4444]">-{fCurrency5(Math.abs(data.maxLossTrade || 0))}</p>
           </div>
           <div>
             <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Avg Hold</p>
-            <p className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+            <p className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>
               {data.avgHoldingTime ? `${Math.round(data.avgHoldingTime / 86400)}d` : '—'}
             </p>
           </div>
@@ -278,10 +285,15 @@ const OverView = ({ account }) => {
         {/* Holdings */}
         {holdings && holdings.accountActive !== false && (
           <div className="mb-3">
-            <div className="flex items-center gap-2 mb-2">
+            <div className="flex items-center justify-between mb-2">
               <p className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>
                 Token Holdings ({holdings.total})
               </p>
+              {holdings.lines?.length > 0 && (
+                <p className={cn("text-[13px] font-medium", isDark ? "text-white" : "text-gray-900")}>
+                  Total: {fCurrency5(holdings.lines.reduce((sum, l) => sum + (l.value || 0), 0))} XRP
+                </p>
+              )}
             </div>
             {holdings.lines?.length > 0 && (
               <>
@@ -416,7 +428,7 @@ const OverView = ({ account }) => {
                 {getAvailableTxTypes().map(filter => (
                   <button
                     key={filter}
-                    onClick={() => setTxFilter(filter)}
+                    onClick={() => { setTxFilter(filter); setTxPage(0); }}
                     className={cn(
                       "text-[10px] px-1.5 py-0.5 rounded border",
                       txFilter === filter
@@ -436,14 +448,12 @@ const OverView = ({ account }) => {
               <div className={cn(
                 "grid px-2 py-1.5 border-b",
                 isDark ? "border-white/[0.04]" : "border-gray-200"
-              )} style={{ gridTemplateColumns: '140px 1fr 100px 70px 70px' }}>
-                <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Type</span>
+              )} style={{ gridTemplateColumns: '1fr 120px 90px' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Details</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Amount</span>
-                <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Fee</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>When</span>
               </div>
-              {filteredTxHistory.slice(0, 20).map((tx, idx) => {
+              {filteredTxHistory.slice(txPage * 20, txPage * 20 + 20).map((tx, idx) => {
                 const txData = tx.tx_json || tx.tx;
                 const meta = tx.meta;
                 const date = new Date((txData.date + 946684800) * 1000);
@@ -643,16 +653,11 @@ const OverView = ({ account }) => {
                       "grid px-2 py-1.5 hover:bg-white/[0.02] transition-colors",
                       idx < 19 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100")
                     )}
-                    style={{ gridTemplateColumns: '140px 1fr 100px 70px 70px' }}
+                    style={{ gridTemplateColumns: '1fr 120px 90px' }}
                   >
-                    <span className={cn(
-                      "text-[11px]",
-                      txData.TransactionType === 'Payment' ? "text-[#4285f4]" : (isDark ? "text-white/50" : "text-gray-500")
-                    )}>
-                      {txData.TransactionType}
-                    </span>
                     <div className="min-w-0">
                       <p className={cn("text-[12px] truncate", actionColor)}>
+                        <span className={cn("text-[10px] mr-1", isDark ? "text-white/40" : "text-gray-400")}>{txData.TransactionType}</span>
                         {actionDesc}
                       </p>
                       {sourceLabel && (
@@ -664,9 +669,6 @@ const OverView = ({ account }) => {
                     <span className={cn("text-[11px] text-right font-medium", amountColor)}>
                       {amountDisplay}
                     </span>
-                    <span className={cn("text-[11px] text-right", isDark ? "text-white/30" : "text-gray-400")}>
-                      {fee > 0 ? `${fee.toFixed(6)}` : '—'}
-                    </span>
                     <span className={cn("text-[11px] text-right", isDark ? "text-white/40" : "text-gray-400")}>
                       {formatDistanceToNow(date, { addSuffix: false })}
                     </span>
@@ -674,6 +676,33 @@ const OverView = ({ account }) => {
                 );
               })}
             </div>
+            {filteredTxHistory.length > 20 && (
+              <div className="flex gap-2 justify-center items-center text-[12px] py-2">
+                <button
+                  onClick={() => setTxPage(Math.max(0, txPage - 1))}
+                  disabled={txPage === 0}
+                  className={cn(
+                    "bg-transparent border-none p-0",
+                    txPage === 0 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#4285f4] cursor-pointer"
+                  )}
+                >
+                  ← Prev
+                </button>
+                <span className={isDark ? "text-white/40" : "text-gray-400"}>
+                  {txPage + 1}/{Math.ceil(filteredTxHistory.length / 20)}
+                </span>
+                <button
+                  onClick={() => setTxPage(txPage + 1)}
+                  disabled={txPage >= Math.ceil(filteredTxHistory.length / 20) - 1}
+                  className={cn(
+                    "bg-transparent border-none p-0",
+                    txPage >= Math.ceil(filteredTxHistory.length / 20) - 1 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#4285f4] cursor-pointer"
+                  )}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
