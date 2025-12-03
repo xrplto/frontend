@@ -26,8 +26,8 @@ const setCachedData = (url, data) => {
 const Sparkline = ({
   url,
   showGradient = true,
-  lineWidth = 2,
-  interpolationFactor = 2,
+  lineWidth = 1.5,
+  smooth = true,
   ...props
 }) => {
   const { themeName } = useContext(AppContext);
@@ -35,6 +35,7 @@ const Sparkline = ({
   const [chartData, setChartData] = useState(null);
   const [isError, setIsError] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVisible, setIsVisible] = useState(false);
   const previousUrlRef = useRef(url);
   const canvasRef = useRef(null);
 
@@ -43,29 +44,27 @@ const Sparkline = ({
     threshold: 0.1
   });
 
-  // Linear interpolation between two points
-  const interpolatePoints = (points, factor) => {
-    if (factor <= 1 || points.length < 2) return points;
+  // Draw smooth bezier curve through points (continues existing path)
+  const drawCurve = (ctx, points, startNew = true) => {
+    if (points.length < 2) return;
 
-    const interpolated = [];
-
-    for (let i = 0; i < points.length - 1; i++) {
-      interpolated.push(points[i]);
-
-      // Add interpolated points between current and next
-      for (let j = 1; j < factor; j++) {
-        const t = j / factor;
-        const interpolatedPoint = {
-          x: points[i].x + (points[i + 1].x - points[i].x) * t,
-          y: points[i].y + (points[i + 1].y - points[i].y) * t
-        };
-        interpolated.push(interpolatedPoint);
-      }
+    if (startNew) {
+      ctx.beginPath();
+      ctx.moveTo(points[0].x, points[0].y);
     }
 
-    // Add the last point
-    interpolated.push(points[points.length - 1]);
-    return interpolated;
+    if (!smooth || points.length < 3) {
+      points.forEach((p) => ctx.lineTo(p.x, p.y));
+      return;
+    }
+
+    // Use quadratic bezier curves for smoothing
+    for (let i = 1; i < points.length - 1; i++) {
+      const xc = (points[i].x + points[i + 1].x) / 2;
+      const yc = (points[i].y + points[i + 1].y) / 2;
+      ctx.quadraticCurveTo(points[i].x, points[i].y, xc, yc);
+    }
+    ctx.lineTo(points[points.length - 1].x, points[points.length - 1].y);
   };
 
   // Draw chart on canvas
@@ -80,7 +79,7 @@ const Sparkline = ({
 
     const prices = apiData.prices.map((p) => parseFloat(p));
     const isPositive = prices[prices.length - 1] >= prices[0];
-    const color = chartColor || (isPositive ? '#00ff88' : '#ff3366');
+    const color = chartColor || (isPositive ? '#22c55e' : '#ef4444');
 
     // Set canvas size
     const rect = canvas.getBoundingClientRect();
@@ -102,7 +101,7 @@ const Sparkline = ({
     const range = maxPrice - minPrice;
 
     // Scale points to canvas with padding
-    const padding = height * 0.1; // 10% padding top and bottom
+    const padding = height * 0.15;
     const chartHeight = height - padding * 2;
 
     const points = prices.map((price, index) => {
@@ -114,34 +113,33 @@ const Sparkline = ({
       return { x, y };
     });
 
-    // Interpolate points for smoother sparklines
-    const interpolatedPoints = interpolatePoints(points, interpolationFactor);
-
     // Draw gradient fill if enabled
     if (showGradient) {
       const gradient = ctx.createLinearGradient(0, 0, 0, height);
-      gradient.addColorStop(0, color + '66');
-      gradient.addColorStop(1, color + '00');
+      gradient.addColorStop(0, color + '25');
+      gradient.addColorStop(1, color + '05');
 
       ctx.beginPath();
-      ctx.moveTo(interpolatedPoints[0].x, height - padding);
-      interpolatedPoints.forEach((point) => ctx.lineTo(point.x, point.y));
-      ctx.lineTo(interpolatedPoints[interpolatedPoints.length - 1].x, height - padding);
+      ctx.moveTo(points[0].x, height);
+      ctx.lineTo(points[0].x, points[0].y);
+      drawCurve(ctx, points, false);
+      ctx.lineTo(points[points.length - 1].x, height);
       ctx.closePath();
       ctx.fillStyle = gradient;
       ctx.fill();
     }
 
-    // Draw line with interpolated points
-    ctx.beginPath();
-    ctx.moveTo(interpolatedPoints[0].x, interpolatedPoints[0].y);
-    interpolatedPoints.forEach((point) => ctx.lineTo(point.x, point.y));
+    // Draw smooth line
+    drawCurve(ctx, points);
     ctx.strokeStyle = color;
     ctx.lineWidth = lineWidth;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.stroke();
-  }, [chartData, showGradient, lineWidth, interpolationFactor, isDark]);
+
+    // Trigger fade-in
+    setIsVisible(true);
+  }, [chartData, showGradient, lineWidth, smooth, isDark]);
 
   // Fetch data when URL changes or component comes into view
   useEffect(() => {
@@ -195,62 +193,47 @@ const Sparkline = ({
     };
   }, [url, inView, chartData]);
 
-  // Loading state with skeleton
+  // Loading skeleton styled like a sparkline
   if (isLoading) {
     return (
-      <div
-        ref={ref}
-        className="w-full h-full flex items-center justify-center min-h-[40px]"
-      >
-        <div className={cn(
-          "w-full h-full rounded-lg animate-pulse",
-          isDark ? "bg-primary/[0.08]" : "bg-primary/[0.08]"
-        )} />
+      <div ref={ref} className="w-full h-full min-h-[40px] relative overflow-hidden">
+        <svg viewBox="0 0 100 40" preserveAspectRatio="none" className="w-full h-full">
+          <path
+            d="M0,30 Q15,25 25,28 T50,20 T75,25 T100,18"
+            fill="none"
+            className={cn(
+              "animate-pulse",
+              isDark ? "stroke-white/10" : "stroke-gray-200"
+            )}
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
     );
   }
 
-  // Error state
-  if (isError) {
+  // Error/no data state
+  if (isError || !chartData) {
     return (
-      <div
-        ref={ref}
-        className="w-full h-full flex items-center justify-center min-h-[40px] opacity-30"
-      >
+      <div ref={ref} className="w-full h-full min-h-[40px] flex items-center">
         <div className={cn(
-          "w-full h-0.5 rounded",
-          isDark
-            ? "bg-gradient-to-r from-transparent via-white/50 to-transparent"
-            : "bg-gradient-to-r from-transparent via-gray-400/50 to-transparent"
+          "w-full h-px",
+          isDark ? "bg-white/10" : "bg-gray-200"
         )} />
-      </div>
-    );
-  }
-
-  // No data state
-  if (!chartData) {
-    return (
-      <div
-        ref={ref}
-        className="w-full h-full flex items-center justify-center min-h-[40px]"
-      >
-        <div className="w-full h-full rounded bg-transparent" />
       </div>
     );
   }
 
   return (
-    <div
-      ref={ref}
-      className="w-full h-full relative"
-    >
+    <div ref={ref} className="w-full h-full relative">
       <canvas
         ref={canvasRef}
-        style={{
-          width: '100%',
-          height: '100%',
-          display: 'block'
-        }}
+        className={cn(
+          "transition-opacity duration-300",
+          isVisible ? "opacity-100" : "opacity-0"
+        )}
+        style={{ width: '100%', height: '100%', display: 'block' }}
       />
     </div>
   );

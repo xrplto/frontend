@@ -97,6 +97,12 @@ const MetricBox = styled.div`
   border-radius: 12px;
   background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
   border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.3)' : 'rgba(66, 133, 244, 0.25)'};
+    background: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.03)'};
+  }
 
   @media (max-width: 600px) {
     padding: 8px;

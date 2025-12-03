@@ -112,16 +112,17 @@ const OptimizedChart = memo(
 OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.04)' : 'rgba(0, 0, 0, 0.04)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
   cursor: pointer;
+  transition: background 0.15s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.015)'};
+    background: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.05)'};
   }
 `;
 
 const StyledCell = styled.td`
-  padding: 10px 8px;
+  padding: 14px 8px;
   white-space: ${(props) => (props.isTokenColumn ? 'normal' : 'nowrap')};
   text-align: ${(props) => props.align || 'left'};
   font-size: 12px;
