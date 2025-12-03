@@ -4,7 +4,6 @@ import { useContext, useState, useEffect, useCallback, memo } from 'react';
 import { AppContext } from 'src/AppContext';
 import Overview from './tabs/overview';
 import LinkCascade from './components/LinkCascade';
-import TokenSummary from './components/TokenSummary';
 import CreatorTransactionsDialog from './dialogs/CreatorTransactionsDialog';
 import TransactionDetailsPanel from './dialogs/TransactionDetailsPanel';
 import { cn } from 'src/utils/cn';
@@ -135,23 +134,6 @@ const TokenDetail = memo(
         <div className="flex-1 min-w-0">
           {!isMobile && <LinkCascade token={token} />}
 
-          <div className="pr-0">
-            <TokenSummary
-              token={token}
-              onCreatorTxToggle={handleCreatorTxToggle}
-              creatorTxOpen={creatorTxOpen}
-              latestCreatorTx={latestCreatorTx}
-              setLatestCreatorTx={setLatestCreatorTx}
-            />
-          </div>
-
-          {!isMobile && (
-            <hr className={cn(
-              "my-1 mx-4 border-t-[1.5px]",
-              isDark ? "border-white/[0.08]" : "border-gray-200"
-            )} />
-          )}
-
           <div id="back-to-top-tab-anchor" />
 
           <Overview
@@ -160,6 +142,10 @@ const TokenDetail = memo(
             onOrderBookToggle={handleOrderBookToggle}
             orderBookOpen={txDetailsOpen && panelMode === 'orderbook'}
             onOrderBookData={handleOrderBookData}
+            onCreatorTxToggle={handleCreatorTxToggle}
+            creatorTxOpen={creatorTxOpen}
+            latestCreatorTx={latestCreatorTx}
+            setLatestCreatorTx={setLatestCreatorTx}
           />
         </div>
 

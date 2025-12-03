@@ -693,7 +693,7 @@ function CreatePage() {
         </div>
 
         {/* Token Information */}
-        <div className={cn("rounded-xl border p-4 mb-4", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("rounded-xl border p-4 mb-4 transition-colors", isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]")}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-[13px] font-normal">Token Information</h3>
             <span className="text-[10px] opacity-40">Required</span>
@@ -798,7 +798,7 @@ function CreatePage() {
 
         {/* Liquidity + Social Links - Combined Row */}
         <div className="flex gap-4 mb-4">
-          <div className={cn("rounded-xl border p-4 flex-1", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className={cn("rounded-xl border p-4 flex-1 transition-colors", isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]")}>
             <div className="flex justify-between items-center mb-3">
               <h3 className="text-[13px] font-normal">Initial Liquidity</h3>
               <span className="text-[10px] opacity-40">Required</span>
@@ -816,7 +816,7 @@ function CreatePage() {
           </div>
 
           {/* Social Links */}
-          <div className={cn("rounded-xl border p-4 flex-[2]", isDark ? "border-white/10" : "border-gray-200")}>
+          <div className={cn("rounded-xl border p-4 flex-[2] transition-colors", isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]")}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-[13px] font-normal">Social Links</h3>
             <span className="text-[10px] opacity-40">Optional</span>
@@ -852,7 +852,7 @@ function CreatePage() {
         </div>
 
         {/* Cost Summary */}
-        <div className={cn("rounded-xl border px-4 py-3 mb-4", isDark ? "border-white/10 bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+        <div className={cn("rounded-xl border px-4 py-3 mb-4 transition-colors", isDark ? "border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)] hover:border-[rgba(59,130,246,0.2)]" : "border-[rgba(59,130,246,0.15)] bg-[rgba(59,130,246,0.02)] hover:border-[rgba(59,130,246,0.25)]")}>
           <div className="flex items-center justify-between text-[12px] mb-2">
             <span className="opacity-60">Liquidity pool</span>
             <span>{formData.ammXrpAmount} XRP</span>
@@ -870,7 +870,7 @@ function CreatePage() {
         </div>
 
         {/* Token Image */}
-        <div className={cn("rounded-xl border p-4 mb-5", isDark ? "border-white/10" : "border-gray-200")}>
+        <div className={cn("rounded-xl border p-4 mb-5 transition-colors", isDark ? "border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.2)]" : "border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.25)]")}>
           <div className="flex justify-between items-center mb-3">
             <h3 className="text-[13px] font-normal">Token Image</h3>
             <span className="text-[10px] opacity-40">Recommended</span>

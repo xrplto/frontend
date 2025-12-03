@@ -328,30 +328,30 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] px-3 py-2 sm:px-4 sm:py-2.5", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
-      {/* Main Row */}
-      <div className="flex items-center justify-between gap-2">
+    <div className={cn("rounded-xl border-[1.5px] px-3 py-2.5", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
+      {/* Row 1: Token Info + Price */}
+      <div className="flex items-center justify-between gap-3">
         {/* Left: Token Image + Info */}
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-none sm:w-[220px]">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
           <div className="relative group cursor-pointer flex-shrink-0" onClick={handleGoogleLensSearch}>
-            <Image src={tokenImageUrl} alt={name} width={36} height={36} priority unoptimized
+            <Image src={tokenImageUrl} alt={name} width={40} height={40} priority unoptimized
               className="rounded-lg object-cover border border-primary/20"
               onError={(e) => { e.currentTarget.src = fallbackImageUrl; }} />
             {verified && <div className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-primary rounded-full flex items-center justify-center text-[8px] text-white font-medium">✓</div>}
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1 sm:gap-1.5 flex-wrap">
-              <span className={cn("text-sm font-semibold truncate max-w-[100px] sm:max-w-none", isDark ? "text-white" : "text-gray-900")}>{name}</span>
-              {id && <span className="px-1 rounded text-[9px] font-medium bg-primary/10 text-primary">#{id}</span>}
-              <span className={cn("hidden sm:inline-flex items-center gap-0.5 px-1 rounded text-[9px]", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className={cn("text-[15px] font-semibold truncate", isDark ? "text-white" : "text-gray-900")}>{name}</span>
+              {id && <span className="px-1 py-0.5 rounded text-[9px] font-medium bg-primary/10 text-primary">#{id}</span>}
+              <span className={cn("inline-flex items-center gap-0.5 px-1 py-0.5 rounded text-[9px]", isDark ? "bg-white/5 text-white/50" : "bg-gray-100 text-gray-500")}>
                 <OriginIcon origin={origin || 'XRPL'} isDark={isDark} />{origin || 'XRPL'}
               </span>
             </div>
-            <div className="flex items-center gap-1 mt-0.5">
-              <span className={cn("text-[10px] truncate hidden sm:inline", isDark ? "text-white/40" : "text-gray-400")}>{user || name}</span>
+            <div className="flex items-center gap-1.5 mt-0.5">
+              <span className={cn("text-[10px] truncate", isDark ? "text-white/40" : "text-gray-400")}>{user || name}</span>
               {issuer && (
-                <button onClick={copyIssuer} className={cn("flex items-center gap-0.5 text-[9px] font-mono", isDark ? "text-white/25 hover:text-white/40" : "text-gray-400")}>
-                  {copied ? <Check size={8} className="text-green-500" /> : <Copy size={8} />}
+                <button onClick={copyIssuer} className={cn("flex items-center gap-0.5 text-[9px] font-mono", isDark ? "text-white/30 hover:text-white/50" : "text-gray-400 hover:text-gray-600")}>
+                  {copied ? <Check size={9} className="text-green-500" /> : <Copy size={9} />}
                   {issuer.slice(0, 4)}...{issuer.slice(-4)}
                 </button>
               )}
@@ -359,122 +359,101 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </div>
         </div>
 
-        {/* Center: Stats */}
-        <div className="hidden md:grid grid-cols-4 gap-6 flex-1 mx-6">
-          {[
-            { label: 'Market Cap', value: formatValue(convertedMarketCap), color: 'text-green-500' },
-            { label: 'Volume 24h', value: formatValue(convertedVolume), color: 'text-red-500' },
-            { label: 'TVL', value: formatValue(convertedTvl), color: 'text-blue-500' },
-            { label: 'Holders', value: formatValue(holders || 0), color: 'text-orange-500', noSymbol: true }
-          ].map((stat) => (
-            <div key={stat.label} className="text-center">
-              <div className={cn("text-[9px] uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
-              <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Right: Price + Actions */}
-        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          {/* Price */}
-          <span className={cn("text-lg sm:text-xl font-bold tracking-tight", priceColor ? "" : "text-primary")} style={priceColor ? { color: priceColor } : undefined}>
+        {/* Right: Price + Change */}
+        <div className="flex flex-col items-end flex-shrink-0">
+          <span className={cn("text-xl font-bold tracking-tight", priceColor ? "" : "text-primary")} style={priceColor ? { color: priceColor } : undefined}>
             {priceDisplay.isCompact ? <>{priceDisplay.symbol}0.0<sub className="text-[0.5em]">{priceDisplay.zeros}</sub>{priceDisplay.significant}</> : <>{priceDisplay.symbol}{priceDisplay.price}</>}
           </span>
-
-          {/* Desktop: Time Changes */}
-          <div className="hidden sm:flex items-center gap-1">
-            {priceChanges.map((item) => (
-              <div key={item.label} className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/5" : "bg-gray-100")}>
-                <span className={isDark ? "text-white/30" : "text-gray-400"}>{item.label} </span>
-                <span className={item.value >= 0 ? "text-green-500" : "text-red-500"}>{formatPct(item.value)}</span>
-              </div>
-            ))}
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-1.5 pl-2 border-l border-[rgba(59,130,246,0.15)] relative">
-            {trustStatus && trustStatus !== 'loading' && (
-              <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
-                {trustStatus}
-              </div>
-            )}
-            <button
-              onClick={handleSetTrust}
-              disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
-              className={cn(
-                "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all flex items-center gap-1",
-                isRemove ? "border-red-500/30 text-red-500 hover:bg-red-500/10" : "border-green-500/30 text-green-500 hover:bg-green-500/10",
-                (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
-              )}
-            >
-              {trustStatus === 'loading' ? <Loader2 size={10} className="animate-spin" /> : null}
-              {isRemove ? 'Untrust' : 'Trust'}
-            </button>
-            <Share token={token} />
-            <Watch token={token} />
-            {creator && (
-              <button
-                onClick={onCreatorTxToggle}
-                className={cn(
-                  "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
-                  creatorTxOpen ? "border-primary bg-primary/10 text-primary" : isDark ? "border-white/[0.08] text-white/50 hover:border-primary/30" : "border-gray-200 text-gray-500 hover:border-primary/30"
-                )}
-              >
-                Activity
-              </button>
-            )}
-            {accountProfile?.admin && (
-              <button
-                onClick={() => setEditToken(token)}
-                className={cn(
-                  "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
-                  isDark ? "border-amber-500/30 text-amber-500 hover:bg-amber-500/10" : "border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
-                )}
-              >
-                Edit
-              </button>
-            )}
-          </div>
+          <span className={cn("text-[11px] font-medium", mainChange >= 0 ? "text-green-500" : "text-red-500")}>
+            {formatPct(mainChange)}
+          </span>
         </div>
       </div>
 
-      {/* 24h Range */}
-      {range24h && (
-        <div className={cn("flex items-center gap-3 mt-1.5 pt-1.5 sm:mt-2 sm:pt-2 border-t", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-gray-100")}>
-          <span className={cn("text-[9px] uppercase w-16 flex-shrink-0", isDark ? "text-white/30" : "text-gray-400")}>24h Range</span>
-          <span className="text-[10px] text-green-500 w-16 text-right">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.min)}</span>
-          <div className={cn("flex-1 h-1 rounded-full relative mx-2", isDark ? "bg-white/10" : "bg-gray-200")}>
-            <div className="absolute inset-y-0 rounded-full bg-gradient-to-r from-green-500/40 to-red-500/40" style={{ width: '100%' }} />
-            <div className="absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-white border-2 border-primary shadow-sm" style={{ left: `calc(${range24h.percent}% - 5px)` }} />
+      {/* Row 2: Stats Grid (2x2) */}
+      <div className="grid grid-cols-4 gap-2 mt-2.5 pt-2.5 border-t border-[rgba(59,130,246,0.08)]">
+        {[
+          { label: 'MCAP', value: formatValue(convertedMarketCap), color: 'text-green-500' },
+          { label: 'VOL 24H', value: formatValue(convertedVolume), color: 'text-red-500' },
+          { label: 'TVL', value: formatValue(convertedTvl), color: 'text-blue-500' },
+          { label: 'HOLDERS', value: formatValue(holders || 0), color: 'text-orange-500', noSymbol: true }
+        ].map((stat) => (
+          <div key={stat.label} className={cn("text-center py-1.5 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50/50")}>
+            <div className={cn("text-[9px] uppercase tracking-wide mb-0.5", isDark ? "text-white/30" : "text-gray-400")}>{stat.label}</div>
+            <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
           </div>
-          <span className="text-[10px] text-red-500 w-16">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.max)}</span>
+        ))}
+      </div>
+
+      {/* Row 3: Price Changes */}
+      <div className="grid grid-cols-4 gap-2 mt-2">
+        {priceChanges.map((item) => (
+          <div key={item.label} className={cn("text-center py-1 rounded-lg", isDark ? "bg-white/[0.03]" : "bg-gray-50/50")}>
+            <span className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>{item.label}</span>
+            <span className={cn("text-[12px] font-medium ml-1", item.value >= 0 ? "text-green-500" : "text-red-500")}>{formatPct(item.value)}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Row 4: 24h Range */}
+      {range24h && (
+        <div className={cn("flex items-center gap-2 mt-2.5 pt-2.5 border-t", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-100")}>
+          <span className={cn("text-[9px] uppercase tracking-wide flex-shrink-0", isDark ? "text-white/30" : "text-gray-400")}>24H</span>
+          <span className="text-[10px] text-green-500 flex-shrink-0">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.min)}</span>
+          <div className={cn("flex-1 h-1.5 rounded-full relative", isDark ? "bg-white/10" : "bg-gray-200")}>
+            <div className="absolute inset-y-0 rounded-full bg-gradient-to-r from-green-500/30 to-red-500/30" style={{ width: '100%' }} />
+            <div className="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-white border-2 border-primary shadow-sm" style={{ left: `calc(${range24h.percent}% - 6px)` }} />
+          </div>
+          <span className="text-[10px] text-red-500 flex-shrink-0">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.max)}</span>
         </div>
       )}
 
-      {/* Mobile: Price Changes + Stats Combined */}
-      <div className="sm:hidden mt-1.5 pt-1.5 border-t border-[rgba(59,130,246,0.1)] space-y-1.5">
-        {/* Price Changes Row */}
-        <div className="grid grid-cols-4 gap-1">
-          {priceChanges.map((item) => (
-            <div key={item.label} className={cn("text-center py-1.5 rounded-lg", isDark ? "bg-white/[0.05]" : "bg-gray-50")}>
-              <span className={cn("text-[10px] font-medium block mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>{item.label}</span>
-              <span className={cn("text-[13px] font-medium", item.value >= 0 ? "text-green-500" : "text-red-500")}>{formatPct(item.value)}</span>
+      {/* Row 5: Actions */}
+      <div className="flex items-center justify-between gap-2 mt-2.5 pt-2.5 border-t border-[rgba(59,130,246,0.08)]">
+        <div className="flex items-center gap-1.5 relative">
+          {trustStatus && trustStatus !== 'loading' && (
+            <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
+              {trustStatus}
             </div>
-          ))}
+          )}
+          <button
+            onClick={handleSetTrust}
+            disabled={CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading'}
+            className={cn(
+              "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all flex items-center gap-1",
+              isRemove ? "border-red-500/30 text-red-500 hover:bg-red-500/10" : "border-green-500/30 text-green-500 hover:bg-green-500/10",
+              (CURRENCY_ISSUERS?.XRP_MD5 === md5 || trustStatus === 'loading') && "opacity-40 cursor-not-allowed"
+            )}
+          >
+            {trustStatus === 'loading' ? <Loader2 size={12} className="animate-spin" /> : null}
+            {isRemove ? 'Untrust' : 'Trust'}
+          </button>
+          {creator && (
+            <button
+              onClick={onCreatorTxToggle}
+              className={cn(
+                "px-3 py-1.5 rounded-lg border-[1.5px] text-[11px] font-medium transition-all",
+                creatorTxOpen ? "border-primary bg-primary/10 text-primary" : isDark ? "border-white/[0.08] text-white/50 hover:border-primary/30" : "border-gray-200 text-gray-500 hover:border-primary/30"
+              )}
+            >
+              Activity
+            </button>
+          )}
         </div>
-        {/* Stats Row */}
-        <div className="grid grid-cols-4 gap-1">
-          {[
-            { label: 'MCAP', value: formatValue(convertedMarketCap), color: 'text-green-500' },
-            { label: 'VOL', value: formatValue(convertedVolume), color: 'text-red-500' },
-            { label: 'TVL', value: formatValue(convertedTvl), color: 'text-blue-500' },
-            { label: 'HOLDERS', value: formatValue(holders || 0), color: 'text-orange-500', noSymbol: true }
-          ].map((stat) => (
-            <div key={stat.label} className={cn("text-center py-1.5 rounded-lg", isDark ? "bg-white/[0.05]" : "bg-gray-50")}>
-              <div className={cn("text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>{stat.label}</div>
-              <div className={cn("text-[13px] font-medium", stat.color)}>{stat.noSymbol ? '' : currencySymbols[activeFiatCurrency]}{stat.value}</div>
-            </div>
-          ))}
+        <div className="flex items-center gap-1.5">
+          <Share token={token} />
+          <Watch token={token} />
+          {accountProfile?.admin && (
+            <button
+              onClick={() => setEditToken(token)}
+              className={cn(
+                "px-2 py-1 rounded-lg border-[1.5px] text-[10px] font-medium transition-all",
+                isDark ? "border-amber-500/30 text-amber-500 hover:bg-amber-500/10" : "border-amber-500/30 text-amber-500 hover:bg-amber-500/10"
+              )}
+            >
+              Edit
+            </button>
+          )}
         </div>
       </div>
 
