@@ -11,19 +11,19 @@ const alpha = (color, opacity) => {
 
 export const XrplToDarkTheme = {
   colors: {
-    primary: '#147DFE',
+    primary: '#3b82f6',
     secondary: '#8B92A8',
-    success: '#4CAF50',
-    warning: '#FF9800',
-    error: '#F44336',
-    info: '#2196F3',
+    success: '#10b981',
+    warning: '#f59e0b',
+    error: '#ef4444',
+    info: '#3b82f6',
     black: '#000000',
     white: '#FFFFFF',
     neutral: {
-      50: '#18181B',
-      100: '#27272A',
-      200: '#3F3F46',
-      300: '#52525B',
+      50: '#0a0a0f',
+      100: '#111118',
+      200: '#1a1a24',
+      300: '#252532',
       400: '#71717A',
       500: '#A1A1AA',
       600: '#D4D4D8',
@@ -38,49 +38,49 @@ export const XrplToDarkTheme = {
     borderRadius: '12px',
     borderRadiusLg: '16px',
     borderRadiusXl: '20px',
-    background: 'linear-gradient(135deg, #000000 0%, #0a0a0f 25%, #050510 50%, #0a0a0a 75%, #000000 100%)',
-    backgroundAlt: 'linear-gradient(180deg, #050508 0%, #080810 50%, #050505 100%)',
-    backgroundAsset: 'radial-gradient(ellipse at top, #0c0c14 0%, #080808 50%, #050508 100%)',
-    glassMorphism: 'rgba(255, 255, 255, 0.04)',
-    cardBackground: 'rgba(10, 10, 10, 0.95)',
-    cardBackgroundSolid: '#0a0a0a',
-    surfaceElevated: 'rgba(15, 15, 15, 0.98)',
-    accentGlow: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 255, 255, 0.08), transparent)',
-    borderSubtle: 'rgba(255, 255, 255, 0.08)',
-    borderMedium: 'rgba(255, 255, 255, 0.15)'
+    background: 'linear-gradient(135deg, #000005 0%, #040820 25%, #020515 50%, #050a25 75%, #000008 100%)',
+    backgroundAlt: 'linear-gradient(180deg, #000008 0%, #030818 50%, #010510 100%)',
+    backgroundAsset: 'radial-gradient(ellipse at top, #0a1025 0%, #050815 50%, #020510 100%)',
+    glassMorphism: 'rgba(59, 130, 246, 0.05)',
+    cardBackground: 'rgba(5, 10, 25, 0.95)',
+    cardBackgroundSolid: '#050a18',
+    surfaceElevated: 'rgba(8, 15, 30, 0.98)',
+    accentGlow: 'radial-gradient(ellipse 80% 50% at 50% -20%, rgba(59, 130, 246, 0.18), transparent)',
+    borderSubtle: 'rgba(59, 130, 246, 0.1)',
+    borderMedium: 'rgba(59, 130, 246, 0.2)'
   },
 
   header: {
     height: '80px',
-    background: 'rgba(0, 0, 0, 0.9)',
-    boxShadow: '0 1px 0 rgba(255, 255, 255, 0.1)',
+    background: 'rgba(3, 8, 20, 0.95)',
+    boxShadow: '0 1px 0 rgba(59, 130, 246, 0.15)',
     backdropFilter: 'blur(20px)',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    borderBottom: '1px solid rgba(59, 130, 246, 0.15)',
     textColor: '#FFFFFF'
   },
 
   sidebar: {
-    background: '#000000',
+    background: '#020510',
     textColor: '#A0A0A0',
     width: '290px'
   },
 
   walletDialog: {
-    background: '#000000',
-    backgroundSecondary: '#080808',
-    border: 'rgba(255, 255, 255, 0.15)'
+    background: '#030815',
+    backgroundSecondary: '#050a18',
+    border: 'rgba(59, 130, 246, 0.2)'
   },
 
   currency: {
-    background1: 'rgba(255, 255, 255, 0.06)',
-    background2: 'rgba(255, 255, 255, 0.1)',
-    border: '1px solid rgba(255, 255, 255, 0.12)'
+    background1: 'rgba(59, 130, 246, 0.08)',
+    background2: 'rgba(59, 130, 246, 0.12)',
+    border: '1px solid rgba(59, 130, 246, 0.15)'
   },
 
   chart: {
-    background: 'rgba(0, 0, 0, 0.8)',
-    gridColor: 'rgba(255, 255, 255, 0.06)',
-    borderColor: 'rgba(255, 255, 255, 0.12)'
+    background: 'rgba(3, 8, 18, 0.9)',
+    gridColor: 'rgba(59, 130, 246, 0.08)',
+    borderColor: 'rgba(59, 130, 246, 0.15)'
   },
 
   typography: {

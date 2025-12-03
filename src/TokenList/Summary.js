@@ -95,13 +95,13 @@ const MetricBox = styled.div`
   justify-content: flex-start;
   align-items: flex-start;
   border-radius: 12px;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.02)' : 'rgba(0, 0, 0, 0.02)'};
-  border: 1.5px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)'};
+  border: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)'};
   transition: border-color 0.2s ease, background 0.2s ease;
 
   &:hover {
-    border-color: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.3)' : 'rgba(66, 133, 244, 0.25)'};
-    background: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.04)' : 'rgba(66, 133, 244, 0.03)'};
+    border-color: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.04)'};
   }
 
   @media (max-width: 600px) {
@@ -411,7 +411,7 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       } else if (maxMarketcap > 2000) {
         segmentColor = '#eab308'; // Yellow for medium
       } else {
-        segmentColor = '#147DFE'; // Default theme color
+        segmentColor = '#3b82f6'; // Default blue theme color
       }
 
       // Draw gradient fill for segment
@@ -450,12 +450,13 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           position: 'fixed',
           left: tooltip.x + 15,
           top: tooltip.y - 60,
-          background: darkMode ? '#1c1c1c' : 'white',
+          background: darkMode ? 'rgba(12, 12, 12, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(12px)',
           color: darkMode ? '#fff' : '#000',
-          border: '1px solid #147DFE',
+          border: darkMode ? '1px solid rgba(59, 130, 246, 0.2)' : '1px solid rgba(59, 130, 246, 0.3)',
           borderRadius: '12px',
           padding: '12px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          boxShadow: darkMode ? '0 4px 20px rgba(59, 130, 246, 0.1)' : '0 4px 20px rgba(59, 130, 246, 0.15)',
           minWidth: '200px',
           zIndex: 999999,
           pointerEvents: 'none',
@@ -464,10 +465,12 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
       >
         <div
           style={{
-            fontSize: '14px',
-            fontWeight: 400,
+            fontSize: '13px',
+            fontWeight: 500,
             marginBottom: '8px',
-            color: '#147DFE'
+            color: '#3b82f6',
+            paddingBottom: '8px',
+            borderBottom: darkMode ? '1px solid rgba(59, 130, 246, 0.15)' : '1px solid rgba(59, 130, 246, 0.2)'
           }}
         >
           {format(new Date(tooltip.data.originalDate), 'MMM dd, yyyy')}
@@ -506,12 +509,12 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
             <>
               <div
                 style={{
-                  borderTop: '1px solid rgba(20, 125, 254, 0.25)',
+                  borderTop: darkMode ? '1px solid rgba(59, 130, 246, 0.15)' : '1px solid rgba(59, 130, 246, 0.2)',
                   margin: '8px 0 4px',
-                  paddingTop: '4px'
+                  paddingTop: '6px'
                 }}
               >
-                <strong>Platforms:</strong>
+                <strong style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 500 }}>Platforms</strong>
               </div>
               {Object.entries(tooltip.data.platforms)
                 .filter(([, v]) => v > 0)
@@ -536,12 +539,12 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
           <>
             <div
               style={{
-                borderTop: '1px solid rgba(20, 125, 254, 0.25)',
+                borderTop: darkMode ? '1px solid rgba(59, 130, 246, 0.15)' : '1px solid rgba(59, 130, 246, 0.2)',
                 margin: '8px 0 4px',
-                paddingTop: '4px'
+                paddingTop: '6px'
               }}
             >
-              <strong>Top Tokens:</strong>
+              <strong style={{ color: '#3b82f6', fontSize: '11px', fontWeight: 500 }}>Top Tokens</strong>
             </div>
             {[...tooltip.data.tokensInvolved]
               .sort((a, b) => (b.marketcap || 0) - (a.marketcap || 0))
@@ -565,9 +568,9 @@ const TokenChart = ({ data, theme, activeFiatCurrency, darkMode }) => {
                       width: '16px',
                       height: '16px',
                       borderRadius: '50%',
-                      background: 'rgba(20, 125, 254, 0.13)',
+                      background: 'rgba(59, 130, 246, 0.1)',
                       objectFit: 'cover',
-                      border: '1px solid rgba(20, 125, 254, 0.25)'
+                      border: '1px solid rgba(59, 130, 246, 0.2)'
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -845,7 +848,7 @@ export default function Summary() {
         type: 'line',
         smooth: true,
         lineStyle: {
-          color: '#8C7CF0',
+          color: '#3b82f6',
           width: 1.5
         },
         areaStyle: {
@@ -858,11 +861,11 @@ export default function Summary() {
             colorStops: [
               {
                 offset: 0,
-                color: 'rgba(140, 124, 240, 0.3)'
+                color: 'rgba(59, 130, 246, 0.3)'
               },
               {
                 offset: 1,
-                color: 'rgba(140, 124, 240, 0)'
+                color: 'rgba(59, 130, 246, 0)'
               }
             ]
           }
@@ -878,10 +881,10 @@ export default function Summary() {
   }, []);
 
   const platformColors = {
-    'xrpl.to': '#8C7CF0',
-    XPMarket: '#FF6B6B',
-    FirstLedger: '#4ECDC4',
-    Sologenic: '#FFD93D',
+    'xrpl.to': '#3b82f6',
+    XPMarket: '#ef4444',
+    FirstLedger: '#10b981',
+    Sologenic: '#f59e0b',
     Other: '#6b7280'
   };
 

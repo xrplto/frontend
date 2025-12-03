@@ -13,7 +13,6 @@ import axios from 'axios';
 import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
-import Wallet from 'src/components/Wallet';
 
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -37,7 +36,9 @@ import {
   PawPrint,
   Sun,
   BadgeCheck,
-  Settings
+  Settings,
+  Wallet,
+  Trash2
 } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
@@ -52,6 +53,11 @@ const currencySymbols = {
 const currencyConfig = {
   availableFiatCurrencies: ['XRP', 'USD', 'EUR', 'JPY', 'CNH'],
   activeFiatCurrency: 'XRP'
+};
+
+const truncateAccount = (account, chars = 4) => {
+  if (!account) return '';
+  return `${account.slice(0, chars)}...${account.slice(-chars)}`;
 };
 
 
@@ -133,7 +139,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const router = useRouter();
   const isProcessing = useSelector(selectProcess);
   const metrics = useSelector(selectMetrics);
-  const { darkMode, setDarkMode, accountProfile, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme } = useContext(AppContext);
+  const { darkMode, setDarkMode, accountProfile, accountLogin, activeFiatCurrency, toggleFiatCurrency, themeName, setTheme, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
 
   // Check if current path matches for active state
@@ -166,6 +172,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [suggestedTokens, setSuggestedTokens] = useState([]);
   const [suggestedCollections, setSuggestedCollections] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [recentSearches, setRecentSearches] = useState([]);
+
+  // Load recent searches from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('recentSearches');
+    if (stored) setRecentSearches(JSON.parse(stored));
+  }, []);
 
   const tokensRef = useRef(null);
   const nftsRef = useRef(null);
@@ -247,9 +260,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   }, [searchQuery, searchOpen]);
 
   const handleSearchSelect = useCallback((item, type) => {
+    // Save to recent searches
+    const newRecent = { ...item, type, timestamp: Date.now() };
+    const updated = [newRecent, ...recentSearches.filter(r => r.slug !== item.slug)].slice(0, 5);
+    setRecentSearches(updated);
+    localStorage.setItem('recentSearches', JSON.stringify(updated));
+
     setSearchOpen(false);
     setSearchQuery('');
     window.location.href = type === 'token' ? `/token/${item.slug}` : `/collection/${item.slug}`;
+  }, [recentSearches]);
+
+  const clearRecentSearches = useCallback(() => {
+    setRecentSearches([]);
+    localStorage.removeItem('recentSearches');
   }, []);
 
   const openSearch = useCallback(() => {
@@ -260,7 +284,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   // Menu items
   const discoverMenuItems = [
     { path: '/trending', name: 'Trending', icon: <Flame size={16} className="text-orange-500" /> },
-    { path: '/spotlight', name: 'Spotlight', icon: <Search size={16} className="text-cyan-400" /> },
+    { path: '/spotlight', name: 'Spotlight', icon: <Search size={16} className="text-blue-400" /> },
     { path: '/most-viewed', name: 'Most Viewed', icon: <Eye size={16} className="text-purple-500" /> },
     { path: '/gainers/24h', name: 'Gainers', icon: <TrendingUp size={16} className="text-green-500" /> },
     { path: '/new', name: 'New', icon: <Newspaper size={16} className="text-yellow-500" /> }
@@ -278,7 +302,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   const analyticsItems = [
     { path: '/rsi-analysis', name: 'RSI Analysis', icon: <TrendingUp size={16} className="text-blue-500" /> },
-    { path: '/amm-pools', name: 'AMM Pools', icon: <Waves size={16} className="text-cyan-500" /> },
+    { path: '/amm-pools', name: 'AMM Pools', icon: <Waves size={16} className="text-blue-500" /> },
     ...(accountProfile ? [{ path: '/watchlist', name: 'Watchlist', icon: <Star size={16} className="text-yellow-500" /> }] : [])
   ];
 
@@ -377,13 +401,195 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <header
       className={cn(
         'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
-        isDark ? 'bg-[#0a0a0a] border-b border-white/[0.06]' : 'bg-white border-b border-gray-200'
+        isDark ? 'bg-[#0a0a0a]/95 backdrop-blur-md border-b border-blue-500/10' : 'bg-white/95 backdrop-blur-md border-b border-blue-200/50'
       )}
     >
       <div className="mx-auto flex w-full max-w-full items-center px-4 sm:px-6">
-        {/* Left: Logo */}
-        <div className="flex shrink-0 items-center">
+        {/* Left: Logo + Nav */}
+        <div className="flex shrink-0 items-center gap-6">
           <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '24px' }} />
+
+          {/* Desktop Navigation - Left Side */}
+          {isDesktop && (
+            <nav className="flex items-center">
+              {/* Tokens Dropdown */}
+              <div
+                ref={tokensRef}
+                className="relative"
+                onMouseEnter={handleTokensOpen}
+                onMouseLeave={handleTokensClose}
+              >
+                <a
+                  href="/"
+                  className={cn(
+                    'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                    isTokensActive
+                      ? isDark ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'
+                      : isDark ? 'text-white/70 hover:text-blue-400 hover:bg-blue-500/5' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                  )}
+                >
+                  Tokens
+                  <ChevronDown size={14} className={cn('transition-transform duration-150', tokensMenuOpen && 'rotate-180')} />
+                </a>
+
+                {tokensMenuOpen && (
+                  <div
+                    onMouseEnter={handleTokensOpen}
+                    onMouseLeave={handleTokensClose}
+                    className={cn(
+                      'absolute left-0 top-full z-[2147483647] mt-2 min-w-[480px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
+                      isDark
+                        ? 'border-blue-500/15 bg-[#0c0c0c]/95 backdrop-blur-xl shadow-2xl shadow-blue-500/5'
+                        : 'border-blue-200/50 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5'
+                    )}
+                  >
+                    <div className="flex gap-0 p-1.5">
+                      {/* Column 1: Launchpads */}
+                      <div className="min-w-[150px] p-2">
+                        <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          Launchpads
+                        </p>
+                        {launchpadItems.map((item) => (
+                          <div
+                            key={item.path}
+                            onClick={() => handleTokenOptionSelect(item.path)}
+                            className={cn(
+                              'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors duration-150',
+                              isActive(item.path)
+                                ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                                : isDark ? 'hover:bg-blue-500/5 hover:text-blue-400' : 'hover:bg-blue-50 hover:text-blue-600'
+                            )}
+                          >
+                            {item.icon}
+                            <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Column 2: Analytics */}
+                      <div className={cn('min-w-[130px] border-l p-2', isDark ? 'border-blue-500/10' : 'border-blue-200/30')}>
+                        <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          Analytics
+                        </p>
+                        {analyticsItems.map((item) => (
+                          <div
+                            key={item.path}
+                            onClick={() => handleTokenOptionSelect(item.path)}
+                            className={cn(
+                              'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors duration-150',
+                              isActive(item.path)
+                                ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                                : isDark ? 'hover:bg-blue-500/5 hover:text-blue-400' : 'hover:bg-blue-50 hover:text-blue-600'
+                            )}
+                          >
+                            {item.icon}
+                            <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Column 3: Discover */}
+                      <div className={cn('min-w-[120px] border-l p-2', isDark ? 'border-blue-500/10' : 'border-blue-200/30')}>
+                        <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
+                          Discover
+                        </p>
+                        {discoverMenuItems.map((item) => (
+                          <div
+                            key={item.path}
+                            onClick={() => handleTokenOptionSelect(item.path)}
+                            className={cn(
+                              'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors duration-150',
+                              isActive(item.path)
+                                ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                                : isDark ? 'hover:bg-blue-500/5 hover:text-blue-400' : 'hover:bg-blue-50 hover:text-blue-600'
+                            )}
+                          >
+                            {item.icon}
+                            <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* NFTs Dropdown */}
+              <div
+                ref={nftsRef}
+                className="relative"
+                onMouseEnter={handleNftsOpen}
+                onMouseLeave={handleNftsClose}
+              >
+                <a
+                  href="/collections"
+                  className={cn(
+                    'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                    isNftsActive
+                      ? isDark ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'
+                      : isDark ? 'text-white/70 hover:text-blue-400 hover:bg-blue-500/5' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                  )}
+                >
+                  NFTs
+                  <ChevronDown size={14} className={cn('transition-transform duration-150', nftsMenuOpen && 'rotate-180')} />
+                </a>
+
+                {nftsMenuOpen && (
+                  <div
+                    onMouseEnter={handleNftsOpen}
+                    onMouseLeave={handleNftsClose}
+                    className={cn(
+                      'absolute left-0 top-full z-[2147483647] mt-2 min-w-[160px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
+                      isDark
+                        ? 'border-blue-500/15 bg-[#0c0c0c]/95 backdrop-blur-xl shadow-2xl shadow-blue-500/5'
+                        : 'border-blue-200/50 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5'
+                    )}
+                  >
+                    <div className="p-1.5">
+                      {nftItems.map((item) => (
+                        <div
+                          key={item.path}
+                          onClick={() => handleTokenOptionSelect(item.path)}
+                          className={cn(
+                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors duration-150',
+                            isActive(item.path)
+                              ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                              : isDark ? 'hover:bg-blue-500/5 hover:text-blue-400' : 'hover:bg-blue-50 hover:text-blue-600'
+                          )}
+                        >
+                          {item.icon}
+                          <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <a
+                href="/swap"
+                className={cn(
+                  'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                  isActive('/swap')
+                    ? isDark ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'
+                    : isDark ? 'text-white/70 hover:text-blue-400 hover:bg-blue-500/5' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                )}
+              >
+                Swap
+              </a>
+              <a
+                href="/news"
+                className={cn(
+                  'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-200',
+                  isActive('/news')
+                    ? isDark ? 'text-blue-400 bg-blue-500/10' : 'text-blue-600 bg-blue-50'
+                    : isDark ? 'text-white/70 hover:text-blue-400 hover:bg-blue-500/5' : 'text-gray-600 hover:text-blue-600 hover:bg-blue-50/50'
+                )}
+              >
+                News
+              </a>
+            </nav>
+          )}
         </div>
 
         {/* Center: Search */}
@@ -391,8 +597,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div ref={searchRef} className="relative flex-1 flex justify-center px-8">
             <div
               className={cn(
-                "flex items-center gap-3 rounded-lg px-4 py-2 h-9 w-full max-w-[400px] cursor-text",
-                isDark ? "bg-white/[0.06] hover:bg-white/[0.08]" : "bg-gray-100 hover:bg-gray-200/70"
+                "flex items-center gap-3 rounded-xl px-4 py-2 h-9 w-full max-w-[420px] cursor-text border transition-all duration-200",
+                isDark
+                  ? "bg-white/[0.04] hover:bg-white/[0.06] border-blue-500/10 hover:border-blue-500/20"
+                  : "bg-blue-50/50 hover:bg-blue-50 border-blue-200/40 hover:border-blue-300/60"
               )}
               onClick={openSearch}
             >
@@ -419,16 +627,57 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             {/* Search Dropdown */}
             {searchOpen && (
               <div className={cn(
-                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[400px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
-                isDark ? "bg-[#111] border-white/10 shadow-2xl" : "bg-white border-gray-200 shadow-xl"
+                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[420px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
+                isDark
+                  ? "bg-[#0c0c0c]/95 backdrop-blur-xl border-blue-500/15 shadow-2xl shadow-blue-500/5"
+                  : "bg-white/95 backdrop-blur-xl border-blue-200/50 shadow-xl shadow-blue-500/5"
               )}>
+                {!searchQuery && recentSearches.length > 0 && (
+                  <div className="p-2">
+                    <div className="flex items-center gap-3 px-2 py-1">
+                      <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>Recent</span>
+                      <div
+                        className="flex-1 h-[14px]"
+                        style={{
+                          backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                          backgroundSize: '8px 5px'
+                        }}
+                      />
+                      <button onClick={clearRecentSearches} className={cn("flex items-center gap-1 text-[10px] uppercase tracking-wider transition-colors", isDark ? "text-white/30 hover:text-red-400" : "text-gray-400 hover:text-red-500")}>
+                        <Trash2 size={10} />
+                        Clear
+                      </button>
+                    </div>
+                    {recentSearches.map((item, i) => (
+                      <div key={i} onClick={() => handleSearchSelect(item, item.type)} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
+                        <img src={item.type === 'token' ? `https://s1.xrpl.to/token/${item.md5}` : `https://s1.xrpl.to/nft-collection/${item.logoImage}`} className={cn("w-7 h-7 object-cover", item.type === 'token' ? "rounded-full" : "rounded-lg")} alt="" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{item.user || item.name}</span>
+                            {(item.verified === true || item.verified === 'yes') && <BadgeCheck size={12} className="text-primary" />}
+                          </div>
+                          <p className="text-[11px] text-gray-500 truncate">{item.type === 'token' ? item.name : `${item.items?.toLocaleString()} items`}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
                 {!searchQuery && (suggestedTokens.length > 0 || suggestedCollections.length > 0) && (
                   <>
                     {suggestedTokens.length > 0 && (
                       <div className="p-2">
-                        <p className={cn("px-2 py-1 text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Popular</p>
+                        <div className="flex items-center gap-3 px-2 py-1">
+                          <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>Popular</span>
+                          <div
+                            className="flex-1 h-[14px]"
+                            style={{
+                              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                              backgroundSize: '8px 5px'
+                            }}
+                          />
+                        </div>
                         {suggestedTokens.map((token, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
+                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
                             <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
@@ -442,10 +691,21 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       </div>
                     )}
                     {suggestedCollections.length > 0 && (
-                      <div className={cn("p-2", suggestedTokens.length > 0 && (isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100"))}>
-                        <p className={cn("px-2 py-1 text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Trending NFTs</p>
+                      <div className="p-2">
+                        {suggestedTokens.length > 0 && (
+                          <div className="flex items-center gap-3 px-2 py-2">
+                            <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>NFTs</span>
+                            <div
+                              className="flex-1 h-[14px]"
+                              style={{
+                                backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                                backgroundSize: '8px 5px'
+                              }}
+                            />
+                          </div>
+                        )}
                         {suggestedCollections.map((col, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
+                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
                             <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
@@ -460,41 +720,49 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     )}
                   </>
                 )}
-                {searchQuery && (searchResults.tokens.length > 0 || searchResults.collections.length > 0) && (
-                  <>
+                {searchQuery && searchResults.tokens.length > 0 && (
+                  <div className="p-2">
+                    {searchResults.tokens.map((token, i) => (
+                      <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
+                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                            {token.verified && <BadgeCheck size={12} className="text-primary" />}
+                          </div>
+                          <p className="text-[11px] text-gray-500 truncate">{token.name}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {searchQuery && searchResults.collections.length > 0 && (
+                  <div className="p-2">
                     {searchResults.tokens.length > 0 && (
-                      <div className="p-2">
-                        {searchResults.tokens.map((token, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
-                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
-                                {token.verified && <BadgeCheck size={12} className="text-primary" />}
-                              </div>
-                              <p className="text-[11px] text-gray-500 truncate">{token.name}</p>
-                            </div>
-                          </div>
-                        ))}
+                      <div className="flex items-center gap-3 px-2 py-2">
+                        <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>NFTs</span>
+                        <div
+                          className="flex-1 h-[14px]"
+                          style={{
+                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                            backgroundSize: '8px 5px'
+                          }}
+                        />
                       </div>
                     )}
-                    {searchResults.collections.length > 0 && (
-                      <div className={cn("p-2", searchResults.tokens.length > 0 && (isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100"))}>
-                        {searchResults.collections.map((col, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
-                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
-                            <div className="flex-1 min-w-0">
-                              <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
-                                {col.verified === 'yes' && <BadgeCheck size={12} className="text-primary" />}
-                              </div>
-                              <p className="text-[11px] text-gray-500">{col.items?.toLocaleString()} items</p>
-                            </div>
+                    {searchResults.collections.map((col, i) => (
+                      <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
+                        <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                            {col.verified === 'yes' && <BadgeCheck size={12} className="text-primary" />}
                           </div>
-                        ))}
+                          <p className="text-[11px] text-gray-500">{col.items?.toLocaleString()} items</p>
+                        </div>
                       </div>
-                    )}
-                  </>
+                    ))}
+                  </div>
                 )}
                 {searchQuery && !searchLoading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
                   <div className="py-6 text-center">
@@ -506,188 +774,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           </div>
         )}
 
-        {/* Desktop Navigation */}
-        {isDesktop && (
-          <nav className="flex items-center">
-            {/* Tokens Dropdown */}
-            <div
-              ref={tokensRef}
-              className="relative"
-              onMouseEnter={handleTokensOpen}
-              onMouseLeave={handleTokensClose}
-            >
-              <a
-                href="/"
-                className={cn(
-                  'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-150',
-                  isTokensActive
-                    ? isDark ? 'text-white bg-white/[0.08]' : 'text-gray-900 bg-gray-100'
-                    : isDark ? 'text-white/70 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                )}
-              >
-                Tokens
-                <ChevronDown size={14} className={cn('transition-transform duration-150', tokensMenuOpen && 'rotate-180')} />
-              </a>
-
-              {tokensMenuOpen && (
-                <div
-                  onMouseEnter={handleTokensOpen}
-                  onMouseLeave={handleTokensClose}
-                  className={cn(
-                    'absolute left-0 top-full z-[2147483647] mt-2 min-w-[480px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                    isDark ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
-                  )}
-                >
-                  <div className="flex gap-0 p-1.5">
-                    {/* Column 1: Launchpads */}
-                    <div className="min-w-[150px] p-2">
-                      <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        Launchpads
-                      </p>
-                      {launchpadItems.map((item) => (
-                        <div
-                          key={item.path}
-                          onClick={() => handleTokenOptionSelect(item.path)}
-                          className={cn(
-                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors duration-100',
-                            isActive(item.path)
-                              ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                              : isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50'
-                          )}
-                        >
-                          {item.icon}
-                          <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Column 2: Analytics */}
-                    <div className={cn('min-w-[130px] border-l p-2', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
-                      <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        Analytics
-                      </p>
-                      {analyticsItems.map((item) => (
-                        <div
-                          key={item.path}
-                          onClick={() => handleTokenOptionSelect(item.path)}
-                          className={cn(
-                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors duration-100',
-                            isActive(item.path)
-                              ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                              : isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50'
-                          )}
-                        >
-                          {item.icon}
-                          <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
-                        </div>
-                      ))}
-                    </div>
-
-                    {/* Column 3: Discover */}
-                    <div className={cn('min-w-[120px] border-l p-2', isDark ? 'border-white/[0.06]' : 'border-gray-100')}>
-                      <p className={cn('mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
-                        Discover
-                      </p>
-                      {discoverMenuItems.map((item) => (
-                        <div
-                          key={item.path}
-                          onClick={() => handleTokenOptionSelect(item.path)}
-                          className={cn(
-                            'flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2 transition-colors duration-100',
-                            isActive(item.path)
-                              ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                              : isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50'
-                          )}
-                        >
-                          {item.icon}
-                          <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* NFTs Dropdown */}
-            <div
-              ref={nftsRef}
-              className="relative"
-              onMouseEnter={handleNftsOpen}
-              onMouseLeave={handleNftsClose}
-            >
-              <a
-                href="/collections"
-                className={cn(
-                  'mr-1 inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-150',
-                  isNftsActive
-                    ? isDark ? 'text-white bg-white/[0.08]' : 'text-gray-900 bg-gray-100'
-                    : isDark ? 'text-white/70 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-                )}
-              >
-                NFTs
-                <ChevronDown size={14} className={cn('transition-transform duration-150', nftsMenuOpen && 'rotate-180')} />
-              </a>
-
-              {nftsMenuOpen && (
-                <div
-                  onMouseEnter={handleNftsOpen}
-                  onMouseLeave={handleNftsClose}
-                  className={cn(
-                    'absolute left-0 top-full z-[2147483647] mt-2 min-w-[160px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                    isDark ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
-                  )}
-                >
-                  <div className="p-1.5">
-                    {nftItems.map((item) => (
-                      <div
-                        key={item.path}
-                        onClick={() => handleTokenOptionSelect(item.path)}
-                        className={cn(
-                          'flex cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 transition-colors duration-100',
-                          isActive(item.path)
-                            ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                            : isDark ? 'hover:bg-white/[0.05]' : 'hover:bg-gray-50'
-                        )}
-                      >
-                        {item.icon}
-                        <span className={cn('text-[13px]', isActive(item.path) ? '' : isDark ? 'text-white/80' : 'text-gray-700')}>{item.name}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            <a
-              href="/swap"
-              className={cn(
-                'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-150',
-                isActive('/swap')
-                  ? isDark ? 'text-white bg-white/[0.08]' : 'text-gray-900 bg-gray-100'
-                  : isDark ? 'text-white/70 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              )}
-            >
-              Swap
-            </a>
-            <a
-              href="/news"
-              className={cn(
-                'mr-1 inline-flex items-center rounded-lg px-3 py-1.5 text-[13px] font-medium transition-all duration-150',
-                isActive('/news')
-                  ? isDark ? 'text-white bg-white/[0.08]' : 'text-gray-900 bg-gray-100'
-                  : isDark ? 'text-white/70 hover:text-white hover:bg-white/[0.05]' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
-              )}
-            >
-              News
-            </a>
-          </nav>
-        )}
-
         {/* Mobile Full Search */}
         {fullSearch && isTabletOrMobile && (
           <div className="flex-1 px-2">
-            <div className={cn("flex items-center gap-2 rounded-lg px-3 h-9", isDark ? "bg-white/[0.06]" : "bg-gray-100")}>
+            <div className={cn("flex items-center gap-2 rounded-xl px-3 h-9 border transition-all", isDark ? "bg-white/[0.04] border-blue-500/20" : "bg-blue-50/50 border-blue-200/40")}>
               <Search size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
               <input
                 autoFocus
@@ -715,7 +805,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               onClick={handleFullSearch}
               className={cn(
                 'flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200',
-                isDark ? 'text-white/60 hover:text-white hover:bg-white/[0.06]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/80'
+                isDark ? 'text-white/60 hover:text-blue-400 hover:bg-blue-500/10' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-50'
               )}
             >
               <Search size={18} />
@@ -729,8 +819,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/watchlist"
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150',
-                  isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                  'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
+                  isDark ? 'text-white/50 hover:text-blue-400 hover:bg-blue-500/10' : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50'
                 )}
               >
                 <Star size={16} />
@@ -741,8 +831,8 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <button
                   onClick={handleSettingsToggle}
                   className={cn(
-                    'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150',
-                    isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                    'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-200',
+                    isDark ? 'text-white/50 hover:text-blue-400 hover:bg-blue-500/10' : 'text-gray-400 hover:text-blue-500 hover:bg-blue-50'
                   )}
                 >
                   <Settings size={16} />
@@ -752,7 +842,9 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <div
                     className={cn(
                       'absolute right-0 top-10 z-[2147483647] min-w-[180px] overflow-hidden rounded-xl border animate-in fade-in slide-in-from-top-1 duration-150',
-                      isDark ? 'border-white/[0.08] bg-[#0d0d0d] shadow-2xl shadow-black/70' : 'border-gray-200 bg-white shadow-xl shadow-black/[0.08]'
+                      isDark
+                        ? 'border-blue-500/15 bg-[#0c0c0c]/95 backdrop-blur-xl shadow-2xl shadow-blue-500/5'
+                        : 'border-blue-200/50 bg-white/95 backdrop-blur-xl shadow-xl shadow-blue-500/5'
                     )}
                   >
                     <div className="p-1.5">
@@ -769,20 +861,20 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors duration-100',
+                            'flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 transition-colors duration-150',
                             currency === activeFiatCurrency
-                              ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                              : isDark ? 'text-white/80 hover:bg-white/[0.05]' : 'text-gray-700 hover:bg-gray-50'
+                              ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                              : isDark ? 'text-white/80 hover:bg-blue-500/5 hover:text-blue-400' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
                           )}
                         >
                           <span className="text-[13px]">
                             {currencySymbols[currency] || ''}{currency}
                           </span>
-                          {currency === activeFiatCurrency && <Check size={13} className="text-primary" />}
+                          {currency === activeFiatCurrency && <Check size={13} className={isDark ? "text-blue-400" : "text-blue-600"} />}
                         </button>
                       ))}
 
-                      <div className={cn('my-1.5 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')} />
+                      <div className={cn('my-1.5 border-t', isDark ? 'border-blue-500/10' : 'border-blue-200/30')} />
 
                       {/* Theme Section */}
                       <p className={cn('flex items-center gap-2 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
@@ -800,17 +892,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                             setSettingsMenuOpen(false);
                           }}
                           className={cn(
-                            'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors duration-100',
+                            'flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-colors duration-150',
                             themeName === themeOption.id
-                              ? isDark ? 'bg-white/[0.08] text-white' : 'bg-primary/10 text-primary'
-                              : isDark ? 'text-white/80 hover:bg-white/[0.05]' : 'text-gray-700 hover:bg-gray-50'
+                              ? isDark ? 'bg-blue-500/15 text-blue-400' : 'bg-blue-500/10 text-blue-600'
+                              : isDark ? 'text-white/80 hover:bg-blue-500/5 hover:text-blue-400' : 'text-gray-700 hover:bg-blue-50 hover:text-blue-600'
                           )}
                         >
                           {themeOption.icon}
                           <span className="flex-1 text-left text-[13px]">
                             {themeOption.name}
                           </span>
-                          {themeName === themeOption.id && <Check size={13} className="text-primary" />}
+                          {themeName === themeOption.id && <Check size={13} className={isDark ? "text-blue-400" : "text-blue-600"} />}
                         </button>
                       ))}
                     </div>
@@ -822,14 +914,44 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               <a
                 href="/launch"
                 className={cn(
-                  'flex h-8 items-center rounded-lg px-4 text-[13px] font-medium transition-all duration-150',
-                  isDark ? 'bg-white text-black hover:bg-white/90' : 'bg-gray-900 text-white hover:bg-gray-800'
+                  'flex h-8 items-center rounded-lg px-4 text-[13px] font-medium transition-all duration-200 border',
+                  isDark
+                    ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
+                    : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
                 )}
               >
                 Launch
               </a>
 
-              <Wallet buttonOnly={true} />
+              <button
+                onClick={() => setOpenWalletModal(true)}
+                className={cn(
+                  'flex h-8 items-center gap-2 rounded-lg px-4 text-[13px] font-medium transition-all duration-200 border',
+                  accountProfile
+                    ? isDark
+                      ? 'bg-white/[0.04] text-white border-blue-500/20 hover:border-blue-500/40 hover:bg-blue-500/5'
+                      : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                    : isDark
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
+                      : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
+                )}
+              >
+                {accountProfile ? (
+                  <>
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                      <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                    </span>
+                    <span className="font-mono">{truncateAccount(accountLogin, 4)}</span>
+                    <ChevronDown size={12} className={isDark ? 'text-white/40' : 'text-gray-400'} />
+                  </>
+                ) : (
+                  <>
+                    <Wallet size={14} />
+                    <span>Connect</span>
+                  </>
+                )}
+              </button>
             </div>
           )}
 
@@ -840,7 +962,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
               onClick={() => toggleDrawer(true)}
               className={cn(
                 'ml-1 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-200',
-                isDark ? 'text-white/60 hover:text-white hover:bg-white/[0.06]' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100/80'
+                isDark ? 'text-white/60 hover:text-blue-400 hover:bg-blue-500/10' : 'text-gray-500 hover:text-blue-500 hover:bg-blue-50'
               )}
             >
               <Menu size={18} />
@@ -852,11 +974,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
       {/* Mobile Drawer */}
       {openDrawer && (
         <>
-          <div className="fixed inset-0 z-[2147483646] bg-black/50 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => toggleDrawer(false)} />
+          <div className="fixed inset-0 z-[2147483646] bg-black/60 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => toggleDrawer(false)} />
           <div
             className={cn(
               'fixed bottom-0 right-0 top-0 z-[2147483647] w-[280px] animate-in slide-in-from-right duration-200',
-              isDark ? 'bg-[#0d0d0d] border-l border-white/[0.08]' : 'bg-white border-l border-gray-200'
+              isDark ? 'bg-[#0a0a0a]/95 backdrop-blur-xl border-l border-blue-500/15' : 'bg-white/95 backdrop-blur-xl border-l border-blue-200/50'
             )}
             style={{ overflowY: 'auto', height: '100vh', paddingBottom: '80px' }}
           >
@@ -891,7 +1013,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </button>
 
                 {tokensExpanded && (
-                  <div className={cn('ml-2 space-y-0.5 border-l pl-2', isDark ? 'border-white/[0.06]' : 'border-gray-200')}>
+                  <div className={cn('ml-2 space-y-0.5 border-l pl-2', isDark ? 'border-blue-500/15' : 'border-blue-200/40')}>
                     <p className={cn('px-2 py-1 text-[10px] font-semibold uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>
                       Launchpads
                     </p>
@@ -969,7 +1091,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 </button>
 
                 {nftsExpanded && (
-                  <div className={cn('ml-2 space-y-0.5 border-l pl-2', isDark ? 'border-white/[0.06]' : 'border-gray-200')}>
+                  <div className={cn('ml-2 space-y-0.5 border-l pl-2', isDark ? 'border-blue-500/15' : 'border-blue-200/40')}>
                     {nftItems.map((item) => (
                       <a
                         key={item.path}
@@ -1027,27 +1149,59 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   Watchlist
                 </a>
 
-                <div className={cn('my-2 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')} />
+                <div className={cn('my-2 border-t', isDark ? 'border-blue-500/10' : 'border-blue-200/30')} />
 
                 <a
                   href="/launch"
                   onClick={() => toggleDrawer(false)}
                   className={cn(
-                    'flex items-center justify-center rounded-lg px-4 py-2 text-[13px] font-medium transition-colors duration-100',
-                    isDark ? 'bg-white text-black hover:bg-white/90' : 'bg-gray-900 text-white hover:bg-gray-800'
+                    'flex items-center justify-center rounded-lg px-4 py-2 text-[13px] font-medium transition-all duration-200 border',
+                    isDark
+                      ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
+                      : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
                   )}
                 >
                   Launch
                 </a>
               </nav>
 
-              <div className={cn('my-3 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')} />
+              <div className={cn('my-3 border-t', isDark ? 'border-blue-500/10' : 'border-blue-200/30')} />
 
               <div className="px-1">
-                <Wallet buttonOnly={true} />
+                <button
+                  onClick={() => {
+                    setOpenWalletModal(true);
+                    toggleDrawer(false);
+                  }}
+                  className={cn(
+                    'flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-all duration-200 border',
+                    accountProfile
+                      ? isDark
+                        ? 'bg-white/[0.04] text-white border-blue-500/20 hover:border-blue-500/40 hover:bg-blue-500/5'
+                        : 'bg-gray-50 text-gray-900 border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      : isDark
+                        ? 'bg-blue-500/10 text-blue-400 border-blue-500/30 hover:bg-blue-500/20 hover:border-blue-500/50'
+                        : 'bg-blue-500 text-white border-blue-500 hover:bg-blue-600'
+                  )}
+                >
+                  {accountProfile ? (
+                    <>
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      </span>
+                      <span className="font-mono">{truncateAccount(accountLogin, 4)}</span>
+                    </>
+                  ) : (
+                    <>
+                      <Wallet size={14} />
+                      <span>Connect Wallet</span>
+                    </>
+                  )}
+                </button>
               </div>
 
-              <div className={cn('my-3 border-t', isDark ? 'border-white/[0.06]' : 'border-gray-100')} />
+              <div className={cn('my-3 border-t', isDark ? 'border-blue-500/10' : 'border-blue-200/30')} />
 
               {/* Currency */}
               <div className="px-1">
@@ -1060,10 +1214,10 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       key={currency}
                       onClick={() => toggleFiatCurrency(currency)}
                       className={cn(
-                        'rounded-lg px-3 py-2 text-[13px] transition-colors',
+                        'rounded-lg px-3 py-2 text-[13px] transition-colors duration-150',
                         currency === activeFiatCurrency
-                          ? isDark ? 'bg-white/[0.12] text-white font-medium' : 'bg-primary/10 text-primary font-medium'
-                          : isDark ? 'text-white/60 hover:bg-white/[0.06]' : 'text-gray-600 hover:bg-gray-50'
+                          ? isDark ? 'bg-blue-500/15 text-blue-400 font-medium' : 'bg-blue-500/10 text-blue-600 font-medium'
+                          : isDark ? 'text-white/60 hover:bg-blue-500/5 hover:text-blue-400' : 'text-gray-600 hover:bg-blue-50 hover:text-blue-600'
                       )}
                     >
                       {currencySymbols[currency] || ''}{currency}
