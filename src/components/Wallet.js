@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import Image from 'next/image';
-import { Wallet as XRPLWallet, encodeSeed } from 'xrpl';
+import { Wallet as XRPLWallet, encodeSeed, Client, xrpToDrops, dropsToXrp, isValidAddress } from 'xrpl';
 
 // Lazy load heavy dependencies
 let startRegistration, startAuthentication, CryptoJS, scrypt, base64URLStringToBuffer;
@@ -31,7 +31,15 @@ import {
   ArrowLeft,
   Check,
   AlertTriangle,
-  Send
+  Send,
+  History,
+  ArrowUpRight,
+  ArrowDownLeft,
+  Loader2,
+  ExternalLink,
+  RefreshCw,
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 // Context
@@ -456,10 +464,159 @@ const WalletContent = ({
   setBackupAgreed,
   walletPage,
   setWalletPage,
-  walletsPerPage
+  walletsPerPage,
+  walletStorage,
+  isFullScreen,
+  setIsFullScreen
 }) => {
   const needsBackup = typeof window !== 'undefined' && localStorage.getItem(`wallet_needs_backup_${accountLogin}`);
   const [showAllAccounts, setShowAllAccounts] = useState(false);
+  const [addressCopied, setAddressCopied] = useState(false);
+  const [showQrCode, setShowQrCode] = useState(false);
+
+  // Fullscreen tab state
+  const [activeTab, setActiveTab] = useState('send');
+
+  // Send state
+  const [recipient, setRecipient] = useState('');
+  const [amount, setAmount] = useState('');
+  const [destinationTag, setDestinationTag] = useState('');
+  const [sendPassword, setSendPassword] = useState('');
+  const [showSendPassword, setShowSendPassword] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [sendError, setSendError] = useState('');
+  const [txResult, setTxResult] = useState(null);
+  const [isUnlocked, setIsUnlocked] = useState(false);
+  const [storedPassword, setStoredPassword] = useState(null);
+
+  // History state
+  const [transactions, setTransactions] = useState([]);
+  const [loadingHistory, setLoadingHistory] = useState(false);
+
+  const handleCopyAddress = () => {
+    if (accountLogin) {
+      navigator.clipboard.writeText(accountLogin);
+      setAddressCopied(true);
+      openSnackbar('Address copied', 'success');
+      setTimeout(() => setAddressCopied(false), 2000);
+    }
+  };
+
+  // Check unlock status
+  useEffect(() => {
+    const checkUnlock = async () => {
+      if (!accountProfile?.provider || !accountProfile?.provider_id || !walletStorage) return;
+      try {
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        const pwd = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+        if (pwd) {
+          const walletData = await walletStorage.getWalletByAddress(accountLogin, pwd);
+          if (walletData?.seed) {
+            setStoredPassword(pwd);
+            setIsUnlocked(true);
+          }
+        }
+      } catch (err) { /* ignore */ }
+    };
+    if (isFullScreen) checkUnlock();
+  }, [accountProfile, accountLogin, walletStorage, isFullScreen]);
+
+  // Load history when tab changes
+  useEffect(() => {
+    if (isFullScreen && activeTab === 'history' && accountLogin) {
+      loadTransactionHistory();
+    }
+  }, [isFullScreen, activeTab, accountLogin]);
+
+  const loadTransactionHistory = async () => {
+    if (!accountLogin) return;
+    setLoadingHistory(true);
+    try {
+      const response = await fetch(`https://api.xrpl.to/api/account/${accountLogin}/transactions?limit=20`);
+      if (response.ok) {
+        const data = await response.json();
+        setTransactions(data.transactions || []);
+      }
+    } catch (err) { /* ignore */ }
+    finally { setLoadingHistory(false); }
+  };
+
+  const availableBalance = parseFloat(accountBalance?.curr1?.value || '0');
+  const maxSendable = Math.max(0, availableBalance - 10.000012);
+
+  const validateSend = () => {
+    if (!recipient) return 'Enter recipient address';
+    if (!isValidAddress(recipient)) return 'Invalid XRPL address';
+    if (recipient === accountLogin) return 'Cannot send to yourself';
+    if (!amount || parseFloat(amount) <= 0) return 'Enter amount';
+    if (parseFloat(amount) > maxSendable) return 'Insufficient balance';
+    if (!isUnlocked && !sendPassword) return 'Enter password';
+    return null;
+  };
+
+  const handleSend = async () => {
+    const error = validateSend();
+    if (error) { setSendError(error); return; }
+
+    setIsSending(true);
+    setSendError('');
+    setTxResult(null);
+
+    try {
+      const pwdToUse = isUnlocked && storedPassword ? storedPassword : sendPassword;
+      let wallet;
+      if (accountProfile?.wallet_type === 'oauth') {
+        const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+        wallet = await walletStorage.findWalletBySocialId(walletId, pwdToUse, accountLogin);
+      } else {
+        wallet = await walletStorage.getWalletByAddress(accountLogin, pwdToUse);
+      }
+
+      if (!wallet?.seed) throw new Error('Incorrect password');
+
+      const client = new Client('wss://xrplcluster.com');
+      await client.connect();
+
+      try {
+        const payment = {
+          TransactionType: 'Payment',
+          Account: accountLogin,
+          Destination: recipient,
+          Amount: xrpToDrops(amount)
+        };
+        if (destinationTag) payment.DestinationTag = parseInt(destinationTag);
+
+        const xrplWallet = XRPLWallet.fromSeed(wallet.seed);
+        const prepared = await client.autofill(payment);
+        const signed = xrplWallet.sign(prepared);
+        const result = await client.submitAndWait(signed.tx_blob);
+
+        if (result.result.meta.TransactionResult === 'tesSUCCESS') {
+          setTxResult({ success: true, hash: result.result.hash, amount, recipient });
+          openSnackbar('Transaction successful', 'success');
+          setRecipient(''); setAmount(''); setDestinationTag('');
+          if (!isUnlocked) setSendPassword('');
+        } else {
+          throw new Error(result.result.meta.TransactionResult);
+        }
+      } finally { await client.disconnect(); }
+    } catch (err) {
+      setSendError(err.message || 'Transaction failed');
+    } finally { setIsSending(false); }
+  };
+
+  const formatDate = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp * 1000);
+    const diff = Date.now() - date.getTime();
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)}m ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)}h ago`;
+    if (diff < 604800000) return `${Math.floor(diff / 86400000)}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const truncAddr = (addr, len = 6) => addr ? `${addr.slice(0, len)}...${addr.slice(-4)}` : '';
 
   // Show backup section instead of wallet when downloading
   if (showBackupPassword) {
@@ -593,15 +750,31 @@ const WalletContent = ({
         "px-4 py-3 flex items-center justify-between",
         isDark ? "border-b border-white/[0.06]" : "border-b border-gray-100"
       )}>
-        <div className="flex items-center gap-2.5">
+        <button
+          onClick={handleCopyAddress}
+          className={cn(
+            "flex items-center gap-2 px-2 py-1 -ml-2 rounded-lg transition-all",
+            addressCopied
+              ? "bg-emerald-500/10"
+              : isDark ? "hover:bg-white/5" : "hover:bg-gray-100"
+          )}
+        >
           <div className="relative">
-            <div className="w-2 h-2 rounded-full bg-emerald-400" />
-            <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />
+            <div className={cn("w-2 h-2 rounded-full", addressCopied ? "bg-emerald-400" : "bg-emerald-400")} />
+            {!addressCopied && <div className="absolute inset-0 w-2 h-2 rounded-full bg-emerald-400 animate-ping opacity-75" />}
           </div>
-          <span className={cn("font-mono text-xs", isDark ? "text-white/60" : "text-gray-500")}>
+          <span className={cn(
+            "font-mono text-xs",
+            addressCopied ? "text-emerald-500" : isDark ? "text-white/60" : "text-gray-500"
+          )}>
             {truncateAccount(accountLogin, 6)}
           </span>
-        </div>
+          {addressCopied ? (
+            <Check size={12} className="text-emerald-500" />
+          ) : (
+            <Copy size={12} className={isDark ? "text-white/40" : "text-gray-400"} />
+          )}
+        </button>
         <div className="flex items-center gap-2">
           {needsBackup && (
             <button
@@ -648,18 +821,20 @@ const WalletContent = ({
             <Send size={13} />
             Send
           </a>
-          <a
-            href="/wallet?tab=receive"
+          <button
+            onClick={() => setShowQrCode(!showQrCode)}
             className={cn(
               "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              isDark
-                ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              showQrCode
+                ? "bg-primary/10 text-primary"
+                : isDark
+                  ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
             )}
           >
             <QrCode size={13} />
             Receive
-          </a>
+          </button>
           <button
             onClick={onBackupSeed}
             className={cn(
@@ -673,6 +848,44 @@ const WalletContent = ({
             Backup
           </button>
         </div>
+
+        {/* QR Code Section - Collapsible */}
+        {showQrCode && (
+          <div className={cn(
+            "mt-4 mx-4 p-4 rounded-xl",
+            isDark ? "bg-white/[0.03]" : "bg-gray-50"
+          )}>
+            <div className="flex justify-center mb-3">
+              <div className="p-2 bg-white rounded-xl">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`}
+                  alt="Wallet QR"
+                  className="w-[140px] h-[140px]"
+                />
+              </div>
+            </div>
+            <div className="text-center">
+              <p className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
+                Full Address
+              </p>
+              <p className={cn("font-mono text-[11px] break-all leading-relaxed px-2", isDark ? "text-white/70" : "text-gray-600")}>
+                {accountLogin}
+              </p>
+              <button
+                onClick={handleCopyAddress}
+                className={cn(
+                  "mt-3 w-full py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all",
+                  addressCopied
+                    ? "bg-emerald-500/10 text-emerald-500"
+                    : "bg-primary text-white hover:bg-primary/90"
+                )}
+              >
+                {addressCopied ? <Check size={14} /> : <Copy size={14} />}
+                {addressCopied ? 'Copied!' : 'Copy Address'}
+              </button>
+            </div>
+          </div>
+        )}
 
       </div>
 

@@ -180,6 +180,32 @@ export default function NFTActions({ nft }) {
   const [sync, setSync] = useState(0);
   const [lowestSellOffer, setLowestSellOffer] = useState(null);
   const [offerAmount, setOfferAmount] = useState('');
+  const [debugInfo, setDebugInfo] = useState(null);
+
+  // Debug info for wallet
+  useEffect(() => {
+    const loadDebugInfo = async () => {
+      if (!accountProfile) { setDebugInfo(null); return; }
+      const walletKeyId = accountProfile.walletKeyId ||
+        (accountProfile.wallet_type === 'device' ? accountProfile.deviceKeyId : null) ||
+        (accountProfile.provider && accountProfile.provider_id ? `${accountProfile.provider}_${accountProfile.provider_id}` : null);
+      let seed = accountProfile.seed || null;
+      if (!seed && (accountProfile.wallet_type === 'oauth' || accountProfile.wallet_type === 'social')) {
+        try {
+          const { EncryptedWalletStorage } = await import('src/utils/encryptedWalletStorage');
+          const walletStorage = new EncryptedWalletStorage();
+          const walletId = `${accountProfile.provider}_${accountProfile.provider_id}`;
+          const storedPassword = await walletStorage.getSecureItem(`wallet_pwd_${walletId}`);
+          if (storedPassword) {
+            const walletData = await walletStorage.getWallet(accountProfile.account, storedPassword);
+            seed = walletData?.seed || 'encrypted';
+          }
+        } catch (e) { seed = 'error: ' + e.message; }
+      }
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, accountIndex: accountProfile.accountIndex, seed: seed || 'N/A' });
+    };
+    loadDebugInfo();
+  }, [accountProfile]);
 
   // Close share dropdown on outside click
   useEffect(() => {
@@ -937,6 +963,18 @@ export default function NFTActions({ nft }) {
               <h3 className={cn('text-sm font-normal mb-2', isDark ? 'text-white' : 'text-gray-900')}>History</h3>
               <HistoryList nft={nft} />
             </div>
+
+            {/* Debug Info */}
+            {debugInfo && (
+              <div className={cn('mt-4 p-3 rounded-lg border text-[11px] font-mono', isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-gray-50')}>
+                <div className={isDark ? 'text-gray-400' : 'text-gray-500'}>
+                  <div>Type: {debugInfo.wallet_type}</div>
+                  <div>Account: {debugInfo.account}</div>
+                  <div>Index: {debugInfo.accountIndex}</div>
+                  <div>Seed: {debugInfo.seed?.substring(0, 8)}...</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
