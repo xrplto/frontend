@@ -642,3 +642,37 @@ const key = await crypto.subtle.deriveKey({
 
 // Encryption format: base64(salt || iv || ciphertext)
 ```
+
+## XRPL Seed Types & Algorithm Detection
+
+XRPL supports two cryptographic algorithms. **The xrpl.js library defaults to ed25519, but most seeds are secp256k1.** Always detect the algorithm from the seed prefix.
+
+### Seed Format Detection
+| Prefix | Algorithm | Example |
+|--------|-----------|---------|
+| `sEd...` | ed25519 | `sEdVHf6gL...` |
+| `s...` (not sEd) | secp256k1 | `snGi55VXg...` |
+
+### Implementation
+```javascript
+// Auto-detect algorithm from seed prefix
+const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
+
+// CORRECT - Always specify algorithm
+const wallet = XRPLWallet.fromSeed(seed, { algorithm: getAlgorithmFromSeed(seed) });
+
+// WRONG - Library defaults to ed25519, will produce wrong address for secp256k1 seeds
+const wallet = XRPLWallet.fromSeed(seed);
+```
+
+### Validation
+```javascript
+const BASE58_ALPHABET = 'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz';
+const validateSeed = (seed) => {
+  if (!seed.startsWith('s')) return { valid: false, error: 'Seed must start with "s"' };
+  if (seed.length < 20 || seed.length > 35) return { valid: false, error: 'Invalid length' };
+  const invalidChar = [...seed].find(c => !BASE58_ALPHABET.includes(c));
+  if (invalidChar) return { valid: false, error: `Invalid character "${invalidChar}"` };
+  return { valid: true };
+};
+```

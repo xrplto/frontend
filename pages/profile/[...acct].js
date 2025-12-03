@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { Wallet } from 'lucide-react';
 
 const OverView = ({ account }) => {
-  const { themeName, accountProfile } = useContext(AppContext);
+  const { themeName, accountProfile, setOpenWalletModal } = useContext(AppContext);
   const isDark = themeName === 'XrplToDarkTheme';
   const isOwnAccount = accountProfile?.account === account;
   const [data, setData] = useState(null);
@@ -133,13 +133,13 @@ const OverView = ({ account }) => {
             </span>
           )}
           {isOwnAccount && (
-            <Link
-              href="/wallet"
+            <button
+              onClick={() => setOpenWalletModal(true)}
               className="flex items-center gap-1.5 text-[12px] px-3 py-1 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
             >
               <Wallet size={14} />
               Manage
-            </Link>
+            </button>
           )}
           {data?.firstTradeDate && (
             <span className={cn("text-[0.9rem] ml-auto", isDark ? "text-white/50" : "text-gray-500")}>

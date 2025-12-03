@@ -155,12 +155,17 @@ const DialogContent = ({ children, sx }) => (
 );
 
 // StyledPopoverPaper component - Enhanced with subtle gradient border
-const StyledPopoverPaper = ({ children, isDark }) => (
+const StyledPopoverPaper = ({ children, isDark, isFullScreen }) => (
   <div className={cn(
-    "overflow-hidden rounded-2xl shadow-2xl",
-    isDark
-      ? "bg-[#0a0a0a] shadow-black/80 ring-1 ring-white/[0.08]"
-      : "bg-white shadow-gray-200/50 ring-1 ring-gray-200/80"
+    "overflow-hidden",
+    isFullScreen
+      ? "rounded-none shadow-none bg-transparent"
+      : cn(
+          "rounded-2xl shadow-2xl",
+          isDark
+            ? "bg-[#0a0a0a] shadow-black/80 ring-1 ring-white/[0.08]"
+            : "bg-white shadow-gray-200/50 ring-1 ring-gray-200/80"
+        )
   )}>
     {children}
   </div>
@@ -743,6 +748,230 @@ const WalletContent = ({
     );
   }
 
+  // ============================================
+  // FULLSCREEN MODE
+  // ============================================
+  if (isFullScreen) {
+    return (
+      <div className={cn("min-h-screen", isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900")}>
+        {/* Header */}
+        <div className={cn(
+          "sticky top-0 z-10 border-b backdrop-blur-xl",
+          isDark ? "border-white/10 bg-black/90" : "border-gray-200 bg-white/90"
+        )}>
+          <div className="max-w-lg mx-auto px-4 py-3">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setIsFullScreen(false)}
+                className={cn("p-2 -ml-2 rounded-lg transition-colors", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}
+              >
+                <Minimize2 size={18} className={isDark ? "text-white/60" : "text-gray-500"} />
+              </button>
+              <button
+                onClick={handleCopyAddress}
+                className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-mono transition-colors",
+                  addressCopied ? "bg-emerald-500/10 text-emerald-500" : isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                )}
+              >
+                {truncAddr(accountLogin)}
+                {addressCopied ? <Check size={12} /> : <Copy size={12} />}
+              </button>
+            </div>
+
+            {/* Balance */}
+            <div className="mt-3 mb-4 text-center">
+              <p className={cn("text-[10px] uppercase tracking-wider mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>Available</p>
+              <p className={cn("text-3xl font-light tracking-tight", isDark ? "text-white" : "text-gray-900")}>
+                {Number(availableBalance).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+                <span className={cn("text-sm ml-1", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+              </p>
+            </div>
+
+            {/* Tabs */}
+            <div className={cn("flex rounded-lg p-0.5 gap-0.5", isDark ? "bg-white/5" : "bg-gray-100")}>
+              {[
+                { id: 'send', label: 'Send', icon: ArrowUpRight },
+                { id: 'receive', label: 'Receive', icon: ArrowDownLeft },
+                { id: 'history', label: 'Activity', icon: History }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={cn(
+                    "flex-1 flex items-center justify-center gap-1 py-2 rounded-md text-[12px] font-medium transition-all",
+                    activeTab === tab.id
+                      ? isDark ? "bg-white/10 text-white" : "bg-white text-gray-900 shadow-sm"
+                      : isDark ? "text-white/50 hover:text-white/70" : "text-gray-500 hover:text-gray-700"
+                  )}
+                >
+                  <tab.icon size={14} />
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="max-w-lg mx-auto px-4 py-5">
+          {/* Send Tab */}
+          {activeTab === 'send' && (
+            <div className="space-y-3">
+              {txResult?.success ? (
+                <div className={cn("rounded-2xl p-8 text-center", isDark ? "bg-emerald-500/5" : "bg-emerald-50")}>
+                  <div className="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+                    <Check size={32} className="text-emerald-500" />
+                  </div>
+                  <p className={cn("text-2xl font-light mb-1", isDark ? "text-white" : "text-gray-900")}>{txResult.amount} XRP</p>
+                  <p className={cn("text-sm mb-6", isDark ? "text-white/50" : "text-gray-500")}>Sent to {truncAddr(txResult.recipient)}</p>
+                  <div className="flex gap-2">
+                    <a href={`https://xrpl.to/tx/${txResult.hash}`} target="_blank" rel="noopener noreferrer"
+                      className={cn("flex-1 py-2.5 rounded-xl text-sm font-medium flex items-center justify-center gap-1.5", isDark ? "bg-white/5 text-white/70 hover:bg-white/10" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}>
+                      View <ExternalLink size={14} />
+                    </a>
+                    <button onClick={() => setTxResult(null)} className="flex-1 py-2.5 rounded-xl text-sm font-medium bg-primary text-white hover:bg-primary/90">Send more</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Amount */}
+                  <div className={cn("rounded-2xl p-5 text-center", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
+                    <p className={cn("text-[11px] uppercase tracking-wider mb-3", isDark ? "text-white/40" : "text-gray-400")}>Amount</p>
+                    <div className="relative inline-flex items-baseline">
+                      <input
+                        type="text" inputMode="decimal" value={amount}
+                        onChange={(e) => { const val = e.target.value.replace(/[^0-9.]/g, ''); if (val === '' || /^\d*\.?\d*$/.test(val)) { setAmount(val); setSendError(''); } }}
+                        placeholder="0"
+                        className={cn("text-5xl font-light text-center bg-transparent outline-none w-full max-w-[200px]", isDark ? "text-white placeholder:text-white/20" : "text-gray-900 placeholder:text-gray-300")}
+                      />
+                      <span className={cn("text-xl ml-2", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
+                    </div>
+                    <div className="mt-3 flex items-center justify-center gap-3">
+                      <span className={cn("text-xs", isDark ? "text-white/40" : "text-gray-400")}>Max: {maxSendable.toFixed(2)}</span>
+                      <button onClick={() => setAmount(maxSendable.toFixed(6))} className="text-xs text-primary font-medium hover:text-primary/80">Send all</button>
+                    </div>
+                  </div>
+                  {/* Recipient */}
+                  <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
+                    <label className={cn("block text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>To</label>
+                    <input type="text" value={recipient} onChange={(e) => { setRecipient(e.target.value.trim()); setSendError(''); }} placeholder="Enter XRPL address"
+                      className={cn("w-full text-sm bg-transparent outline-none font-mono", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
+                  </div>
+                  {/* Destination Tag */}
+                  <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
+                    <label className={cn("block text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Destination Tag <span className="normal-case">(optional)</span></label>
+                    <input type="number" value={destinationTag} onChange={(e) => setDestinationTag(e.target.value)} placeholder="Optional"
+                      className={cn("w-full text-sm bg-transparent outline-none", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
+                  </div>
+                  {/* Password */}
+                  {!isUnlocked && (
+                    <div className={cn("rounded-xl p-4", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
+                      <label className={cn("block text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Password</label>
+                      <div className="relative">
+                        <input type={showSendPassword ? 'text' : 'password'} value={sendPassword} onChange={(e) => { setSendPassword(e.target.value); setSendError(''); }} placeholder="Enter to confirm"
+                          className={cn("w-full text-sm bg-transparent outline-none pr-10", isDark ? "text-white placeholder:text-white/30" : "text-gray-900 placeholder:text-gray-400")} />
+                        <button type="button" onClick={() => setShowSendPassword(!showSendPassword)} className={cn("absolute right-0 top-0", isDark ? "text-white/30" : "text-gray-400")}>
+                          {showSendPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {/* Error */}
+                  {sendError && (
+                    <div className={cn("flex items-center gap-2 px-4 py-3 rounded-xl text-sm", isDark ? "bg-red-500/10 text-red-400" : "bg-red-50 text-red-600")}>
+                      <AlertTriangle size={16} /> {sendError}
+                    </div>
+                  )}
+                  {/* Send Button */}
+                  <button onClick={handleSend} disabled={isSending}
+                    className={cn("w-full py-4 rounded-xl text-sm font-medium transition-all flex items-center justify-center gap-2", isSending ? "bg-primary/50 text-white/70 cursor-not-allowed" : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98]")}>
+                    {isSending ? <Loader2 size={18} className="animate-spin" /> : <><Send size={18} /> Send</>}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Receive Tab */}
+          {activeTab === 'receive' && (
+            <div className="space-y-4">
+              <div className={cn("rounded-2xl p-6 text-center", isDark ? "bg-white/[0.03]" : "bg-white border border-gray-200")}>
+                <div className="inline-block p-3 bg-white rounded-2xl mb-4 shadow-sm">
+                  <img src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`} alt="QR" className="w-[200px] h-[200px]" />
+                </div>
+                <p className={cn("text-[11px] uppercase tracking-wider mb-2", isDark ? "text-white/40" : "text-gray-400")}>Your Address</p>
+                <p className={cn("font-mono text-[13px] break-all leading-relaxed", isDark ? "text-white/80" : "text-gray-700")}>{accountLogin}</p>
+                <button onClick={handleCopyAddress}
+                  className={cn("mt-4 w-full py-3 rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all", addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90 active:scale-[0.98]")}>
+                  {addressCopied ? <Check size={16} /> : <Copy size={16} />} {addressCopied ? 'Copied' : 'Copy Address'}
+                </button>
+              </div>
+              {availableBalance === 0 && (
+                <div className={cn("flex items-start gap-3 p-4 rounded-xl", isDark ? "bg-amber-500/5" : "bg-amber-50")}>
+                  <AlertTriangle size={18} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className={cn("text-sm font-medium", isDark ? "text-amber-400" : "text-amber-700")}>Activate your account</p>
+                    <p className={cn("text-xs mt-0.5", isDark ? "text-white/50" : "text-gray-600")}>Receive at least 10 XRP to activate.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* History Tab */}
+          {activeTab === 'history' && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between mb-3">
+                <p className={cn("text-[11px] uppercase tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>Recent Activity</p>
+                <button onClick={loadTransactionHistory} disabled={loadingHistory} className={cn("p-1.5 rounded-lg", isDark ? "hover:bg-white/5" : "hover:bg-gray-100")}>
+                  <RefreshCw size={14} className={cn(loadingHistory && "animate-spin", isDark ? "text-white/40" : "text-gray-400")} />
+                </button>
+              </div>
+              {loadingHistory && transactions.length === 0 ? (
+                <div className="flex items-center justify-center py-16"><Loader2 className={cn("animate-spin", isDark ? "text-white/30" : "text-gray-300")} size={24} /></div>
+              ) : transactions.length === 0 ? (
+                <div className={cn("text-center py-16", isDark ? "text-white/30" : "text-gray-400")}>
+                  <History size={40} className="mx-auto mb-3 opacity-40" /><p className="text-sm">No activity yet</p>
+                </div>
+              ) : (
+                <>
+                  {transactions.map((tx, i) => {
+                    const isReceived = tx.Destination === accountLogin;
+                    const txAmount = tx.Amount?.value || (typeof tx.Amount === 'string' ? dropsToXrp(tx.Amount) : '0');
+                    const otherParty = isReceived ? tx.Account : tx.Destination;
+                    return (
+                      <a key={tx.hash || i} href={`https://xrpl.to/tx/${tx.hash}`} target="_blank" rel="noopener noreferrer"
+                        className={cn("flex items-center gap-3 p-3 rounded-xl transition-colors", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center", isReceived ? "bg-emerald-500/10" : isDark ? "bg-white/5" : "bg-gray-100")}>
+                          {isReceived ? <ArrowDownLeft size={18} className="text-emerald-500" /> : <ArrowUpRight size={18} className={isDark ? "text-white/60" : "text-gray-500"} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-sm font-medium", isDark ? "text-white" : "text-gray-900")}>{isReceived ? 'Received' : 'Sent'}</p>
+                          <p className={cn("text-xs truncate", isDark ? "text-white/40" : "text-gray-400")}>{isReceived ? 'From' : 'To'} {truncAddr(otherParty)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className={cn("text-sm font-medium tabular-nums", isReceived ? "text-emerald-500" : isDark ? "text-white" : "text-gray-900")}>{isReceived ? '+' : '-'}{Number(txAmount).toLocaleString(undefined, { maximumFractionDigits: 2 })}</p>
+                          <p className={cn("text-[11px]", isDark ? "text-white/30" : "text-gray-400")}>{formatDate(tx.date)}</p>
+                        </div>
+                      </a>
+                    );
+                  })}
+                  <a href={`https://xrpl.to/account/${accountLogin}`} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 py-4 text-sm font-medium text-primary hover:text-primary/80">
+                    View all <ExternalLink size={14} />
+                  </a>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ============================================
+  // COMPACT DROPDOWN MODE
+  // ============================================
   return (
     <div className={isDark ? "text-white" : "text-gray-900"}>
       {/* Header with gradient accent */}
@@ -785,6 +1014,12 @@ const WalletContent = ({
             </button>
           )}
           <button
+            onClick={() => setIsFullScreen(true)}
+            className={cn("p-1.5 rounded-lg transition-colors", isDark ? "hover:bg-white/5 text-white/40 hover:text-white/60" : "hover:bg-gray-100 text-gray-400 hover:text-gray-600")}
+          >
+            <Maximize2 size={14} />
+          </button>
+          <button
             onClick={onClose}
             className={cn(
               "p-1.5 rounded-lg transition-colors",
@@ -796,40 +1031,38 @@ const WalletContent = ({
         </div>
       </div>
 
-      {/* Balance Section - Enhanced */}
-      <div className="px-5 py-6 text-center">
-        <div className="mb-1">
+      {/* Balance Section */}
+      <div className="px-5 pt-5 pb-4 text-center">
+        <div className="mb-0.5">
           <span className="font-mono text-3xl font-light tracking-tight">
             {accountTotalXrp || accountBalance?.curr1?.value || '0'}
           </span>
+          <span className={cn("text-sm ml-1.5", isDark ? "text-white/30" : "text-gray-400")}>XRP</span>
         </div>
-        <span className={cn("text-xs font-medium tracking-wider", isDark ? "text-white/40" : "text-gray-400")}>
-          XRP
-        </span>
+        {/* Balance Stats - Always visible under balance */}
+        <div className={cn("flex items-center justify-center gap-3 text-[11px] mt-1", isDark ? "text-white/40" : "text-gray-400")}>
+          <span>{accountBalance?.curr1?.value || '0'} available</span>
+          <span>•</span>
+          <span>{accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved</span>
+        </div>
 
-        {/* Quick Actions - Redesigned */}
-        <div className="flex items-center justify-center gap-2 mt-5">
-          <a
-            href="/wallet?tab=send"
+        {/* Quick Actions */}
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <button
+            onClick={() => { setActiveTab('send'); setIsFullScreen(true); }}
             className={cn(
               "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              isDark
-                ? "bg-primary/10 text-primary hover:bg-primary/20"
-                : "bg-primary/10 text-primary hover:bg-primary/20"
+              isDark ? "bg-primary/10 text-primary hover:bg-primary/20" : "bg-primary/10 text-primary hover:bg-primary/20"
             )}
           >
             <Send size={13} />
             Send
-          </a>
+          </button>
           <button
             onClick={() => setShowQrCode(!showQrCode)}
             className={cn(
               "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              showQrCode
-                ? "bg-primary/10 text-primary"
-                : isDark
-                  ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              showQrCode ? "bg-primary/10 text-primary" : isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             )}
           >
             <QrCode size={13} />
@@ -839,70 +1072,43 @@ const WalletContent = ({
             onClick={onBackupSeed}
             className={cn(
               "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-medium transition-all",
-              isDark
-                ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08] hover:text-white"
-                : "bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900"
+              isDark ? "bg-white/[0.04] text-white/70 hover:bg-white/[0.08]" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             )}
           >
             <Shield size={13} />
             Backup
           </button>
         </div>
+      </div>
 
-        {/* QR Code Section - Collapsible */}
-        {showQrCode && (
-          <div className={cn(
-            "mt-4 mx-4 p-4 rounded-xl",
-            isDark ? "bg-white/[0.03]" : "bg-gray-50"
-          )}>
-            <div className="flex justify-center mb-3">
-              <div className="p-2 bg-white rounded-xl">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`}
-                  alt="Wallet QR"
-                  className="w-[140px] h-[140px]"
-                />
-              </div>
+      {/* QR Code Section - Compact */}
+      {showQrCode && (
+        <div className={cn("mx-4 mb-4 p-3 rounded-xl", isDark ? "bg-white/[0.03]" : "bg-gray-50")}>
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 bg-white rounded-lg flex-shrink-0">
+              <img
+                src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${accountLogin}&bgcolor=ffffff&color=000000&margin=0`}
+                alt="QR"
+                className="w-[80px] h-[80px]"
+              />
             </div>
-            <div className="text-center">
-              <p className={cn("text-[10px] uppercase tracking-wider mb-1.5", isDark ? "text-white/40" : "text-gray-400")}>
-                Full Address
-              </p>
-              <p className={cn("font-mono text-[11px] break-all leading-relaxed px-2", isDark ? "text-white/70" : "text-gray-600")}>
-                {accountLogin}
-              </p>
+            <div className="flex-1 min-w-0">
+              <p className={cn("text-[10px] uppercase tracking-wider mb-1", isDark ? "text-white/40" : "text-gray-400")}>Address</p>
+              <p className={cn("font-mono text-[10px] break-all leading-relaxed", isDark ? "text-white/60" : "text-gray-600")}>{accountLogin}</p>
               <button
                 onClick={handleCopyAddress}
                 className={cn(
-                  "mt-3 w-full py-2 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all",
-                  addressCopied
-                    ? "bg-emerald-500/10 text-emerald-500"
-                    : "bg-primary text-white hover:bg-primary/90"
+                  "mt-2 w-full py-1.5 rounded-lg text-[11px] font-medium flex items-center justify-center gap-1 transition-all",
+                  addressCopied ? "bg-emerald-500/10 text-emerald-500" : "bg-primary text-white hover:bg-primary/90"
                 )}
               >
-                {addressCopied ? <Check size={14} /> : <Copy size={14} />}
-                {addressCopied ? 'Copied!' : 'Copy Address'}
+                {addressCopied ? <Check size={12} /> : <Copy size={12} />}
+                {addressCopied ? 'Copied' : 'Copy Address'}
               </button>
             </div>
           </div>
-        )}
-
-      </div>
-
-      {/* Balance Stats - Refined */}
-      <div className={cn(
-        "px-5 pb-4 flex items-center justify-center gap-4 text-[11px]",
-        isDark ? "text-white/50" : "text-gray-500"
-      )}>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-          <span>{accountBalance?.curr1?.value || '0'} available</span>
         </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          <span>{accountBalance?.curr2?.value || Math.max(0, Number(accountTotalXrp || 0) - Number(accountBalance?.curr1?.value || 0)) || '0'} reserved</span>
-        </div>
-      </div>
+      )}
 
       {/* Accounts Section - Enhanced */}
       <div className={cn("border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
@@ -1229,6 +1435,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
   const [storedWalletCount, setStoredWalletCount] = useState(0);
   const [storedWalletDate, setStoredWalletDate] = useState(null);
   const [storedWalletAddresses, setStoredWalletAddresses] = useState([]);
+  const [isFullScreen, setIsFullScreen] = useState(false);
 
 
   // Device Password handlers
@@ -3117,9 +3324,27 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
           disableEnforceFocus
           disableAutoFocus
           disableRestoreFocus
-          hideBackdrop={true}
+          hideBackdrop={!isFullScreen}
           TransitionProps={{ timeout: 0 }}
-          sx={{
+          sx={isFullScreen ? {
+            '& .MuiDialog-paper': {
+              borderRadius: 0,
+              width: '100vw',
+              maxWidth: '100vw',
+              height: '100vh',
+              maxHeight: '100vh',
+              background: isDark ? '#000' : '#f9fafb',
+              boxShadow: 'none',
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              transform: 'none !important',
+              margin: 0,
+            },
+            zIndex: 9999
+          } : {
             '& .MuiDialog-paper': {
               borderRadius: '12px',
               width: '320px',
@@ -3136,8 +3361,8 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
             zIndex: 9999
           }}
         >
-          <DialogContent sx={{ p: 0 }}>
-            <StyledPopoverPaper isDark={isDark}>
+          <DialogContent sx={{ p: 0, height: isFullScreen ? '100%' : 'auto', overflow: isFullScreen ? 'auto' : 'visible' }}>
+            <StyledPopoverPaper isDark={isDark} isFullScreen={isFullScreen}>
             {accountProfile ? (
               <>
 
@@ -3150,7 +3375,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     accountTotalXrp={accountTotalXrp}
                     accountsActivation={accountsActivation}
                     profiles={profiles}
-                    onClose={() => setOpen(false)}
+                    onClose={() => { setOpen(false); setIsFullScreen(false); }}
                     onAccountSwitch={(account) => {
                       if (account !== accountProfile?.account) {
                         setOpen(false);
@@ -3162,6 +3387,7 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     onLogout={() => {
                       handleLogout();
                       setOpen(false);
+                      setIsFullScreen(false);
                     }}
                     onRemoveProfile={removeProfile}
                     onBackupSeed={handleBackupSeed}
@@ -3191,6 +3417,9 @@ export default function Wallet({ style, embedded = false, onClose, buttonOnly = 
                     walletPage={walletPage}
                     setWalletPage={setWalletPage}
                     walletsPerPage={walletsPerPage}
+                    walletStorage={walletStorage}
+                    isFullScreen={isFullScreen}
+                    setIsFullScreen={setIsFullScreen}
                   />
                 ) : showNewAccountFlow ? (
                   <div className={cn("p-5", isDark ? "text-white" : "text-gray-900")}>

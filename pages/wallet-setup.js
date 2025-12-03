@@ -1,6 +1,6 @@
 import { useState, useContext, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Eye, EyeOff, Loader2, Plus, X } from 'lucide-react';
 import { cn } from 'src/utils/cn';
 import { AppContext } from 'src/AppContext';
 import { EncryptedWalletStorage, securityUtils } from 'src/utils/encryptedWalletStorage';
@@ -11,6 +11,21 @@ const generateRandomWallet = () => {
   const entropy = crypto.getRandomValues(new Uint8Array(32));
   return XRPLWallet.fromEntropy(Array.from(entropy));
 };
+
+// Validate XRPL seed format
+const BASE58_ALPHABET = 'rpshnaf39wBUDNEGHJKLM4PQRST7VWXYZ2bcdeCg65jkm8oFqi1tuvAxyz';
+const validateSeed = (seed) => {
+  const trimmed = seed.trim();
+  if (!trimmed) return { valid: false, error: '' };
+  if (!trimmed.startsWith('s')) return { valid: false, error: 'Seed must start with "s"' };
+  if (trimmed.length < 20 || trimmed.length > 35) return { valid: false, error: 'Invalid seed length' };
+  const invalidChar = [...trimmed].find(c => !BASE58_ALPHABET.includes(c));
+  if (invalidChar) return { valid: false, error: `Invalid character "${invalidChar}"` };
+  return { valid: true, error: '' };
+};
+
+// Detect algorithm from seed prefix: "sEd" = ed25519, otherwise secp256k1
+const getAlgorithmFromSeed = (seed) => seed.startsWith('sEd') ? 'ed25519' : 'secp256k1';
 
 const WalletSetupPage = () => {
   const router = useRouter();
@@ -122,25 +137,36 @@ const WalletSetupPage = () => {
 
         openSnackbar(`${wallets.length} wallet(s) restored!`, 'success');
       }
-      // Handle seed import
-      else if (importMethod === 'seed' && importSeeds[0]) {
-        setError('Importing wallet...');
-        const wallet = XRPLWallet.fromSeed(importSeeds[0].trim());
-        const walletData = {
-          provider,
-          provider_id: user.id,
-          walletKeyId: walletId,
-          accountIndex: 0,
-          account: wallet.address,
-          address: wallet.address,
-          publicKey: wallet.publicKey,
-          seed: wallet.seed,
-          wallet_type: 'oauth',
-          xrp: '0',
-          importedAt: Date.now()
-        };
-        await walletStorage.storeWallet(walletData, password);
-        wallets = [walletData];
+      // Handle seed import (multiple seeds)
+      else if (importMethod === 'seed' && importSeeds.some(s => s.trim())) {
+        const validSeeds = importSeeds.filter(s => s.trim());
+        setError(`Importing ${validSeeds.length} wallet(s)...`);
+
+        for (let i = 0; i < validSeeds.length; i++) {
+          try {
+            const seedTrimmed = validSeeds[i].trim();
+            const algorithm = getAlgorithmFromSeed(seedTrimmed);
+            const wallet = XRPLWallet.fromSeed(seedTrimmed, { algorithm });
+            const walletData = {
+              provider,
+              provider_id: user.id,
+              walletKeyId: walletId,
+              accountIndex: i,
+              account: wallet.address,
+              address: wallet.address,
+              publicKey: wallet.publicKey,
+              seed: wallet.seed,
+              wallet_type: 'oauth',
+              xrp: '0',
+              importedAt: Date.now()
+            };
+            await walletStorage.storeWallet(walletData, password);
+            wallets.push(walletData);
+          } catch (seedErr) {
+            throw new Error(`Invalid seed #${i + 1}: ${seedErr.message}`);
+          }
+        }
+        openSnackbar(`${wallets.length} wallet(s) imported!`, 'success');
       }
       // Create new wallet
       else {
@@ -349,24 +375,77 @@ const WalletSetupPage = () => {
 
           {importMethod === 'seed' && (
             <div>
-              <label className={cn(
-                "mb-2 block text-[11px] font-medium uppercase tracking-wide",
-                isDark ? "text-white/60" : "text-gray-600"
-              )}>
-                Seed Phrase
-              </label>
-              <textarea
-                rows={3}
-                value={importSeeds[0]}
-                onChange={(e) => setImportSeeds([e.target.value])}
-                placeholder="Enter seed phrase"
-                className={cn(
-                  "w-full rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal outline-none transition-colors",
-                  isDark
-                    ? "border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary"
-                    : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary"
+              <div className="mb-2 flex items-center justify-between">
+                <label className={cn(
+                  "text-[11px] font-medium uppercase tracking-wide",
+                  isDark ? "text-white/60" : "text-gray-600"
+                )}>
+                  Seed{importSeeds.length > 1 ? 's' : ''} ({importSeeds.length})
+                </label>
+                {importSeeds.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={() => setImportSeeds([...importSeeds, ''])}
+                    className={cn(
+                      "flex items-center gap-1 rounded px-2 py-0.5 text-[11px] transition-colors",
+                      isDark ? "text-primary hover:bg-primary/10" : "text-primary hover:bg-primary/10"
+                    )}
+                  >
+                    <Plus size={12} /> Add
+                  </button>
                 )}
-              />
+              </div>
+              <div className="flex flex-col gap-2">
+                {importSeeds.map((seed, idx) => {
+                  const validation = validateSeed(seed);
+                  const hasInput = seed.trim().length > 0;
+                  return (
+                    <div key={idx}>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={seed}
+                          onChange={(e) => {
+                            const newSeeds = [...importSeeds];
+                            newSeeds[idx] = e.target.value;
+                            setImportSeeds(newSeeds);
+                          }}
+                          placeholder={`Seed ${idx + 1} (starts with "s")`}
+                          className={cn(
+                            "w-full rounded-lg border-[1.5px] px-4 py-2 pr-8 text-[13px] font-mono outline-none transition-colors",
+                            hasInput && !validation.valid
+                              ? "border-red-500/50 focus:border-red-500"
+                              : hasInput && validation.valid
+                              ? "border-green-500/50 focus:border-green-500"
+                              : isDark
+                              ? "border-white/15 bg-transparent text-white placeholder:text-white/40 focus:border-primary"
+                              : "border-gray-300 bg-white text-gray-900 placeholder:text-gray-400 focus:border-primary",
+                            isDark ? "bg-transparent text-white" : "bg-white text-gray-900"
+                          )}
+                        />
+                        {importSeeds.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setImportSeeds(importSeeds.filter((_, i) => i !== idx))}
+                            className={cn(
+                              "absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 transition-colors",
+                              isDark ? "text-white/40 hover:text-red-400" : "text-gray-400 hover:text-red-500"
+                            )}
+                          >
+                            <X size={14} />
+                          </button>
+                        )}
+                      </div>
+                      {hasInput && validation.error && (
+                        <p className="mt-1 text-[11px] text-red-500">{validation.error}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <p className={cn("mt-1.5 text-[11px]", isDark ? "text-white/40" : "text-gray-500")}>
+                Add multiple seeds to import several wallets at once
+              </p>
             </div>
           )}
 
@@ -438,7 +517,13 @@ const WalletSetupPage = () => {
         {/* Action Buttons */}
         <div className="flex gap-3">
           <button
-            onClick={() => router.push('/')}
+            onClick={() => {
+              sessionStorage.removeItem('oauth_temp_token');
+              sessionStorage.removeItem('oauth_temp_provider');
+              sessionStorage.removeItem('oauth_temp_user');
+              sessionStorage.removeItem('oauth_action');
+              window.location.href = '/';
+            }}
             disabled={isCreating}
             className={cn(
               "flex-1 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
@@ -455,13 +540,13 @@ const WalletSetupPage = () => {
             onClick={handleCreateWallet}
             disabled={isCreating || !password ||
               (importMethod === 'new' && !confirmPassword) ||
-              (importMethod === 'seed' && !importSeeds[0]) ||
+              (importMethod === 'seed' && (!importSeeds.some(s => s.trim()) || !importSeeds.filter(s => s.trim()).every(s => validateSeed(s).valid))) ||
               (importMethod === 'import' && !importFileData)}
             className={cn(
               "flex flex-1 items-center justify-center gap-2 rounded-lg border-[1.5px] px-4 py-2 text-[13px] font-normal transition-colors",
               isCreating || !password ||
               (importMethod === 'new' && !confirmPassword) ||
-              (importMethod === 'seed' && !importSeeds[0]) ||
+              (importMethod === 'seed' && (!importSeeds.some(s => s.trim()) || !importSeeds.filter(s => s.trim()).every(s => validateSeed(s).valid))) ||
               (importMethod === 'import' && !importFileData)
                 ? "cursor-not-allowed border-gray-400 bg-gray-400 text-white opacity-50"
                 : "border-primary bg-primary text-white hover:bg-primary/90"
@@ -470,10 +555,12 @@ const WalletSetupPage = () => {
             {isCreating ? (
               <>
                 <Loader2 className="animate-spin" size={16} />
-                {importMethod === 'import' ? 'Restoring...' : 'Creating...'}
+                {importMethod === 'import' ? 'Restoring...' : importMethod === 'seed' ? 'Importing...' : 'Creating...'}
               </>
             ) : (
-              importMethod === 'new' ? 'Create Wallet' : importMethod === 'import' ? 'Restore Wallet' : 'Import Wallet'
+              importMethod === 'new' ? 'Create Wallet' :
+              importMethod === 'import' ? 'Restore Wallet' :
+              `Import ${importSeeds.filter(s => validateSeed(s).valid).length || 1} Wallet${importSeeds.filter(s => validateSeed(s).valid).length > 1 ? 's' : ''}`
             )}
           </button>
         </div>

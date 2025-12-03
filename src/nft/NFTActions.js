@@ -202,7 +202,7 @@ export default function NFTActions({ nft }) {
           }
         } catch (e) { seed = 'error: ' + e.message; }
       }
-      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, accountIndex: accountProfile.accountIndex, seed: seed || 'N/A' });
+      setDebugInfo({ wallet_type: accountProfile.wallet_type, account: accountProfile.account, walletKeyId, seed: seed || 'N/A' });
     };
     loadDebugInfo();
   }, [accountProfile]);
@@ -968,10 +968,10 @@ export default function NFTActions({ nft }) {
             {debugInfo && (
               <div className={cn('mt-4 p-3 rounded-lg border text-[11px] font-mono', isDark ? 'border-white/10 bg-white/5' : 'border-gray-200 bg-gray-50')}>
                 <div className={isDark ? 'text-gray-400' : 'text-gray-500'}>
-                  <div>Type: {debugInfo.wallet_type}</div>
-                  <div>Account: {debugInfo.account}</div>
-                  <div>Index: {debugInfo.accountIndex}</div>
-                  <div>Seed: {debugInfo.seed?.substring(0, 8)}...</div>
+                  <div>wallet_type: {debugInfo.wallet_type}</div>
+                  <div>account: {debugInfo.account}</div>
+                  <div>walletKeyId: {debugInfo.walletKeyId}</div>
+                  <div>seed: {debugInfo.seed}</div>
                 </div>
               </div>
             )}

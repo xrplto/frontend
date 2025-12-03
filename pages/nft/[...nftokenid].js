@@ -32,14 +32,14 @@ export default function Overview({ nft }) {
   const nftId = nft?.nft?.NFTokenID;
 
   return (
-    <div className="flex-1 overflow-hidden">
+    <div className="flex min-h-screen flex-col">
       <div id="back-to-top-anchor" className="h-4" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {nftName} NFT on XRPL
       </h1>
 
-      <div className="mx-auto max-w-7xl px-4">
+      <div className="mx-auto max-w-7xl flex-1 px-4">
         {collectionData && (
           <CollectionBreadcrumb collection={collectionData} nftName={nftName} nftId={nftId} />
         )}
