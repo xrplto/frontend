@@ -36,7 +36,9 @@ const OverView = ({ account }) => {
         // Fetch profile data and holdings
         const [profileRes, holdingsRes] = await Promise.all([
           axios.get(`https://api.xrpl.to/api/trader/${account}`).catch(() => ({ data: null })),
-          axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0`).catch(() => ({ data: null }))
+          axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0&format=full`)
+            .catch(() => axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0`))
+            .catch(() => ({ data: null }))
         ]);
 
         setData(profileRes.data);
@@ -64,7 +66,7 @@ const OverView = ({ account }) => {
     const isInitialLoad = holdingsPage === 0 && !holdings;
     if (isInitialLoad) return;
 
-    axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=${holdingsPage}`)
+    axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=${holdingsPage}&format=full`)
       .then(res => setHoldings(res.data))
       .catch(err => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
@@ -146,21 +148,33 @@ const OverView = ({ account }) => {
           )}
         </div>
 
+        {/* Account Not Activated */}
+        {holdings?.accountActive === false && (
+          <div className={cn("text-center py-8 mb-4 rounded-xl border", isDark ? "border-[#ef4444]/20 bg-[#ef4444]/5" : "border-red-200 bg-red-50")}>
+            <p className={cn("text-[15px] font-medium", "text-[#ef4444]")}>
+              Account not activated
+            </p>
+            <p className={cn("text-[13px] mt-1", isDark ? "text-white/40" : "text-gray-500")}>
+              This account has been deleted or was never funded
+            </p>
+          </div>
+        )}
+
         {/* XRP Balance for accounts with no trading data */}
-        {hasNoTradingData && holdings?.accountData && (
+        {hasNoTradingData && holdings?.accountActive !== false && holdings?.accountData && (
           <div className={cn("mb-4 pb-4 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
               {fCurrency5(holdings.accountData.balanceDrops / 1000000)}
             </p>
             <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>
-              {fCurrency5((holdings.accountData.balanceDrops - holdings.accountData.reserveDrops) / 1000000)} spendable
+              {fCurrency5(holdings.accountData.spendableDrops / 1000000)} spendable
             </span>
           </div>
         )}
 
         {/* No Trading Data Message */}
-        {hasNoTradingData && (
+        {hasNoTradingData && holdings?.accountActive !== false && (
           <div className={cn("text-center py-6 mb-4 rounded-xl border", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
             <p className={cn("text-[14px]", isDark ? "text-white/50" : "text-gray-500")}>
               No trading history
@@ -179,7 +193,7 @@ const OverView = ({ account }) => {
             </p>
             {holdings?.accountData && (
               <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>
-                {fCurrency5((holdings.accountData.balanceDrops - holdings.accountData.reserveDrops) / 1000000)} spendable
+                {fCurrency5(holdings.accountData.spendableDrops / 1000000)} spendable
               </span>
             )}
           </div>
@@ -262,15 +276,12 @@ const OverView = ({ account }) => {
         )}
 
         {/* Holdings */}
-        {holdings && (
+        {holdings && holdings.accountActive !== false && (
           <div className="mb-3">
             <div className="flex items-center gap-2 mb-2">
               <p className={cn("text-[11px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>
                 Token Holdings ({holdings.total})
               </p>
-              {holdings.accountActive === false && (
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ef4444]/10 text-[#ef4444]">Deleted</span>
-              )}
             </div>
             {holdings.lines?.length > 0 && (
               <>
