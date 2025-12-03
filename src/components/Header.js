@@ -5,19 +5,16 @@ import {
   useEffect,
   memo,
   useCallback,
-  lazy,
-  Suspense,
   useRef
 } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useRouter } from 'next/router';
-import dynamic from 'next/dynamic';
+import axios from 'axios';
 import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
-import NavSearchBar from './NavSearchBar';
-const SearchModal = lazy(() => import('./SearchModal'));
 import Wallet from 'src/components/Wallet';
+
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics } from 'src/redux/statusSlice';
 import { cn } from 'src/utils/cn';
@@ -38,10 +35,13 @@ import {
   Waves,
   X,
   PawPrint,
-  Sun
+  Sun,
+  BadgeCheck,
+  Settings
 } from 'lucide-react';
 
 const BASE_URL = 'https://api.xrpl.to/api';
+
 const currencySymbols = {
   USD: '$ ',
   EUR: '€ ',
@@ -54,9 +54,6 @@ const currencyConfig = {
   activeFiatCurrency: 'XRP'
 };
 
-// Server-rendered switchers
-import CurrencySwitcher from './CurrencySwitcher';
-import ThemeSwitcher from './ThemeSwitcher';
 
 // Helper functions (from Topbar)
 const abbreviateNumber = (num) => {
@@ -159,12 +156,21 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [tokensMenuOpen, setTokensMenuOpen] = useState(false);
   const [nftsMenuOpen, setNftsMenuOpen] = useState(false);
   const [settingsMenuOpen, setSettingsMenuOpen] = useState(false);
-  const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [tokensExpanded, setTokensExpanded] = useState(false);
   const [nftsExpanded, setNftsExpanded] = useState(false);
 
+  // Search state
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState({ tokens: [], collections: [] });
+  const [suggestedTokens, setSuggestedTokens] = useState([]);
+  const [suggestedCollections, setSuggestedCollections] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+
   const tokensRef = useRef(null);
   const nftsRef = useRef(null);
+  const searchRef = useRef(null);
+  const searchInputRef = useRef(null);
   const settingsRef = useRef(null);
   const closeTimeoutRef = useRef(null);
   const nftsCloseTimeoutRef = useRef(null);
@@ -182,6 +188,74 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     return () => window.removeEventListener('resize', checkBreakpoints);
   }, []);
 
+  // Search keyboard shortcut
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.key === '/' && !e.ctrlKey && !e.metaKey) {
+        e.preventDefault();
+        setSearchOpen(true);
+        setTimeout(() => searchInputRef.current?.focus(), 50);
+      }
+      if (e.key === 'Escape') setSearchOpen(false);
+    };
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, []);
+
+  // Search click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (searchRef.current && !searchRef.current.contains(e.target)) {
+        setSearchOpen(false);
+      }
+    };
+    if (searchOpen) document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [searchOpen]);
+
+  // Load trending when search opens
+  useEffect(() => {
+    if (!searchOpen) return;
+    axios.post(`${BASE_URL}/search`, { search: '' })
+      .then(res => {
+        setSuggestedTokens(res.data?.tokens?.slice(0, 4) || []);
+        setSuggestedCollections(res.data?.collections?.slice(0, 3) || []);
+      })
+      .catch(() => {});
+  }, [searchOpen]);
+
+  // Search effect
+  useEffect(() => {
+    if (!searchQuery || !searchOpen) {
+      setSearchResults({ tokens: [], collections: [] });
+      return;
+    }
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      setSearchLoading(true);
+      try {
+        const res = await axios.post(`${BASE_URL}/search`, { search: searchQuery }, { signal: controller.signal });
+        setSearchResults({
+          tokens: res.data?.tokens?.slice(0, 5) || [],
+          collections: res.data?.collections?.slice(0, 3) || []
+        });
+      } catch {}
+      setSearchLoading(false);
+    }, 150);
+    return () => { clearTimeout(timer); controller.abort(); };
+  }, [searchQuery, searchOpen]);
+
+  const handleSearchSelect = useCallback((item, type) => {
+    setSearchOpen(false);
+    setSearchQuery('');
+    window.location.href = type === 'token' ? `/token/${item.slug}` : `/collection/${item.slug}`;
+  }, []);
+
+  const openSearch = useCallback(() => {
+    setSearchOpen(true);
+    setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, []);
 
   // Menu items
   const discoverMenuItems = [
@@ -215,7 +289,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
 
   const handleFullSearch = useCallback(() => {
     setFullSearch(true);
-    setSearchModalOpen(true);
   }, []);
 
   const toggleDrawer = useCallback((isOpen = true) => {
@@ -303,15 +376,135 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   return (
     <header
       className={cn(
-        'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center transition-all duration-200',
-        isDark ? 'bg-black/90 backdrop-blur-xl border-b border-white/[0.04]' : 'bg-white/90 backdrop-blur-xl border-b border-gray-200/60'
+        'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
+        isDark ? 'bg-[#0a0a0a] border-b border-white/[0.06]' : 'bg-white border-b border-gray-200'
       )}
     >
-      <div className="mx-auto flex w-full max-w-full items-center justify-between px-4 sm:px-5 md:px-6">
-        {/* Logo - Desktop */}
-        <div className="mr-4 hidden items-center sm:flex md:mr-6">
-          <Logo alt="xrpl.to Logo" style={{ marginRight: '12px', width: 'auto', height: '30px' }} />
+      <div className="mx-auto flex w-full max-w-full items-center px-4 sm:px-6">
+        {/* Left: Logo */}
+        <div className="flex shrink-0 items-center">
+          <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '24px' }} />
         </div>
+
+        {/* Center: Search */}
+        {isDesktop && (
+          <div ref={searchRef} className="relative flex-1 flex justify-center px-8">
+            <div
+              className={cn(
+                "flex items-center gap-3 rounded-lg px-4 py-2 h-9 w-full max-w-[400px] cursor-text",
+                isDark ? "bg-white/[0.06] hover:bg-white/[0.08]" : "bg-gray-100 hover:bg-gray-200/70"
+              )}
+              onClick={openSearch}
+            >
+              <Search size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+              {searchOpen ? (
+                <input
+                  ref={searchInputRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search for tokens ..."
+                  className={cn("flex-1 bg-transparent text-[14px] outline-none", isDark ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400")}
+                />
+              ) : (
+                <span className={cn("flex-1 text-[14px]", isDark ? "text-white/40" : "text-gray-500")}>Search for tokens ...</span>
+              )}
+              {!searchOpen && (
+                <div className="flex items-center gap-1">
+                  <kbd className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/[0.08] text-white/30" : "bg-gray-200 text-gray-400")}>⌘</kbd>
+                  <kbd className={cn("px-1.5 py-0.5 rounded text-[10px]", isDark ? "bg-white/[0.08] text-white/30" : "bg-gray-200 text-gray-400")}>/</kbd>
+                </div>
+              )}
+            </div>
+
+            {/* Search Dropdown */}
+            {searchOpen && (
+              <div className={cn(
+                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[400px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
+                isDark ? "bg-[#111] border-white/10 shadow-2xl" : "bg-white border-gray-200 shadow-xl"
+              )}>
+                {!searchQuery && (suggestedTokens.length > 0 || suggestedCollections.length > 0) && (
+                  <>
+                    {suggestedTokens.length > 0 && (
+                      <div className="p-2">
+                        <p className={cn("px-2 py-1 text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Popular</p>
+                        {suggestedTokens.map((token, i) => (
+                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                                {token.verified && <BadgeCheck size={12} className="text-primary" />}
+                              </div>
+                              <p className="text-[11px] text-gray-500 truncate">{token.name}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {suggestedCollections.length > 0 && (
+                      <div className={cn("p-2", suggestedTokens.length > 0 && (isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100"))}>
+                        <p className={cn("px-2 py-1 text-[10px] font-medium uppercase tracking-wider", isDark ? "text-white/30" : "text-gray-400")}>Trending NFTs</p>
+                        {suggestedCollections.map((col, i) => (
+                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                                {col.verified === 'yes' && <BadgeCheck size={12} className="text-primary" />}
+                              </div>
+                              <p className="text-[11px] text-gray-500">{col.items?.toLocaleString()} items</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+                {searchQuery && (searchResults.tokens.length > 0 || searchResults.collections.length > 0) && (
+                  <>
+                    {searchResults.tokens.length > 0 && (
+                      <div className="p-2">
+                        {searchResults.tokens.map((token, i) => (
+                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                                {token.verified && <BadgeCheck size={12} className="text-primary" />}
+                              </div>
+                              <p className="text-[11px] text-gray-500 truncate">{token.name}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {searchResults.collections.length > 0 && (
+                      <div className={cn("p-2", searchResults.tokens.length > 0 && (isDark ? "border-t border-white/[0.06]" : "border-t border-gray-100"))}>
+                        {searchResults.collections.map((col, i) => (
+                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer", isDark ? "hover:bg-white/[0.05]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
+                                {col.verified === 'yes' && <BadgeCheck size={12} className="text-primary" />}
+                              </div>
+                              <p className="text-[11px] text-gray-500">{col.items?.toLocaleString()} items</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+                {searchQuery && !searchLoading && searchResults.tokens.length === 0 && searchResults.collections.length === 0 && (
+                  <div className="py-6 text-center">
+                    <p className={cn("text-[13px]", isDark ? "text-white/40" : "text-gray-400")}>No results</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Desktop Navigation */}
         {isDesktop && (
@@ -491,39 +684,30 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           </nav>
         )}
 
-        {/* Full Search (mobile expanded) */}
-        {fullSearch && (
-          <NavSearchBar
-            id="id_search_tokens"
-            placeholder="Search XRPL Tokens"
-            fullSearch={fullSearch}
-            setFullSearch={setFullSearch}
-            onOpenSearchModal={() => setSearchModalOpen(true)}
-          />
-        )}
-
-        {/* Logo - Mobile */}
-        {!fullSearch && (
-          <div className="flex items-center sm:hidden">
-            <Logo alt="xrpl.to Logo" style={{ width: 'auto', height: '26px', paddingLeft: 0 }} />
+        {/* Mobile Full Search */}
+        {fullSearch && isTabletOrMobile && (
+          <div className="flex-1 px-2">
+            <div className={cn("flex items-center gap-2 rounded-lg px-3 h-9", isDark ? "bg-white/[0.06]" : "bg-gray-100")}>
+              <Search size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+              <input
+                autoFocus
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search..."
+                className={cn("flex-1 bg-transparent text-[14px] outline-none", isDark ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400")}
+              />
+              <button onClick={() => { setFullSearch(false); setSearchQuery(''); }} className={cn("p-1 rounded", isDark ? "hover:bg-white/10" : "hover:bg-gray-100")}>
+                <X size={16} className={isDark ? "text-white/40" : "text-gray-400"} />
+              </button>
+            </div>
           </div>
         )}
 
-        {/* Right Side Actions */}
-        <div className="flex flex-grow items-center justify-end">
-          {/* Desktop Search */}
-          {!fullSearch && isDesktop && (
-            <div className="mr-2">
-              <NavSearchBar
-                id="id_search_tokens"
-                placeholder="Search XRPL Tokens"
-                fullSearch={fullSearch}
-                setFullSearch={setFullSearch}
-                onOpenSearchModal={() => setSearchModalOpen(true)}
-              />
-            </div>
-          )}
+        {/* Mobile spacer */}
+        {!fullSearch && isTabletOrMobile && <div className="flex-1" />}
 
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-2">
           {/* Mobile Search Icon */}
           {!fullSearch && isTabletOrMobile && (
             <button
@@ -539,19 +723,17 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           )}
 
           {/* Desktop Actions */}
-          {!fullSearch && (
-            <div className="mr-0 hidden items-center gap-2 md:flex">
-              {/* Watchlist Button */}
+          {!fullSearch && isDesktop && (
+            <div className="flex items-center gap-1">
+              {/* Watchlist */}
               <a
                 href="/watchlist"
                 className={cn(
-                  'flex h-8 items-center rounded-lg px-3 text-[12px] font-medium transition-all duration-200',
-                  isDark
-                    ? 'text-yellow-500/80 hover:text-yellow-500 hover:bg-yellow-500/10'
-                    : 'text-yellow-600 hover:text-yellow-500 hover:bg-yellow-500/10'
+                  'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150',
+                  isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                 )}
               >
-                Saved
+                <Star size={16} />
               </a>
 
               {/* Settings Dropdown */}
@@ -559,13 +741,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 <button
                   onClick={handleSettingsToggle}
                   className={cn(
-                    'flex h-8 items-center rounded-lg px-3 text-[12px] font-medium transition-all duration-200',
-                    isDark
-                      ? 'text-white/50 hover:text-white hover:bg-white/[0.06]'
-                      : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100/80'
+                    'flex h-8 w-8 items-center justify-center rounded-lg transition-all duration-150',
+                    isDark ? 'text-white/50 hover:text-white hover:bg-white/[0.06]' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
                   )}
                 >
-                  Settings
+                  <Settings size={16} />
                 </button>
 
                 {settingsMenuOpen && (
@@ -643,15 +823,13 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 href="/launch"
                 className={cn(
                   'flex h-8 items-center rounded-lg px-4 text-[13px] font-medium transition-all duration-150',
-                  isDark
-                    ? 'bg-white text-black hover:bg-white/90'
-                    : 'bg-gray-900 text-white hover:bg-gray-800'
+                  isDark ? 'bg-white text-black hover:bg-white/90' : 'bg-gray-900 text-white hover:bg-gray-800'
                 )}
               >
                 Launch
               </a>
 
-              <Wallet style={{ marginRight: '4px' }} buttonOnly={true} />
+              <Wallet buttonOnly={true} />
             </div>
           )}
 
@@ -670,12 +848,6 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           )}
         </div>
       </div>
-
-
-      {/* Search Modal */}
-      <Suspense fallback={null}>
-        <SearchModal open={searchModalOpen} onClose={() => { setSearchModalOpen(false); setFullSearch(false); }} />
-      </Suspense>
 
       {/* Mobile Drawer */}
       {openDrawer && (
