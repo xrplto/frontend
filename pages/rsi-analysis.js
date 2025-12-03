@@ -102,8 +102,8 @@ const FilterChip = styled.div`
   align-items: center;
   gap: 4px;
   padding: 4px 10px;
-  background: ${p => p.darkMode ? 'rgba(33,150,243,0.1)' : 'rgba(33,150,243,0.08)'};
-  color: #2196f3;
+  background: ${p => p.darkMode ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.08)'};
+  color: #3b82f6;
   border-radius: 6px;
   font-size: 11px;
   font-weight: 400;
@@ -111,7 +111,7 @@ const FilterChip = styled.div`
   transition: all 0.15s;
 
   &:hover {
-    background: ${p => p.darkMode ? 'rgba(33,150,243,0.18)' : 'rgba(33,150,243,0.15)'};
+    background: ${p => p.darkMode ? 'rgba(59,130,246,0.18)' : 'rgba(59,130,246,0.15)'};
   }
 
   &::after {
@@ -144,34 +144,34 @@ const SearchInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: rgba(33,150,243,0.5);
+    border-color: rgba(59,130,246,0.5);
   }
 `;
 
 const Button = styled.button`
   padding: 8px 14px;
-  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.25)' : p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${p => p.selected ? 'rgba(59,130,246,0.25)' : p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   border-radius: 8px;
-  background: ${p => p.selected ? 'rgba(33,150,243,0.08)' : 'transparent'};
-  color: ${p => p.selected ? '#2196f3' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+  background: ${p => p.selected ? 'rgba(59,130,246,0.08)' : 'transparent'};
+  color: ${p => p.selected ? '#3b82f6' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
   cursor: pointer;
   font-size: 13px;
   font-weight: 400;
   transition: all 0.15s;
 
   &:hover {
-    border-color: ${p => p.selected ? 'rgba(33,150,243,0.35)' : p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
-    background: ${p => p.selected ? 'rgba(33,150,243,0.12)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'};
+    border-color: ${p => p.selected ? 'rgba(59,130,246,0.35)' : p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+    background: ${p => p.selected ? 'rgba(59,130,246,0.12)' : p.darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'};
   }
 `;
 
 const Select = styled.select`
   padding: 8px 14px;
   padding-right: 30px;
-  border: 1.5px solid ${p => p.selected ? 'rgba(33,150,243,0.25)' : p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${p => p.selected ? 'rgba(59,130,246,0.25)' : p.darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
   border-radius: 8px;
-  background: ${p => p.selected ? 'rgba(33,150,243,0.08)' : p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'};
-  color: ${p => p.selected ? '#2196f3' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
+  background: ${p => p.selected ? 'rgba(59,130,246,0.08)' : p.darkMode ? 'rgba(255,255,255,0.04)' : 'rgba(255,255,255,0.95)'};
+  color: ${p => p.selected ? '#3b82f6' : p.darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)'};
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
@@ -183,7 +183,7 @@ const Select = styled.select`
   transition: all 0.15s;
 
   &:hover {
-    border-color: ${p => p.selected ? 'rgba(33,150,243,0.35)' : p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
+    border-color: ${p => p.selected ? 'rgba(59,130,246,0.35)' : p.darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.2)'};
   }
 `;
 
@@ -203,7 +203,7 @@ const FilterInput = styled.input`
 
   &:focus {
     outline: none;
-    border-color: rgba(33,150,243,0.35);
+    border-color: rgba(59,130,246,0.35);
   }
 `;
 

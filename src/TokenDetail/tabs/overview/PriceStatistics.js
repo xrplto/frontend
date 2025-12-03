@@ -270,7 +270,7 @@ export default function PriceStatistics({ token, isDark = false }) {
       style={{
         borderRadius: '10px',
         background: 'transparent',
-        border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.08)"}`,
+        border: `1px solid ${isDark ? "rgba(59,130,246,0.1)" : "rgba(0,0,0,0.08)"}`,
         width: '100%',
         marginBottom: '6px',
         overflow: 'hidden'
@@ -694,7 +694,7 @@ export default function PriceStatistics({ token, isDark = false }) {
         <Box
           style={{
             padding: '10px',
-            borderTop: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`
+            borderTop: `1px solid ${isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.06)'}`
           }}
         >
           <Typography

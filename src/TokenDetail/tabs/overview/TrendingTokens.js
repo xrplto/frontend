@@ -35,7 +35,7 @@ const alpha = (color, opacity) => {
 const Container = styled('div')(({ isDark }) => ({
   borderRadius: '10px',
   background: 'transparent',
-  border: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
+  border: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}`,
   position: 'relative',
   overflow: 'hidden',
   width: '100%',
@@ -45,14 +45,14 @@ const Container = styled('div')(({ isDark }) => ({
 
 const TokenCard = styled('div')(({ isDark }) => ({
   background: 'transparent',
-  border: `1px solid ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'}`,
+  border: `1px solid ${isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.06)'}`,
   borderRadius: '8px',
   padding: '6px 8px',
   cursor: 'pointer',
   width: '100%',
   minWidth: 0,
   '&:hover': {
-    background: isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'
+    background: isDark ? 'rgba(59,130,246,0.06)' : 'rgba(0,0,0,0.02)'
   }
 }));
 

@@ -34,7 +34,7 @@ const Card = styled.div`
   padding: ${props => props.isMobile ? '8px' : '16px'};
   padding-bottom: ${props => props.isMobile ? '8px' : '16px'};
   background: transparent;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'};
   border-radius: 12px;
   position: relative;
   z-index: 1;
@@ -499,11 +499,11 @@ const PriceChartAdvanced = memo(({ token }) => {
       },
       grid: {
         vertLines: {
-          color: isDark ? 'rgba(56, 56, 56, 0.25)' : 'rgba(240, 240, 240, 0.8)',
+          color: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(240, 240, 240, 0.8)',
           style: 1
         },
         horzLines: {
-          color: isDark ? 'rgba(56, 56, 56, 0.4)' : 'rgba(240, 240, 240, 1)',
+          color: isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(240, 240, 240, 1)',
           style: 0
         }
       },
@@ -670,7 +670,7 @@ const PriceChartAdvanced = memo(({ token }) => {
     });
 
     const toolTip = document.createElement('div');
-    toolTip.style = `width: 130px; position: absolute; display: none; padding: 8px; font-size: 11px; z-index: 1000; top: 8px; left: 8px; pointer-events: none; border-radius: 6px; background: ${isDark ? '#1a1a1a' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`;
+    toolTip.style = `width: 130px; position: absolute; display: none; padding: 8px; font-size: 11px; z-index: 1000; top: 8px; left: 8px; pointer-events: none; border-radius: 6px; background: ${isDark ? '#010815' : '#fff'}; color: ${isDark ? '#fff' : '#1a1a1a'}; border: 1.5px solid ${isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.08)'}`;
     chartContainerRef.current.appendChild(toolTip);
 
     chart.subscribeCrosshairMove((param) => {

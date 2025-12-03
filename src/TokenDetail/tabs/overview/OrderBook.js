@@ -22,7 +22,7 @@ const fetchCache = { orderbook: null };
 
 const Container = styled.div`
   border-radius: 10px;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
   overflow: hidden;
   height: 100%;
   display: flex;
@@ -34,8 +34,8 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.02)' : 'rgba(0,0,0,0.02)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.06)'};
 `;
 
 const Title = styled.div`
@@ -74,8 +74,8 @@ const ColumnHeader = styled.div`
   position: sticky;
   top: 0;
   z-index: 2;
-  background: ${props => props.isDark ? '#0a0a0a' : '#fafafa'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  background: ${props => props.isDark ? '#010815' : '#fafafa'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.06)'};
   color: ${props => props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'};
 `;
 
@@ -137,9 +137,9 @@ const SpreadBar = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 8px 12px;
-  background: ${props => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
-  border-top: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.04)' : 'rgba(0,0,0,0.04)'};
+  border-top: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
   font-size: 11px;
   font-family: monospace;
   flex-shrink: 0;

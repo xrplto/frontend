@@ -113,10 +113,10 @@ const LiveCircle = styled.div`
 
 const Card = styled.div`
   background: transparent;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.08)' : 'rgba(0,0,0,0.06)'};
   position: relative;
   animation: ${props => props.isNew ? 'highlight 0.8s ease-out' : 'none'};
-  &:hover { background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'}; }
+  &:hover { background: ${props => props.isDark ? 'rgba(59,130,246,0.06)' : 'rgba(0,0,0,0.02)'}; }
   ${props => props.isNew && highlightAnimation(props.isDark)}
 `;
 
@@ -151,7 +151,7 @@ const Pagination = styled.div`
 const PaginationButton = styled.button`
   color: ${props => props.selected ? '#fff' : (props.isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)')};
   background: ${props => props.selected ? '#3b82f6' : 'transparent'};
-  border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+  border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')};
   border-radius: 6px;
   font-size: 12px;
   font-weight: 400;
@@ -172,7 +172,7 @@ const Table = styled.table`
 const TableHeader = styled.div`
   display: flex;
   padding: 10px 0;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
   & > div {
     font-size: 10px;
     font-weight: 500;
@@ -188,7 +188,7 @@ const TableRow = styled.tr`
   &:hover {
     background-color: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
   }
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
 `;
 
 const TableCell = styled.td`
@@ -202,7 +202,7 @@ const TableCell = styled.td`
 
 const TableContainer = styled.div`
   border-radius: 12px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'};
   overflow: auto;
 `;
 
@@ -292,7 +292,7 @@ const Button = styled.button`
   font-size: 11px;
   font-weight: 400;
   border-radius: 6px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.1)'};
   background: transparent;
   color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : '#374151'};
   cursor: pointer;
@@ -322,7 +322,7 @@ const Dialog = styled.div`
 
 const DialogPaper = styled.div`
   background: ${props => props.isDark ? '#0c0c12' : '#ffffff'};
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.1)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.1)'};
   border-radius: 16px;
   max-width: 420px;
   width: 100%;
@@ -336,7 +336,7 @@ const DialogTitle = styled.div`
   justify-content: space-between;
   align-items: center;
   padding: 18px 20px;
-  border-bottom: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border-bottom: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
   font-size: 15px;
   font-weight: 500;
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
@@ -351,7 +351,7 @@ const TextField = styled.input`
   width: 100%;
   padding: 12px 14px;
   font-size: 14px;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.12)'};
   border-radius: 10px;
   background: ${props => props.isDark ? '#1a1a1a' : '#f5f5f5'};
   color: ${props => props.isDark ? '#fff' : '#1a1a1a'};
@@ -585,7 +585,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     font-weight: 500;
     padding: 6px 14px;
     background: ${props => props.selected ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
-    border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+    border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')};
     border-radius: 6px;
     color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
     cursor: pointer;
@@ -595,11 +595,11 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
 
   const OfferCard = styled.div`
     background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
-    border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
     border-radius: 10px;
     padding: 14px;
     &:hover {
-      border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+      border-color: ${props => props.isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'};
     }
   `;
 
@@ -629,7 +629,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
         padding: '40px 24px',
         backgroundColor: 'transparent',
         borderRadius: '12px',
-        border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+        border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`,
       }}
     >
       <div style={{ marginBottom: '12px' }}>
@@ -765,7 +765,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
               style={{
                 textAlign: 'center',
                 padding: '24px',
-                border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`,
                 borderRadius: '10px'
               }}
             >
@@ -836,7 +836,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
               style={{
                 textAlign: 'center',
                 padding: '24px',
-                border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                border: `1.5px dashed ${isDark ? 'rgba(59,130,246,0.18)' : 'rgba(0,0,0,0.15)'}`,
                 borderRadius: '10px'
               }}
             >
@@ -864,7 +864,7 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
                         </span>
                       </Box>
 
-                      <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                      <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}` }}>
                         <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
                           {offer.total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
                         </span>
@@ -1429,7 +1429,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 fontSize: '11px',
                 fontWeight: 500,
                 borderRadius: '6px',
-                border: `1px solid ${pairType ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                border: `1px solid ${pairType ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
                 background: isDark ? (pairType ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (pairType ? 'rgba(59,130,246,0.1)' : '#fff'),
                 color: pairType ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                 cursor: 'pointer',
@@ -1452,7 +1452,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 fontSize: '11px',
                 fontWeight: 500,
                 borderRadius: '6px',
-                border: `1px solid ${historyType !== 'trades' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                border: `1px solid ${historyType !== 'trades' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
                 background: isDark ? (historyType !== 'trades' ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (historyType !== 'trades' ? 'rgba(59,130,246,0.1)' : '#fff'),
                 color: historyType !== 'trades' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                 cursor: 'pointer',
@@ -1476,7 +1476,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   fontSize: '11px',
                   fontWeight: 500,
                   borderRadius: '6px',
-                  border: `1px solid ${liquidityType ? '#8b5cf6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                  border: `1px solid ${liquidityType ? '#8b5cf6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
                   background: isDark ? (liquidityType ? 'rgba(139,92,246,0.15)' : 'rgba(0,0,0,0.8)') : (liquidityType ? 'rgba(139,92,246,0.1)' : '#fff'),
                   color: liquidityType ? '#8b5cf6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                   cursor: 'pointer',
@@ -1501,7 +1501,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 fontSize: '11px',
                 fontWeight: 500,
                 borderRadius: '6px',
-                border: `1px solid ${xrpAmount ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                border: `1px solid ${xrpAmount ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
                 background: isDark ? (xrpAmount ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (xrpAmount ? 'rgba(59,130,246,0.1)' : '#fff'),
                 color: xrpAmount ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                 cursor: 'pointer',
@@ -1528,7 +1528,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 fontSize: '11px',
                 fontWeight: 500,
                 borderRadius: '6px',
-                border: `1px solid ${timeRange ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                border: `1px solid ${timeRange ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
                 background: isDark ? (timeRange ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (timeRange ? 'rgba(59,130,246,0.1)' : '#fff'),
                 color: timeRange ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)'),
                 cursor: 'pointer',
@@ -1555,7 +1555,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                 fontSize: '11px',
                 fontWeight: 500,
                 borderRadius: '6px',
-                border: `1px solid ${accountFilter ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.12)')}`,
+                border: `1px solid ${accountFilter ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.12)')}`,
                 background: isDark ? (accountFilter ? 'rgba(59,130,246,0.15)' : 'rgba(0,0,0,0.8)') : (accountFilter ? 'rgba(59,130,246,0.1)' : '#fff'),
                 color: isDark ? '#fff' : '#1a1a1a',
                 outline: 'none',
@@ -1719,14 +1719,14 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
               <Spinner size={20} />
             </Box>
           ) : ammPools.length === 0 ? (
-            <Box style={{ textAlign: 'center', padding: '20px', border: `1px dashed ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px' }}>
+            <Box style={{ textAlign: 'center', padding: '20px', border: `1px dashed ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)'}`, borderRadius: '8px' }}>
               <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>No pools found</span>
             </Box>
           ) : isMobile ? (
             /* Mobile compact pool rows - grid layout for alignment */
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               {/* Mobile header */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 55px 32px', gap: '8px', alignItems: 'center', padding: '6px 0', marginBottom: '4px', borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}` }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 55px 32px', gap: '8px', alignItems: 'center', padding: '6px 0', marginBottom: '4px', borderBottom: `1px solid ${isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'}` }}>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>Pool</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>APY</span>
                 <span style={{ fontSize: '10px', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.03em', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', textAlign: 'right' }}>TVL</span>
@@ -1890,7 +1890,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                     padding: '12px 14px',
                     background: isDark ? '#1a1a1a' : '#f5f5f5',
                     borderRadius: '10px',
-                    border: `1.5px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)'}`
+                    border: `1.5px solid ${isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.08)'}`
                   }}>
                     <div style={{ display: 'flex' }}>
                       <img src={getTokenImageUrl(addLiquidityDialog.pool.asset1.issuer, addLiquidityDialog.pool.asset1.currency)} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />
@@ -1905,15 +1905,15 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
                   <FormControl>
                     <label style={{ fontSize: '13px', fontWeight: 500, marginBottom: '10px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>Deposit Mode</label>
                     <RadioGroup style={{ gap: '8px' }}>
-                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'double' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'double' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}` }}>
+                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'double' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'double' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')}` }}>
                         <Radio type="radio" value="double" checked={depositMode === 'double'} onChange={(e) => setDepositMode(e.target.value)} />
                         <span style={{ marginLeft: '6px', fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Double-asset (both tokens, no fee)</span>
                       </FormControlLabel>
-                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'single1' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'single1' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}` }}>
+                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'single1' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'single1' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')}` }}>
                         <Radio type="radio" value="single1" checked={depositMode === 'single1'} onChange={(e) => setDepositMode(e.target.value)} />
                         <span style={{ marginLeft: '6px', fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset1.currency)} only)</span>
                       </FormControlLabel>
-                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'single2' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'single2' ? '#3b82f6' : (isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')}` }}>
+                      <FormControlLabel isDark={isDark} style={{ padding: '10px 12px', borderRadius: '8px', background: depositMode === 'single2' ? (isDark ? '#1e3a5f' : '#e0f2fe') : (isDark ? '#1a1a1a' : '#f5f5f5'), border: `1.5px solid ${depositMode === 'single2' ? '#3b82f6' : (isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')}` }}>
                         <Radio type="radio" value="single2" checked={depositMode === 'single2'} onChange={(e) => setDepositMode(e.target.value)} />
                         <span style={{ marginLeft: '6px', fontSize: '13px', color: isDark ? '#fff' : '#1a1a1a' }}>Single-asset ({decodeCurrency(addLiquidityDialog.pool.asset2.currency)} only)</span>
                       </FormControlLabel>

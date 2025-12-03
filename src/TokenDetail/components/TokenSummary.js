@@ -328,7 +328,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
   const isPositive = mainChange >= 0;
 
   return (
-    <div className={cn("rounded-xl border-[1.5px] px-3 py-2 sm:px-4 sm:py-2.5", isDark ? "border-white/[0.08]" : "border-gray-200")}>
+    <div className={cn("rounded-xl border-[1.5px] px-3 py-2 sm:px-4 sm:py-2.5", isDark ? "border-[rgba(59,130,246,0.12)]" : "border-gray-200")}>
       {/* Main Row */}
       <div className="flex items-center justify-between gap-2">
         {/* Left: Token Image + Info */}
@@ -392,7 +392,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
           </div>
 
           {/* Actions */}
-          <div className="flex items-center gap-1.5 pl-2 border-l border-white/[0.08] relative">
+          <div className="flex items-center gap-1.5 pl-2 border-l border-[rgba(59,130,246,0.15)] relative">
             {trustStatus && trustStatus !== 'loading' && (
               <div className="absolute -top-8 left-0 px-2 py-1 rounded text-[10px] whitespace-nowrap bg-black/90 text-white z-50">
                 {trustStatus}
@@ -440,7 +440,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
 
       {/* 24h Range */}
       {range24h && (
-        <div className={cn("flex items-center gap-3 mt-1.5 pt-1.5 sm:mt-2 sm:pt-2 border-t", isDark ? "border-white/[0.06]" : "border-gray-100")}>
+        <div className={cn("flex items-center gap-3 mt-1.5 pt-1.5 sm:mt-2 sm:pt-2 border-t", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-gray-100")}>
           <span className={cn("text-[9px] uppercase w-16 flex-shrink-0", isDark ? "text-white/30" : "text-gray-400")}>24h Range</span>
           <span className="text-[10px] text-green-500 w-16 text-right">{currencySymbols[activeFiatCurrency]}{formatPrice(range24h.min)}</span>
           <div className={cn("flex-1 h-1 rounded-full relative mx-2", isDark ? "bg-white/10" : "bg-gray-200")}>
@@ -452,7 +452,7 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
       )}
 
       {/* Mobile: Price Changes + Stats Combined */}
-      <div className="sm:hidden mt-1.5 pt-1.5 border-t border-white/[0.06] space-y-1.5">
+      <div className="sm:hidden mt-1.5 pt-1.5 border-t border-[rgba(59,130,246,0.1)] space-y-1.5">
         {/* Price Changes Row */}
         <div className="grid grid-cols-4 gap-1">
           {priceChanges.map((item) => (

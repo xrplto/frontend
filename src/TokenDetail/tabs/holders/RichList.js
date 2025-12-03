@@ -106,7 +106,7 @@ const RichList = ({ token, amm }) => {
     return (
       <div className={cn(
         'rounded-xl border-[1.5px] border-dashed py-12 text-center',
-        isDark ? 'border-white/20 bg-white/[0.02]' : 'border-gray-300 bg-gray-50'
+        isDark ? 'border-[rgba(59,130,246,0.2)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-300 bg-gray-50'
       )}>
         <h3 className={cn('mb-2 text-base font-medium', isDark ? 'text-white/60' : 'text-gray-500')}>
           No Holder Data Available
@@ -122,7 +122,7 @@ const RichList = ({ token, amm }) => {
     if (rank === 1) return 'bg-yellow-500/15 text-yellow-500';
     if (rank === 2) return 'bg-gray-400/15 text-gray-400';
     if (rank === 3) return 'bg-orange-600/15 text-orange-500';
-    return isDark ? 'bg-white/5 text-white/50' : 'bg-gray-100 text-gray-500';
+    return isDark ? 'bg-[rgba(59,130,246,0.08)] text-white/50' : 'bg-gray-100 text-gray-500';
   };
 
   return (
@@ -138,7 +138,7 @@ const RichList = ({ token, amm }) => {
           ].map(({ label, value }) => (
             <div key={label} className={cn(
               'rounded-lg border px-3 py-2',
-              isDark ? 'border-white/[0.08] bg-white/[0.02]' : 'border-gray-200 bg-gray-50'
+              isDark ? 'border-[rgba(59,130,246,0.1)] bg-[rgba(59,130,246,0.02)]' : 'border-gray-200 bg-gray-50'
             )}>
               <div className={cn('text-[10px] uppercase tracking-wide', isDark ? 'text-white/40' : 'text-gray-400')}>{label}</div>
               <div className={cn(
@@ -156,7 +156,7 @@ const RichList = ({ token, amm }) => {
       <div>
         <table className="w-full">
           <thead>
-            <tr className={cn('border-b', isDark ? 'border-white/[0.08]' : 'border-gray-200')}>
+            <tr className={cn('border-b', isDark ? 'border-[rgba(59,130,246,0.1)]' : 'border-gray-200')}>
               <th className={cn('py-2 pr-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>#</th>
               <th className={cn('py-2 px-2 text-left text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Address</th>
               <th className={cn('py-2 px-2 text-right text-[10px] font-medium uppercase tracking-wider', isDark ? 'text-white/40' : 'text-gray-400')}>Balance</th>
@@ -173,7 +173,7 @@ const RichList = ({ token, amm }) => {
                   key={holder.account || index}
                   className={cn(
                     'border-b',
-                    isDark ? 'border-white/5' : 'border-gray-100'
+                    isDark ? 'border-[rgba(59,130,246,0.06)]' : 'border-gray-100'
                   )}
                 >
                   <td className="py-2 pr-2">
@@ -208,7 +208,7 @@ const RichList = ({ token, amm }) => {
                   </td>
                   <td className="py-2 pl-2 text-right">
                     <div className="flex items-center justify-end gap-1.5">
-                      <div className={cn('h-1 w-8 overflow-hidden rounded-full', isDark ? 'bg-white/10' : 'bg-gray-200')}>
+                      <div className={cn('h-1 w-8 overflow-hidden rounded-full', isDark ? 'bg-[rgba(59,130,246,0.15)]' : 'bg-gray-200')}>
                         <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(percentOfSupply * 10, 100)}%` }} />
                       </div>
                       <span className={cn(
@@ -233,7 +233,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === 1}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronsLeft size={14} />
@@ -243,7 +243,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === 1}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronLeft size={14} />
@@ -256,7 +256,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === totalPages}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronRight size={14} />
@@ -266,7 +266,7 @@ const RichList = ({ token, amm }) => {
             disabled={page === totalPages}
             className={cn(
               'flex h-7 w-7 items-center justify-center rounded-md border transition-colors disabled:opacity-30',
-              isDark ? 'border-white/[0.08] hover:border-primary' : 'border-gray-200 hover:border-primary'
+              isDark ? 'border-[rgba(59,130,246,0.12)] hover:border-primary' : 'border-gray-200 hover:border-primary'
             )}
           >
             <ChevronsRight size={14} />

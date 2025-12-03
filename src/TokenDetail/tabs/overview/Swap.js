@@ -396,8 +396,8 @@ const Tabs = styled.div`
   gap: 4px;
   padding: 4px;
   border-radius: 8px;
-  background: ${props => props.isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)'};
-  border: 1px solid ${props => props.isDark ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)'};
   @media (max-width: 600px) {
     padding: 4px;
     gap: 4px;
@@ -485,13 +485,13 @@ const CurrencyContent = styled.div`
   padding: 12px 14px;
   border-radius: 10px;
   align-items: center;
-  background: ${props => props.isDark ? 'rgba(66,133,244,0.03)' : 'rgba(66,133,244,0.02)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.03)' : 'rgba(59,130,246,0.02)'};
   width: 100%;
   justify-content: space-between;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.2)' : 'rgba(66,133,244,0.15)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'};
   transition: border-color 0.2s;
   &:focus-within {
-    border-color: #4285f4;
+    border-color: #3b82f6;
   }
   @media (max-width: 600px) {
     padding: 14px 16px;
@@ -521,7 +521,7 @@ const OverviewWrapper = styled.div`
   width: 100%;
   min-width: 0;
   background: transparent;
-  border: 1px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(0,0,0,0.08)'};
   @media (max-width: 600px) {
     border-radius: 12px;
     padding: 16px;
@@ -546,17 +546,17 @@ const ToggleContent = styled.div`
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  background: ${props => props.isDark ? 'rgba(66,133,244,0.1)' : 'rgba(66,133,244,0.05)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.1)' : 'rgba(59,130,246,0.05)'};
   border-radius: 50%;
   padding: 8px;
   z-index: 1;
-  border: 1.5px solid ${props => props.isDark ? 'rgba(66,133,244,0.3)' : 'rgba(66,133,244,0.2)'};
+  border: 1.5px solid ${props => props.isDark ? 'rgba(59,130,246,0.3)' : 'rgba(59,130,246,0.2)'};
   transition: all 0.2s;
   &:hover {
-    border-color: #4285f4;
-    background: rgba(66,133,244,0.15);
+    border-color: #3b82f6;
+    background: rgba(59,130,246,0.15);
     svg {
-      color: #4285f4 !important;
+      color: #3b82f6 !important;
     }
   }
 `;
@@ -611,9 +611,9 @@ const TokenImage = styled(Image)`
 
 const SummaryBox = styled.div`
   padding: 10px 12px;
-  background: ${props => props.isDark ? 'rgba(66,133,244,0.05)' : 'rgba(66,133,244,0.03)'};
+  background: ${props => props.isDark ? 'rgba(59,130,246,0.05)' : 'rgba(59,130,246,0.03)'};
   border-radius: 8px;
-  border: 1px solid ${props => props.isDark ? 'rgba(66,133,244,0.15)' : 'rgba(66,133,244,0.1)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)'};
   margin-top: 8px;
   margin-bottom: 4px;
   @media (max-width: 600px) {

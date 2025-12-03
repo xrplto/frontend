@@ -46,8 +46,14 @@ const MetricsGrid = styled.div`
 const MetricBox = styled.div`
   padding: 12px;
   border-radius: 12px;
-  background: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)')};
-  border: 1.5px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.15)')};
+  transition: border-color 0.2s ease, background 0.2s ease;
+
+  &:hover {
+    border-color: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.3)' : 'rgba(59, 130, 246, 0.35)')};
+    background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.05)' : 'rgba(59, 130, 246, 0.04)')};
+  }
 `;
 
 const MetricLabel = styled.div`
@@ -91,7 +97,7 @@ const StyledTh = styled.th`
   text-transform: uppercase;
   color: ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)')};
   padding: 10px 8px;
-  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
+  border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)')};
   text-align: ${({ align }) => align || 'left'};
   width: ${({ width }) => width || 'auto'};
   cursor: ${({ sortable }) => (sortable ? 'pointer' : 'default')};
@@ -99,15 +105,15 @@ const StyledTh = styled.th`
   font-family: inherit;
 
   &:hover {
-    color: ${({ sortable, darkMode }) => (sortable ? '#4285f4' : (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'))};
+    color: ${({ sortable, darkMode }) => (sortable ? '#3b82f6' : (darkMode ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)'))};
   }
 `;
 
 const StyledTbody = styled.tbody`
   tr {
-    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)')};
+    border-bottom: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.08)' : 'rgba(59, 130, 246, 0.1)')};
     &:hover {
-      background: ${({ darkMode }) => (darkMode ? 'rgba(66,133,244,0.02)' : 'rgba(66,133,244,0.015)')};
+      background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.04)' : 'rgba(59, 130, 246, 0.03)')};
     }
   }
 `;
@@ -125,12 +131,12 @@ const SortIndicator = styled.span`
   display: inline-block;
   margin-left: 4px;
   font-size: 9px;
-  color: #4285f4;
+  color: #3b82f6;
   transform: ${({ direction }) => (direction === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)')};
 `;
 
 const TraderLink = styled(Link)`
-  color: #4285f4;
+  color: #3b82f6;
   text-decoration: none;
   &:hover { text-decoration: underline; }
 `;
@@ -142,10 +148,10 @@ const Badge = styled.span`
   text-transform: uppercase;
   font-weight: 500;
   background: ${({ type }) =>
-    type === 'buyer' ? 'rgba(66,133,244,0.1)' :
+    type === 'buyer' ? 'rgba(59, 130, 246, 0.1)' :
     type === 'seller' ? 'rgba(239,83,80,0.1)' : 'rgba(255,193,7,0.1)'};
   color: ${({ type }) =>
-    type === 'buyer' ? '#4285f4' :
+    type === 'buyer' ? '#3b82f6' :
     type === 'seller' ? '#EF5350' : '#FFC107'};
 `;
 
@@ -174,8 +180,8 @@ const PaginationContainer = styled.div`
   padding: 6px 10px;
   min-height: 36px;
   border-radius: 8px;
-  background: ${({ darkMode }) => (darkMode ? 'transparent' : '#fff')};
-  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)')};
+  background: ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.02)' : 'rgba(59, 130, 246, 0.02)')};
+  border: 1px solid ${({ darkMode }) => (darkMode ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.12)')};
 `;
 
 const NavButton = styled.button`
@@ -189,8 +195,9 @@ const NavButton = styled.button`
   align-items: center;
   justify-content: center;
   color: ${({ darkMode }) => (darkMode ? '#fff' : '#212B36')};
+  transition: background 0.2s ease;
 
-  &:hover:not(:disabled) { background: rgba(66,133,244,0.08); }
+  &:hover:not(:disabled) { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
   &:disabled { opacity: 0.3; cursor: not-allowed; }
 `;
 
@@ -199,14 +206,15 @@ const PageButton = styled.button`
   height: 22px;
   border-radius: 5px;
   border: none;
-  background: ${({ selected }) => (selected ? '#4285f4' : 'transparent')};
+  background: ${({ selected }) => (selected ? '#3b82f6' : 'transparent')};
   color: ${({ selected, darkMode }) => (selected ? '#fff' : (darkMode ? '#fff' : '#212B36'))};
   cursor: pointer;
   font-size: 11px;
   font-weight: ${({ selected }) => (selected ? 500 : 400)};
   padding: 0 4px;
+  transition: background 0.2s ease;
 
-  &:hover:not(:disabled) { background: ${({ selected }) => (selected ? '#1976D2' : 'rgba(66,133,244,0.08)')}; }
+  &:hover:not(:disabled) { background: ${({ selected }) => (selected ? '#2563eb' : 'rgba(59, 130, 246, 0.1)')}; }
 `;
 
 const EmptyState = styled.div`
@@ -314,7 +322,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                         width={col.width}
                         sortable={col.sortable}
                         onClick={() => col.sortable && handleSortChange(col.id)}
-                        style={sortBy === col.id ? { color: '#4285f4' } : {}}
+                        style={sortBy === col.id ? { color: '#3b82f6' } : {}}
                       >
                         {col.label}
                         {sortBy === col.id && <SortIndicator>▼</SortIndicator>}
@@ -341,7 +349,7 @@ export default function TradersPage({ traders = [], sortBy = 'totalVolume', glob
                         <StyledTd align="right" darkMode={darkMode}>
                           {fNumber(trader.balance || 0)}
                         </StyledTd>
-                        <StyledTd align="right" color="#4285f4">
+                        <StyledTd align="right" color="#3b82f6">
                           {fNumber(trader.buyVolume || 0)}
                         </StyledTd>
                         <StyledTd align="right" color="#EF5350">

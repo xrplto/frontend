@@ -21,7 +21,7 @@ const InputField = ({ label, value, onChange, placeholder, error, helperText, co
         className={cn(
           "w-full px-2.5 py-2 rounded-lg border text-[13px] bg-transparent resize-none transition-colors",
           error ? "border-red-500/40" : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300",
-          "focus:outline-none focus:border-[#4285f4] placeholder:opacity-40"
+          "focus:outline-none focus:border-[#3b82f6] placeholder:opacity-40"
         )}
       />
     ) : (
@@ -35,7 +35,7 @@ const InputField = ({ label, value, onChange, placeholder, error, helperText, co
         className={cn(
           "w-full px-2.5 py-2 rounded-lg border text-[13px] bg-transparent transition-colors",
           error ? "border-red-500/40" : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300",
-          "focus:outline-none focus:border-[#4285f4] placeholder:opacity-40"
+          "focus:outline-none focus:border-[#3b82f6] placeholder:opacity-40"
         )}
       />
     )}
@@ -57,8 +57,8 @@ const Button = ({ children, onClick, disabled, variant = 'outline', size = 'defa
       "rounded-lg font-normal transition-colors flex items-center justify-center gap-2",
       size === 'small' ? "px-3 py-1.5 text-[12px]" : "px-4 py-2.5 text-[13px]",
       variant === 'primary'
-        ? "bg-[#4285f4] text-white border border-[#4285f4] hover:bg-[#3b78e7]"
-        : "bg-transparent text-[#4285f4] border border-[#4285f4]/20 hover:border-[#4285f4]/40 hover:bg-[#4285f4]/5",
+        ? "bg-[#3b82f6] text-white border border-[#3b82f6] hover:bg-[#2563eb]"
+        : "bg-transparent text-[#3b82f6] border border-[#3b82f6]/20 hover:border-[#3b82f6]/40 hover:bg-[#3b82f6]/5",
       fullWidth && "w-full",
       disabled && "opacity-40 cursor-not-allowed",
       className
@@ -74,7 +74,7 @@ const Alert = ({ severity = 'info', children, className }) => {
     error: "border-red-500/20 bg-red-500/5 text-red-400",
     warning: "border-yellow-500/20 bg-yellow-500/5 text-yellow-500",
     success: "border-green-500/20 bg-green-500/5 text-green-400",
-    info: "border-[#4285f4]/20 bg-[#4285f4]/5 text-[#4285f4]"
+    info: "border-[#3b82f6]/20 bg-[#3b82f6]/5 text-[#3b82f6]"
   };
   return (
     <div className={cn("px-3 py-2 rounded-lg border flex items-start gap-2 text-[12px]", styles[severity], className)}>
@@ -85,7 +85,7 @@ const Alert = ({ severity = 'info', children, className }) => {
 
 // Spinner component
 const Spinner = ({ size = 24 }) => (
-  <Loader2 size={size} className="animate-spin text-[#4285f4]" />
+  <Loader2 size={size} className="animate-spin text-[#3b82f6]" />
 );
 
 function CreatePage() {
@@ -686,7 +686,7 @@ function CreatePage() {
               <span key={step} className={cn(
                 "text-[11px] px-2 py-0.5 rounded",
                 (i === 0 || (i === 1 && (formData.twitter || formData.telegram || formData.website)) || (i === 2 && formData.image))
-                  ? "text-[#4285f4] bg-[#4285f4]/10" : "opacity-30"
+                  ? "text-[#3b82f6] bg-[#3b82f6]/10" : "opacity-30"
               )}>{step}</span>
             ))}
           </div>
@@ -775,7 +775,7 @@ function CreatePage() {
               className={cn(
                 "flex items-center justify-between px-3 py-2.5 rounded-lg cursor-pointer transition-colors border",
                 formData.antiSnipe
-                  ? isDark ? "border-[#4285f4]/40 bg-[#4285f4]/10" : "border-[#4285f4]/30 bg-[#4285f4]/5"
+                  ? isDark ? "border-[#3b82f6]/40 bg-[#3b82f6]/10" : "border-[#3b82f6]/30 bg-[#3b82f6]/5"
                   : isDark ? "border-white/10 hover:border-white/20" : "border-gray-200 hover:border-gray-300"
               )}
             >
@@ -785,7 +785,7 @@ function CreatePage() {
               </div>
               <div className={cn(
                 "w-8 h-4 rounded-full transition-colors relative",
-                formData.antiSnipe ? "bg-[#4285f4]" : isDark ? "bg-white/20" : "bg-gray-300"
+                formData.antiSnipe ? "bg-[#3b82f6]" : isDark ? "bg-white/20" : "bg-gray-300"
               )}>
                 <div className={cn(
                   "absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform",
@@ -863,7 +863,7 @@ function CreatePage() {
           </div>
           <div className={cn("flex items-center justify-between pt-2 border-t", isDark ? "border-white/10" : "border-gray-200")}>
             <span className="text-[12px] opacity-60">Total</span>
-            <span className="text-[14px] font-medium text-[#4285f4]">
+            <span className="text-[14px] font-medium text-[#3b82f6]">
               {loadingCost ? '...' : `~${costBreakdown?.requiredFunding || Math.ceil(9 + formData.ammXrpAmount)} XRP`}
             </span>
           </div>
@@ -883,7 +883,7 @@ function CreatePage() {
             onDrop={handleDrop}
             className={cn(
               "border border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors",
-              dragging ? "border-[#4285f4] bg-[#4285f4]/5" : imagePreview ? "border-green-500/30" : isDark ? "border-white/15 hover:border-white/25" : "border-gray-300 hover:border-gray-400"
+              dragging ? "border-[#3b82f6] bg-[#3b82f6]/5" : imagePreview ? "border-green-500/30" : isDark ? "border-white/15 hover:border-white/25" : "border-gray-300 hover:border-gray-400"
             )}
           >
             {imagePreview ? (
@@ -1049,7 +1049,7 @@ function CreatePage() {
                 <span className="opacity-60">{fundingBalance} / {fundingAmount.required} XRP</span>
               </div>
               <div className={cn("h-1.5 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
-                <div className="h-full bg-[#4285f4] transition-all" style={{ width: `${fundingProgress}%` }} />
+                <div className="h-full bg-[#3b82f6] transition-all" style={{ width: `${fundingProgress}%` }} />
               </div>
 
               <div className={cn("p-3 rounded-lg space-y-3", isDark ? "bg-white/5" : "bg-gray-50")}>
@@ -1088,7 +1088,7 @@ function CreatePage() {
                   href={sessionData.faucetUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 text-[12px] text-[#4285f4] hover:underline"
+                  className="flex items-center justify-center gap-2 text-[12px] text-[#3b82f6] hover:underline"
                 >
                   Get testnet XRP from faucet <ExternalLink size={12} />
                 </a>
@@ -1121,10 +1121,10 @@ function CreatePage() {
               <div className="space-y-2">
                 <div className="flex justify-between text-[11px]">
                   <span className="opacity-60">{sessionData?.progressMessage || 'Processing...'}</span>
-                  <span className="text-[#4285f4]">{sessionData?.progress || 0}%</span>
+                  <span className="text-[#3b82f6]">{sessionData?.progress || 0}%</span>
                 </div>
                 <div className={cn("h-1.5 rounded-full overflow-hidden", isDark ? "bg-white/10" : "bg-gray-200")}>
-                  <div className="h-full bg-[#4285f4] transition-all duration-500" style={{ width: `${sessionData?.progress || 0}%` }} />
+                  <div className="h-full bg-[#3b82f6] transition-all duration-500" style={{ width: `${sessionData?.progress || 0}%` }} />
                 </div>
               </div>
 
@@ -1146,7 +1146,7 @@ function CreatePage() {
                 <Alert severity="error">Insufficient funding - add more XRP</Alert>
               )}
 
-              <button onClick={() => setShowDebugPanel(!showDebugPanel)} className="text-[12px] text-[#4285f4] w-full">
+              <button onClick={() => setShowDebugPanel(!showDebugPanel)} className="text-[12px] text-[#3b82f6] w-full">
                 {showDebugPanel ? 'Hide' : 'Show'} logs ({launchLogs.length})
               </button>
 
@@ -1181,7 +1181,7 @@ function CreatePage() {
               </div>
 
               {(sessionData.data?.userCheckId || sessionData.userCheckId) && (
-                <div className={cn("p-4 rounded-lg border", checkClaimed ? "border-green-500/20 bg-green-500/5" : "border-[#4285f4]/20 bg-[#4285f4]/5")}>
+                <div className={cn("p-4 rounded-lg border", checkClaimed ? "border-green-500/20 bg-green-500/5" : "border-[#3b82f6]/20 bg-[#3b82f6]/5")}>
                   <p className="text-[14px] font-medium mb-2">{checkClaimed ? 'Claimed' : 'Claim Tokens'}</p>
                   <p className="text-[12px] opacity-70 mb-3">
                     {checkClaimed

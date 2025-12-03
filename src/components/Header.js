@@ -463,7 +463,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     <header
       className={cn(
         'fixed left-0 right-0 top-0 z-[1100] flex h-[52px] items-center',
-        isDark ? 'bg-[#0a0a0a]/95 backdrop-blur-md border-b border-blue-500/10' : 'bg-white/95 backdrop-blur-md border-b border-blue-200/50'
+        isDark ? 'bg-black border-b border-blue-500/20' : 'bg-white/95 backdrop-blur-md border-b border-blue-200/50'
       )}
     >
       <div className="mx-auto flex w-full max-w-full items-center px-4 sm:px-6">
@@ -659,12 +659,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div ref={searchRef} className="relative flex-1 flex justify-center px-8">
             <div
               className={cn(
-                "flex items-center gap-3 px-4 py-2 h-9 w-full max-w-[800px] cursor-text border transition-all duration-200",
+                "flex items-center gap-3 px-4 h-[52px] w-full max-w-[800px] cursor-text border-0 transition-all duration-200",
                 searchOpen
-                  ? "border-primary bg-primary/5"
+                  ? "bg-primary/5"
                   : isDark
-                    ? "bg-white/[0.04] hover:bg-white/[0.06] border-white/10 hover:border-primary/50"
-                    : "bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-primary/50"
+                    ? "bg-white/[0.04] hover:bg-white/[0.06]"
+                    : "bg-gray-50 hover:bg-gray-100"
               )}
               onClick={openSearch}
             >
@@ -736,7 +736,7 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                     {suggestedTokens.length > 0 && (
                       <div className="p-2">
                         <div className="flex items-center gap-3 px-2 py-2">
-                          <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Suggested</span>
+                          <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
                           <div
                             className="flex-1 h-[14px]"
                             style={{

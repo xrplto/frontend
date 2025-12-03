@@ -112,12 +112,12 @@ const OptimizedChart = memo(
 OptimizedChart.displayName = 'OptimizedChart';
 
 const StyledRow = styled.tr`
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(0, 0, 0, 0.06)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(0, 0, 0, 0.06)'};
   cursor: pointer;
   transition: background 0.15s ease;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.08)' : 'rgba(66, 133, 244, 0.05)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(66, 133, 244, 0.05)'};
   }
 `;
 
@@ -138,13 +138,13 @@ const MobileTokenCard = styled.div`
   display: flex;
   width: 100%;
   padding: 10px 4px;
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.04)'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.06)' : 'rgba(0,0,0,0.04)'};
   cursor: pointer;
   box-sizing: border-box;
   align-items: center;
 
   &:hover {
-    background: ${(props) => props.isDark ? 'rgba(66, 133, 244, 0.02)' : 'rgba(66, 133, 244, 0.015)'};
+    background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(66, 133, 244, 0.015)'};
   }
 `;
 
@@ -183,7 +183,7 @@ const TokenImage = styled.div`
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  background: ${(props) => props.isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+  background: ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.1)' : 'rgba(0, 0, 0, 0.05)'};
 `;
 
 const TokenDetails = styled.div`
@@ -1406,15 +1406,15 @@ export const MobileContainer = styled.div`
   gap: 0;
   padding: 0;
   margin: 0;
-  background: ${(props) => props.isDark ? '#000000' : '#FFFFFF'};
+  background: ${(props) => props.isDark ? '#010815' : '#FFFFFF'};
 `;
 
 export const MobileHeader = styled.div`
   display: flex;
   width: 100%;
   padding: 8px 4px;
-  background: ${(props) => props.isDark ? '#000000' : '#FFFFFF'};
-  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'};
+  background: ${(props) => props.isDark ? '#010815' : '#FFFFFF'};
+  border-bottom: 1px solid ${(props) => props.isDark ? 'rgba(59, 130, 246, 0.12)' : 'rgba(0,0,0,0.1)'};
   font-size: 10px;
   font-weight: 500;
   text-transform: uppercase;

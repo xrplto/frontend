@@ -146,7 +146,7 @@ const OverView = ({ account }) => {
             <ExternalLink size={14} />
           </a>
           {data?.isAMM && (
-            <span className="text-[11px] h-5 px-2 rounded bg-[#4285f4]/10 text-[#4285f4] font-normal flex items-center">
+            <span className="text-[11px] h-5 px-2 rounded bg-[#3b82f6]/10 text-[#3b82f6] font-normal flex items-center">
               AMM
             </span>
           )}
@@ -180,7 +180,7 @@ const OverView = ({ account }) => {
 
         {/* XRP Balance for accounts with no trading data */}
         {hasNoTradingData && holdings?.accountActive !== false && holdings?.accountData && (
-          <div className={cn("mb-4 pb-4 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
+          <div className={cn("mb-4 pb-4 border-b", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
               {fCurrency5(holdings.accountData.balanceDrops / 1000000)}
@@ -193,7 +193,7 @@ const OverView = ({ account }) => {
 
         {/* No Trading Data Message */}
         {hasNoTradingData && holdings?.accountActive !== false && (
-          <div className={cn("text-center py-6 mb-4 rounded-xl border", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+          <div className={cn("text-center py-6 mb-4 rounded-xl border", isDark ? "border-[rgba(59,130,246,0.08)] bg-[rgba(59,130,246,0.02)]" : "border-gray-200 bg-gray-50")}>
             <p className={cn("text-[14px]", isDark ? "text-white/50" : "text-gray-500")}>
               No trading history
             </p>
@@ -203,7 +203,7 @@ const OverView = ({ account }) => {
         {/* Key Metrics */}
         {data && (
         <>
-        <div className={cn("grid grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
+        <div className={cn("grid grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}>
           <div>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
@@ -245,7 +245,7 @@ const OverView = ({ account }) => {
         </div>
 
         {/* Period P&L Summary */}
-        <div className={cn("grid grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
+        <div className={cn("grid grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}>
           <div>
             <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>7d P&L</p>
             <p className={cn("text-[14px] font-medium", (data.profit7d || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
@@ -301,7 +301,7 @@ const OverView = ({ account }) => {
                   {holdings.lines.map((line, idx) => (
                   <div key={idx} className={cn(
                     "p-2 rounded border",
-                    isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-50 border-gray-200"
+                    isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.06)]" : "bg-gray-50 border-gray-200"
                   )}>
                       <div className="flex items-center gap-1.5 mb-1">
                         <img
@@ -329,7 +329,7 @@ const OverView = ({ account }) => {
                     disabled={holdingsPage === 0}
                     className={cn(
                       "bg-transparent border-none p-0",
-                      holdingsPage === 0 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#4285f4] cursor-pointer"
+                      holdingsPage === 0 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#3b82f6] cursor-pointer"
                     )}
                   >
                     ← Prev
@@ -342,7 +342,7 @@ const OverView = ({ account }) => {
                     disabled={holdingsPage >= Math.ceil(holdings.total / 20) - 1}
                     className={cn(
                       "bg-transparent border-none p-0",
-                      holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#4285f4] cursor-pointer"
+                      holdingsPage >= Math.ceil(holdings.total / 20) - 1 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#3b82f6] cursor-pointer"
                     )}
                   >
                     Next →
@@ -361,11 +361,11 @@ const OverView = ({ account }) => {
             </p>
             <div className={cn(
               "rounded border overflow-hidden",
-              isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-50 border-gray-200"
+              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.06)]" : "bg-gray-50 border-gray-200"
             )}>
               <div className={cn(
                 "grid gap-2 px-2 py-1 border-b",
-                isDark ? "border-white/[0.04]" : "border-gray-200"
+                isDark ? "border-[rgba(59,130,246,0.06)]" : "border-gray-200"
               )} style={{ gridTemplateColumns: '120px repeat(4, 1fr)' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Token</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Volume (XRP)</span>
@@ -378,7 +378,7 @@ const OverView = ({ account }) => {
                   key={idx}
                   className={cn(
                     "grid gap-2 px-2 py-1",
-                    idx < data.tokenPerformance.length - 1 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100")
+                    idx < data.tokenPerformance.length - 1 && (isDark ? "border-b border-[rgba(59,130,246,0.04)]" : "border-b border-gray-100")
                   )}
                   style={{ gridTemplateColumns: '120px repeat(4, 1fr)' }}
                 >
@@ -432,8 +432,8 @@ const OverView = ({ account }) => {
                     className={cn(
                       "text-[10px] px-1.5 py-0.5 rounded border",
                       txFilter === filter
-                        ? (isDark ? "border-[#4285f4]/30 bg-[#4285f4]/10 text-[#4285f4]" : "border-blue-200 bg-blue-50 text-[#4285f4]")
-                        : (isDark ? "border-white/[0.06] bg-transparent text-white/50" : "border-gray-200 bg-transparent text-gray-400")
+                        ? (isDark ? "border-[#3b82f6]/30 bg-[#3b82f6]/10 text-[#3b82f6]" : "border-blue-200 bg-blue-50 text-[#3b82f6]")
+                        : (isDark ? "border-[rgba(59,130,246,0.08)] bg-transparent text-white/50" : "border-gray-200 bg-transparent text-gray-400")
                     )}
                   >
                     {filter === 'all' ? 'ALL' : filter}
@@ -443,11 +443,11 @@ const OverView = ({ account }) => {
             </div>
             <div className={cn(
               "rounded border overflow-hidden",
-              isDark ? "bg-white/[0.02] border-white/[0.04]" : "bg-gray-50 border-gray-200"
+              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.06)]" : "bg-gray-50 border-gray-200"
             )}>
               <div className={cn(
                 "grid px-2 py-1.5 border-b",
-                isDark ? "border-white/[0.04]" : "border-gray-200"
+                isDark ? "border-[rgba(59,130,246,0.06)]" : "border-gray-200"
               )} style={{ gridTemplateColumns: '1fr 120px 90px' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Details</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Amount</span>
@@ -525,7 +525,7 @@ const OverView = ({ account }) => {
                 if (txData.TransactionType === 'OfferCreate' && offerDetails) {
                   const parts = offerDetails.split(' → ');
                   actionDesc = `Offer to sell ${parts[0]} for ${parts[1]}`;
-                  actionColor = 'text-[#4285f4]';
+                  actionColor = 'text-[#3b82f6]';
                 } else if (txData.TransactionType === 'OfferCancel') {
                   actionDesc = `Cancelled offer #${txData.OfferSequence || 'unknown'}`;
                   actionColor = 'text-[#ef4444]';
@@ -591,7 +591,7 @@ const OverView = ({ account }) => {
                   } else {
                     actionDesc = shortId ? `Offered to buy NFT ${shortId}` : 'Created buy offer';
                   }
-                  actionColor = 'text-[#4285f4]';
+                  actionColor = 'text-[#3b82f6]';
                 } else if (txData.TransactionType === 'NFTokenAcceptOffer') {
                   const nftId = txData.NFTokenID || (meta?.nftoken_id);
                   const shortId = nftId ? `${nftId.substring(0, 8)}...${nftId.substring(nftId.length - 4)}` : '';
@@ -650,8 +650,8 @@ const OverView = ({ account }) => {
                     key={idx}
                     href={`/tx/${txHash}`}
                     className={cn(
-                      "grid px-2 py-1.5 hover:bg-white/[0.02] transition-colors",
-                      idx < 19 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100")
+                      "grid px-2 py-1.5 hover:bg-[rgba(59,130,246,0.02)] transition-colors",
+                      idx < 19 && (isDark ? "border-b border-[rgba(59,130,246,0.04)]" : "border-b border-gray-100")
                     )}
                     style={{ gridTemplateColumns: '1fr 120px 90px' }}
                   >
@@ -683,7 +683,7 @@ const OverView = ({ account }) => {
                   disabled={txPage === 0}
                   className={cn(
                     "bg-transparent border-none p-0",
-                    txPage === 0 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#4285f4] cursor-pointer"
+                    txPage === 0 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#3b82f6] cursor-pointer"
                   )}
                 >
                   ← Prev
@@ -696,7 +696,7 @@ const OverView = ({ account }) => {
                   disabled={txPage >= Math.ceil(filteredTxHistory.length / 20) - 1}
                   className={cn(
                     "bg-transparent border-none p-0",
-                    txPage >= Math.ceil(filteredTxHistory.length / 20) - 1 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#4285f4] cursor-pointer"
+                    txPage >= Math.ceil(filteredTxHistory.length / 20) - 1 ? (isDark ? "text-white/30 cursor-default" : "text-gray-300 cursor-default") : "text-[#3b82f6] cursor-pointer"
                   )}
                 >
                   Next →
