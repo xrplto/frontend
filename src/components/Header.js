@@ -173,11 +173,73 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
   const [suggestedCollections, setSuggestedCollections] = useState([]);
   const [searchLoading, setSearchLoading] = useState(false);
   const [recentSearches, setRecentSearches] = useState([]);
+  const [typedText, setTypedText] = useState('');
+  const searchWords = ['tokens', 'NFTs', 'collections'];
+  const baseText = 'Search for ';
 
   // Load recent searches from localStorage
   useEffect(() => {
     const stored = localStorage.getItem('recentSearches');
     if (stored) setRecentSearches(JSON.parse(stored));
+  }, []);
+
+  // Typewriter effect
+  useEffect(() => {
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let isBaseTyped = false;
+    let timeout;
+
+    const type = () => {
+      const currentWord = searchWords[wordIndex];
+      const fullText = baseText + currentWord + '...';
+
+      const typeSpeed = 100 + Math.random() * 50; // 100-150ms, slight variation
+      const deleteSpeed = 40 + Math.random() * 20; // 40-60ms
+
+      if (!isBaseTyped) {
+        // Type base text first
+        if (charIndex < baseText.length) {
+          setTypedText(baseText.slice(0, charIndex + 1));
+          charIndex++;
+          timeout = setTimeout(type, typeSpeed);
+        } else {
+          isBaseTyped = true;
+          charIndex = 0;
+          timeout = setTimeout(type, 150);
+        }
+      } else if (!isDeleting) {
+        // Type the word
+        const word = currentWord + '...';
+        if (charIndex < word.length) {
+          setTypedText(baseText + word.slice(0, charIndex + 1));
+          charIndex++;
+          timeout = setTimeout(type, typeSpeed);
+        } else {
+          // Pause then start deleting
+          timeout = setTimeout(() => {
+            isDeleting = true;
+            type();
+          }, 2500);
+        }
+      } else {
+        // Delete only the word (keep base text)
+        const word = currentWord + '...';
+        if (charIndex > 0) {
+          charIndex--;
+          setTypedText(baseText + word.slice(0, charIndex));
+          timeout = setTimeout(type, deleteSpeed);
+        } else {
+          isDeleting = false;
+          wordIndex = (wordIndex + 1) % searchWords.length;
+          timeout = setTimeout(type, 300);
+        }
+      }
+    };
+
+    type();
+    return () => clearTimeout(timeout);
   }, []);
 
   const tokensRef = useRef(null);
@@ -597,10 +659,12 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
           <div ref={searchRef} className="relative flex-1 flex justify-center px-8">
             <div
               className={cn(
-                "flex items-center gap-3 rounded-xl px-4 py-2 h-9 w-full max-w-[420px] cursor-text border transition-all duration-200",
-                isDark
-                  ? "bg-white/[0.04] hover:bg-white/[0.06] border-blue-500/10 hover:border-blue-500/20"
-                  : "bg-blue-50/50 hover:bg-blue-50 border-blue-200/40 hover:border-blue-300/60"
+                "flex items-center gap-3 px-4 py-2 h-9 w-full max-w-[800px] cursor-text border transition-all duration-200",
+                searchOpen
+                  ? "border-primary bg-primary/5"
+                  : isDark
+                    ? "bg-white/[0.04] hover:bg-white/[0.06] border-white/10 hover:border-primary/50"
+                    : "bg-gray-50 hover:bg-gray-100 border-gray-200 hover:border-primary/50"
               )}
               onClick={openSearch}
             >
@@ -610,11 +674,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   ref={searchInputRef}
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search for tokens ..."
+                  placeholder={typedText || 'Search...'}
                   className={cn("flex-1 bg-transparent text-[14px] outline-none", isDark ? "text-white placeholder:text-white/40" : "text-gray-900 placeholder:text-gray-400")}
                 />
               ) : (
-                <span className={cn("flex-1 text-[14px]", isDark ? "text-white/40" : "text-gray-500")}>Search for tokens ...</span>
+                <span className={cn("flex-1 text-[14px]", isDark ? "text-white/40" : "text-gray-500")}>{typedText || 'Search...'}<span className="animate-pulse">|</span></span>
               )}
               {!searchOpen && (
                 <div className="flex items-center gap-1">
@@ -627,36 +691,41 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
             {/* Search Dropdown */}
             {searchOpen && (
               <div className={cn(
-                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[420px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
+                "absolute top-full left-1/2 -translate-x-1/2 w-full max-w-[800px] mt-2 rounded-xl border overflow-hidden max-h-[60vh] overflow-y-auto z-[9999]",
                 isDark
-                  ? "bg-[#0c0c0c]/95 backdrop-blur-xl border-blue-500/15 shadow-2xl shadow-blue-500/5"
-                  : "bg-white/95 backdrop-blur-xl border-blue-200/50 shadow-xl shadow-blue-500/5"
+                  ? "bg-[#0a0f1a]/95 backdrop-blur-xl border-primary/20 shadow-2xl shadow-primary/10"
+                  : "bg-blue-50/95 backdrop-blur-xl border-primary/20 shadow-xl shadow-primary/10"
               )}>
                 {!searchQuery && recentSearches.length > 0 && (
                   <div className="p-2">
-                    <div className="flex items-center gap-3 px-2 py-1">
-                      <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>Recent</span>
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Recent Searches</span>
                       <div
                         className="flex-1 h-[14px]"
                         style={{
-                          backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                          backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                           backgroundSize: '8px 5px'
                         }}
                       />
-                      <button onClick={clearRecentSearches} className={cn("flex items-center gap-1 text-[10px] uppercase tracking-wider transition-colors", isDark ? "text-white/30 hover:text-red-400" : "text-gray-400 hover:text-red-500")}>
-                        <Trash2 size={10} />
+                      <button onClick={clearRecentSearches} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-primary hover:text-blue-400 transition-colors">
+                        <Trash2 size={12} />
                         Clear
                       </button>
                     </div>
                     {recentSearches.map((item, i) => (
-                      <div key={i} onClick={() => handleSearchSelect(item, item.type)} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
-                        <img src={item.type === 'token' ? `https://s1.xrpl.to/token/${item.md5}` : `https://s1.xrpl.to/nft-collection/${item.logoImage}`} className={cn("w-7 h-7 object-cover", item.type === 'token' ? "rounded-full" : "rounded-lg")} alt="" />
+                      <div key={i} onClick={() => handleSearchSelect(item, item.type)} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                        <img src={item.type === 'token' ? `https://s1.xrpl.to/token/${item.md5}` : `https://s1.xrpl.to/nft-collection/${item.logoImage}`} className={cn("w-9 h-9 object-cover", item.type === 'token' ? "rounded-full" : "rounded-lg")} alt="" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{item.user || item.name}</span>
-                            {(item.verified === true || item.verified === 'yes') && <BadgeCheck size={12} className="text-primary" />}
+                            <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{item.user || item.name}</span>
+                            <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>•</span>
+                            <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({item.name || item.type})</span>
                           </div>
-                          <p className="text-[11px] text-gray-500 truncate">{item.type === 'token' ? item.name : `${item.items?.toLocaleString()} items`}</p>
+                          <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{item.issuer || item.account || ''}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>{item.type === 'token' ? 'Token' : 'NFT'}</span>
+                          {(item.verified === true || item.verified === 'yes') && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
                         </div>
                       </div>
                     ))}
@@ -666,25 +735,34 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                   <>
                     {suggestedTokens.length > 0 && (
                       <div className="p-2">
-                        <div className="flex items-center gap-3 px-2 py-1">
-                          <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>Popular</span>
+                        <div className="flex items-center gap-3 px-2 py-2">
+                          <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Suggested</span>
                           <div
                             className="flex-1 h-[14px]"
                             style={{
-                              backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                              backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                               backgroundSize: '8px 5px'
                             }}
                           />
                         </div>
                         {suggestedTokens.map((token, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
-                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
+                          <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
-                                {token.verified && <BadgeCheck size={12} className="text-primary" />}
+                                <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                                <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>•</span>
+                                <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
                               </div>
-                              <p className="text-[11px] text-gray-500 truncate">{token.name}</p>
+                              <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>Token</span>
+                              {token.verified && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
+                              <div className="text-right">
+                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
+                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                            </div>
                             </div>
                           </div>
                         ))}
@@ -694,25 +772,32 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                       <div className="p-2">
                         {suggestedTokens.length > 0 && (
                           <div className="flex items-center gap-3 px-2 py-2">
-                            <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>NFTs</span>
+                            <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
                             <div
                               className="flex-1 h-[14px]"
                               style={{
-                                backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
+                                backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
                                 backgroundSize: '8px 5px'
                               }}
                             />
                           </div>
                         )}
                         {suggestedCollections.map((col, i) => (
-                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
-                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
+                          <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                            <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" />
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center gap-1.5">
-                                <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
-                                {col.verified === 'yes' && <BadgeCheck size={12} className="text-primary" />}
+                                <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
                               </div>
-                              <p className="text-[11px] text-gray-500">{col.items?.toLocaleString()} items</p>
+                              <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>NFT</span>
+                              {col.verified === 'yes' && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
+                              <div className="text-right">
+                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
+                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                            </div>
                             </div>
                           </div>
                         ))}
@@ -722,15 +807,34 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 )}
                 {searchQuery && searchResults.tokens.length > 0 && (
                   <div className="p-2">
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">Tokens</span>
+                      <div
+                        className="flex-1 h-[14px]"
+                        style={{
+                          backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                          backgroundSize: '8px 5px'
+                        }}
+                      />
+                    </div>
                     {searchResults.tokens.map((token, i) => (
-                      <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
-                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-7 h-7 rounded-full object-cover" alt="" />
+                      <div key={i} onClick={() => handleSearchSelect(token, 'token')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                        <img src={`https://s1.xrpl.to/token/${token.md5}`} className="w-9 h-9 rounded-full object-cover" alt="" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
-                            {token.verified && <BadgeCheck size={12} className="text-primary" />}
+                            <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{token.user}</span>
+                            <span className={cn("text-[12px]", isDark ? "text-white/30" : "text-gray-400")}>•</span>
+                            <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-500")}>({token.name})</span>
                           </div>
-                          <p className="text-[11px] text-gray-500 truncate">{token.name}</p>
+                          <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{token.issuer}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>Token</span>
+                          {token.verified && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
+                          <div className="text-right">
+                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{token.holders?.toLocaleString()}</span>
+                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Holders</p>
+                            </div>
                         </div>
                       </div>
                     ))}
@@ -738,27 +842,32 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
                 )}
                 {searchQuery && searchResults.collections.length > 0 && (
                   <div className="p-2">
-                    {searchResults.tokens.length > 0 && (
-                      <div className="flex items-center gap-3 px-2 py-2">
-                        <span className={cn("text-[10px] font-medium uppercase tracking-widest whitespace-nowrap", isDark ? "text-white/40" : "text-gray-400")}>NFTs</span>
-                        <div
-                          className="flex-1 h-[14px]"
-                          style={{
-                            backgroundImage: `radial-gradient(circle, ${isDark ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.15)'} 1px, transparent 1px)`,
-                            backgroundSize: '8px 5px'
-                          }}
-                        />
-                      </div>
-                    )}
+                    <div className="flex items-center gap-3 px-2 py-2">
+                      <span className="text-[10px] font-semibold uppercase tracking-widest whitespace-nowrap text-primary">NFTs</span>
+                      <div
+                        className="flex-1 h-[14px]"
+                        style={{
+                          backgroundImage: 'radial-gradient(circle, rgba(66,133,244,0.5) 1px, transparent 1px)',
+                          backgroundSize: '8px 5px'
+                        }}
+                      />
+                    </div>
                     {searchResults.collections.map((col, i) => (
-                      <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-2.5 px-2 py-2 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-blue-500/5" : "hover:bg-blue-50")}>
-                        <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-7 h-7 rounded-lg object-cover" alt="" />
+                      <div key={i} onClick={() => handleSearchSelect(col, 'collection')} className={cn("flex items-center gap-3 px-2 py-3 rounded-lg cursor-pointer transition-colors duration-150", isDark ? "hover:bg-white/[0.03]" : "hover:bg-gray-50")}>
+                        <img src={`https://s1.xrpl.to/nft-collection/${col.logoImage}`} className="w-9 h-9 rounded-lg object-cover" alt="" />
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-1.5">
-                            <span className={cn("text-[13px] truncate", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
-                            {col.verified === 'yes' && <BadgeCheck size={12} className="text-primary" />}
+                            <span className={cn("text-[14px] font-medium", isDark ? "text-white" : "text-gray-900")}>{col.name}</span>
                           </div>
-                          <p className="text-[11px] text-gray-500">{col.items?.toLocaleString()} items</p>
+                          <p className={cn("text-[11px] font-mono truncate mt-0.5", isDark ? "text-white/25" : "text-gray-400")}>{col.account}</p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={cn("px-2 py-1 text-[10px] font-semibold uppercase rounded", isDark ? "bg-white/10 text-white/60" : "bg-gray-100 text-gray-500")}>NFT</span>
+                          {col.verified === 'yes' && <span className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase rounded bg-green-500/20 text-green-500">✓ Verified</span>}
+                          <div className="text-right">
+                              <span className={cn("text-[13px] font-medium tabular-nums", isDark ? "text-white/70" : "text-gray-600")}>{col.items?.toLocaleString()}</span>
+                              <p className={cn("text-[9px] uppercase tracking-wide", isDark ? "text-white/30" : "text-gray-400")}>Items</p>
+                            </div>
                         </div>
                       </div>
                     ))}
