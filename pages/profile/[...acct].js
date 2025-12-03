@@ -36,7 +36,7 @@ const OverView = ({ account }) => {
         // Fetch profile data and holdings
         const [profileRes, holdingsRes] = await Promise.all([
           axios.get(`https://api.xrpl.to/api/trader/${account}`).catch(() => ({ data: null })),
-          axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&limit=20&page=0&format=full`)
+          axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=0`).catch(() => ({ data: null }))
         ]);
 
         setData(profileRes.data);
@@ -64,7 +64,7 @@ const OverView = ({ account }) => {
     const isInitialLoad = holdingsPage === 0 && !holdings;
     if (isInitialLoad) return;
 
-    axios.get(`https://api.xrpl.to/api/trustlines/${account}?sortByValue=true&limit=20&page=${holdingsPage}&format=full`)
+    axios.get(`https://api.xrpl.to/api/trustlines/${account}?limit=20&page=${holdingsPage}`)
       .then(res => setHoldings(res.data))
       .catch(err => console.error('Failed to fetch holdings page:', err));
   }, [holdingsPage]);
@@ -95,13 +95,11 @@ const OverView = ({ account }) => {
 
   if (loading) {
     return (
-      <div className="overflow-hidden flex-1">
+      <div className="min-h-screen flex flex-col">
         <div id="back-to-top-anchor" />
         <Header />
-        <div className="max-w-screen-2xl mx-auto w-full px-4">
-          <div className="flex justify-center items-center min-h-[60vh]">
-            <p className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
-          </div>
+        <div className="max-w-screen-2xl mx-auto w-full px-4 flex-1 flex justify-center items-center">
+          <p className={cn("text-[15px]", isDark ? "text-white/60" : "text-gray-600")}>Loading...</p>
         </div>
         <ScrollToTop />
         <Footer />
@@ -111,16 +109,17 @@ const OverView = ({ account }) => {
 
   const winRate = data?.totalTrades > 0 ? (data.profitableTrades / data.totalTrades * 100) : 0;
   const totalPnL = data?.totalProfit || data?.profit || 0;
+  const hasNoTradingData = !data || data.error;
 
   return (
-    <div className="overflow-hidden flex-1">
+    <div className="min-h-screen flex flex-col">
       <div id="back-to-top-anchor" />
       <Header />
       <h1 style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 }}>
         {account} Profile on XRPL
       </h1>
 
-      <div className="max-w-screen-2xl mx-auto w-full px-4 py-2">
+      <div className="max-w-screen-2xl mx-auto w-full px-4 py-2 flex-1">
         {/* Account Header */}
         <div className="flex items-center gap-2 mb-4">
           <h2 className={cn("text-xl font-normal", isDark ? "text-white" : "text-gray-900")}>
@@ -146,6 +145,28 @@ const OverView = ({ account }) => {
             </span>
           )}
         </div>
+
+        {/* XRP Balance for accounts with no trading data */}
+        {hasNoTradingData && holdings?.accountData && (
+          <div className={cn("mb-4 pb-4 border-b", isDark ? "border-white/[0.06]" : "border-gray-200")}>
+            <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
+            <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
+              {fCurrency5(holdings.accountData.balanceDrops / 1000000)}
+            </p>
+            <span className={cn("text-[12px]", isDark ? "text-white/40" : "text-gray-400")}>
+              {fCurrency5((holdings.accountData.balanceDrops - holdings.accountData.reserveDrops) / 1000000)} spendable
+            </span>
+          </div>
+        )}
+
+        {/* No Trading Data Message */}
+        {hasNoTradingData && (
+          <div className={cn("text-center py-6 mb-4 rounded-xl border", isDark ? "border-white/[0.06] bg-white/[0.02]" : "border-gray-200 bg-gray-50")}>
+            <p className={cn("text-[14px]", isDark ? "text-white/50" : "text-gray-500")}>
+              No trading history
+            </p>
+          </div>
+        )}
 
         {/* Key Metrics */}
         {data && (
@@ -404,7 +425,7 @@ const OverView = ({ account }) => {
               <div className={cn(
                 "grid px-2 py-1.5 border-b",
                 isDark ? "border-white/[0.04]" : "border-gray-200"
-              )} style={{ gridTemplateColumns: '100px 1fr 100px 70px 70px' }}>
+              )} style={{ gridTemplateColumns: '140px 1fr 100px 70px 70px' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Type</span>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Details</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Amount</span>
@@ -611,7 +632,7 @@ const OverView = ({ account }) => {
                       "grid px-2 py-1.5 hover:bg-white/[0.02] transition-colors",
                       idx < 19 && (isDark ? "border-b border-white/[0.02]" : "border-b border-gray-100")
                     )}
-                    style={{ gridTemplateColumns: '100px 1fr 100px 70px 70px' }}
+                    style={{ gridTemplateColumns: '140px 1fr 100px 70px 70px' }}
                   >
                     <span className={cn(
                       "text-[11px]",

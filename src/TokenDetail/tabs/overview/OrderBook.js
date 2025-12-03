@@ -49,7 +49,7 @@ const Title = styled.div`
 
 const Content = styled.div`
   display: grid;
-  grid-template-rows: 0.6fr auto 1fr;
+  grid-template-rows: 1fr auto 1fr;
   flex: 1;
   min-height: 0;
   overflow: hidden;
