@@ -243,6 +243,7 @@ export default function Share({ token }) {
   return (
     <>
       <ShareButton isDark={isDark} onClick={() => setOpen(true)}>
+        <ShareIcon size={12} style={{ marginRight: 4 }} />
         Share
       </ShareButton>
 

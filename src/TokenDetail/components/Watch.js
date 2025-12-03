@@ -2,6 +2,7 @@ import axios from 'axios';
 import { useState, useEffect, useContext } from 'react';
 import styled from '@emotion/styled';
 import { AppContext } from 'src/AppContext';
+import { Bookmark } from 'lucide-react';
 
 const WatchButton = styled.button`
   border-radius: 8px;
@@ -71,6 +72,7 @@ export default function Watch({ token }) {
 
   return (
     <WatchButton isDark={isDark} isActive={isActive} onClick={onChangeWatchList}>
+      <Bookmark size={12} style={{ marginRight: 4 }} fill={isActive ? '#F6B87E' : 'none'} />
       {isActive ? 'Saved' : 'Save'}
     </WatchButton>
   );

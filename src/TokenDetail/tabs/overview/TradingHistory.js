@@ -4,7 +4,7 @@ import { MD5 } from 'crypto-js';
 import styled from '@emotion/styled';
 import TopTraders from 'src/TokenDetail/tabs/holders/TopTraders';
 import RichList from 'src/TokenDetail/tabs/holders/RichList';
-import { ExternalLink, X, Plus, Fish, Anchor, Ship, Loader2 } from 'lucide-react';
+import { ExternalLink, X, Plus, Fish, Anchor, Ship, Loader2, Activity, Droplets, Users, PieChart, Wallet } from 'lucide-react';
 
 // Custom styled components
 const Box = styled.div``;
@@ -269,22 +269,33 @@ const FormControlLabel = styled.label`
 `;
 
 const Tabs = styled.div`
-  display: flex;
-  gap: 4px;
+  display: inline-flex;
+  gap: 2px;
+  padding: 4px;
+  background: ${props => props.isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.05)'};
+  border: 1px solid ${props => props.isDark ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.1)'};
+  border-radius: 12px;
   margin-bottom: 12px;
 `;
 
 const Tab = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 12px;
-  font-weight: 400;
-  padding: 6px 12px;
-  background: ${props => props.selected ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
-  border: 1.5px solid ${props => props.selected ? '#3b82f6' : 'transparent'};
-  border-radius: 6px;
-  color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+  font-weight: 500;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1.5px solid ${props => props.selected ? 'rgba(59,130,246,0.5)' : 'transparent'};
+  border-radius: 8px;
+  color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
   cursor: pointer;
   transition: all 0.15s;
-  &:hover { color: ${props => props.isDark ? '#fff' : '#1a1a1a'}; }
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  &:hover {
+    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)')};
+  }
 `;
 
 const Button = styled.button`
@@ -584,13 +595,15 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
     font-size: 11px;
     font-weight: 500;
     padding: 6px 14px;
-    background: ${props => props.selected ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
-    border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(59,130,246,0.12)' : 'rgba(0,0,0,0.1)')};
+    background: transparent;
+    border: 1.5px solid ${props => props.selected ? 'rgba(59,130,246,0.5)' : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
     border-radius: 6px;
-    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)')};
     cursor: pointer;
     transition: all 0.15s;
-    &:hover { border-color: #3b82f6; }
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    &:hover { color: ${props => props.isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)'}; }
   `;
 
   const OfferCard = styled.div`
@@ -657,7 +670,15 @@ const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
   return (
     <Stack spacing={1.5}>
       {/* Sub-tabs */}
-      <Box style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+      <Box style={{
+        display: 'inline-flex',
+        gap: '2px',
+        padding: '4px',
+        background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.05)',
+        border: `1px solid ${isDark ? 'rgba(59,130,246,0.25)' : 'rgba(0,0,0,0.1)'}`,
+        borderRadius: '10px',
+        marginBottom: '4px'
+      }}>
         <SubTab
           selected={activeSubTab === 'assets'}
           onClick={() => setActiveSubTab('assets')}
@@ -1413,11 +1434,11 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
     <Stack spacing={1} style={{ width: '100%', position: 'relative', zIndex: 0 }}>
       <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <Tabs isDark={isDark}>
-          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}>Trades</Tab>
-          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}>Pools</Tab>
-          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}>Traders</Tab>
-          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Holders</Tab>
-          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark}>My Activity</Tab>
+          <Tab selected={tabValue === 0} onClick={(e) => handleTabChange(e, 0)} isDark={isDark}><Activity size={14} />Trades</Tab>
+          <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}><Droplets size={14} />Pools</Tab>
+          <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}><Users size={14} />Traders</Tab>
+          <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}><PieChart size={14} />Holders</Tab>
+          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark}><Wallet size={14} />My Activity</Tab>
         </Tabs>
         {tabValue === 0 && !isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
