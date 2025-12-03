@@ -203,7 +203,7 @@ const OverView = ({ account }) => {
         {/* Key Metrics */}
         {data && (
         <>
-        <div className={cn("grid grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}>
+        <div className={cn("grid grid-cols-4 gap-4 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
           <div>
             <p className={cn("text-[11px] uppercase tracking-wide mb-1", isDark ? "text-white/40" : "text-gray-400")}>XRP Balance</p>
             <p className={cn("text-[1.3rem] font-medium", isDark ? "text-white" : "text-gray-900")}>
@@ -245,7 +245,7 @@ const OverView = ({ account }) => {
         </div>
 
         {/* Period P&L Summary */}
-        <div className={cn("grid grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.08)]" : "border-gray-200")}>
+        <div className={cn("grid grid-cols-6 gap-3 mb-3 pb-3 border-b", isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]")}>
           <div>
             <p className={cn("text-[10px] uppercase tracking-wide mb-0.5", isDark ? "text-white/40" : "text-gray-400")}>7d P&L</p>
             <p className={cn("text-[14px] font-medium", (data.profit7d || 0) >= 0 ? "text-[#10b981]" : "text-[#ef4444]")}>
@@ -300,8 +300,8 @@ const OverView = ({ account }) => {
                 <div className="grid grid-cols-4 gap-2 mb-2">
                   {holdings.lines.map((line, idx) => (
                   <div key={idx} className={cn(
-                    "p-2 rounded border",
-                    isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.06)]" : "bg-gray-50 border-gray-200"
+                    "p-2 rounded-xl border transition-colors",
+                    isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)] hover:border-[rgba(59,130,246,0.25)]" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)] hover:border-[rgba(59,130,246,0.3)]"
                   )}>
                       <div className="flex items-center gap-1.5 mb-1">
                         <img
@@ -360,12 +360,12 @@ const OverView = ({ account }) => {
               Trading Performance by Token ({data.totalTokensTraded || data.tokenPerformance.length})
             </p>
             <div className={cn(
-              "rounded border overflow-hidden",
-              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.06)]" : "bg-gray-50 border-gray-200"
+              "rounded-xl border overflow-hidden",
+              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)]" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]"
             )}>
               <div className={cn(
                 "grid gap-2 px-2 py-1 border-b",
-                isDark ? "border-[rgba(59,130,246,0.06)]" : "border-gray-200"
+                isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
               )} style={{ gridTemplateColumns: '120px repeat(4, 1fr)' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Token</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Volume (XRP)</span>
@@ -442,12 +442,12 @@ const OverView = ({ account }) => {
               </div>
             </div>
             <div className={cn(
-              "rounded border overflow-hidden",
-              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.06)]" : "bg-gray-50 border-gray-200"
+              "rounded-xl border overflow-hidden",
+              isDark ? "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.1)]" : "bg-[rgba(59,130,246,0.02)] border-[rgba(59,130,246,0.15)]"
             )}>
               <div className={cn(
                 "grid px-2 py-1.5 border-b",
-                isDark ? "border-[rgba(59,130,246,0.06)]" : "border-gray-200"
+                isDark ? "border-[rgba(59,130,246,0.1)]" : "border-[rgba(59,130,246,0.15)]"
               )} style={{ gridTemplateColumns: '1fr 120px 90px' }}>
                 <span className={cn("text-[10px] uppercase tracking-wide", isDark ? "text-white/40" : "text-gray-400")}>Details</span>
                 <span className={cn("text-[10px] uppercase tracking-wide text-right", isDark ? "text-white/40" : "text-gray-400")}>Amount</span>

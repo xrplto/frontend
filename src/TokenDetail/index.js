@@ -3,10 +3,11 @@ import { useContext, useState, useEffect, useCallback, memo } from 'react';
 // Components
 import { AppContext } from 'src/AppContext';
 import Overview from './tabs/overview';
-import LinkCascade from './components/LinkCascade';
+import TokenTabs from './components/TokenTabs';
 import CreatorTransactionsDialog from './dialogs/CreatorTransactionsDialog';
 import TransactionDetailsPanel from './dialogs/TransactionDetailsPanel';
 import { cn } from 'src/utils/cn';
+import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 const TokenDetail = memo(
   ({
@@ -22,6 +23,13 @@ const TokenDetail = memo(
     const { themeName } = useContext(AppContext);
     const isDark = themeName === 'XrplToDarkTheme';
     const isMobile = typeof window !== 'undefined' && window.innerWidth < 960;
+
+    // Add current token to tabs on mount
+    useEffect(() => {
+      if (token?.md5 && token?.slug) {
+        addTokenToTabs(token);
+      }
+    }, [token?.md5, token?.slug]);
     const [creatorTxOpen, setCreatorTxOpen] = useState(creatorPanelOpen || false);
     const [latestCreatorTx, setLatestCreatorTx] = useState(null);
     const [selectedTxHash, setSelectedTxHash] = useState(null);
@@ -116,25 +124,27 @@ const TokenDetail = memo(
     // No separate OrderBook panel anymore; handled inside TransactionDetailsPanel
 
     return (
-      <div className="relative flex flex-row">
-        {/* Creator Transactions Panel - Only render when open to save memory */}
-        {!isMobile && token?.creator && creatorTxOpen && (
-          <CreatorTransactionsDialog
-            open={creatorTxOpen}
-            onClose={handleCreatorTxToggle}
-            creatorAddress={token?.creator}
-            tokenName={token?.name}
-            onLatestTransaction={setLatestCreatorTx}
-            onSelectTransaction={handleSelectTransaction}
-            isDark={isDark}
-          />
-        )}
+      <div className="relative">
+        {/* Token Tabs - Full Width */}
+        {!isMobile && <TokenTabs currentMd5={token?.md5} />}
 
-        {/* Main Content Area */}
-        <div className="flex-1 min-w-0">
-          {!isMobile && <LinkCascade token={token} />}
+        <div className="flex flex-row">
+          {/* Creator Transactions Panel - Only render when open to save memory */}
+          {!isMobile && token?.creator && creatorTxOpen && (
+            <CreatorTransactionsDialog
+              open={creatorTxOpen}
+              onClose={handleCreatorTxToggle}
+              creatorAddress={token?.creator}
+              tokenName={token?.name}
+              onLatestTransaction={setLatestCreatorTx}
+              onSelectTransaction={handleSelectTransaction}
+              isDark={isDark}
+            />
+          )}
 
-          <div id="back-to-top-tab-anchor" />
+          {/* Main Content Area */}
+          <div className="flex-1 min-w-0">
+            <div id="back-to-top-tab-anchor" />
 
           <Overview
             token={token}
@@ -169,6 +179,7 @@ const TokenDetail = memo(
         )}
 
         {/* OrderBook now renders inside TransactionDetailsPanel (mode === 'orderbook') */}
+        </div>
       </div>
     );
   }

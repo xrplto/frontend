@@ -50,7 +50,7 @@ function Detail({ data }) {
 
   return (
     <main className="overflow-hidden min-h-screen">
-      <div id="back-to-top-anchor" className="h-0 sm:h-2" />
+      <div id="back-to-top-anchor" className="h-0" />
       <Header
         notificationPanelOpen={notificationPanelOpen}
         onNotificationPanelToggle={setNotificationPanelOpen}

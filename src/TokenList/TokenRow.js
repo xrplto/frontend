@@ -5,6 +5,7 @@ import styled from '@emotion/styled';
 import Image from 'next/image';
 
 import { AppContext } from 'src/AppContext';
+import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 // Constants
 const currencySymbols = {
@@ -1267,8 +1268,9 @@ const FTokenRow = memo(
     );
 
     const handleRowClick = useCallback(() => {
+      addTokenToTabs({ md5, slug, name, user });
       window.location.href = `/token/${slug}`;
-    }, [slug]);
+    }, [md5, slug, name, user]);
 
     const convertedValues = useMemo(
       () => ({

@@ -13,6 +13,7 @@ import axios from 'axios';
 import { throttle } from 'src/utils/formatters';
 import { AppContext } from 'src/AppContext';
 import Logo from 'src/components/Logo';
+import { addTokenToTabs } from 'src/hooks/useTokenTabs';
 
 import { selectProcess, updateProcess } from 'src/redux/transactionSlice';
 import { selectMetrics } from 'src/redux/statusSlice';
@@ -327,6 +328,11 @@ function Header({ notificationPanelOpen, onNotificationPanelToggle, ...props }) 
     const updated = [newRecent, ...recentSearches.filter(r => r.slug !== item.slug)].slice(0, 5);
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
+
+    // Add token to tabs history
+    if (type === 'token') {
+      addTokenToTabs({ md5: item.md5, slug: item.slug, name: item.name, user: item.user });
+    }
 
     setSearchOpen(false);
     setSearchQuery('');
