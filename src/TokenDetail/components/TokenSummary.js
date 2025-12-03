@@ -173,7 +173,11 @@ const TokenSummary = memo(({ token, onCreatorTxToggle, creatorTxOpen, latestCrea
       }
     } catch (err) {
       console.error('Trustline error:', err);
-      showStatus(err.message?.slice(0, 30) || 'Error');
+      if (err.response?.status === 404) {
+        showStatus('Account not activated - need XRP');
+      } else {
+        showStatus(err.message?.slice(0, 30) || 'Error');
+      }
     }
   };
 

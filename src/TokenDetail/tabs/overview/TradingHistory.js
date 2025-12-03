@@ -479,6 +479,445 @@ const parseValue = (value) => {
   return parseFloat(value);
 };
 
+// My Activity Tab Component - Shows user's trading history and open offers
+const MyActivityTab = ({ token, isDark, isMobile, onTransactionClick }) => {
+  const [activeSubTab, setActiveSubTab] = useState('assets'); // 'assets', 'history', or 'offers'
+  const [loading, setLoading] = useState(false);
+
+  // Mock data for user's token assets
+  const mockAssets = {
+    balance: 125000,
+    avgBuyPrice: 0.00221,
+    currentPrice: 0.00256,
+    totalValue: 320.0,
+    totalCost: 276.25,
+    pnl: 43.75,
+    pnlPercent: 15.84,
+    trustlineSet: true,
+    limitAmount: 1000000000
+  };
+
+  // Mock data for user's trading history
+  const mockMyTrades = [
+    {
+      _id: 'my1',
+      type: 'BUY',
+      amount: 15000,
+      price: 0.00234,
+      total: 35.1,
+      time: Date.now() - 3600000,
+      hash: 'ABC123DEF456...',
+      status: 'completed'
+    },
+    {
+      _id: 'my2',
+      type: 'SELL',
+      amount: 8500,
+      price: 0.00256,
+      total: 21.76,
+      time: Date.now() - 86400000,
+      hash: 'GHI789JKL012...',
+      status: 'completed'
+    },
+    {
+      _id: 'my3',
+      type: 'BUY',
+      amount: 25000,
+      price: 0.00198,
+      total: 49.5,
+      time: Date.now() - 172800000,
+      hash: 'MNO345PQR678...',
+      status: 'completed'
+    },
+    {
+      _id: 'my4',
+      type: 'SELL',
+      amount: 5000,
+      price: 0.00289,
+      total: 14.45,
+      time: Date.now() - 259200000,
+      hash: 'STU901VWX234...',
+      status: 'completed'
+    }
+  ];
+
+  // Mock data for user's open offers
+  const mockOpenOffers = [
+    {
+      _id: 'offer1',
+      type: 'BUY',
+      amount: 10000,
+      price: 0.00215,
+      total: 21.5,
+      createdAt: Date.now() - 7200000,
+      sequence: 12345678,
+      expiration: null
+    },
+    {
+      _id: 'offer2',
+      type: 'SELL',
+      amount: 20000,
+      price: 0.00310,
+      total: 62.0,
+      createdAt: Date.now() - 14400000,
+      sequence: 12345679,
+      expiration: Date.now() + 86400000
+    },
+    {
+      _id: 'offer3',
+      type: 'BUY',
+      amount: 5000,
+      price: 0.00195,
+      total: 9.75,
+      createdAt: Date.now() - 28800000,
+      sequence: 12345680,
+      expiration: null
+    }
+  ];
+
+  const handleCancelOffer = (offerId) => {
+    // TODO: Implement offer cancellation
+    console.log('Cancel offer:', offerId);
+  };
+
+  const SubTab = styled.button`
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 14px;
+    background: ${props => props.selected ? (props.isDark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.1)') : 'transparent'};
+    border: 1.5px solid ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)')};
+    border-radius: 6px;
+    color: ${props => props.selected ? '#3b82f6' : (props.isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)')};
+    cursor: pointer;
+    transition: all 0.15s;
+    &:hover { border-color: #3b82f6; }
+  `;
+
+  const OfferCard = styled.div`
+    background: ${props => props.isDark ? 'rgba(255,255,255,0.02)' : 'rgba(0,0,0,0.02)'};
+    border: 1.5px solid ${props => props.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'};
+    border-radius: 10px;
+    padding: 14px;
+    &:hover {
+      border-color: ${props => props.isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'};
+    }
+  `;
+
+  const CancelButton = styled.button`
+    font-size: 11px;
+    font-weight: 500;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1.5px solid ${props => props.isDark ? 'rgba(239,68,68,0.3)' : 'rgba(239,68,68,0.4)'};
+    border-radius: 6px;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all 0.15s;
+    &:hover {
+      background: rgba(239,68,68,0.1);
+      border-color: #ef4444;
+    }
+  `;
+
+  const tokenCurrency = token ? decodeCurrency(token.currency) : 'TOKEN';
+
+  // Empty state when not connected
+  const notConnectedState = (
+    <Box
+      style={{
+        textAlign: 'center',
+        padding: '40px 24px',
+        backgroundColor: 'transparent',
+        borderRadius: '12px',
+        border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+      }}
+    >
+      <div style={{ marginBottom: '12px' }}>
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={isDark ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+          <circle cx="12" cy="7" r="4" />
+        </svg>
+      </div>
+      <Typography variant="h6" color="text.secondary" isDark={isDark} style={{ marginBottom: '8px', fontSize: '14px' }}>
+        Connect Wallet to View Activity
+      </Typography>
+      <Typography variant="body2" color="text.secondary" isDark={isDark} style={{ fontSize: '12px', opacity: 0.7 }}>
+        Your trading history and open offers will appear here
+      </Typography>
+    </Box>
+  );
+
+  // For now, show mock data (replace with actual wallet connection check later)
+  const isConnected = true; // TODO: Check actual wallet connection
+
+  if (!isConnected) {
+    return notConnectedState;
+  }
+
+  return (
+    <Stack spacing={1.5}>
+      {/* Sub-tabs */}
+      <Box style={{ display: 'flex', gap: '8px', marginBottom: '4px' }}>
+        <SubTab
+          selected={activeSubTab === 'assets'}
+          onClick={() => setActiveSubTab('assets')}
+          isDark={isDark}
+        >
+          Assets
+        </SubTab>
+        <SubTab
+          selected={activeSubTab === 'history'}
+          onClick={() => setActiveSubTab('history')}
+          isDark={isDark}
+        >
+          My Trades ({mockMyTrades.length})
+        </SubTab>
+        <SubTab
+          selected={activeSubTab === 'offers'}
+          onClick={() => setActiveSubTab('offers')}
+          isDark={isDark}
+        >
+          Open Offers ({mockOpenOffers.length})
+        </SubTab>
+      </Box>
+
+      {/* Assets */}
+      {activeSubTab === 'assets' && (
+        <Box style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          {/* Balance Card */}
+          <OfferCard isDark={isDark}>
+            <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <Box>
+                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Balance</span>
+                <span style={{ fontSize: '22px', fontWeight: 600, color: isDark ? '#fff' : '#1a1a1a' }}>
+                  {formatTradeValue(mockAssets.balance)} <span style={{ fontSize: '14px', opacity: 0.5 }}>{tokenCurrency}</span>
+                </span>
+              </Box>
+              <Box style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '4px' }}>Value</span>
+                <span style={{ fontSize: '18px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                  {mockAssets.totalValue.toFixed(2)} <span style={{ fontSize: '12px', opacity: 0.5 }}>XRP</span>
+                </span>
+              </Box>
+            </Box>
+          </OfferCard>
+
+          {/* P&L Card */}
+          <Box style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: '12px' }}>
+            <OfferCard isDark={isDark}>
+              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Unrealized P&L</span>
+              <Box style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontSize: '18px', fontWeight: 600, color: mockAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                  {mockAssets.pnl >= 0 ? '+' : ''}{mockAssets.pnl.toFixed(2)} XRP
+                </span>
+                <span style={{ fontSize: '12px', fontWeight: 500, color: mockAssets.pnl >= 0 ? '#22c55e' : '#ef4444' }}>
+                  ({mockAssets.pnl >= 0 ? '+' : ''}{mockAssets.pnlPercent.toFixed(2)}%)
+                </span>
+              </Box>
+            </OfferCard>
+
+            <OfferCard isDark={isDark}>
+              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block', marginBottom: '6px' }}>Avg Buy Price</span>
+              <Box style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                <span style={{ fontSize: '16px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a', fontFamily: 'monospace' }}>
+                  {formatPrice(mockAssets.avgBuyPrice)}
+                </span>
+                <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>XRP</span>
+              </Box>
+            </OfferCard>
+          </Box>
+
+          {/* Trustline Info */}
+          <OfferCard isDark={isDark}>
+            <Box style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: mockAssets.trustlineSet ? '#22c55e' : '#ef4444' }} />
+                <span style={{ fontSize: '12px', color: isDark ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.8)' }}>
+                  Trustline {mockAssets.trustlineSet ? 'Active' : 'Not Set'}
+                </span>
+              </Box>
+              <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                Limit: {abbreviateNumber(mockAssets.limitAmount)}
+              </span>
+            </Box>
+          </OfferCard>
+        </Box>
+      )}
+
+      {/* My Trading History */}
+      {activeSubTab === 'history' && (
+        <>
+          {/* Header */}
+          {!isMobile && (
+            <TableHeader isDark={isDark}>
+              <div style={{ flex: '0.8' }}>Time</div>
+              <div style={{ flex: '0.6' }}>Type</div>
+              <div style={{ flex: '1' }}>Amount</div>
+              <div style={{ flex: '0.8' }}>Price</div>
+              <div style={{ flex: '0.8' }}>Total</div>
+              <div style={{ flex: '0.6' }}>Status</div>
+              <div style={{ flex: '0.3' }}></div>
+            </TableHeader>
+          )}
+
+          {mockMyTrades.length === 0 ? (
+            <Box
+              style={{
+                textAlign: 'center',
+                padding: '24px',
+                border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                borderRadius: '10px'
+              }}
+            >
+              <Typography variant="body2" color="text.secondary" isDark={isDark}>
+                No trades yet for this token
+              </Typography>
+            </Box>
+          ) : (
+            <Stack spacing={0}>
+              {mockMyTrades.map((trade) => (
+                <Card key={trade._id} isDark={isDark}>
+                  <CardContent style={{ padding: isMobile ? '10px 0' : '10px 0' }}>
+                    {isMobile ? (
+                      <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                        <Box style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <TradeTypeChip tradetype={trade.type}>{trade.type}</TradeTypeChip>
+                          <span style={{ fontSize: '10px', color: isDark ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}>
+                            {formatRelativeTime(trade.time)}
+                          </span>
+                        </Box>
+                        <span style={{ fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                          {formatTradeValue(trade.amount)} {tokenCurrency}
+                        </span>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
+                          {trade.total.toFixed(2)} XRP
+                        </span>
+                      </Box>
+                    ) : (
+                      <Box style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span style={{ flex: '0.8', fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          {formatRelativeTime(trade.time)}
+                        </span>
+                        <div style={{ flex: '0.6' }}>
+                          <TradeTypeChip tradetype={trade.type}>{trade.type}</TradeTypeChip>
+                        </div>
+                        <span style={{ flex: '1', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                          {formatTradeValue(trade.amount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
+                        </span>
+                        <span style={{ flex: '0.8', fontSize: '12px', fontFamily: 'monospace', color: isDark ? '#fff' : '#1a1a1a' }}>
+                          {formatPrice(trade.price)}
+                        </span>
+                        <span style={{ flex: '0.8', fontSize: '12px', color: isDark ? '#fff' : '#1a1a1a' }}>
+                          {trade.total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
+                        </span>
+                        <span style={{ flex: '0.6', fontSize: '10px', color: '#22c55e', textTransform: 'uppercase' }}>
+                          {trade.status}
+                        </span>
+                        <div style={{ flex: '0.3' }}>
+                          <IconButton onClick={() => onTransactionClick && onTransactionClick(trade.hash)} isDark={isDark}>
+                            <ExternalLink size={12} />
+                          </IconButton>
+                        </div>
+                      </Box>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </Stack>
+          )}
+        </>
+      )}
+
+      {/* Open Offers */}
+      {activeSubTab === 'offers' && (
+        <>
+          {mockOpenOffers.length === 0 ? (
+            <Box
+              style={{
+                textAlign: 'center',
+                padding: '24px',
+                border: `1.5px dashed ${isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)'}`,
+                borderRadius: '10px'
+              }}
+            >
+              <Typography variant="body2" color="text.secondary" isDark={isDark}>
+                No open offers for this token
+              </Typography>
+            </Box>
+          ) : (
+            <Stack spacing={1}>
+              {mockOpenOffers.map((offer) => (
+                <OfferCard key={offer._id} isDark={isDark}>
+                  <Box style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                    {/* Left side - Offer details */}
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1 }}>
+                      <TradeTypeChip tradetype={offer.type} style={{ fontSize: '12px', fontWeight: 600 }}>
+                        {offer.type}
+                      </TradeTypeChip>
+
+                      <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                          {formatTradeValue(offer.amount)} <span style={{ opacity: 0.5 }}>{tokenCurrency}</span>
+                        </span>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          @ {formatPrice(offer.price)} XRP
+                        </span>
+                      </Box>
+
+                      <Box style={{ display: 'flex', flexDirection: 'column', gap: '2px', paddingLeft: '16px', borderLeft: `1px solid ${isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` }}>
+                        <span style={{ fontSize: '13px', fontWeight: 500, color: isDark ? '#fff' : '#1a1a1a' }}>
+                          {offer.total.toFixed(2)} <span style={{ opacity: 0.5 }}>XRP</span>
+                        </span>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                          Total value
+                        </span>
+                      </Box>
+                    </Box>
+
+                    {/* Right side - Time and actions */}
+                    <Box style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                      <Box style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)', display: 'block' }}>
+                          Created {formatRelativeTime(offer.createdAt)} ago
+                        </span>
+                        {offer.expiration && (
+                          <span style={{ fontSize: '10px', color: '#f59e0b' }}>
+                            Expires {formatRelativeTime(offer.expiration)}
+                          </span>
+                        )}
+                      </Box>
+
+                      <CancelButton
+                        onClick={() => handleCancelOffer(offer._id)}
+                        isDark={isDark}
+                      >
+                        Cancel
+                      </CancelButton>
+                    </Box>
+                  </Box>
+                </OfferCard>
+              ))}
+            </Stack>
+          )}
+
+          {/* Info note */}
+          <Box style={{
+            padding: '12px 14px',
+            background: isDark ? 'rgba(59,130,246,0.08)' : 'rgba(59,130,246,0.06)',
+            borderRadius: '8px',
+            border: `1px solid ${isDark ? 'rgba(59,130,246,0.2)' : 'rgba(59,130,246,0.15)'}`,
+            marginTop: '8px'
+          }}>
+            <span style={{ fontSize: '11px', color: isDark ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+              Open offers are stored on the XRP Ledger. Cancelling an offer requires a transaction fee.
+            </span>
+          </Box>
+        </>
+      )}
+    </Stack>
+  );
+};
+
 const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark = false, isMobile: isMobileProp = false }) => {
   // Use internal mobile detection for reliability
   const [isMobileState, setIsMobileState] = useState(isMobileProp);
@@ -978,6 +1417,7 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
           <Tab selected={tabValue === 1} onClick={(e) => handleTabChange(e, 1)} isDark={isDark}>Pools</Tab>
           <Tab selected={tabValue === 2} onClick={(e) => handleTabChange(e, 2)} isDark={isDark}>Traders</Tab>
           <Tab selected={tabValue === 3} onClick={(e) => handleTabChange(e, 3)} isDark={isDark}>Holders</Tab>
+          <Tab selected={tabValue === 4} onClick={(e) => handleTabChange(e, 4)} isDark={isDark}>My Activity</Tab>
         </Tabs>
         {tabValue === 0 && !isMobile && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -1423,6 +1863,10 @@ const TradingHistory = ({ tokenId, amm, token, pairs, onTransactionClick, isDark
         <Suspense fallback={<Spinner size={32} />}>
           <RichList token={token} amm={amm} />
         </Suspense>
+      )}
+
+      {tabValue === 4 && (
+        <MyActivityTab token={token} isDark={isDark} isMobile={isMobile} onTransactionClick={onTransactionClick} />
       )}
 
       {/* Add Liquidity Dialog - Using Portal to escape stacking context */}

@@ -325,8 +325,9 @@ function ContextProviderInner({ children, data, openSnackbar }) {
             }
           }
         } catch (err) {
-          // Handle unactivated accounts (404) gracefully
-          if (err.response?.status === 404) {
+          // Handle unactivated accounts (404) or server errors (500) gracefully
+          // Both cases typically mean the account doesn't exist or isn't funded
+          if (err.response?.status === 404 || err.response?.status === 500) {
             // Account not activated yet - set balance to 0
             setAccountBalance({
               curr1: { value: '0' },
